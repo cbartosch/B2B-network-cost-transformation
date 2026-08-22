@@ -21,3 +21,19 @@ jobs:
       - run: pip install -e '.[dev]'
       - run: ruff check .
       - run: pytest
+
+  docker-smoke:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and start bundle
+        run: docker compose up -d --build
+      - name: Verify API and Streamlit health
+        run: ./scripts/docker_smoke.sh
+      - name: Show service logs
+        if: always()
+        run: docker compose logs --no-color --tail=200
+      - name: Stop bundle
+        if: always()
+        run: docker compose down -v

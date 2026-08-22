@@ -12,7 +12,8 @@ Initial implementation scaffold for the evidence-gated network cost transformati
 - LangGraph/LangChain-ready agent runtime contract with explicit execution modes
 - Fail-closed production controls: no synthetic fallback for LIVE agent runs
 - PostgreSQL schema bootstrap for tenants, engagements, evidence, analyses, agents, market facts, and benchmark releases
-- Unit tests and CI workflow
+- Docker bundle for PostgreSQL, FastAPI, and Streamlit
+- Unit tests, linting, and a Docker smoke test in CI
 
 ## Architecture
 
@@ -28,7 +29,37 @@ Streamlit (thin UI, no DB/model credentials)
 
 The initial commit intentionally does **not** include client data, benchmark observations, credentials, or model-provider configuration.
 
-## Quick start
+## Start the complete Docker bundle
+
+```bash
+cp .env.example .env
+docker compose up -d --build
+./scripts/docker_smoke.sh
+```
+
+Open:
+
+- Streamlit: `http://localhost:8501`
+- FastAPI docs: `http://localhost:8000/docs`
+- API health: `http://localhost:8000/health`
+
+Inspect or stop the stack:
+
+```bash
+docker compose ps
+docker compose logs -f --tail=200
+docker compose down
+```
+
+To remove the local PostgreSQL volume as well:
+
+```bash
+docker compose down -v
+```
+
+The default bundle is for local development. Credentials in `docker-compose.yml` are deliberately local-only placeholders and must be replaced before any shared or production deployment.
+
+## Local Python development
 
 ```bash
 python -m venv .venv
@@ -39,8 +70,6 @@ docker compose up -d postgres
 uvicorn network_cost_workbench.api.main:app --reload
 streamlit run streamlit_app.py
 ```
-
-API documentation is available at `http://localhost:8000/docs`.
 
 ## Run tests
 
