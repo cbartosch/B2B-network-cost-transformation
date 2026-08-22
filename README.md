@@ -62,9 +62,8 @@ The default bundle is for local development. Credentials in `docker-compose.yml`
 ## Corporate TLS / SSL certificate errors
 
 If the image build fails with `CERTIFICATE_VERIFY_FAILED`, Docker is not trusting
-the CA used by the corporate proxy or security gateway. The image now installs
-Debian's CA bundle, avoids the unnecessary `pip --upgrade` call, and supports
-local corporate-CA injection.
+the CA used by the corporate proxy or security gateway. The image installs
+Debian's CA bundle and supports local corporate-CA injection.
 
 On Windows, run:
 
@@ -72,8 +71,8 @@ On Windows, run:
 Set-ExecutionPolicy -Scope Process Bypass
 .\scripts\export_windows_trusted_roots.ps1
 
-docker compose down
-docker compose build --no-cache api ui
+docker compose down --remove-orphans
+docker compose build --no-cache --progress=plain api ui
 docker compose up -d
 .\scripts\docker_smoke.ps1
 ```
@@ -88,6 +87,25 @@ and do not permanently disable certificate verification.
 
 The VS Code `Unknown channel: agentHostClientProxy` message is unrelated to the
 Docker build failure.
+
+### PEP 517 / build-dependency errors
+
+If Docker reports `pip subprocess to install build dependencies did not run successfully`,
+the project itself must not be installed with `pip install .` inside the image. The
+container uses `requirements-runtime.txt` and `PYTHONPATH=/app/src` instead, so no
+Hatchling/build-isolation download is required. Rebuild with no cache after updating:
+
+```powershell
+docker compose down --remove-orphans
+docker compose build --no-cache --progress=plain api ui
+docker compose up -d
+.\scripts\docker_smoke.ps1
+```
+
+If a direct dependency download still fails with `CERTIFICATE_VERIFY_FAILED`, the
+remaining issue is the corporate CA or package mirror rather than PEP 517. Export the
+corporate root certificate as described above or configure the approved internal
+`PIP_INDEX_URL`.
 
 ## Local Python development
 

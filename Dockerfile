@@ -12,7 +12,9 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PIP_INDEX_URL=${PIP_INDEX_URL} \
     SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt \
     REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt \
-    PIP_CERT=/etc/ssl/certs/ca-certificates.crt
+    PIP_CERT=/etc/ssl/certs/ca-certificates.crt \
+    PIP_PREFER_BINARY=1 \
+    PYTHONPATH=/app/src
 
 WORKDIR /app
 
@@ -44,13 +46,18 @@ RUN set -eux; \
 RUN groupadd --gid 10001 app \
     && useradd --uid 10001 --gid app --create-home --shell /usr/sbin/nologin app
 
-COPY pyproject.toml README.md ./
+COPY requirements-runtime.txt ./
+
+# Install runtime dependencies directly. We deliberately do not run `pip install .`
+# inside the container because PEP 517 build isolation would start a second pip
+# process to download Hatchling. That extra bootstrap step is fragile behind
+# TLS-inspecting corporate proxies and is unnecessary for this source-layout app.
+RUN python -m pip install --no-cache-dir --prefer-binary \
+    --requirement requirements-runtime.txt
+
 COPY src ./src
 COPY streamlit_app.py ./
-
-# Do not upgrade pip during the image build. It adds an unnecessary network call
-# and is a common failure point behind TLS-inspecting corporate proxies.
-RUN python -m pip install --no-cache-dir .
+RUN python -m compileall -q /app/src /app/streamlit_app.py
 
 USER app
 
