@@ -1,0 +1,71 @@
+# Enterprise Network Cost Transformation Workbench
+
+Initial implementation scaffold for the evidence-gated network cost transformation workflow described in the v4.6 development specification.
+
+## What is implemented
+
+- V0-V5 evidence-stage policy and validation
+- Deterministic coverage and savings calculations using `Decimal`
+- FastAPI control plane with typed calculation endpoints
+- Streamlit thin client that calls the API only
+- Prefect outer workflow scaffold
+- LangGraph/LangChain-ready agent runtime contract with explicit execution modes
+- Fail-closed production controls: no synthetic fallback for LIVE agent runs
+- PostgreSQL schema bootstrap for tenants, engagements, evidence, analyses, agents, market facts, and benchmark releases
+- Unit tests and CI workflow
+
+## Architecture
+
+```text
+Streamlit (thin UI, no DB/model credentials)
+    -> FastAPI control plane
+        -> Prefect process workflows
+        -> LangGraph bounded agent workflows
+        -> deterministic domain services
+            -> PostgreSQL (structured system of record)
+            -> object storage (original evidence; adapter added later)
+```
+
+The initial commit intentionally does **not** include client data, benchmark observations, credentials, or model-provider configuration.
+
+## Quick start
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -e '.[dev]'
+
+docker compose up -d postgres
+uvicorn network_cost_workbench.api.main:app --reload
+streamlit run streamlit_app.py
+```
+
+API documentation is available at `http://localhost:8000/docs`.
+
+## Run tests
+
+```bash
+pytest
+ruff check .
+```
+
+## Stage boundaries
+
+| Version | Purpose | Highest permitted evidence class |
+|---|---|---|
+| V0 | Outside-in estimate | Public evidence and approved priors |
+| V1 | Guided assessment | Management responses |
+| V2 | Commercial baseline | Contracts, invoices, service orders, circuit inventory |
+| V3 | Engineering validation | Topology, telemetry, incidents, utilization, serviceability evidence |
+| V4 | Market tested | Quotes and bids |
+| V5 | Realized | Post-implementation invoices and disconnect evidence |
+
+Later versions replace earlier estimates; they are not additive savings pools.
+
+## Security posture
+
+- Production `MOCK` agent execution is disabled by default.
+- A `LIVE` agent run must retain a genuine provider response ID.
+- Agents receive typed tools, not arbitrary SQL or direct benchmark-vault access.
+- Raw evidence belongs in governed object storage, not Git history.
+- This repository must contain synthetic fixtures only.
