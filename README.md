@@ -59,6 +59,36 @@ docker compose down -v
 
 The default bundle is for local development. Credentials in `docker-compose.yml` are deliberately local-only placeholders and must be replaced before any shared or production deployment.
 
+## Corporate TLS / SSL certificate errors
+
+If the image build fails with `CERTIFICATE_VERIFY_FAILED`, Docker is not trusting
+the CA used by the corporate proxy or security gateway. The image now installs
+Debian's CA bundle, avoids the unnecessary `pip --upgrade` call, and supports
+local corporate-CA injection.
+
+On Windows, run:
+
+```powershell
+Set-ExecutionPolicy -Scope Process Bypass
+.\scripts\export_windows_trusted_roots.ps1
+
+docker compose down
+docker compose build --no-cache api ui
+docker compose up -d
+.\scripts\docker_smoke.ps1
+```
+
+For the smaller and preferred trust set, export only the corporate TLS-inspection
+root as Base-64 X.509/PEM and save it as `certs/corporate-root-ca.crt`. See
+`certs/README.md` for details.
+
+If the organization uses an approved internal package mirror, set
+`PIP_INDEX_URL` in `.env` to the mirror URL. Do not embed credentials in that URL
+and do not permanently disable certificate verification.
+
+The VS Code `Unknown channel: agentHostClientProxy` message is unrelated to the
+Docker build failure.
+
 ## Local Python development
 
 ```bash

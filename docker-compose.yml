@@ -1,5 +1,12 @@
 name: network-cost-workbench
 
+x-workbench-build: &workbench-build
+  context: .
+  dockerfile: Dockerfile
+  args:
+    PIP_INDEX_URL: ${PIP_INDEX_URL:-https://pypi.org/simple}
+    PIP_DEFAULT_TIMEOUT: ${PIP_DEFAULT_TIMEOUT:-60}
+
 services:
   postgres:
     image: postgres:16-alpine
@@ -20,9 +27,8 @@ services:
     restart: unless-stopped
 
   api:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: network-cost-workbench:local
+    build: *workbench-build
     command:
       - uvicorn
       - network_cost_workbench.api.main:app
@@ -52,9 +58,8 @@ services:
     restart: unless-stopped
 
   ui:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: network-cost-workbench:local
+    build: *workbench-build
     command:
       - streamlit
       - run
