@@ -1,0 +1,81 @@
+name: network-workbench
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: workbench
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-workbench_dev_only}
+      POSTGRES_DB: workbench
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ./db/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U workbench -d workbench"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks: [backend]          # internal only - no route off the host
+
+  api:
+    build:
+      context: .
+      dockerfile: api_service/Dockerfile
+    environment:
+      DATABASE_URL: postgresql+psycopg://workbench:${POSTGRES_PASSWORD:-workbench_dev_only}@db:5432/workbench
+      # WORKBENCH_ENVIRONMENT is resolved server-side and is never accepted from a caller (spec 7.2C).
+      WORKBENCH_ENVIRONMENT: ${WORKBENCH_ENVIRONMENT:-DEV}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      ANTHROPIC_MODEL: ${ANTHROPIC_MODEL:-claude-sonnet-4-6}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o-mini}
+      PREFLIGHT_PROBE_LIVE: ${PREFLIGHT_PROBE_LIVE:-false}
+      MAX_CLOCK_SKEW_SECONDS: ${MAX_CLOCK_SKEW_SECONDS:-300}
+      MAX_ENSEMBLE_SIZE: ${MAX_ENSEMBLE_SIZE:-100}
+      SIM_WORKERS: ${SIM_WORKERS:-2}
+      SIM_QUEUE_MAX: ${SIM_QUEUE_MAX:-32}
+      SIM_CHECKPOINT_EVERY: ${SIM_CHECKPOINT_EVERY:-5}
+      HEALTH_DEEP_TTL_SECONDS: ${HEALTH_DEEP_TTL_SECONDS:-30}
+      MAX_SIM_SITES: ${MAX_SIM_SITES:-50000}
+      API_TOKEN: ${API_TOKEN:-}
+      # Egress is explicit. httpx trust_env is off, so an ambient HTTPS_PROXY
+      # can no longer silently redirect provider calls; name it here if needed
+      # and the route is recorded on every llm_run row.
+      LLM_EGRESS_PROXY: ${LLM_EGRESS_PROXY:-}
+      # Explicit trust anchor. The image builds this bundle from certs/, so it
+      # contains the corporate CA when one is supplied and the public roots
+      # otherwise. Named here rather than inherited from the environment.
+      LLM_CA_BUNDLE: ${LLM_CA_BUNDLE:-/etc/ssl/certs/ca-certificates.crt}
+      LLM_INSECURE_SKIP_TLS_VERIFY: ${LLM_INSECURE_SKIP_TLS_VERIFY:-false}
+      REQUIRE_PROVIDER_REQUEST_ID: ${REQUIRE_PROVIDER_REQUEST_ID:-false}
+      TLS_PIN_MODE: ${TLS_PIN_MODE:-OBSERVE}
+      TLS_PINS: ${TLS_PINS:-}
+      TLS_PIN_EXPIRY_WARN_DAYS: ${TLS_PIN_EXPIRY_WARN_DAYS:-21}
+      TLS_PIN_ALLOW_CERT_ONLY: ${TLS_PIN_ALLOW_CERT_ONLY:-false}
+    depends_on:
+      db: {condition: service_healthy}
+    ports: ["8000:8000"]
+    networks: [backend, frontend]
+
+  ui:
+    build:
+      context: .
+      dockerfile: analyst_ui/Dockerfile
+    environment:
+      API_BASE_URL: http://api:8000
+      API_TOKEN: ${API_TOKEN:-}
+      # Deliberately absent: DATABASE_URL, provider keys. Streamlit never holds
+      # them (spec 2.1).
+    depends_on:
+      api: {condition: service_healthy}
+    ports: ["8501:8501"]
+    networks: [frontend]          # no backend attachment - no route to the database
+
+networks:
+  backend:
+    internal: true
+  frontend:
+    driver: bridge
+
+volumes:
+  db_data:
