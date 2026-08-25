@@ -51,7 +51,15 @@ def derive_components(*, policy: ConfidencePolicy, stage: str = "V0",
     def share(origin):
         return D((origin_breakdown.get(origin) or {}).get("share", "0"))
 
-    evidenced = share("EVIDENCED_PUBLIC") + share("DERIVED_PUBLIC")
+    # Public evidence counts fully; a client's first-party statement counts at
+    # the governed weight. Summing them at parity would say a self-report and
+    # an independently-checkable source are the same kind of claim, and
+    # excluding client data entirely would say it is worth nothing - neither is
+    # true. See dispositions.DISPOSITIONS for why CLIENT_CONFIRMED is its own
+    # class rather than folded into a neighbour.
+    client_confirmed = share("CLIENT_CONFIRMED")
+    evidenced = (share("EVIDENCED_PUBLIC") + share("DERIVED_PUBLIC")
+                 + policy.client_confirmed_evidence_weight * client_confirmed)
 
     # --- current-baseline: how much of the estate we can actually see and price
     bd = policy.baseline_drivers
@@ -88,6 +96,12 @@ def derive_components(*, policy: ConfidencePolicy, stage: str = "V0",
         "drivers": {
             "priced_spend_pct": str(D(priced_spend_pct)),
             "evidenced_value_share": str(evidenced),
+            # Reported separately so a reader can see how much of the
+            # evidenced driver rests on the client's own word rather than on
+            # something independently checkable.
+            "client_confirmed_value_share": str(client_confirmed),
+            "client_confirmed_evidence_weight": str(
+                policy.client_confirmed_evidence_weight),
             "domain_completeness": str(D(domain_completeness)),
             "prior_coverage": str(D(prior_coverage)),
             "prior_recency": str(D(prior_recency)),

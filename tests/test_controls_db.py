@@ -656,12 +656,16 @@ def test_preflight_blocks_incomplete_intake(session):
 def test_preflight_blocks_an_uncleared_prior_engagement_fact(session):
     """2.4: a fact that may carry another client's confidential information
     cannot influence an estimate before a rights check."""
+    import datetime as _dt
     from app.domain import preflight
     case_id = _case(session)
     session.execute(insert(db.known_fact).values(
         known_fact_id=str(uuid.uuid4()), case_id=case_id,
         fact_class="Location footprint", subject="GB", value_base=120,
-        asserted_by="Jane Okafor", assertion_date=date(2026, 5, 1),
+        # Was a bare `date(...)`, which this module never imports - a
+        # guaranteed NameError. Every other call site in this file already
+        # uses `_dt.date`. Found by executing it.
+        asserted_by="Jane Okafor", assertion_date=_dt.date(2026, 5, 1),
         basis="PRIOR_ENGAGEMENT", verifiability="CLIENT_CONFIRMABLE",
         corroboration_state="PENDING", rights_cleared=False))
     session.commit()
@@ -689,6 +693,7 @@ def test_a_run_cannot_begin_while_a_block_is_open(session):
 
 def test_a_run_cannot_begin_without_acknowledgement(session):
     """The report is rendered, acknowledged and persisted before execution."""
+    import datetime as _dt
     from app.domain import preflight
     case_id = _case(session)
     report = preflight.run(session, case_id=case_id, mode="DETERMINISTIC_ONLY")
@@ -701,6 +706,7 @@ def test_a_run_cannot_begin_without_acknowledgement(session):
 
 
 def test_a_run_cannot_begin_with_no_report_at_all(session):
+    import datetime as _dt
     from app.domain import preflight
     case_id = _case(session)
     with pytest.raises(PermissionError, match="no pre-flight report"):
@@ -889,3 +895,96 @@ def test_zero_reported_against_a_claim_is_total_divergence(session):
     from app.domain import reconciliation
     assert reconciliation._variance(400, 0) == 100
     assert reconciliation._variance(0, 0) == 0
+
+
+# --------------------------------------------------------------- incident resolution
+# Found in audit: integrity_incident carried resolved_at / resolved_by /
+# resolution_note, GET /v1/integrity/incidents took an include_resolved flag,
+# and nothing anywhere wrote any of the three. An incident was permanent, and
+# because _deep_health only caches when open_integrity_incidents is 0, one
+# unresolvable incident silently resurrected the C3-08 performance defect.
+
+def test_an_integrity_incident_can_actually_be_resolved(session):
+    import uuid as _uuid
+    from datetime import datetime, timezone
+    from sqlalchemy import insert, select
+    from app import db as db_module
+    from app.routers.api import resolve_integrity_incident, IncidentResolveIn
+
+    incident_id = str(_uuid.uuid4())
+    session.execute(insert(db_module.integrity_incident).values(
+        incident_id=incident_id, kind="DUPLICATE_PROVIDER_IDENTIFIER",
+        severity="P2", detected_at=datetime.now(timezone.utc),
+        detected_by="migrations.ensure", summary="two runs share a response id",
+        detail={}))
+    session.commit()
+
+    result = resolve_integrity_incident(incident_id, IncidentResolveIn(
+        resolved_by="Jane Okafor",
+        resolution_note="provider confirmed a retry, not a replay; ids reissued"))
+    assert result["resolved_by"] == "Jane Okafor"
+
+    row = session.execute(select(db_module.integrity_incident).where(
+        db_module.integrity_incident.c.incident_id == incident_id)).one()
+    assert row.resolved_at is not None
+    assert row.resolution_note
+
+
+def test_resolving_an_incident_requires_a_named_person_and_a_reason():
+    import pytest as _pytest
+    from pydantic import ValidationError
+    from app.routers.api import IncidentResolveIn
+
+    with _pytest.raises(ValidationError):
+        IncidentResolveIn(resolved_by="", resolution_note="x")
+    with _pytest.raises(ValidationError):
+        IncidentResolveIn(resolved_by="Jane Okafor", resolution_note="")
+
+
+def test_an_already_resolved_incident_is_not_resolved_twice(session):
+    import uuid as _uuid
+    import pytest as _pytest
+    from datetime import datetime, timezone
+    from fastapi import HTTPException
+    from sqlalchemy import insert
+    from app import db as db_module
+    from app.routers.api import resolve_integrity_incident, IncidentResolveIn
+
+    incident_id = str(_uuid.uuid4())
+    session.execute(insert(db_module.integrity_incident).values(
+        incident_id=incident_id, kind="K", severity="P3",
+        detected_at=datetime.now(timezone.utc), detected_by="t",
+        summary="s", detail={}))
+    session.commit()
+
+    payload = IncidentResolveIn(resolved_by="Jane Okafor", resolution_note="looked at it")
+    resolve_integrity_incident(incident_id, payload)
+    with _pytest.raises(HTTPException) as exc:
+        resolve_integrity_incident(incident_id, payload)
+    assert exc.value.status_code == 409
+
+
+def test_resolving_retains_quarantined_rows_rather_than_repairing_them(session):
+    import uuid as _uuid
+    from datetime import datetime, timezone
+    from sqlalchemy import insert, select
+    from app import db as db_module
+    from app.routers.api import resolve_integrity_incident, IncidentResolveIn
+
+    incident_id = str(_uuid.uuid4())
+    session.execute(insert(db_module.integrity_incident).values(
+        incident_id=incident_id, kind="K", severity="P2",
+        detected_at=datetime.now(timezone.utc), detected_by="t",
+        summary="s", detail={}))
+    session.execute(insert(db_module.quarantined_row).values(
+        id=str(_uuid.uuid4()), incident_id=incident_id, source_schema="audit",
+        source_table="llm_run", original_row={"llm_run_id": "x"},
+        reason="duplicate provider_response_id"))
+    session.commit()
+
+    result = resolve_integrity_incident(incident_id, IncidentResolveIn(
+        resolved_by="Jane Okafor", resolution_note="investigated"))
+    assert result["quarantined_rows_retained"] == 1
+    still_there = session.execute(select(db_module.quarantined_row).where(
+        db_module.quarantined_row.c.incident_id == incident_id)).all()
+    assert len(still_there) == 1, "resolving must not delete evidence"

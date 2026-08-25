@@ -50,6 +50,13 @@ ANALYST_ASSERTED_PRIOR = "ANALYST_ASSERTED_PRIOR"
 ANALYST_ENTERED_SCOPE = "ANALYST_ENTERED_SCOPE"
 ANALYST_ASSERTED_PRIOR = "ANALYST_ASSERTED_PRIOR"
 EVIDENCED_PUBLIC = "EVIDENCED_PUBLIC"
+# First-party client data (Tranche 3). A distinct origin, not a synonym for
+# either neighbour - see dispositions.DISPOSITIONS. Deliberately excluded from
+# asserted_share(): the 0.6A asserted-baseline ceiling penalises reliance on an
+# unverified *analyst* claim, and a client's statement about their own estate
+# is not that. It is discounted instead through the governed
+# client_confirmed_evidence_weight in the confidence model.
+CLIENT_CONFIRMED = "CLIENT_CONFIRMED"
 
 LAYERS = ("L0", "L1", "L2", "L3", "L4", "OPS")
 MONTHS = D("12")
@@ -192,6 +199,17 @@ def asserted_share(components) -> Decimal:
     makes corroboration worth doing rather than merely recorded.
     """
     return _share_of(components, ANALYST_ASSERTED_PRIOR)
+
+
+def client_confirmed_share(components) -> Decimal:
+    """Value share whose quantity came from the client's own statement.
+
+    Reported so a reader can see how much of the baseline rests on
+    first-party data. Not a ceiling trigger: it is discounted through the
+    evidenced driver instead, which is the proportionate treatment for a
+    source that is attributable and relevant but not independently checkable.
+    """
+    return _share_of(components, CLIENT_CONFIRMED)
 
 
 def entered_scope_share(components) -> Decimal:

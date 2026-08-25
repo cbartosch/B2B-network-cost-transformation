@@ -10,12 +10,33 @@ case_id = st.session_state.get("case_id")
 if not case_id:
     st.warning("Select a case on the home page first."); st.stop()
 
+with st.expander("Run research (LLM-01 / LLM-08)"):
+    st.caption("Populates whichever of the 24 domains these two agents cover (17 of 24 - "
+               "see the README) and do not already carry a disposition. The other 7 stay "
+               "manual by design. Never overwrites an existing disposition, from any "
+               "source, unless the box below is checked.")
+    overwrite = st.checkbox("Overwrite domains that already have a disposition", value=False)
+    if st.button("Run research now", type="primary"):
+        with st.spinner("Running LLM-01 and LLM-08..."):
+            r = api.post(f"/v1/outside-in/cases/{case_id}/domain-research:run",
+                         {"overwrite": overwrite})
+        if "_error" in r:
+            st.error(r["_error"])
+        else:
+            st.success(
+                f"{r['resolved']} resolved, {r['declared_unknown']} declared unknown, "
+                f"{r['failed']} failed (no disposition written for those - a technical "
+                f"failure isn't evidence; see Execution integrity). "
+                f"{r['domains_skipped_already_disposed']} already disposed and left alone.")
+            st.rerun()
+
 current = api.get(f"/v1/outside-in/cases/{case_id}/domain-dispositions")
 catalogue = current.get("catalogue", [])
 existing = {d["domain_no"]: d for d in current.get("dispositions", [])}
 
-DISPOSITIONS = ["EVIDENCED_PUBLIC", "DERIVED_PUBLIC", "BENCHMARK_PRIOR",
-                "ANALYST_ASSERTED_PRIOR", "SIMULATED", "DECLARED_UNKNOWN"]
+DISPOSITIONS = ["EVIDENCED_PUBLIC", "DERIVED_PUBLIC", "CLIENT_CONFIRMED",
+                "BENCHMARK_PRIOR", "ANALYST_ASSERTED_PRIOR", "SIMULATED",
+                "DECLARED_UNKNOWN"]
 REASONS = ["", "NO_PUBLIC_EVIDENCE", "BUDGET_EXHAUSTED", "OUT_OF_PERIMETER",
            "CONFLICTING_EVIDENCE_UNRESOLVED", "NOT_APPLICABLE"]
 

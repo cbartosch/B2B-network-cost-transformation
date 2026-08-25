@@ -9,6 +9,13 @@ st.caption("Specification 0.3B - a sizing instrument, not evidence. Never writte
            "the topology graph; diversity state is always SIMULATED.")
 
 case_id = st.session_state.get("case_id")
+# Session state outlives a case switch, so anything cached here must be scoped
+# to the case it came from or it will be rendered under the wrong one.
+_scope = st.session_state.get("_scoped_case")
+if _scope != case_id:
+    for _k in ['sim_run_id', 'sim']:
+        st.session_state.pop(_k, None)
+    st.session_state["_scoped_case"] = case_id
 if not case_id:
     st.warning("Select a case on the home page first."); st.stop()
 

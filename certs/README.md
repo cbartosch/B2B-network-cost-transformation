@@ -24,7 +24,21 @@ happened to be set.
 
 ## Getting the certificate
 
-**Windows**, where the corporate CA is already in the machine store:
+**Run this.** It connects to the hosts the build needs, asks Windows to build
+the chain it would use, and writes every issuer to this directory. No guessing
+at vendor names — whatever is actually inspecting your connection ends up in the
+file.
+
+```powershell
+powershell -ExecutionPolicy Bypass -File tools\export_corporate_ca.ps1
+docker compose build --no-cache
+docker compose up -d
+```
+
+### Manual alternatives
+
+If the script cannot run, **Windows**, where the CA is already in the machine
+store:
 
 ```powershell
 Get-ChildItem Cert:\LocalMachine\Root |

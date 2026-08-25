@@ -36,7 +36,15 @@ log = logging.getLogger("workbench.jobs")
 
 QUEUED, RUNNING, SUCCEEDED, FAILED, CANCELLED = (
     "QUEUED", "RUNNING", "SUCCEEDED", "FAILED", "CANCELLED")
+# A cancel accepted while a worker is mid-run. The worker stops between passes
+# and settles it to CANCELLED; a process that dies first leaves the row here,
+# which is what reclaim_interrupted looks for.
+CANCELLING = "CANCELLING"
 TERMINAL = (SUCCEEDED, FAILED, CANCELLED)
+
+
+def _now():
+    return datetime.now(timezone.utc)
 
 # Run identifiers currently held by a worker. Bounds concurrency against the
 # connection pool rather than against CPU: each job holds one session.
@@ -128,9 +136,17 @@ def run_job(run_id: str, session=None) -> dict:
         output = simulation.aggregate(
             summaries, seed=row.seed, ensemble_size=total, footprint=footprint,
             archetypes=archetypes, model_version=row.model_version)
+        # cancel_requested is cleared here, not left standing. A cancel that
+        # arrives after the last pass is too late to act on - completing is
+        # correct - but a row that reads SUCCEEDED *and* cancel_requested is a
+        # record asserting two contradictory things, and a reader cannot tell
+        # which one happened. The same clearing already happens on reclaim.
+        # Found by executing test_a_late_cancellation_does_not_leave_a_
+        # contradictory_record, which had never run.
         _set(s, run_id, status=SUCCEEDED, output=output,
              output_hash=simulation.output_hash(output),
              partial={"summaries": summaries}, progress_completed=total,
+             cancel_requested=False,
              ended_at=datetime.now(timezone.utc))
         return {"simulation_run_id": run_id, "status": SUCCEEDED,
                 "completed": total, "total": total}

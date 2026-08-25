@@ -1,5 +1,16 @@
-
 # Corporate trust anchors are environment-specific and not ours to distribute.
 certs/*.crt
 certs/*.pem
 !certs/README.md
+
+# Python bytecode. Running the test suite locally produces these throughout the
+# tree; without this line they get committed and every subsequent diff is noise.
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# Local environment. .env holds API keys and must never be committed;
+# .env.example is the template that should be.
+.env
+!.env.example

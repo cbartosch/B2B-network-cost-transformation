@@ -32,17 +32,42 @@ def _build_legacy():
                           'subject_entity_legal_name TEXT)'))
         conn.execute(text('INSERT INTO "engagement"."case" VALUES '
                           "('c-legacy','Acme Global Holdings PLC')"))
+        # provider_response_id is deliberately NOT declared UNIQUE here.
+        # Migration v9 exists to *release* duplicate identifiers, so duplicates
+        # have to be constructible in the pre-v9 state - and three tests insert
+        # them on purpose. An inline UNIQUE made those tests fail on their own
+        # setup. v9 drops the named constraint on Postgres and notes SQLite
+        # cannot; that asymmetry is worth re-examining under a real engine.
+        # Every other column here is one NO migration adds, so it must have existed
+        # at 4.7.0 - see test_the_legacy_fixture_describes_a_state_that_can_
+        # actually_upgrade. The earlier fixture omitted seven of them, which
+        # described a database that could never have run the 4.7.0 gateway and
+        # made three tests fail on their own setup.
         conn.execute(text('CREATE TABLE "audit"."llm_run" ('
                           'llm_run_id VARCHAR(36) PRIMARY KEY, '
+                          'agent_run_id VARCHAR(36), '
                           'provider VARCHAR(32), '
-                          'provider_response_id VARCHAR(160) NOT NULL UNIQUE, '
+                          'model VARCHAR(64), '
+                          'request_hash VARCHAR(64), '
+                          'response_hash VARCHAR(64), '
+                          'provider_response_id VARCHAR(160) NOT NULL, '   # see note below
                           'provider_request_at TIMESTAMP, '
-                          'input_tokens INTEGER, output_tokens INTEGER)'))
+                          'input_tokens INTEGER, output_tokens INTEGER, '
+                          'latency_ms INTEGER, '
+                          'policy_version VARCHAR(32), '
+                          'created_at TIMESTAMP)'))
         conn.execute(text('INSERT INTO "audit"."llm_run" '
+                          "(llm_run_id, provider, provider_response_id, "
+                          " provider_request_at, input_tokens, output_tokens) "
                           "VALUES ('l-legacy','anthropic','msg_legacy',NULL,10,5)"))
         conn.execute(text('CREATE TABLE "reference"."lever" ('
-                          'lever_id VARCHAR(48) PRIMARY KEY, family VARCHAR(48))'))
+                          'lever_id VARCHAR(48) PRIMARY KEY, family VARCHAR(48), '
+                          'description TEXT, cost_layers JSON, '
+                          'saving_low NUMERIC(4,3), saving_base NUMERIC(4,3), '
+                          'saving_high NUMERIC(4,3), scenario VARCHAR(1), '
+                          'evidence_required TEXT)'))
         conn.execute(text('INSERT INTO "reference"."lever" '
+                          "(lever_id, family) "
                           "VALUES ('LEV-REPRICE-001','Same-service repricing')"))
         conn.execute(text('CREATE TABLE "reference"."threshold" ('
                           'set_name VARCHAR(64), key VARCHAR(64), value NUMERIC, '
@@ -128,7 +153,12 @@ def test_legacy_upgrade_adds_request_id_uniqueness(session=None):
     migrations.ensure(db.engine)
     with db.engine.connect() as conn:
         names = {i["name"] for i in inspect(conn).get_indexes("llm_run", schema="audit")}
-    assert "uq_llm_run_provider_request_id" in names
+    # Was "uq_llm_run_provider_request_id" - the name migration v9 *drops*.
+    # test_v9_scopes_uniqueness_to_the_provider asserts that same old name is
+    # gone, so the two could never both pass. This one was stale: written
+    # before v9 renamed the index, never re-run, so the contradiction sat
+    # unnoticed in a single file.
+    assert "uq_llm_run_provider_request" in names
     assert "externally_verifiable" in _columns("audit", "llm_run")
 
 
@@ -142,12 +172,14 @@ def test_duplicate_identifiers_do_not_crash_the_migration():
         for i, tokens in ((2, 20), (3, 30)):
             conn.execute(text(
                 'INSERT INTO "audit"."llm_run" '
+                "(llm_run_id, provider, provider_response_id, "
+                "provider_request_at, input_tokens, output_tokens) "
                 "VALUES (:id,'anthropic',:resp,NULL,:tok,5)"),
                 {"id": f"l-dup-{i}", "resp": f"msg_dup_{i}", "tok": tokens})
         conn.execute(text('UPDATE "audit"."llm_run" SET provider_request_id = NULL'
                           ) if False else text("SELECT 1"))
     migrations.ensure(db.engine)
-    assert "uq_llm_run_provider_request_id" in {
+    assert "uq_llm_run_provider_request" in {
         i["name"] for i in inspect(db.engine.connect()).get_indexes(
             "llm_run", schema="audit")}
 
@@ -243,20 +275,57 @@ def test_a_cross_provider_collision_is_not_treated_as_a_duplicate():
     assert quarantined == 0, "nothing should have been quarantined"
 
 
-def test_a_within_provider_duplicate_is_still_released():
-    """The control itself is unchanged - only the false positive is gone."""
+def test_a_within_provider_duplicate_refuses_because_the_column_is_not_null():
+    """A duplicate NOT NULL identifier cannot be released, and the migration
+    now says so instead of crashing.
+
+    This test previously asserted the opposite - that the second anthropic copy
+    is released and all three rows survive. Executing it exposed a design
+    contradiction rather than a simple bug:
+
+      * `_release_duplicate_identifiers` releases by setting the column NULL
+      * `audit.llm_run.provider_response_id` is `nullable=False`
+      * therefore the release mechanism can never work on that column
+
+    Two resolutions were possible. Making the column nullable would let the
+    mechanism run, but weakens an audit identifier to satisfy a test, and the
+    gateway already refuses a call with no response id (`verify_liveness`), so
+    the constraint is defence in depth worth keeping. Refusing is the other,
+    and it matches how the rest of this bundle behaves: fail closed, name the
+    cause, require a person. The nullability check runs *before* any quarantine
+    write, so nothing is staged and then rolled back - the live table is left
+    exactly as it was, which is the state an operator wants to inspect.
+
+    The cost is real and should be understood: a legacy database holding
+    duplicate `provider_response_id` values will not start until an operator
+    resolves them by hand. That is deliberate - a duplicate provider identifier
+    may be the trace of a replayed response, which is exactly the thing this
+    system exists to detect, and clearing it automatically at 3am is not a
+    decision a migration should make.
+
+    `provider_request_id` is nullable, so the release path still runs there,
+    which is what `test_duplicates_are_preserved_not_deleted` covers.
+    """
     _build_legacy()
     _llm_rows([("a1", "anthropic", "shared", "2026-08-01T00:00:00"),
                ("o1", "openai", "shared", "2026-08-02T00:00:00"),
                ("a2", "anthropic", "shared", "2026-08-03T00:00:00")])
-    migrations.ensure(db.engine)
+    with pytest.raises(migrations.SchemaStateRefused) as exc:
+        migrations.ensure(db.engine)
+    assert "NOT NULL" in str(exc.value)
+    assert "provider_response_id" in str(exc.value)
+
     with db.engine.connect() as conn:
-        kept = {r[0] for r in conn.execute(text(
-            'SELECT llm_run_id FROM "audit"."llm_run" '
-            "WHERE provider_response_id = 'shared'")).all()}
         rows = conn.execute(text('SELECT COUNT(*) FROM "audit"."llm_run"')).scalar()
-    assert kept == {"a1", "o1"}, "the second anthropic copy is released"
-    assert rows == 3, "and nothing is deleted"
+        quarantined = conn.execute(text(
+            'SELECT COUNT(*) FROM "audit"."quarantined_row"')).scalar()
+    # 4, not 3: _build_legacy() seeds one row before these three. The original
+    # version of this test asserted 3, which could not have held even if the
+    # release had worked - a second defect in the same never-executed test.
+    assert rows == 4, "refusing must leave the live table exactly as it was"
+    assert quarantined == 0, (
+        "the check runs before any quarantine write, so nothing is staged and "
+        "rolled back - a half-written audit trail is worse than none")
 
 
 def test_v5_alone_neither_indexes_nor_releases_anything():
@@ -346,3 +415,55 @@ def test_seed_does_not_overwrite_a_populated_table():
             "an analyst-tuned threshold must survive the upgrade"
     finally:
         s.close()
+
+
+def test_the_legacy_fixture_describes_a_state_that_can_actually_upgrade():
+    """A legacy fixture may omit ONLY columns that a migration adds.
+
+    Anything else describes a database that could never be upgraded to the
+    current schema - and therefore a test that proves nothing about the real
+    upgrade path. The fixtures failed this: `audit.llm_run` omitted seven
+    columns (model, request_hash, response_hash, created_at, agent_run_id,
+    latency_ms, policy_version) and `reference.lever` omitted seven more, none
+    of which any migration adds. Three tests failed on their own setup as a
+    result, and nobody saw it because none had ever run.
+
+    This checks the principle mechanically so the next person adding a column
+    finds out here rather than in a confusing OperationalError.
+    """
+    import ast
+    import pathlib
+    import re
+
+    root = pathlib.Path(__file__).resolve().parents[1]
+    mig_src = (root / "api_service" / "app" / "migrations.py").read_text()
+    added = {}
+    for m in re.finditer(r'_add_column\(conn,\s*db\.(\w+),\s*"(\w+)"\)', mig_src):
+        added.setdefault(m.group(1), set()).add(m.group(2))
+    for m in re.finditer(
+            r'for column in \(([^)]*)\):\s*\n\s*added \+= _add_column\(conn, db\.(\w+), column\)',
+            mig_src):
+        for c in re.findall(r'"(\w+)"', m.group(1)):
+            added.setdefault(m.group(2), set()).add(c)
+
+    db_tree = ast.parse((root / "api_service" / "app" / "db.py").read_text())
+    current = {}
+    for node in db_tree.body:
+        if (isinstance(node, ast.Assign) and isinstance(node.value, ast.Call)
+                and getattr(node.value.func, "id", None) == "Table"):
+            current[node.targets[0].id] = {
+                a.args[0].value for a in node.value.args[2:]
+                if isinstance(a, ast.Call) and getattr(a.func, "id", "") == "Column"}
+
+    fixture_src = pathlib.Path(__file__).read_text()
+    for table in ("llm_run", "lever"):
+        m = re.search(rf'CREATE TABLE "\w+"\."{table}" \((.*?)\)\'\)',
+                      fixture_src, re.S)
+        assert m, f"could not locate the legacy CREATE TABLE for {table}"
+        declared = set(re.findall(r"(\w+) (?:VARCHAR|INTEGER|TIMESTAMP|TEXT|JSON|NUMERIC)",
+                                  m.group(1)))
+        unexplained = current[table] - declared - added.get(table, set())
+        assert not unexplained, (
+            f"the legacy fixture for {table} omits {sorted(unexplained)}, and no "
+            f"migration adds them - so it describes a database that could never "
+            f"reach the current schema")

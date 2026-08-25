@@ -1,0 +1,24 @@
+# Development-only tooling must not enter a runtime image.
+#
+# tools/offline_shims/ contains a COUNTERFEIT `sqlalchemy` package (plus fake
+# httpx, pydantic and fastapi) written so the test suite could execute in a
+# sandbox with no dependencies installed. The shim is backed by in-memory
+# SQLite and silently ignores DATABASE_URL.
+#
+# It is not reachable by accident: both images run from /app, so `import
+# sqlalchemy` resolves to the real package in site-packages. But shipping a
+# module that answers to the name of the database driver, inside the image that
+# talks to the production database, is a hazard with no upside. One stray
+# PYTHONPATH entry or one script run from the wrong directory and the API is
+# reading an empty in-memory database while reporting success.
+#
+# The tooling that IS needed at build and run time - tls_doctor.py,
+# verify_tls_before_build.py - stays.
+tools/offline_shims/
+tools/run_pure_tests.py
+tools/verify_shim.py
+
+__pycache__/
+*.pyc
+.git/
+.pytest_cache/

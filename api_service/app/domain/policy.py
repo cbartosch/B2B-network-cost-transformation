@@ -66,6 +66,12 @@ class ConfidencePolicy:
     badge_threshold: Decimal
     partial_penalty_factor: Decimal    # applied below the lowest band floor
     known_fact_binding_tolerance: Decimal
+    # How much a CLIENT_CONFIRMED value share counts toward the evidenced
+    # driver, relative to independently-verifiable public evidence at 1.0.
+    # Governed rather than hardcoded because it is exactly the kind of
+    # judgement 18.1 says must carry an approver: it sets how much the model
+    # trusts a client's self-report about their own estate.
+    client_confirmed_evidence_weight: Decimal
 
     COMPONENTS = ("current_baseline", "target_cost", "realization")
     STAGES = ("V0",)
@@ -105,6 +111,7 @@ class ConfidencePolicy:
             badge_threshold=r("simulated_display_badge_threshold"),
             partial_penalty_factor=r("partial_penalty_factor"),
             known_fact_binding_tolerance=r("known_fact_binding_tolerance"),
+            client_confirmed_evidence_weight=r("client_confirmed_evidence_weight"),
         )
         policy.validate()
         return policy
@@ -150,6 +157,16 @@ class ConfidencePolicy:
         _in_unit_interval("simulated_display_badge_threshold", self.badge_threshold)
         _in_unit_interval("known_fact_binding_tolerance",
                           self.known_fact_binding_tolerance)
+        # Must not reach 1: client-confirmed data counting as fully as
+        # independently-verified public evidence would erase the distinction
+        # this weight exists to express.
+        _in_unit_interval("client_confirmed_evidence_weight",
+                          self.client_confirmed_evidence_weight)
+        if self.client_confirmed_evidence_weight >= ONE:
+            raise PolicyInvalid(
+                "client_confirmed_evidence_weight must be below 1: a client "
+                "self-report is not independently verifiable, and weighting it "
+                "as fully as public evidence removes the distinction")
 
 
 # --------------------------------------------------------------- known facts
@@ -205,3 +222,77 @@ class CoveragePolicy:
             raise PolicyInvalid(
                 f"absolute floor {self.prior_coverage_floor} exceeds the minimum "
                 f"{self.prior_coverage_min}; nothing could ever publish PARTIAL")
+
+
+# --------------------------------------------------------------- research
+@dataclass(frozen=True)
+class ResearchPolicy:
+    """0.3A research budget and stopping rule for the domain-research agents
+    (LLM-01, LLM-08). Bounds effort so a run that searched harder is not
+    conflated with a run that knows more - 18.1 defines 'maximalist' as a
+    completeness contract over the 24 input domains, not as search volume,
+    which is what makes it testable. These are counts, not weights, so they
+    are validated for positivity rather than with _in_unit_interval."""
+    set_name: str
+    max_queries_per_domain: int
+    max_captures_per_domain: int
+    max_captures_per_run: int
+    min_independent_sources_material_fact: int
+    research_wall_clock_budget_minutes: int
+
+    @classmethod
+    def from_rows(cls, rows: dict, set_name: str = "research_policy"):
+        r = lambda k: _require(rows, k, set_name)          # noqa: E731
+        policy = cls(
+            set_name=set_name,
+            max_queries_per_domain=int(r("max_queries_per_domain")),
+            max_captures_per_domain=int(r("max_captures_per_domain")),
+            max_captures_per_run=int(r("max_captures_per_run")),
+            min_independent_sources_material_fact=int(
+                r("min_independent_sources_material_fact")),
+            research_wall_clock_budget_minutes=int(
+                r("research_wall_clock_budget_minutes")),
+        )
+        policy.validate()
+        return policy
+
+    def validate(self) -> None:
+        for name in ("max_queries_per_domain", "max_captures_per_domain",
+                     "max_captures_per_run", "research_wall_clock_budget_minutes"):
+            value = getattr(self, name)
+            if value <= 0:
+                raise PolicyInvalid(f"{name}={value} must be positive")
+        if self.min_independent_sources_material_fact < 1:
+            raise PolicyInvalid(
+                "min_independent_sources_material_fact must be at least 1 - "
+                "zero would mean an unsourced claim counts as evidenced")
+        if self.max_captures_per_domain > self.max_captures_per_run:
+            raise PolicyInvalid(
+                f"max_captures_per_domain ({self.max_captures_per_domain}) exceeds "
+                f"max_captures_per_run ({self.max_captures_per_run}); a single "
+                f"domain could never be fully searched within the run budget")
+
+
+# --------------------------------------------------------------- recommendation
+@dataclass(frozen=True)
+class RecommendationPolicy:
+    """Tranche 2 (LLM-07, LLM-06). A lever's saving_base, as a share of current
+    TCO, at or above material_lever_share_threshold makes that lever's
+    inclusion a material assumption: the recommendation is stored regardless,
+    but its narrative (LLM-06) will not present a final version until a named
+    person has approved it (approved_by, never a role - the same requirement
+    known_facts.py already holds asserted_by to)."""
+    set_name: str
+    material_lever_share_threshold: Decimal
+
+    @classmethod
+    def from_rows(cls, rows: dict, set_name: str = "recommendation_policy"):
+        r = lambda k: _require(rows, k, set_name)          # noqa: E731
+        policy = cls(set_name=set_name,
+                    material_lever_share_threshold=r("material_lever_share_threshold"))
+        policy.validate()
+        return policy
+
+    def validate(self) -> None:
+        _in_unit_interval("material_lever_share_threshold",
+                          self.material_lever_share_threshold)

@@ -17,14 +17,17 @@ RUN set -eu; \
 ENV PIP_CERT=/etc/ssl/certs/ca-certificates.crt \
     LLM_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
 
+# Diagnostics, before pip: a missing trust anchor otherwise surfaces as twelve
+# seconds of retries ending in CERTIFICATE_VERIFY_FAILED, which names a symptom.
+COPY tools ./tools
+RUN python tools/verify_tls_before_build.py
+
 COPY analyst_ui/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 COPY analyst_ui/streamlit_app ./streamlit_app
 # Same contract file as the API image. Placed inside streamlit_app so it
 # is importable: Streamlit puts the script's directory on sys.path.
 COPY contract ./streamlit_app/contract
-# Diagnostics, runnable inside the image where the failure happens.
-COPY tools ./tools
 RUN useradd --create-home --uid 10002 analyst && chown -R analyst:analyst /app
 USER analyst
 EXPOSE 8501

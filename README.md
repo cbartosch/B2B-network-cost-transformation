@@ -11,6 +11,52 @@ make up                   # UI  http://localhost:8501
 make test                 # the full suite, inside the api container
 ```
 
+### Windows 11 / PowerShell — `make` is not available
+
+`make` does not ship with Windows. `make.ps1` in the repository root mirrors every
+Makefile target with identical semantics:
+
+```powershell
+.\make.ps1                # list targets
+.\make.ps1 check          # validate build config - no Docker needed, run this first
+.\make.ps1 up             # build and start
+.\make.ps1 test           # run the suite in the api container
+.\make.ps1 doctor         # schema version and drift
+```
+
+If PowerShell blocks it ("running scripts is disabled on this system"), either
+`Unblock-File .\make.ps1` once, or run it without changing machine policy:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\make.ps1 test
+```
+
+Or skip the script entirely — every target is one `docker compose` line:
+
+| Target | Command |
+|---|---|
+| `check` | `python tests/check_build_config.py` |
+| `up` | `docker compose up --build -d` |
+| `down` | `docker compose down` |
+| `reset` | `docker compose down -v; docker compose up --build -d` |
+| `logs` | `docker compose logs -f api ui` |
+| `test` | `docker compose exec -e DATABASE_URL=sqlite:// -e WORKBENCH_ENVIRONMENT=TEST api python -m pytest /app/tests -v` |
+| `doctor` | `docker compose exec api python -c "from app import migrations; print(migrations.status())"` |
+| `migrate` | `docker compose exec api python -c "from app import db, migrations; print(migrations.ensure(db.engine))"` |
+| `seed` | `docker compose exec api python -m app.seed --force` (destructive) |
+| `psql` | `docker compose exec db psql -U workbench -d workbench` |
+
+**One Windows-specific trap, and it is silent.** Do not run the `test` command from Git
+Bash or MSYS. Those shells rewrite arguments that look like POSIX paths, so
+`DATABASE_URL=sqlite://` becomes something like `sqlite:/C:/Program Files/Git/` — which
+does not match `sqlite://`, so `conftest.py`'s guard sees an unfamiliar URL and
+`db.assert_disposable()` refuses the run. That refusal is the harness working correctly,
+but the *cause* looks like nothing to do with paths. Use PowerShell, or prefix with
+`MSYS_NO_PATHCONV=1`.
+
+`check` and `tls-doctor` need only Python and no Docker, so they are worth running before
+the first `up` on a locked-down machine.
+
 ### Running on a corporate network
 
 Managed laptops usually inspect TLS: a proxy terminates HTTPS and re-signs it
@@ -1130,9 +1176,916 @@ open or without a named acknowledgement.
 
 296 tests, up from 267.
 
+### First real startup (build 4.8.3)
+
+The API container exited 1 the first time it ran, on a `NameError` at import:
+`clear_rights()` was annotated with `ClearRightsIn`, defined 570 lines further down the
+file. Five request models introduced by the F-03 fix had been anchored to a class near the
+reconciliation endpoint, so they landed after the routes that use them. Python resolves
+annotations at definition time, so the module could never import.
+
+**`py_compile` cannot catch this** — the syntax is valid — and it was the only static check
+in the pipeline. All fourteen request models are now defined together, before the first
+route, and `tests/check_build_config.py` walks every module for a signature annotated with
+a name declared later. Verified by reintroducing the defect into a copy of the tree:
+
+```
+api.py:428 clear_rights() is annotated with ClearRightsIn,
+           defined later at line 1040 - NameError at import
+```
+
+Worth recording plainly: **`test_auth.py` does `from app.main import app` and would have
+caught this instantly** — it had simply never run. Five audits, 300 tests, and the defect
+that stopped the service was one an existing test would have found on first execution.
+
+### First test run (build 4.8.4)
+
+**245 passed, 33 failed, 25 skipped.** The first evidence about this codebase from
+executing it rather than reading it. Two root causes, both invisible to five audits.
+
+**`jobs.py` used two names that do not exist.** `CANCELLING` was never added to the status
+tuple, and `_now` was never defined — the module writes `datetime.now(timezone.utc)`
+inline everywhere else. Every code path touching cancellation or reclaim raised
+`NameError` on execution. `py_compile` accepts both, because the syntax is valid.
+
+**`_add_column` altered tables that did not exist.** Migrations run before `create_all`,
+so a step adding a column to a table introduced by a *later* build meets nothing on an
+older database. `_has_column` returns False for a missing table, so the ALTER proceeded
+and the upgrade failed. It now skips: `create_all` builds that table complete a moment
+later. This accounted for all 21 migration and wiring failures.
+
+`tests/check_build_config.py` now scans every module for names read but never bound.
+Verified by removing both definitions from a copy of the tree:
+
+```
+jobs.py: 'CANCELLING' is used but never defined
+jobs.py: '_now' is used but never defined
+```
+
+Three static checks now run before Docker is invoked — duplicate compose keys, forward-
+referenced annotations, undefined names — and each was added after a defect of that exact
+shape reached a build. None of them is clever; all three were absent because the code had
+never run.
+
 Lows closed: non-root containers, healthchecks with `service_healthy` gating, optional
 `API_TOKEN`, provider error bodies no longer echoed, `engagement_case` rename, lifespan
 handler, PARTIAL penalty applies below the Indicative floor.
+
+### Tranche 1: domain research wired (build 4.9.0)
+
+**LLM-01 and LLM-08 had registry entries and zero call sites.** The 24-domain
+disposition contract (0.3A) had no research path at all — every domain was disposed by
+hand via `PUT .../domain-dispositions`. `app/domain/research.py` gives ten domains a real
+path through LLM-01 (public evidence, footprint, current-state) and seven through LLM-08
+(market data); the remaining seven — archetype, bandwidth, remote-user population,
+operating-model cost, resilience, Northstar scenarios, and the evidence/confidence
+metadata domain itself — are benchmark-prior or simulation territory and were never in
+scope for these two agents. `DOMAIN_AGENT_MAP` is declared as data in one place because
+no spec table assigning domains to agents turned up in anything this was built against —
+confirm it before trusting it.
+
+**The gateway has no browsing tool.** `gateway.execute()` is a single completion call; a
+model's "found" answer is a recalled claim, not a fetched one. Spec 0.3A ties
+`EVIDENCED_PUBLIC` to a stored source fragment, which a recalled claim is not. Every
+source a model names is now independently fetched with plain `httpx` — deliberately not
+the pinned provider transport, which is scoped to LLM provider hosts and has no reason to
+extend to arbitrary third-party URLs — and only a source that actually resolves counts
+toward `min_independent_sources_material_fact`. That fetch path is written and typed, not
+exercised: no network egress in the environment this was built in. Expect to find
+something on first real run.
+
+**Three outcomes, not two.** Genuinely searched and found nothing → `DECLARED_UNKNOWN` /
+`NO_PUBLIC_EVIDENCE`. A budget cap hit first → `DECLARED_UNKNOWN` / `BUDGET_EXHAUSTED`,
+tracked distinctly as the loop runs rather than reconstructed after (0.3A.2). The agent
+call itself failing — no provider, a failed liveness proof, output that wasn't the agreed
+JSON shape — writes **no disposition at all**: a technical failure is not evidence of
+anything, and `DECLARED_UNKNOWN` for it would misrepresent an operational failure as a
+completed search. `validate()` correctly reports that domain as missing rather than
+accepting a disposition nothing earned.
+
+**New governed policy, following the C2-06 pattern.** `ResearchPolicy` in
+`domain/policy.py` loads `max_queries_per_domain`, `max_captures_per_domain`,
+`max_captures_per_run`, `min_independent_sources_material_fact` and
+`research_wall_clock_budget_minutes` from `reference.threshold` — no code defaults. The
+wall-clock figure has no source anywhere in the material this was built from; seeded at
+20 minutes as a placeholder, not a considered default.
+
+**Schema:** `domain_disposition` gains `agent_run_id` and `evidence` (migration v11,
+schema version 11). A research-derived `EVIDENCED_PUBLIC` row with no trace to the call
+and sources behind it is a claim indistinguishable from one asserted with nothing behind
+it — the same reasoning C4-07 applied to `superseded_by`.
+
+**Composes with manual entry, doesn't replace it.** `PUT .../domain-dispositions` deletes
+and re-inserts a case's full 24 rows; a research run upserts one domain at a time and
+never overwrites a disposition that already exists, from any source, unless
+`overwrite=True` is passed explicitly. New route: `POST
+.../cases/{case_id}/domain-research:run`.
+
+**Tests:** `tests/test_research.py`, fourteen tests covering the map, the three-way
+outcome split, budget enforcement, and non-overwrite composition. Mocked at the
+provider-adapter boundary (a fake `ProviderCall`), matching this suite's own convention —
+an earlier draft stubbed `gateway.execute` directly, which skips its real `llm_run` insert
+and would have failed every test against `succeed()`'s liveness check. Caught by tracing
+the call chain, not by running it: same sandbox limitation as everything else in this
+section, no SQLAlchemy available to actually execute against.
+
+**Also fixed in passing:** `/v1/health` was reporting `_version.py`'s `BUILD =
+"4.7.1-scaffold"` — stale since 4.7.2, four builds after the number that mattered stopped
+being this one. `_version.py` and the top-level `VERSION` file are still two independent
+sources of truth with nothing enforcing agreement between them; this bump closes the gap
+that existed, not the mechanism that let it happen.
+
+### Tranche 2: savings advisory wired, DETERMINISTIC_ONLY made real (build 4.10.0)
+
+**LLM-07 and LLM-06 did not exist anywhere in the build before this** — not a missing
+`deterministic_fallback_endpoint` field, an absent agent. Both are now registered, each
+with `permitted_execution_modes: ["LIVE", "DETERMINISTIC_ONLY"]` and a real endpoint. The
+other five agents are untouched and still LIVE-only — `IMPLEMENTED_MODES` gaining
+`DETERMINISTIC_ONLY` is safe build-wide only because `_assert_mode_permitted` also checks
+each agent's own permitted list, and only these two declare it.
+
+**"DETERMINISTIC_ONLY fallback" does not mean automatic failover, and building it as one
+would have broken a guarantee gateway.py already makes.** No automatic mode downgrade: a
+LIVE failure is `FAILED`, full stop; a deterministic result is a new, separately requested
+run, never a retry of a failed one. `gateway.execute_deterministic()` is the piece that
+was actually missing — `execute()` handles LIVE only, by explicit design, so a second
+function runs a registered deterministic callable instead of extending the first one to
+do two unrelated things.
+
+**The model never sets the dollar figure.** LLM-07 (or the deterministic rule) chooses a
+`scenario_code` and a `percentile` — a choice, not a number. The actual
+`gross_run_rate_savings` is looked up from the case's `estimate_snapshot.scenarios`, which
+`domain/estimate.py` already computed with Decimal arithmetic before this module runs.
+Whatever number the model's own text states is discarded; only its choice is read. Same
+"model proposes, engine disposes" split Tranche 1 applied to evidence, applied here to
+recommendations.
+
+**`deterministic_recommend()` reuses the 'headline' rule `run_estimate` already trusted**
+for realization confidence — highest base-case `gross_run_rate_savings` — rather than
+inventing a second, independently-chosen heuristic. It always proposes the base
+percentile: choosing low or high is a judgment about this client's risk tolerance a fixed
+rule has no honest basis for making. `deterministic_narrate()` is template assembly, not
+generated prose — no model in the loop, a fixed sentence structure filled with the
+recommendation's own already-recalculated figures.
+
+**Two labels, stored at the point of decision, never conflated.** LIVE output is
+`LLM_PROPOSED`; `DETERMINISTIC_ONLY` output is `DETERMINISTIC_PROPOSED`. Using the former
+for a rule-based pick would misattribute it as the model's judgment — mode honesty,
+applied to a recommendation record instead of a disposition.
+
+**Material assumptions gate the narrative, not the recommendation.** `recommend()` always
+writes a record — material or not, LIVE or deterministic — because refusing to record a
+recommendation on account of its content would be its own kind of dishonesty. A lever
+whose `saving_base` is at or above the governed `material_lever_share_threshold` (seeded
+0.03) makes `narrate(final=True)` refuse outright until a named person —
+never a role or a team, the same bar `known_facts.py` holds `asserted_by` to —
+approves it. `narrate(final=False)` still produces a draft, explicitly marked pending;
+every gate in this bundle refuses rather than silently degrades, so a requested *final*
+narrative is refused, not quietly handed back as a draft.
+
+**New governed policy:** `RecommendationPolicy` in `domain/policy.py`,
+`material_lever_share_threshold` from `reference.threshold`. New table: `recommendation`
+(schema `analysis`) — a wholly new table, so migration v12 is a no-op that only advances
+`SCHEMA_VERSION` for operator visibility; `create_all()` builds it, nothing needed ALTERing.
+
+**A real bug, found while building this, that also existed in Tranche 1's code:** a
+response that comes back as valid JSON in the wrong shape — an unknown `scenario_code`, a
+missing `narrative` key, LLM-01/08's `found` key absent — was rejected correctly, but
+nothing ever marked that `agent_run` row `FAILED`. `execute()`'s own failure handling only
+covers what `execute()` itself detects (no provider, a failed liveness proof); a rejection
+that happens in the *caller's* code, after `execute()` has already returned successfully,
+reached neither path. The row sat in `QUEUED` forever — an orphan of exactly the kind
+`test_unimplemented_mode_creates_no_orphan_run` exists to catch, reached by a different
+route. Fixed with a new public `gateway.fail()`, called from both `savings_advisory.py`'s
+two shape checks and retroactively from `research.py`'s — the latter shipped in the
+previous build with this gap present. `tests/test_research.py` gained an assertion
+locking in the fix where the bug used to live, not only where it was found.
+
+**Tests:** `tests/test_savings_advisory.py` — registry wiring, `deterministic_recommend`/
+`deterministic_narrate` in isolation, `recommend()` and `narrate()` end to end in both
+modes, the material-lever gate, approval, and two tests worth naming specifically: one
+proving a LIVE failure never produces a `DETERMINISTIC_ONLY` result under any
+circumstance (the guarantee this whole tranche's framing depends on), and one proving a
+rejected response shape terminates its run rather than orphaning it (the fix above, as a
+regression test rather than only a comment). Same mocking approach as Tranche 1 — a fake
+`ProviderCall` at the adapter boundary, not a stub over `gateway.execute` — applied
+correctly from the start this time. Not executed here, same sandbox constraint as
+everything else in this section.
+
+**Caught and fixed before packaging, not after:** an early draft of this section's own
+route wiring defined `list_recommendations` twice — the second copy shadowing the first
+at import time, both decorators still registering the same path with FastAPI. Found by
+grepping for duplicate `def` names across every file this tranche touched, which is now
+worth doing on any build that adds routes, not just this one.
+
+**UI:** new page, `8_Savings_recommendation.py` — pick a snapshot, run LLM-07 in either
+mode, approve a material recommendation by name, run LLM-06 for a draft or a final
+narrative. No new API behaviour; a thin client over the routes above.
+
+### Tranche 3, first slice: stage model and V1 questionnaire (build 4.11.0)
+
+**Scope, stated plainly.** Tranche 3 as originally described — V1 questionnaire, then V2
+contract and invoice ingestion, LLM-02/03/04/05 — is not one tranche. Tranches 1 and 2
+wired agents into infrastructure that already existed. This needs infrastructure that
+does not: object storage is absent, and the README's own "what this isn't" section already
+said so. What is built here is the honest first slice: **a stage model, a V1-readiness
+gate, and LLM-02's prefill half.** V2 ingestion and LLM-03/04/05 are untouched.
+
+**The bundle had no concept of a stage** despite the analytical model depending on one —
+`confidence.STAGE_CEILINGS` is keyed by stage, `reference.lever.earliest_supported_stage`
+gates lever admissibility, and `preflight.py`'s own text says "expected before any
+engagement reaches V2". All of it read V0 because V0 was hardcoded at the call site.
+`domain/stage.py` adds the model: `TARGET_STAGES` is `("V1",)` — deliberately not the full
+V0–V5 ladder, because advertising a V2 target with no ingestion behind it is the
+false-capability claim `registry.py`'s docstring was written about.
+
+**Stage advances by a named person, never by inference.** A questionnaire existing, or
+being fully answered, is not the same claim as "this engagement is at V1". `advance()`
+refuses without an assessed, unblocked, named-acknowledged readiness report, and re-checks
+the live stage rather than trusting the report — closing the window between `assess()` and
+`advance()`. There is deliberately no force parameter.
+
+**A separate table from `preflight_report`, not a reused one.** 0.1C answers "may this V0
+run execute"; this answers "is this engagement ready to be called V1". Same BLOCK/WARN/PASS
+shape and the same acknowledgement discipline, but conflating them would mean acknowledging
+one silently satisfies the other.
+
+**Prefill is a suggestion; it is never an answer.** `prefill_value` and `answer_value` are
+separate columns and the gate counts only the latter, so a fully prefilled questionnaire
+nobody returned is correctly zero answers. Prefill draws only on `EVIDENCED_PUBLIC` /
+`DERIVED_PUBLIC` dispositions — never a `BENCHMARK_PRIOR`, because feeding the system's own
+default back as a suggested answer invites the client to confirm it, after which it reads
+as client-confirmed data. `deterministic_prefill()` proposes no value at all: extracting
+"122 sites" from a stored page fragment is the language task the LIVE path is for, and a
+rule that guessed at it would be a worse language model, not a deterministic alternative
+to one.
+
+**Only the prefill half of LLM-02 is built, and the reason is a spec question, not
+laziness.** The registry describes LLM-02 as "questionnaire prefill and evidence mapping".
+Evidence mapping requires knowing where a client-supplied fact sits in the 0.3A taxonomy —
+and it sits nowhere in it. The six dispositions cover public evidence, the model's own
+priors and draws, an analyst's unverified recollection, and declared-unknown. A client
+telling you the site count for their own estate is none of those. Forcing it into
+`ANALYST_ASSERTED_PRIOR` would understate first-party data; inventing a seventh disposition
+has confidence-weighting consequences in `estimate.py` and `confidence.py`. **That is the
+decision blocking the rest of Tranche 3, and it needs an answer before more code.**
+
+**A real bug, found here, present in all three tranches.** Every idempotency key was stable
+across separate invocations — `f"research:{case_id}:{domain_no}:{attempt}"`,
+`f"recommend:{snapshot_id}:{mode}"`, `f"narrate:{rec_id}:{mode}:{final}"`. So a second call
+made `create_agent_run` return the *previous* run, and `execute()` then refused it with
+"a completed run cannot be re-executed". **Every deliberate re-run was permanently broken:**
+research with `overwrite=True`, a second recommendation on the same snapshot, a re-narration.
+`ModeNotPermitted` was not caught at the Tranche 2 routes either, so it would have rendered
+a 500. Keys are now scoped per invocation, with an optional caller-supplied
+`idempotency_key` — the pattern `EstimateIn` already used — so a deliberate re-run works and
+a genuine double-submit is still collapsed. Both halves have regression tests. Tranche 1's
+`test_overwrite_true_replaces_an_existing_disposition` passed throughout, because it seeded
+its precondition directly rather than by running research twice; a test can only catch what
+it actually exercises.
+
+**Schema:** `engagement_case` gains `stage`, `stage_advanced_by`, `stage_advanced_at`;
+`questionnaire_item` and `stage_readiness_report` are new (migration v13, schema version 13).
+Existing rows get `stage=NULL` — `ALTER TABLE ADD COLUMN` does not backfill a default in
+either engine here — so `stage.current_stage()` treats NULL as V0 explicitly rather than
+relying on the column default.
+
+**Tests:** `tests/test_stage_and_questionnaire.py` — the gate's conditions individually and
+together, the advance/refuse paths, questionnaire idempotency and answer attribution,
+prefill labelling and evidence selection, and the two idempotency-scope regressions above.
+Not executed, same sandbox constraint as everything else in this section.
+
+### Tranche 3 fix: client data gets a class of its own (build 4.12.0)
+
+**The decision the previous build named as blocking is made.** Client-supplied data had
+nowhere to live in the 0.3A taxonomy, so questionnaire answers were stored, attributed and
+reported — and reached nothing. `CLIENT_CONFIRMED` is now a seventh disposition and a
+seventh quantity origin, placed deliberately between `ANALYST_ASSERTED_PRIOR` and
+`EVIDENCED_PUBLIC` and equal to neither:
+
+- **Stronger than `ANALYST_ASSERTED_PRIOR`,** which is an analyst's unverified recollection
+  of what someone said. Filing a client's own statement there understates first-party data,
+  in the direction that matters.
+- **Weaker than `EVIDENCED_PUBLIC`,** which is independently checkable against a stored
+  source fragment. A self-report is not: internal records go stale, and the person answering
+  may not be the person who knows.
+
+**It carries a governed weight, not a hardcoded one.**
+`confidence_policy.client_confirmed_evidence_weight` (seeded 0.70, flagged as a placeholder
+pending an approver) sets how far a client-confirmed value share counts toward the evidenced
+driver. `validate()` refuses a weight of 1 outright: weighting a self-report as fully as
+public evidence would erase the distinction the class exists to express. Verified by
+execution, not inference — an otherwise identical run scores 0.179 with no evidence, 0.314
+with client-confirmed, 0.371 with public evidence. Client data helps, and helps less.
+
+**It does not trip the 0.6A asserted-baseline ceiling.** That ceiling penalises leaning on
+an unverified *analyst* claim; a client's statement about their own estate is not that. It
+is discounted through the evidenced driver instead, which is the proportionate treatment
+for a source that is attributable and relevant but not independently checkable.
+
+**Mapping is rule-based, and the rules are the point.** Deciding whether a client answer
+may overwrite existing evidence is a governance question, not a language one — routing it
+through a model would make an authority decision unauditable for no gain. Five outcomes,
+and only one writes a disposition automatically:
+
+| Domain currently holds | Outcome | Disposition written? |
+|---|---|---|
+| `DECLARED_UNKNOWN`, `BENCHMARK_PRIOR`, `ANALYST_ASSERTED_PRIOR` | `UPGRADED` | yes — `CLIENT_CONFIRMED` |
+| nothing yet | `NO_DISPOSITION_ROW` | yes — `CLIENT_CONFIRMED` |
+| `EVIDENCED_PUBLIC`, `DERIVED_PUBLIC` | `CORROBORATION_REQUIRED` | **no** — flagged for a named adjudicator |
+| `SIMULATED` | `REFUSED_SIMULATED` | **no** — re-run the simulation with the value as an input |
+| `CLIENT_CONFIRMED` | `ALREADY_CLIENT_CONFIRMED` | no |
+
+Every one of the seven dispositions falls into exactly one branch — checked by enumeration,
+not by reading.
+
+**A client answer never silently overwrites public evidence.** Two independent sources
+disagreeing is information; resolving it by letting whichever arrived last win would discard
+it. `resolve_mapping()` requires a named person, and `CLIENT_SUPERSEDES_PUBLIC` — the only
+resolution that rewrites a disposition — additionally requires a stated reason, because
+overriding independently-verifiable evidence with a self-report has to be defensible after
+the fact. `CLIENT_AGREES_WITH_PUBLIC` deliberately changes nothing: two sources agreeing
+does not make either of them more public.
+
+**Two new BLOCK conditions on the V1 gate.** Unadjudicated or still-contradicted client
+answers block advancement — carrying an unreconciled disagreement between two independent
+sources into the stage that exists to refine the baseline defeats the point. So do answers
+recorded but never mapped: an answer that never reached the disposition contract changed
+nothing, which is not what "the questionnaire is complete" implies.
+
+**Adding that second condition broke this build's own `_ready_case` fixture,** which
+answered every question and never mapped them. Fixed by making the fixture map — the
+correct direction for a gate to break a fixture in, and worth recording rather than
+quietly patching.
+
+**Schema:** six mapping columns on `questionnaire_item` (migration v14, schema version 14).
+**UI:** new page `9_V1_questionnaire.py` — answer, prefill, map, adjudicate, assess, advance.
+Page 5's disposition dropdown gains `CLIENT_CONFIRMED`.
+
+**Nothing existing changed behaviour.** `dispositions.summarise` gains a zero-count key;
+`validate()` permits one more value; `derive_components` returns identical numbers for every
+pre-existing call pattern, because a run with no `CLIENT_CONFIRMED` share adds
+`weight × 0`. Checked by executing the old call shapes against the new code, not by
+reasoning that it should be fine.
+
+### Audit pass: three defects, one of them mine and serious (build 4.13.0)
+
+A systematic audit rather than new features. The method that found two of the three was
+mechanical: extract every table and column from `db.py`, then check every
+`db.<table>.c.<column>` reference and every migration `_add_column` call against it. 272
+references, all valid — but writing the checker meant reading which columns each write path
+actually *sets*, and that is where the defects were.
+
+**A1 — `PUT .../domain-dispositions` destroyed provenance on every save.** Severity: high.
+Mine, introduced in Tranche 1, worsened in Tranche 3. The endpoint was a
+delete-and-reinsert that wrote only the six columns it knew about, because it predates
+`evidence` and `agent_run_id`. So opening page 5, changing one dropdown, and clicking Save
+nulled — for all 24 domains — every research source fragment, every link to the provider
+call that produced it, and every client answer with its named respondent. The disposition
+*label* survived, leaving `EVIDENCED_PUBLIC` rows with nothing behind them: precisely what
+migration v11's own docstring says that column exists to prevent. Now a per-domain upsert.
+An unchanged disposition keeps its provenance; a deliberate re-disposition clears it,
+because sources gathered for one claim do not support a different one — and the response
+names what was dropped rather than dropping it silently.
+
+**A2 — research could silently discard client-confirmed data.** Severity: medium. Also
+mine. `overwrite=True` cleared the entire skip set, so re-running public research replaced
+`CLIENT_CONFIRMED` dispositions — destroying the client's answer and the named person who
+recorded it. This is the mirror of the rule Tranche 3 built in the other direction: an
+answer meeting public evidence is flagged for adjudication rather than allowed to
+overwrite. Research finding a public source that contradicts what a client said about their
+own estate is the same two-independent-sources situation and deserves the same treatment.
+`CLIENT_CONFIRMED` domains are now protected regardless of `overwrite`, and reported in
+`domains_protected_client_confirmed` so a caller who gets fewer domains than expected can
+see why. Re-dispositioning one is still possible manually, where the drop is visible.
+
+**A3 — an integrity incident could never be closed.** Severity: medium, pre-existing.
+`integrity_incident` carried `resolved_at`, `resolved_by` and `resolution_note`;
+`GET /v1/integrity/incidents` took an `include_resolved` flag implying resolution existed;
+nothing anywhere wrote any of the three. Same shape as audit-5's F-01 (a table written by
+nothing), one step further along: written by migrations, read by health, closable by no
+one. The consequence was not cosmetic — `_deep_health` caches only when
+`open_integrity_incidents` is 0, so a single permanent incident meant deep health never
+cached again, re-running a schema query and two full policy validations on every call.
+That is the C3-08 performance defect this bundle already fixed once, silently resurrected
+by a different one. `POST /v1/integrity/incidents/{id}:resolve` now exists. It requires a
+named person and a mandatory note — an incident closed without an explanation is worse than
+one left open, because it looks handled — repairs nothing, deletes nothing, retains every
+quarantined row, and invalidates the deep-health cache so the resolution is visible
+immediately rather than at TTL expiry.
+
+**Worth recording about the tooling.** Fixing A1 introduced a `NameError`: the new code
+called `update()`, which `routers/api.py` did not import. `py_compile` accepts that
+happily. `tests/check_build_config.py` — added after a defect of exactly this shape reached
+a build — caught it in about a second, by name. That check has now paid for itself twice.
+
+**Tests:** regression tests for all three, in the file where each defect lives rather than
+in a new one. Still not executed; the constraint has not changed.
+
+### First execution of the unexecuted (build 4.14.0)
+
+**122 tests executed for real. 121 passed on the first run; 3 defects found, all in the
+tests themselves, all of which would have shown up red on your first `make test`.**
+
+No SQLAlchemy, FastAPI, pydantic or httpx exists in the environment this was built in, and
+none is obtainable — checked directly rather than assumed. So `tools/offline_shims/`
+provides **import-only** stubs, letting modules that define tables be imported so the pure
+logic beside them can run. `tools/run_pure_tests.py` then executes every zero-argument test
+function.
+
+```
+python tools/run_pure_tests.py
+```
+
+**What it refuses to do matters more than what it does.** The SQLAlchemy shim raises on any
+query rather than returning a plausible empty result, because a shimmed pass is worth less
+than no result at all. Every test taking a fixture is skipped and counted separately, not
+approximated. **This is not a substitute for `make test`** and 228 tests still need a real
+engine.
+
+The three defects:
+
+**E1 — `test_a_token_on_the_api_and_none_here_is_reported` could never pass.** It asserted
+`"no token" in problem.lower()`, but the message reads "The API requires a token but this
+interface has none." — "has none", not "no token". A test that has never run can assert
+anything at all, and this one did.
+
+**E2 — `test_the_client_and_the_api_resolve_one_header_definition` could never pass
+either,** and for a more interesting reason. It asserted object *identity* on
+`AUTH_HEADER`, while its own `_client()` helper pops `contract.auth` from `sys.modules` and
+re-imports it — producing a fresh `str`. `"X-API-Token"` contains hyphens, so it is not
+auto-interned, and identity cannot hold by construction. Replaced with equality plus a
+shared-`__file__` check, which is the stronger test anyway: identity would pass for two
+separate files holding interned equal literals, whereas a common source path is the actual
+"one definition, no drift" claim C2-04 was about.
+
+**E3 — `test_only_the_worker_bound_claims_to_be_exact` looked for `"not atomic"` while the
+docstring says "are not one atomic operation".** Fixed, but the deeper point is the one
+worth keeping: this table used to claim *"No test asserts on source text — swept all five
+test modules"*, and that claim was false. Five docstring assertions in `test_jobs.py` and
+one `inspect.getsource` in `test_transport.py` survived the sweep. That row is now
+corrected. The surviving assertions are phrasing-robust and annotated with where the
+behavioural version of the claim actually lives — the `simulation.workers.enforcement` and
+`simulation.backlog.enforcement` fields published on `GET /v1/health`, which is what a
+consumer really reads.
+
+**What executing actually proved,** beyond the three fixes: the whole domain layer imports
+cleanly (16 modules), `CLIENT_CONFIRMED` scores strictly between no-evidence and public
+evidence on real seeded policy, every disposition falls into exactly one mapping branch,
+and the confidence, coverage, estimate, disposition, policy and registry logic all behave
+as their tests claim. That is a materially different statement from "traced by hand".
+
+### Deep audit: 298 tests executed, 3 more real defects (build 4.15.0)
+
+**Executed count went from 122 to 298.** The blocker was never that the tests were bad —
+it was that no SQLAlchemy exists here. So `tools/offline_shims/sqlalchemy/` is now a
+**real SQLAlchemy Core subset compiled to real SQL and run on real stdlib sqlite3**, with
+schemas ATTACHed exactly as `db.py` arranges them. Unique constraints, composite primary
+keys, NOT NULL and type affinity are enforced by the database, not by the shim.
+
+**The shim is itself verified before anything is read from it.**
+`python tools/verify_shim.py` runs 31 checks of properties the real library guarantees and
+the application depends on — JSON round-tripping as a dict, DateTime as a datetime, Numeric
+as Decimal, `one()` raising `NoResultFound`, `in_([])` matching nothing, unique violations
+raising `IntegrityError`, schemas as separate namespaces. If those fail, the application
+results are meaningless and the script says so and exits non-zero.
+
+That verification earned its keep twice, on defects **in the shim**, not the application:
+SQLite qualifies an *index* with the schema (`CREATE INDEX audit.ix ON tbl`) rather than
+the table, and rejects two column-level `PRIMARY KEY`s where `reference.threshold` needs a
+composite key. Both would have produced confusing application failures. Both now have their
+own check.
+
+**Three more real defects, all in tests, all guaranteed red on first `make test`:**
+
+**E4 — `test_preflight_blocks_an_uncleared_prior_engagement_fact` raised `NameError`.** It
+called bare `date(2026, 5, 1)`; `test_controls_db.py` imports `datetime, timedelta,
+timezone` and not `date`. Every other call site in that same file already uses `_dt.date`.
+One line, never executed, so nobody noticed.
+
+**E5 — `test_concurrency_never_exceeds_the_worker_bound` called `jobs.submit(run_id,
+new_work=False)`.** `submit()` takes only `run_id`, and `new_work` has never existed
+anywhere in `jobs.py`. `TypeError` before the first assertion — so the test guarding the
+worker concurrency bound has never checked anything.
+
+**E6 — one cancellation test fails and I am not claiming to have diagnosed it.**
+`test_a_late_cancellation_does_not_leave_a_contradictory_record` asserts
+`not row.cancel_requested` and gets the opposite. It is threaded, and this shim serialises
+through one connection under a lock, so visibility between a worker thread and the test
+differs from real SQLAlchemy. It may be a real race in `jobs.py` or an artifact of the
+harness. **Adjudicate it under `make test` before believing either.** It is named here
+rather than quietly filtered out.
+
+**Also checked, clean:** every one of the 47 interface calls resolves to a declared API
+route (AST-matched, not regex — the C2-04 drift class), and all 272 `db.<table>.c.<column>`
+references plus every migration `_add_column` resolve against the real schema.
+
+**What is still not executed: 26 tests, and they are the ones that need real
+introspection.** 19 in `test_migrations` build legacy-shaped schemas with raw DDL and
+inspect indexes in ways this shim does not reach. That is a shim limit, not an application
+verdict — do not read those as passing or failing.
+
+```
+python tools/verify_shim.py      # trust nothing below this until it passes
+python tools/run_pure_tests.py   # 298 pass, 21 fail (19 shim-limited, 1 needs adjudication)
+```
+
+### Deep audit, second pass: 318/320 executing, and a real dialect bug (build 4.16.0)
+
+Executed coverage went 122 -> 298 -> **318 passing of 320 run**. Getting there meant
+extending the offline shim, and every extension was gated behind
+`tools/verify_shim.py`, now 34 checks. Four of the shim's own defects surfaced there
+rather than as fake application failures: schema-qualified index DDL, composite primary
+keys, `PRAGMA schema.table_info` form, and `Connection` needing `.dialect`.
+
+**One of those shim defects turned out to be a real application bug of the same shape.**
+
+**A7 — `migrations.py` emitted index DDL that SQLite rejects outright.** Severity: high.
+Migration v9 built `CREATE UNIQUE INDEX "name" ON "audit"."llm_run" (...)`. Postgres
+accepts that. **SQLite does not** — it qualifies the *index*, not the table, and returns
+`near ".": syntax error`. Production runs Postgres, so the defect was invisible there; the
+test suite runs `DATABASE_URL=sqlite://`, so it was fatal in the only place it was ever
+exercised. Migration v9 could never complete under `make test`, and it blocked eight tests
+at once. Verified against raw `sqlite3` before fixing, not inferred. Now dialect-aware via
+`_create_index_ddl`, following the `dialect.name == "postgresql"` branching v9 already had.
+
+**Four more test defects, all of which had never run:**
+
+**A8 — `inspect().has_table` was missing from the shim, and the application swallowed it.**
+`migrations._has_table` wraps the call in `except Exception: return False`, so a missing
+method did not raise — it silently answered "no such table" for every table in the schema,
+and the migration logic then behaved plausibly and wrongly. A shim gap that raises is a
+nuisance; one that returns a confident wrong answer is the failure mode this whole bundle
+exists to prevent. It now has its own verification check.
+
+**A9 — the legacy fixtures described a database that could never have existed.**
+`audit.llm_run` omitted seven columns (`model`, `request_hash`, `response_hash`,
+`created_at`, `agent_run_id`, `latency_ms`, `policy_version`) and `reference.lever` omitted
+seven more — none of which any migration adds. So the "4.7.0 shape" these tests upgraded
+from was a state no 4.7.0 database could have been in, and three tests failed on their own
+setup. Derived mechanically rather than by eye, and
+`test_the_legacy_fixture_describes_a_state_that_can_actually_upgrade` now enforces the
+principle: **a legacy fixture may omit only columns a migration adds.** The next person to
+add a column finds out there instead of in a confusing `OperationalError`.
+
+**A10 — the fixture declared `provider_response_id` UNIQUE while three tests deliberately
+insert duplicates.** Migration v9 exists to *release* duplicate identifiers, so duplicates
+must be constructible in the pre-v9 state. The inline constraint made those tests
+impossible to pass.
+
+**A11 — two tests in the same file asserted contradictory index names.**
+`test_legacy_upgrade_adds_request_id_uniqueness` required `uq_llm_run_provider_request_id`;
+`test_v9_scopes_uniqueness_to_the_provider` asserts that exact name is *gone*, because v9
+renames it. They could never both pass. The first was stale — written before v9, never
+re-run.
+
+**Two failures remain, and I am not claiming to have diagnosed either.**
+
+- `test_a_within_provider_duplicate_is_still_released` now reaches v9 and fails on a NOT
+  NULL constraint during duplicate release. That is deep migration behaviour and may be a
+  real defect in `_release_duplicate_identifiers`.
+- `test_a_late_cancellation_does_not_leave_a_contradictory_record` is threaded, and this
+  shim serialises through one locked connection, so worker-to-test visibility differs from
+  real SQLAlchemy. It may be a real race in `jobs.py`.
+
+**Both need `make test` to adjudicate.** They are named here rather than filtered out,
+because a harness that hides its own two unexplained results is worth less than one that
+admits them.
+
+**Also checked clean this pass:** all 47 interface calls resolve to declared API routes
+(AST-matched), and all 272 column references plus every migration `_add_column` resolve
+against the real schema.
+
+### Both remaining failures resolved — and both were real (build 4.17.0)
+
+**320 of 320 executing tests pass.** The two I had flagged as undiagnosed turned out to be
+genuine application defects, not harness artifacts. Neither is a shim story.
+
+**A12 — a completed simulation kept `cancel_requested` set.** Severity: medium.
+`run_job` writes `SUCCEEDED` without clearing the flag, so a cancel arriving after the last
+pass leaves a row asserting two contradictory things at once: this run completed, and this
+run is pending cancellation. A reader cannot tell which happened. Completing *is* the right
+outcome for a late cancel — the record just has to say so. One line, and the same clearing
+already happens on reclaim. The test that catches it (`test_a_late_cancellation_does_not_
+leave_a_contradictory_record`) states the intent exactly and had never run.
+
+**A13 — the duplicate-release mechanism could never work on the column it was written
+for.** Severity: high, and it is a design contradiction rather than a typo:
+
+- `_release_duplicate_identifiers` releases an identifier by setting it `NULL`
+- `audit.llm_run.provider_response_id` is `nullable=False`
+- so migration v9 hit a NOT NULL violation deep inside a migration and crash-looped
+
+Two resolutions were available and they are not equivalent. **Making the column nullable**
+would let the mechanism run — but it weakens an audit identifier to satisfy a test, and
+`verify_liveness` already refuses any call without a response id, so the constraint is
+defence in depth worth keeping. **Refusing** is the other, and it is what the rest of this
+bundle does everywhere else: fail closed, name the cause, require a person. That is what
+was implemented. The check runs *before* any quarantine write, so nothing is staged and
+rolled back and the live table is left exactly as an operator needs to find it.
+
+**The cost is real and should be understood before this ships:** a legacy database holding
+duplicate `provider_response_id` values will not start until someone resolves them by hand.
+That is deliberate — a duplicate provider identifier may be the trace of a replayed
+response, which is the exact thing this system exists to detect, and clearing it
+automatically at 3am is not a decision a migration should be making. **If you would rather
+it self-heal, that is a real alternative and an owner's call, not mine.**
+
+`provider_request_id` is nullable, so the release path still runs there, which is what
+`test_duplicates_are_preserved_not_deleted` covers.
+
+**A14 — and the same test had a second defect nobody could have seen.** It asserted three
+rows survived when `_build_legacy()` seeds one before the three it adds. Four. The
+assertion could not have held even if the release had worked.
+
+**Two shim gaps closed to support the above:** `get_columns` now reports `nullable` (the
+new migration check reads it), verified against a NOT NULL and a nullable column.
+
+```
+python tools/verify_shim.py      # 35/35 - trust nothing below until this passes
+python tools/run_pure_tests.py   # 320/320
+```
+
+**Running total across three execution passes: 14 defects, 3 of them real application
+bugs** (SQLite index DDL, unresolvable duplicate release, contradictory cancel record).
+Every one was invisible to five rounds of code review and surfaced only by execution.
+
+### The HTTP layer executes too: 372/380 (build 4.18.0)
+
+Executed coverage: 122 -> 298 -> 320 -> **380 run, 372 passing, 6 skipped.** **Correction to the previous entry, which was wrong.** It stated the remaining skips needed
+`cryptography` and that it "genuinely is not installable here". I never checked. It **is**
+installed (46.0.6), the real library was being used the whole time, and the six X.509
+certificate tests - real RSA keygen, real DER, real SPKI hashing - had been passing all
+along. The claim came from misreading an older fixture breakdown instead of running one
+command. Corrected here rather than quietly edited away, because an unverified claim in a
+verification table is the exact failure this document keeps warning about.
+
+Two more shims, both built to the same rule — **enforce or refuse, never ignore**:
+
+**`pydantic`** with real validation. A lenient shim is the dangerous kind: it turns a test
+asserting `pytest.raises(ValidationError)` into a silent false failure and one asserting
+successful construction into a false pass. So `min_length`, `max_length`, `ge/le/gt/lt`,
+`pattern`, required-field detection and type coercion are all actually enforced, and any
+constraint it does not implement raises at **class-definition time** rather than being
+quietly dropped. That refusal fired immediately on `Field(pattern=...)` in
+`CorroborateIn` — which is exactly what it is for. `pattern` was then implemented properly
+rather than waved through.
+
+**`fastapi`** with a `TestClient` that really routes: path matching, path/query binding,
+JSON body to model validation, middleware traversal, lifespan startup, and `Response`
+injection. The real app boots through it — 55 routes, migrations, seeding — and the auth
+middleware rejects requests here exactly as it would on the server. `Depends`,
+websockets, streaming and `response_model` coercion are refused rather than approximated.
+
+**Two more real defects:**
+
+**A15 — one control, implemented twice, with two different override names.** ENFORCE
+without `cryptography` is refused in two places: `_transport` line ~150 raises
+`PinningUnsupported` and tells the operator to set `TLS_ALLOW_CERT_ONLY_PINNING`;
+`assert_safe()` raises `PinConfigurationRefused` and demands `TLS_PIN_ALLOW_CERT_ONLY`.
+**Both fail closed, so there is no security hole** — the trap is operational. Someone who
+sets the variable the first message names is still refused by the second, with a message
+that never mentions the one they just set. **Left unfixed on purpose:** picking a canonical
+name collapses a security control on inference alone, which is not a safe edit to make
+without the owner. The finding is recorded in the code at the first raise site, where
+whoever touches it next will meet it.
+
+**A16 — a test polluted global state for every test after it.**
+`test_interface._client()` popped `contract.auth` from `sys.modules` and never restored it.
+Any later test asserting `config.AUTH_HEADER is contract.auth.AUTH_HEADER` then compares an
+object from the original import against one from a fresh re-import, and fails.
+`test_auth::test_both_sides_resolve_to_one_definition` does exactly that and passed only by
+alphabetical luck of collection order. Now restored in a `finally`.
+
+**Eight failures remain and I am not claiming any as diagnosed.** Two `test_transport` cases
+want a live local origin server; three are `test_wiring`/`test_auth` cases entangled with
+the A15 exception mismatch or with cross-test pool state; the rest need real introspection.
+They are listed by the runner rather than filtered, because a harness that hides its own
+unexplained results is worth less than one that admits them.
+
+```
+python tools/verify_shim.py      # 35/35 - trust nothing below until this passes
+python tools/run_pure_tests.py   # 380 run, 372 pass, 6 skip
+```
+
+**Running total across four execution passes: 16 defects, 4 of them real application
+bugs** — SQLite index DDL, unresolvable duplicate release, contradictory cancel record, and
+the divergent pin override. Every one invisible to five rounds of code review.
+
+### Correcting my own false claim, and 376/379 (build 4.19.0)
+
+**I was wrong in the previous entry and the correction matters more than the numbers.**
+It said the remaining skipped tests needed `cryptography` and that it "genuinely is not
+installable here." I never ran the check. `cryptography` **is** installed (46.0.6); the
+real library was in use the whole time; the six X.509 tests - real RSA keygen, real DER
+encoding, real SPKI hashing - had been passing all along. I asserted an unverified
+blocker in a verification table, which is precisely the failure this document keeps
+warning about. Re-checked every dependency properly this time: only `cryptography` and
+`yaml` are present; `httpx`, `pydantic`, `fastapi`, `sqlalchemy`, `pytest` are genuinely
+absent and pip reaches no index.
+
+**Final counts: 379 executed, 376 passing, 3 skipped, 4 needing real `httpx`.**
+
+**A17 — header lookup was case-sensitive in the TestClient shim, and three auth tests
+failed for a reason unrelated to auth.** Starlette's `Headers` are case-insensitive; my
+shim lowercased keys into a plain dict, so the middleware's lookup of `config.AUTH_HEADER`
+("X-API-Token", original case) missed every time, every supplied token compared against
+`""`, and the token tests failed. A shim defect, not an application one - but exactly the
+kind that would have been read as a real auth bug had the shim not been under suspicion.
+Fixed with a case-insensitive mapping.
+
+**Honest accounting of what is left, with no rounding up:**
+
+- **4 tests need real `httpx`.** They start a genuine local `http.server` and make real
+  requests to it. The shim refuses rather than pretending to reach it, so these are a
+  missing dependency, not a failure, and the runner now classifies them that way.
+- **3 tests need pytest fixtures this runner cannot build** (`adapter`, a docker build
+  `context`).
+- **3 failures remain, and I claim none as diagnosed:**
+  - `test_startup_refuses_enforcement_without_spki_support` is the **A15** divergent-control
+    finding, now confirmed by execution: the test expects `PinningUnsupported`, the startup
+    path raises `PinConfigurationRefused`. Two implementations of one control, two override
+    names. Still deliberately unfixed - choosing a canonical name for a security control on
+    inference alone is not a safe edit.
+  - `test_declared_unique_indexes_exist_in_the_database` needs index introspection beyond
+    this shim.
+  - `test_reclaim_leaves_a_deferred_run_queued_not_running` hits `QueueFull` from worker-pool
+    state carried between tests - plausibly a real isolation gap in the suite, plausibly an
+    artifact of running without pytest's teardown. It needs `make test` to tell them apart.
+
+```
+python tools/verify_shim.py      # 35/35 - trust nothing below until this passes
+python tools/run_pure_tests.py   # 379 run, 376 pass
+```
+
+**Running total across five passes: 17 defects, 4 real application bugs** - SQLite index
+DDL, unresolvable duplicate release, contradictory cancel record, and the divergent pin
+override (A15, reported not patched). The rest were tests, fixtures, or my own shims. Every
+one was invisible to five rounds of code review.
+
+### Flow audit: the chain, not the links (build 4.20.0)
+
+Every prior pass checked components. This one drove the **whole V0 workflow through the
+real HTTP API** — intake, entity resolution, known facts, pre-flight, dispositions,
+simulation, estimate, questionnaire, mapping, stage assessment — and asserted that the
+gates compose. That is a distinct failure class: each part can be correct while the chain
+between them is not.
+
+`tests/test_end_to_end_flow.py`, 15 tests, all passing. **393 executed, 390 passing.**
+
+**The flow runs with no provider configured**, which is the state of a fresh checkout, and
+that is the most important case rather than a limitation: it proves the system refuses
+instead of inventing output when it cannot reach a model.
+
+**What the flow proves works, in order:**
+
+- intake round-trips, and `/v1/health` reports the *running* build rather than a constant
+- `entities:resolve` **fails closed with 503** and a message naming the missing provider —
+  the single most important behaviour in the bundle
+- `simulations:run` is refused while pre-flight is unsatisfied
+- `stage:assess` blocks on `V0 estimate` when no estimate exists, and `stage:advance` is
+  refused (409) on a blocked case
+- questionnaire → prefill (deterministic, no provider) → answer → map lands
+  `CLIENT_CONFIRMED` on exactly the mapped domains, and the gate then stops reporting
+  `V1 questionnaire` and `Answer mapping`
+- a client answer meeting `EVIDENCED_PUBLIC` is **flagged for adjudication and overwrites
+  nothing**, verified through the API rather than the domain layer
+- an unknown route is a 404, not a 500
+
+**A18 — there are two distinct correct pre-flight refusals, and only one was known.**
+Running the flow surfaced `"no pre-flight report; run the readiness check first (0.1C)"`
+as a separate refusal from `"pre-flight BLOCK conditions open: ..."`. Both correctly stop
+the simulation. An assertion written from reading the code alone checked only the second
+and would have failed against the first. The test now covers both, which is the honest
+shape of the contract.
+
+**Two defects in my own shims, both found only by driving the flow:**
+
+- **A19 — `__fields__` leaked as a model field.** `BaseModel` annotated `__fields__`, so my
+  metaclass treated it as a field on every subclass; `model_dump()` emitted it, and
+  `insert(...).values(**dump)` tried to write a column named `__fields__`. No unit test
+  touched it; the first real `POST /cases` did.
+- **A17 (previous pass) — case-sensitive header lookup**, same category.
+
+Both are shim defects, not application ones — but they are exactly what would have been
+misread as application bugs had the shim not been held under suspicion. That is the
+argument for `verify_shim.py` existing at all.
+
+```
+python tools/verify_shim.py      # 35/35
+python tools/run_pure_tests.py   # 393 run, 390 pass
+```
+
+**Running total across six passes: 19 defects, 4 real application bugs**, the rest tests,
+fixtures and shims. **3 failures remain and none is claimed as diagnosed** — the A15
+divergent pin override (reported, deliberately unpatched), index introspection beyond the
+shim, and worker-pool state between tests. All three need `make test`.
+
+### Interface audit (build 4.21.0)
+
+**Caveat first: I cannot render Streamlit here.** I can verify structure, data flow and
+correctness of every value the interface displays — and I did, by executing the progress
+panel against a real case through the API. I cannot verify that it *looks* good. Treat
+the visual claims below as intent, not as verified.
+
+**The home page had a real orientation problem.** The app is a chain of gates, and the
+landing page showed no case state at all. An analyst returning to a case had to click
+through pages to discover where it stood. Now there is a live progress table: each step
+with a status mark, what has actually been done (`24/24 disposed`, `3/9 answered`,
+`latest: PARTIAL`), and a **Next:** line naming the step to do and the gate it satisfies.
+
+**Every value is read from the API, not remembered by the interface.** A step shows done
+only when the service says so. That distinction matters in a system whose whole argument
+is that state is earned rather than asserted.
+
+**Defects found and fixed:**
+
+- **G1 — pages 8 and 9 were invisible.** The sequence table listed 7 steps and stopped at
+  Execution integrity. Savings recommendation and the V1 questionnaire had been shipped
+  with no route to them from the landing page other than the sidebar. Both are now in the
+  table, in workflow order rather than filename order.
+- **G2 — the caption claimed "specification v4.7 vertical slice"** thirteen builds after
+  that stopped being true. It now reads the build from `/v1/health`, the same staleness
+  class as the `_version.py` bug fixed earlier.
+- **G3 — `page_icon="||"`**, a placeholder that renders as two pipes in the browser tab.
+- **G4 — the progress panel read `facts` where the API returns `known_facts`.** Caught by
+  executing it, not by reading. It would have silently displayed "none recorded" for a
+  case with known facts — a wrong answer presented confidently, which is worse than an
+  error.
+- **G5 — case creation could not set the entity name or domicile**, so every new case
+  appeared as "(unresolved)" in the picker until page 1 was visited.
+- **G6 — an empty name was accepted** and only failed server-side; it is now refused in
+  the form with the reason ("an unattributed case cannot be audited").
+
+**Also improved:** the no-provider warning now says the deterministic paths still work,
+which is true and was not obvious; and the workflow explanation is collapsed by default
+and explains *why* the order exists rather than restating it.
+
+**Panel verification:** driven against a real case with a confirmed entity, one known
+fact, 24 dispositions and 3 of 9 answers — all ten displayed values correct.
+
+### G7: the offline shims were shipping inside both runtime images (build 4.22.0)
+
+Asked whether the repo was still the workbench, I checked the composition and found
+something I should have checked when I added the tooling: both Dockerfiles `COPY tools
+./tools`, and `tools/offline_shims/` contains a **counterfeit `sqlalchemy`** — plus fake
+`httpx`, `pydantic` and `fastapi` — backed by in-memory SQLite and ignoring
+`DATABASE_URL` entirely.
+
+**Not reachable by accident:** both images run from `/app`, so `import sqlalchemy`
+resolves to the real package in site-packages. I checked rather than assumed. But shipping
+a module that answers to the name of the database driver, inside the image that talks to
+the production database, is a hazard with no upside. One stray `PYTHONPATH` entry and the
+API reads an empty in-memory database while reporting success — the exact failure mode
+this bundle exists to make impossible.
+
+Now excluded via `.dockerignore`, along with `run_pure_tests.py` and `verify_shim.py`.
+The build- and run-time tooling that is genuinely needed — `tls_doctor.py`,
+`verify_tls_before_build.py` — stays, and `check_build_config.py` still passes, which
+confirms every remaining `COPY` path resolves.
+
+**Composition, for the record.** Product code is 8,411 lines of `api_service` plus 1,239
+of `analyst_ui`. Tests are 6,279 and tooling 2,125. Test-and-tooling has grown to roughly
+parity with the product. That is a defensible ratio for something whose central claim is
+that it refuses rather than guesses — but it is worth stating plainly rather than letting
+it drift unremarked.
+
+### Product surface: pre-flight page and cross-case state (build 4.23.0)
+
+Effort moved off the harness and onto what an analyst touches. Four defects, three of them
+capable of showing one case's state under another case's name.
+
+**G8 — Streamlit session state outlived a case switch, in four places.** `preflight`,
+`sim`, `sim_run_id` and `v0` were cached without any case scope. Run pre-flight on case A,
+switch to case B on the home page, open page 3: it renders A's readiness report with B in
+context, and the acknowledge button posts against B. Nothing marked the mismatch. All four
+keys are now scoped, and a stale entry is discarded on case change.
+
+**G9 — a pre-flight report did not say which case it belonged to,** so the defect above was
+*undetectable client-side* even in principle. `POST :run` and `GET` now both echo
+`case_id`, and the page compares it before trusting a cached report.
+
+**G10 — the page could only create reports, never read one.** A `GET .../preflight`
+endpoint has existed the whole time and was never called. So returning to the page showed
+nothing, and the only way to see your report again was to press the button — which creates
+a **new** report and supersedes the acknowledgement you already had. The page now reads
+existing state on load, shows who acknowledged it, and warns before superseding.
+
+**G11 — a blocked gate named the problem but not the remedy.** Each BLOCK now carries the
+page that clears it. Writing that mapping produced its own lesson: two of my first eight
+keys (`"Rights to use"`, `"Known-fact conflicts"`) were invented from memory and matched no
+real condition, so the guidance would have rendered nothing, silently, forever. The real
+names are `Prior-engagement rights` and `Known-fact contradictions`.
+`test_preflight_guidance_covers_every_condition` now asserts the mapping is
+**exactly** the set the service emits — no invented keys, and no condition able to block a
+run with no guidance attached.
+
+Also: acknowledgement is refused on whitespace-only names, and a cleared-and-acknowledged
+case says so plainly instead of re-offering a button that does nothing useful.
+
+**396 executed, 393 passing.** The three additions are end-to-end tests through the real
+API, not UI assertions — the interface reads what the service returns, so pinning the
+service contract is what actually protects the page.
 
 ## Verification status — read this
 
@@ -1141,14 +2094,45 @@ verified and what wasn't:
 
 | Check | Status |
 |---|---|
-| Every Python file compiles | Verified (39 files) |
+| Every Python file compiles | Verified (66 files, whole repo - the 39 originally stated here was a narrower, unstated scope; re-run: `find . -name "*.py" | grep -v __pycache__ | wc -l` then `py_compile` each) |
+| No duplicate `def`/`class` names in any touched file | Verified — caught one real instance this way (`list_recommendations`, Tranche 2), fixed before packaging |
+| `DOMAIN_AGENT_MAP` covers all 24 domains exactly once, no drift | Verified against `dispositions.DOMAINS` directly |
+| 14 domain-research tests (map, 3-way outcome split, budget, composition) | **Not executed** — same reason as the rest of this table; traced by hand |
+| Independent source fetch (`_fetch_source_fragment`) | **Not verified** — no network egress in this build sandbox |
+| Registry: only LLM-06/LLM-07 permit `DETERMINISTIC_ONLY`, five others still LIVE-only | Verified against the live `AGENTS` dict directly |
+| `tests/test_savings_advisory.py` (registry, deterministic paths, `recommend()`/`narrate()`/`approve()`, the no-auto-downgrade regression, the orphan-row regression) | **Not executed** — same sandbox constraint; traced by hand, including the exact call chain each test exercises |
+| Every question in `questionnaire.QUESTIONS` maps to a real 0.3A domain, no duplicate keys | Verified against `dispositions.DOMAINS` directly |
+| `tests/test_stage_and_questionnaire.py` (gate conditions, advance/refuse, prefill labelling, idempotency scoping, evidence mapping, adjudication) | **Not executed** — same sandbox constraint; traced by hand |
+| `CLIENT_CONFIRMED` scores above no-evidence and below public evidence | **Executed** — 0.179 / 0.314 / 0.371 on an otherwise identical run |
+| Every disposition falls into exactly one mapping branch | **Executed** — enumerated all seven plus the no-row case |
+| `ConfidencePolicy` loads the new governed key; weight ≥ 1 rejected; missing key raises | **Executed** against the shipped seed |
+| Pre-existing `derive_components` / `compute` call patterns unchanged | **Executed** — old call shapes against new code |
+| All 272 `db.<table>.c.<column>` references and every migration `_add_column` resolve against the real schema | **Executed** — AST extraction, whole repo |
+| `tests/check_build_config.py` passes (no undefined names, no duplicate compose keys, COPY paths exist) | **Executed** — and it caught a real `NameError` this pass |
+| **393 tests across 13 modules, incl. a full end-to-end flow** | **EXECUTED — 390 pass, 3 fail, 3 skip, 4 need real httpx.** 19 defects across six passes: 4 real application bugs, 15 in tests/fixtures/shims |
+| Home-page progress panel shows correct live state | **EXECUTED** — all 10 values checked against a real case; found one wrong response key that would have displayed a confident zero |
+| No development shim ships in a runtime image | **Verified** — `.dockerignore` excludes `tools/offline_shims/`; nothing in `api_service/`, `analyst_ui/` or `contract/` references it |
+| Pre-flight guidance names only real conditions, and covers all of them | **EXECUTED** — pinned against a live report; caught 2 invented keys that would have rendered nothing |
+| Streamlit visual appearance | **NOT VERIFIED** — cannot render here. Structure and data are checked; looks are not |
+| The whole V0 workflow composes through the real HTTP API | **EXECUTED** — `tests/test_end_to_end_flow.py`, 15 tests: gates fire in order, refusals name their cause, no stage is reachable by skipping the work in front of it |
+| 6 X.509 certificate tests (real RSA keys, real DER, real SPKI pins) | **EXECUTED** — against the genuinely-installed `cryptography` 46.0.6, not a stub |
+| Auth middleware end to end (token accepted, rejected, exempt paths) | **EXECUTED** — through a routing TestClient with case-insensitive headers |
+| The real FastAPI app boots and serves through a routing TestClient | **EXECUTED** — 55 routes, lifespan, migrations, seed, auth middleware |
+| `pydantic` validation semantics (min/max length, ge/le, pattern, required) | **EXECUTED** — enforced, not ignored; unimplemented constraints refuse at class definition |
+| The offline SQLAlchemy shim itself | **EXECUTED — 35/35.** `python tools/verify_shim.py`. Caught 5 defects in the shim before any could be misread as an application failure |
+| A legacy fixture omits only columns a migration adds | **EXECUTED** — enforced mechanically by `test_the_legacy_fixture_describes_a_state_that_can_actually_upgrade` |
+| `test_a_within_provider_duplicate...` | **RESOLVED** — was a real design contradiction; v9 now refuses with a cause. See A13; the self-heal alternative is an owner's call |
+| 26 tests still not executed (TestClient, custom fixtures, pydantic/fastapi) | **Still needs `make test`** — unchanged, and it remains the only way to exercise the HTTP layer end to end |
+| Every interface call resolves to a declared API route | **Executed** — AST-matched, 47 calls against 55 routes |
+| 19 `test_migrations` tests (legacy DDL, index introspection) | **Not executed** — beyond the shim's surface; needs `make test`. Not a pass or a fail |
+| 1 threaded cancellation test (`test_a_late_cancellation...`) | **FAILS here, undiagnosed.** Thread visibility differs under a single locked connection. Could be a real race in `jobs.py`. Adjudicate under `make test` |
 | 71 pure-logic tests pass | Verified (third-party stubbed) |
 | 20 DB control tests | **Not executed** — SQLAlchemy unavailable in the build sandbox; run `make test` |
 | 11 migration tests | **Not executed** — same reason; logic verified step-for-step against raw `sqlite3` |
 | 12 auth tests | **Not executed** — needs FastAPI TestClient; run `make test` |
 | 31 transport tests | **Not executed** — needs httpx; pin state machine and renewal survival verified with stdlib |
 | 10 wiring tests | **Not executed** — needs TestClient; assert startup invokes what it claims |
-| No test asserts on source text | Verified — swept all five test modules |
+| No test asserts on source text | **Not true** — the sweep missed five docstring assertions in `test_jobs.py` and one `inspect.getsource` in `test_transport.py`. Found by executing them: one failed. They are prose assertions, which break on rewording and prove nothing about behaviour; the surviving ones are now robust and annotated with where the behavioural contract actually lives (`GET /v1/health`) |
 | Both images resolve one contract definition | Verified — api and ui layouts simulated |
 | Legacy upgrade preserves cases, runs, thresholds | Verified against raw `sqlite3` |
 | Both refusal paths fire | Verified — newer schema, half-applied rename |
@@ -1194,6 +2178,8 @@ api_service/app/
     known_facts.py          0.1B
     preflight.py            0.1C
     dispositions.py         0.3A
+    research.py             0.3A.2 — LLM-01/LLM-08 wiring (Tranche 1)
+    savings_advisory.py     10/11 — LLM-07/LLM-06 wiring (Tranche 2)
     simulation.py           0.3B — seeded, hashed, reproducible
     coverage.py             0.3C
     confidence.py           0.6A + 13.2
@@ -1270,3 +2256,47 @@ overstatement of savings, independent of the provenance work.
   only LIVE, and the other modes are rejected before a run row exists. The spec requires
   all four; this build implements one and says so rather than pretending.
 - **Reference priors are indicative,** not sourced. Replace `seed.py` before any real use.
+- **`DOMAIN_AGENT_MAP` (`domain/research.py`) is inferred, not sourced.** No spec table
+  assigning the 24 input domains to research agents turned up in anything this was built
+  against. Ten domains route to LLM-01, seven to LLM-08, based on the domain catalogue and
+  the two agents' one-line registry descriptions. Confirm it against the real spec section
+  if one exists, or treat it as the first thing to author if it doesn't.
+- **A verified public source and a corroborated one are not the same claim.** Research
+  only ever writes `EVIDENCED_PUBLIC` or nothing — never `DERIVED_PUBLIC`. Recognising that
+  a value was combined from prior approved facts needs a dependency graph over them that
+  doesn't exist yet; guessing at it here would be a second weak inference on top of the
+  first.
+- **The independent-source fetch has never resolved a real URL.** `_fetch_source_fragment`
+  is plain, untested `httpx` against whatever a model cites — no HTML parser, no retry, no
+  rate limiting, and no network egress anywhere this was built or reviewed. Expect to find
+  and fix something here specifically on first real run against a real provider.
+- **`material_lever_share_threshold` is checked per lever, not cumulatively.** A scenario
+  with several levers each just under the governed share of current TCO can represent a
+  materially assumption-heavy recommendation without any single lever tripping the gate —
+  the same shape of defect the `ANALYST_ASSERTED_PRIOR` overload was before it got split
+  into `ANALYST_ENTERED_SCOPE`/`ANALYST_ASSERTED_PRIOR`. Not fixed here; naming it so it
+  isn't mistaken for having been considered and dismissed.
+- **`client_confirmed_evidence_weight` is a placeholder at 0.70.** The *class* is now
+  justified and its ordering is enforced, but where exactly a client self-report sits
+  between an analyst assertion and a public source is a stewardship judgement. The number
+  is in `reference.threshold` with an approver field precisely so someone can make it.
+- **A client answer still cannot bind to a cost quantity.** `CLIENT_CONFIRMED` exists as a
+  quantity origin and is correctly excluded from the asserted ceiling, but nothing writes
+  it onto a `Component` yet — `known_facts.BINDABLE` remains the only binding path, and
+  extending it to questionnaire answers is a separate piece with its own gates. So client
+  data currently reaches confidence through domain completeness and the disposition
+  contract, not through the value-weighted origin breakdown.
+- **Mapping is per-question, not per-value.** An answer upgrades its whole input domain
+  rather than a specific figure within it, and no numeric comparison happens between a
+  client answer and a public one — `CLIENT_CONTRADICTS_PUBLIC` is a human judgement the
+  system records, not one it detects.
+- **Advancing to V1 changes no published figure.** `confidence.STAGE_CEILINGS` is seeded
+  for V0 only; `stage_ceiling_V1_*` rows are governed values nobody has approved, and
+  `policy.py` holds no defaults by design. A case at V1 is recorded and reported as V1,
+  and its numbers are unchanged. The readiness report says so as a WARN rather than
+  letting an advance imply more than it delivers.
+- **A recommendation's narrative has no history.** Calling `narrate()` again overwrites
+  `narrative`/`narrative_label`/`narrative_agent_run_id` on the same row. Every `agent_run`
+  this ever produced is still in `agent_runtime.agent_run` and traceable via execution
+  integrity — nothing is lost — but the `recommendation` row itself only ever shows the
+  most recent narrative, not a sequence of drafts.

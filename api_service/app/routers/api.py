@@ -5,12 +5,13 @@ from decimal import Decimal
 
 from fastapi import APIRouter, Body, HTTPException, Response
 from pydantic import BaseModel, Field
-from sqlalchemy import delete, insert, select, text
+from sqlalchemy import delete, insert, select, text, update
 
 from .. import config, db, jobs, migrations
 from ..domain import (confidence, coverage, dispositions, entity_resolution,
-                      estimate, known_facts, policy, preflight, reconciliation,
-                      simulation)
+                      estimate, known_facts, policy, preflight, questionnaire,
+                      reconciliation, research, savings_advisory, simulation,
+                      stage)
 from ..domain.money import D, Range
 from ..llm import errors, gateway, registry
 
@@ -52,6 +53,25 @@ def _policies(s):
                 policy.KnownFactPolicy.from_rows(_thresholds(s, "known_fact_policy")))
     except (policy.PolicyIncomplete, policy.PolicyInvalid) as exc:
         raise HTTPException(503, {"error": "governed policy unusable", "detail": str(exc)})
+
+
+def _research_policy(s):
+    """Separate from _policies(): two existing call sites unpack that as a
+    3-tuple, and research is not required for every route that needs the
+    other three."""
+    try:
+        return policy.ResearchPolicy.from_rows(_thresholds(s, "research_policy"))
+    except (policy.PolicyIncomplete, policy.PolicyInvalid) as exc:
+        raise HTTPException(503, {"error": "governed research policy unusable",
+                                  "detail": str(exc)})
+
+
+def _recommendation_policy(s):
+    try:
+        return policy.RecommendationPolicy.from_rows(_thresholds(s, "recommendation_policy"))
+    except (policy.PolicyIncomplete, policy.PolicyInvalid) as exc:
+        raise HTTPException(503, {"error": "governed recommendation policy unusable",
+                                  "detail": str(exc)})
 
 
 def _open_incidents() -> int:
@@ -208,6 +228,46 @@ def agents():
 
 
 # --------------------------------------------------------------- 0.1A intake
+# --- request models -------------------------------------------------------
+# Defined together and before any route. Five of these were introduced anchored
+# to a model near the reconciliation endpoint, so they landed 570 lines after
+# the routes annotating them - a NameError at import, which is what the API
+# container exited on the first time it ran.
+# --- validation models for routes that previously took a raw body ----------
+# Body(...) gives a KeyError and a 500 on a malformed payload; a model gives a
+# 422 naming the field. Six routes took raw bodies, one of which indexed a
+# caller-supplied list directly.
+class ClearRightsIn(BaseModel):
+    cleared_by: str = Field(min_length=1, max_length=120)
+
+
+class ResolveConflictIn(BaseModel):
+    resolution: str = "SCOPE_IS_CORRECT"
+    reason: str = Field(min_length=1, max_length=2000)
+    resolved_by: str = Field(min_length=1, max_length=120)
+
+
+class CorroborateIn(BaseModel):
+    provider: str = Field(default="anthropic", pattern="^(anthropic|openai)$")
+    mode: str = Field(default="LIVE", pattern="^(LIVE|MOCK|REPLAY|DETERMINISTIC_ONLY)$")
+
+
+class PreflightRunIn(BaseModel):
+    mode: str = Field(default="LIVE", pattern="^(LIVE|MOCK|REPLAY|DETERMINISTIC_ONLY)$")
+
+
+class PreflightAckIn(BaseModel):
+    report_id: str = Field(min_length=1, max_length=36)
+    acknowledged_by: str = Field(min_length=1, max_length=120)
+
+
+class DispositionIn(BaseModel):
+    domain_no: int = Field(ge=1, le=24)
+    domain_name: str = ""
+    disposition: str
+    reason: str | None = None
+
+
 class CaseIn(BaseModel):
     created_by: str
     subject_entity_legal_name: str | None = None
@@ -435,7 +495,8 @@ def get_preflight(case_id: str):
         row = preflight.latest(s, case_id)
         if row is None:
             raise HTTPException(404, "no pre-flight report; POST :run first")
-        return {"report_id": row.report_id, "blocked": row.blocked,
+        return {"case_id": case_id,
+                "report_id": row.report_id, "blocked": row.blocked,
                 "conditions": row.conditions,
                 "acknowledged_by": row.acknowledged_by,
                 "blocks": [c for c in row.conditions if c["state"] == "BLOCK"],
@@ -444,8 +505,17 @@ def get_preflight(case_id: str):
 
 @router.post("/v1/outside-in/cases/{case_id}/preflight:run")
 def run_preflight(case_id: str, payload: PreflightRunIn):
+    """Creates a new report. Note the asymmetry with GET: reading must never
+    create one, because a fresh report supersedes a prior acknowledgement.
+
+    `case_id` is echoed so a caller holding a cached report can tell whether it
+    belongs to the case now in context. Without it the interface had no way to
+    detect that it was rendering one case's readiness under another's - which
+    it was doing, because Streamlit session state outlives a case switch.
+    """
     with S() as s:
-        return preflight.run(s, case_id=case_id, mode=payload.mode)
+        report = preflight.run(s, case_id=case_id, mode=payload.mode)
+        return {"case_id": case_id, **report}
 
 
 @router.post("/v1/outside-in/cases/{case_id}/preflight:acknowledge")
@@ -577,18 +647,65 @@ def list_simulations(case_id: str):
 # --------------------------------------------------------------- 0.3A dispositions
 @router.put("/v1/outside-in/cases/{case_id}/domain-dispositions")
 def set_dispositions(case_id: str, records: list[DispositionIn]):
+    """Manual disposition entry. Per-domain upsert, NOT delete-and-reinsert.
+
+    This was a delete-and-reinsert, which meant every save silently nulled
+    `evidence` and `agent_run_id` for all 24 domains - because this endpoint
+    predates both columns and only ever wrote the six it knew about. Changing
+    one dropdown on page 5 destroyed every research source fragment, every
+    link to the provider call that produced it, and every client answer with
+    its named respondent. The disposition *label* survived, so an
+    EVIDENCED_PUBLIC row stayed labelled EVIDENCED_PUBLIC with nothing behind
+    it - exactly what migration v11's own docstring says that column exists to
+    prevent. Introduced in Tranche 1, worsened in Tranche 3, found in audit.
+
+    Now: a domain whose disposition is unchanged keeps its provenance. A
+    domain the analyst deliberately re-dispositions loses it, because sources
+    gathered for one claim do not support a different one - but that is
+    reported rather than silent, and the response names what was dropped.
+    """
     records = [r.model_dump() for r in records]
     problems = dispositions.validate(records)
     with S() as s:
-        s.execute(delete(db.domain_disposition).where(
-            db.domain_disposition.c.case_id == case_id))
-        s.execute(insert(db.domain_disposition), [
-            {"id": str(uuid.uuid4()), "case_id": case_id, "estimate_snapshot_id": None,
-             "domain_no": r["domain_no"], "domain_name": r.get("domain_name", ""),
-             "disposition": r["disposition"], "reason": r.get("reason")} for r in records])
+        existing = {r.domain_no: r for r in s.execute(
+            select(db.domain_disposition).where(
+                db.domain_disposition.c.case_id == case_id)).all()}
+        incoming = {r["domain_no"] for r in records}
+
+        # Domains absent from the payload are removed, preserving the previous
+        # whole-case-replacement semantics the interface relies on.
+        for domain_no in set(existing) - incoming:
+            s.execute(delete(db.domain_disposition).where(
+                db.domain_disposition.c.id == existing[domain_no].id))
+
+        provenance_dropped = []
+        for r in records:
+            prev = existing.get(r["domain_no"])
+            values = {"domain_name": r.get("domain_name", ""),
+                      "disposition": r["disposition"], "reason": r.get("reason")}
+            if prev is None:
+                s.execute(insert(db.domain_disposition).values(
+                    id=str(uuid.uuid4()), case_id=case_id,
+                    estimate_snapshot_id=None, domain_no=r["domain_no"],
+                    agent_run_id=None, evidence=None, **values))
+                continue
+            if prev.disposition != r["disposition"] and (prev.evidence
+                                                         or prev.agent_run_id):
+                # Deliberate re-disposition: the stored provenance was gathered
+                # for the old claim and does not support the new one.
+                provenance_dropped.append(
+                    {"domain_no": r["domain_no"], "was": prev.disposition,
+                     "now": r["disposition"],
+                     "had_evidence": bool(prev.evidence),
+                     "had_agent_run": bool(prev.agent_run_id)})
+                values.update(agent_run_id=None, evidence=None)
+            s.execute(update(db.domain_disposition)
+                      .where(db.domain_disposition.c.id == prev.id)
+                      .values(**values))
         s.commit()
     return {"stored": len(records), "publication_blockers": problems,
-            "summary": dispositions.summarise(records)}
+            "summary": dispositions.summarise(records),
+            "provenance_dropped": provenance_dropped}
 
 
 @router.get("/v1/outside-in/cases/{case_id}/domain-dispositions")
@@ -602,6 +719,46 @@ def get_dispositions(case_id: str):
                 "summary": dispositions.summarise(recs) if recs else None,
                 "publication_blockers": dispositions.validate(recs) if recs else
                 ["no dispositions recorded"]}
+
+
+# --------------------------------------------------------------- 0.3A.2 domain research
+class DomainResearchIn(BaseModel):
+    agent_ids: list[str] | None = None       # default: both LLM-01 and LLM-08
+    provider: str = "anthropic"
+    overwrite: bool = False
+    # Optional, same pattern as EstimateIn. Absent means a fresh scope per
+    # call, so a deliberate re-run works; supplied means a repeat submission
+    # of the *same* request returns the original runs instead of spending
+    # twice at the provider.
+    idempotency_key: str | None = None
+
+
+@router.post("/v1/outside-in/cases/{case_id}/domain-research:run")
+def run_domain_research(case_id: str, payload: DomainResearchIn):
+    """Runs LLM-01/LLM-08 research for whichever of the 24 domains they cover
+    and do not already carry a disposition (or all of them, if overwrite=True).
+
+    Composes with PUT .../domain-dispositions rather than replacing it: this
+    writes only the domains DOMAIN_AGENT_MAP assigns to the requested agents,
+    upserted one at a time, so a manual entry for domains outside that map -
+    or a manual override the analyst made deliberately - is left alone unless
+    overwrite is explicit.
+    """
+    with S() as s:
+        research_policy = _research_policy(s)
+        try:
+            result = research.run_domain_research(
+                s, case_id=case_id, agent_ids=payload.agent_ids,
+                provider=payload.provider, research_policy=research_policy,
+                overwrite=payload.overwrite,
+                idempotency_key=payload.idempotency_key)
+        except LookupError as exc:
+            raise HTTPException(404, str(exc))
+        except PermissionError as exc:
+            raise HTTPException(409, str(exc))
+        except ValueError as exc:
+            raise HTTPException(422, str(exc))
+        return result
 
 
 # --------------------------------------------------------------- V0 estimate
@@ -804,6 +961,290 @@ def list_estimates(case_id: str):
         return {"snapshots": [dict(r._mapping) for r in rows]}
 
 
+# --------------------------------------------------------------- Tranche 2 (LLM-07, LLM-06)
+class RecommendIn(BaseModel):
+    mode: str = "LIVE"          # LIVE | DETERMINISTIC_ONLY - never inferred, never automatic
+    provider: str = "anthropic"
+    idempotency_key: str | None = None
+
+
+class ApproveIn(BaseModel):
+    approved_by: str            # a name, not a role or a team - see savings_advisory.approve
+
+
+class NarrateIn(BaseModel):
+    mode: str = "LIVE"
+    provider: str = "anthropic"
+    final: bool = False         # True is refused, not downgraded, if material and unapproved
+    idempotency_key: str | None = None
+
+
+def _recommendation_or_404(session, case_id: str, recommendation_id: str) -> dict:
+    row = session.execute(select(db.recommendation).where(
+        db.recommendation.c.recommendation_id == recommendation_id)).one_or_none()
+    if row is None or row.case_id != case_id:
+        raise HTTPException(404, f"recommendation {recommendation_id!r} not found for "
+                                 f"case {case_id!r}")
+    return dict(row._mapping)
+
+
+@router.post("/v1/outside-in/cases/{case_id}/estimates/{estimate_snapshot_id}"
+            "/recommendation:run")
+def run_recommendation(case_id: str, estimate_snapshot_id: str, payload: RecommendIn):
+    with S() as s:
+        # Checked before recommend() runs, not after: recommend() creates a
+        # real agent_run and, in LIVE mode, makes a real provider call. Catching
+        # a case_id mismatch afterward would mean the call already happened.
+        snap = s.execute(select(db.estimate_snapshot.c.case_id).where(
+            db.estimate_snapshot.c.estimate_snapshot_id == estimate_snapshot_id)).first()
+        if snap is None or snap.case_id != case_id:
+            raise HTTPException(404, f"estimate snapshot {estimate_snapshot_id!r} not "
+                                     f"found for case {case_id!r}")
+        rp = _recommendation_policy(s)
+        try:
+            return savings_advisory.recommend(
+                s, estimate_snapshot_id=estimate_snapshot_id, mode=payload.mode,
+                provider=payload.provider, recommendation_policy=rp,
+                idempotency_key=payload.idempotency_key)
+        except LookupError as exc:
+            raise HTTPException(404, str(exc))
+        except ValueError as exc:
+            raise HTTPException(422, str(exc))
+        except errors.ModeNotPermitted as exc:
+            raise HTTPException(409, {"error": "execution mode refused", "detail": str(exc)})
+        except errors.StructuredOutputInvalid as exc:
+            raise HTTPException(502, {"error": "LLM-07 output invalid", "detail": str(exc)})
+        except (errors.ProviderUnavailable, errors.LivenessProofFailed) as exc:
+            raise HTTPException(503, {"error": "LLM-07 LIVE call failed", "detail": str(exc)})
+
+
+@router.post("/v1/outside-in/cases/{case_id}/recommendations/{recommendation_id}:approve")
+def approve_recommendation(case_id: str, recommendation_id: str, payload: ApproveIn):
+    with S() as s:
+        _recommendation_or_404(s, case_id, recommendation_id)
+        try:
+            return savings_advisory.approve(
+                s, recommendation_id=recommendation_id, approved_by=payload.approved_by)
+        except ValueError as exc:
+            raise HTTPException(422, str(exc))
+
+
+@router.post("/v1/outside-in/cases/{case_id}/recommendations/{recommendation_id}"
+            "/narrative:run")
+def run_narrative(case_id: str, recommendation_id: str, payload: NarrateIn):
+    with S() as s:
+        _recommendation_or_404(s, case_id, recommendation_id)
+        try:
+            return savings_advisory.narrate(
+                s, recommendation_id=recommendation_id, mode=payload.mode,
+                provider=payload.provider, final=payload.final,
+                idempotency_key=payload.idempotency_key)
+        except PermissionError as exc:
+            raise HTTPException(409, str(exc))
+        except ValueError as exc:
+            raise HTTPException(422, str(exc))
+        except errors.ModeNotPermitted as exc:
+            raise HTTPException(409, {"error": "execution mode refused", "detail": str(exc)})
+        except errors.StructuredOutputInvalid as exc:
+            raise HTTPException(502, {"error": "LLM-06 output invalid", "detail": str(exc)})
+        except (errors.ProviderUnavailable, errors.LivenessProofFailed) as exc:
+            raise HTTPException(503, {"error": "LLM-06 LIVE call failed", "detail": str(exc)})
+
+
+@router.get("/v1/outside-in/cases/{case_id}/recommendations")
+def list_recommendations(case_id: str):
+    """Read-only - unlike re-calling recommend()/narrate(), which each create
+    a new agent_run."""
+    with S() as s:
+        rows = s.execute(select(db.recommendation).where(
+            db.recommendation.c.case_id == case_id).order_by(
+            db.recommendation.c.created_at.desc())).all()
+        return {"recommendations": [dict(r._mapping) for r in rows]}
+
+
+@router.get("/v1/outside-in/cases/{case_id}/recommendations/{recommendation_id}")
+def get_recommendation(case_id: str, recommendation_id: str):
+    with S() as s:
+        return _recommendation_or_404(s, case_id, recommendation_id)
+
+
+# --------------------------------------------------------------- Tranche 3: V1 stage
+class PrefillIn(BaseModel):
+    mode: str = "LIVE"          # LIVE | DETERMINISTIC_ONLY - never inferred
+    provider: str = "anthropic"
+    overwrite: bool = False     # never overwrites an *answered* item regardless
+    idempotency_key: str | None = None
+
+
+class AnswerIn(BaseModel):
+    question_key: str
+    answer_value: str
+    answered_by: str            # a named person at the client, never a role
+
+
+class MapAnswersIn(BaseModel):
+    mapped_by: str              # named person - this changes what the estimate rests on
+
+
+class ResolveMappingIn(BaseModel):
+    question_key: str
+    resolution: str             # see questionnaire.RESOLUTIONS
+    resolved_by: str
+    note: str = ""              # mandatory for CLIENT_SUPERSEDES_PUBLIC
+
+
+class StageAssessIn(BaseModel):
+    target_stage: str = "V1"
+
+
+class StageAckIn(BaseModel):
+    report_id: str
+    acknowledged_by: str
+
+
+class StageAdvanceIn(BaseModel):
+    target_stage: str = "V1"
+    advanced_by: str
+
+
+@router.post("/v1/outside-in/cases/{case_id}/questionnaire")
+def create_questionnaire(case_id: str):
+    with S() as s:
+        try:
+            return questionnaire.create(s, case_id=case_id)
+        except LookupError as exc:
+            raise HTTPException(404, str(exc))
+
+
+@router.get("/v1/outside-in/cases/{case_id}/questionnaire")
+def get_questionnaire(case_id: str):
+    with S() as s:
+        return questionnaire.load(s, case_id)
+
+
+@router.post("/v1/outside-in/cases/{case_id}/questionnaire:prefill")
+def prefill_questionnaire(case_id: str, payload: PrefillIn):
+    with S() as s:
+        try:
+            return questionnaire.prefill(s, case_id=case_id, mode=payload.mode,
+                                         provider=payload.provider,
+                                         overwrite=payload.overwrite,
+                                         idempotency_key=payload.idempotency_key)
+        except LookupError as exc:
+            raise HTTPException(404, str(exc))
+        except ValueError as exc:
+            raise HTTPException(422, str(exc))
+
+
+@router.post("/v1/outside-in/cases/{case_id}/questionnaire:answer")
+def answer_questionnaire(case_id: str, payload: AnswerIn):
+    with S() as s:
+        try:
+            return questionnaire.answer(s, case_id=case_id,
+                                        question_key=payload.question_key,
+                                        answer_value=payload.answer_value,
+                                        answered_by=payload.answered_by)
+        except LookupError as exc:
+            raise HTTPException(404, str(exc))
+        except ValueError as exc:
+            raise HTTPException(422, str(exc))
+
+
+@router.post("/v1/outside-in/cases/{case_id}/questionnaire:map")
+def map_questionnaire_answers(case_id: str, payload: MapAnswersIn):
+    """Maps answered items onto the 0.3A disposition contract. Only upgrades a
+    domain that held DECLARED_UNKNOWN, a benchmark prior or an analyst
+    assertion; an answer meeting public evidence is flagged for adjudication
+    rather than allowed to overwrite it."""
+    with S() as s:
+        try:
+            return questionnaire.map_answers(s, case_id=case_id,
+                                             mapped_by=payload.mapped_by)
+        except LookupError as exc:
+            raise HTTPException(404, str(exc))
+        except ValueError as exc:
+            raise HTTPException(422, str(exc))
+
+
+@router.post("/v1/outside-in/cases/{case_id}/questionnaire:resolve-mapping")
+def resolve_questionnaire_mapping(case_id: str, payload: ResolveMappingIn):
+    with S() as s:
+        try:
+            return questionnaire.resolve_mapping(
+                s, case_id=case_id, question_key=payload.question_key,
+                resolution=payload.resolution, resolved_by=payload.resolved_by,
+                note=payload.note)
+        except LookupError as exc:
+            raise HTTPException(404, str(exc))
+        except ValueError as exc:
+            raise HTTPException(422, str(exc))
+
+
+@router.get("/v1/outside-in/cases/{case_id}/questionnaire/conflicts")
+def questionnaire_conflicts(case_id: str):
+    with S() as s:
+        return {"case_id": case_id,
+                "conflicts": questionnaire.unresolved_conflicts(s, case_id)}
+
+
+@router.post("/v1/outside-in/cases/{case_id}/stage:assess")
+def assess_stage(case_id: str, payload: StageAssessIn):
+    with S() as s:
+        try:
+            return stage.assess(s, case_id=case_id, target_stage=payload.target_stage)
+        except LookupError as exc:
+            raise HTTPException(404, str(exc))
+        except ValueError as exc:
+            raise HTTPException(422, str(exc))
+
+
+@router.get("/v1/outside-in/cases/{case_id}/stage")
+def get_stage(case_id: str, target_stage: str = "V1"):
+    """Read-only: the case's current stage plus the latest readiness report,
+    without creating one."""
+    with S() as s:
+        case_row = _one_or_404(s, db.case, db.case.c.case_id, case_id, "case")
+        report = stage.latest(s, case_id, target_stage)
+        return {"case_id": case_id,
+                "current_stage": stage.current_stage(case_row),
+                "advanced_by": case_row.stage_advanced_by,
+                "advanced_at": case_row.stage_advanced_at,
+                "assessable_targets": list(stage.TARGET_STAGES),
+                "latest_report": None if report is None else {
+                    "report_id": report.report_id,
+                    "target_stage": report.target_stage,
+                    "blocked": report.blocked,
+                    "conditions": report.conditions,
+                    "acknowledged_by": report.acknowledged_by}}
+
+
+@router.post("/v1/outside-in/cases/{case_id}/stage:acknowledge")
+def ack_stage(case_id: str, payload: StageAckIn):
+    with S() as s:
+        try:
+            return stage.acknowledge(s, report_id=payload.report_id,
+                                     acknowledged_by=payload.acknowledged_by)
+        except LookupError as exc:
+            raise HTTPException(404, str(exc))
+        except ValueError as exc:
+            raise HTTPException(422, str(exc))
+
+
+@router.post("/v1/outside-in/cases/{case_id}/stage:advance")
+def advance_stage(case_id: str, payload: StageAdvanceIn):
+    with S() as s:
+        try:
+            return stage.advance(s, case_id=case_id,
+                                 target_stage=payload.target_stage,
+                                 advanced_by=payload.advanced_by)
+        except LookupError as exc:
+            raise HTTPException(404, str(exc))
+        except PermissionError as exc:
+            raise HTTPException(409, str(exc))
+        except ValueError as exc:
+            raise HTTPException(422, str(exc))
+
+
 # --------------------------------------------------------------- 7.2C integrity
 @router.get("/v1/agent-runs")
 def agent_runs(case_id: str | None = None, limit: int = 50):
@@ -828,6 +1269,58 @@ def rejections(limit: int = 50):
         rows = s.execute(select(db.rejected_run).order_by(
             db.rejected_run.c.created_at.desc()).limit(limit)).all()
         return {"rejections": [dict(r._mapping) for r in rows]}
+
+
+class IncidentResolveIn(BaseModel):
+    resolved_by: str = Field(min_length=1, max_length=120)
+    resolution_note: str = Field(min_length=1)
+
+
+@router.post("/v1/integrity/incidents/{incident_id}:resolve")
+def resolve_integrity_incident(incident_id: str, payload: IncidentResolveIn):
+    """Records that a named person investigated a finding and judged it
+    addressed. Found in audit: `integrity_incident` had `resolved_at`,
+    `resolved_by` and `resolution_note` columns, `GET /v1/integrity/incidents`
+    took an `include_resolved` flag implying resolution existed, and nothing
+    anywhere ever wrote any of the three. An incident, once raised by a
+    migration, was permanent.
+
+    That was not merely untidy. `_deep_health` caches only when
+    `open_integrity_incidents` is 0, so one unresolvable incident meant deep
+    health never cached again - every call re-running a schema query and two
+    full policy validations. That is exactly the C3-08 defect this bundle
+    already fixed once, silently resurrected by a different one.
+
+    Resolving repairs nothing and deletes nothing. Quarantined rows stay in
+    `audit.quarantined_row` in full; this only records the human judgement.
+    The note is mandatory, because an incident closed without an explanation
+    is worse than one left open - it looks handled.
+    """
+    with S() as s:
+        row = s.execute(select(db.integrity_incident).where(
+            db.integrity_incident.c.incident_id == incident_id)).one_or_none()
+        if row is None:
+            raise HTTPException(404, f"incident {incident_id!r} not found")
+        if row.resolved_at is not None:
+            raise HTTPException(409, {
+                "error": "incident is already resolved",
+                "resolved_by": row.resolved_by, "resolved_at": str(row.resolved_at)})
+        s.execute(update(db.integrity_incident)
+                  .where(db.integrity_incident.c.incident_id == incident_id)
+                  .values(resolved_by=payload.resolved_by.strip(),
+                          resolution_note=payload.resolution_note.strip(),
+                          resolved_at=datetime.now(timezone.utc)))
+        s.commit()
+        quarantined = len(s.execute(select(db.quarantined_row.c.id).where(
+            db.quarantined_row.c.incident_id == incident_id)).all())
+    # The cache is keyed on a clean result, so a resolution has to invalidate
+    # it or deep health keeps reporting the incident until the TTL expires.
+    _DEEP_CACHE.update(at=None, value=None)
+    return {"incident_id": incident_id, "resolved_by": payload.resolved_by.strip(),
+            "quarantined_rows_retained": quarantined,
+            "note": ("Resolution records a human judgement. Nothing was "
+                     "repaired or deleted; quarantined rows are retained in "
+                     "full in audit.quarantined_row.")}
 
 
 @router.get("/v1/integrity/incidents")
@@ -987,39 +1480,16 @@ def tls_pins(days: int = 30):
     }
 
 
-# --- validation models for routes that previously took a raw body ----------
-# Body(...) gives a KeyError and a 500 on a malformed payload; a model gives a
-# 422 naming the field. Six routes took raw bodies, one of which indexed a
-# caller-supplied list directly.
-class ClearRightsIn(BaseModel):
-    cleared_by: str = Field(min_length=1, max_length=120)
 
 
-class ResolveConflictIn(BaseModel):
-    resolution: str = "SCOPE_IS_CORRECT"
-    reason: str = Field(min_length=1, max_length=2000)
-    resolved_by: str = Field(min_length=1, max_length=120)
 
 
-class CorroborateIn(BaseModel):
-    provider: str = Field(default="anthropic", pattern="^(anthropic|openai)$")
-    mode: str = Field(default="LIVE", pattern="^(LIVE|MOCK|REPLAY|DETERMINISTIC_ONLY)$")
 
 
-class PreflightRunIn(BaseModel):
-    mode: str = Field(default="LIVE", pattern="^(LIVE|MOCK|REPLAY|DETERMINISTIC_ONLY)$")
 
 
-class PreflightAckIn(BaseModel):
-    report_id: str = Field(min_length=1, max_length=36)
-    acknowledged_by: str = Field(min_length=1, max_length=120)
 
 
-class DispositionIn(BaseModel):
-    domain_no: int = Field(ge=1, le=24)
-    domain_name: str = ""
-    disposition: str
-    reason: str | None = None
 
 
 class ReconciliationIn(BaseModel):

@@ -62,7 +62,75 @@ case = Table(
     Column("resolved_entity_id", String(36)), Column("perimeter_version", Integer, default=0),
     Column("entity_confirmed_by", String(120)),
     Column("entity_confirmed_at", DateTime(timezone=True)),
+    # Stage (Tranche 3). V0 until a named person advances it - never inferred
+    # from activity, because "a questionnaire exists" is not the same claim as
+    # "this engagement is at V1", and only a person can make the second one.
+    Column("stage", String(4), default="V0"),
+    Column("stage_advanced_by", String(120)),
+    Column("stage_advanced_at", DateTime(timezone=True)),
     schema="engagement",
+)
+
+# V1 questionnaire (Tranche 3). One row per question per case.
+#
+# answer_value/answer_text hold what the *client* said, which is not the same
+# kind of claim as anything already in this system: known_facts.BASES are all
+# analyst-mediated recollections capped at ANALYST_ASSERTED_PRIOR, and
+# EVIDENCED_PUBLIC/DERIVED_PUBLIC mean public evidence. A client's direct
+# answer about their own estate is neither. This build deliberately does not
+# resolve where it sits in the disposition taxonomy - see the README's known
+# gaps. Answers are stored and reported; nothing here writes a disposition or
+# moves a confidence figure, because doing so would require picking an
+# evidence class nobody has approved yet.
+questionnaire_item = Table(
+    "questionnaire_item", metadata,
+    Column("item_id", String(36), primary_key=True),
+    Column("case_id", String(36), ForeignKey("engagement.engagement_case.case_id"),
+           index=True),
+    Column("question_key", String(64)),        # stable identifier, see domain/questionnaire.py
+    Column("question_text", Text),
+    Column("domain_no", Integer),              # the 0.3A input domain this informs
+    # Prefill: what LLM-02 (or the deterministic rule) proposed as a likely
+    # answer, and where that proposal came from. Never presented to the client
+    # as fact, and never counted as an answer.
+    Column("prefill_value", Text), Column("prefill_basis", Text),
+    Column("prefill_label", String(24)),       # LLM_PROPOSED | DETERMINISTIC_PROPOSED
+    Column("prefill_agent_run_id", String(36)),
+    # Answer: what the client actually said. answered_by is a named person at
+    # the client, same bar as known_facts.asserted_by.
+    Column("answer_value", Text), Column("answered_by", String(120)),
+    Column("answered_at", DateTime(timezone=True)),
+    # Evidence mapping (Tranche 3 fix). What this answer did - or was refused
+    # permission to do - to the 0.3A disposition for its input domain. See
+    # domain/questionnaire.py MAPPING_STATES.
+    Column("mapping_state", String(32)), Column("mapping_note", Text),
+    Column("mapped_at", DateTime(timezone=True)),
+    # Set only where an answer met existing independent evidence and a named
+    # person adjudicated. Never written by the automatic mapping pass.
+    Column("mapping_resolution", String(32)),
+    Column("mapping_resolved_by", String(120)),
+    Column("mapping_resolved_at", DateTime(timezone=True)),
+    Column("created_at", DateTime(timezone=True), default=_now),
+    UniqueConstraint("case_id", "question_key", name="uq_questionnaire_case_question"),
+    schema="outside_in",
+)
+
+# Stage-readiness report (Tranche 3). Deliberately a separate table from
+# preflight_report rather than a reused one: 0.1C answers "may this V0 run
+# execute", this answers "is this engagement ready to be called V1". Same
+# BLOCK/WARN/PASS shape and the same named-acknowledgement discipline, but
+# conflating them would mean acknowledging one silently satisfies the other.
+stage_readiness_report = Table(
+    "stage_readiness_report", metadata,
+    Column("report_id", String(36), primary_key=True),
+    Column("case_id", String(36), ForeignKey("engagement.engagement_case.case_id"),
+           index=True),
+    Column("target_stage", String(4)),
+    Column("created_at", DateTime(timezone=True), default=_now),
+    Column("conditions", JSON), Column("blocked", Boolean),
+    Column("acknowledged_by", String(120)),
+    Column("acknowledged_at", DateTime(timezone=True)),
+    schema="outside_in",
 )
 
 entity_candidate = Table(
@@ -153,6 +221,16 @@ domain_disposition = Table(
     Column("case_id", String(36), index=True), Column("estimate_snapshot_id", String(36)),
     Column("domain_no", Integer), Column("domain_name", Text),
     Column("disposition", String(32)), Column("reason", String(48)),
+    # Null for a manually-entered disposition. Set for a research-derived one,
+    # pointing at the agent_run that produced it - the link execution-integrity
+    # (page 7) needs to show provenance for a disposition rather than just a
+    # provider call in isolation.
+    Column("agent_run_id", String(36)),
+    # {"sources": [{"url", "publisher", "as_of", "fetched", "fragment"}],
+    #  "queries_used", "captures_used"} for a research-derived row. Null for a
+    # manual one - EVIDENCED_PUBLIC without this is not distinguishable from
+    # EVIDENCED_PUBLIC asserted with nothing behind it.
+    Column("evidence", JSON),
     schema="outside_in",
 )
 
@@ -167,6 +245,33 @@ estimate_snapshot = Table(
     Column("confidence", JSON), Column("coverage", JSON),
     Column("simulated_share", Numeric(4, 3)), Column("asserted_share", Numeric(4, 3)),
     Column("pins", JSON), Column("levers", JSON),
+    schema="analysis",
+)
+
+recommendation = Table(
+    "recommendation", metadata,
+    Column("recommendation_id", String(36), primary_key=True),
+    Column("estimate_snapshot_id", String(36), index=True),
+    Column("case_id", String(36), index=True),
+    Column("scenario_code", String(1)), Column("percentile", String(8)),
+    Column("basis", Text),
+    # LLM_PROPOSED for a LIVE run, DETERMINISTIC_PROPOSED for DETERMINISTIC_ONLY -
+    # never the same label, so a rule-based pick is never presented as the
+    # model's judgment (spec 7.2C mode honesty, applied to this record too).
+    Column("label", String(24)),
+    # Looked up from the snapshot's own scenarios JSON after scenario_code and
+    # percentile are chosen - never a figure the model (or the rule) stated
+    # directly. The model proposes a choice; this is the engine's number for
+    # that choice.
+    Column("gross_run_rate_savings", JSON),
+    Column("material_levers", JSON),          # lever_ids at/above the governed threshold
+    Column("approved_by", String(120)),       # named person, never a role or team
+    Column("approved_at", DateTime(timezone=True)),
+    Column("agent_run_id", String(36)),       # LLM-07's run (LIVE or DETERMINISTIC_ONLY)
+    Column("narrative", Text),
+    Column("narrative_label", String(24)),
+    Column("narrative_agent_run_id", String(36)),   # LLM-06's run
+    Column("created_at", DateTime(timezone=True), default=_now),
     schema="analysis",
 )
 

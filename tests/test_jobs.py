@@ -211,10 +211,25 @@ def test_submit_never_refuses_on_backlog(session, monkeypatch):
 def test_only_the_worker_bound_claims_to_be_exact():
     """Honesty check on the two guarantees. The backlog bound is advisory
     because the count and the insert are not atomic; the worker bound is not,
-    because it is the one guarding a resource that can be exhausted."""
-    assert "Exact" in jobs.in_flight.__doc__
-    assert "Advisory" in jobs.backlog.__doc__
-    assert "not atomic" in jobs.backlog.__doc__
+    because it is the one guarding a resource that can be exhausted.
+
+    This asserts on prose, which is the weakest kind of test - it breaks when
+    someone rewords a comment and proves nothing about behaviour. It failed on
+    first execution for exactly that reason: it looked for "not atomic" while
+    the docstring says "are not one atomic operation". Made robust below rather
+    than deleted, because the distinction it guards is real, but the *load
+    bearing* version of this claim is the one published on GET /v1/health
+    (`simulation.workers.enforcement` = "exact, per process" versus
+    `simulation.backlog.enforcement` = "advisory, not atomic across replicas").
+    That payload is what a consumer actually reads; assert against it in
+    preference to this if the two ever disagree.
+    """
+    worker_doc = " ".join(jobs.in_flight.__doc__.lower().split())
+    backlog_doc = " ".join(jobs.backlog.__doc__.lower().split())
+    assert "exact" in worker_doc
+    assert "advisory" in backlog_doc
+    assert "not exact" in backlog_doc
+    assert "atomic" in backlog_doc
 
 
 def test_backlog_ignores_finished_runs(session):
@@ -432,7 +447,11 @@ def test_concurrency_never_exceeds_the_worker_bound(session, monkeypatch):
     monkeypatch.setattr(jobs.threading, "Thread",
                         lambda **kw: type("T", (), {"start": lambda s: None})())
     try:
-        outcomes = [jobs.submit(_queue(session, size=2), new_work=False)["status"]
+        # `submit()` takes only run_id - `new_work=` was never a parameter, so
+        # this raised TypeError before reaching a single assertion. Found by
+        # executing it. Admission is `admit()`, deliberately separate from
+        # scheduling, which is what the removed argument was reaching for.
+        outcomes = [jobs.submit(_queue(session, size=2))["status"]
                     for _ in range(5)]
         assert outcomes.count(jobs.RUNNING) == 2
         assert outcomes.count(jobs.QUEUED) == 3

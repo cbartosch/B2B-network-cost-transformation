@@ -34,7 +34,7 @@ from . import db
 log = logging.getLogger("workbench.migrations")
 
 # Bump when the physical schema changes, and add a step below.
-SCHEMA_VERSION = 10
+SCHEMA_VERSION = 14
 
 VERSION_TABLE = "schema_version"
 VERSION_SCHEMA = "audit"
@@ -59,6 +59,40 @@ def _q(identifier: str) -> str:
     return '"' + identifier.replace('"', '""') + '"'
 
 
+def _create_index_ddl(conn, *, schema: str, table: str, name: str,
+                      columns, unique: bool = False) -> str:
+    """Dialect-correct CREATE INDEX.
+
+    Found by executing the migration tests: SQLite and Postgres put the schema
+    in different places, and this emitted only the Postgres form.
+
+        Postgres : CREATE INDEX name ON schema.table (cols)
+        SQLite   : CREATE INDEX schema.name ON table (cols)   <- table unqualified
+
+    SQLite rejects the Postgres form with `near ".": syntax error`, so migration
+    v9 could never complete against SQLite - which is precisely what `make test`
+    runs (DATABASE_URL=sqlite://). Production is Postgres, so the defect was
+    invisible there and fatal in the only place it was ever exercised.
+    """
+    uniq = "UNIQUE " if unique else ""
+    cols = ", ".join(_q(c) for c in columns)
+    if conn.dialect.name == "sqlite":
+        return f"CREATE {uniq}INDEX {_q(schema)}.{_q(name)} ON {_q(table)} ({cols})"
+    return (f"CREATE {uniq}INDEX {_q(name)} ON {_q(schema)}.{_q(table)} ({cols})")
+
+
+def _column_is_nullable(conn, schema: str, table: str, column: str) -> bool:
+    """True when `column` accepts NULL. Unknown columns report True so the
+    caller proceeds and the database gives the authoritative answer."""
+    try:
+        for col in inspect(conn).get_columns(table, schema=schema):
+            if col["name"] == column:
+                return bool(col.get("nullable", True))
+    except Exception:                                    # noqa: BLE001
+        return True
+    return True
+
+
 def _has_table(conn, schema: str, table: str) -> bool:
     try:
         return inspect(conn).has_table(table, schema=schema)
@@ -76,7 +110,18 @@ def _has_column(conn, schema: str, table: str, column: str) -> bool:
 
 
 def _add_column(conn, table_obj, column_name: str) -> bool:
-    """Add a column using the type compiled from the model definition."""
+    """Add a column using the type compiled from the model definition.
+
+    Skips a table that does not exist. Migrations run before create_all, so a
+    step that alters a table introduced by a *later* build meets nothing on an
+    older database - create_all then builds it with the column already present.
+    Without this guard the ALTER hit a missing table and the whole upgrade
+    failed, which is what 21 migration tests were reporting.
+    """
+    if not _has_table(conn, table_obj.schema, table_obj.name):
+        log.info("skipping %s.%s.%s: table not present yet, create_all will "
+                 "build it complete", table_obj.schema, table_obj.name, column_name)
+        return False
     if _has_column(conn, table_obj.schema, table_obj.name, column_name):
         return False
     col = table_obj.c[column_name]
@@ -191,6 +236,21 @@ def _release_duplicate_identifiers(conn, *, schema: str, table: str,
     if order_by and not _has_column(conn, schema, table, order_by):
         order_by = None
     ordering = _q(order_by) if order_by else _q(pk)
+
+    # Releasing means setting the identifier to NULL, which a NOT NULL column
+    # cannot accept. Detected up front so this refuses with a cause an operator
+    # can act on, instead of surfacing a raw driver error from deep inside a
+    # migration - the rows are already preserved in quarantine either way.
+    # Found by executing test_a_within_provider_duplicate_is_still_released.
+    if not _column_is_nullable(conn, schema, table, column):
+        raise SchemaStateRefused(
+            f"{schema}.{table}.{column} holds duplicate values but is NOT NULL, "
+            f"so the identifier cannot be released to make the column unique. "
+            f"Resolve manually: the duplicate rows are the trace of a possible "
+            f"replayed response and must not be deleted blindly. Inspect them, "
+            f"decide which copy is authoritative, and either drop the NOT NULL "
+            f"constraint or remove the superseded rows deliberately before "
+            f"restarting.")
 
     quarantined, affected = 0, []
     for dupe in dupes:
@@ -346,9 +406,9 @@ def _migrate_v9(conn) -> None:
             pk="llm_run_id", order_by="created_at", scope_column="provider")
         if released:
             log.warning("v9: %s", released)
-        conn.execute(text(
-            f"CREATE UNIQUE INDEX {_q(name)} ON {_q('audit')}.{_q('llm_run')} "
-            f"({_q('provider')}, {_q(column)})"))
+        conn.execute(text(_create_index_ddl(
+            conn, schema="audit", table="llm_run", name=name,
+            columns=("provider", column), unique=True)))
         log.info("v9: created %s", name)
 
 
@@ -365,9 +425,74 @@ def _migrate_v10(conn) -> None:
     log.info("v10: %d reconciliation column(s) added", added)
 
 
+def _migrate_v11(conn) -> None:
+    """4.8.4 -> 4.9.0: domain_disposition gains agent_run_id and evidence.
+
+    Tranche 1 gives the 24-domain contract a research path (LLM-01, LLM-08).
+    Before this, every row in domain_disposition was written by a person via
+    PUT .../domain-dispositions, so nothing pointed back to a call that
+    produced it. A research-derived EVIDENCED_PUBLIC row without a trace to
+    the agent_run and the sources it names is a claim indistinguishable from
+    one asserted with nothing behind it - the same discipline C4-07 applied to
+    superseded_by.
+    """
+    added = 0
+    for column in ("agent_run_id", "evidence"):
+        added += _add_column(conn, db.domain_disposition, column)
+    log.info("v11: %d domain_disposition column(s) added", added)
+
+
+def _migrate_v12(conn) -> None:
+    """4.9.0 -> 4.10.0: recommendation is a wholly new table (Tranche 2,
+    LLM-07/LLM-06). Nothing to ALTER - create_all builds it after this step
+    runs, per the ordering _add_column's own docstring explains. This step
+    exists so SCHEMA_VERSION advances and an operator upgrading from 4.9.0
+    sees a stamped step rather than a silent jump."""
+    log.info("v12: recommendation table introduced; create_all will build it")
+
+
+def _migrate_v13(conn) -> None:
+    """4.10.0 -> 4.11.0: stage tracking on engagement_case, plus two wholly
+    new tables (questionnaire_item, stage_readiness_report) that create_all
+    builds after this step.
+
+    The three ALTERs are real: engagement_case exists on any database from
+    4.7.x onward, so stage/stage_advanced_by/stage_advanced_at have to be
+    added to it rather than appearing with the table. Existing rows get
+    stage=NULL rather than 'V0' - a server-side DEFAULT is not backfilled by
+    ALTER TABLE ADD COLUMN in either engine here. domain/stage.py treats NULL
+    as V0 explicitly (see current_stage) rather than relying on the column
+    default, which only applies to rows inserted after this runs.
+    """
+    added = 0
+    for column in ("stage", "stage_advanced_by", "stage_advanced_at"):
+        added += _add_column(conn, db.case, column)
+    log.info("v13: %d stage column(s) added; questionnaire_item and "
+             "stage_readiness_report introduced, create_all will build them", added)
+
+
+def _migrate_v14(conn) -> None:
+    """4.11.0 -> 4.12.0: evidence-mapping columns on questionnaire_item.
+
+    Tranche 3 shipped questionnaire answers with nowhere to go: they were
+    stored and attributed but never reached the disposition contract, because
+    client-supplied data had no class in the 0.3A taxonomy. CLIENT_CONFIRMED
+    closes that, and these columns record what each answer did to its domain -
+    including the cases where it was deliberately refused permission to
+    overwrite existing independent evidence.
+    """
+    added = 0
+    for column in ("mapping_state", "mapping_note", "mapped_at",
+                   "mapping_resolution", "mapping_resolved_by",
+                   "mapping_resolved_at"):
+        added += _add_column(conn, db.questionnaire_item, column)
+    log.info("v14: %d questionnaire_item mapping column(s) added", added)
+
+
 MIGRATIONS = {2: _migrate_v2, 3: _migrate_v3, 4: _migrate_v4, 5: _migrate_v5,
               6: _migrate_v6, 7: _migrate_v7, 8: _migrate_v8, 9: _migrate_v9,
-              10: _migrate_v10}
+              10: _migrate_v10, 11: _migrate_v11, 12: _migrate_v12,
+              13: _migrate_v13, 14: _migrate_v14}
 
 
 # ---------------------------------------------------------------- version

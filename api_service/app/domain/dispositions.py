@@ -16,8 +16,26 @@ DOMAINS = [
     (23, "Northstar architecture scenarios"), (24, "Evidence and confidence metadata"),
 ]
 
-DISPOSITIONS = ("EVIDENCED_PUBLIC", "DERIVED_PUBLIC", "BENCHMARK_PRIOR",
-                "ANALYST_ASSERTED_PRIOR", "SIMULATED", "DECLARED_UNKNOWN")
+# CLIENT_CONFIRMED (Tranche 3) is first-party data: the client stating
+# something about their own estate, attributed to a named person at the
+# client. It sits deliberately between ANALYST_ASSERTED_PRIOR and
+# EVIDENCED_PUBLIC and is neither of them.
+#
+#   - Stronger than ANALYST_ASSERTED_PRIOR, which is an analyst's unverified
+#     recollection of what someone said. Filing a client's own statement there
+#     would understate first-party data, and in the direction that matters.
+#   - Weaker than EVIDENCED_PUBLIC, which is independently checkable against a
+#     stored source fragment. A client self-report is not independently
+#     verifiable: internal records go stale, and the person answering may not
+#     be the person who knows.
+#
+# It therefore carries its own governed confidence weight
+# (confidence_policy.client_confirmed_evidence_weight) rather than inheriting
+# either neighbour's, and it does NOT trip the 0.6A asserted-baseline ceiling,
+# which exists to penalise leaning on an unverified *analyst* claim.
+DISPOSITIONS = ("EVIDENCED_PUBLIC", "DERIVED_PUBLIC", "CLIENT_CONFIRMED",
+                "BENCHMARK_PRIOR", "ANALYST_ASSERTED_PRIOR", "SIMULATED",
+                "DECLARED_UNKNOWN")
 
 UNKNOWN_REASONS = ("NO_PUBLIC_EVIDENCE", "BUDGET_EXHAUSTED", "OUT_OF_PERIMETER",
                    "CONFLICTING_EVIDENCE_UNRESOLVED", "NOT_APPLICABLE")

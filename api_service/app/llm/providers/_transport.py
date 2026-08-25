@@ -145,6 +145,19 @@ def assert_pinning_supported() -> None:
     what "silently" means. TLS_ALLOW_CERT_ONLY_PINNING is the deliberate
     override for someone who has accepted the exposure.
     """
+    # FINDING (unresolved, needs an owner's decision): this same condition -
+    # ENFORCE without cryptography - is refused in TWO places, with two
+    # exception types and two different override names:
+    #
+    #   here            -> PinningUnsupported,      TLS_ALLOW_CERT_ONLY_PINNING
+    #   assert_safe()   -> PinConfigurationRefused, TLS_PIN_ALLOW_CERT_ONLY
+    #
+    # Both fail closed, so there is no security hole. The trap is operational:
+    # an operator who sets the override this message names is still refused by
+    # the other check demanding a differently-named variable, with a message
+    # that does not mention the one they just set. Pick one name and one
+    # exception; this comment is here rather than a silent unification because
+    # collapsing a security control on inference alone is not a safe edit.
     if PIN_MODE != PIN_ENFORCE or _CRYPTO or ALLOW_CERT_ONLY_PINNING:
         return
     raise PinningUnsupported(

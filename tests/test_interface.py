@@ -26,12 +26,25 @@ def _client(token: str = ""):
     os.environ["API_TOKEN"] = token
     sys.path.insert(0, str(UI.parent.parent / "contract"))
     sys.path.insert(0, str(UI))
-    for name in ("api_client", "contract.auth"):
+    # contract.auth is popped so api_client re-reads it, then RESTORED.
+    # Leaving it popped is global state pollution: a later test asserting
+    # `config.AUTH_HEADER is contract.auth.AUTH_HEADER` then compares an object
+    # from the original import against one from a fresh re-import and fails.
+    # test_auth does exactly that, and only passed by alphabetical luck.
+    saved = {name: sys.modules.get(name)
+             for name in ("api_client", "contract.auth")}
+    for name in saved:
         sys.modules.pop(name, None)
-    spec = importlib.util.spec_from_file_location("api_client", UI / "api_client.py")
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+    try:
+        spec = importlib.util.spec_from_file_location(
+            "api_client", UI / "api_client.py")
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module
+    finally:
+        for name, mod in saved.items():
+            if mod is not None:
+                sys.modules[name] = mod
 
 
 # --- the token contract -----------------------------------------------------
@@ -47,8 +60,29 @@ def test_the_client_sends_nothing_when_no_token_is_configured():
 
 
 def test_the_client_and_the_api_resolve_one_header_definition():
+    """The claim is that both images read ONE definition, not two copies that
+    can drift - C2-04 was exactly that drift.
+
+    This asserted object identity, which `_client()` makes impossible by
+    construction: it pops `contract.auth` from sys.modules and re-imports it,
+    producing a fresh str, and "X-API-Token" contains hyphens so it is not
+    auto-interned. The test could never pass. Found by executing it.
+
+    Equality plus a shared source file is the stronger check anyway: identity
+    would pass for two separate files that happened to hold interned equal
+    literals, while a common __file__ is the actual "one definition" claim.
+    """
     from app import config
-    assert _client().AUTH_HEADER is config.AUTH_HEADER
+    import contract.auth as api_side
+    client = _client()
+    assert client.AUTH_HEADER == config.AUTH_HEADER
+    assert client.AUTH_HEADER == api_side.AUTH_HEADER
+    import importlib.util
+    client_side = importlib.util.find_spec("contract.auth")
+    assert client_side is not None
+    assert Path(client_side.origin).resolve() == Path(api_side.__file__).resolve(), (
+        "the interface and the API must resolve the same contract/auth.py, "
+        "not two copies")
 
 
 # --- misconfiguration must be diagnosable, not silent -----------------------
@@ -57,7 +91,15 @@ def test_a_token_on_the_api_and_none_here_is_reported():
     Without this check the operator sees a green home page and failures
     everywhere else."""
     problem = _client("").probe_auth({"auth_required": True})
-    assert problem and "no token" in problem.lower()
+    # Asserted "no token", but the message says "has none" - so this test could
+    # never pass. Found by executing it. The message is good user-facing text;
+    # the assertion was wrong, so the assertion is what changed. Checking two
+    # fragments rather than one long literal keeps it from breaking on a
+    # reworded sentence while still proving the operator is told what to fix.
+    assert problem
+    lowered = problem.lower()
+    assert "requires a token" in lowered and "this interface has none" in lowered
+    assert "API_TOKEN" in problem
 
 
 def test_a_token_here_and_none_on_the_api_is_reported():

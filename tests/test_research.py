@@ -1,0 +1,359 @@
+"""Tests for domain research (Tranche 1: LLM-01/LLM-08 wiring into the
+24-domain disposition contract).
+
+Mocking is at the provider-adapter boundary (a fake object returning a real
+ProviderCall), not at gateway.execute itself. That distinction matters:
+gateway.execute's own behaviour - liveness verification, the llm_run insert,
+idempotency - has a real effect this module depends on (succeed() refuses to
+mark a LIVE run SUCCEEDED without a persisted llm_run proof). Replacing
+gateway.execute wholesale with a bare stub, as an earlier draft of this file
+did, skips that side effect and makes succeed() raise LivenessProofFailed on
+every call that reaches it - a bug in the test, not in research.py, caught by
+tracing the call chain rather than by running it (SQLAlchemy is not
+installed in the environment this was written in). _fetch_source_fragment is
+mocked directly, since it makes a real outbound HTTP call this suite has no
+business making.
+
+Like the rest of this suite, none of this has been executed against a real
+interpreter. It is written and traced by hand, not proven; `make test` is the
+first real signal.
+"""
+import itertools
+import json
+import uuid
+from datetime import datetime, timezone
+
+import pytest
+from sqlalchemy import insert, select
+
+from app import db
+from app.domain import dispositions, research
+from app.domain.policy import ResearchPolicy
+from app.llm.providers.base import ProviderCall
+
+
+def _seeded(set_name):
+    """Same principle as test_integrity.py: read the policy that actually
+    ships, so a seed change that breaks this is caught here."""
+    from app.seed import THRESHOLDS
+    return {k: v for sn, k, v in THRESHOLDS if sn == set_name}
+
+
+POLICY = ResearchPolicy.from_rows(_seeded("research_policy"))
+
+# A tighter policy for the budget-exhaustion test, so it does not depend on
+# how many LLM-01 domains happen to exist today.
+TIGHT_POLICY = ResearchPolicy(
+    set_name="test-tight", max_queries_per_domain=2, max_captures_per_domain=4,
+    max_captures_per_run=3, min_independent_sources_material_fact=2,
+    research_wall_clock_budget_minutes=5)
+
+_response_ids = (f"msg_test_{i}" for i in itertools.count())
+
+
+def _case(session, *, confirmed=True, legal_name="Acme Global Logistics") -> str:
+    case_id = str(uuid.uuid4())
+    values = {"case_id": case_id, "created_by": "test",
+              "subject_entity_legal_name": legal_name,
+              "in_scope_countries": ["GB"]}
+    if confirmed:
+        values["resolved_entity_id"] = str(uuid.uuid4())
+        values["entity_confirmed_by"] = "Jane Okafor"
+    session.execute(insert(db.case).values(**values))
+    session.commit()
+    return case_id
+
+
+def _found_text(n_sources=2, subject="Acme Global Logistics"):
+    return json.dumps({
+        "found": True, "subject": subject, "finding": "a finding",
+        "sources": [{"url": f"https://example.com/{i}", "publisher": "p",
+                     "as_of": "2026"} for i in range(n_sources)],
+        "confidence_note": "n/a"})
+
+
+def _not_found_text():
+    return json.dumps({"found": False, "subject": "", "finding": "",
+                       "sources": [], "confidence_note": "n/a"})
+
+
+def _verified_fetch(url, timeout=10.0):
+    return {"url": url, "status_code": 200, "fragment": "a real page fragment"}
+
+
+class _FakeAdapter:
+    """Stands in for AnthropicAdapter/OpenAIAdapter. gateway.execute()'s own
+    logic runs for real against whatever this returns; only the network call
+    is replaced."""
+
+    def __init__(self, text_fn, configured=True):
+        self._text_fn = text_fn
+        self._configured = configured
+        self.name = "anthropic"
+        self.reconciliation_tier = "A"
+
+    def configured(self) -> bool:
+        return self._configured
+
+    def complete(self, *, system, prompt, max_tokens=1500) -> ProviderCall:
+        now = datetime.now(timezone.utc)
+        text = self._text_fn(system=system, prompt=prompt, max_tokens=max_tokens)
+        return ProviderCall(
+            provider="anthropic", model="fake-model", text=text,
+            provider_response_id=next(_response_ids),
+            provider_request_id=str(uuid.uuid4()),
+            provider_request_at=now, input_tokens=50, output_tokens=50,
+            local_request_at=now, latency_ms=10, http_status=200,
+            egress_proxy=None, raw={})
+
+
+def _wire_fake_provider(monkeypatch, text_fn=None, *, configured=True):
+    """Patches gateway._adapters(), which gateway.execute() calls internally,
+    rather than gateway.execute itself - see the module docstring."""
+    text_fn = text_fn or (lambda **kw: _found_text())
+    fake = _FakeAdapter(text_fn, configured=configured)
+    monkeypatch.setattr(research.gateway, "_adapters",
+                        lambda: {"anthropic": fake, "openai": fake})
+    return fake
+
+
+# --------------------------------------------------------------- preconditions
+
+def test_refuses_to_run_before_the_entity_is_confirmed(session):
+    case_id = _case(session, confirmed=False)
+    with pytest.raises(PermissionError, match="resolved and confirmed"):
+        research.run_domain_research(session, case_id=case_id, research_policy=POLICY)
+
+
+def test_raises_lookup_error_for_an_unknown_case(session):
+    with pytest.raises(LookupError):
+        research.run_domain_research(session, case_id="no-such-case",
+                                     research_policy=POLICY)
+
+
+def test_raises_value_error_for_an_agent_this_module_does_not_run(session):
+    case_id = _case(session)
+    with pytest.raises(ValueError, match="LLM-09"):
+        research.run_domain_research(session, case_id=case_id, agent_ids=["LLM-09"],
+                                     research_policy=POLICY)
+
+
+# --------------------------------------------------------------- the map itself
+
+def test_domain_agent_map_covers_all_24_domains_exactly_once():
+    real = {no for no, _ in dispositions.DOMAINS}
+    assert set(research.DOMAIN_AGENT_MAP) == real
+
+
+def test_domain_agent_map_only_names_registered_agents():
+    from app.llm import registry
+    named = {a for a in research.DOMAIN_AGENT_MAP.values() if a is not None}
+    assert named <= set(registry.AGENTS)
+    assert named == {"LLM-01", "LLM-08"}
+
+
+# --------------------------------------------------------------- success path
+
+def test_a_verified_finding_is_written_as_evidenced_public(session, monkeypatch):
+    case_id = _case(session)
+    _wire_fake_provider(monkeypatch)
+    monkeypatch.setattr(research, "_fetch_source_fragment", _verified_fetch)
+
+    result = research.run_domain_research(
+        session, case_id=case_id, agent_ids=["LLM-01"], research_policy=POLICY)
+
+    llm01_domains = {no for no, a in research.DOMAIN_AGENT_MAP.items() if a == "LLM-01"}
+    assert result["domains_attempted"] == len(llm01_domains)
+    assert result["failed"] == 0
+    assert result["resolved"] == len(llm01_domains)
+
+    rows = session.execute(select(db.domain_disposition)
+                           .where(db.domain_disposition.c.case_id == case_id)).all()
+    by_domain = {r.domain_no: r for r in rows}
+    assert set(by_domain) == llm01_domains
+    for r in by_domain.values():
+        assert r.disposition == "EVIDENCED_PUBLIC"
+        assert r.reason is None
+        assert r.agent_run_id is not None
+        assert r.evidence and len(r.evidence["sources"]) >= \
+            POLICY.min_independent_sources_material_fact
+
+
+def test_a_negative_finding_is_declared_unknown_no_public_evidence(session, monkeypatch):
+    case_id = _case(session)
+    _wire_fake_provider(monkeypatch, lambda **kw: _not_found_text())
+
+    research.run_domain_research(session, case_id=case_id, agent_ids=["LLM-08"],
+                                 research_policy=POLICY)
+
+    rows = session.execute(select(db.domain_disposition)
+                           .where(db.domain_disposition.c.case_id == case_id)).all()
+    assert rows and all(r.disposition == "DECLARED_UNKNOWN" for r in rows)
+    assert all(r.reason == "NO_PUBLIC_EVIDENCE" for r in rows)
+
+
+def test_an_out_of_perimeter_subject_is_declared_unknown_out_of_perimeter(
+        session, monkeypatch):
+    case_id = _case(session, legal_name="Acme Global Logistics")
+    _wire_fake_provider(
+        monkeypatch, lambda **kw: _found_text(subject="A Totally Unrelated Company"))
+
+    research.run_domain_research(session, case_id=case_id, agent_ids=["LLM-01"],
+                                 research_policy=POLICY)
+
+    rows = session.execute(select(db.domain_disposition)
+                           .where(db.domain_disposition.c.case_id == case_id)).all()
+    assert rows and all(r.reason == "OUT_OF_PERIMETER" for r in rows)
+
+
+# --------------------------------------------------------------- failure handling
+
+def test_a_provider_failure_writes_no_disposition_at_all(session, monkeypatch):
+    case_id = _case(session)
+    _wire_fake_provider(monkeypatch, configured=False)   # gateway.execute fails closed
+
+    result = research.run_domain_research(
+        session, case_id=case_id, agent_ids=["LLM-01"], research_policy=POLICY)
+
+    assert result["failed"] == len(
+        [1 for no, a in research.DOMAIN_AGENT_MAP.items() if a == "LLM-01"])
+    rows = session.execute(select(db.domain_disposition)
+                           .where(db.domain_disposition.c.case_id == case_id)).all()
+    assert rows == [], (
+        "a technical failure must not produce a disposition row - "
+        "validate() should still report these domains as missing")
+
+
+def test_malformed_model_output_writes_no_disposition(session, monkeypatch):
+    case_id = _case(session)
+    _wire_fake_provider(monkeypatch, lambda **kw: json.dumps({"unexpected": "shape"}))
+
+    result = research.run_domain_research(
+        session, case_id=case_id, agent_ids=["LLM-08"], research_policy=POLICY)
+
+    assert result["failed"] > 0
+    rows = session.execute(select(db.domain_disposition)
+                           .where(db.domain_disposition.c.case_id == case_id)).all()
+    assert rows == []
+
+    # Found while building Tranche 2, fixed retroactively here: a rejected
+    # shape must terminate the underlying agent_run as FAILED, not leave it
+    # QUEUED forever - execute()'s own failure handling only covers what
+    # execute() itself detects, not a caller's post-hoc shape check.
+    from app import db as db_module
+    runs = session.execute(select(db_module.agent_run)
+                           .where(db_module.agent_run.c.case_id == case_id)).all()
+    assert runs and all(r.status == "FAILED" for r in runs), (
+        "every agent_run this research call created must reach a terminal "
+        "state, not sit in QUEUED")
+
+
+# --------------------------------------------------------------- budget and composition
+
+def test_the_run_wide_capture_cap_is_enforced_across_domains(session, monkeypatch):
+    case_id = _case(session)
+    _wire_fake_provider(monkeypatch)
+    monkeypatch.setattr(research, "_fetch_source_fragment", _verified_fetch)
+
+    result = research.run_domain_research(
+        session, case_id=case_id, agent_ids=["LLM-01"], research_policy=TIGHT_POLICY)
+
+    assert result["captures_used_this_run"] <= TIGHT_POLICY.max_captures_per_run
+    reasons = {r["domain_no"]: r["reason"] for r in result["results"]}
+    assert "BUDGET_EXHAUSTED" in reasons.values(), (
+        "with max_captures_per_run=3 and 2 sources fetched per resolved "
+        "domain, not every LLM-01 domain can be reached")
+
+
+def test_research_does_not_overwrite_an_existing_disposition_by_default(
+        session, monkeypatch):
+    case_id = _case(session)
+    session.execute(insert(db.domain_disposition).values(
+        id=str(uuid.uuid4()), case_id=case_id, estimate_snapshot_id=None,
+        domain_no=1, domain_name="Company and industry profile",
+        disposition="ANALYST_ASSERTED_PRIOR", reason=None))
+    session.commit()
+
+    _wire_fake_provider(monkeypatch)
+    monkeypatch.setattr(research, "_fetch_source_fragment", _verified_fetch)
+
+    result = research.run_domain_research(
+        session, case_id=case_id, agent_ids=["LLM-01"], research_policy=POLICY)
+
+    assert result["domains_skipped_already_disposed"] == 1
+    row = session.execute(select(db.domain_disposition).where(
+        db.domain_disposition.c.case_id == case_id,
+        db.domain_disposition.c.domain_no == 1)).one()
+    assert row.disposition == "ANALYST_ASSERTED_PRIOR", (
+        "a pre-existing disposition must survive a research run unless "
+        "overwrite=True was passed explicitly")
+
+
+def test_overwrite_true_replaces_an_existing_disposition(session, monkeypatch):
+    case_id = _case(session)
+    session.execute(insert(db.domain_disposition).values(
+        id=str(uuid.uuid4()), case_id=case_id, estimate_snapshot_id=None,
+        domain_no=1, domain_name="Company and industry profile",
+        disposition="ANALYST_ASSERTED_PRIOR", reason=None))
+    session.commit()
+
+    _wire_fake_provider(monkeypatch)
+    monkeypatch.setattr(research, "_fetch_source_fragment", _verified_fetch)
+
+    research.run_domain_research(session, case_id=case_id, agent_ids=["LLM-01"],
+                                 research_policy=POLICY, overwrite=True)
+
+    row = session.execute(select(db.domain_disposition).where(
+        db.domain_disposition.c.case_id == case_id,
+        db.domain_disposition.c.domain_no == 1)).one()
+    assert row.disposition == "EVIDENCED_PUBLIC"
+
+
+def test_a_research_run_never_touches_domains_outside_its_map(session, monkeypatch):
+    """Domains 3, 4, 5, 11, 17, 23, 24 are None in DOMAIN_AGENT_MAP - benchmark
+    or simulation territory. A research run for LLM-01/LLM-08 must leave them
+    alone even when nothing has disposed them yet."""
+    case_id = _case(session)
+    _wire_fake_provider(monkeypatch)
+    monkeypatch.setattr(research, "_fetch_source_fragment", _verified_fetch)
+
+    research.run_domain_research(session, case_id=case_id, research_policy=POLICY)
+
+    out_of_scope = {no for no, a in research.DOMAIN_AGENT_MAP.items() if a is None}
+    rows = session.execute(select(db.domain_disposition.c.domain_no)
+                           .where(db.domain_disposition.c.case_id == case_id)).all()
+    touched = {r.domain_no for r in rows}
+    assert touched.isdisjoint(out_of_scope)
+
+
+# --------------------------------------------------------------- client-data protection
+
+def test_research_never_discards_client_confirmed_data_even_with_overwrite(
+        session, monkeypatch):
+    """Found in audit. overwrite=True cleared the whole skip set, so a re-run
+    of public research silently replaced a CLIENT_CONFIRMED disposition -
+    destroying the client's answer, the named person who recorded it, and the
+    attribution in the evidence column. The mirror of the rule mapping already
+    enforced in the other direction."""
+    case_id = _case(session)
+    session.execute(insert(db.domain_disposition).values(
+        id=str(uuid.uuid4()), case_id=case_id, estimate_snapshot_id=None,
+        domain_no=2, domain_name="Location footprint",
+        disposition="CLIENT_CONFIRMED", reason=None,
+        evidence={"client_answer": "122 sites", "answered_by": "Client Contact"}))
+    session.commit()
+
+    _wire_fake_provider(monkeypatch)
+    monkeypatch.setattr(research, "_fetch_source_fragment", _verified_fetch)
+
+    result = research.run_domain_research(
+        session, case_id=case_id, agent_ids=["LLM-01"], research_policy=POLICY,
+        overwrite=True)
+
+    assert 2 in result["domains_protected_client_confirmed"]
+    row = session.execute(select(db.domain_disposition).where(
+        db.domain_disposition.c.case_id == case_id,
+        db.domain_disposition.c.domain_no == 2)).one()
+    assert row.disposition == "CLIENT_CONFIRMED"
+    assert row.evidence["answered_by"] == "Client Contact", (
+        "the client's attribution must survive a research re-run")

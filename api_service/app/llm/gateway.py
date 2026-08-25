@@ -240,6 +240,37 @@ def execute(session, *, agent_run_id: str, provider: str, system: str,
             "latency_ms": call.latency_ms}
 
 
+def execute_deterministic(session, *, agent_run_id: str, fn) -> dict:
+    """Runs a registered deterministic_fallback_endpoint (Tranche 2: LLM-06,
+    LLM-07). No provider call and no liveness proof to check - the guarantee
+    here is different from execute()'s: the run's mode was DETERMINISTIC_ONLY
+    from creation, never a downgrade from a failed LIVE attempt. That is
+    enforced upstream (create_agent_run -> _assert_mode_permitted only
+    permits a mode explicitly requested at creation, and mode cannot change
+    after), not re-checked here - this function only refuses to run a mode
+    other than the one already committed to the row.
+
+    fn is the caller's already-resolved deterministic function - a plain
+    Python callable, not something this module looks up. registry.py's
+    deterministic_fallback_endpoint is documentary; the real dispatch is an
+    ordinary import in the domain module that owns the logic.
+    """
+    row = session.execute(
+        select(db.agent_run).where(db.agent_run.c.agent_run_id == agent_run_id)).one()
+    if row.execution_mode != "DETERMINISTIC_ONLY":
+        raise errors.ModeNotPermitted(
+            f"gateway.execute_deterministic handles DETERMINISTIC_ONLY only; "
+            f"run is {row.execution_mode}")
+    if row.status not in ("QUEUED", "RUNNING"):
+        raise errors.ModeNotPermitted(
+            f"run is {row.status}; a completed run cannot be re-executed")
+    try:
+        return fn()
+    except Exception as exc:                         # noqa: BLE001
+        _fail(session, agent_run_id, f"deterministic executor raised: {exc}")
+        raise
+
+
 def _fail(session, agent_run_id: str, message: str) -> None:
     session.rollback()
     session.execute(update(db.agent_run)
@@ -247,6 +278,24 @@ def _fail(session, agent_run_id: str, message: str) -> None:
                     .values(status="FAILED", error=message[:2000],
                             ended_at=datetime.now(timezone.utc)))
     session.commit()
+
+
+def fail(session, agent_run_id: str, message: str) -> None:
+    """Public wrapper around _fail(), for a caller whose own post-execute
+    validation rejects an otherwise-successful call.
+
+    Found while building Tranche 2: execute()'s LIVE call can succeed fully -
+    valid provider response, liveness verified, llm_run recorded - and the
+    *caller* (research.py, savings_advisory.py) still rejects the content
+    because it names an unknown domain, scenario or shape. That rejection
+    happens outside execute(), so execute()'s own failure handling never
+    runs, and nothing else was marking the row FAILED - it sat in QUEUED
+    forever. The same class of defect test_unimplemented_mode_creates_no_
+    orphan_run exists to catch, reached by a different path. research.py's
+    shape-violation branch had exactly this gap before this fix; it's
+    corrected there too, not just here.
+    """
+    _fail(session, agent_run_id, message)
 
 
 def succeed(session, agent_run_id: str, result: dict) -> None:
@@ -264,6 +313,11 @@ def succeed(session, agent_run_id: str, result: dict) -> None:
     session.execute(update(db.agent_run)
                     .where(db.agent_run.c.agent_run_id == agent_run_id)
                     .values(status="SUCCEEDED", result=result,
+                            # True exactly for DETERMINISTIC_ONLY. MOCK and
+                            # REPLAY represent an LLM's own output (canned or
+                            # historical) and are not this claim, even though
+                            # neither has an executor in this build.
+                            produced_without_llm=(row.execution_mode == "DETERMINISTIC_ONLY"),
                             ended_at=datetime.now(timezone.utc)))
     session.commit()
 

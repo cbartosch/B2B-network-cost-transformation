@@ -669,7 +669,8 @@ def test_every_key_the_loader_needs_is_seeded():
               | {f"target_driver_{d}" for d in policy.ConfidencePolicy.TARGET_DRIVERS}
               | {"component_cap_headroom", "band_a_floor", "band_b_floor", "band_c_floor",
                  "asserted_baseline_confidence_ceiling", "asserted_share_trigger",
-                 "simulated_display_badge_threshold", "partial_penalty_factor"})
+                 "simulated_display_badge_threshold", "partial_penalty_factor",
+                 "client_confirmed_evidence_weight"})
     assert not (needed - set(rows)), f"unseeded: {sorted(needed - set(rows))}"
 
 
