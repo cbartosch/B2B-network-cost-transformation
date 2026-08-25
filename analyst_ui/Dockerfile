@@ -1,6 +1,17 @@
 FROM python:3.12-slim
 WORKDIR /app
 ENV PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1
+# Corporate proxy, if this network needs one. Passed as build args rather than
+# read from the environment: an ambient proxy variable that silently reroutes
+# egress is the same defect class the transport's trust_env=False exists to
+# prevent. Empty by default, so a direct-egress network is unaffected.
+#   docker compose build --build-arg HTTP_PROXY=http://proxy:8080 ...
+ARG HTTP_PROXY=""
+ARG HTTPS_PROXY=""
+ARG NO_PROXY="localhost,127.0.0.1,db,api,ui"
+ENV HTTP_PROXY=$HTTP_PROXY HTTPS_PROXY=$HTTPS_PROXY NO_PROXY=$NO_PROXY \
+    http_proxy=$HTTP_PROXY https_proxy=$HTTPS_PROXY no_proxy=$NO_PROXY
+
 # Corporate trust anchors first: an inspecting proxy re-signs HTTPS, so pip
 # cannot verify PyPI until the re-signing CA is trusted. Empty by default.
 COPY certs/ /usr/local/share/ca-certificates/corporate/

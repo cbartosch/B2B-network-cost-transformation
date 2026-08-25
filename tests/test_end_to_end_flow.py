@@ -257,8 +257,14 @@ def test_preflight_guidance_covers_every_condition(client):
     import pathlib
     import re
 
-    page = (pathlib.Path(__file__).resolve().parents[1]
-            / "analyst_ui" / "streamlit_app" / "pages" / "3_Pre_flight.py").read_text()
+    # The api image copies app/, tests/ and contract/ - not analyst_ui/. Run
+    # from a checkout this reads the real page; run inside the container there
+    # is nothing to read, and skipping is honest where passing would be a lie.
+    page_path = (pathlib.Path(__file__).resolve().parents[1]
+                 / "analyst_ui" / "streamlit_app" / "pages" / "3_Pre_flight.py")
+    if not page_path.exists():
+        pytest.skip("analyst_ui is not present in this image")
+    page = page_path.read_text()
     mapped = set(re.findall(r'^    "([^"]+)":', page, re.M))
 
     case_id = _intake(client)

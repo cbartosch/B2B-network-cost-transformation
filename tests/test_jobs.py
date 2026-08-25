@@ -397,10 +397,10 @@ def test_reclaim_handles_a_backlog_larger_than_the_bound(session, monkeypatch):
     report = jobs.reclaim_interrupted()
     jobs._inflight.clear()
 
-    assert report["requeued"] + report["queued"] == 10, \
+    assert report["requeued"] + report["deferred"] == 10, \
         "every orphan must be accounted for, not refused"
     assert report["requeued"] == 2, "started up to SIM_WORKERS"
-    assert report["queued"] == 8, "the rest wait for a worker, not for a restart"
+    assert report["deferred"] == 8, "the rest wait for a worker, not for a restart"
     session.expire_all()
     remaining = session.execute(select(db.simulation_run).where(
         db.simulation_run.c.simulation_run_id.in_(orphans),

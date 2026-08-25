@@ -28,7 +28,74 @@ function Export-Pem {
         Out-File -Encoding ascii -FilePath $Path
 }
 
+# Publicly-trusted roots. Exporting one of these is worse than useless: the
+# base image already trusts it, so `update-ca-certificates` reports "2 added"
+# and the build then fails verification anyway - which reads as "no CA
+# supplied" when the truth is "the wrong CA supplied".
+#
+# This happened for real. The live-chain method below walks the chain of each
+# host and exports the issuers it finds; on a host that is NOT being
+# intercepted, that is simply the genuine public root. A run produced
+# GlobalSign ECC Root CA R4 and Google Trust Services WE1, both public, and
+# the build kept failing at the same line with a message pointing at the fix
+# it had already appeared to apply.
+#
+# The rule is simple and worth stating: we want anchors the image does NOT
+# already trust. A publicly-trusted root is by definition not one of them.
+$publicRoots = 'GlobalSign|DigiCert|Google Trust|GTS |Let''s Encrypt|ISRG|' +
+               'Baltimore|USERTrust|Sectigo|Comodo|Amazon|Microsoft |VeriSign|' +
+               'Entrust|GoDaddy|Starfield|QuoVadis|Thawte|GeoTrust|RapidSSL|' +
+               'AAA Certificate|Certum|Buypass|SwissSign|T-TeleSec|IdenTrust|' +
+               'Actalis|SSL.com|Trustwave|Network Solutions'
+
+function Test-PublicRoot {
+    param([string]$Subject)
+    if ($Subject -match $publicRoots) { return $true }
+    return $false
+}
+
 $written = @{}
+$skippedPublic = @()
+
+# ---------------------------------------------------------------- method 1
+# The Windows machine store. Tried FIRST because it needs no network at all:
+# on a managed laptop the inspection CA is already installed there, which is
+# exactly why the browser works. The live-chain method below needs a direct
+# TCP connection to :443, and some managed networks require an explicit proxy
+# or block raw sockets outright - in which case that method reports "every
+# host was unreachable" and exports nothing, which is what happens in practice.
+Write-Host "Scanning the Windows machine store for inspection CAs ..."
+$patterns = 'Zscaler|Netskope|Palo Alto|Forcepoint|McAfee|Blue Coat|Symantec Web|' +
+            'Cisco Umbrella|Fortinet|FortiGate|Sophos|Trend Micro|Menlo|iboss|' +
+            'Proxy|Inspect|MITM|SSL Interc'
+try {
+    $storeHits = Get-ChildItem Cert:\LocalMachine\Root, Cert:\LocalMachine\CA `
+                     -ErrorAction SilentlyContinue |
+                 Where-Object { $_.Subject -match $patterns }
+    foreach ($c in $storeHits) {
+        if ($written.ContainsKey($c.Thumbprint)) { continue }
+        $safe = ($c.Subject -replace '[^A-Za-z0-9]+','-').Trim('-')
+        if ($safe.Length -gt 60) { $safe = $safe.Substring(0,60) }
+        if (Test-PublicRoot $c.Subject) {
+            $skippedPublic += $c.Subject
+            continue
+        }
+        Export-Pem -Cert $c -Path (Join-Path $certsDir "$safe.crt")
+        $written[$c.Thumbprint] = $c.Subject
+        Write-Host "  found: $($c.Subject)" -ForegroundColor Green
+    }
+    if (-not $storeHits) {
+        Write-Host "  no known inspection vendor matched by name." -ForegroundColor Yellow
+        Write-Host "  That does not mean there is none - the name may be unfamiliar."
+        Write-Host "  Method 2 below asks the network itself rather than guessing."
+    }
+} catch {
+    Write-Host "  store scan failed: $($_.Exception.Message)" -ForegroundColor Yellow
+}
+
+# ---------------------------------------------------------------- method 2
+Write-Host ""
+Write-Host "Asking each host what it actually presents ..."
 foreach ($h in $hosts) {
     Write-Host "Inspecting $h ..." -NoNewline
     try {
@@ -65,9 +132,29 @@ foreach ($h in $hosts) {
 }
 
 Write-Host ""
+if ($skippedPublic.Count -gt 0) {
+    Write-Host ""
+    Write-Host "Skipped $($skippedPublic.Count) publicly-trusted root(s) - the image" -ForegroundColor Yellow
+    Write-Host "already trusts these, so exporting them would achieve nothing:" -ForegroundColor Yellow
+    $skippedPublic | Sort-Object -Unique | ForEach-Object { Write-Host "  $_" }
+}
+
 if ($written.Count -eq 0) {
-    Write-Host "No certificates exported. Every host was unreachable - that is a" -ForegroundColor Red
-    Write-Host "connectivity problem, not a certificate one. Run: make tls-doctor" -ForegroundColor Red
+    Write-Host "No certificates exported by either method." -ForegroundColor Red
+    Write-Host ""
+    Write-Host "Neither the machine store nor a live connection produced a CA. That"
+    Write-Host "usually means one of:"
+    Write-Host ""
+    Write-Host "  * this network needs an explicit HTTP proxy, so raw :443 fails and"
+    Write-Host "    the store holds a CA under a name none of the patterns match."
+    Write-Host "    List candidates yourself and export by thumbprint:"
+    Write-Host ""
+    Write-Host "      Get-ChildItem Cert:\LocalMachine\Root |" -ForegroundColor Cyan
+    Write-Host "        Sort-Object Subject | Select-Object Subject, Thumbprint" -ForegroundColor Cyan
+    Write-Host ""
+    Write-Host "  * egress is blocked entirely, in which case no certificate helps."
+    Write-Host ""
+    Write-Host "Run .\make.ps1 tls-doctor for a per-endpoint diagnosis." -ForegroundColor Cyan
     exit 1
 }
 Write-Host "Exported $($written.Count) certificate(s) to certs\:" -ForegroundColor Green

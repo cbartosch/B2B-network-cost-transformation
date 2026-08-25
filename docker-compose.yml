@@ -21,6 +21,12 @@ services:
     build:
       context: .
       dockerfile: api_service/Dockerfile
+      args:
+        # Forwarded from the shell if set, empty otherwise. Without this block a
+        # --build-arg never reaches the Dockerfile and the proxy is silently
+        # ignored - which looks identical to the proxy not working.
+        HTTP_PROXY: ${HTTP_PROXY:-}
+        HTTPS_PROXY: ${HTTPS_PROXY:-}
     environment:
       DATABASE_URL: postgresql+psycopg://workbench:${POSTGRES_PASSWORD:-workbench_dev_only}@db:5432/workbench
       # WORKBENCH_ENVIRONMENT is resolved server-side and is never accepted from a caller (spec 7.2C).
@@ -61,6 +67,9 @@ services:
     build:
       context: .
       dockerfile: analyst_ui/Dockerfile
+      args:
+        HTTP_PROXY: ${HTTP_PROXY:-}
+        HTTPS_PROXY: ${HTTPS_PROXY:-}
     environment:
       API_BASE_URL: http://api:8000
       API_TOKEN: ${API_TOKEN:-}

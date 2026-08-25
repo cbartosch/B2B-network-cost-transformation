@@ -377,7 +377,10 @@ def reclaim_interrupted() -> dict:
     indistinguishable from a live one when the pool was full.
     """
     s = db.SessionLocal()
-    report = {"cancelled": 0, "requeued": 0, "queued": 0}
+    # "deferred", not "queued": a run the pool could not take is deferred to
+    # the next free worker. Two tests assert this exact shape, and the app was
+    # emitting a third name for it - harmless until something reads the report.
+    report = {"cancelled": 0, "requeued": 0, "deferred": 0}
     try:
         for row in s.execute(select(db.simulation_run.c.simulation_run_id,
                                     db.simulation_run.c.status)
@@ -395,12 +398,34 @@ def reclaim_interrupted() -> dict:
             # Not new work: this run was admitted before the process died.
             # Beyond SIM_WORKERS it stays QUEUED and _drain collects it as
             # workers free, so a backlog larger than the bound still drains.
-            started = submit(row.simulation_run_id)
+            # QueueFull is expected here, not exceptional: the docstring above
+            # promises a run stays QUEUED when the pool is full. Without this
+            # handler the exception propagated out of the loop, so the FIRST
+            # full pool aborted reclaim for every remaining row - leaving them
+            # RUNNING and indistinguishable from live jobs, which is precisely
+            # the state this function exists to eliminate. main.py catches the
+            # exception and starts anyway, so nothing surfaced.
+            #
+            # Found by the first real `make test` run against Postgres. The
+            # offline harness saw it too and I misattributed it to worker-pool
+            # state carried between tests.
+            try:
+                started = submit(row.simulation_run_id)
+            except QueueFull:
+                report["deferred"] += 1
+                log.info("simulation %s left QUEUED: worker pool full. It will be "
+                         "collected as a worker frees, or on the next restart.",
+                         row.simulation_run_id)
+                continue
             if started.get("status") == RUNNING:
                 report["requeued"] += 1
                 log.info("resuming interrupted simulation %s", row.simulation_run_id)
             else:
-                report["queued"] = report.get("queued", 0) + 1
+                # Same outcome as the QueueFull branch above: submit() declined
+                # without raising. One key for one meaning - this wrote
+                # "queued" while the exception path wrote "deferred", so a
+                # report could carry both for the same situation.
+                report["deferred"] += 1
         return report
     finally:
         s.close()

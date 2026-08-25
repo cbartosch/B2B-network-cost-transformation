@@ -11,6 +11,78 @@ make up                   # UI  http://localhost:8501
 make test                 # the full suite, inside the api container
 ```
 
+### Exchanging work as git bundles
+
+A bundle carries **history**; a zip carries only a tree. That difference decides whether a
+returned change arrives as a commit whose parent is genuinely yours — fast-forwarding, with
+git computing every add, edit and deletion — or as a snapshot you copy over the top and
+hope nothing silently disappeared.
+
+```powershell
+.\make.ps1 bundle-out                    # -> wb-repo.bundle, send this
+.\make.ps1 bundle-in <returned.bundle>   # fetch, then review before merging
+```
+
+**It is a round trip, not a one-time setup.** A descendant commit can only be built on an
+object the author actually holds, so a bundle has to go out before changes can come back
+based on the current head. Sending a stale bundle produces a commit rooted at the wrong
+parent, which then refuses to fast-forward — correctly.
+
+`bundle-in` fetches into `incoming-<branch>` rather than onto the branch you are standing
+on: git refuses to overwrite a checked-out branch, and that refusal is quiet enough to look
+like nothing happened. Review, then `git merge --ff-only`. If `--ff-only` refuses, the
+commit is not a clean descendant and that is worth knowing before merging rather than after.
+
+**A bundle is an ordinary file containing your history.** If that history holds anything
+sensitive, it travels with it.
+
+### Managed / inspected corporate networks (build 4.24.0)
+
+If the build stops at `verify_tls_before_build.py`, that check is **working**. It
+detected that this network re-signs HTTPS and stopped before pip failed with an opaque
+`CERTIFICATE_VERIFY_FAILED`.
+
+```powershell
+.\make.ps1 bootstrap-ca      # acquire the CA, verify it landed, rebuild --no-cache
+.\make.ps1 up
+```
+
+**Two acquisition methods, machine store first.** The store needs no network at all: on a
+managed laptop the inspection CA is already installed there, which is precisely why the
+browser works and the container does not. Live chain inspection needs a direct TCP
+connection to :443, which some networks block outright — and when they do, the original
+single-method script exported nothing and reported "every host was unreachable", which
+reads as a connectivity fault rather than a method limitation.
+
+**`--no-cache` is not optional and `bootstrap-ca` does it for you.** The `COPY certs/`
+layer caches on directory contents, so a plain rebuild after adding a certificate reuses
+the pre-certificate layer and fails identically — which reads as "the fix did not work".
+
+**If the network needs an explicit proxy**, pass it as a build arg. Deliberately not read
+from the ambient environment: a proxy variable that silently reroutes egress is the same
+defect class `trust_env=False` exists to prevent.
+
+```powershell
+$env:HTTP_PROXY  = "http://proxy.corp:8080"
+$env:HTTPS_PROXY = "http://proxy.corp:8080"
+docker compose build --no-cache
+```
+
+**If neither method finds a CA**, the vendor name may be unfamiliar. List candidates and
+export by thumbprint:
+
+```powershell
+Get-ChildItem Cert:\LocalMachine\Root | Sort-Object Subject | Select Subject, Thumbprint
+```
+
+`.\make.ps1 tls-doctor` gives a per-endpoint diagnosis and needs no Docker.
+
+**What this does not achieve.** TLS pinning under interception pins **the inspector**, not
+the provider — the proxy is a man-in-the-middle by policy. `ENFORCE` still detects the
+inspector's certificate changing, which is worth having, but it cannot attest that you
+reached Anthropic or OpenAI. The attestation says so rather than reporting an inspected
+connection as end-to-end.
+
 ### Windows 11 / PowerShell — `make` is not available
 
 `make` does not ship with Windows. `make.ps1` in the repository root mirrors every

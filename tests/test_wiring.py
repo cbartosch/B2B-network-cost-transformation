@@ -103,7 +103,11 @@ def test_declared_unique_indexes_exist_in_the_database(session):
     with db.engine.connect() as conn:
         indexes = {i["name"] for i in inspect(conn).get_indexes("llm_run",
                                                                schema="audit")}
-    assert "uq_llm_run_provider_request_id" in indexes
+    # Migration v9 renames this to uq_llm_run_provider_request and explicitly
+    # asserts the _id form is gone. The same stale name was fixed in
+    # test_migrations.py; this duplicate was missed because the offline harness
+    # could not introspect indexes and skipped the test entirely.
+    assert "uq_llm_run_provider_request" in indexes
 
 
 def test_declared_unique_constraints_are_enforced_by_the_database(session):
@@ -317,7 +321,12 @@ def test_startup_refuses_enforcement_without_spki_support(monkeypatch):
     monkeypatch.setattr(_transport, "PIN_MODE", _transport.PIN_ENFORCE)
     monkeypatch.setattr(_transport, "_CRYPTO", False)
     monkeypatch.setattr(_transport, "ALLOW_CERT_ONLY_PINNING", False)
-    with pytest.raises(_transport.PinningUnsupported):
+    # startup_check() raises PinConfigurationRefused. PinningUnsupported is
+    # raised by a different function for the same condition, gated on a
+    # differently-named override - the open A15 finding. This asserts what the
+    # startup path actually does; unifying the two is a decision about a
+    # security control and is deliberately not taken here.
+    with pytest.raises(_transport.PinConfigurationRefused):
         with TestClient(app):
             pass
 

@@ -435,8 +435,16 @@ def test_the_legacy_fixture_describes_a_state_that_can_actually_upgrade():
     import pathlib
     import re
 
+    # Two layouts: a checkout has api_service/app/, the image has app/ at the
+    # WORKDIR root (COPY api_service/app ./app). Try both rather than assuming.
     root = pathlib.Path(__file__).resolve().parents[1]
-    mig_src = (root / "api_service" / "app" / "migrations.py").read_text()
+    for candidate in (root / "api_service" / "app", root / "app"):
+        if (candidate / "migrations.py").exists():
+            app_dir = candidate
+            break
+    else:
+        pytest.skip("cannot locate the application package from this layout")
+    mig_src = (app_dir / "migrations.py").read_text()
     added = {}
     for m in re.finditer(r'_add_column\(conn,\s*db\.(\w+),\s*"(\w+)"\)', mig_src):
         added.setdefault(m.group(1), set()).add(m.group(2))
@@ -446,7 +454,7 @@ def test_the_legacy_fixture_describes_a_state_that_can_actually_upgrade():
         for c in re.findall(r'"(\w+)"', m.group(1)):
             added.setdefault(m.group(2), set()).add(c)
 
-    db_tree = ast.parse((root / "api_service" / "app" / "db.py").read_text())
+    db_tree = ast.parse((app_dir / "db.py").read_text())
     current = {}
     for node in db_tree.body:
         if (isinstance(node, ast.Assign) and isinstance(node.value, ast.Call)

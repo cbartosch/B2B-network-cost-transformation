@@ -1,4 +1,4 @@
-BUILD = "4.23.1"
+BUILD = "4.26.0"
 # Kept in sync with the top-level VERSION file by hand - there is no single
 # source of truth between them yet. VERSION isn't copied into the API image
 # (see api_service/Dockerfile), so this can't simply read it at import time
