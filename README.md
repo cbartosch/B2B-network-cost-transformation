@@ -11,6 +11,43 @@ make up                   # UI  http://localhost:8501
 make test                 # the full suite, inside the api container
 ```
 
+### The 26 skips, and why `test` alone is not the whole suite
+
+A container run reports 26 skipped. They are not arbitrary: **every one is a test of a
+build-time artifact, running inside a runtime image that deliberately does not contain
+it.** The api image copies `app/`, `tests/`, `tools/` and `contract/` — not
+`docker-compose.yml`, not the Dockerfiles, not `analyst_ui/`. So the compose and interface
+controls skip with "not present in this image", which is honest and also means they never
+actually ran.
+
+Two causes, two fixes:
+
+**PyYAML was absent from the image.** All thirteen `test_compose.py` tests are gated on
+`importorskip("yaml")`, and the api requirements never listed it — so they reported as
+skipped when the truth was that the parser was missing. The test suite ships inside this
+image; its dependencies belong there too.
+
+**The rest need the repository, not the image.**
+
+```powershell
+.\make.ps1 test        # the copy baked into the image - proves the image is self-testing
+.\make.ps1 test-all    # mounts the repo at /src - proves the build config is correct
+```
+
+`test-all` bind-mounts the repository and points pytest at `/src/tests`, so
+`Path(__file__).parents[1]` resolves to the real repository root and every file those tests
+look for exists. `WORKDIR` stays `/app` so `import app` still finds the installed package.
+Verified path by path: `docker-compose.yml`, both Dockerfiles, `analyst_ui/streamlit_app/`,
+`api_service/app/migrations.py`, `certs/`.
+
+**Both are worth keeping.** `test` answers "can this image test itself", which matters if
+the image is all you have. `test-all` answers "is the build configuration correct", which
+`test` structurally cannot. Reporting only the first and calling the suite green would
+overstate it.
+
+The remaining honest skip is `importorskip("cryptography")` in `test_transport.py` — and
+`cryptography` **is** in the image, so those run.
+
 ### Exchanging work as git bundles
 
 A bundle carries **history**; a zip carries only a tree. That difference decides whether a

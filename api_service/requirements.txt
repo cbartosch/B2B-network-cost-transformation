@@ -8,3 +8,8 @@ httpx==0.28.1
 # what lets a pin survive a certificate renewal.
 cryptography==44.0.0
 pytest==8.3.4
+# The test suite ships in this image (COPY tests ./tests), so its dependencies
+# belong here too. Without PyYAML the ten docker-compose control tests
+# importorskip and report as skipped - which reads as "not applicable" when the
+# truth is "the parser is missing".
+PyYAML==6.0.2

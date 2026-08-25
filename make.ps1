@@ -28,7 +28,7 @@
 [CmdletBinding()]
 param(
     [Parameter(Position = 0)]
-    [ValidateSet('help', 'check', 'bundle-out', 'bundle-in', 'bootstrap-ca', 'tls-doctor', 'tls-doctor-in-container', 'up', 'down',
+    [ValidateSet('help', 'check', 'bundle-out', 'bundle-in', 'bootstrap-ca', 'test-all', 'tls-doctor', 'tls-doctor-in-container', 'up', 'down',
                  'reset', 'logs', 'test', 'seed', 'pins', 'attest', 'doctor',
                  'migrate', 'psql')]
     [string]$Target = 'help',
@@ -106,7 +106,8 @@ switch ($Target) {
         Write-Host "  down                     stop the stack"
         Write-Host "  reset                    destroy data and rebuild"
         Write-Host "  logs                     follow api and ui logs"
-        Write-Host "  test                     run the full suite in the api container"
+        Write-Host "  test                     run the suite baked into the image"
+        Write-Host "  test-all                 run it against the repo too (unskips build-config tests)"
         Write-Host "  seed                     reload reference data (DESTRUCTIVE)"
         Write-Host "  doctor                   report schema version and drift"
         Write-Host "  migrate                  apply pending schema migrations"
@@ -256,6 +257,35 @@ switch ($Target) {
             '-e', 'DATABASE_URL=sqlite://',
             '-e', 'WORKBENCH_ENVIRONMENT=TEST',
             'api', 'python', '-m', 'pytest', '/app/tests', '-v'
+        )
+    }
+
+    'test-all' {
+        <#
+        The full suite, including the tests that read build-time artifacts.
+
+        `test` runs against the copy baked into the image, which deliberately
+        does not contain docker-compose.yml, the Dockerfiles, or analyst_ui/ -
+        so 26 tests skip with "not present in this image". That is honest but
+        it means the compose and interface controls never actually run.
+
+        This mounts the repository at /src and points pytest there, so
+        Path(__file__).parents[1] resolves to the real repository root and
+        every file those tests look for exists. WORKDIR stays /app so
+        `import app` still finds the installed package.
+
+        Both are worth keeping: `test` proves the image is self-testing,
+        `test-all` proves the build configuration is correct.
+        #>
+        Assert-Docker
+        Assert-Service
+        Invoke-Checked 'docker' @(
+            'compose', 'run', '--rm', '--no-deps',
+            '-v', "$($PSScriptRoot):/src",
+            '-w', '/app',
+            '-e', 'DATABASE_URL=sqlite://',
+            '-e', 'WORKBENCH_ENVIRONMENT=TEST',
+            'api', 'python', '-m', 'pytest', '/src/tests', '-v'
         )
     }
 
