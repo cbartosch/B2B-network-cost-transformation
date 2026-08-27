@@ -10,7 +10,7 @@ import uuid
 from sqlalchemy import insert, select, update
 
 from .. import db
-from ..llm import gateway
+from ..llm import errors, gateway
 
 SYSTEM = (
     "You are a corporate-registry research assistant. You return only facts you can "
@@ -44,21 +44,44 @@ def propose_candidates(session, *, case_id: str, name_hint: str,
     if isinstance(parsed, dict):
         parsed = parsed.get("candidates", [])
 
+    # Shape rejection must terminate the run. parse_json_strict is pure and has
+    # no session, and execute() only fails runs for problems execute() itself
+    # detects - so a response that is valid JSON in the wrong shape was
+    # rejected here and the agent_run left QUEUED forever. Same defect as the
+    # one fixed in research.py and savings_advisory.py; these two older call
+    # sites were never audited for it. Found by the agent-API audit.
+    if not isinstance(parsed, list) or not all(isinstance(c, dict) for c in parsed):
+        gateway.fail(session, run_id,
+                     "ENTITY-RESOLVE returned valid JSON that is not a list of "
+                     "candidate objects")
+        raise errors.StructuredOutputInvalid(
+            "ENTITY-RESOLVE returned valid JSON that is not a list of candidate "
+            "objects")
+
     rows = []
-    for c in parsed:
-        cid = str(uuid.uuid4())
-        rows.append({
-            "candidate_id": cid, "case_id": case_id,
-            "legal_name": c.get("legal_name"), "identifier": c.get("identifier"),
-            "domicile": (c.get("domicile") or "")[:2] or None,
-            "industry": c.get("industry"), "revenue": str(c.get("revenue") or ""),
-            "employees": str(c.get("employees") or ""),
-            "group_parent": c.get("group_parent"), "website": c.get("website"),
-            "match_score": min(1.0, max(0.0, float(c.get("match_score") or 0))),
-            "sources": {"differentiator": c.get("differentiator"),
-                        "provider_response_id": call["provider_response_id"]},
-            "agent_run_id": run_id,
-        })
+    try:
+        for c in parsed:
+            cid = str(uuid.uuid4())
+            rows.append({
+                "candidate_id": cid, "case_id": case_id,
+                "legal_name": c.get("legal_name"), "identifier": c.get("identifier"),
+                "domicile": (c.get("domicile") or "")[:2] or None,
+                "industry": c.get("industry"), "revenue": str(c.get("revenue") or ""),
+                "employees": str(c.get("employees") or ""),
+                "group_parent": c.get("group_parent"), "website": c.get("website"),
+                "match_score": min(1.0, max(0.0, float(c.get("match_score") or 0))),
+                "sources": {"differentiator": c.get("differentiator"),
+                            "provider_response_id": call["provider_response_id"]},
+                "agent_run_id": run_id,
+            })
+    except (AttributeError, TypeError, ValueError) as exc:
+        # A candidate object with the wrong field types - match_score as a
+        # word, revenue as a nested object - reached float()/.get() and raised.
+        # Unhandled, that also orphaned the run.
+        gateway.fail(session, run_id, f"ENTITY-RESOLVE candidate malformed: {exc}")
+        raise errors.StructuredOutputInvalid(
+            f"ENTITY-RESOLVE candidate malformed: {exc}") from exc
+
     if rows:
         session.execute(insert(db.entity_candidate), rows)
         session.commit()

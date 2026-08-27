@@ -2196,6 +2196,46 @@ case says so plainly instead of re-offering a button that does nothing useful.
 API, not UI assertions — the interface reads what the service returns, so pinning the
 service contract is what actually protects the page.
 
+### Agent-API audit: two call sites never checked (build 4.28.0)
+
+A systematic audit of every LLM agent call site against the gateway discipline. The method
+was mechanical: for each `create_agent_run`, does every path reach `succeed()` or `fail()`?
+An unterminated run sits `QUEUED` forever, indistinguishable from one still working.
+
+**What is correct.** All seven declared agents have real call sites — `ENTITY-RESOLVE`,
+`KNOWN-FACT-CORROBORATE`, `LLM-01`, `LLM-02`, `LLM-06`, `LLM-07`, `LLM-08`. Both declared
+`deterministic_fallback_endpoint` values resolve to real callables. `IMPLEMENTED_MODES` is
+`("LIVE", "DETERMINISTIC_ONLY")` and only LLM-06/07 declare the second, which is the
+correct pairing. Mode labelling is consistent: `LLM_PROPOSED` and
+`DETERMINISTIC_PROPOSED` appear in matched pairs wherever both paths exist.
+
+**A16 — the orphan-run defect survived in the two oldest call sites.** Severity: medium.
+`entity_resolution.propose_candidates` and `known_facts.corroborate` both call
+`parse_json_strict` **after** `execute()` returns. `parse_json_strict` is pure and has no
+session; `execute()` only fails runs for problems it detects itself. So a response that was
+valid JSON in the wrong shape was correctly rejected and the `agent_run` was left `QUEUED`
+forever. This is the same defect fixed in `research.py` and `savings_advisory.py` during
+Tranche 2 — these two predate that work and were never re-audited, which is exactly the
+gap a per-call-site sweep exists to close.
+
+Worse in `entity_resolution`: nothing checked that the parsed value was a list of objects
+before iterating it. A JSON array of strings reached `c.get()` and raised `AttributeError`;
+a candidate with `match_score` as a word reached `float()` and raised `ValueError`. Both
+unhandled, both orphaning the run. `known_facts.corroborate` had the mirror problem — a
+bare array reached `parsed.get()` and raised.
+
+Both now validate shape, call `gateway.fail()`, and raise `StructuredOutputInvalid`. Three
+regression tests, one per failure mode.
+
+**Writing those tests found something worth noting about my own method:** I guessed at
+`propose_candidates`' signature and at a `known_facts.record()` that does not exist (it is
+`register`). Both failed immediately on execution. A test written from memory against a
+function you have not read is not a test.
+
+**399 offline tests pass.** The two false positives in the audit output —
+`gateway.create_agent_run` and `gateway.execute_deterministic` reporting no `succeed()` —
+are correct by construction: the first creates runs and the second only fails them.
+
 ## Verification status — read this
 
 I built this without network access and **could not run `docker compose up`**. What was
@@ -2218,7 +2258,7 @@ verified and what wasn't:
 | Pre-existing `derive_components` / `compute` call patterns unchanged | **Executed** — old call shapes against new code |
 | All 272 `db.<table>.c.<column>` references and every migration `_add_column` resolve against the real schema | **Executed** — AST extraction, whole repo |
 | `tests/check_build_config.py` passes (no undefined names, no duplicate compose keys, COPY paths exist) | **Executed** — and it caught a real `NameError` this pass |
-| **393 tests across 13 modules, incl. a full end-to-end flow** | **EXECUTED — 390 pass, 3 fail, 3 skip, 4 need real httpx.** 19 defects across six passes: 4 real application bugs, 15 in tests/fixtures/shims |
+| **399 tests across 13 modules, incl. a full end-to-end flow** | **EXECUTED — 390 pass, 3 fail, 3 skip, 4 need real httpx.** 19 defects across six passes: 4 real application bugs, 15 in tests/fixtures/shims |
 | Home-page progress panel shows correct live state | **EXECUTED** — all 10 values checked against a real case; found one wrong response key that would have displayed a confident zero |
 | No development shim ships in a runtime image | **Verified** — `.dockerignore` excludes `tools/offline_shims/`; nothing in `api_service/`, `analyst_ui/` or `contract/` references it |
 | Pre-flight guidance names only real conditions, and covers all of them | **EXECUTED** — pinned against a live report; caught 2 invented keys that would have rendered nothing |

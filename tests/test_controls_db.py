@@ -988,3 +988,106 @@ def test_resolving_retains_quarantined_rows_rather_than_repairing_them(session):
     still_there = session.execute(select(db_module.quarantined_row).where(
         db_module.quarantined_row.c.incident_id == incident_id)).all()
     assert len(still_there) == 1, "resolving must not delete evidence"
+
+
+# --------------------------------------------------------------- agent-API audit
+# Found by auditing every LLM agent call site against the gateway discipline:
+# every create_agent_run must reach succeed() or fail() on every path. Four call
+# sites were already correct; ENTITY-RESOLVE and KNOWN-FACT-CORROBORATE predate
+# the fix and were never re-audited, so a response that was valid JSON in the
+# wrong shape left the run QUEUED forever.
+
+def _fake_provider(monkeypatch, module, text, configured=True):
+    import itertools
+    import uuid as _uuid
+    from datetime import datetime, timezone
+    from app.llm.providers.base import ProviderCall
+    ids = (f"msg_audit_{i}" for i in itertools.count())
+
+    class _A:
+        def configured(self): return configured
+        def complete(self, *, system, prompt, max_tokens=1500):
+            now = datetime.now(timezone.utc)
+            return ProviderCall(
+                provider="anthropic", model="m", text=text,
+                provider_response_id=next(ids),
+                provider_request_id=str(_uuid.uuid4()),
+                provider_request_at=now, input_tokens=1, output_tokens=1,
+                local_request_at=now, latency_ms=1, http_status=200,
+                egress_proxy=None, raw={})
+    fake = _A()
+    monkeypatch.setattr(module.gateway, "_adapters",
+                        lambda: {"anthropic": fake, "openai": fake})
+
+
+def _runs(session, agent_id):
+    from sqlalchemy import select
+    from app import db as _db
+    return session.execute(select(_db.agent_run).where(
+        _db.agent_run.c.agent_id == agent_id)).all()
+
+
+def test_entity_resolve_shape_rejection_terminates_its_run(session, monkeypatch):
+    import json
+    import pytest as _pytest
+    from app.domain import entity_resolution
+    from app.llm import errors
+
+    case_id = _case(session)
+    # Valid JSON, wrong shape: a list of strings rather than candidate objects.
+    _fake_provider(monkeypatch, entity_resolution, json.dumps(["Acme", "Acme Ltd"]))
+
+    with _pytest.raises(errors.StructuredOutputInvalid):
+        entity_resolution.propose_candidates(
+            session, case_id=case_id, name_hint="Acme",
+            identifier_hint=None, provider="anthropic")
+
+    runs = _runs(session, "ENTITY-RESOLVE")
+    assert runs, "a run should have been created"
+    assert all(r.status == "FAILED" for r in runs), (
+        "a rejected shape must terminate the run, not leave it QUEUED")
+
+
+def test_entity_resolve_malformed_candidate_terminates_its_run(session, monkeypatch):
+    import json
+    import pytest as _pytest
+    from app.domain import entity_resolution
+    from app.llm import errors
+
+    case_id = _case(session)
+    # Right shape, wrong field type: match_score is a word, so float() raises.
+    _fake_provider(monkeypatch, entity_resolution, json.dumps(
+        [{"legal_name": "Acme", "match_score": "very high"}]))
+
+    with _pytest.raises(errors.StructuredOutputInvalid):
+        entity_resolution.propose_candidates(
+            session, case_id=case_id, name_hint="Acme",
+            identifier_hint=None, provider="anthropic")
+
+    assert all(r.status == "FAILED" for r in _runs(session, "ENTITY-RESOLVE"))
+
+
+def test_corroborate_non_object_response_terminates_its_run(session, monkeypatch):
+    import datetime as _dt
+    import json
+    import pytest as _pytest
+    from app.domain import known_facts
+    from app.llm import errors
+
+    case_id = _case(session)
+    fact = known_facts.register(
+        session, case_id=case_id, fact_class="SITE_COUNT", subject="estate",
+        value_base=100, unit="count", asserted_by="Jane Okafor",
+        assertion_date=_dt.date(2026, 5, 1), basis="CLIENT_CONVERSATION",
+        verifiability="CLIENT_CONFIRMABLE")
+    fact_id = fact["known_fact_id"] if isinstance(fact, dict) else fact
+
+    # A bare JSON array reached parsed.get() and raised AttributeError.
+    _fake_provider(monkeypatch, known_facts, json.dumps(["CORROBORATED"]))
+
+    with _pytest.raises(errors.StructuredOutputInvalid):
+        known_facts.corroborate(session, known_fact_id=fact_id,
+                                provider="anthropic")
+
+    assert all(r.status == "FAILED"
+               for r in _runs(session, "KNOWN-FACT-CORROBORATE"))

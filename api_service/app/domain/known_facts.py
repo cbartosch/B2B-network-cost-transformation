@@ -13,7 +13,7 @@ from decimal import Decimal
 from sqlalchemy import insert, select, update
 
 from .. import db
-from ..llm import gateway
+from ..llm import errors, gateway
 
 BASES = ("PRIOR_ENGAGEMENT", "CLIENT_CONVERSATION", "INDUSTRY_KNOWLEDGE",
          "THIRD_PARTY_REPORT", "UNSTATED")
@@ -122,6 +122,15 @@ def corroborate(session, *, known_fact_id: str, provider: str, mode: str = "LIVE
     call = gateway.execute(session, agent_run_id=run_id, provider=provider,
                            system=CORROBORATION_SYSTEM, prompt=prompt)
     parsed = gateway.parse_json_strict(call["text"])
+    # A JSON array or bare string reached .get() and raised AttributeError,
+    # unhandled, orphaning the run at QUEUED. Same gap as entity_resolution;
+    # both predate the fix applied to research.py and savings_advisory.py.
+    if not isinstance(parsed, dict):
+        gateway.fail(session, run_id,
+                     "KNOWN-FACT-CORROBORATE returned valid JSON that is not an "
+                     "object")
+        raise errors.StructuredOutputInvalid(
+            "KNOWN-FACT-CORROBORATE returned valid JSON that is not an object")
     state = parsed.get("state", "UNCORROBORATED")
     if state not in ("CORROBORATED", "UNCORROBORATED", "CONTRADICTED"):
         state = "UNCORROBORATED"
