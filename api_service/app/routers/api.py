@@ -551,9 +551,14 @@ def run_simulation(case_id: str, payload: SimIn):
             preflight.assert_clear_to_run(s, case_id)
         except PermissionError as e:
             raise HTTPException(409, str(e))
+        # users_base and bandwidth_mbps_base were seeded and never loaded. Five
+        # columns exist on the prior; three were read. The footprint therefore
+        # implied a headcount the model discarded in favour of a flat default.
         arch = {r.archetype: {"dual_access_probability": float(r.dual_access_probability),
                               "primary_product": r.primary_product,
-                              "backup_product": r.backup_product}
+                              "backup_product": r.backup_product,
+                              "users_base": r.users_base,
+                              "bandwidth_mbps_base": r.bandwidth_mbps_base}
                 for r in s.execute(select(db.archetype_prior)).all()}
         footprint = [r.model_dump() for r in payload.footprint]
         total_sites = sum(r["sites"] for r in footprint)
@@ -764,7 +769,12 @@ def run_domain_research(case_id: str, payload: DomainResearchIn):
 # --------------------------------------------------------------- V0 estimate
 class EstimateIn(BaseModel):
     simulation_run_id: str
-    users: int = Field(default=5000, ge=0, le=5_000_000)
+    # Optional. Absent means "derive it from the footprint" using the approved
+    # users_base on each archetype - the topology already implies a headcount,
+    # and a flat 5000 default made a 500-branch estate and a 5-DC estate cost
+    # the same in platform terms. An explicit value still wins, and the
+    # response records which was used.
+    users: int | None = Field(default=None, ge=0, le=5_000_000)
     ops_cost_per_site_base: Decimal = Field(default=Decimal("900"), ge=0)
     # Reconciled and reported. Never used as the coverage denominator - that is
     # derived from the simulated scope and the priors.
@@ -853,9 +863,28 @@ def run_estimate(case_id: str, payload: EstimateIn):
             except ValueError as exc:
                 raise HTTPException(422, str(exc))
 
+        # Headcount: the analyst's figure if given, otherwise derived from the
+        # footprint via each archetype's approved users_base. Which one was used
+        # is reported, because a derived headcount and a typed one are different
+        # claims and the reader should not have to guess.
+        _implied = int(sim.output.get("implied_users") or 0)
+        if payload.users is not None:
+            _resolved_users, _users_source = payload.users, "ANALYST_SUPPLIED"
+        elif _implied > 0:
+            _resolved_users, _users_source = _implied, "DERIVED_FROM_FOOTPRINT"
+        else:
+            # No figure and nothing to derive from: refuse rather than fall back
+            # to a constant. A platform cost computed on an invented headcount
+            # is exactly the kind of unsourced number this bundle refuses.
+            raise HTTPException(422, {
+                "error": "no user count available",
+                "detail": "None supplied, and the footprint implies none because "
+                          "every archetype in it has users_base 0 (a DC-only "
+                          "estate, for example). Supply `users` explicitly."})
+
         ops = D(payload.ops_cost_per_site_base)
         components, unpriced = estimate.build_components(
-            sim_output=sim.output, users=payload.users,
+            sim_output=sim.output, users=_resolved_users,
             ops_cost_per_site={"low": ops * D("0.8"), "base": ops, "high": ops * D("1.3")},
             priors=priors,
             footprint_origin=sources["footprint"]["origin"],
@@ -949,6 +978,19 @@ def run_estimate(case_id: str, payload: EstimateIn):
                 "asserted_share": str(asserted),
                 "entered_share": str(entered),
                 "quantity_sources": sources,
+                # Headcount provenance, and the bandwidth profile the topology
+                # implies. The profile is REPORTED, not priced: unit_cost_prior
+                # is keyed (country, product, cost_layer) with no speed
+                # dimension, so a 100 Mbps branch and a 10 Gbps data centre on
+                # the same product are priced identically. That is a real
+                # limitation of the reference data and it is named here rather
+                # than hidden - see the README.
+                "users": _resolved_users,
+                "users_source": _users_source,
+                "users_implied_by_footprint": _implied,
+                "bandwidth_profile": sim.output.get("bandwidth_profile", {}),
+                "bandwidth_mbps_total": sim.output.get("bandwidth_mbps_total", 0),
+                "bandwidth_is_priced": False,
                 "uncorroborated_known_facts": known_facts.uncorroborated_count(s, case_id)}
 
 

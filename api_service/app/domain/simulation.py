@@ -33,12 +33,26 @@ def one_pass(seed: int, footprint: list[dict], archetypes: dict) -> dict:
     primary = backup = 0
     dual_sites = 0
     products: dict[tuple, int] = {}
+    # users_base and bandwidth_mbps_base were seeded on every archetype and read
+    # by nothing - two dead reference columns. The footprint already implies a
+    # headcount and a bandwidth profile; discarding them meant a 500-branch
+    # estate and a 5-DC estate looked identical to the platform cost.
+    implied_users = 0
+    bandwidth_by_archetype: dict[str, dict] = {}
 
     for entry in sorted(footprint, key=lambda e: (e["country"], e["archetype"])):
         prior = archetypes.get(entry["archetype"], {})
         p_dual = float(prior.get("dual_access_probability", 0.5))
         primary_product = prior.get("primary_product", "DIA")
         backup_product = prior.get("backup_product", "BROADBAND")
+        users_base = int(prior.get("users_base") or 0)
+        bw_base = int(prior.get("bandwidth_mbps_base") or 0)
+        n_sites = int(entry["sites"])
+        implied_users += users_base * n_sites
+        agg = bandwidth_by_archetype.setdefault(
+            entry["archetype"], {"sites": 0, "mbps_per_site": bw_base, "mbps_total": 0})
+        agg["sites"] += n_sites
+        agg["mbps_total"] += bw_base * n_sites
 
         for i in range(int(entry["sites"])):
             node_id = f"{entry['country']}-{entry['archetype']}-{i:04d}"
@@ -75,6 +89,13 @@ def one_pass(seed: int, footprint: list[dict], archetypes: dict) -> dict:
     return {"sites": sites, "circuits": circuits,
             "circuits_primary": primary, "circuits_backup": backup,
             "dual_sites": dual_sites,
+            # Derived from the footprint and the approved archetype priors, so
+            # it is reference-backed rather than invented. The estimate uses it
+            # as the default headcount when the caller supplies none.
+            "implied_users": implied_users,
+            "bandwidth_profile": bandwidth_by_archetype,
+            "bandwidth_mbps_total": sum(a["mbps_total"]
+                                        for a in bandwidth_by_archetype.values()),
             "circuits_per_site": round(circuits / sites, 4) if sites else 0.0,
             "products": [{"country": c, "product": p, "role": r, "count": n}
                          for (c, p, r), n in sorted(products.items())],

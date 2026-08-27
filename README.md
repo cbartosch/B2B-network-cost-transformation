@@ -2236,6 +2236,60 @@ function you have not read is not a test.
 `gateway.create_agent_run` and `gateway.execute_deterministic` reporting no `succeed()` —
 are correct by construction: the first creates runs and the second only fails them.
 
+### What V0 is actually driven by (build 4.29.0)
+
+Audited in response to a direct question: does V0 produce an outside-in estimate based on
+network topology, industry, and so on? The honest answer needed three parts.
+
+**Topology: yes, and it is real arithmetic.** `footprint [{country, archetype, sites}]` →
+the simulation assigns each site its archetype's `primary_product` and draws a backup
+circuit against `dual_access_probability` → product counts per (country, product, role) →
+priced against `reference.unit_cost_prior` keyed (country, product, cost_layer) → × 12
+months, plus platform/SSE per user and ops per site. Site counts, archetype mix, product
+mix, dual-homing rate and country all move the number. The Monte Carlo spread comes from
+the dual-access draw.
+
+**Industry: no. Captured and never used.** `industry` appears in the `entity_candidate`
+column, the entity-resolution prompt, the row that stores it, and the *name* of input
+domain 1 — "Company and industry profile". Nothing in `estimate.py`, `simulation.py` or
+`confidence.py` reads it. Domain 1 can be disposed `EVIDENCED_PUBLIC` and the estimate is
+byte-identical. **Left as-is deliberately:** making industry modulate cost means inventing
+multipliers, which is the fabricated-reference-data problem this bundle refuses everywhere
+else. If BCG holds industry cost factors, they are reference data to seed. If not, the
+honest fix is renaming domain 1 to what it does — inform entity resolution, not the
+arithmetic.
+
+**A21 — two dead reference columns, now fixed.** Severity: medium.
+`reference.archetype_prior` seeds five columns per archetype. The loader read **three**.
+`users_base` and `bandwidth_mbps_base` were seeded, approved, and read by nothing.
+
+*Headcount ignored the topology.* Each archetype declares a `users_base` (BRANCH 25,
+LARGE_OFFICE 250, DC 0), so the footprint already implies a headcount — but `EstimateIn.users`
+was a flat input defaulting to 5000. A 500-branch estate and a 5-data-centre estate cost the
+same in platform terms. `users` is now optional and derived as `Σ(sites × users_base)` when
+absent; an explicit value still wins, and the response reports `users_source` as
+`ANALYST_SUPPLIED` or `DERIVED_FROM_FOOTPRINT` because those are different claims. Where
+nothing can be derived and nothing was supplied — a DC-only estate, every `users_base` zero —
+the route **refuses with 422** rather than falling back to a constant.
+
+Verified by execution: 500 branches + 5 DCs derives 12,500 users, not 5,000. 100 branches
+and 100 large offices are the same site count and imply 2,500 versus 25,000.
+
+*Bandwidth is now reported, and explicitly not priced.* The profile per archetype and the
+estate total are carried through to the estimate response. But `unit_cost_prior` has **no
+speed dimension**, so a 100 Mbps branch and a 10 Gbps data centre on the same product are
+priced identically — a 100× difference the reference data cannot express. The response
+carries `bandwidth_is_priced: false` rather than leaving a reader to assume otherwise.
+Pricing it properly needs bandwidth-tiered priors, which is reference data to approve, not
+arithmetic to invent.
+
+**A mechanical guard, so this cannot recur:**
+`test_every_archetype_prior_column_is_loaded_by_the_route` fails if any seeded column on
+the prior is read by nothing. A seeded column the model ignores is a claim it does not
+honour.
+
+**404 offline tests pass.**
+
 ## Verification status — read this
 
 I built this without network access and **could not run `docker compose up`**. What was
@@ -2258,7 +2312,7 @@ verified and what wasn't:
 | Pre-existing `derive_components` / `compute` call patterns unchanged | **Executed** — old call shapes against new code |
 | All 272 `db.<table>.c.<column>` references and every migration `_add_column` resolve against the real schema | **Executed** — AST extraction, whole repo |
 | `tests/check_build_config.py` passes (no undefined names, no duplicate compose keys, COPY paths exist) | **Executed** — and it caught a real `NameError` this pass |
-| **399 tests across 13 modules, incl. a full end-to-end flow** | **EXECUTED — 390 pass, 3 fail, 3 skip, 4 need real httpx.** 19 defects across six passes: 4 real application bugs, 15 in tests/fixtures/shims |
+| **404 tests across 13 modules, incl. a full end-to-end flow** | **EXECUTED — 390 pass, 3 fail, 3 skip, 4 need real httpx.** 19 defects across six passes: 4 real application bugs, 15 in tests/fixtures/shims |
 | Home-page progress panel shows correct live state | **EXECUTED** — all 10 values checked against a real case; found one wrong response key that would have displayed a confident zero |
 | No development shim ships in a runtime image | **Verified** — `.dockerignore` excludes `tools/offline_shims/`; nothing in `api_service/`, `analyst_ui/` or `contract/` references it |
 | Pre-flight guidance names only real conditions, and covers all of them | **EXECUTED** — pinned against a live report; caught 2 invented keys that would have rendered nothing |

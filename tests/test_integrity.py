@@ -849,3 +849,97 @@ def test_omitting_a_confidence_guard_input_fails_loudly():
     with pytest.raises(TypeError):
         confidence.compute(policy=POLICY, current_baseline="0.5",
                            target_cost="0.5", realization="0.3")
+
+
+# --------------------------------------------------------------- dead reference columns
+# Found by auditing whether V0 is genuinely topology-driven. archetype_prior
+# seeds five columns; the loader read three. users_base and bandwidth_mbps_base
+# were seeded and read by nothing, so the footprint implied a headcount the
+# model discarded in favour of a flat 5000 default.
+
+def test_the_footprint_implies_a_headcount_from_approved_priors():
+    from app.domain import simulation
+    arch = {"BRANCH": {"dual_access_probability": 0.55, "primary_product": "DIA",
+                       "backup_product": "BROADBAND", "users_base": 25,
+                       "bandwidth_mbps_base": 100},
+            "DC": {"dual_access_probability": 1.0, "primary_product": "ETHERNET",
+                   "backup_product": "ETHERNET", "users_base": 0,
+                   "bandwidth_mbps_base": 10000}}
+    out = simulation.one_pass(42, [
+        {"country": "GB", "archetype": "BRANCH", "sites": 500},
+        {"country": "DE", "archetype": "DC", "sites": 5}], arch)
+    assert out["implied_users"] == 12500, (
+        "500 branches at 25 users each; a data centre contributes none")
+
+
+def test_two_estates_of_the_same_site_count_imply_different_headcounts():
+    """The defect this closes: a flat default made these identical."""
+    from app.domain import simulation
+    arch = {"BRANCH": {"dual_access_probability": 0.5, "primary_product": "DIA",
+                       "backup_product": "BROADBAND", "users_base": 25,
+                       "bandwidth_mbps_base": 100},
+            "LARGE_OFFICE": {"dual_access_probability": 0.9,
+                             "primary_product": "ETHERNET", "backup_product": "DIA",
+                             "users_base": 250, "bandwidth_mbps_base": 500}}
+    branches = simulation.one_pass(7, [
+        {"country": "GB", "archetype": "BRANCH", "sites": 100}], arch)
+    offices = simulation.one_pass(7, [
+        {"country": "GB", "archetype": "LARGE_OFFICE", "sites": 100}], arch)
+    assert branches["sites"] == offices["sites"] == 100
+    assert branches["implied_users"] == 2500
+    assert offices["implied_users"] == 25000
+    assert offices["implied_users"] > branches["implied_users"] * 5
+
+
+def test_the_bandwidth_profile_is_reported_per_archetype():
+    from app.domain import simulation
+    arch = {"BRANCH": {"dual_access_probability": 0.5, "primary_product": "DIA",
+                       "backup_product": "BROADBAND", "users_base": 25,
+                       "bandwidth_mbps_base": 100}}
+    out = simulation.one_pass(1, [
+        {"country": "GB", "archetype": "BRANCH", "sites": 10}], arch)
+    assert out["bandwidth_mbps_total"] == 1000
+    assert out["bandwidth_profile"]["BRANCH"] == {
+        "sites": 10, "mbps_per_site": 100, "mbps_total": 1000}
+
+
+def test_a_missing_users_base_derives_zero_rather_than_guessing():
+    """An archetype with no approved users_base must contribute nothing, not a
+    fallback constant - the estimate route then refuses rather than inventing a
+    headcount."""
+    from app.domain import simulation
+    arch = {"MYSTERY": {"dual_access_probability": 0.5, "primary_product": "DIA",
+                        "backup_product": "BROADBAND"}}
+    out = simulation.one_pass(1, [
+        {"country": "GB", "archetype": "MYSTERY", "sites": 50}], arch)
+    assert out["implied_users"] == 0
+    assert out["bandwidth_mbps_total"] == 0
+
+
+def test_every_archetype_prior_column_is_loaded_by_the_route():
+    """The audit finding in mechanical form: a seeded column nothing reads is a
+    claim the model does not honour. Five columns on the prior, five read."""
+    import ast
+    import pathlib
+    root = pathlib.Path(__file__).resolve().parents[1]
+    for candidate in (root / "api_service" / "app", root / "app"):
+        if (candidate / "db.py").exists():
+            app_dir = candidate
+            break
+    else:
+        import pytest
+        pytest.skip("cannot locate the application package")
+
+    tree = ast.parse((app_dir / "db.py").read_text())
+    declared = set()
+    for node in tree.body:
+        if (isinstance(node, ast.Assign) and isinstance(node.value, ast.Call)
+                and getattr(node.value.func, "id", None) == "Table"
+                and node.targets[0].id == "archetype_prior"):
+            declared = {a.args[0].value for a in node.value.args[2:]
+                        if isinstance(a, ast.Call)
+                        and getattr(a.func, "id", "") == "Column"}
+    loader = (app_dir / "routers" / "api.py").read_text()
+    block = loader.split("db.archetype_prior")[0][-900:]
+    unread = {c for c in declared - {"archetype"} if f"r.{c}" not in block}
+    assert not unread, f"seeded archetype_prior columns nothing reads: {sorted(unread)}"
