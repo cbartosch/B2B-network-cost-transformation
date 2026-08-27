@@ -314,6 +314,20 @@ def _fact(session, *, value, fact_class="Location footprint",
     return case_id, fid
 
 
+def _recon_policy():
+    """The reconciliation policy that actually ships. Same principle as
+    _seeded_tolerance below: exercise the seeded values, so a seed change that
+    loosens a tolerance fails here rather than in production. The tolerances
+    used to be a module constant in reconciliation.py duplicating these
+    numbers, so the seed was decoration.
+    """
+    from app.domain.policy import ReconciliationPolicy
+    from app.seed import THRESHOLDS
+    rows = {k: v for sn, k, v in THRESHOLDS
+            if sn == "provider_reconciliation_tier"}
+    return ReconciliationPolicy.from_rows(rows)
+
+
 def _seeded_tolerance():
     """Tests exercise the value that ships, so a seed change that weakens the
     guard fails here rather than in production."""
@@ -792,7 +806,7 @@ def test_matching_usage_passes(session):
     start, end = _window()
     _llm_calls(session, provider="anthropic", count=10, tokens_each=100)
     out = reconciliation.record(
-        session, provider="anthropic", tier="A", period_start=start,
+        session, reconciliation_policy=_recon_policy(), provider="anthropic", tier="A", period_start=start,
         period_end=end, reported_calls=10, reported_tokens=1000,
         environment="TEST", source=reconciliation.MANUAL_CONSOLE,
         recorded_by="Priya Raman")
@@ -807,7 +821,7 @@ def test_a_variance_beyond_tolerance_raises_a_p2_and_blocks_promotion(session):
     start, end = _window()
     _llm_calls(session, provider="anthropic", count=10, tokens_each=100)
     out = reconciliation.record(
-        session, provider="anthropic", tier="A", period_start=start,
+        session, reconciliation_policy=_recon_policy(), provider="anthropic", tier="A", period_start=start,
         period_end=end, reported_calls=2, reported_tokens=200,
         environment="TEST", source=reconciliation.MANUAL_CONSOLE,
         recorded_by="Priya Raman")
@@ -822,11 +836,11 @@ def test_tolerance_differs_by_adapter_tier(session):
     start, end = _window()
     _llm_calls(session, provider="openai", count=104, tokens_each=1)
     strict = reconciliation.record(
-        session, provider="openai", tier="A", period_start=start, period_end=end,
+        session, reconciliation_policy=_recon_policy(), provider="openai", tier="A", period_start=start, period_end=end,
         reported_calls=100, reported_tokens=100, environment="TEST",
         source=reconciliation.MANUAL_CONSOLE, recorded_by="P")
     lenient = reconciliation.record(
-        session, provider="openai", tier="B", period_start=start, period_end=end,
+        session, reconciliation_policy=_recon_policy(), provider="openai", tier="B", period_start=start, period_end=end,
         reported_calls=100, reported_tokens=100, environment="TEST",
         source=reconciliation.MANUAL_CONSOLE, recorded_by="P")
     assert strict["status"] == reconciliation.BREACH      # 4% > 2%
@@ -839,7 +853,7 @@ def test_an_unreconcilable_tier_is_refused(session):
     start, end = _window()
     with pytest.raises(ValueError, match="not reconcilable"):
         reconciliation.record(
-            session, provider="x", tier="C", period_start=start, period_end=end,
+            session, reconciliation_policy=_recon_policy(), provider="x", tier="C", period_start=start, period_end=end,
             reported_calls=1, reported_tokens=1, environment="TEST",
             source=reconciliation.MANUAL_CONSOLE, recorded_by="P")
 
@@ -851,7 +865,7 @@ def test_the_automated_fetch_is_refused_rather_than_stubbed(session):
     start, end = _window()
     with pytest.raises(reconciliation.SourceNotImplemented, match="console"):
         reconciliation.record(
-            session, provider="anthropic", tier="A", period_start=start,
+            session, reconciliation_policy=_recon_policy(), provider="anthropic", tier="A", period_start=start,
             period_end=end, reported_calls=1, reported_tokens=1,
             environment="TEST", source=reconciliation.PROVIDER_API,
             recorded_by="P")
@@ -864,7 +878,7 @@ def test_a_reconciliation_records_who_performed_it(session):
     start, end = _window()
     with pytest.raises(ValueError, match="recorded_by"):
         reconciliation.record(
-            session, provider="anthropic", tier="A", period_start=start,
+            session, reconciliation_policy=_recon_policy(), provider="anthropic", tier="A", period_start=start,
             period_end=end, reported_calls=1, reported_tokens=1,
             environment="TEST", source=reconciliation.MANUAL_CONSOLE,
             recorded_by="  ")
@@ -882,7 +896,7 @@ def test_never_reconciled_is_reported_distinctly_from_passing(session):
     start, end = _window()
     _llm_calls(session, provider="anthropic", count=5, tokens_each=10)
     reconciliation.record(
-        session, provider="anthropic", tier="A", period_start=start,
+        session, reconciliation_policy=_recon_policy(), provider="anthropic", tier="A", period_start=start,
         period_end=end, reported_calls=5, reported_tokens=50,
         environment="TEST", source=reconciliation.MANUAL_CONSOLE, recorded_by="P")
     after = reconciliation.state(session)

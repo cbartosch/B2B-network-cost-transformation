@@ -39,7 +39,7 @@ def _seeded(set_name):
     return {k: v for sn, k, v in THRESHOLDS if sn == set_name}
 
 
-POLICY = ResearchPolicy.from_rows(_seeded("research_policy"))
+POLICY = ResearchPolicy.from_rows(_seeded("research_budget_profile"))
 
 # A tighter policy for the budget-exhaustion test, so it does not depend on
 # how many LLM-01 domains happen to exist today.

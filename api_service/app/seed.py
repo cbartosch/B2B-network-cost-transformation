@@ -98,18 +98,14 @@ THRESHOLDS = [
     ("provider_reconciliation_tier", "tier_b_tolerance_pct", "5.0"),
     ("provider_reconciliation_tier", "consecutive_gap_incident", "3"),
 
-    # --- 0.3A research budget and stopping rule (LLM-01, LLM-08). Bounds
-    # search effort per domain and per run so "maximalist" stays a
-    # completeness contract rather than an unbounded, irreproducible search.
-    # research_wall_clock_budget_minutes has no source value anywhere in the
-    # material this was built from - 20 is a placeholder pending an approved
-    # figure, not a considered default. Treat it as PolicyIncomplete in spirit
-    # even though it satisfies from_rows() mechanically.
-    ("research_policy", "max_queries_per_domain", "6"),
-    ("research_policy", "max_captures_per_domain", "12"),
-    ("research_policy", "max_captures_per_run", "150"),
-    ("research_policy", "min_independent_sources_material_fact", "2"),
-    ("research_policy", "research_wall_clock_budget_minutes", "20"),
+    # (The 0.3A research budget lives above under research_budget_profile.
+    # Tranche 1 added a second set named research_policy with the same four
+    # counts and a wall clock of 20 minutes, described in a comment as "a
+    # placeholder pending an approved figure". The approved figure was already
+    # here - 45 minutes - and was never looked for. ResearchPolicy now reads
+    # research_budget_profile and the duplicate is gone. Found by the
+    # dead-governance guard, which flagged research_budget_profile as seeded
+    # and read by nothing: the two sets were the symptom, not the cause.)
 
     # --- Tranche 2 (LLM-07, LLM-06). A lever whose saving_base is at or above
     # this share of current TCO makes its inclusion a material assumption,

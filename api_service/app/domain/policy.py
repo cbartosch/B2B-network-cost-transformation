@@ -224,6 +224,59 @@ class CoveragePolicy:
                 f"{self.prior_coverage_min}; nothing could ever publish PARTIAL")
 
 
+# --------------------------------------------------------------- reconciliation
+@dataclass(frozen=True)
+class ReconciliationPolicy:
+    """7.2E usage-variance tolerances by adapter reconciliation tier.
+
+    These were seeded into reference.threshold AND hardcoded as
+    `reconciliation.TIER_TOLERANCE = {"A": D("2.0"), "B": D("5.0")}` - the same
+    numbers in two places, one governed and one not. The seeded values were
+    decoration: an approver could change tier_a_tolerance_pct and the code would
+    keep using its constant. Exactly the defect C2-06 fixed for the confidence
+    weights, surviving in a module added later.
+
+    Percentages, not unit-interval weights, so validated for positivity and
+    ordering rather than with _in_unit_interval.
+    """
+    set_name: str
+    tier_a_tolerance_pct: Decimal
+    tier_b_tolerance_pct: Decimal
+    consecutive_gap_incident: int
+
+    @classmethod
+    def from_rows(cls, rows: dict, set_name: str = "provider_reconciliation_tier"):
+        r = lambda k: _require(rows, k, set_name)          # noqa: E731
+        policy = cls(
+            set_name=set_name,
+            tier_a_tolerance_pct=r("tier_a_tolerance_pct"),
+            tier_b_tolerance_pct=r("tier_b_tolerance_pct"),
+            consecutive_gap_incident=int(r("consecutive_gap_incident")),
+        )
+        policy.validate()
+        return policy
+
+    def validate(self) -> None:
+        for name in ("tier_a_tolerance_pct", "tier_b_tolerance_pct"):
+            value = getattr(self, name)
+            if value <= 0:
+                raise PolicyInvalid(f"{name}={value} must be positive")
+        if self.tier_a_tolerance_pct > self.tier_b_tolerance_pct:
+            raise PolicyInvalid(
+                f"tier A tolerance ({self.tier_a_tolerance_pct}) is looser than "
+                f"tier B ({self.tier_b_tolerance_pct}). Tier A is the stricter "
+                f"tier by definition - a provider with a reconcilable API is held "
+                f"to a tighter variance than one read off a console by hand.")
+        if self.consecutive_gap_incident < 1:
+            raise PolicyInvalid(
+                "consecutive_gap_incident must be at least 1; zero would raise an "
+                "incident for a period that was never missed")
+
+    def tier_tolerance(self) -> dict:
+        """The mapping reconciliation.record() consumes."""
+        return {"A": self.tier_a_tolerance_pct, "B": self.tier_b_tolerance_pct}
+
+
 # --------------------------------------------------------------- research
 @dataclass(frozen=True)
 class ResearchPolicy:
@@ -241,7 +294,7 @@ class ResearchPolicy:
     research_wall_clock_budget_minutes: int
 
     @classmethod
-    def from_rows(cls, rows: dict, set_name: str = "research_policy"):
+    def from_rows(cls, rows: dict, set_name: str = "research_budget_profile"):
         r = lambda k: _require(rows, k, set_name)          # noqa: E731
         policy = cls(
             set_name=set_name,

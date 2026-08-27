@@ -55,12 +55,25 @@ def _policies(s):
         raise HTTPException(503, {"error": "governed policy unusable", "detail": str(exc)})
 
 
+def _reconciliation_policy(s):
+    try:
+        return policy.ReconciliationPolicy.from_rows(
+            _thresholds(s, "provider_reconciliation_tier"))
+    except (policy.PolicyIncomplete, policy.PolicyInvalid) as exc:
+        raise HTTPException(503, {"error": "governed reconciliation policy unusable",
+                                  "detail": str(exc)})
+
+
 def _research_policy(s):
     """Separate from _policies(): two existing call sites unpack that as a
     3-tuple, and research is not required for every route that needs the
     other three."""
     try:
-        return policy.ResearchPolicy.from_rows(_thresholds(s, "research_policy"))
+        # research_budget_profile, not research_policy: the latter was a
+        # duplicate set added in Tranche 1 whose wall-clock value was invented
+        # while an approved one already existed here.
+        return policy.ResearchPolicy.from_rows(
+            _thresholds(s, "research_budget_profile"))
     except (policy.PolicyIncomplete, policy.PolicyInvalid) as exc:
         raise HTTPException(503, {"error": "governed research policy unusable",
                                   "detail": str(exc)})
@@ -1569,7 +1582,8 @@ def submit_reconciliation(payload: ReconciliationIn):
     with S() as s:
         try:
             return reconciliation.record(
-                s, provider=payload.provider, tier=payload.tier,
+                s, reconciliation_policy=_reconciliation_policy(s),
+                provider=payload.provider, tier=payload.tier,
                 period_start=payload.period_start, period_end=payload.period_end,
                 reported_calls=payload.reported_calls,
                 reported_tokens=payload.reported_tokens,

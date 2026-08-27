@@ -943,3 +943,88 @@ def test_every_archetype_prior_column_is_loaded_by_the_route():
     block = loader.split("db.archetype_prior")[0][-900:]
     unread = {c for c in declared - {"archetype"} if f"r.{c}" not in block}
     assert not unread, f"seeded archetype_prior columns nothing reads: {sorted(unread)}"
+
+
+def test_no_governed_threshold_set_is_seeded_without_a_consumer():
+    """Dead governance: an approver sets a value nothing consults.
+
+    `provider_reconciliation_tier` was seeded into reference.threshold AND
+    hardcoded as `reconciliation.TIER_TOLERANCE = {"A": D("2.0"), "B": D("5.0")}`
+    - the same numbers twice, one governed and one not. Changing the seed
+    changed nothing. Exactly the defect C2-06 fixed for the confidence weights,
+    surviving in a module added afterwards.
+
+    This is deliberately a whitelist rather than a scan: keys are frequently
+    built with f-strings (`f"stage_ceiling_{s}_{c}"`), so a textual search
+    produces false positives. Naming the known-unconsumed sets means a NEW one
+    has to be added here consciously, with a reason.
+    """
+    import pathlib
+    import re
+
+    from app.seed import THRESHOLDS
+
+    root = pathlib.Path(__file__).resolve().parents[1]
+    for candidate in (root / "api_service" / "app", root / "app"):
+        if (candidate / "domain" / "policy.py").exists():
+            app_dir = candidate
+            break
+    else:
+        pytest.skip("cannot locate the application package")
+
+    # Sets that are knowingly seeded ahead of the control that will read them.
+    # Each needs a reason, not just an entry.
+    DECLARED_NOT_YET_CONSUMED = {
+        # 7.2D calibration compares simulated output against realised engagement
+        # outcomes. There are no realised outcomes in a Stage 0 build, so there
+        # is nothing to compute an MdAPE against. Seeded so the thresholds are
+        # governed from the start rather than invented later.
+        "simulation_calibration_threshold",
+    }
+
+    sets = {sn for sn, _, _ in THRESHOLDS}
+    policy_src = (app_dir / "domain" / "policy.py").read_text()
+    app_src = "\n".join(p.read_text() for p in app_dir.rglob("*.py")
+                        if p.name != "seed.py")
+
+    unconsumed = set()
+    for setname in sets:
+        if f'"{setname}"' in app_src or f"'{setname}'" in app_src:
+            continue
+        unconsumed.add(setname)
+
+    surprising = unconsumed - DECLARED_NOT_YET_CONSUMED
+    assert not surprising, (
+        f"these threshold sets are seeded and read by nothing: {sorted(surprising)}. "
+        f"Either wire them, or add them to DECLARED_NOT_YET_CONSUMED with a "
+        f"reason - a governed value nothing consults is a control that does not "
+        f"exist while appearing to.")
+
+    stale = DECLARED_NOT_YET_CONSUMED - unconsumed
+    assert not stale, (
+        f"{sorted(stale)} are now consumed and should leave the whitelist")
+
+
+def test_reconciliation_tolerances_come_from_the_seed_not_a_constant():
+    from app.domain import reconciliation
+    from app.domain.policy import ReconciliationPolicy
+    from app.seed import THRESHOLDS
+
+    rows = {k: v for sn, k, v in THRESHOLDS
+            if sn == "provider_reconciliation_tier"}
+    pol = ReconciliationPolicy.from_rows(rows)
+    assert pol.tier_tolerance() == {"A": D("2.0"), "B": D("5.0")}
+    assert reconciliation.TIER_TOLERANCE == {}, (
+        "the module constant must stay empty: a non-empty fallback would let a "
+        "missing policy price a breach against an ungoverned default")
+
+
+def test_tier_a_may_not_be_looser_than_tier_b():
+    """Tier A is the stricter tier by definition - a provider with a
+    reconcilable API is held to a tighter variance than one read off a console
+    by hand. Inverting them would silently weaken the control."""
+    from app.domain.policy import PolicyInvalid, ReconciliationPolicy
+    with pytest.raises(PolicyInvalid, match="looser"):
+        ReconciliationPolicy.from_rows({
+            "tier_a_tolerance_pct": "9.0", "tier_b_tolerance_pct": "5.0",
+            "consecutive_gap_incident": "3"})

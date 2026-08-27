@@ -30,8 +30,14 @@ from sqlalchemy import insert, select
 from .. import db
 from .money import D
 
-# Tolerances by adapter reconciliation tier (7.2E).
-TIER_TOLERANCE = {"A": D("2.0"), "B": D("5.0")}
+# Tolerances are GOVERNED, not constant. They live in reference.threshold under
+# `provider_reconciliation_tier` and arrive as a ReconciliationPolicy. This was
+# a module constant duplicating the seeded values, so an approver changing the
+# seed changed nothing - see policy.ReconciliationPolicy.
+#
+# Kept only as the fallback the caller may not supply, and deliberately empty:
+# a missing policy must refuse, not silently price a breach against a default.
+TIER_TOLERANCE: dict = {}
 
 MANUAL_CONSOLE = "MANUAL_CONSOLE"
 PROVIDER_API = "PROVIDER_API"
@@ -86,7 +92,8 @@ def _variance(claimed_value: int, reported_value: int) -> Decimal:
     return (abs(D(claimed_value) - D(reported_value)) / D(reported_value)) * D(100)
 
 
-def record(session, *, provider: str, tier: str, period_start, period_end,
+def record(session, *, reconciliation_policy, provider: str, tier: str,
+           period_start, period_end,
            reported_calls: int, reported_tokens: int, environment: str,
            source: str, recorded_by: str) -> dict:
     """Compare a provider-reported figure against what this system claims.
@@ -100,7 +107,9 @@ def record(session, *, provider: str, tier: str, period_start, period_end,
             f"{PROVIDER_API} requires a per-provider usage adapter, which this "
             f"build does not have - read the figures from the provider console "
             f"and submit them as {MANUAL_CONSOLE}.")
-    if tier not in TIER_TOLERANCE:
+    tolerances = (reconciliation_policy.tier_tolerance()
+                  if reconciliation_policy is not None else TIER_TOLERANCE)
+    if tier not in tolerances:
         raise ValueError(
             f"tier {tier!r} has no tolerance. Tier C providers are not "
             f"reconcilable and cannot be approved for LIVE use (7.2E).")
@@ -110,7 +119,7 @@ def record(session, *, provider: str, tier: str, period_start, period_end,
 
     mine = claimed(session, period_start=period_start, period_end=period_end
                    ).get(provider, {"calls": 0, "tokens": 0})
-    tolerance = TIER_TOLERANCE[tier]
+    tolerance = tolerances[tier]
     call_variance = _variance(mine["calls"], reported_calls)
     token_variance = _variance(mine["tokens"], reported_tokens)
     worst = max(call_variance, token_variance)

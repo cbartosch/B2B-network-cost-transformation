@@ -113,6 +113,10 @@ for name in MODULES:
         needs_dep.append((name + " (whole module)", str(e)))
         continue
     except Exception as e:
+        # A SyntaxError here means a whole module was never collected. That used
+        # to be reported only as a line in a summary nobody reads, so the total
+        # silently dropped by 70 while the run still said "0 FAILED". A
+        # collection failure is now fatal to the run.
         import_err.append((name, f"{type(e).__name__}: {e}"))
         continue
     for fname, fn in sorted(vars(mod).items()):
@@ -214,6 +218,8 @@ if needs_dep:
 if import_err:
     print("\nMODULES THAT WOULD NOT IMPORT:")
     for n, e in import_err: print(f"  {n}: {e}")
+if import_err:
+    sys.exit(2)
 if failed:
     import collections, re as _re
     buckets = collections.Counter()

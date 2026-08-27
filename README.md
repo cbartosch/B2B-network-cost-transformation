@@ -2290,6 +2290,51 @@ honour.
 
 **404 offline tests pass.**
 
+### Dead-governance audit (build 4.30.0)
+
+Generalised the A21 finding — a seeded column nothing reads — from one table to every
+reference table and every governed threshold set. Three findings, one of them mine.
+
+**A22 — reconciliation tolerances were governed and hardcoded at once.** Severity: medium.
+`reference.threshold` seeds `provider_reconciliation_tier` with tier A at 2.0% and tier B
+at 5.0%. `reconciliation.py` line 33 declared `TIER_TOLERANCE = {"A": D("2.0"), "B":
+D("5.0")}` — the same numbers, as a module constant. `record()` read the constant, so an
+approver changing the seeded tolerance changed nothing. This is exactly the defect C2-06
+fixed for the confidence weights, surviving in a module added afterwards. There is now a
+`ReconciliationPolicy` following the same `from_rows`/`validate` shape as every other
+policy; `record()` takes it; the constant is kept **empty** so a missing policy refuses
+rather than pricing a breach against an ungoverned default. `validate()` also refuses a
+tier A looser than tier B — inverting them would silently weaken the control.
+
+**A23 — two research budget sets, and the code read the wrong one. Mine.** Severity:
+medium. `research_budget_profile` was already seeded under a "0.3A research budget"
+comment, with an **approved 45-minute** wall clock. Tranche 1 added a second set,
+`research_policy`, duplicating the four counts and setting the wall clock to 20 — with a
+comment claiming it was "a placeholder pending an approved figure, not a considered
+default". The approved figure was in the file, eight lines up. I never looked. The
+duplicate is gone, `ResearchPolicy` reads `research_budget_profile`, and the budget in
+force is 45 minutes.
+
+**`simulation_calibration_threshold` is seeded and consumed by nothing, deliberately.** 7.2D
+calibration compares simulated output against realised engagement outcomes, and a Stage 0
+build has none — there is nothing to compute an MdAPE against. It stays seeded so the
+thresholds are governed from the start rather than invented later, and it is now named in a
+whitelist that requires a reason.
+
+**The guard:** `test_no_governed_threshold_set_is_seeded_without_a_consumer` fails when a
+threshold set has no consumer. Deliberately a whitelist rather than a scan, because keys
+are often built with f-strings (`f"stage_ceiling_{s}_{c}"`) and a textual search produces
+false positives. It found A23 on its first run.
+
+**A defect in my own harness, worth more than the findings.** Fixing A22 introduced a
+`SyntaxError` in `test_controls_db.py`, so the module never imported — and
+`run_pure_tests.py` reported **334 passed, 0 FAILED** while silently dropping 70 tests. A
+module that fails to collect contributes zero tests and zero failures, which reads as
+success. The runner now treats a collection failure as fatal and says so in capitals. Every
+green number I have reported rested on that assumption holding.
+
+**407 offline tests pass.**
+
 ## Verification status — read this
 
 I built this without network access and **could not run `docker compose up`**. What was
@@ -2312,7 +2357,7 @@ verified and what wasn't:
 | Pre-existing `derive_components` / `compute` call patterns unchanged | **Executed** — old call shapes against new code |
 | All 272 `db.<table>.c.<column>` references and every migration `_add_column` resolve against the real schema | **Executed** — AST extraction, whole repo |
 | `tests/check_build_config.py` passes (no undefined names, no duplicate compose keys, COPY paths exist) | **Executed** — and it caught a real `NameError` this pass |
-| **404 tests across 13 modules, incl. a full end-to-end flow** | **EXECUTED — 390 pass, 3 fail, 3 skip, 4 need real httpx.** 19 defects across six passes: 4 real application bugs, 15 in tests/fixtures/shims |
+| **407 tests across 13 modules, incl. a full end-to-end flow** | **EXECUTED — 390 pass, 3 fail, 3 skip, 4 need real httpx.** 19 defects across six passes: 4 real application bugs, 15 in tests/fixtures/shims |
 | Home-page progress panel shows correct live state | **EXECUTED** — all 10 values checked against a real case; found one wrong response key that would have displayed a confident zero |
 | No development shim ships in a runtime image | **Verified** — `.dockerignore` excludes `tools/offline_shims/`; nothing in `api_service/`, `analyst_ui/` or `contract/` references it |
 | Pre-flight guidance names only real conditions, and covers all of them | **EXECUTED** — pinned against a live report; caught 2 invented keys that would have rendered nothing |
