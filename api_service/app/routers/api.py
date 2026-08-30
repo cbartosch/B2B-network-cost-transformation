@@ -8,7 +8,8 @@ from pydantic import BaseModel, Field
 from sqlalchemy import delete, insert, select, text, update
 
 from .. import config, db, jobs, migrations
-from ..domain import (benchmark_ingest, confidence, coverage, dispositions,
+from ..domain import (anchor_estimate, benchmark_ingest, confidence, coverage,
+                      dispositions,
                       entity_resolution,
                       estimate, known_facts, policy, preflight, promotion, questionnaire,
                       reachability, reconciliation, research, savings_advisory,
@@ -1027,7 +1028,19 @@ def run_domain_research(case_id: str, payload: DomainResearchIn):
 
 # --------------------------------------------------------------- V0 estimate
 class EstimateIn(BaseModel):
-    simulation_run_id: str
+    # Which method. BUILD_UP enumerates and prices the estate; ANCHOR starts
+    # from a disclosed spend line and a governed addressable share. The
+    # analyst chooses - neither is a fallback that fires silently, because a
+    # method that changes itself when the evidence is thin produces a number
+    # whose basis nobody chose.
+    method: str = anchor_estimate.METHOD_BUILD_UP
+    # ANCHOR only. The disclosed annual spend figure the pool is a share of.
+    # Naming a known fact is what makes it evidence rather than a typed
+    # number, exactly as it is for a quantity driver.
+    anchor_value: Decimal | None = None
+    anchor_known_fact_id: str | None = None
+    # BUILD_UP only.
+    simulation_run_id: str | None = None
     # Optional. Absent means "derive it from the footprint" using the approved
     # users_base on each archetype - the topology already implies a headcount,
     # and a flat 5000 default made a 500-branch estate and a 5-DC estate cost
@@ -1047,6 +1060,126 @@ class EstimateIn(BaseModel):
     idempotency_key: str | None = None
 
 
+def _run_anchor_estimate(s, *, case_id, case_row, payload,
+                         confidence_policy, fact_policy):
+    """V0 by the ANCHOR method: a disclosed spend line and a governed share.
+
+    Deliberately reuses estimate.scenarios, confidence.compute and the same
+    snapshot row as the build-up path. Two methods with two savings engines
+    would be two products, and a reader comparing an ANCHOR run to a BUILD_UP
+    run needs the levers, the ceilings and the confidence bands to mean the
+    same thing in both.
+    """
+    try:
+        anchor_policy = policy.AnchorPolicy.from_rows(_thresholds(s, "anchor_policy"))
+    except policy.PolicyIncomplete as exc:
+        raise HTTPException(409, {"error": "governed policy unusable",
+                                  "detail": str(exc)})
+
+    # Provenance for the anchor, on the same terms as a quantity driver: a
+    # named known fact is evidence, a typed number is an assertion, and a
+    # corroborated fact is public evidence (0.1B).
+    anchor_ref, anchor_origin = None, anchor_estimate.ANCHOR_ASSERTED
+    anchor_value = payload.anchor_value
+    if payload.anchor_known_fact_id:
+        try:
+            src = known_facts.resolve_quantity_source(
+                s, case_id=case_id, known_fact_id=payload.anchor_known_fact_id,
+                driver="anchor_spend", value_used=anchor_value,
+                tolerance=fact_policy.agreement_tolerance)
+        except known_facts.QuantityConflict as exc:
+            raise HTTPException(409, {"error": "anchor conflicts with the "
+                                               "fact named as its source",
+                                      "detail": exc.detail})
+        except ValueError as exc:
+            raise HTTPException(422, str(exc))
+        anchor_ref = src.get("known_fact_id")
+        anchor_origin = src["origin"]
+
+    if anchor_value is None:
+        raise HTTPException(422, {
+            "error": "ANCHOR requires an anchor_value",
+            "detail": "the disclosed annual spend figure the addressable pool "
+                      "is a share of - for example a telecommunication costs "
+                      "line from the annual report."})
+
+    try:
+        components, basis = anchor_estimate.build_pool_components(
+            anchor_value=anchor_value, policy=anchor_policy,
+            anchor_origin=anchor_origin, anchor_ref=anchor_ref)
+    except anchor_estimate.AnchorUnusable as exc:
+        raise HTTPException(422, str(exc))
+
+    cov = anchor_estimate.assess_coverage(basis=basis, policy=anchor_policy,
+                                          anchor_origin=anchor_origin)
+    if cov["status"] == "REFUSED":
+        raise HTTPException(409, {"error": "V0 publication refused (0.3C)",
+                                  "coverage": cov})
+
+    disp = [dict(r._mapping) for r in s.execute(select(db.domain_disposition).where(
+        db.domain_disposition.c.case_id == case_id)).all()]
+    blockers = dispositions.validate(disp) if disp else ["no dispositions recorded"]
+    if blockers:
+        raise HTTPException(409, {"error": "V0 cannot publish", "blockers": blockers})
+
+    cur = estimate.current_tco(components)
+    lv = [dict(r._mapping) for r in s.execute(select(db.lever)).all()]
+    levers_by_id = {l["lever_id"]: l for l in lv}
+    scen = estimate.scenarios(components, lv)
+
+    disp_summary = dispositions.summarise(disp)
+    completeness = (D(disp_summary["total_domains"] - disp_summary["declared_unknown"])
+                    / D(disp_summary["total_domains"]))
+    headline = max(scen, key=lambda k: D(scen[k]["gross_run_rate_savings"]["base"]))
+    derived = confidence.derive_components(
+        policy=confidence_policy, stage="V0",
+        priced_spend_pct=cov["effective_coverage_pct"],
+        origin_breakdown=cur["origin_breakdown"],
+        domain_completeness=completeness,
+        # No priors are consulted by this method, so there is no prior recency
+        # or coverage to report. Zero is the honest value: the target-cost
+        # driver rests on the governed saving rates, not on a price book.
+        prior_recency=D(0), prior_coverage=D(0),
+        lever_stage_mix=estimate.lever_stage_mix(scen[headline], levers_by_id))
+    conf = confidence.compute(
+        policy=confidence_policy,
+        current_baseline=derived["current_baseline"],
+        target_cost=derived["target_cost"], realization=derived["realization"],
+        simulated_share=D(0),
+        asserted_share=estimate.asserted_share(components),
+        v0_status=cov["status"], drivers=derived["drivers"])
+
+    snap_id = str(uuid.uuid4())
+    s.execute(insert(db.estimate_snapshot).values(
+        estimate_snapshot_id=snap_id, case_id=case_id, version_label="V0",
+        v0_status=cov["status"],
+        current_tco={**cur["by_layer"], "total": cur["total"]},
+        target_tco={k: v["target_tco"] for k, v in scen.items()},
+        scenarios=scen,
+        gross_run_rate_savings={k: v["gross_run_rate_savings"] for k, v in scen.items()},
+        confidence=conf, coverage=cov,
+        simulated_share=0.0,
+        asserted_share=float(estimate.asserted_share(components)),
+        levers=[{"lever_id": l["lever_id"], "family": l["family"],
+                 "scenario": l["scenario"], "cost_layers": l["cost_layers"],
+                 "earliest_supported_stage": l["earliest_supported_stage"]} for l in lv],
+        pins={"calculation_version": config.CALCULATION_VERSION,
+              "estimate_method": anchor_estimate.METHOD_ANCHOR,
+              "anchor_basis": basis,
+              "resolved_entity_id": case_row.resolved_entity_id,
+              "perimeter_version": case_row.perimeter_version,
+              "discount_rate_set_id": case_row.discount_rate_set_id,
+              "base_currency": case_row.base_currency,
+              "price_year": case_row.price_year}))
+    s.commit()
+
+    return {"estimate_snapshot_id": snap_id, "method": anchor_estimate.METHOD_ANCHOR,
+            "v0_status": cov["status"], "anchor_basis": basis,
+            "current_tco": {**cur["by_layer"], "total": cur["total"]},
+            "scenarios": scen, "confidence": conf, "coverage": cov,
+            "headline_scenario": headline}
+
+
 @router.post("/v1/outside-in/cases/{case_id}/estimates:run")
 def run_estimate(case_id: str, payload: EstimateIn):
     with S() as s:
@@ -1057,6 +1190,27 @@ def run_estimate(case_id: str, payload: EstimateIn):
 
         confidence_policy, coverage_policy, fact_policy = _policies(s)
         case_row = _one_or_404(s, db.case, db.case.c.case_id, case_id, "case")
+
+        if payload.method not in anchor_estimate.METHODS:
+            raise HTTPException(422, {
+                "error": f"unknown method {payload.method!r}",
+                "methods": list(anchor_estimate.METHODS)})
+
+        # ---------------------------------------------------------- ANCHOR
+        if payload.method == anchor_estimate.METHOD_ANCHOR:
+            return _run_anchor_estimate(s, case_id=case_id, case_row=case_row,
+                                        payload=payload,
+                                        confidence_policy=confidence_policy,
+                                        fact_policy=fact_policy)
+
+        # --------------------------------------------------------- BUILD_UP
+        if not payload.simulation_run_id:
+            raise HTTPException(422, {
+                "error": "BUILD_UP requires a simulation",
+                "detail": "the method prices an enumerated estate, so there "
+                          "has to be one. Run a simulation on page 4, or use "
+                          "method=ANCHOR where a site-level inventory is not "
+                          "available."})
         sim = _one_or_404(s, db.simulation_run,
                           db.simulation_run.c.simulation_run_id,
                           payload.simulation_run_id, "simulation run")

@@ -373,6 +373,54 @@ class PriceDivergencePolicy:
                 "would be ignored within a day")
 
 
+@dataclass(frozen=True)
+class AnchorPolicy:
+    """Governs the V0 ANCHOR method: how much of a disclosed cost line may be
+    treated as addressable, and how that pool splits across cost layers.
+
+    Every number here is an assumption. That is the method: where a site-level
+    circuit inventory is not public - which is the normal case for a large
+    group - a Stage 0 estimate anchors on a disclosed figure and states what
+    share of it it claims to model. Governing the share is what keeps that
+    claim visible and arguable instead of buried."""
+    set_name: str
+    addressable_share_low: Decimal
+    addressable_share_base: Decimal
+    addressable_share_high: Decimal
+    layer_mix: dict
+    min_addressable_share: Decimal
+
+    @classmethod
+    def from_rows(cls, rows: dict, set_name: str = "anchor_policy"):
+        r = lambda k: _require(rows, k, set_name)          # noqa: E731
+        policy = cls(
+            set_name=set_name,
+            addressable_share_low=r("addressable_share_low"),
+            addressable_share_base=r("addressable_share_base"),
+            addressable_share_high=r("addressable_share_high"),
+            layer_mix={layer: r(f"layer_mix_{layer}")
+                       for layer in ("L0", "L2", "L4", "OPS")},
+            min_addressable_share=r("min_addressable_share"))
+        policy.validate()
+        return policy
+
+    def validate(self) -> None:
+        for name in ("addressable_share_low", "addressable_share_base",
+                     "addressable_share_high", "min_addressable_share"):
+            _in_unit_interval(name, getattr(self, name))
+        if not (self.addressable_share_low <= self.addressable_share_base
+                <= self.addressable_share_high):
+            raise PolicyInvalid(
+                f"addressable share must be ordered low <= base <= high, got "
+                f"{self.addressable_share_low}/{self.addressable_share_base}/"
+                f"{self.addressable_share_high}")
+        total = sum(self.layer_mix.values())
+        if abs(total - ONE) > Decimal("0.001"):
+            raise PolicyInvalid(
+                f"layer mix must sum to 1, got {total}: a pool that does not "
+                f"account for itself would silently drop or double-count spend")
+
+
 # --------------------------------------------------------------- recommendation
 @dataclass(frozen=True)
 class RecommendationPolicy:

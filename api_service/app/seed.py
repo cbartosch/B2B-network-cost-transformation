@@ -91,6 +91,27 @@ THRESHOLDS = [
     # still recorded, and it is flagged for adjudication before approval.
     ("price_divergence_policy", "material_divergence_share", "0.25"),
 
+    # --- anchor method (V0 ANCHOR).
+    # A disclosed telecom or IT cost line is an upper bound, not an addressable
+    # pool: it carries voice, mobile, non-WAN services and sites out of scope.
+    # These say how much of a public anchor a Stage 0 estimate may claim to
+    # model. They are assumptions and are labelled as such wherever they reach
+    # a number - the point of the method is that the assumption is explicit and
+    # governed rather than buried in a spreadsheet.
+    ("anchor_policy", "addressable_share_low", "0.45"),
+    ("anchor_policy", "addressable_share_base", "0.55"),
+    ("anchor_policy", "addressable_share_high", "0.65"),
+    # How the addressable pool splits across cost layers, so the seeded levers
+    # - which name the layers they act on - apply to it exactly as they apply
+    # to a built-up estate. Must sum to 1.
+    ("anchor_policy", "layer_mix_L0", "0.60"),
+    ("anchor_policy", "layer_mix_L2", "0.10"),
+    ("anchor_policy", "layer_mix_L4", "0.20"),
+    ("anchor_policy", "layer_mix_OPS", "0.10"),
+    # Below this addressable share the anchor explains too little of its own
+    # cost line to be an estimate of anything.
+    ("anchor_policy", "min_addressable_share", "0.25"),
+
     # --- 0.3A research budget
     ("research_budget_profile", "max_queries_per_domain", "6"),
     ("research_budget_profile", "max_captures_per_domain", "12"),

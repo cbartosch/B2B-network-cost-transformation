@@ -73,14 +73,47 @@ c3, c4 = st.columns(2)
 fp_fact = _picker("Footprint source", "footprint", c3)
 us_fact = _picker("User-count source", "users", c4)
 
+st.divider()
+st.subheader("Estimation method")
+st.caption("BUILD_UP enumerates the estate and prices every circuit. ANCHOR "
+           "starts from a disclosed spend line and a governed addressable "
+           "share, for the normal outside-in case where no site-level circuit "
+           "inventory is public. Both run through the same levers, the same "
+           "confidence model and the same ceilings; neither is a fallback that "
+           "fires on its own, because a method that switches itself produces a "
+           "number whose basis nobody chose.")
+method = st.radio("Method", ["BUILD_UP", "ANCHOR"], horizontal=True,
+                  help="BUILD_UP needs a completed simulation. ANCHOR needs a "
+                       "disclosed annual spend figure.")
+
+anchor_value, anchor_fact = None, None
+if method == "ANCHOR":
+    a1, a2 = st.columns(2)
+    anchor_value = a1.number_input(
+        "Disclosed annual spend (anchor)", min_value=0.0, value=0.0, step=1_000_000.0,
+        help="The cost line the addressable pool is a share of - a "
+             "telecommunication costs or IT services figure from the annual "
+             "report. It is an upper bound: it carries voice, mobile and "
+             "non-WAN services the transformation cannot touch.")
+    anchor_fact = _picker("Anchor source", "anchor_spend", a2)
+    if not anchor_fact:
+        a2.caption("Typed: the estimate will rest on an assertion and report "
+                   "PARTIAL. Register the figure as a known fact and "
+                   "corroborate it to lift that.")
+
 if st.button("Run V0 estimate", type="primary"):
-    r = api.post(f"/v1/outside-in/cases/{case_id}/estimates:run", {
-        "simulation_run_id": sim_id, "users": int(users),
-        "ops_cost_per_site_base": float(ops),
-        "footprint_known_fact_id": fp_fact, "users_known_fact_id": us_fact,
-        # Reconciled and reported, never the coverage denominator.
-        "declared_spend_by_country": {r["country"]: r["estimated_annual_spend"]
-                                      for r in spend_df.to_dict("records")}})
+    payload = {"method": method, "users": int(users),
+               "ops_cost_per_site_base": float(ops),
+               "footprint_known_fact_id": fp_fact, "users_known_fact_id": us_fact,
+               # Reconciled and reported, never the coverage denominator.
+               "declared_spend_by_country": {r["country"]: r["estimated_annual_spend"]
+                                             for r in spend_df.to_dict("records")}}
+    if method == "ANCHOR":
+        payload.update({"anchor_value": anchor_value or None,
+                        "anchor_known_fact_id": anchor_fact})
+    else:
+        payload["simulation_run_id"] = sim_id
+    r = api.post(f"/v1/outside-in/cases/{case_id}/estimates:run", payload)
     st.session_state["v0"] = r
 
 v0 = st.session_state.get("v0")
