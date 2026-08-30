@@ -216,6 +216,52 @@ rows = [{"domain_no": n, "domain_name": nm,
          "disposition": existing.get(n, {}).get("disposition", "BENCHMARK_PRIOR"),
          "reason": existing.get(n, {}).get("reason") or ""} for n, nm in catalogue]
 
+st.subheader("What research actually found")
+st.caption("The table below records a disposition and a reason. Everything the "
+           "research produced behind that - the sources, the fetched fragments, "
+           "the numbers, and which budget ran out where nothing was found - is "
+           "stored on each domain and shown here. A disposition without its "
+           "evidence is an assertion.")
+
+_researched = [d for d in current.get("dispositions", [])
+               if (d.get("evidence") or d.get("agent_run_id"))]
+if not _researched:
+    st.caption("No researched domains on this case yet.")
+else:
+    _names = dict(catalogue)
+    for d in sorted(_researched, key=lambda d: d["domain_no"]):
+        ev = d.get("evidence") or {}
+        srcs = ev.get("sources") or []
+        qty = ev.get("quantities") or []
+        head = (f"{d['domain_no']}. {_names.get(d['domain_no'], '')} - "
+                f"{d.get('disposition')}"
+                + (f" ({d.get('reason')})" if d.get("reason") else "")
+                + (f" - {len(srcs)} source(s), {len(qty)} quantity(ies)"
+                   if (srcs or qty) else ""))
+        with st.expander(head):
+            if ev.get("budget_note"):
+                st.warning(f"Stopped early: {ev['budget_note']}")
+            if qty:
+                st.markdown("**Numbers found**")
+                st.dataframe(pd.DataFrame(qty), use_container_width=True,
+                             hide_index=True)
+            else:
+                st.caption("No structured quantities - the finding was "
+                           "qualitative, or the agent returned prose only.")
+            if srcs:
+                st.markdown("**Sources, as independently re-fetched**")
+                for srec in srcs:
+                    st.write(f"- {srec.get('publisher') or 'source'}: "
+                             f"{srec.get('url')}")
+                    if srec.get("fragment"):
+                        st.caption(srec["fragment"][:400])
+            if d.get("agent_run_id"):
+                st.caption(f"agent_run_id `{d['agent_run_id']}` - the provider "
+                           f"call and its liveness proof are on page 7.")
+
+st.divider()
+st.subheader("Dispositions")
+
 edited = st.data_editor(
     pd.DataFrame(rows), use_container_width=True, hide_index=True, height=520,
     column_config={

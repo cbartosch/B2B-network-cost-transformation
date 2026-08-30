@@ -1,5 +1,6 @@
 import logging
 import secrets
+import traceback
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
@@ -120,3 +121,34 @@ async def require_token(request: Request, call_next):
 
 
 app.include_router(router)
+
+@app.exception_handler(Exception)
+async def _unhandled(request: Request, exc: Exception):
+    """Say what actually failed, outside PRODUCTION.
+
+    FastAPI's default is a bare {"detail": "Internal Server Error"}, with the
+    traceback only in the container log. That is right for a deployment facing
+    a client and wrong for a laptop: three separate debugging rounds on this
+    build went into narrowing a 500 by inference when the exception type was
+    sitting in `docker compose logs` the whole time.
+
+    PRODUCTION keeps the bare response - an error body can echo request
+    content, and the same reasoning already governs provider errors in
+    _transport.safe_error. Everywhere else the type, the message and the last
+    frames come back with the response, because the person reading it is the
+    person running the container.
+    """
+    log.exception("unhandled error: %s %s", request.method, request.url.path)
+    if config.is_production():
+        return JSONResponse(status_code=500,
+                            content={"detail": "Internal Server Error"})
+    return JSONResponse(status_code=500, content={
+        "detail": "Internal Server Error",
+        "error_type": type(exc).__name__,
+        "error": str(exc)[:2000],
+        "where": traceback.format_exc().strip().splitlines()[-8:],
+        "note": (f"Detail included because WORKBENCH_ENVIRONMENT is "
+                 f"{config.environment()}, not PRODUCTION. Full traceback: "
+                 f"docker compose logs api"),
+    })
+
