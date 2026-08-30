@@ -49,6 +49,21 @@ def _issuer(host: str, port: int = 443, cafile: str | None = None):
         return False, None, f"certificate not trusted: {exc.verify_message or exc}"
     except (socket.timeout, TimeoutError):
         return False, None, "timed out - blocked, or a proxy is required"
+    except ssl.SSLError as exc:
+        # An EOF mid-handshake is not a trust problem: nothing was rejected,
+        # the connection was cut. On an inspected network that is what a
+        # policy block looks like when the proxy resets rather than refusing,
+        # and it is also what a *mandatory* proxy looks like when the client
+        # tries to connect directly past it - which the provider transport
+        # does by default, since trust_env=False makes it ignore the ambient
+        # HTTPS_PROXY the rest of the machine uses. Classified separately
+        # because the remedy is different from either of the two above.
+        detail = str(exc)
+        if "UNEXPECTED_EOF" in detail or "EOF occurred" in detail:
+            return False, None, f"connection cut during handshake: {detail}"
+        return False, None, f"SSL error: {detail}"
+    except ConnectionResetError as exc:
+        return False, None, f"connection reset: {exc}"
     except OSError as exc:
         return False, None, f"{type(exc).__name__}: {exc}"
 
@@ -112,10 +127,27 @@ def main() -> int:
 
     untrusted = [f for f in failures if "not trusted" in (f[1] or "")]
     blocked = [f for f in failures if "timed out" in (f[1] or "")]
+    cut = [f for f in failures
+           if "connection cut" in (f[1] or "") or "connection reset" in (f[1] or "")]
     if untrusted:
         print("  Certificates are not trusted. The inspecting proxy's CA is missing")
         print("  from this trust store. Export it, put the .crt in certs/, rebuild:")
         print("      make check && docker compose build --no-cache")
+    if cut:
+        print("  The connection was cut during the TLS handshake. Nothing rejected a")
+        print("  certificate, so this is NOT a missing-CA problem and adding a CA to")
+        print("  certs/ will not fix it. Two things look like this:")
+        print()
+        print("    1. Egress must traverse a proxy, and the call went direct.")
+        print("       Provider calls set trust_env=False, so the ambient HTTPS_PROXY")
+        print("       the rest of the machine uses is deliberately ignored. Name it:")
+        print("           LLM_EGRESS_PROXY=http://proxy.host:port   in .env")
+        print("       Take the value from your shell:  echo $HTTPS_PROXY")
+        print()
+        print("    2. Policy blocks the host outright and the proxy resets rather")
+        print("       than refusing. Confirm with your network team; if Anthropic")
+        print("       is blocked, LIVE runs fail closed and the deterministic half")
+        print("       of Stage 0 still works.")
     if blocked:
         print("  Connections timed out. Either the endpoint is blocked by policy,")
         print("  or an egress proxy is mandatory. If a proxy is required:")

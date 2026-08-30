@@ -55,7 +55,8 @@ class OpenAIAdapter:
             with _transport.client(self._timeout) as c:
                 resp = c.post(ENDPOINT, json=body, headers=headers)
         except httpx.HTTPError as exc:
-            raise errors.ProviderUnavailable(f"openai transport error: {exc}") from exc
+            raise errors.ProviderUnavailable(
+                _transport.transport_error("openai", exc)) from exc
         latency_ms = int((time.perf_counter() - started) * 1000)
 
         # Pin read from the connection this response arrived on. Under ENFORCE

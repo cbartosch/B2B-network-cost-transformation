@@ -424,6 +424,42 @@ def safe_error(provider: str, status: int) -> str:
     return f"{provider} returned HTTP {status}"
 
 
+def transport_error(provider: str, exc: Exception) -> str:
+    """An httpx transport failure, translated into what to do about it.
+
+    The raw text is kept - an operator pasting it into a ticket needs it - but
+    an unadorned `[SSL: UNEXPECTED_EOF_WHILE_READING]` in the interface reads
+    as a certificate problem and sends people to certs/, which is the one
+    remedy that cannot help: nothing rejected a certificate, the connection
+    was cut. On a network where egress must traverse a proxy that is exactly
+    what a direct call looks like, and provider calls go direct by default
+    because trust_env=False makes them ignore the ambient HTTPS_PROXY the rest
+    of the machine uses (see the module docstring for why that is deliberate).
+    """
+    detail = str(exc)
+    hint = ""
+    if "UNEXPECTED_EOF" in detail or "EOF occurred" in detail or "reset" in detail.lower():
+        if EGRESS_PROXY:
+            hint = (" The connection was cut rather than refused, and "
+                   f"LLM_EGRESS_PROXY is set to {EGRESS_PROXY} - check that "
+                   "value is reachable and permitted to reach this host. This "
+                   "is not a certificate problem; adding a CA will not fix it.")
+        else:
+            hint = (" The connection was cut rather than refused. This is not a "
+                   "certificate problem - adding a CA to certs/ will not fix "
+                   "it. If this network requires a proxy for outbound HTTPS, "
+                   "set LLM_EGRESS_PROXY in .env: provider calls ignore the "
+                   "ambient HTTPS_PROXY by design, so a direct call past a "
+                   "mandatory proxy fails exactly like this. Run "
+                   "`make tls-doctor` to confirm which it is.")
+    elif "CERTIFICATE_VERIFY_FAILED" in detail:
+        hint = (" The peer's certificate was rejected by this container's trust "
+               "store, which is what an inspecting proxy looks like when its "
+               "CA is missing. Put the CA in certs/ and rebuild; "
+               "`make tls-doctor` names the issuer to look for.")
+    return f"{provider} transport error: {detail}{hint}"
+
+
 def spki_warning() -> dict | None:
     """Reported wherever pins are, so degraded support is visible rather than a
     boolean nobody reads."""
