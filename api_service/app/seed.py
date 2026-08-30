@@ -86,6 +86,14 @@ THRESHOLDS = [
     ("research_budget_profile", "max_captures_per_run", "150"),
     ("research_budget_profile", "min_independent_sources_material_fact", "2"),
     ("research_budget_profile", "research_wall_clock_budget_minutes", "45"),
+    # Ceiling on one domain. The 45-minute budget above is a *run* budget and
+    # was only ever checked between domains, so a single domain could retry
+    # until its query and capture caps ran out with no time bound at all -
+    # 6 provider calls carrying web searches plus a dozen source fetches.
+    # Once the interface began walking domains one request at a time, each
+    # request started a fresh run clock and the run budget stopped binding
+    # anything. This is the bound that actually holds.
+    ("research_budget_profile", "max_seconds_per_domain", "240"),
     # Hosted web-search tool invocations per domain (domain/research.py) -
     # a separate, provider-billed cost dimension from max_queries_per_domain.
     ("research_budget_profile", "max_web_searches_per_domain", "5"),

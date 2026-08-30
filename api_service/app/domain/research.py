@@ -184,7 +184,7 @@ class DomainResult:
 
     __slots__ = ("domain_no", "domain_name", "agent_id", "disposition",
                  "reason", "agent_run_id", "queries_used", "captures_used",
-                 "verified_sources", "failed", "failure_detail")
+                 "verified_sources", "failed", "failure_detail", "budget_note")
 
     def __init__(self, domain_no: int, domain_name: str, agent_id: str | None):
         self.domain_no = domain_no
@@ -198,6 +198,10 @@ class DomainResult:
         self.verified_sources: list[dict] = []
         self.failed = False
         self.failure_detail: str | None = None
+        # Which budget ran out, when one did. "BUDGET_EXHAUSTED" alone does not
+        # say whether the limit was time, captures for this domain, or captures
+        # for the run - three different remedies.
+        self.budget_note: str | None = None
 
     def as_dict(self) -> dict:
         return {"domain_no": self.domain_no, "domain_name": self.domain_name,
@@ -206,7 +210,8 @@ class DomainResult:
                 "queries_used": self.queries_used,
                 "captures_used": self.captures_used,
                 "verified_source_count": len(self.verified_sources),
-                "failed": self.failed, "failure_detail": self.failure_detail}
+                "failed": self.failed, "failure_detail": self.failure_detail,
+                "budget_note": self.budget_note}
 
 
 class SourceUnreachable(RuntimeError):
@@ -423,13 +428,33 @@ def _research_one_domain(session, *, case_row, domain_no: int, domain_name: str,
                          request_scope: str) -> DomainResult:
     result = DomainResult(domain_no, domain_name, agent_id)
     captures_left_for_domain = research_policy.max_captures_per_domain
+    domain_start = datetime.now(timezone.utc)
 
     for attempt in range(1, research_policy.max_queries_per_domain + 1):
+        # Time first. The query and capture caps bound *effort*, not duration,
+        # and with a provider call now carrying a hosted web search a domain
+        # could sit inside its caps for many minutes - long enough for the
+        # interface to give up on the request and report an outage on a run
+        # that was working. The run-level clock in run_domain_research cannot
+        # help: it is checked between domains, and a domain researched alone
+        # never reaches that check.
+        elapsed = (datetime.now(timezone.utc) - domain_start).total_seconds()
+        if attempt > 1 and elapsed >= research_policy.max_seconds_per_domain:
+            result.disposition, result.reason = "DECLARED_UNKNOWN", "BUDGET_EXHAUSTED"
+            result.budget_note = (
+                f"stopped after {elapsed:.0f}s ({attempt - 1} attempt(s)) - "
+                f"max_seconds_per_domain is "
+                f"{research_policy.max_seconds_per_domain}s")
+            return result
         if captures_remaining_in_run - result.captures_used <= 0:
             result.disposition, result.reason = "DECLARED_UNKNOWN", "BUDGET_EXHAUSTED"
+            result.budget_note = "run-level capture budget exhausted"
             return result
         if captures_left_for_domain <= 0:
             result.disposition, result.reason = "DECLARED_UNKNOWN", "BUDGET_EXHAUSTED"
+            result.budget_note = (
+                f"per-domain capture budget exhausted "
+                f"({research_policy.max_captures_per_domain} captures)")
             return result
 
         result.queries_used = attempt
@@ -659,6 +684,13 @@ def run_domain_research(session, *, case_id: str, agent_ids: list[str] | None = 
             evidence = None
             if result.verified_sources:
                 evidence = {"sources": result.verified_sources,
+                           "queries_used": result.queries_used,
+                           "captures_used": result.captures_used}
+            elif result.budget_note:
+                # Which limit stopped this, stored beside the disposition.
+                # BUDGET_EXHAUSTED on its own sent an analyst looking for a
+                # bigger budget when the real answer was often a slow network.
+                evidence = {"budget_note": result.budget_note,
                            "queries_used": result.queries_used,
                            "captures_used": result.captures_used}
             _upsert_disposition(session, case_id=case_id, domain_no=domain_no,

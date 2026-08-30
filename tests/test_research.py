@@ -46,7 +46,8 @@ POLICY = ResearchPolicy.from_rows(_seeded("research_budget_profile"))
 TIGHT_POLICY = ResearchPolicy(
     set_name="test-tight", max_queries_per_domain=2, max_captures_per_domain=4,
     max_captures_per_run=3, min_independent_sources_material_fact=2,
-    research_wall_clock_budget_minutes=5, max_web_searches_per_domain=3)
+    research_wall_clock_budget_minutes=5, max_web_searches_per_domain=3,
+    max_seconds_per_domain=240)
 
 _response_ids = (f"msg_test_{i}" for i in itertools.count())
 
@@ -531,3 +532,40 @@ def test_walking_domain_by_domain_resumes_rather_than_restarts(session, monkeypa
         domain_nos=[2])
     assert again["domains_attempted"] == 0, (
         "a domain already disposed must not be researched a second time")
+
+
+def test_a_single_domain_is_bounded_by_wall_clock(session, monkeypatch):
+    """Regression from 4.40.0. research_wall_clock_budget_minutes is checked
+    between domains in run_domain_research; once the interface began walking
+    domains one request at a time, every request started a fresh run clock and
+    that check stopped binding anything. A domain could then retry until its
+    query and capture caps ran out - minutes of provider calls - and the
+    interface reported the request as an outage.
+
+    Effort caps bound effort. This bounds duration."""
+    import app.domain.policy as policy_module
+
+    case_id = _case(session)
+    # Never verifies, so the loop always wants another attempt.
+    _wire_fake_provider(monkeypatch, observed_urls=[])
+    monkeypatch.setattr(research, "_fetch_source_fragment", _verified_fetch)
+
+    slow = policy_module.ResearchPolicy(
+        set_name="test-slow", max_queries_per_domain=50,
+        max_captures_per_domain=500, max_captures_per_run=500,
+        min_independent_sources_material_fact=2,
+        research_wall_clock_budget_minutes=45,
+        max_web_searches_per_domain=3,
+        max_seconds_per_domain=0)          # every attempt after the first is late
+
+    result = research.run_domain_research(
+        session, case_id=case_id, agent_ids=["LLM-01"], research_policy=slow,
+        domain_nos=[2])
+
+    entry = result["results"][0]
+    assert entry["reason"] == "BUDGET_EXHAUSTED"
+    assert entry["queries_used"] == 1, (
+        "the clock must stop the loop long before the 50-query cap")
+    assert "max_seconds_per_domain" in (entry["budget_note"] or ""), (
+        "which budget ran out has to be recorded - time and captures have "
+        "different remedies")

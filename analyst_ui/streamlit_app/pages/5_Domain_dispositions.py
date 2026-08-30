@@ -38,13 +38,20 @@ with st.expander("Run research (LLM-01 / LLM-08)"):
         # resumable for free: a domain that already carries a disposition is
         # skipped by the endpoint, so re-running continues rather than starts
         # over.
+        import time
         bar = st.progress(0.0)
         status = st.empty()
+        st.caption("Each domain is a live provider call carrying a web search, "
+                   "plus an independent fetch of every source it cites, so a "
+                   "domain takes minutes rather than seconds. Progress below is "
+                   "per domain - if it is moving, nothing is stuck.")
         tally = {"resolved": 0, "declared_unknown": 0, "failed": 0}
         problems = []
+        started = time.monotonic()
         for i, d in enumerate(pending, start=1):
             status.write(f"({i}/{len(pending)}) {d['domain_no']}. "
-                         f"{d['domain_name']} - {d['agent_id']}")
+                         f"{d['domain_name']} - {d['agent_id']} "
+                         f"[{int(time.monotonic() - started)}s elapsed]")
             r = api.post(f"/v1/outside-in/cases/{case_id}/domain-research:run",
                          {"overwrite": overwrite, "domain_nos": [d["domain_no"]]},
                          timeout=600.0)
