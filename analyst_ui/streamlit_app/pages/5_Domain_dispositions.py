@@ -133,6 +133,24 @@ with st.expander("Review research findings and promote them into the estimate"):
                     st.success(
                         f"{len(r['promoted_footprint'])} footprint row(s) promoted, "
                         f"{len(r['proposed_prices'])} price(s) proposed unapproved.")
+                    for px in r.get("proposed_prices", []):
+                        cx = px.get("benchmark_comparison") or {}
+                        line = (f"{px['country']} {px['product']} @ "
+                                f"{px['base']}: {cx.get('note', '')}")
+                        if cx.get("material"):
+                            st.error("Materially disagrees with the approved "
+                                     "benchmark - " + line)
+                        elif cx.get("verdict") == "NO_BENCHMARK":
+                            st.info(line)
+                        else:
+                            st.caption(line)
+                    if r.get("material_divergences"):
+                        st.warning(
+                            "Public research and a governed benchmark disagree "
+                            "materially above. Both are unapproved and neither "
+                            "is in any estimate. A steward should decide which "
+                            "is right before approving either - the "
+                            "disagreement is the finding.")
                     st.rerun()
 
             already = _f.get("already_promoted_footprint", [])

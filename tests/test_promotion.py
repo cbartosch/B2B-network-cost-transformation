@@ -98,3 +98,71 @@ def test_promoting_the_same_finding_twice_replaces_rather_than_duplicates(sessio
                       promoted_by="B")
     fp = promotion.evidenced_footprint(session, case_id)
     assert len(fp) == 1 and fp[0]["promoted_by"] == "B"
+
+
+# --- researched price vs the benchmark it would displace --------------------
+def _benchmark(session, country="DE", product="DIA", low=420, base=580, high=800):
+    session.execute(insert(db.unit_cost_prior).values(
+        id=f"{country}-{product}", country=country, product=product,
+        cost_layer="L0", low=low, base=base, high=high, currency="USD",
+        price_year=2026, approved=True))
+    session.commit()
+
+
+def _policy(share="0.25"):
+    from decimal import Decimal
+    from app.domain.policy import PriceDivergencePolicy
+    return PriceDivergencePolicy(set_name="t",
+                                 material_divergence_share=Decimal(share))
+
+
+def test_a_price_inside_the_band_corroborates_rather_than_contradicts(session):
+    _benchmark(session)
+    r = promotion.compare_to_benchmark(session, country="DE", product="DIA",
+                                       value=520, policy=_policy())
+    assert r["verdict"] == "WITHIN_BAND" and r["material"] is False
+
+
+def test_a_materially_divergent_price_is_flagged_not_absorbed(session):
+    """The gap this closes: a researched price landed unapproved with no
+    comparison recorded, so a figure 60% off the governed band looked exactly
+    like one that confirmed it. The disagreement is the finding."""
+    _benchmark(session)
+    r = promotion.compare_to_benchmark(session, country="DE", product="DIA",
+                                       value=1280, policy=_policy())
+    assert r["verdict"] == "OUTSIDE_BAND" and r["material"] is True
+    assert r["direction"] == "above"
+
+
+def test_divergence_is_measured_from_the_nearest_edge_not_the_midpoint(session):
+    """A benchmark is a range. Measuring from the centre would call a price
+    just outside a wide band a large disagreement."""
+    _benchmark(session)
+    r = promotion.compare_to_benchmark(session, country="DE", product="DIA",
+                                       value=880, policy=_policy())
+    assert r["divergence_share"] == pytest.approx(80 / 800, abs=1e-4)
+    assert r["material"] is False
+
+
+def test_a_country_with_no_benchmark_is_new_coverage_not_silence(session):
+    r = promotion.compare_to_benchmark(session, country="AE", product="DIA",
+                                       value=1300, policy=_policy())
+    assert r["verdict"] == "NO_BENCHMARK" and r["material"] is False
+
+
+def test_promotion_records_the_comparison_where_a_steward_will_see_it(session):
+    _benchmark(session)
+    q = {"label": "DIA 100Mbps MRC", "value": 1280, "unit": "USD/month",
+         "country": "DE", "as_of": "2025"}
+    case_id, _ = _case_with_finding(session, q)
+    cid = promotion.candidates(session, case_id)["price_candidates"][0]["candidate_id"]
+
+    out = promotion.promote(session, case_id=case_id, candidate_ids=[cid],
+                            promoted_by="Priya Raman",
+                            divergence_policy=_policy())
+
+    assert len(out["material_divergences"]) == 1
+    row = session.execute(select(db.unit_cost_prior).where(
+        db.unit_cost_prior.c.id == "DE-DIA-researched")).one()
+    assert row.approved is False
+    assert "OUTSIDE_BAND" in row.source_note

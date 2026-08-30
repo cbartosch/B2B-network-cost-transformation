@@ -80,6 +80,17 @@ THRESHOLDS = [
     # can be credited as its source.
     ("known_fact_policy", "agreement_tolerance", "0.10"),
 
+    # --- researched price vs the benchmark it would displace.
+    # A researched price previously landed as a separate unapproved row with
+    # nobody computing how far it sat from the approved band. A steward saw
+    # one number and approved it; a research finding 40% off the benchmark was
+    # indistinguishable from one that confirmed it, and the disagreement -
+    # the most informative thing in the comparison - was never surfaced.
+    # Inside the band is agreement. Outside it, divergence is measured against
+    # the nearest edge, and beyond this share it is material: the promotion is
+    # still recorded, and it is flagged for adjudication before approval.
+    ("price_divergence_policy", "material_divergence_share", "0.25"),
+
     # --- 0.3A research budget
     ("research_budget_profile", "max_queries_per_domain", "6"),
     ("research_budget_profile", "max_captures_per_domain", "12"),

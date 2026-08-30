@@ -117,8 +117,75 @@ def candidates(session, case_id: str) -> dict:
     }
 
 
+
+def compare_to_benchmark(session, *, country: str, product: str, value: float,
+                         policy=None) -> dict:
+    """How far a researched price sits from the approved benchmark it would
+    displace.
+
+    Inside the approved low/high band is agreement - a benchmark is a range,
+    and a figure within it corroborates rather than contradicts. Outside, the
+    divergence is measured against the nearest edge rather than the midpoint,
+    because the question a steward is answering is "how far outside the range
+    we approved is this", not "how far from its centre".
+
+    Returns a verdict either way. NO_BENCHMARK is not silence: a researched
+    price for a country the model cannot currently price at all is the most
+    valuable kind, and saying so is different from saying nothing was found.
+    """
+    row = session.execute(
+        select(db.unit_cost_prior).where(
+            db.unit_cost_prior.c.country == country,
+            db.unit_cost_prior.c.product == product,
+            db.unit_cost_prior.c.approved.is_(True))).first()
+    if row is None:
+        return {"verdict": "NO_BENCHMARK", "material": False,
+                "note": (f"no approved benchmark for {country} {product}, so "
+                         f"this is new coverage rather than a correction - "
+                         f"nothing to contradict")}
+
+    low, base, high = float(row.low), float(row.base), float(row.high)
+    if low <= value <= high:
+        return {"verdict": "WITHIN_BAND", "material": False,
+                "benchmark": {"low": low, "base": base, "high": high},
+                "note": (f"{value} falls inside the approved band "
+                         f"{low}-{high}; the research corroborates the "
+                         f"benchmark")}
+
+    edge = low if value < low else high
+    # Guard a zero edge rather than dividing by it: a benchmark of 0 is a data
+    # error, and reporting it as such beats a ZeroDivisionError inside a
+    # promotion the analyst thought had succeeded.
+    if edge == 0:
+        return {"verdict": "BENCHMARK_UNUSABLE", "material": True,
+                "benchmark": {"low": low, "base": base, "high": high},
+                "note": (f"the approved band for {country} {product} has a "
+                         f"zero edge, so divergence cannot be computed - the "
+                         f"benchmark itself needs attention")}
+
+    share = abs(value - edge) / abs(edge)
+    threshold = float(policy.material_divergence_share) if policy else 0.25
+    direction = "below" if value < low else "above"
+    return {
+        "verdict": "OUTSIDE_BAND",
+        "material": share >= threshold,
+        "benchmark": {"low": low, "base": base, "high": high},
+        "divergence_share": round(share, 4),
+        "direction": direction,
+        "threshold": threshold,
+        "note": (f"{value} is {share:.0%} {direction} the approved band "
+                 f"{low}-{high}"
+                 + (f", beyond the {threshold:.0%} materiality threshold - "
+                    f"public research and the governed benchmark disagree "
+                    f"materially and a steward should adjudicate before "
+                    f"approving either"
+                    if share >= threshold else
+                    f", within the {threshold:.0%} materiality threshold")),
+    }
+
+
 def promote(session, *, case_id: str, candidate_ids: list[str],
-            promoted_by: str) -> dict:
+            promoted_by: str, divergence_policy=None) -> dict:
     """Move selected candidates into the numbers the estimate reads.
 
     Idempotent per (case, country, archetype) for footprint and per
@@ -166,6 +233,14 @@ def promote(session, *, case_id: str, candidate_ids: list[str],
             # base with the band left equal to it and approved=False, so a
             # steward has to widen it deliberately rather than the system
             # inventing a spread it has no evidence for.
+            # Compare against the benchmark this would displace, before
+            # writing. A researched price that contradicts a governed value is
+            # the most informative outcome here and used to be the least
+            # visible one: the row landed unapproved with no comparison
+            # recorded, so a steward saw a number rather than a disagreement.
+            cmp = compare_to_benchmark(session, country=country,
+                                       product=product, value=value,
+                                       policy=divergence_policy)
             row_id = f"{country}-{product}-researched"
             session.execute(delete(db.unit_cost_prior).where(
                 db.unit_cost_prior.c.id == row_id))
@@ -176,18 +251,26 @@ def promote(session, *, case_id: str, candidate_ids: list[str],
                 source_agent_run_id=e["agent_run_id"],
                 source_note=(f"researched from domain {e['domain_no']} by "
                              f"{promoted_by}; as_of {q.get('as_of') or 'unstated'}; "
-                             f"single observation, band not yet set")))
+                             f"single observation, band not yet set. "
+                             f"vs benchmark: {cmp['verdict']} - {cmp['note']}")))
             proposed_prices.append(
                 {"country": country, "product": product, "base": value,
-                 "approved": False})
+                 "approved": False, "benchmark_comparison": cmp})
         else:
             declined.append({"candidate_id": e["candidate_id"],
                              "reason": "not in a shape the estimate consumes"})
     session.commit()
 
+    material = [p for p in proposed_prices
+                if (p.get("benchmark_comparison") or {}).get("material")]
     return {
         "promoted_footprint": promoted_footprint,
         "proposed_prices": proposed_prices,
+        # Lifted out of the list rather than left to be noticed inside it. A
+        # disagreement between public research and a governed benchmark is the
+        # thing a steward most needs to see and the thing most easily missed
+        # in a row of successful-looking promotions.
+        "material_divergences": material,
         "declined": declined,
         "promoted_by": promoted_by,
         "note": (

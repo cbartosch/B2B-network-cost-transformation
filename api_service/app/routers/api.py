@@ -938,9 +938,16 @@ def promote_research_findings(case_id: str, payload: PromoteIn):
     with S() as s:
         _one_or_404(s, db.case, db.case.c.case_id, case_id, "case")
         try:
+            div = policy.PriceDivergencePolicy.from_rows(
+                _thresholds(s, "price_divergence_policy"))
+        except policy.PolicyIncomplete as exc:
+            raise HTTPException(409, {"error": "governed policy unusable",
+                                      "detail": str(exc)})
+        try:
             return promotion.promote(s, case_id=case_id,
                                      candidate_ids=payload.candidate_ids,
-                                     promoted_by=payload.promoted_by)
+                                     promoted_by=payload.promoted_by,
+                                     divergence_policy=div)
         except promotion.NotPromotable as exc:
             raise HTTPException(422, str(exc))
 

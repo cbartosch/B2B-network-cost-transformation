@@ -342,6 +342,37 @@ class ResearchPolicy:
                 f"domain could never be fully searched within the run budget")
 
 
+@dataclass(frozen=True)
+class PriceDivergencePolicy:
+    """How far a researched price may sit from the approved benchmark before
+    the disagreement has to be adjudicated rather than absorbed.
+
+    Deliberately not the known-fact agreement_tolerance: that governs whether
+    a private assertion may be credited as the source of a quantity, and it is
+    tighter because it decides attribution. This one decides whether a steward
+    is told that public research contradicts a governed value - a different
+    question with a different cost of being wrong."""
+    set_name: str
+    material_divergence_share: Decimal
+
+    @classmethod
+    def from_rows(cls, rows: dict, set_name: str = "price_divergence_policy"):
+        policy = cls(set_name=set_name,
+                     material_divergence_share=_require(
+                         rows, "material_divergence_share", set_name))
+        policy.validate()
+        return policy
+
+    def validate(self) -> None:
+        _in_unit_interval("material_divergence_share",
+                          self.material_divergence_share)
+        if self.material_divergence_share <= 0:
+            raise PolicyInvalid(
+                "material_divergence_share must be above 0: zero would make "
+                "every researched price a material disagreement, and the flag "
+                "would be ignored within a day")
+
+
 # --------------------------------------------------------------- recommendation
 @dataclass(frozen=True)
 class RecommendationPolicy:
