@@ -1138,8 +1138,18 @@ def run_estimate(case_id: str, payload: EstimateIn):
             sim_output=sim.output, users=_resolved_users,
             ops_cost_per_site={"low": ops * D("0.8"), "base": ops, "high": ops * D("1.3")},
             priors=priors,
-            footprint_origin=sources["footprint"]["origin"],
-            users_origin=sources["users"]["origin"],
+            # build_components takes driver_origins/driver_refs keyed by the
+            # driver names it uses internally ("sites", "users"). This call
+            # passed footprint_origin= and users_origin=, which are not
+            # parameters of that function at all, so every request raised
+            # TypeError before reaching the calculation: estimates:run has
+            # returned a bare 500 since the original build. The unit tests
+            # call build_components directly with the correct keywords, so
+            # they passed throughout - nothing exercised this route.
+            driver_origins={"sites": sources["footprint"]["origin"],
+                            "users": sources["users"]["origin"]},
+            driver_refs={"sites": sources["footprint"].get("known_fact_id"),
+                         "users": sources["users"].get("known_fact_id")},
             overlay_unit=platform.get("SDWAN_OVERLAY"),
             sse_unit=platform.get("SSE_LICENCE"))
         if not components:

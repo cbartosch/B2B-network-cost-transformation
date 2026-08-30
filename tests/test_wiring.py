@@ -347,3 +347,54 @@ def test_startup_logs_pin_warnings_without_refusing(monkeypatch):
     monkeypatch.setattr(_transport, "startup_check", lambda: ["degraded but usable"])
     with TestClient(app) as c:
         assert c.get("/v1/health").status_code == 200
+
+
+# --- routes must actually be callable ---------------------------------------
+def test_every_domain_call_from_a_route_matches_its_signature():
+    """estimates:run passed footprint_origin= and users_origin= to
+    build_components, which takes neither. Every request raised TypeError
+    before reaching the calculation, so V0 returned a bare 500 from the
+    original build onward - while the unit tests, which call build_components
+    directly with the right keywords, passed the whole time.
+
+    Binding each call's keywords against the real signature catches the class:
+    a route and a domain function that disagree about their contract."""
+    import ast
+    import inspect
+    import pathlib
+
+    from app.domain import (confidence, coverage, dispositions, estimate,
+                            known_facts, promotion, research)
+
+    modules = {"estimate": estimate, "coverage": coverage,
+               "confidence": confidence, "dispositions": dispositions,
+               "known_facts": known_facts, "research": research,
+               "promotion": promotion}
+
+    root = pathlib.Path(__file__).resolve().parents[1]
+    for candidate in (root / "api_service" / "app", root / "app"):
+        if (candidate / "routers" / "api.py").exists():
+            api_src = (candidate / "routers" / "api.py").read_text()
+            break
+    else:
+        pytest.skip("cannot locate the application package")
+
+    problems = []
+    for node in ast.walk(ast.parse(api_src)):
+        if not isinstance(node, ast.Call):
+            continue
+        fn = node.func
+        if not (isinstance(fn, ast.Attribute) and isinstance(fn.value, ast.Name)):
+            continue
+        module = modules.get(fn.value.id)
+        target = getattr(module, fn.attr, None) if module else None
+        if target is None or not callable(target):
+            continue
+        kwargs = {k.arg for k in node.keywords if k.arg}
+        accepted = set(inspect.signature(target).parameters)
+        unknown = kwargs - accepted
+        if unknown:
+            problems.append(
+                f"{fn.value.id}.{fn.attr}() called with {sorted(unknown)}, "
+                f"which it does not accept (line {node.lineno})")
+    assert not problems, "route/domain signature mismatch:\n" + "\n".join(problems)
