@@ -73,6 +73,9 @@ services:
     environment:
       API_BASE_URL: http://api:8000
       API_TOKEN: ${API_TOKEN:-}
+      # How long the interface waits on one API call. LIVE agent calls are the
+      # slow ones; raise this rather than concluding the API is down.
+      UI_API_TIMEOUT_SECONDS: ${UI_API_TIMEOUT_SECONDS:-360}
       # Deliberately absent: DATABASE_URL, provider keys. Streamlit never holds
       # them (spec 2.1).
     depends_on:

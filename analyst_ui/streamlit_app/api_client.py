@@ -19,7 +19,16 @@ from contract.auth import AUTH_HEADER
 
 BASE = os.getenv("API_BASE_URL", "http://api:8000")
 API_TOKEN = os.getenv("API_TOKEN", "")
-TIMEOUT = 120.0
+# 120s was the original value and it was too short for this system's own
+# workload: a single LIVE agent call now carries a hosted web search plus
+# source fetches, and entity resolution, fact corroboration, the questionnaire
+# prefill and the savings advisor all go through this synchronous path. The
+# failure mode was indistinguishable from an outage - "API unreachable: timed
+# out" - while the request was in fact still running and would have succeeded.
+#
+# Configurable rather than hardcoded so a slow or heavily-proxied network can
+# raise it further without a rebuild of the interface's source.
+TIMEOUT = float(os.getenv("UI_API_TIMEOUT_SECONDS", "360"))
 
 
 def auth_configured() -> bool:
