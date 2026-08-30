@@ -34,6 +34,9 @@ AGENTS = {
     "LLM-01": {"name": "public evidence, footprint and current-state proposals", **_LIVE_ONLY},
     "LLM-02": {"name": "questionnaire prefill and evidence mapping", **_LIVE_ONLY},
     "LLM-08": {"name": "source-backed market-data gathering", **_LIVE_ONLY},
+    "LLM-09": {"name": "benchmark extraction - structuring a heterogeneous "
+                       "source into observations; interpretation only, no "
+                       "arithmetic", **_LIVE_ONLY},
     "ENTITY-RESOLVE": {"name": "subject-entity candidate generation (0.1A)", **_LIVE_ONLY},
     "KNOWN-FACT-CORROBORATE": {"name": "known-fact corroboration (0.1B.3)", **_LIVE_ONLY},
     "LLM-07": {"name": "savings advisory - scenario, percentile and basis recommendation",

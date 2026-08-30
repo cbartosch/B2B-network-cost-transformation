@@ -8,7 +8,8 @@ from pydantic import BaseModel, Field
 from sqlalchemy import delete, insert, select, text, update
 
 from .. import config, db, jobs, migrations
-from ..domain import (confidence, coverage, dispositions, entity_resolution,
+from ..domain import (benchmark_ingest, confidence, coverage, dispositions,
+                      entity_resolution,
                       estimate, known_facts, policy, preflight, promotion, questionnaire,
                       reachability, reconciliation, research, savings_advisory,
                       scope, simulation, stage)
@@ -1730,6 +1731,97 @@ def attestation(days: int = 30):
             "host does not control. Runs counted in unverifiable_runs carry no "
             "identifier to quote and cannot be spot-checked at all."),
     }
+
+
+class BenchmarkExtractIn(BaseModel):
+    text: str
+    source_document: str
+    source_locator: str | None = None
+    source_org: str | None = None
+    rights_basis: str = "PUBLISHED"
+    as_of: str | None = None
+    provider: str = "anthropic"
+
+
+@router.post("/v1/benchmarks:extract")
+def extract_benchmarks(payload: BenchmarkExtractIn):
+    """Structure one source's text into benchmark observations.
+
+    Text, not a file: the image carries no pptx/xlsx/pdf parser and does not
+    want one. tools/ingest_benchmarks.py converts locally, so a confidential
+    source never has to enter the container - only the extracted text and the
+    observations, which carry a rights flag.
+    """
+    with S() as s:
+        try:
+            return benchmark_ingest.extract(
+                s, text=payload.text, source_document=payload.source_document,
+                source_locator=payload.source_locator,
+                source_org=payload.source_org,
+                rights_basis=payload.rights_basis, as_of=payload.as_of,
+                provider=payload.provider)
+        except ValueError as exc:
+            raise HTTPException(422, str(exc))
+        except errors.ProviderUnavailable as exc:
+            raise HTTPException(503, str(exc))
+        except (errors.LivenessProofFailed, errors.StructuredOutputInvalid) as exc:
+            raise HTTPException(502, str(exc))
+
+
+@router.get("/v1/benchmarks/observations")
+def list_benchmark_observations(metric: str | None = None,
+                                rights_cleared: bool | None = None,
+                                country: str | None = None):
+    with S() as s:
+        q = select(db.benchmark_observation)
+        if metric:
+            q = q.where(db.benchmark_observation.c.metric == metric)
+        if rights_cleared is not None:
+            q = q.where(db.benchmark_observation.c.rights_cleared.is_(rights_cleared))
+        if country:
+            q = q.where(db.benchmark_observation.c.country == country.upper())
+        rows = s.execute(q.order_by(
+            db.benchmark_observation.c.created_at.desc())).all()
+        return {"observations": [dict(r._mapping) for r in rows]}
+
+
+class ClearRightsIn(BaseModel):
+    observation_ids: list[str]
+    cleared_by: str
+
+
+@router.post("/v1/benchmarks/observations:clear-rights")
+def clear_benchmark_rights(payload: ClearRightsIn):
+    """Named clearance. A benchmark from prior client work carries another
+    client's commercial position and contributes to nothing until someone
+    puts their name to that decision (2.4)."""
+    with S() as s:
+        try:
+            return benchmark_ingest.clear_rights(
+                s, observation_ids=payload.observation_ids,
+                cleared_by=payload.cleared_by)
+        except ValueError as exc:
+            raise HTTPException(422, str(exc))
+
+
+class DeriveBandsIn(BaseModel):
+    currency: str = "USD"
+    price_year: int = 2026
+    min_observations: int = 3
+    dry_run: bool = True
+
+
+@router.post("/v1/benchmarks/bands:derive")
+def derive_benchmark_bands(payload: DeriveBandsIn):
+    """Turn cleared observations into unapproved price bands, deterministically.
+
+    dry_run by default: see what would be derived, and what is being skipped
+    and why, before anything is written.
+    """
+    with S() as s:
+        return benchmark_ingest.derive_bands(
+            s, currency=payload.currency, price_year=payload.price_year,
+            min_observations=payload.min_observations, dry_run=payload.dry_run)
 
 
 @router.get("/v1/integrity/reachability")

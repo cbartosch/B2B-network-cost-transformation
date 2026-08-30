@@ -406,6 +406,51 @@ threshold = Table(
     schema="reference",
 )
 
+# The Proprietary Benchmark Vault (spec 2.2). Declared in SCHEMAS from the
+# first build and empty until now: benchmarks existed only as constants in
+# seed.py, so there was elaborate governance around *using* a benchmark and no
+# way to *get* one.
+#
+# One row per observed data point, as received. Nothing here is derived and
+# nothing here prices anything - reference.unit_cost_prior bands are derived
+# FROM these, deterministically and unapproved, so the arithmetic between a
+# quote and a governed band is inspectable rather than a model's assertion.
+#
+# The dimensions exist because real benchmarks carry them and the old target
+# schema could not: a $367 DIA quote that fails the latency SLA is not the
+# same product as a $477 that meets it, a 12-month price is not a 36-month
+# price, and MRC is not one-time cost.
+benchmark_observation = Table(
+    "benchmark_observation", metadata,
+    Column("observation_id", String(36), primary_key=True),
+    Column("created_at", DateTime(timezone=True), default=_now),
+    # --- where it came from
+    Column("source_document", Text), Column("source_locator", String(120)),
+    Column("source_org", String(160)), Column("as_of", String(32)),
+    Column("raw_text", Text),
+    # --- rights. A benchmark taken from prior client work carries another
+    # client's commercial position; it cannot contribute to a derived band
+    # until a named person clears it (same rule as known_facts, 2.4).
+    Column("rights_basis", String(32)),          # PUBLISHED | PRIOR_ENGAGEMENT | VENDOR_SUPPLIED
+    Column("rights_cleared", Boolean, default=False),
+    Column("rights_cleared_by", String(120)),
+    # --- what was observed
+    Column("metric", String(48)),                # MRC | NRC | LEAD_TIME_DAYS | ...
+    Column("country", String(2)), Column("product", String(48)),
+    Column("bandwidth_mbps", Integer),
+    Column("vendor", String(120)),
+    Column("value", Numeric(16, 4)), Column("unit", String(32)),
+    Column("currency", String(3)), Column("price_year", Integer),
+    Column("term_months", Integer), Column("tax_basis", String(24)),
+    Column("sla_compliant", Boolean),
+    # --- how it got here
+    Column("agent_run_id", String(36)),
+    Column("extraction_confidence", String(16)),
+    Column("inferred_fields", JSON),             # what the agent guessed, not read
+    Column("note", Text),
+    schema="benchmark",
+)
+
 unit_cost_prior = Table(
     "unit_cost_prior", metadata,
     Column("id", String(64), primary_key=True),
