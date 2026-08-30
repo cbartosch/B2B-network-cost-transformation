@@ -504,3 +504,28 @@ def test_the_verifier_ignores_tables_create_all_has_not_built_yet():
     moments later. Only a table that exists and is short a column is."""
     _drop_everything()
     assert migrations.verify_model_matches_database(db.engine) == []
+
+
+def test_v17_clears_archetypes_naming_the_retired_product():
+    """seed() is idempotent per primary key - ensure-present, never
+    update-changed. BRANCH keeps its identity across the BROADBAND split, so a
+    re-seed leaves backup_product='BROADBAND' in place: a product with no
+    price rows at all. Every BRANCH backup circuit is then unpriced and the
+    coverage gate refuses the estimate for what looks like missing evidence
+    and is really a stale row."""
+    _drop_everything()
+    db.metadata.create_all(db.engine)
+    with db.engine.begin() as conn:
+        conn.execute(text(
+            'INSERT INTO "reference"."archetype_prior" '
+            '(archetype, users_base, bandwidth_mbps_base, '
+            ' dual_access_probability, primary_product, backup_product) '
+            "VALUES ('BRANCH', 25, 100, 0.55, 'DIA', 'BROADBAND'), "
+            "       ('DC', 0, 10000, 1.0, 'ETHERNET', 'ETHERNET')"))
+        migrations._migrate_v17(conn)
+
+    with db.engine.connect() as conn:
+        rows = {r[0] for r in conn.execute(text(
+            'SELECT archetype FROM "reference"."archetype_prior"'))}
+    assert "BRANCH" not in rows, "the stale row must go so the seed rebuilds it"
+    assert "DC" in rows, "a row naming no retired product is a steward's to keep"

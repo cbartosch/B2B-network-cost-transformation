@@ -548,8 +548,25 @@ def _migrate_v17(conn) -> None:
             'DELETE FROM "reference"."unit_cost_prior" '
             "WHERE bandwidth_mbps IS NULL AND id NOT LIKE '%-researched'"))
         removed = result.rowcount or 0
-    log.info("v17: bandwidth_mbps added=%s; %d pre-split seeded price row(s) "
-             "cleared for reseed", bool(added), removed)
+    # The archetypes need the same treatment, and for a reason worth stating:
+    # seed() is idempotent per primary key - "ensure present", never "update
+    # changed". BRANCH keeps its identity across the split, so a re-seed
+    # (even --force) leaves backup_product='BROADBAND' untouched: a product
+    # that no longer has a single price row. Every BRANCH backup circuit would
+    # then be unpriced, and the coverage gate would refuse the estimate for a
+    # reason that looks like missing evidence and is really a stale row.
+    #
+    # Only rows naming the retired product are removed, so a steward's tuning
+    # of LARGE_OFFICE or DC survives. The seed rebuilds the three it clears.
+    archetypes_cleared = 0
+    if _has_table(conn, "reference", "archetype_prior"):
+        result = conn.execute(text(
+            'DELETE FROM "reference"."archetype_prior" '
+            "WHERE primary_product = 'BROADBAND' OR backup_product = 'BROADBAND'"))
+        archetypes_cleared = result.rowcount or 0
+    log.info("v17: bandwidth_mbps added=%s; %d pre-split price row(s) and %d "
+             "archetype row(s) naming the retired BROADBAND product cleared "
+             "for reseed", bool(added), removed, archetypes_cleared)
 
 
 def _migrate_v18(conn) -> None:

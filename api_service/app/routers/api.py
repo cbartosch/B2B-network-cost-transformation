@@ -1060,6 +1060,26 @@ def run_estimate(case_id: str, payload: EstimateIn):
         sim = _one_or_404(s, db.simulation_run,
                           db.simulation_run.c.simulation_run_id,
                           payload.simulation_run_id, "simulation run")
+        # A simulation from before the bandwidth dimension has product rows
+        # with no bandwidth, and match_prior cannot price a circuit whose
+        # requirement is unknown - so every circuit falls out as unpriced and
+        # the coverage gate refuses at 0%. That refusal is true but it names
+        # the wrong problem: nothing is wrong with the evidence, the run
+        # predates the model. Caught here, where the remedy can be stated.
+        _products = (sim.output or {}).get("products") or []
+        if _products and not any("bandwidth_mbps" in p for p in _products):
+            raise HTTPException(409, {
+                "error": "simulation predates the bandwidth dimension",
+                "simulation_model_version": sim.model_version,
+                "current_model_version": config.SIMULATION_MODEL_VERSION,
+                "detail": (
+                    "This simulation's circuits carry no bandwidth, so none of "
+                    "them can be matched to a price and the estimate would "
+                    "report 0% coverage for a reason that has nothing to do "
+                    "with coverage. Re-run the simulation on page 4 - the "
+                    "footprint and seed are unchanged, so the result is "
+                    "reproducible, not merely similar.")})
+
         if sim.status != jobs.SUCCEEDED or not sim.output:
             raise HTTPException(409, {
                 "error": "simulation has not completed",

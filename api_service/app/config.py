@@ -55,5 +55,9 @@ SIM_CHECKPOINT_EVERY = max(1, int(os.getenv("SIM_CHECKPOINT_EVERY", "5")))
 # How long the deep half of /v1/health is cached. The container healthcheck
 # polls the shallow half, which touches no database.
 HEALTH_DEEP_TTL_SECONDS = int(os.getenv("HEALTH_DEEP_TTL_SECONDS", "30"))
-SIMULATION_MODEL_VERSION = "sim-1.0.0"
+# 1.1.0: product rows carry bandwidth_mbps (4.53.0). A version that does not
+# move when the output shape changes is a version that means nothing - and a
+# stored 1.0.0 output run through the 1.1.0 pricing lookup prices zero
+# circuits, which reads as a badly evidenced estimate rather than a stale run.
+SIMULATION_MODEL_VERSION = "sim-1.1.0"
 CALCULATION_VERSION = "calc-1.0.0"
