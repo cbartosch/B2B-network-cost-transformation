@@ -503,6 +503,27 @@ def _build_prompt(domain_name: str, case_row, domain_no: int | None = None) -> s
         "Respond with the JSON object only.")
 
 
+
+def _answer_text(call: dict) -> str:
+    """The block carrying the answer, not every block concatenated.
+
+    Without tools a reply is one text block and `call["text"]` is right. With
+    the hosted search the model narrates between searches - "Let me look for
+    the annual report" - and the adapter concatenates every text block, so the
+    JSON object arrives with prose bolted to the front of it. The answer is
+    the last text block, after the final tool result.
+
+    This is not salvage-by-regex, which parse_json_strict rightly refuses: no
+    JSON is extracted from prose here, the correct block is selected and then
+    parsed whole. A reply whose last block is not valid JSON is still an
+    abstention.
+    """
+    blocks = call.get("content_blocks") or []
+    texts = [b.get("text", "") for b in blocks
+             if isinstance(b, dict) and b.get("type") == "text" and b.get("text")]
+    return texts[-1] if texts else call.get("text", "")
+
+
 def _existing_domain_nos(session, case_id: str) -> set[int]:
     rows = session.execute(
         select(db.domain_disposition.c.domain_no)
@@ -620,8 +641,18 @@ def _research_one_domain(session, *, case_row, domain_no: int, domain_name: str,
                     if provider == "anthropic" else None)
             call = gateway.execute(
                 session, agent_run_id=run_id, provider=provider,
-                system=AGENT_SYSTEM_PROMPTS[agent_id], prompt=prompt, tools=tools)
-            parsed = gateway.parse_json_strict(call["text"])
+                system=AGENT_SYSTEM_PROMPTS[agent_id], prompt=prompt, tools=tools,
+                max_tokens=research_policy.max_output_tokens_per_call)
+            if call.get("stop_reason") == "max_tokens":
+                # Cut off mid-answer. Parsing it would raise
+                # StructuredOutputInvalid and blame the model for bad JSON,
+                # when the JSON was fine and we stopped listening.
+                raise errors.StructuredOutputInvalid(
+                    f"the reply was truncated at the output-token limit "
+                    f"({research_policy.max_output_tokens_per_call}), so the "
+                    f"JSON is incomplete. Raise "
+                    f"research_budget_profile.max_output_tokens_per_call.")
+            parsed = gateway.parse_json_strict(_answer_text(call))
             observed_urls = _extract_observed_urls(call.get("content_blocks"))
         except (errors.ProviderUnavailable, errors.LivenessProofFailed,
                 errors.StructuredOutputInvalid, errors.ModeNotPermitted) as exc:

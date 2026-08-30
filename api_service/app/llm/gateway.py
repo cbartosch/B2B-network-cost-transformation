@@ -234,6 +234,11 @@ def execute(session, *, agent_run_id: str, provider: str, system: str,
             # about it. Empty when no tools were requested or the provider
             # doesn't surface one (raw.get is defensive against either).
             "content_blocks": call.raw.get("content", []),
+            # "max_tokens" here means the provider cut the reply off. A caller
+            # parsing structured output needs to tell that apart from a model
+            # that answered badly: the remedy is a bigger budget, not a better
+            # prompt, and "not valid JSON" points at the wrong one.
+            "stop_reason": call.raw.get("stop_reason"),
             "provider_response_id": call.provider_response_id,
             "provider_request_id": call.provider_request_id,
             "externally_verifiable": bool(call.provider_request_id),

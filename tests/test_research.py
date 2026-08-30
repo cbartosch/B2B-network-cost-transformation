@@ -47,7 +47,8 @@ TIGHT_POLICY = ResearchPolicy(
     set_name="test-tight", max_queries_per_domain=2, max_captures_per_domain=4,
     max_captures_per_run=3, min_independent_sources_material_fact=2,
     research_wall_clock_budget_minutes=5, max_web_searches_per_domain=3,
-    max_seconds_per_domain=240)
+    max_seconds_per_domain=240,
+    max_output_tokens_per_call=8000)
 
 _response_ids = (f"msg_test_{i}" for i in itertools.count())
 
@@ -556,7 +557,8 @@ def test_a_single_domain_is_bounded_by_wall_clock(session, monkeypatch):
         min_independent_sources_material_fact=2,
         research_wall_clock_budget_minutes=45,
         max_web_searches_per_domain=3,
-        max_seconds_per_domain=0)          # every attempt after the first is late
+        max_seconds_per_domain=0,          # every attempt after the first is late
+        max_output_tokens_per_call=8000)
 
     result = research.run_domain_research(
         session, case_id=case_id, agent_ids=["LLM-01"], research_policy=slow,
@@ -617,3 +619,48 @@ def test_the_displayed_prompt_is_hashed_the_way_the_gateway_hashes_it():
     system, prompt = "sys", "usr"
     assert gateway._sha(system + prompt) == hashlib.sha256(
         (system + prompt).encode("utf-8")).hexdigest()
+
+
+def test_the_answer_is_the_last_text_block_not_every_block_glued_together():
+    """With the hosted search the model narrates between searches, and the
+    adapter concatenates every text block - so the JSON arrived with prose
+    bolted to the front and failed to parse. The answer is the block after the
+    final tool result."""
+    call = {
+        "text": 'Let me search for that.{"found": true}',
+        "content_blocks": [
+            {"type": "text", "text": "Let me search for that."},
+            {"type": "server_tool_use", "name": "web_search"},
+            {"type": "web_search_tool_result",
+             "content": [{"url": "https://example.com/ar"}]},
+            {"type": "text", "text": '{"found": true, "quantities": []}'},
+        ],
+    }
+    assert json.loads(research._answer_text(call))["found"] is True
+
+
+def test_a_truncated_reply_is_reported_as_truncation_not_as_bad_json(
+        session, monkeypatch):
+    """Observed in the field: a domain searched properly, answered fully, and
+    was cut off at the 1500-token gateway default around 4,900 characters. It
+    surfaced as "model output was not valid JSON", which points at the prompt
+    when the remedy is a bigger output budget."""
+    case_id = _case(session)
+
+    class _Truncating(_FakeAdapter):
+        def complete(self, *, system, prompt, max_tokens=1500, tools=None):
+            call = super().complete(system=system, prompt=prompt,
+                                    max_tokens=max_tokens, tools=tools)
+            return type(call)(**{**call.__dict__,
+                                 "raw": {**call.raw, "stop_reason": "max_tokens"}})
+
+    fake = _Truncating(lambda **kw: _found_text())
+    monkeypatch.setattr(research.gateway, "_adapters",
+                        lambda: {"anthropic": fake, "openai": fake})
+
+    result = research.run_domain_research(
+        session, case_id=case_id, agent_ids=["LLM-01"], research_policy=POLICY,
+        domain_nos=[2])
+
+    detail = result["results"][0]["failure_detail"] or ""
+    assert "truncated" in detail and "max_output_tokens_per_call" in detail, detail

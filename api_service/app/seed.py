@@ -94,6 +94,12 @@ THRESHOLDS = [
     # request started a fresh run clock and the run budget stopped binding
     # anything. This is the bound that actually holds.
     ("research_budget_profile", "max_seconds_per_domain", "240"),
+    # Output tokens for one research call. The gateway default of 1500 predates
+    # both the hosted web search and the structured `quantities` block: a
+    # domain that searched properly and answered fully was cut off mid-JSON at
+    # roughly 4,900 characters, and surfaced as "model output was not valid
+    # JSON" - a prompt problem that was really a budget problem.
+    ("research_budget_profile", "max_output_tokens_per_call", "8000"),
     # Hosted web-search tool invocations per domain (domain/research.py) -
     # a separate, provider-billed cost dimension from max_queries_per_domain.
     ("research_budget_profile", "max_web_searches_per_domain", "8"),

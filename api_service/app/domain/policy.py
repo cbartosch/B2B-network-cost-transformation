@@ -302,6 +302,7 @@ class ResearchPolicy:
     # Wall-clock ceiling for a single domain. Distinct from the run budget,
     # which bounds a whole pass and cannot bound a domain researched alone.
     max_seconds_per_domain: int
+    max_output_tokens_per_call: int
 
     @classmethod
     def from_rows(cls, rows: dict, set_name: str = "research_budget_profile"):
@@ -317,6 +318,7 @@ class ResearchPolicy:
                 r("research_wall_clock_budget_minutes")),
             max_web_searches_per_domain=int(r("max_web_searches_per_domain")),
             max_seconds_per_domain=int(r("max_seconds_per_domain")),
+            max_output_tokens_per_call=int(r("max_output_tokens_per_call")),
         )
         policy.validate()
         return policy
@@ -324,7 +326,8 @@ class ResearchPolicy:
     def validate(self) -> None:
         for name in ("max_queries_per_domain", "max_captures_per_domain",
                      "max_captures_per_run", "research_wall_clock_budget_minutes",
-                     "max_web_searches_per_domain", "max_seconds_per_domain"):
+                     "max_web_searches_per_domain", "max_seconds_per_domain",
+                     "max_output_tokens_per_call"):
             value = getattr(self, name)
             if value <= 0:
                 raise PolicyInvalid(f"{name}={value} must be positive")
