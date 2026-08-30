@@ -676,3 +676,51 @@ def test_a_truncated_reply_is_reported_as_truncation_not_as_bad_json(
 
     detail = result["results"][0]["failure_detail"] or ""
     assert "truncated" in detail and "max_output_tokens_per_call" in detail, detail
+
+
+def test_the_prompt_states_the_evidence_bar_the_answer_must_clear(session, monkeypatch):
+    """min_independent_sources_material_fact is 2, and the prompt never said
+    so. An agent that returned one excellent source produced DECLARED_UNKNOWN
+    and never knew a second was needed - the bar was enforced silently after
+    the fact instead of being stated before it."""
+    case_id = _case(session)
+    seen = {}
+    _wire_fake_provider(monkeypatch, text_fn=lambda **kw: seen.update(kw) or _found_text())
+    monkeypatch.setattr(research, "_fetch_source_fragment", _verified_fetch)
+    research.run_domain_research(
+        session, case_id=case_id, agent_ids=["LLM-01"], research_policy=POLICY,
+        domain_nos=[2])
+
+    prompt = seen.get("prompt", "")
+    assert f"{POLICY.min_independent_sources_material_fact} independently" in prompt, (
+        "the source bar must come from the governed policy, not a constant")
+    assert "fetched again independently" in prompt, (
+        "the agent has to know its URLs are re-fetched, or it cites pages that "
+        "cannot be verified")
+    assert "as_of" in prompt, "recency is priced downstream; it has to be asked for"
+
+
+def test_the_prompt_states_what_the_model_currently_assumes(session, monkeypatch):
+    """An open question against a large group returns a group-level summary.
+    Stating the working assumption makes it falsifiable instead."""
+    case_id = _case(session)
+    seen = {}
+    _wire_fake_provider(monkeypatch, text_fn=lambda **kw: seen.update(kw) or _found_text())
+    monkeypatch.setattr(research, "_fetch_source_fragment", _verified_fetch)
+    research.run_domain_research(
+        session, case_id=case_id, agent_ids=["LLM-01"], research_policy=POLICY,
+        domain_nos=[2])
+
+    prompt = seen.get("prompt", "")
+    assert "WHAT THE MODEL CURRENTLY ASSUMES" in prompt
+    assert "HOW SITE TYPES MAP" in prompt and "users and" in prompt, (
+        "archetypes must arrive with the seeded users/bandwidth definitions, "
+        "so a real site type can be mapped rather than guessed at")
+
+
+def test_the_system_prompt_explains_which_numbers_move_the_total():
+    """An agent that does not know the cost formula cannot prioritise. Site
+    counts and circuit prices dominate; a country with no benchmark is
+    excluded entirely rather than estimated."""
+    for agent_id, system in research.AGENT_SYSTEM_PROMPTS.items():
+        assert "archetype" in system and "benchmark" in system, agent_id

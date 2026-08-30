@@ -125,6 +125,20 @@ _RESPONSE_SHAPE = (
 # several domains are genuinely qualitative - but asked for wherever the brief
 # implies a count, and stored beside the disposition when present.
 
+_HOW_THE_ESTIMATE_WORKS = (
+    "The estimate you are feeding works like this, and knowing it tells you "
+    "which numbers matter: each site is assigned an archetype; each archetype "
+    "implies a primary access circuit, a probability of a second backup "
+    "circuit, a headcount and a bandwidth; each circuit is priced at a "
+    "(country, product) monthly benchmark; an SD-WAN overlay is charged per "
+    "site and an SSE licence per user; an operating cost is charged per site. "
+    "Site counts by country and archetype, and circuit prices by country and "
+    "product, therefore drive almost all of the total. A country with no "
+    "price benchmark is excluded from the total entirely rather than "
+    "estimated, so identifying prices in an unpriced country is worth more "
+    "than refining one already covered."
+)
+
 _SEARCH_INSTRUCTION = (
     "You have a web_search tool. Use it before answering - actually search "
     "for current public information about the named entity for this domain; "
@@ -142,7 +156,7 @@ AGENT_SYSTEM_PROMPTS = {
         "archetypes map to connectivity, and where enterprises disclose "
         "facility counts, IT spend, vendors and transformation programmes. "
         "You may only assert what a named public source "
-        f"states. {_SEARCH_INSTRUCTION} Respond with a single JSON object and "
+        f"states.\n\n{_HOW_THE_ESTIMATE_WORKS}\n\n{_SEARCH_INSTRUCTION} Respond with a single JSON object and "
         f"nothing else, matching this shape exactly: {_RESPONSE_SHAPE}. If "
         'your search finds nothing you can attribute to a named public '
         'source, set "found": false and leave "sources" empty - never '
@@ -153,7 +167,7 @@ AGENT_SYSTEM_PROMPTS = {
         "unit prices by country and product, carrier availability, contract "
         "norms, transformation costs, and currency and tax parameters. You "
         "cite regulators, published tariffs and named pricing studies. "
-        f"{_SEARCH_INSTRUCTION} Respond with a single JSON object and "
+        f"\n\n{_HOW_THE_ESTIMATE_WORKS}\n\n{_SEARCH_INSTRUCTION} Respond with a single JSON object and "
         f"nothing else, matching this shape exactly: {_RESPONSE_SHAPE}. If "
         'your search finds nothing you can attribute to a named public '
         'source, set "found": false and leave "sources" empty - never '
@@ -717,7 +731,104 @@ def _looks_out_of_perimeter(subject: str, case_row) -> bool:
     return True
 
 
-def _build_prompt(domain_name: str, case_row, domain_no: int | None = None) -> str:
+
+def _build_context(session, case_row, domain_no: int) -> dict:
+    """What the model currently believes, for the domain being researched.
+
+    Research previously ran in a vacuum: "how many sites does this entity
+    operate" is an open question, and an open question against a large group
+    returns a group-level summary. The model already holds a working answer -
+    a seeded benchmark prior, or a footprint the analyst typed - and stating
+    it turns the task into a falsifiable one: confirm this number or replace
+    it. That is a different search, and a much more productive one.
+
+    Nothing here is treated as evidence. It is the current assumption, labelled
+    as such, so the agent knows what it is trying to improve on and the reader
+    of the prompt can see what the answer was compared against.
+    """
+    ctx: dict = {}
+
+    # Archetype definitions, from the approved priors rather than restated in
+    # prose here - so a steward retuning users_base or bandwidth changes what
+    # the agent is told, instead of the two drifting apart.
+    if domain_no in (2, 6, 15):
+        rows = session.execute(select(db.archetype_prior)).all()
+        if rows:
+            ctx["archetypes"] = "\n".join(
+                f"  - {r.archetype}: about {r.users_base} users and "
+                f"{r.bandwidth_mbps_base} Mbps per site, primary access "
+                f"{r.primary_product}, backup {r.backup_product}"
+                for r in sorted(rows, key=lambda r: r.archetype))
+
+    # The footprint the estimate is currently running on, if any simulation has
+    # been set up for this case.
+    if domain_no in (2, 6, 15):
+        sim = session.execute(
+            select(db.simulation_run.c.params)
+            .where(db.simulation_run.c.case_id == case_row.case_id)
+            .order_by(db.simulation_run.c.created_at.desc()).limit(1)).first()
+        footprint = ((sim.params or {}).get("footprint") if sim else None) or []
+        if footprint:
+            ctx["model_state"] = (
+                "The estimate is currently running on this footprint, which is "
+                "an assumption and not evidence:\n" + "\n".join(
+                    f"  - {f.get('country')}: {f.get('sites')} x {f.get('archetype')}"
+                    for f in footprint[:40]))
+        else:
+            ctx["model_state"] = (
+                "No footprint has been entered for this case yet, so the "
+                "estimate has nothing to run on. Counts found here are the "
+                "first real input it would get.")
+
+    # The unit-cost band each in-scope country is currently priced at.
+    if domain_no == 19:
+        countries = list(getattr(case_row, "in_scope_countries", None) or [])
+        if countries:
+            rows = session.execute(
+                select(db.unit_cost_prior)
+                .where(db.unit_cost_prior.c.country.in_(countries),
+                       db.unit_cost_prior.c.approved.is_(True))).all()
+            if rows:
+                ctx["model_state"] = (
+                    "The estimate currently prices these (country, product) "
+                    "pairs at the bands below, in {cur} for price year {yr}. "
+                    "Confirm or correct them, and name any in-scope pair that "
+                    "is missing:\n".format(
+                        cur=rows[0].currency or "USD",
+                        yr=rows[0].price_year or "unknown")
+                    + "\n".join(
+                        f"  - {r.country} {r.product}: {r.low} / {r.base} / "
+                        f"{r.high} per month (low/base/high)"
+                        for r in sorted(rows, key=lambda r: (r.country, r.product))))
+            else:
+                ctx["model_state"] = (
+                    "None of the in-scope countries has an approved price "
+                    "benchmark, so every circuit in them is currently unpriced "
+                    "and excluded from the total.")
+
+    # Which in-scope countries can be priced at all - the serviceability
+    # question is only interesting where the answer changes coverage.
+    if domain_no == 18:
+        countries = list(getattr(case_row, "in_scope_countries", None) or [])
+        if countries:
+            rows = session.execute(
+                select(db.unit_cost_prior.c.country)
+                .where(db.unit_cost_prior.c.country.in_(countries),
+                       db.unit_cost_prior.c.approved.is_(True)).distinct()).all()
+            priced = {r.country for r in rows}
+            missing = sorted(set(countries) - priced)
+            ctx["model_state"] = (
+                f"In-scope countries with no approved price benchmark, so "
+                f"currently unpriceable: {', '.join(missing)}."
+                if missing else
+                "Every in-scope country already has a price benchmark.")
+
+    return ctx
+
+
+def _build_prompt(domain_name: str, case_row, domain_no: int | None = None,
+                  context: dict | None = None,
+                  min_sources: int = 2) -> str:
     """Returns the user-turn prompt; system comes from AGENT_SYSTEM_PROMPTS,
     provider is chosen by the caller.
 
@@ -753,6 +864,19 @@ def _build_prompt(domain_name: str, case_row, domain_no: int | None = None) -> s
                              case_row.subject_entity_legal_name or "")
     brief_block = f"\n{rendered}\n" if rendered else "\n"
 
+    ctx = context or {}
+    state_block = (
+        f"\nWHAT THE MODEL CURRENTLY ASSUMES (an assumption, not evidence - "
+        f"your job is to confirm or replace it)\n{ctx['model_state']}\n"
+        if ctx.get("model_state") else "")
+    archetype_block = (
+        f"\nHOW SITE TYPES MAP, from the approved priors this estimate uses\n"
+        f"{ctx['archetypes']}\n"
+        f"Map each real site type onto whichever of these it most resembles in "
+        f"headcount and connectivity need, and say in \"finding\" which mapping "
+        f"you chose and why.\n"
+        if ctx.get("archetypes") else "")
+
     return (
         "You are researching one input domain of an outside-in enterprise "
         "network cost estimate for the entity named below. The estimate models "
@@ -761,16 +885,34 @@ def _build_prompt(domain_name: str, case_row, domain_no: int | None = None) -> s
         "group-level summary.\n"
         f"{entity}\n{country}\n{domain}\n{scope}\n"
         f"{brief_block}"
+        f"{state_block}"
+        f"{archetype_block}"
+        "\nHOW YOUR ANSWER WILL BE JUDGED\n"
+        f"  - Every URL you cite is fetched again independently. A URL that "
+        f"does not resolve counts for nothing, so prefer a stable public page "
+        f"over a paywalled, script-rendered or session-bound one, and cite the "
+        f"document you actually read rather than the site it sits on.\n"
+        f"  - A finding needs {min_sources} independently fetchable sources "
+        f"that each support it before it can be recorded as public evidence. "
+        f"With fewer it is discarded entirely, however good the single source "
+        f"is - so if you find one, spend a further search looking for a "
+        f"second rather than stopping.\n"
+        "  - Every quantity is discounted by age, sharply. Put an as_of on "
+        "each one. An undated figure is treated as the weakest possible, and "
+        "a recent figure you are less fond of usually beats an older one you "
+        "prefer.\n"
+        "  - Deriving a number from other numbers is not permitted here. "
+        "Report what a source states; if you had to calculate it, say so "
+        "plainly in confidence_note rather than presenting it as reported.\n"
         "\nHOW TO WORK\n"
         "Run several of the searches above before answering - one search is "
         "almost never enough for a domain like this. Follow a promising result "
         "to the underlying document rather than answering from a snippet. Put "
         "every number you find into \"quantities\" as well as describing it in "
-        "\"finding\", with country and as-of date wherever you have them. If "
-        "sources disagree, say so in \"confidence_note\" instead of silently "
-        "picking one. If the searches genuinely turn up nothing attributable, "
-        "return found=false - a plausible guess is worse than an abstention "
-        "here, because it will be priced.\n\n"
+        "\"finding\". If sources disagree, say so in \"confidence_note\" instead "
+        "of silently picking one. If the searches genuinely turn up nothing "
+        "attributable, return found=false - a plausible guess is worse than an "
+        "abstention here, because it will be priced.\n\n"
         "Respond with the JSON object only.")
 
 
@@ -904,7 +1046,10 @@ def _research_one_domain(session, *, case_row, domain_no: int, domain_name: str,
             run_id = gateway.create_agent_run(
                 session, agent_id=agent_id, mode="LIVE", case_id=case_row.case_id,
                 idempotency_key=idem_key)
-            prompt = _build_prompt(domain_name, case_row, domain_no)
+            prompt = _build_prompt(
+                domain_name, case_row, domain_no,
+                context=_build_context(session, case_row, domain_no),
+                min_sources=research_policy.min_independent_sources_material_fact)
             # Only the anthropic adapter has a hosted search tool to hand it
             # (see module docstring); passing tools to openai raises rather
             # than silently completing without one.

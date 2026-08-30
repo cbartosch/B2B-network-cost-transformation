@@ -875,7 +875,10 @@ def domain_research_prompt(case_id: str, domain_no: int):
         case_row = _one_or_404(s, db.case, db.case.c.case_id, case_id, "case")
         research_policy = _research_policy(s)
         system = research.AGENT_SYSTEM_PROMPTS[agent_id]
-        prompt = research._build_prompt(name, case_row, domain_no)
+        prompt = research._build_prompt(
+            name, case_row, domain_no,
+            context=research._build_context(s, case_row, domain_no),
+            min_sources=research_policy.min_independent_sources_material_fact)
         request_hash = gateway._sha(system + prompt)
 
         # Did the run that produced the current disposition use this text?
