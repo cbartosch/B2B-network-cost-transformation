@@ -833,11 +833,50 @@ class DomainResearchIn(BaseModel):
     agent_ids: list[str] | None = None       # default: both LLM-01 and LLM-08
     provider: str = "anthropic"
     overwrite: bool = False
+    # Narrows the run to specific domains. The interface uses this to walk the
+    # list one domain at a time: a full 17-domain run is minutes of LIVE
+    # provider calls and source fetches, which no HTTP client will wait for.
+    domain_nos: list[int] | None = None
     # Optional, same pattern as EstimateIn. Absent means a fresh scope per
     # call, so a deliberate re-run works; supplied means a repeat submission
     # of the *same* request returns the original runs instead of spending
     # twice at the provider.
     idempotency_key: str | None = None
+
+
+@router.get("/v1/outside-in/cases/{case_id}/domain-research:plan")
+def plan_domain_research(case_id: str, agent_ids: str | None = None,
+                         overwrite: bool = False):
+    """Which domains a research run would actually touch, in order.
+
+    The interface needs this to walk the list one domain at a time and show
+    progress. Computed here rather than in Streamlit so the domain-to-agent
+    map has exactly one home (research.DOMAIN_AGENT_MAP) - a second copy in
+    the interface would drift the moment the map is corrected.
+    """
+    wanted = ([a.strip() for a in agent_ids.split(",") if a.strip()]
+              if agent_ids else ["LLM-01", "LLM-08"])
+    with S() as s:
+        _one_or_404(s, db.case, db.case.c.case_id, case_id, "case")
+        rows = s.execute(select(db.domain_disposition.c.domain_no,
+                                db.domain_disposition.c.disposition)
+                         .where(db.domain_disposition.c.case_id == case_id)).all()
+    disposed = {r.domain_no for r in rows}
+    # Protected from overwrite regardless - first-party client data is not
+    # discarded as a side effect of re-running public research.
+    client_confirmed = {r.domain_no for r in rows
+                        if r.disposition == "CLIENT_CONFIRMED"}
+    skipped = client_confirmed if overwrite else (disposed | client_confirmed)
+
+    pending, already = [], []
+    for no, name in dispositions.DOMAINS:
+        if research.DOMAIN_AGENT_MAP.get(no) not in wanted:
+            continue
+        entry = {"domain_no": no, "domain_name": name,
+                 "agent_id": research.DOMAIN_AGENT_MAP[no]}
+        (already if no in skipped else pending).append(entry)
+    return {"pending": pending, "skipped": already,
+            "agent_ids": wanted, "overwrite": overwrite}
 
 
 @router.post("/v1/outside-in/cases/{case_id}/domain-research:run")
@@ -857,7 +896,7 @@ def run_domain_research(case_id: str, payload: DomainResearchIn):
             result = research.run_domain_research(
                 s, case_id=case_id, agent_ids=payload.agent_ids,
                 provider=payload.provider, research_policy=research_policy,
-                overwrite=payload.overwrite,
+                overwrite=payload.overwrite, domain_nos=payload.domain_nos,
                 idempotency_key=payload.idempotency_key)
         except LookupError as exc:
             raise HTTPException(404, str(exc))

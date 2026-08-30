@@ -16,19 +16,57 @@ with st.expander("Run research (LLM-01 / LLM-08)"):
                "manual by design. Never overwrites an existing disposition, from any "
                "source, unless the box below is checked.")
     overwrite = st.checkbox("Overwrite domains that already have a disposition", value=False)
-    if st.button("Run research now", type="primary"):
-        with st.spinner("Running LLM-01 and LLM-08..."):
+
+    plan = api.get(f"/v1/outside-in/cases/{case_id}/domain-research:plan",
+                   overwrite=overwrite)
+    if "_error" in plan:
+        st.error(plan["_error"])
+        pending = []
+    else:
+        pending = plan.get("pending", [])
+        st.caption(f"{len(pending)} domain(s) to research, "
+                   f"{len(plan.get('skipped', []))} left alone.")
+
+    if st.button("Run research now", type="primary", disabled=not pending):
+        # One request per domain, not one for all 17. A full run is minutes of
+        # LIVE provider calls and source fetches; a single synchronous request
+        # for the lot exceeded the client timeout and reported "API
+        # unreachable: timed out" - with no way to tell a slow run from a dead
+        # one, and no sight of the domains that had already succeeded.
+        #
+        # Walking the list keeps every request short, shows progress, and is
+        # resumable for free: a domain that already carries a disposition is
+        # skipped by the endpoint, so re-running continues rather than starts
+        # over.
+        bar = st.progress(0.0)
+        status = st.empty()
+        tally = {"resolved": 0, "declared_unknown": 0, "failed": 0}
+        problems = []
+        for i, d in enumerate(pending, start=1):
+            status.write(f"({i}/{len(pending)}) {d['domain_no']}. "
+                         f"{d['domain_name']} - {d['agent_id']}")
             r = api.post(f"/v1/outside-in/cases/{case_id}/domain-research:run",
-                         {"overwrite": overwrite})
-        if "_error" in r:
-            st.error(r["_error"])
-        else:
-            st.success(
-                f"{r['resolved']} resolved, {r['declared_unknown']} declared unknown, "
-                f"{r['failed']} failed (no disposition written for those - a technical "
-                f"failure isn't evidence; see Execution integrity). "
-                f"{r['domains_skipped_already_disposed']} already disposed and left alone.")
-            st.rerun()
+                         {"overwrite": overwrite, "domain_nos": [d["domain_no"]]},
+                         timeout=600.0)
+            if "_error" in r:
+                # Keep going. One domain failing is not a reason to abandon the
+                # other sixteen, and what succeeded is already persisted.
+                problems.append(f"{d['domain_no']}. {d['domain_name']}: {r['_error']}")
+            else:
+                for k in tally:
+                    tally[k] += r.get(k, 0)
+            bar.progress(i / len(pending))
+        status.empty()
+
+        st.success(
+            f"{tally['resolved']} resolved, {tally['declared_unknown']} declared "
+            f"unknown, {tally['failed']} failed (no disposition written for those - "
+            f"a technical failure isn't evidence; see Execution integrity).")
+        if problems:
+            st.warning("Some domains could not be attempted:")
+            for line in problems:
+                st.caption(line)
+        st.rerun()
 
 current = api.get(f"/v1/outside-in/cases/{case_id}/domain-dispositions")
 catalogue = current.get("catalogue", [])

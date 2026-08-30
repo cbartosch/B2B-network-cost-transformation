@@ -493,3 +493,41 @@ def test_a_404_still_counts_for_nothing_without_being_called_an_outage(
         db.domain_disposition.c.case_id == case_id)).all()
     assert rows, "a genuinely fruitless search must still be dispositioned"
     assert all(r.disposition == "DECLARED_UNKNOWN" for r in rows)
+
+
+def test_domain_nos_narrows_the_run_to_one_domain(session, monkeypatch):
+    """The interface walks the 17 domains one request at a time: a single
+    synchronous request for all of them ran for minutes and tripped the client
+    timeout, reporting "API unreachable" with no sight of what had already
+    succeeded. Narrowing has to actually narrow, or the walk is 17 full runs."""
+    case_id = _case(session)
+    _wire_fake_provider(monkeypatch)
+    monkeypatch.setattr(research, "_fetch_source_fragment", _verified_fetch)
+
+    result = research.run_domain_research(
+        session, case_id=case_id, agent_ids=["LLM-01"], research_policy=POLICY,
+        domain_nos=[2])
+
+    assert result["domains_attempted"] == 1
+    rows = session.execute(select(db.domain_disposition.c.domain_no).where(
+        db.domain_disposition.c.case_id == case_id)).all()
+    assert {r.domain_no for r in rows} == {2}
+
+
+def test_walking_domain_by_domain_resumes_rather_than_restarts(session, monkeypatch):
+    """Each step is skipped on the next pass because it already carries a
+    disposition - which is what makes an interrupted walk safe to re-run."""
+    case_id = _case(session)
+    _wire_fake_provider(monkeypatch)
+    monkeypatch.setattr(research, "_fetch_source_fragment", _verified_fetch)
+
+    first = research.run_domain_research(
+        session, case_id=case_id, agent_ids=["LLM-01"], research_policy=POLICY,
+        domain_nos=[2])
+    assert first["domains_attempted"] == 1
+
+    again = research.run_domain_research(
+        session, case_id=case_id, agent_ids=["LLM-01"], research_policy=POLICY,
+        domain_nos=[2])
+    assert again["domains_attempted"] == 0, (
+        "a domain already disposed must not be researched a second time")

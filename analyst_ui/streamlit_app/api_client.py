@@ -34,8 +34,13 @@ def auth_headers() -> dict:
 
 def _req(method: str, path: str, **kw):
     headers = {**auth_headers(), **kw.pop("headers", {})}
+    # Per-call override. Most routes answer in well under TIMEOUT; a single
+    # domain of research is a LIVE provider call plus up to a dozen source
+    # fetches and legitimately runs longer. Raising the global default instead
+    # would mean a genuinely wedged request hangs the interface for minutes.
+    timeout = kw.pop("timeout", TIMEOUT)
     try:
-        with httpx.Client(timeout=TIMEOUT) as c:
+        with httpx.Client(timeout=timeout) as c:
             r = c.request(method, f"{BASE}{path}", headers=headers, **kw)
     except httpx.HTTPError as e:
         return {"_error": f"API unreachable: {e}"}
@@ -85,8 +90,11 @@ def get(path, **params):
     return _req("GET", path, params=params or None)
 
 
-def post(path, payload=None):
-    return _req("POST", path, json=payload or {})
+def post(path, payload=None, timeout=None):
+    kw = {"json": payload or {}}
+    if timeout is not None:
+        kw["timeout"] = timeout
+    return _req("POST", path, **kw)
 
 
 def put(path, payload=None):

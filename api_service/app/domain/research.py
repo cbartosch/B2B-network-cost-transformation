@@ -577,6 +577,7 @@ def run_domain_research(session, *, case_id: str, agent_ids: list[str] | None = 
                         provider: str = "anthropic",
                         research_policy: ResearchPolicy,
                         overwrite: bool = False,
+                        domain_nos: list[int] | None = None,
                         idempotency_key: str | None = None) -> dict:
     """Runs the research phase for whichever DOMAIN_AGENT_MAP domains are
     assigned to agent_ids (default: LLM-01 and LLM-08 both) and either have no
@@ -610,8 +611,16 @@ def run_domain_research(session, *, case_id: str, agent_ids: list[str] | None = 
     # Protected regardless of overwrite - see _client_confirmed_domain_nos.
     protected = _client_confirmed_domain_nos(session, case_id)
     skipped = already | protected
+    # domain_nos narrows the run to a subset. Researching 17 domains in one
+    # request takes minutes - each domain is a LIVE provider call plus source
+    # fetches - which exceeds any sane HTTP timeout, so the interface walks the
+    # list a domain at a time and shows progress. Nothing about the semantics
+    # changes: a domain already carrying a disposition is still skipped, so a
+    # walk that stops halfway resumes rather than restarts.
+    wanted = set(domain_nos) if domain_nos else None
     targets = [(no, name) for no, name in dispositions.DOMAINS
-              if DOMAIN_AGENT_MAP.get(no) in agent_ids and no not in skipped]
+              if DOMAIN_AGENT_MAP.get(no) in agent_ids and no not in skipped
+              and (wanted is None or no in wanted)]
 
     # One idempotency scope per invocation unless the caller supplies one -
     # the same pattern EstimateIn already uses. A caller who wants
