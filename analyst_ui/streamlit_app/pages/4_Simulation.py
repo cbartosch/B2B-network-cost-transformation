@@ -41,15 +41,34 @@ if _rows:
                              "archetype": r["archetype"],
                              "sites": r["sites"]} for r in _rows])
 else:
-    st.caption("No promoted research findings for this case, so this opens on "
-               "illustrative values. Research a domain and promote its site "
-               "counts on page 5 to start from evidence instead.")
-    default = pd.DataFrame([
-        {"country": "GB", "archetype": "BRANCH", "sites": 120},
-        {"country": "DE", "archetype": "BRANCH", "sites": 80},
-        {"country": "US", "archetype": "LARGE_OFFICE", "sites": 12},
-        {"country": "GB", "archetype": "DC", "sites": 2},
-    ])
+    # The case already declares which countries are in scope - the intake page
+    # writes them, and Region/Global resolve to a literal list there. Opening
+    # on four hardcoded demo rows meant the editor showed GB, DE, US, GB while
+    # the case might be scoped to five other countries, and a country the
+    # analyst never removed simply never appeared. Scope belongs to the case,
+    # not to this page.
+    _case = api.get(f"/v1/outside-in/cases/{case_id}")
+    _countries = ([] if "_error" in _case
+                  else list(_case.get("in_scope_countries") or []))
+    if _countries:
+        st.caption(
+            f"No promoted research findings yet, so this opens on the "
+            f"{len(_countries)} in-scope country(ies) from intake with zero "
+            f"sites. Enter counts, add archetype rows as needed, or research "
+            f"domain 2 and promote its counts on page 5 to start from "
+            f"evidence. Zero is deliberate: a pre-filled number would be an "
+            f"assumption wearing the shape of a finding.")
+        default = pd.DataFrame([{"country": c, "archetype": "BRANCH", "sites": 0}
+                                for c in _countries])
+    else:
+        st.caption("This case has no in-scope countries set, so this opens on "
+                   "illustrative values. Set the scope on page 1.")
+        default = pd.DataFrame([
+            {"country": "GB", "archetype": "BRANCH", "sites": 120},
+            {"country": "DE", "archetype": "BRANCH", "sites": 80},
+            {"country": "US", "archetype": "LARGE_OFFICE", "sites": 12},
+            {"country": "GB", "archetype": "DC", "sites": 2},
+        ])
 fp = st.data_editor(default, num_rows="dynamic", use_container_width=True)
 
 c1, c2 = st.columns(2)

@@ -666,6 +666,18 @@ def run_simulation(case_id: str, payload: SimIn):
                 for r in s.execute(select(db.archetype_prior)).all()}
         footprint = [r.model_dump() for r in payload.footprint]
         total_sites = sum(r["sites"] for r in footprint)
+        if total_sites == 0:
+            # The footprint editor now opens on the case's in-scope countries
+            # with zero sites, so submitting it unchanged is an easy mistake.
+            # Left unguarded it produces a successful simulation of nothing,
+            # and the failure surfaces two pages later as "no priced
+            # components" - a true statement about an empty estate that reads
+            # as a pricing problem.
+            raise HTTPException(422, {
+                "error": "footprint has no sites",
+                "detail": "Every row is zero, so there is nothing to simulate. "
+                          "Enter site counts, or research domain 2 and promote "
+                          "its counts on page 5 to start from evidence."})
         if total_sites > config.MAX_SIM_SITES:
             raise HTTPException(422, f"total sites {total_sites} exceeds "
                                      f"MAX_SIM_SITES={config.MAX_SIM_SITES}")

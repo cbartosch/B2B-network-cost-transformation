@@ -261,3 +261,26 @@ def test_a_snapshot_is_persisted_and_readable(session, client):
                   if s["estimate_snapshot_id"] == snap_id)
     assert stored["pins"]["estimate_method"] == "ANCHOR", (
         "which method produced a stored estimate has to survive in the record")
+
+
+# --------------------------------------------------------------- simulation scope
+def test_a_footprint_of_all_zeros_is_refused_by_name(session, client):
+    """The footprint editor opens on the case's in-scope countries with zero
+    sites, so submitting it unchanged is an easy mistake. Unguarded it
+    simulates nothing successfully and the failure surfaces two pages later as
+    "no priced components" - a true statement about an empty estate that reads
+    as a pricing problem."""
+    case_id = _ready_case(session, countries=("GB", "DE", "US"))
+
+    r = client.post(f"/v1/outside-in/cases/{case_id}/simulations:run",
+                    json={"seed": 42, "ensemble_size": 1,
+                          "footprint": [
+                              {"country": "GB", "archetype": "BRANCH", "sites": 0},
+                              {"country": "DE", "archetype": "BRANCH", "sites": 0},
+                              {"country": "US", "archetype": "BRANCH", "sites": 0}]})
+
+    assert r.status_code == 422, r.text
+    detail = r.json()["detail"]
+    assert detail["error"] == "footprint has no sites"
+    assert "promote" in detail["detail"], (
+        "the refusal should name the route to evidence, not just the mistake")
