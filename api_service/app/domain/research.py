@@ -113,8 +113,17 @@ DOMAIN_AGENT_MAP: dict[int, str | None] = {
 
 _RESPONSE_SHAPE = (
     '{"found": bool, "subject": str, "finding": str, '
+    '"quantities": [{"label": str, "value": number, "unit": str, '
+    '"country": str|null, "as_of": str|null}], '
     '"sources": [{"url": str, "publisher": str, "as_of": str}], '
     '"confidence_note": str}')
+
+# `quantities` exists because the estimate consumes numbers, not prose. A
+# "finding" of "DHL operates a large European network" is unusable;
+# [{"label": "WAREHOUSE", "value": 340, "unit": "sites", "country": "DE"}] is
+# the same claim in a form the topology can be checked against. Optional -
+# several domains are genuinely qualitative - but asked for wherever the brief
+# implies a count, and stored beside the disposition when present.
 
 _SEARCH_INSTRUCTION = (
     "You have a web_search tool. Use it before answering - actually search "
@@ -173,6 +182,95 @@ def _extract_observed_urls(content_blocks: list) -> set[str]:
                 urls.add(item["url"])
     return urls
 
+
+# What each domain is actually asking for. The prompt used to carry the domain
+# *name* and nothing else - "Location footprint" - which is a label, not a
+# question. A model given that guesses at scope, returns prose, and cites a
+# homepage; for an entity with abundant public disclosure the result looked
+# like "no evidence found" when the evidence was a page of the annual report.
+#
+# Each brief says what would answer the domain, in what units, and where that
+# kind of figure is normally published. Written against the vocabulary the
+# rest of the system already uses - the archetypes in reference.archetype_prior
+# (BRANCH, LARGE_OFFICE, WAREHOUSE, DC, STORE) and the L0/L2/L4/OPS cost
+# layers - so a finding lands in terms the estimate can consume rather than
+# needing a human to translate it.
+#
+# Only the 17 domains DOMAIN_AGENT_MAP routes to an agent appear here; the
+# other 7 are benchmark-prior or simulation territory by design.
+DOMAIN_BRIEFS: dict[int, str] = {
+    1: ("What the entity does, its scale and its operating geography. Revenue, "
+        "employee count, business segments, and the countries it operates in. "
+        "Annual report, 20-F/10-K, or the corporate fact sheet."),
+    2: ("How many physical sites the entity operates, broken down by country "
+        "and by site type. Map each type onto one of: DC (data centre), "
+        "LARGE_OFFICE (headquarters, regional office, campus), WAREHOUSE "
+        "(distribution centre, depot, sorting or logistics hub), STORE (retail "
+        "outlet, customer service point, parcel shop), BRANCH (small "
+        "operational site). Give counts, not adjectives, and state the as-of "
+        "date. Annual and ESG reports, investor presentations, network or "
+        "facility overviews, and country subsidiary pages usually carry these."),
+    6: ("Data centres and cloud posture: how many owned or co-located data "
+        "centres, in which countries, and which public cloud providers or "
+        "regions are named. Look for data-centre consolidation or cloud "
+        "migration statements in annual reports and IT press."),
+    7: ("What the wide-area network and security architecture appears to be "
+        "today: MPLS, SD-WAN, internet breakout, SASE/SSE, private "
+        "interconnect. Vendor case studies and press releases, conference "
+        "talks by the entity's network or infrastructure staff, and job "
+        "adverts naming specific products are the usual sources."),
+    8: ("Named network and security vendors or products in use - carriers, "
+        "SD-WAN, firewall, SSE, managed service providers. A vendor case "
+        "study or press release naming the entity is strong evidence; a job "
+        "advert requiring experience with a named product is weaker but "
+        "attributable. Name the vendor and the product."),
+    12: ("Telecom, network or managed-service contracts and sourcing events: "
+         "awards, renewals, RFPs, framework agreements, and their value and "
+         "duration where stated. Procurement notices, carrier press releases "
+         "and trade press."),
+    13: ("Publicly reported outages, performance incidents or resilience "
+         "failures affecting the entity's network or IT, with dates and any "
+         "stated impact."),
+    14: ("Announced transformation programmes touching network, IT "
+         "infrastructure, digitalisation or cost reduction - including stated "
+         "budgets, savings targets and timelines. Investor days and results "
+         "presentations are where these are quantified."),
+    15: ("Direction and rate of change in the site estate: openings, closures, "
+         "consolidations, acquisitions and disposals, with counts and dates."),
+    16: ("Regulatory or data-sovereignty constraints that would shape where "
+         "traffic and data may go - sector regulation, national data "
+         "residency rules, and any localisation commitments the entity has "
+         "made in the in-scope countries."),
+    9: ("Published figures for what the entity spends on network, "
+        "telecommunications or IT connectivity. Rare as a standalone line; "
+        "look for IT or technology cost lines in segment reporting, and say "
+        "plainly which line the figure came from and what it includes."),
+    10: ("A defensible proxy for IT spend when a network figure is not "
+         "published: total IT or technology spend, IT spend as a share of "
+         "revenue, or a published industry ratio for this sector with the "
+         "entity's revenue. State the proxy and its basis, not just a number."),
+    18: ("Whether the in-scope countries can actually be served with "
+         "enterprise connectivity, and by whom - incumbent and alternative "
+         "carriers, availability of DIA, MPLS, ethernet and business "
+         "broadband, and any country where provisioning is materially "
+         "constrained."),
+    19: ("Market unit prices for enterprise connectivity in the in-scope "
+         "countries: monthly recurring charge per circuit by product (DIA, "
+         "MPLS, ETHERNET, BROADBAND, MOBILE_5G) and bandwidth. Regulator "
+         "price benchmarks, published carrier tariffs and analyst pricing "
+         "studies. Give currency, bandwidth and the price year."),
+    20: ("Typical contract lengths and commercial terms for enterprise "
+         "network services in these markets - term, notice periods, and "
+         "whether early termination charges are customary."),
+    21: ("Typical one-off costs of a network transformation of this shape: "
+         "migration cost per site, professional services, parallel running, "
+         "and any published programme costs for comparable estates."),
+    22: ("Currency, inflation and tax parameters for the in-scope countries "
+         "relevant to a multi-year cost model: FX rates against the base "
+         "currency, telecom-specific taxes or levies, and recent inflation "
+         "in business services."),
+}
+
 _TAG_RE = re.compile(r"<[^>]+>")
 _WS_RE = re.compile(r"\s+")
 
@@ -184,7 +282,8 @@ class DomainResult:
 
     __slots__ = ("domain_no", "domain_name", "agent_id", "disposition",
                  "reason", "agent_run_id", "queries_used", "captures_used",
-                 "verified_sources", "failed", "failure_detail", "budget_note")
+                 "verified_sources", "failed", "failure_detail", "budget_note",
+                 "quantities")
 
     def __init__(self, domain_no: int, domain_name: str, agent_id: str | None):
         self.domain_no = domain_no
@@ -202,6 +301,9 @@ class DomainResult:
         # say whether the limit was time, captures for this domain, or captures
         # for the run - three different remedies.
         self.budget_note: str | None = None
+        # Structured numbers from the finding. Kept separate from the prose so
+        # the estimate can be checked against them without re-reading English.
+        self.quantities: list[dict] = []
 
     def as_dict(self) -> dict:
         return {"domain_no": self.domain_no, "domain_name": self.domain_name,
@@ -211,7 +313,8 @@ class DomainResult:
                 "captures_used": self.captures_used,
                 "verified_source_count": len(self.verified_sources),
                 "failed": self.failed, "failure_detail": self.failure_detail,
-                "budget_note": self.budget_note}
+                "budget_note": self.budget_note,
+                "quantities": self.quantities}
 
 
 class SourceUnreachable(RuntimeError):
@@ -348,17 +451,56 @@ def _looks_out_of_perimeter(subject: str, case_row) -> bool:
     return True
 
 
-def _build_prompt(domain_name: str, case_row) -> str:
+def _build_prompt(domain_name: str, case_row, domain_no: int | None = None) -> str:
     """Returns the user-turn prompt; system comes from AGENT_SYSTEM_PROMPTS,
-    provider is chosen by the caller. Case-derived values are fenced (spec
-    7.3) - an entity name is ultimately caller-supplied at intake, and
-    treating it as untrusted content here is the conservative default."""
+    provider is chosen by the caller.
+
+    Carries three things the earlier version did not, all of which showed up
+    as poor recall rather than as an error:
+
+      * the domain *brief*, not just its name. "Location footprint" is a
+        label; DOMAIN_BRIEFS says what would answer it and in what units.
+      * the case scope. Without the in-scope countries a search for a global
+        group returns group-level prose, when what the estimate needs is
+        per-country detail for the countries actually being modelled.
+      * the base currency and price year, so a price or spend figure comes
+        back on the basis the model will use it on.
+
+    Case-derived values are fenced (spec 7.3) - an entity name is ultimately
+    caller-supplied at intake, and treating it as untrusted content here is
+    the conservative default.
+    """
     entity = gateway.fence("subject_entity_legal_name",
                            case_row.subject_entity_legal_name or "")
     country = gateway.fence("country_of_domicile", case_row.country_of_domicile or "")
     domain = gateway.fence("input_domain", domain_name)
-    return (f"Research this input domain for the named entity.\n{entity}\n{country}\n"
-            f"{domain}\nRespond with the JSON object only.")
+
+    countries = ", ".join(getattr(case_row, "in_scope_countries", None) or []) or "not restricted"
+    families = ", ".join(getattr(case_row, "in_scope_service_families", None) or []) or "WAN, SSE"
+    scope = gateway.fence(
+        "analysis_scope",
+        f"in-scope countries: {countries}; service families: {families}; "
+        f"base currency: {getattr(case_row, 'base_currency', None) or 'USD'}; "
+        f"price year: {getattr(case_row, 'price_year', None) or 2026}")
+
+    brief = DOMAIN_BRIEFS.get(domain_no or -1)
+    brief_block = (f"\nWhat would answer this domain:\n{brief}\n" if brief else "\n")
+
+    return (
+        "You are researching one input domain of an outside-in enterprise "
+        "network cost estimate for the entity named below. The estimate models "
+        "site counts by type, circuits and unit prices per country, so "
+        "per-country and per-site-type detail is worth far more than a "
+        "group-level summary.\n"
+        f"{entity}\n{country}\n{domain}\n{scope}\n"
+        f"{brief_block}"
+        "Search for it. Prefer the entity's own annual report, ESG or "
+        "sustainability report, investor presentations and fact sheets, then "
+        "regulators and established trade press. Put every number you find "
+        "into \"quantities\" as well as describing it in \"finding\", with the "
+        "country and as-of date where you have them. If the sources disagree, "
+        "say so in \"confidence_note\" rather than picking one silently.\n"
+        "Respond with the JSON object only.")
 
 
 def _existing_domain_nos(session, case_id: str) -> set[int]:
@@ -470,7 +612,7 @@ def _research_one_domain(session, *, case_row, domain_no: int, domain_name: str,
             run_id = gateway.create_agent_run(
                 session, agent_id=agent_id, mode="LIVE", case_id=case_row.case_id,
                 idempotency_key=idem_key)
-            prompt = _build_prompt(domain_name, case_row)
+            prompt = _build_prompt(domain_name, case_row, domain_no)
             # Only the anthropic adapter has a hosted search tool to hand it
             # (see module docstring); passing tools to openai raises rather
             # than silently completing without one.
@@ -589,6 +731,9 @@ def _research_one_domain(session, *, case_row, domain_no: int, domain_name: str,
             result.disposition = "EVIDENCED_PUBLIC"
             result.reason = None
             result.verified_sources = verified
+            result.quantities = [
+                q for q in (parsed.get("quantities") or [])
+                if isinstance(q, dict) and q.get("value") is not None]
             return result
         # Found a claim but could not independently verify enough of it -
         # try again if budget allows; a claim without enough verification is
@@ -684,6 +829,7 @@ def run_domain_research(session, *, case_id: str, agent_ids: list[str] | None = 
             evidence = None
             if result.verified_sources:
                 evidence = {"sources": result.verified_sources,
+                           "quantities": result.quantities,
                            "queries_used": result.queries_used,
                            "captures_used": result.captures_used}
             elif result.budget_note:

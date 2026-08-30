@@ -569,3 +569,38 @@ def test_a_single_domain_is_bounded_by_wall_clock(session, monkeypatch):
     assert "max_seconds_per_domain" in (entry["budget_note"] or ""), (
         "which budget ran out has to be recorded - time and captures have "
         "different remedies")
+
+
+def test_the_prompt_carries_the_domain_brief_and_the_case_scope(session, monkeypatch):
+    """The prompt used to carry the domain *name* and nothing else. A label is
+    not a question: for an entity with abundant public disclosure the agent
+    guessed at scope, returned group-level prose and cited a homepage, which
+    reached the analyst as "no evidence found"."""
+    case_id = _case(session)
+    seen = {}
+
+    def _capture(**kw):
+        seen.update(kw)
+        return _found_text()
+
+    _wire_fake_provider(monkeypatch, text_fn=_capture)
+    monkeypatch.setattr(research, "_fetch_source_fragment", _verified_fetch)
+    research.run_domain_research(
+        session, case_id=case_id, agent_ids=["LLM-01"], research_policy=POLICY,
+        domain_nos=[2])
+
+    prompt = seen.get("prompt", "")
+    assert "WAREHOUSE" in prompt and "LARGE_OFFICE" in prompt, (
+        "domain 2 must ask for counts in the archetype vocabulary the "
+        "simulation actually uses")
+    assert "in-scope countries" in prompt, (
+        "without scope the agent answers at group level for a global entity")
+    assert "quantities" in prompt, "the estimate consumes numbers, not prose"
+
+
+def test_every_agent_routed_domain_has_a_brief():
+    """A domain routed to an agent with no brief falls back to its bare name -
+    the exact condition that produced empty findings."""
+    missing = sorted(no for no, agent in research.DOMAIN_AGENT_MAP.items()
+                     if agent and no not in research.DOMAIN_BRIEFS)
+    assert not missing, f"domains routed to an agent with no research brief: {missing}"

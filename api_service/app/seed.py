@@ -96,7 +96,7 @@ THRESHOLDS = [
     ("research_budget_profile", "max_seconds_per_domain", "240"),
     # Hosted web-search tool invocations per domain (domain/research.py) -
     # a separate, provider-billed cost dimension from max_queries_per_domain.
-    ("research_budget_profile", "max_web_searches_per_domain", "5"),
+    ("research_budget_profile", "max_web_searches_per_domain", "8"),
 
     # --- 0.3B.6 calibration
     ("simulation_calibration_threshold", "flag_mdape", "0.25"),
