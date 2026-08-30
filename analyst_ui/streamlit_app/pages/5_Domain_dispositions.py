@@ -75,6 +75,60 @@ with st.expander("Run research (LLM-01 / LLM-08)"):
                 st.caption(line)
         st.rerun()
 
+with st.expander("Show the prompt used for a domain"):
+    st.caption("Exactly what the agent is sent for one domain - system prompt, "
+               "user prompt and search-tool configuration. Nothing runs; this "
+               "builds the text and shows it. The brief inside it is the main "
+               "lever on how good a domain's research is, so it is worth "
+               "reading before concluding a domain has no public evidence.")
+
+    _cat = api.get(f"/v1/outside-in/cases/{case_id}/domain-research:plan",
+                   overwrite=True)
+    _choices = ([] if "_error" in _cat else
+                sorted(_cat.get("pending", []) + _cat.get("skipped", []),
+                       key=lambda d: d["domain_no"]))
+    if not _choices:
+        st.caption("No researchable domains to show.")
+    else:
+        pick = st.selectbox(
+            "Domain", _choices,
+            format_func=lambda d: f"{d['domain_no']}. {d['domain_name']} "
+                                  f"({d['agent_id']})")
+        p = api.get(f"/v1/outside-in/cases/{case_id}/domain-research:prompt",
+                    domain_no=pick["domain_no"])
+        if "_error" in p:
+            st.error(p["_error"])
+        elif not p.get("researchable"):
+            st.info(p.get("note"))
+        else:
+            match = p.get("matches_last_run")
+            if match is True:
+                st.success("This is the exact text the last run for this domain "
+                           "used - the request hash matches what the gateway "
+                           "recorded.")
+            elif match is False:
+                st.warning("The brief or the case scope has changed since this "
+                           "domain was last researched, so the stored result "
+                           "came from different text than the one below. "
+                           "Re-run before comparing them.")
+            else:
+                st.caption("This domain has not been researched yet, so there is "
+                           "no recorded prompt to compare against.")
+
+            st.markdown("**Brief for this domain**")
+            st.info(p.get("brief") or "No brief - the agent gets the bare "
+                                      "domain name, which is the condition that "
+                                      "produces vague results.")
+            st.markdown("**System prompt**")
+            st.code(p["system"], language="text")
+            st.markdown("**User prompt**")
+            st.code(p["prompt"], language="text")
+            st.markdown("**Search tool**")
+            st.json(p["tools"])
+            st.caption(f"request_hash `{p['request_hash']}` - "
+                       f"{p['hash_note']}")
+
+st.divider()
 current = api.get(f"/v1/outside-in/cases/{case_id}/domain-dispositions")
 catalogue = current.get("catalogue", [])
 existing = {d["domain_no"]: d for d in current.get("dispositions", [])}

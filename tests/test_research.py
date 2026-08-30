@@ -604,3 +604,16 @@ def test_every_agent_routed_domain_has_a_brief():
     missing = sorted(no for no, agent in research.DOMAIN_AGENT_MAP.items()
                      if agent and no not in research.DOMAIN_BRIEFS)
     assert not missing, f"domains routed to an agent with no research brief: {missing}"
+
+
+def test_the_displayed_prompt_is_hashed_the_way_the_gateway_hashes_it():
+    """The prompt viewer claims 'this is what was sent'. That claim rests on
+    the hash being computed identically to gateway.execute's request_hash - if
+    the two ever diverge the panel would report a mismatch on every domain and
+    be quietly ignored."""
+    import hashlib
+    from app.llm import gateway
+
+    system, prompt = "sys", "usr"
+    assert gateway._sha(system + prompt) == hashlib.sha256(
+        (system + prompt).encode("utf-8")).hexdigest()

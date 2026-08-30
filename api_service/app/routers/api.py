@@ -844,6 +844,72 @@ class DomainResearchIn(BaseModel):
     idempotency_key: str | None = None
 
 
+@router.get("/v1/outside-in/cases/{case_id}/domain-research:prompt")
+def domain_research_prompt(case_id: str, domain_no: int):
+    """The exact system and user prompt this domain would be researched with.
+
+    Read-only: builds the prompt, makes no provider call and writes nothing.
+    The briefs in research.DOMAIN_BRIEFS are the main lever on research
+    quality, and a lever nobody can see is one nobody tunes - the interface
+    showed a disposition and a reason code, so a thin result and a badly
+    worded brief were indistinguishable.
+
+    Where the domain has already been researched, the prompt is hashed the
+    same way the gateway hashes it (sha256 of system + prompt, llm_run.
+    request_hash) and compared. A match proves the text below is what was
+    actually sent, not a plausible reconstruction of it; a mismatch means the
+    brief or the case scope has changed since that run, which is worth
+    knowing before comparing outputs.
+    """
+    agent_id = research.DOMAIN_AGENT_MAP.get(domain_no)
+    name = dict(dispositions.DOMAINS).get(domain_no)
+    if name is None:
+        raise HTTPException(404, f"domain {domain_no} is not one of the 24")
+    if agent_id is None:
+        return {"domain_no": domain_no, "domain_name": name, "agent_id": None,
+                "researchable": False,
+                "note": "benchmark-prior or simulation territory by design - "
+                        "no agent researches this domain, so there is no prompt"}
+
+    with S() as s:
+        case_row = _one_or_404(s, db.case, db.case.c.case_id, case_id, "case")
+        research_policy = _research_policy(s)
+        system = research.AGENT_SYSTEM_PROMPTS[agent_id]
+        prompt = research._build_prompt(name, case_row, domain_no)
+        request_hash = gateway._sha(system + prompt)
+
+        # Did the run that produced the current disposition use this text?
+        row = s.execute(select(db.domain_disposition.c.agent_run_id)
+                        .where(db.domain_disposition.c.case_id == case_id,
+                               db.domain_disposition.c.domain_no == domain_no)).first()
+        matches, last_hash = None, None
+        if row and row.agent_run_id:
+            hit = s.execute(select(db.llm_run.c.request_hash)
+                            .where(db.llm_run.c.agent_run_id == row.agent_run_id)
+                            .order_by(db.llm_run.c.created_at.desc())).first()
+            if hit:
+                last_hash = hit.request_hash
+                matches = (last_hash == request_hash)
+
+    return {
+        "domain_no": domain_no, "domain_name": name, "agent_id": agent_id,
+        "researchable": True,
+        "brief": research.DOMAIN_BRIEFS.get(domain_no),
+        "system": system,
+        "prompt": prompt,
+        "tools": research._web_search_tool(
+            research_policy.max_web_searches_per_domain),
+        "request_hash": request_hash,
+        "last_run_request_hash": last_hash,
+        "matches_last_run": matches,
+        "hash_note": (
+            "sha256(system + prompt), the same value the gateway stores as "
+            "llm_run.request_hash. matches_last_run is null when this domain "
+            "has not been researched, false when the brief or case scope has "
+            "changed since it was."),
+    }
+
+
 @router.get("/v1/outside-in/cases/{case_id}/domain-research:plan")
 def plan_domain_research(case_id: str, agent_ids: str | None = None,
                          overwrite: bool = False):
