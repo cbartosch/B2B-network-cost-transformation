@@ -136,19 +136,23 @@ _SEARCH_INSTRUCTION = (
 
 AGENT_SYSTEM_PROMPTS = {
     "LLM-01": (
-        "You are a research agent proposing public evidence for one input "
-        "domain of an outside-in network cost estimate (footprint, "
-        "architecture, vendor signals, transformation announcements, "
-        "regulatory posture). You may only assert what a named public source "
+        "You are a telecoms and enterprise-network analyst building an "
+        "outside-in cost baseline for a large enterprise WAN and network "
+        "security estate. You know how carriers price circuits, how site "
+        "archetypes map to connectivity, and where enterprises disclose "
+        "facility counts, IT spend, vendors and transformation programmes. "
+        "You may only assert what a named public source "
         f"states. {_SEARCH_INSTRUCTION} Respond with a single JSON object and "
         f"nothing else, matching this shape exactly: {_RESPONSE_SHAPE}. If "
         'your search finds nothing you can attribute to a named public '
         'source, set "found": false and leave "sources" empty - never '
         "invent a source to satisfy the shape."),
     "LLM-08": (
-        "You are a research agent proposing source-backed market data for "
-        "one input domain of an outside-in network cost estimate (public "
-        "cost evidence, market pricing, serviceability, currency and tax). "
+        "You are a telecoms market analyst sourcing the price and "
+        "serviceability inputs of an enterprise WAN cost baseline: circuit "
+        "unit prices by country and product, carrier availability, contract "
+        "norms, transformation costs, and currency and tax parameters. You "
+        "cite regulators, published tariffs and named pricing studies. "
         f"{_SEARCH_INSTRUCTION} Respond with a single JSON object and "
         f"nothing else, matching this shape exactly: {_RESPONSE_SHAPE}. If "
         'your search finds nothing you can attribute to a named public '
@@ -198,78 +202,340 @@ def _extract_observed_urls(content_blocks: list) -> set[str]:
 #
 # Only the 17 domains DOMAIN_AGENT_MAP routes to an agent appear here; the
 # other 7 are benchmark-prior or simulation territory by design.
-DOMAIN_BRIEFS: dict[int, str] = {
-    1: ("What the entity does, its scale and its operating geography. Revenue, "
-        "employee count, business segments, and the countries it operates in. "
-        "Annual report, 20-F/10-K, or the corporate fact sheet."),
-    2: ("How many physical sites the entity operates, broken down by country "
-        "and by site type. Map each type onto one of: DC (data centre), "
-        "LARGE_OFFICE (headquarters, regional office, campus), WAREHOUSE "
-        "(distribution centre, depot, sorting or logistics hub), STORE (retail "
-        "outlet, customer service point, parcel shop), BRANCH (small "
-        "operational site). Give counts, not adjectives, and state the as-of "
-        "date. Annual and ESG reports, investor presentations, network or "
-        "facility overviews, and country subsidiary pages usually carry these."),
-    6: ("Data centres and cloud posture: how many owned or co-located data "
-        "centres, in which countries, and which public cloud providers or "
-        "regions are named. Look for data-centre consolidation or cloud "
-        "migration statements in annual reports and IT press."),
-    7: ("What the wide-area network and security architecture appears to be "
-        "today: MPLS, SD-WAN, internet breakout, SASE/SSE, private "
-        "interconnect. Vendor case studies and press releases, conference "
-        "talks by the entity's network or infrastructure staff, and job "
-        "adverts naming specific products are the usual sources."),
-    8: ("Named network and security vendors or products in use - carriers, "
-        "SD-WAN, firewall, SSE, managed service providers. A vendor case "
-        "study or press release naming the entity is strong evidence; a job "
-        "advert requiring experience with a named product is weaker but "
-        "attributable. Name the vendor and the product."),
-    12: ("Telecom, network or managed-service contracts and sourcing events: "
-         "awards, renewals, RFPs, framework agreements, and their value and "
-         "duration where stated. Procurement notices, carrier press releases "
-         "and trade press."),
-    13: ("Publicly reported outages, performance incidents or resilience "
-         "failures affecting the entity's network or IT, with dates and any "
-         "stated impact."),
-    14: ("Announced transformation programmes touching network, IT "
-         "infrastructure, digitalisation or cost reduction - including stated "
-         "budgets, savings targets and timelines. Investor days and results "
-         "presentations are where these are quantified."),
-    15: ("Direction and rate of change in the site estate: openings, closures, "
-         "consolidations, acquisitions and disposals, with counts and dates."),
-    16: ("Regulatory or data-sovereignty constraints that would shape where "
-         "traffic and data may go - sector regulation, national data "
-         "residency rules, and any localisation commitments the entity has "
-         "made in the in-scope countries."),
-    9: ("Published figures for what the entity spends on network, "
-        "telecommunications or IT connectivity. Rare as a standalone line; "
-        "look for IT or technology cost lines in segment reporting, and say "
-        "plainly which line the figure came from and what it includes."),
-    10: ("A defensible proxy for IT spend when a network figure is not "
-         "published: total IT or technology spend, IT spend as a share of "
-         "revenue, or a published industry ratio for this sector with the "
-         "entity's revenue. State the proxy and its basis, not just a number."),
-    18: ("Whether the in-scope countries can actually be served with "
-         "enterprise connectivity, and by whom - incumbent and alternative "
-         "carriers, availability of DIA, MPLS, ethernet and business "
-         "broadband, and any country where provisioning is materially "
-         "constrained."),
-    19: ("Market unit prices for enterprise connectivity in the in-scope "
-         "countries: monthly recurring charge per circuit by product (DIA, "
-         "MPLS, ETHERNET, BROADBAND, MOBILE_5G) and bandwidth. Regulator "
-         "price benchmarks, published carrier tariffs and analyst pricing "
-         "studies. Give currency, bandwidth and the price year."),
-    20: ("Typical contract lengths and commercial terms for enterprise "
-         "network services in these markets - term, notice periods, and "
-         "whether early termination charges are customary."),
-    21: ("Typical one-off costs of a network transformation of this shape: "
-         "migration cost per site, professional services, parallel running, "
-         "and any published programme costs for comparable estates."),
-    22: ("Currency, inflation and tax parameters for the in-scope countries "
-         "relevant to a multi-year cost model: FX rates against the base "
-         "currency, telecom-specific taxes or levies, and recent inflation "
-         "in business services."),
+DOMAIN_BRIEFS: dict[int, dict] = {
+    # Each brief is a research instruction, not a label. The first version of
+    # this module sent the domain *name* ("Location footprint") and nothing
+    # else; the second added a sentence of description. Both produced
+    # group-level prose and a homepage citation for entities that publish the
+    # answer in their annual report, because neither told the agent how to
+    # hunt: what to type into a search box, which documents carry this class
+    # of fact, what a filled answer looks like, or what to throw away.
+    #
+    # Keys, all optional except `asks`:
+    #   asks    - the question, in one line
+    #   wants   - the shape of a good answer: units, breakdowns, as-of dates
+    #   search  - concrete query patterns. {entity} is substituted with the
+    #             confirmed legal name; the agent is told to vary them, since
+    #             a brand name usually out-searches a legal name ("DHL", not
+    #             "DHL International GmbH")
+    #   sources - named document types in rough priority order
+    #   example - a filled `quantities` fragment, so the shape is shown rather
+    #             than described
+    #   reject  - what does not count, stated explicitly, because a plausible
+    #             non-answer is worse than an abstention
+    1: {
+        "asks": "What the entity is, at what scale, and where it operates.",
+        "wants": "Revenue, employees, business segments, and the countries of "
+                 "operation. Group versus the specific legal entity matters: "
+                 "say which one each figure describes.",
+        "search": ["{entity} annual report revenue employees",
+                   "{entity} group structure segments",
+                   "{entity} number of countries operations"],
+        "sources": ["annual report or 20-F/10-K", "investor fact sheet",
+                    "group company profile page"],
+        "example": '[{"label": "revenue", "value": 84200000000, "unit": "EUR", '
+                   '"as_of": "FY2024"}, {"label": "employees", "value": 594000, '
+                   '"unit": "people", "as_of": "FY2024"}]',
+    },
+    2: {
+        "asks": "How many physical sites the entity operates, by country and "
+                "by site type - this drives the whole cost model, so it is the "
+                "single most valuable domain to get right.",
+        "wants": "Counts per country, each mapped to exactly one archetype: "
+                 "DC (data centre), LARGE_OFFICE (headquarters, regional "
+                 "office, campus), WAREHOUSE (distribution centre, depot, "
+                 "sorting or logistics hub, terminal), STORE (retail outlet, "
+                 "service point, parcel shop, branch counter), BRANCH (small "
+                 "operational site). Where only a global total is published, "
+                 "give it and say it is global. Always give the as-of date.",
+        "search": ["{entity} annual report number of facilities",
+                   "{entity} distribution centers by country",
+                   "{entity} sorting hubs locations list",
+                   "{entity} service points retail network count",
+                   "{entity} sustainability report sites buildings",
+                   "{entity} locations Germany United Kingdom United States"],
+        "sources": ["annual report - operations or segment section",
+                    "ESG/sustainability report - buildings, energy or "
+                    "emissions tables, which usually count sites by type",
+                    "investor day presentation - network slides",
+                    "country subsidiary or 'our locations' pages",
+                    "regulatory filings listing establishments"],
+        "example": '[{"label": "WAREHOUSE", "value": 340, "unit": "sites", '
+                   '"country": "DE", "as_of": "2024-12-31"}, '
+                   '{"label": "STORE", "value": 27000, "unit": "sites", '
+                   '"country": "DE", "as_of": "2024-12-31"}]',
+        "reject": "A statement that the entity has 'a large global network' or "
+                  "'operates in over 220 countries' is not a site count. If "
+                  "you cannot find counts, say so rather than restating scale.",
+    },
+    6: {
+        "asks": "Data centres and cloud posture.",
+        "wants": "Number of owned or co-located data centres and where they "
+                 "are; named cloud providers and regions; any announced "
+                 "consolidation, exit or migration with dates and targets.",
+        "search": ["{entity} data center consolidation",
+                   "{entity} AWS Azure Google Cloud migration press release",
+                   "{entity} colocation Equinix Digital Realty",
+                   "{entity} data centre strategy annual report"],
+        "sources": ["cloud provider case study or press release naming the "
+                    "entity", "annual report IT section",
+                    "colocation provider customer announcements", "IT trade press"],
+        "example": '[{"label": "DC", "value": 4, "unit": "sites", '
+                   '"country": "DE", "as_of": "2024"}]',
+    },
+    7: {
+        "asks": "What the wide-area network and network-security architecture "
+                "looks like today.",
+        "wants": "Which of MPLS, SD-WAN, internet breakout, DIA, broadband, "
+                 "4G/5G backup, SASE/SSE, zero-trust, private cloud "
+                 "interconnect are in use, and where. Name the products, not "
+                 "just the categories. Note the year each claim describes: an "
+                 "architecture statement from 2019 is not current state.",
+        "search": ["{entity} SD-WAN deployment case study",
+                   "{entity} MPLS network transformation",
+                   "{entity} SASE SSE zero trust network",
+                   "{entity} network architect job description SD-WAN",
+                   "{entity} network modernization conference presentation"],
+        "sources": ["network vendor case study naming the entity",
+                    "carrier or MSP press release",
+                    "conference talk or slide deck by the entity's network staff",
+                    "job adverts requiring named products - weaker, but "
+                    "attributable and dated",
+                    "IT trade press"],
+        "example": '[{"label": "sites on SD-WAN", "value": 1200, '
+                   '"unit": "sites", "as_of": "2023"}]',
+        "reject": "Vendor marketing describing what the entity *could* do, or "
+                  "a generic industry trend piece that merely mentions the "
+                  "entity, is not evidence of its architecture.",
+    },
+    8: {
+        "asks": "Which network and security vendors, carriers and partners the "
+                "entity actually uses.",
+        "wants": "Named vendor and product per role: WAN carrier or carriers "
+                 "by region, SD-WAN platform, firewall/SSE, managed service "
+                 "provider, mobile operator. Say what each claim rests on and "
+                 "how recent it is.",
+        "search": ["{entity} selects network provider press release",
+                   "{entity} managed network services contract awarded",
+                   "{entity} Cisco Fortinet Palo Alto Zscaler Netskope customer",
+                   "{entity} Orange Business BT Verizon Vodafone Telefonica contract",
+                   "{entity} case study network"],
+        "sources": ["vendor or carrier case study naming the entity - strongest",
+                    "contract award or renewal press release",
+                    "the entity's own procurement or supplier pages",
+                    "job adverts naming products - weaker but dated"],
+        "example": '[{"label": "WAN carrier", "value": 1, "unit": "named '
+                   'supplier", "as_of": "2023"}]',
+    },
+    9: {
+        "asks": "Published figures for what the entity spends on network, "
+                "telecommunications or IT connectivity.",
+        "wants": "An amount, a currency, a period, and - critically - which "
+                 "reported line it came from and what that line includes. A "
+                 "network-only figure is rare; an IT or technology cost line "
+                 "is common and useful if labelled honestly.",
+        "search": ["{entity} annual report IT costs technology expenses",
+                   "{entity} telecommunications expenses segment report",
+                   "{entity} IT spending million euros"],
+        "sources": ["annual report notes - operating expenses breakdown",
+                    "segment reporting", "investor presentations",
+                    "analyst coverage quoting a spend figure"],
+        "example": '[{"label": "IT and communications expense", '
+                   '"value": 1800000000, "unit": "EUR", "as_of": "FY2024"}]',
+        "reject": "Do not derive a network figure from a total IT figure here "
+                  "- that belongs in domain 10 as an explicit proxy.",
+    },
+    10: {
+        "asks": "A defensible proxy for IT or network spend where no direct "
+                "figure is published.",
+        "wants": "The proxy itself, its basis, and the arithmetic: total IT "
+                 "spend, or IT spend as a percentage of revenue for this "
+                 "sector from a named study, applied to the entity's revenue. "
+                 "State the source of the ratio.",
+        "search": ["logistics industry IT spend percentage of revenue",
+                   "transportation sector IT budget benchmark Gartner",
+                   "{entity} revenue annual report"],
+        "sources": ["analyst benchmark studies naming the sector",
+                    "industry association reports", "the entity's revenue "
+                    "from its own accounts"],
+        "example": '[{"label": "IT spend proxy", "value": 1260000000, '
+                   '"unit": "EUR", "as_of": "FY2024"}]',
+    },
+    12: {
+        "asks": "Telecom, network and managed-service contracts and sourcing "
+                "events.",
+        "wants": "Counterparty, scope, value, duration and date for each "
+                 "award, renewal, tender or framework agreement. Public-sector "
+                 "tender portals carry these verbatim where the entity or its "
+                 "subsidiaries are in scope.",
+        "search": ["{entity} network services tender award",
+                   "{entity} telecommunications contract renewal",
+                   "{entity} RFP wide area network",
+                   "{entity} framework agreement connectivity"],
+        "sources": ["tender and procurement portals - TED for the EU, "
+                    "national equivalents elsewhere",
+                    "carrier and MSP contract-win press releases",
+                    "trade press covering deal values"],
+        "example": '[{"label": "contract value", "value": 45000000, '
+                   '"unit": "EUR", "as_of": "2023"}, {"label": "contract term", '
+                   '"value": 5, "unit": "years", "as_of": "2023"}]',
+    },
+    13: {
+        "asks": "Publicly reported outages or performance incidents affecting "
+                "the entity's network or IT.",
+        "wants": "Date, duration, what failed, and any stated operational or "
+                 "financial impact.",
+        "search": ["{entity} IT outage disruption",
+                   "{entity} systems failure delays statement",
+                   "{entity} cyber incident network"],
+        "sources": ["the entity's own incident statements",
+                    "regulatory disclosures", "established trade and news press"],
+    },
+    14: {
+        "asks": "Announced transformation programmes touching network, IT "
+                "infrastructure or cost reduction.",
+        "wants": "Programme name, stated budget, savings target, timeline and "
+                 "scope. Investor days are where these get quantified.",
+        "search": ["{entity} digital transformation strategy investor day",
+                   "{entity} cost savings programme IT infrastructure",
+                   "{entity} strategy 2030 digitalization targets"],
+        "sources": ["investor day and capital markets day decks",
+                    "results presentations", "annual report strategy section"],
+        "example": '[{"label": "announced IT savings target", '
+                   '"value": 500000000, "unit": "EUR", "as_of": "2025-2030"}]',
+    },
+    15: {
+        "asks": "Direction and rate of change in the site estate.",
+        "wants": "Openings, closures, consolidations, acquisitions and "
+                 "disposals, with counts and dates - enough to say whether the "
+                 "estate is growing or shrinking and how fast.",
+        "search": ["{entity} opens new distribution center",
+                   "{entity} closes facilities consolidation",
+                   "{entity} acquisition logistics network expansion"],
+        "sources": ["press releases", "annual report operations section",
+                    "regional and trade press"],
+        "example": '[{"label": "sites opened", "value": 25, "unit": "sites", '
+                   '"as_of": "FY2024"}]',
+    },
+    16: {
+        "asks": "Regulatory and data-sovereignty constraints shaping where "
+                "traffic and data may travel.",
+        "wants": "Sector regulation, national data-residency rules and any "
+                 "localisation commitments the entity has made, for the "
+                 "in-scope countries specifically.",
+        "search": ["{entity} data protection data residency commitment",
+                   "data localisation requirements {country} enterprise",
+                   "{entity} GDPR compliance data transfers"],
+        "sources": ["the entity's privacy and compliance disclosures",
+                    "national regulators", "law-firm country guides"],
+    },
+    18: {
+        "asks": "Whether enterprise connectivity can actually be delivered in "
+                "the in-scope countries, and by whom.",
+        "wants": "Per in-scope country: incumbent and credible alternative "
+                 "carriers, availability of DIA, MPLS, ethernet and business "
+                 "broadband, typical lead times, and any country where "
+                 "provisioning is materially constrained.",
+        "search": ["enterprise fibre availability {country} business carriers",
+                   "{country} telecom market incumbent alternative operators",
+                   "leased line availability lead time {country}"],
+        "sources": ["national telecom regulator market reviews",
+                    "carrier coverage and product pages",
+                    "ITU or OECD market data"],
+        "example": '[{"label": "credible enterprise carriers", "value": 4, '
+                   '"unit": "operators", "country": "DE", "as_of": "2025"}]',
+    },
+    19: {
+        "asks": "Market unit prices for enterprise connectivity in the "
+                "in-scope countries.",
+        "wants": "Monthly recurring charge per circuit by product (DIA, MPLS, "
+                 "ETHERNET, BROADBAND, MOBILE_5G) and bandwidth, per country, "
+                 "with currency and price year. This feeds the pricing "
+                 "benchmark directly, so precision matters more than coverage.",
+        "search": ["{country} leased line pricing benchmark enterprise",
+                   "dedicated internet access price per Mbps {country}",
+                   "regulator broadband business tariff comparison {country}",
+                   "MPLS circuit monthly cost benchmark"],
+        "sources": ["national regulator price benchmarking studies",
+                    "published carrier business tariffs",
+                    "analyst pricing studies - TeleGeography and similar"],
+        "example": '[{"label": "DIA 100Mbps MRC", "value": 520, "unit": "USD/'
+                   'month", "country": "DE", "as_of": "2025"}]',
+        "reject": "Consumer broadband pricing is not an enterprise circuit "
+                  "price. Say which market a price describes.",
+    },
+    20: {
+        "asks": "Customary contract lengths and commercial terms for "
+                "enterprise network services in these markets.",
+        "wants": "Typical term, notice period, and whether early-termination "
+                 "charges are customary.",
+        "search": ["enterprise connectivity contract term typical years",
+                   "leased line minimum term early termination charge",
+                   "{country} business telecom contract terms regulation"],
+        "sources": ["carrier standard terms", "regulator consumer/business "
+                    "contract rules", "analyst market practice notes"],
+        "example": '[{"label": "typical contract term", "value": 3, '
+                   '"unit": "years", "country": "DE", "as_of": "2025"}]',
+    },
+    21: {
+        "asks": "One-off costs of a network transformation of this shape.",
+        "wants": "Migration cost per site, professional services, parallel "
+                 "running and decommissioning - ideally from a published "
+                 "comparable programme, with the estate size it covered so the "
+                 "figure can be normalised.",
+        "search": ["SD-WAN migration cost per site enterprise",
+                   "network transformation programme cost case study",
+                   "WAN refresh professional services cost benchmark"],
+        "sources": ["analyst studies", "vendor case studies stating programme "
+                    "cost and site count", "published public-sector business "
+                    "cases, which often disclose full costs"],
+        "example": '[{"label": "migration cost per site", "value": 2200, '
+                   '"unit": "USD", "as_of": "2024"}]',
+    },
+    22: {
+        "asks": "Currency, inflation and tax parameters for the in-scope "
+                "countries.",
+        "wants": "FX rates against the case base currency for the price year, "
+                 "telecom-specific taxes or levies, and recent inflation in "
+                 "business services.",
+        "search": ["{country} telecom tax levy business services",
+                   "{country} inflation business services index",
+                   "exchange rate EUR USD average {year}"],
+        "sources": ["central banks", "national statistics offices",
+                    "tax authority guidance", "OECD"],
+        "example": '[{"label": "telecom levy", "value": 2.5, "unit": "percent", '
+                   '"country": "FR", "as_of": "2025"}]',
+    },
 }
+
+
+def _render_brief(domain_no: int, entity_name: str) -> str:
+    """Flatten a brief into the prompt. {entity} is substituted so the search
+    patterns arrive ready to use rather than as a template the agent has to
+    assemble - and the agent is told to vary the name, because a brand
+    ("DHL") almost always out-searches a registered legal name ("DHL
+    International GmbH") on public sources."""
+    brief = DOMAIN_BRIEFS.get(domain_no)
+    if not brief:
+        return ""
+    out = [f"WHAT THIS DOMAIN ASKS\n{brief['asks']}"]
+    if brief.get("wants"):
+        out.append(f"WHAT A GOOD ANSWER CONTAINS\n{brief['wants']}")
+    if brief.get("search"):
+        queries = "\n".join(
+            f"  - {q.replace('{entity}', entity_name)}" for q in brief["search"])
+        out.append(
+            "SEARCHES TO RUN (vary them; try the common brand name as well as "
+            f"the registered legal name)\n{queries}")
+    if brief.get("sources"):
+        out.append("WHERE THIS IS NORMALLY PUBLISHED, BEST FIRST\n"
+                   + "\n".join(f"  - {x}" for x in brief["sources"]))
+    if brief.get("example"):
+        out.append(f"SHAPE OF A GOOD `quantities` ANSWER\n  {brief['example']}")
+    if brief.get("reject"):
+        out.append(f"WHAT DOES NOT COUNT\n{brief['reject']}")
+    return "\n\n".join(out)
+
 
 _TAG_RE = re.compile(r"<[^>]+>")
 _WS_RE = re.compile(r"\s+")
@@ -483,8 +749,9 @@ def _build_prompt(domain_name: str, case_row, domain_no: int | None = None) -> s
         f"base currency: {getattr(case_row, 'base_currency', None) or 'USD'}; "
         f"price year: {getattr(case_row, 'price_year', None) or 2026}")
 
-    brief = DOMAIN_BRIEFS.get(domain_no or -1)
-    brief_block = (f"\nWhat would answer this domain:\n{brief}\n" if brief else "\n")
+    rendered = _render_brief(domain_no or -1,
+                             case_row.subject_entity_legal_name or "")
+    brief_block = f"\n{rendered}\n" if rendered else "\n"
 
     return (
         "You are researching one input domain of an outside-in enterprise "
@@ -494,12 +761,16 @@ def _build_prompt(domain_name: str, case_row, domain_no: int | None = None) -> s
         "group-level summary.\n"
         f"{entity}\n{country}\n{domain}\n{scope}\n"
         f"{brief_block}"
-        "Search for it. Prefer the entity's own annual report, ESG or "
-        "sustainability report, investor presentations and fact sheets, then "
-        "regulators and established trade press. Put every number you find "
-        "into \"quantities\" as well as describing it in \"finding\", with the "
-        "country and as-of date where you have them. If the sources disagree, "
-        "say so in \"confidence_note\" rather than picking one silently.\n"
+        "\nHOW TO WORK\n"
+        "Run several of the searches above before answering - one search is "
+        "almost never enough for a domain like this. Follow a promising result "
+        "to the underlying document rather than answering from a snippet. Put "
+        "every number you find into \"quantities\" as well as describing it in "
+        "\"finding\", with country and as-of date wherever you have them. If "
+        "sources disagree, say so in \"confidence_note\" instead of silently "
+        "picking one. If the searches genuinely turn up nothing attributable, "
+        "return found=false - a plausible guess is worse than an abstention "
+        "here, because it will be priced.\n\n"
         "Respond with the JSON object only.")
 
 

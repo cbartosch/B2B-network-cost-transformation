@@ -598,6 +598,13 @@ def test_the_prompt_carries_the_domain_brief_and_the_case_scope(session, monkeyp
     assert "in-scope countries" in prompt, (
         "without scope the agent answers at group level for a global entity")
     assert "quantities" in prompt, "the estimate consumes numbers, not prose"
+    assert "SEARCHES TO RUN" in prompt and "annual report" in prompt, (
+        "the brief must hand over concrete search patterns, not just describe "
+        "the target - naming what to find and leaving the agent to invent the "
+        "query is what produced homepage citations")
+    assert "DHL" in prompt or "Acme" in prompt, (
+        "search patterns must be substituted with the entity name, not left "
+        "as a {entity} template the agent has to assemble")
 
 
 def test_every_agent_routed_domain_has_a_brief():
@@ -606,6 +613,11 @@ def test_every_agent_routed_domain_has_a_brief():
     missing = sorted(no for no, agent in research.DOMAIN_AGENT_MAP.items()
                      if agent and no not in research.DOMAIN_BRIEFS)
     assert not missing, f"domains routed to an agent with no research brief: {missing}"
+    # A brief without search patterns is the old failure in a new shape: the
+    # agent is told what to find and left to guess how to look for it.
+    thin = sorted(no for no, b in research.DOMAIN_BRIEFS.items()
+                  if not b.get("search"))
+    assert not thin, f"briefs with no search patterns: {thin}"
 
 
 def test_the_displayed_prompt_is_hashed_the_way_the_gateway_hashes_it():
