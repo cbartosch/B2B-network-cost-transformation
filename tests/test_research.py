@@ -439,3 +439,57 @@ def test_a_short_brand_name_is_not_treated_as_out_of_perimeter(session):
         assert not research._looks_out_of_perimeter(subject, _Row()), subject
     # Still catches a genuinely different company.
     assert research._looks_out_of_perimeter("FedEx Corporation", _Row())
+
+
+def test_unreachable_sources_are_an_egress_failure_not_budget_exhaustion(
+        session, monkeypatch):
+    """Found in the field. A container with no egress fetched nothing, so every
+    claimed source failed, captures drained, the domain retried until its
+    per-domain cap was gone, and the result was written up as
+    DECLARED_UNKNOWN / BUDGET_EXHAUSTED - "we searched hard and found nothing".
+    The run budget then drained the same way and later domains were marked
+    exhausted without being attempted at all.
+
+    A request that never completed says nothing about the source. The module
+    contract is that an operational failure gets no disposition; this is the
+    same rule one layer down."""
+    case_id = _case(session)
+    _wire_fake_provider(monkeypatch)
+
+    def _unreachable(url, timeout=10.0):
+        raise research.SourceUnreachable("ConnectError: [Errno -3] Temporary failure")
+
+    monkeypatch.setattr(research, "_fetch_source_fragment", _unreachable)
+
+    result = research.run_domain_research(
+        session, case_id=case_id, agent_ids=["LLM-01"], research_policy=POLICY)
+
+    rows = session.execute(select(db.domain_disposition).where(
+        db.domain_disposition.c.case_id == case_id)).all()
+    assert not any(r.reason == "BUDGET_EXHAUSTED" for r in rows), (
+        "an egress failure was reported as an exhausted search budget")
+    assert not rows, (
+        "no disposition should be written for a domain that was never actually "
+        "researched")
+    assert any("egress failure" in (d.get("failure_detail") or "")
+               for d in result["results"]), result["results"]
+
+
+def test_a_404_still_counts_for_nothing_without_being_called_an_outage(
+        session, monkeypatch):
+    """The other half: a source that resolves and 404s IS evidence about that
+    source, and must keep behaving as it did - no evidence, budget spent,
+    eventually NO_PUBLIC_EVIDENCE. Only a request that never completed is an
+    operational failure."""
+    case_id = _case(session)
+    _wire_fake_provider(monkeypatch)
+    monkeypatch.setattr(research, "_fetch_source_fragment",
+                        lambda url, timeout=10.0: None)
+
+    research.run_domain_research(
+        session, case_id=case_id, agent_ids=["LLM-01"], research_policy=POLICY)
+
+    rows = session.execute(select(db.domain_disposition).where(
+        db.domain_disposition.c.case_id == case_id)).all()
+    assert rows, "a genuinely fruitless search must still be dispositioned"
+    assert all(r.disposition == "DECLARED_UNKNOWN" for r in rows)

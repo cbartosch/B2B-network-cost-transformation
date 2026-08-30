@@ -208,9 +208,25 @@ class DomainResult:
                 "failed": self.failed, "failure_detail": self.failure_detail}
 
 
+class SourceUnreachable(RuntimeError):
+    """The fetch failed at the transport layer, so nothing was learned about
+    the source itself.
+
+    Distinct from "fetched and it was a 404". A 404 is evidence: that URL does
+    not resolve, and a source that does not resolve counts for nothing. A
+    connection that never completed is not evidence of anything - it says the
+    container could not reach the internet, which is a statement about this
+    deployment and not about the claim being researched.
+    """
+
+
 def _fetch_source_fragment(url: str, timeout: float = 10.0) -> dict | None:
-    """Independently resolves a source the model named. Returns None on any
-    failure - a claimed source that does not resolve counts for nothing.
+    """Independently resolves a source the model named.
+
+    Returns None when the source resolved but did not stand up - a non-200, an
+    empty body, a URL that is not http(s). Raises SourceUnreachable when the
+    request never completed, because those two must not be conflated: see the
+    class docstring, and _research_one_domain for what the difference changes.
 
     Deliberately not the pinned transport in llm/providers/_transport.py:
     that pin is scoped to specific LLM provider hosts and has no reason to
@@ -226,8 +242,8 @@ def _fetch_source_fragment(url: str, timeout: float = 10.0) -> dict | None:
         resp = httpx.get(url, timeout=timeout, follow_redirects=True,
                          headers={"User-Agent": "network-workbench-research/1.0"})
     except httpx.HTTPError as exc:
-        log.info("source fetch failed for %s: %s", url, exc)
-        return None
+        log.info("source fetch could not complete for %s: %s", url, exc)
+        raise SourceUnreachable(f"{type(exc).__name__}: {exc}") from exc
     if resp.status_code != 200:
         return None
     text = _WS_RE.sub(" ", _TAG_RE.sub(" ", resp.text[:20_000])).strip()
@@ -236,19 +252,30 @@ def _fetch_source_fragment(url: str, timeout: float = 10.0) -> dict | None:
     return {"url": url, "status_code": resp.status_code, "fragment": text[:600]}
 
 
-def _verify_sources(claimed: list[dict], captures_remaining: int) -> tuple[list[dict], int]:
+def _verify_sources(claimed: list[dict],
+                    captures_remaining: int) -> tuple[list[dict], int, int, str | None]:
     """Fetches up to captures_remaining of the model's claimed sources.
-    Returns (verified, captures_used) - captures_used counts fetch *attempts*,
-    successful or not, since a failed fetch still spends gateway effort."""
-    verified, used = [], 0
+
+    Returns (verified, captures_used, unreachable, first_unreachable_detail).
+    captures_used counts fetch *attempts*, successful or not, since a failed
+    fetch still spends gateway effort. `unreachable` counts only the attempts
+    that never completed a request - the caller needs that separately, because
+    a domain where nothing was reachable has not been researched at all.
+    """
+    verified, used, unreachable, detail = [], 0, 0, None
     for source in claimed:
         if used >= captures_remaining:
             break
         used += 1
-        fetched = _fetch_source_fragment(source.get("url", ""))
+        try:
+            fetched = _fetch_source_fragment(source.get("url", ""))
+        except SourceUnreachable as exc:
+            unreachable += 1
+            detail = detail or str(exc)
+            continue
         if fetched is not None:
             verified.append({**source, **fetched})
-    return verified, used
+    return verified, used, unreachable, detail
 
 
 # Legal-form suffixes and generic scope words: dropped because they carry no
@@ -485,9 +512,37 @@ def _research_one_domain(session, *, case_row, domain_no: int, domain_name: str,
             claimed_sources = kept
         budget_left = min(captures_left_for_domain,
                           captures_remaining_in_run - result.captures_used)
-        verified, used = _verify_sources(claimed_sources, budget_left)
+        verified, used, unreachable, unreachable_detail = _verify_sources(
+            claimed_sources, budget_left)
         result.captures_used += used
         captures_left_for_domain -= used
+
+        if used and unreachable == used:
+            # Every fetch attempted this turn failed to complete a request.
+            # That is not a statement about the sources - it is a statement
+            # about this container's egress, and the module contract is that
+            # an operational failure gets no disposition rather than being
+            # written up as a completed search. Without this the domain
+            # burned its capture budget on unreachable URLs, retried until
+            # exhausted, and reported BUDGET_EXHAUSTED - which reads as "we
+            # searched hard and ran out of budget" when nothing was ever
+            # reached. The run-level budget then drained the same way and
+            # later domains were marked BUDGET_EXHAUSTED without being
+            # attempted at all, so one network fault presented as an
+            # exhaustive-but-fruitless search across the whole contract.
+            gateway.succeed(session, run_id, {
+                "found": True, "subject": subject,
+                "sources_unreachable": unreachable,
+                "note": "no claimed source could be fetched from this container"})
+            result.agent_run_id = run_id
+            result.failed = True
+            result.failure_detail = (
+                f"none of the {unreachable} claimed source(s) could be fetched: "
+                f"{unreachable_detail}. This is an egress failure, not a research "
+                f"outcome - the domain is left undisposed for a retry. Check that "
+                f"the container can reach the public internet (see "
+                f"`docker compose exec api python tools/tls_doctor.py`).")
+            return result
 
         gateway.succeed(session, run_id, {
             "found": True, "subject": subject, "finding": parsed.get("finding"),
@@ -496,6 +551,7 @@ def _research_one_domain(session, *, case_row, domain_no: int, domain_name: str,
             # that cited two unobserved sources look like it cited none.
             "claimed_sources": claimed_count,
             "verified_sources": len(verified),
+            "sources_unreachable": unreachable,
             "dropped_unobserved_sources": dropped_unobserved})
         result.agent_run_id = run_id
 
