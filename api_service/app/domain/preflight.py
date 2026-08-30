@@ -44,9 +44,29 @@ def run(session, *, case_id: str, mode: str = "LIVE") -> dict:
                              "subject entity not confirmed by a named user"))
 
     # 2. Mandatory intake
-    missing = [f for f in MANDATORY_FIELDS if not getattr(row, f, None)]
-    conditions.append(_c("Mandatory intake", PASS, "all fields populated") if not missing
-                      else _c("Mandatory intake", BLOCK, "missing: " + ", ".join(missing)))
+    # in_scope_countries can legitimately be an empty list: a REGION or
+    # GLOBAL selection (domain/scope.py) that matches no approved pricing
+    # prior resolves to [], which is a real outcome of a deliberate choice,
+    # not an unset field. The blanket falsy check below can't tell those
+    # apart - `not []` and `not None` are both True - so it's checked
+    # separately and given its own message when in_scope_region says a
+    # geography selector actually ran.
+    via_selector = bool(row.in_scope_region)
+    check_fields = [f for f in MANDATORY_FIELDS if not (via_selector and f == "in_scope_countries")]
+    missing = [f for f in check_fields if not getattr(row, f, None)]
+
+    geography_empty = via_selector and not row.in_scope_countries
+    if missing or geography_empty:
+        detail = []
+        if missing:
+            detail.append("missing: " + ", ".join(missing))
+        if geography_empty:
+            detail.append(
+                f"'{row.in_scope_region}' resolved to zero in-scope countries - "
+                f"no approved pricing benchmark matches this selection")
+        conditions.append(_c("Mandatory intake", BLOCK, "; ".join(detail)))
+    else:
+        conditions.append(_c("Mandatory intake", PASS, "all fields populated"))
 
     # 3. Provider availability - BLOCK for LIVE, and never auto-downgraded
     avail = gateway.available_providers()

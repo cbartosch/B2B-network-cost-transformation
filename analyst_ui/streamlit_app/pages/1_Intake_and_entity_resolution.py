@@ -14,6 +14,14 @@ case = api.get(f"/v1/outside-in/cases/{case_id}")
 
 st.subheader("Mandatory intake block")
 
+is_locked = bool(case.get("resolved_entity_id"))
+if is_locked:
+    st.info("Entity confirmed - legal name, identifier, domicile and group "
+           "perimeter are locked so an estimate's provenance can't drift from "
+           "what was actually confirmed. To change any of them, resolve and "
+           "confirm the entity again below; that's what advances the "
+           "perimeter version.")
+
 # Scope mode lives outside the form: a form batches its own widgets and only
 # reruns the script on submit, so a radio inside it can't reveal or hide the
 # field beside it before the analyst has already submitted once. Outside the
@@ -36,15 +44,23 @@ region_options = api.get("/v1/outside-in/regions").get("regions", [])
 with st.form("intake"):
     c1, c2, c3 = st.columns(3)
     name = c1.text_input("Subject entity legal name *", case.get("subject_entity_legal_name") or "",
-                         help="Exact registered legal name - not a trading or brand name")
+                         help="Exact registered legal name - not a trading or brand name",
+                         disabled=is_locked)
     ident = c2.text_input("Entity identifier *", case.get("entity_identifier") or "",
-                          help="LEI, ticker plus exchange, registration number or primary domain")
-    dom = c3.text_input("Country of domicile *", case.get("country_of_domicile") or "", max_chars=2)
+                          help="LEI, ticker plus exchange, registration number or primary domain",
+                          disabled=is_locked)
+    dom = c3.text_input("Country of domicile *", case.get("country_of_domicile") or "",
+                        max_chars=2, disabled=is_locked)
 
     c4, c5, c6 = st.columns(3)
-    perimeter = c4.selectbox("Group perimeter *",
-                             ["SINGLE_ENTITY", "GROUP_CONSOLIDATED", "NAMED_SUBSIDIARIES",
-                              "NAMED_DIVISION"])
+    _perimeter_options = ["SINGLE_ENTITY", "GROUP_CONSOLIDATED", "NAMED_SUBSIDIARIES",
+                          "NAMED_DIVISION"]
+    _current_perimeter = case.get("group_perimeter")
+    perimeter = c4.selectbox(
+        "Group perimeter *", _perimeter_options,
+        index=(_perimeter_options.index(_current_perimeter)
+              if _current_perimeter in _perimeter_options else 0),
+        disabled=is_locked)
 
     countries_text, region_choice = None, None
     if scope_mode == "COUNTRIES":
@@ -83,10 +99,6 @@ with st.form("intake"):
 
     if st.form_submit_button("Save intake block"):
         payload = {
-            "subject_entity_legal_name": name or None,
-            "entity_identifier": ident or None,
-            "country_of_domicile": dom or None,
-            "group_perimeter": perimeter,
             "scope_mode": scope_mode,
             "in_scope_countries": ([c.strip().upper() for c in countries_text.split(",") if c.strip()]
                                    if countries_text else []),
@@ -99,6 +111,15 @@ with st.form("intake"):
             "discount_rate_set_id": drs or None,
             "client_contact_status": contact,
         }
+        if not is_locked:
+            # Only sent pre-confirmation: once entity_resolution.confirm() has
+            # run, the backend refuses these four - they're re-set only by
+            # confirming again, which is what actually advances
+            # perimeter_version and re-stamps who confirmed what.
+            payload["subject_entity_legal_name"] = name or None
+            payload["entity_identifier"] = ident or None
+            payload["country_of_domicile"] = dom or None
+            payload["group_perimeter"] = perimeter
         r = api.put(f"/v1/outside-in/cases/{case_id}", payload)
         if "_error" in r:
             st.error(r["_error"])

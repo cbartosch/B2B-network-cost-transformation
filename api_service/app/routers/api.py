@@ -357,9 +357,38 @@ class CaseUpdate(BaseModel):
 
 @router.put("/v1/outside-in/cases/{case_id}")
 def update_case(case_id: str, payload: CaseUpdate):
+    """Mandatory intake block, partial update.
+
+    Four fields - subject_entity_legal_name, entity_identifier,
+    country_of_domicile, group_perimeter - are also written by
+    entity_resolution.confirm(), which bumps perimeter_version and stamps
+    entity_confirmed_by/at as the record of *who* confirmed *this* identity
+    and perimeter (spec 0.1A). estimates:run stamps that same
+    perimeter_version onto every snapshot as provenance. Letting this
+    endpoint rewrite any of the four after confirmation would let an
+    estimate's "perimeter v3, confirmed by Jane Okafor" go on describing a
+    name or perimeter Jane never saw - the confirmation record would still
+    read as current while silently describing something else. So once an
+    entity is confirmed, those four fields are refused here; changing them
+    means re-resolving and re-confirming through entities:resolve and
+    :confirm-entity, which is the only path that bumps perimeter_version.
+    """
     with S() as s:
         _one_or_404(s, db.case, db.case.c.case_id, case_id, "case")
         fields = payload.model_dump(exclude_unset=True, exclude={"scope_mode", "region"})
+
+        if entity_resolution.is_confirmed(s, case_id):
+            locked = {"subject_entity_legal_name", "entity_identifier",
+                     "country_of_domicile", "group_perimeter", "excluded_entities"}
+            attempted = locked & set(fields)
+            if attempted:
+                raise HTTPException(409, {
+                    "error": "entity already confirmed",
+                    "locked_fields": sorted(attempted),
+                    "detail": "these fields are set by confirming an entity "
+                             "(spec 0.1A) and cannot be edited directly once "
+                             "confirmed - re-resolve and confirm again via "
+                             "entities:resolve / :confirm-entity instead"})
 
         if payload.scope_mode is not None:
             try:
