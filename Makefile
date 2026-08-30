@@ -1,4 +1,7 @@
-.PHONY: benchmarks reach tls-doctor tls-doctor-in-container check up down logs test seed reset psql doctor migrate pins attest
+.PHONY: deck benchmarks reach tls-doctor tls-doctor-in-container check up down logs test seed reset psql doctor migrate pins attest
+
+deck:          ## render a V0 snapshot as a PowerPoint (CASE=<case-id> OUT=v0.pptx)
+	python tools/render_v0_deck.py --case $(CASE) -o $(or $(OUT),v0_estimate.pptx)
 
 benchmarks:    ## ingest a folder of benchmark sources (BENCH=./folder RIGHTS=PUBLISHED)
 	python tools/ingest_benchmarks.py $(BENCH) --rights $(RIGHTS) $(if $(ORG),--org "$(ORG)",)
