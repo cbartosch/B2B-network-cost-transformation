@@ -10,7 +10,7 @@ would move client files into a service that has no reason to hold them.
 
 Usage:
 
-    python tools/ingest_benchmarks.py ./benchmarks --rights PRIOR_ENGAGEMENT --org "Simmons"
+    python tools/ingest_benchmarks.py ./benchmarks --rights PRIOR_ENGAGEMENT --org "<prior engagement>"
     python tools/ingest_benchmarks.py ./public-tariffs --rights PUBLISHED
     python tools/ingest_benchmarks.py ./one.pptx --dry-run      # show the text only
 

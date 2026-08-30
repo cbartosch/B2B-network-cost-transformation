@@ -206,18 +206,19 @@ PRIORS = [
     ("DE", "ETHERNET", "L0", 10000, 2850, 4000, 5600),
     ("DE", "MOBILE_5G", "L0", 50, 28, 50, 88),
 
-    # --- US. The DIA and broadband bands here were re-derived against the
-    # Simmons RFP responses (7 vendors, 230 branch locations, May 2026): the
-    # DIA quotes ran 367-609 with a median of 477, which the old 350/480/660
-    # band already covered. The old BROADBAND band of 55/85/130 did not - real
-    # business broadband quotes ran 80-268 - which is exactly the disagreement
-    # the price-divergence check surfaced.
+    # --- US. The business-broadband bands are wider and higher than the
+    # single pre-split BROADBAND band they replace, which described
+    # residential-grade service and understated business connectivity at
+    # branch sites. These are indicative market figures like every other row
+    # here - seed defaults a steward is expected to replace with real
+    # benchmarks through the ingestion path, not values carried over from any
+    # engagement.
     ("US", "DIA", "L0", 100, 350, 480, 660), ("US", "DIA", "L0", 500, 680, 920, 1270),
     ("US", "DIA", "L0", 1000, 990, 1340, 1840),
     ("US", "BROADBAND_PON", "L0", 50, 70, 105, 165),
-    ("US", "BROADBAND_PON", "L0", 100, 80, 120, 200),
-    ("US", "BROADBAND_HFC", "L0", 50, 115, 150, 230),
-    ("US", "BROADBAND_HFC", "L0", 100, 132, 166, 268),
+    ("US", "BROADBAND_PON", "L0", 100, 85, 125, 195),
+    ("US", "BROADBAND_HFC", "L0", 50, 110, 150, 225),
+    ("US", "BROADBAND_HFC", "L0", 100, 130, 170, 260),
     ("US", "MPLS", "L0", 100, 650, 900, 1300),
     ("US", "ETHERNET", "L0", 500, 520, 720, 1000),
     ("US", "ETHERNET", "L0", 10000, 2500, 3450, 4800),
