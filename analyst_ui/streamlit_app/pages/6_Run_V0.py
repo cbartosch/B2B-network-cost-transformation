@@ -126,6 +126,22 @@ if "_error" in v0:
     st.stop()
 
 cov, conf = v0["coverage"], v0["confidence"]
+
+_method = v0.get("method", "BUILD_UP")
+if _method == "ANCHOR":
+    _b = v0.get("anchor_basis") or {}
+    _pool = _b.get("addressable_pool") or {}
+    _share = _b.get("addressable_share") or {}
+    st.info(
+        f"**Method: ANCHOR.** Anchored on a disclosed figure of "
+        f"{float(_b.get('anchor_value', 0)):,.0f}, of which "
+        f"{float(_share.get('low', 0)):.0%}-{float(_share.get('high', 0)):.0%} "
+        f"is treated as addressable - a governed assumption, not an "
+        f"observation. Addressable pool "
+        f"{float(_pool.get('low', 0)):,.0f} to {float(_pool.get('high', 0)):,.0f}. "
+        f"Anchor provenance: {_b.get('anchor_origin', 'unknown')}.")
+    st.caption(_b.get("caveat", ""))
+
 if v0["v0_status"] == "PARTIAL":
     st.warning(f"**V0 PARTIAL** - effective coverage {cov['effective_coverage_pct']}. "
                f"{cov['reason']}")
@@ -152,10 +168,18 @@ if conf["ceilings_applied"]:
 else:
     st.caption("No confidence ceiling tripped - simulated share is below the 10% band.")
 
-st.subheader("Where the simulated share comes from")
-st.caption("Derived from the share of bill-of-materials value whose *quantity* was "
-           "decided by the simulation. Unit prices come from approved reference priors "
-           "in every case.")
+if _method == "ANCHOR":
+    st.subheader("Why the simulated share is zero")
+    st.caption("Nothing was enumerated, so no quantity was decided by a "
+               "seeded draw. The uncertainty in this method sits in the "
+               "addressable share above, not in a simulated topology - and "
+               "the circuit coverage figure is zero for the same reason, "
+               "which is not comparable with a BUILD_UP run.")
+else:
+    st.subheader("Where the simulated share comes from")
+    st.caption("Derived from the share of bill-of-materials value whose *quantity* was "
+               "decided by the simulation. Unit prices come from approved reference priors "
+               "in every case.")
 kf = v0.get("known_facts") or {}
 if kf.get("registered"):
     bound, info = len(kf.get("bound_to_a_driver") or []), len(kf.get("informational") or [])

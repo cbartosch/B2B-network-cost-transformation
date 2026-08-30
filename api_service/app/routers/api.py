@@ -1173,11 +1173,27 @@ def _run_anchor_estimate(s, *, case_id, case_row, payload,
               "price_year": case_row.price_year}))
     s.commit()
 
+    # The response shape has to match the build-up path exactly. It did not:
+    # this returned the *snapshot* shape - by-layer keys plus "total" - while
+    # the interface reads current_tco["base"] from a Range, so page 6 raised
+    # KeyError the moment an ANCHOR run succeeded. Two methods that return
+    # different shapes are two products; the point of sharing the engine was
+    # that everything downstream reads one contract.
     return {"estimate_snapshot_id": snap_id, "method": anchor_estimate.METHOD_ANCHOR,
             "v0_status": cov["status"], "anchor_basis": basis,
-            "current_tco": {**cur["by_layer"], "total": cur["total"]},
+            "current_tco": cur["total"], "by_layer": cur["by_layer"],
+            "origin_breakdown": cur["origin_breakdown"],
+            "components": cur["components"],
             "scenarios": scen, "confidence": conf, "coverage": cov,
-            "headline_scenario": headline}
+            "simulated_share": "0",
+            "asserted_share": str(estimate.asserted_share(components)),
+            "entered_share": str(estimate.entered_share(components)),
+            "headline_scenario": headline,
+            # Named so the interface can tell the reader which method produced
+            # what it is looking at, rather than leaving two different bases
+            # to look identical.
+            "quantity_sources": {"anchor": {"origin": anchor_origin,
+                                            "known_fact_id": anchor_ref}}}
 
 
 @router.post("/v1/outside-in/cases/{case_id}/estimates:run")

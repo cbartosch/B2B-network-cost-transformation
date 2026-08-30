@@ -111,3 +111,45 @@ def test_a_zero_anchor_cannot_support_an_estimate():
     with pytest.raises(ae.AnchorUnusable):
         ae.build_pool_components(anchor_value=D("0"), policy=_policy(),
                                  anchor_origin=ae.ANCHOR_DISCLOSED)
+
+
+def test_both_methods_return_the_same_response_contract():
+    """Found in the field as a KeyError the moment an ANCHOR run succeeded:
+    the anchor path returned the *snapshot* shape - by-layer keys plus
+    "total" - while the interface reads current_tco["base"] from a Range.
+
+    Sharing the savings engine and the confidence model buys nothing if the
+    two methods hand back different shapes; everything downstream would need
+    to know which method ran. This binds the contract."""
+    import ast
+    import pathlib
+
+    root = pathlib.Path(__file__).resolve().parents[1]
+    for candidate in (root / "api_service" / "app", root / "app"):
+        if (candidate / "routers" / "api.py").exists():
+            src = (candidate / "routers" / "api.py").read_text()
+            break
+    else:
+        pytest.skip("cannot locate the application package")
+
+    tree = ast.parse(src)
+    returns = {}
+    for fn in ast.walk(tree):
+        if not isinstance(fn, ast.FunctionDef):
+            continue
+        if fn.name not in ("run_estimate", "_run_anchor_estimate"):
+            continue
+        for node in ast.walk(fn):
+            if (isinstance(node, ast.Return) and isinstance(node.value, ast.Dict)):
+                keys = {k.value for k in node.value.keys
+                        if isinstance(k, ast.Constant)}
+                if "estimate_snapshot_id" in keys:
+                    returns[fn.name] = keys
+
+    assert len(returns) == 2, f"expected both estimate paths, found {list(returns)}"
+    shared = {"estimate_snapshot_id", "v0_status", "current_tco", "by_layer",
+              "scenarios", "confidence", "coverage", "simulated_share",
+              "asserted_share"}
+    for name, keys in returns.items():
+        missing = shared - keys
+        assert not missing, f"{name} does not return {sorted(missing)}"
