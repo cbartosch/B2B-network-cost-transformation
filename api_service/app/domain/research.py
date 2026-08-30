@@ -94,6 +94,7 @@ from sqlalchemy import insert, select, update
 
 from .. import db
 from ..llm import errors, gateway, registry
+from ..llm.providers import _transport
 from . import dispositions
 from .policy import ResearchPolicy
 
@@ -228,9 +229,13 @@ def _fetch_source_fragment(url: str, timeout: float = 10.0) -> dict | None:
     request never completed, because those two must not be conflated: see the
     class docstring, and _research_one_domain for what the difference changes.
 
-    Deliberately not the pinned transport in llm/providers/_transport.py:
+    Deliberately not the *pinned* transport in llm/providers/_transport.py:
     that pin is scoped to specific LLM provider hosts and has no reason to
-    extend to arbitrary third-party URLs a model happens to cite.
+    extend to arbitrary third-party URLs a model happens to cite. It does use
+    that module's outbound_client, so the egress proxy and trust anchor a
+    deployment configures apply here too - a bare httpx.get meant that on a
+    proxied network LLM_EGRESS_PROXY fixed provider calls and left every
+    source fetch timing out.
 
     The fragment is a naive tag-strip, not real content extraction - no HTML
     parser is a dependency here. Good enough to show a human what was found;
@@ -239,8 +244,8 @@ def _fetch_source_fragment(url: str, timeout: float = 10.0) -> dict | None:
     if not url or not url.lower().startswith(("http://", "https://")):
         return None
     try:
-        resp = httpx.get(url, timeout=timeout, follow_redirects=True,
-                         headers={"User-Agent": "network-workbench-research/1.0"})
+        with _transport.outbound_client(timeout) as c:
+            resp = c.get(url, headers={"User-Agent": "network-workbench-research/1.0"})
     except httpx.HTTPError as exc:
         log.info("source fetch could not complete for %s: %s", url, exc)
         raise SourceUnreachable(f"{type(exc).__name__}: {exc}") from exc

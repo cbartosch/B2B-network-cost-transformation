@@ -192,6 +192,33 @@ def client(timeout: float) -> httpx.Client:
     return httpx.Client(**kwargs)
 
 
+def outbound_client(timeout: float) -> httpx.Client:
+    """For fetching arbitrary third-party URLs - source verification in
+    domain/research.py - not for provider calls.
+
+    Same egress path and same trust anchor as a provider call, because a
+    network that requires a proxy requires it for every host, and a proxy that
+    re-signs provider traffic re-signs everything else too. Source
+    verification previously used a bare `httpx.get`, so on a proxied network
+    LLM_EGRESS_PROXY fixed the provider call and left every source fetch
+    timing out - which then surfaced as an exhausted research budget rather
+    than as the configuration gap it was.
+
+    What this deliberately does NOT carry is the pin. TLS_PINS is a statement
+    about specific provider hosts; it means nothing for a URL a model happened
+    to cite, and applying it there would fail every fetch.
+
+    follow_redirects is on, unlike the provider client: an article moving to a
+    canonical URL is ordinary, and refusing to follow it would report a live
+    source as unreachable.
+    """
+    kwargs = {"timeout": timeout, "trust_env": False,
+              "verify": verification(), "follow_redirects": True}
+    if EGRESS_PROXY:
+        kwargs["proxy"] = EGRESS_PROXY
+    return httpx.Client(**kwargs)
+
+
 def spki_pin(der: bytes) -> str | None:
     """RFC 7469 form: SHA-256 of the SubjectPublicKeyInfo. Survives certificate
     renewal, because the key is unchanged. None when cryptography is absent."""

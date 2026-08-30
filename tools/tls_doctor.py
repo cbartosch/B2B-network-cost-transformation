@@ -34,6 +34,36 @@ def _line(label, value):
     print(f"  {label:<34} {value}")
 
 
+def _resolves(host: str):
+    """DNS only. Separates 'the name does not resolve' from 'it resolves and
+    the connection is refused or dropped' - different faults, different teams."""
+    try:
+        return True, socket.gethostbyname(host), None
+    except OSError as exc:
+        return False, None, f"{type(exc).__name__}: {exc}"
+
+
+def _via_proxy(proxy_url: str, host: str, port: int = 443, timeout: int = 8):
+    """HTTP CONNECT through a proxy. Answers the question the direct probes
+    cannot: is this host reachable *when the proxy is used properly*? A
+    network where egress is mandatory-proxied fails every direct probe below
+    while working perfectly through here, and the two results together are
+    what distinguish 'blocked' from 'you have not told the app about the
+    proxy'."""
+    parsed = urlparse(proxy_url if "://" in proxy_url else f"http://{proxy_url}")
+    if not parsed.hostname:
+        return False, f"could not parse proxy URL {proxy_url!r}"
+    try:
+        with socket.create_connection(
+                (parsed.hostname, parsed.port or 8080), timeout=timeout) as raw:
+            raw.sendall(f"CONNECT {host}:{port} HTTP/1.1\r\n"
+                        f"Host: {host}:{port}\r\n\r\n".encode())
+            reply = raw.recv(256).decode("latin-1", "replace").split("\r\n")[0]
+        return ("200" in reply), reply.strip() or "empty reply"
+    except OSError as exc:
+        return False, f"{type(exc).__name__}: {exc}"
+
+
 def _issuer(host: str, port: int = 443, cafile: str | None = None):
     """Return (ok, issuer_common_name, error). The issuer is the tell: a
     corporate name there means the connection is being inspected."""
@@ -99,8 +129,15 @@ def main() -> int:
     print("\nEndpoints")
     inspected = False
     failures = []
+    dns_failures = []
     for label, url in ENDPOINTS:
         host = urlparse(url).hostname
+        resolved, addr, dns_error = _resolves(host)
+        if not resolved:
+            _line(label, f"FAIL DNS: {dns_error}")
+            dns_failures.append((label, dns_error))
+            failures.append((label, f"dns: {dns_error}"))
+            continue
         ok, issuer, error = _issuer(host, cafile=bundle)
         if ok:
             _line(label, f"OK   issuer: {issuer}")
@@ -110,8 +147,26 @@ def main() -> int:
                                                   "baltimore", "isrg")):
                 inspected = True
         else:
-            _line(label, f"FAIL {error}")
+            _line(label, f"FAIL {error}   (dns ok: {addr})")
             failures.append((label, error))
+
+    # A direct probe cannot distinguish "blocked" from "proxy is mandatory and
+    # was not used". If a proxy is named anywhere, try it - a host that fails
+    # above and succeeds here is a configuration gap, not a policy block.
+    proxy = (os.getenv("LLM_EGRESS_PROXY") or os.getenv("HTTPS_PROXY")
+             or os.getenv("https_proxy") or "")
+    proxy_results = []
+    if proxy and failures:
+        print(f"\nThrough the proxy ({proxy})")
+        for label, url in ENDPOINTS:
+            host = urlparse(url).hostname
+            ok, detail = _via_proxy(proxy, host)
+            _line(label, f"{'OK  ' if ok else 'FAIL'} {detail}")
+            proxy_results.append((label, ok))
+    elif failures and not proxy:
+        print("\nThrough the proxy")
+        _line("no proxy configured",
+              "LLM_EGRESS_PROXY and HTTPS_PROXY are both unset")
 
     print("\nDiagnosis")
     if inspected:
@@ -129,6 +184,23 @@ def main() -> int:
     blocked = [f for f in failures if "timed out" in (f[1] or "")]
     cut = [f for f in failures
            if "connection cut" in (f[1] or "") or "connection reset" in (f[1] or "")]
+    if dns_failures:
+        print("  DNS did not resolve. Nothing was blocked or rejected - the name")
+        print("  could not be looked up at all, which is a container networking")
+        print("  fault rather than a TLS or policy one. On Docker Desktop check")
+        print("  that the VM has the corporate DNS servers, and restart Docker.")
+    if any(ok for _, ok in proxy_results):
+        print("  Reachable THROUGH THE PROXY but not directly. This is a")
+        print("  configuration gap, not a policy block: egress on this network is")
+        print("  mandatory-proxied, and provider calls deliberately ignore the")
+        print("  ambient HTTPS_PROXY. Name it explicitly in .env and rebuild:")
+        print(f"      LLM_EGRESS_PROXY={proxy}")
+        print("      docker compose up --build -d")
+        return 1
+    if proxy_results and not any(ok for _, ok in proxy_results):
+        print("  Unreachable directly AND through the configured proxy. Either the")
+        print("  proxy address is wrong, or policy blocks these hosts. Confirm the")
+        print("  proxy with your network team before assuming the latter.")
     if untrusted:
         print("  Certificates are not trusted. The inspecting proxy's CA is missing")
         print("  from this trust store. Export it, put the .crt in certs/, rebuild:")
