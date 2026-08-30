@@ -10,8 +10,8 @@ from sqlalchemy import delete, insert, select, text, update
 from .. import config, db, jobs, migrations
 from ..domain import (confidence, coverage, dispositions, entity_resolution,
                       estimate, known_facts, policy, preflight, questionnaire,
-                      reconciliation, research, savings_advisory, scope,
-                      simulation, stage)
+                      reachability, reconciliation, research, savings_advisory,
+                      scope, simulation, stage)
 from ..domain.money import D, Range
 from ..llm import errors, gateway, registry
 
@@ -1564,6 +1564,23 @@ def attestation(days: int = 30):
             "host does not control. Runs counted in unverifiable_runs carry no "
             "identifier to quote and cannot be spot-checked at all."),
     }
+
+
+@router.get("/v1/integrity/reachability")
+def egress_reachability(case_id: str | None = None, place: str | None = None):
+    """Prove the container can reach the public internet, with live evidence.
+
+    /v1/health reports whether a key is set and pre-flight reports whether an
+    adapter is configured; both pass on a container that can reach nothing.
+    This one fetches data that changes - an independent clock, and the current
+    weather where the subject entity is domiciled - so the answer can be read
+    as true rather than taken on trust.
+    """
+    case_row = None
+    if case_id:
+        with S() as s:
+            case_row = _one_or_404(s, db.case, db.case.c.case_id, case_id, "case")
+    return reachability.check(case_row=case_row, place=place)
 
 
 @router.get("/v1/integrity/tls-pins")

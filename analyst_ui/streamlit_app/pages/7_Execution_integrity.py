@@ -16,6 +16,50 @@ b.metric("Providers configured",
          ", ".join([k for k, v in health.get("providers", {}).items() if v]) or "NONE")
 
 st.divider()
+st.subheader("Can this container reach the internet?")
+st.caption("\"Providers configured\" above means a key is set - it passes on a "
+           "container that can reach nothing. This fetches data that changes, so "
+           "the answer can be read rather than trusted.")
+
+if st.button("Check egress now"):
+    st.session_state["_reach"] = api.get(
+        "/v1/integrity/reachability",
+        **({"case_id": st.session_state["case_id"]}
+           if st.session_state.get("case_id") else {}))
+
+reach = st.session_state.get("_reach")
+if reach and "_error" in reach:
+    st.error(f"Could not run the check: {reach['_error']}")
+elif reach:
+    if reach.get("reachable"):
+        st.success("Reachable. The readings below are live.")
+    else:
+        st.error("Not reachable. A research run cannot verify any source from "
+                 "here, so no domain can reach EVIDENCED_PUBLIC - which surfaces "
+                 "as empty findings rather than as a network fault.")
+
+    cols = st.columns(3)
+    by_step = {s["step"]: s for s in reach.get("steps", [])}
+    clock = by_step.get("independent clock", {})
+    weather = by_step.get("weather at headquarters", {})
+    cols[0].metric("Remote clock",
+                   (clock.get("remote_time") or "-")[11:19] if clock.get("ok") else "-",
+                   clock.get("skew_note") if clock.get("ok") else "unavailable")
+    cols[1].metric(f"Weather - {reach.get('asked_about', '?')}",
+                   f"{weather.get('temperature')}" if weather.get("ok") else "-",
+                   weather.get("local_time") if weather.get("ok") else "unavailable")
+    cols[2].metric("Egress proxy",
+                   reach.get("transport", {}).get("egress_proxy") or "none")
+
+    st.caption(f"Location basis: {reach.get('location_basis')}. "
+               f"Verification: {reach.get('transport', {}).get('verification')}.")
+    for step in reach.get("steps", []):
+        (st.success if step["ok"] else st.error)(
+            f"**{step['step']}** - {step['detail']}")
+    with st.expander("Full response"):
+        st.json(reach)
+
+st.divider()
 st.subheader("Agent runs")
 # An API failure must not render as an empty table: "no runs recorded" and
 # "could not ask" are different answers, and on an integrity page the

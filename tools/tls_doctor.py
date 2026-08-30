@@ -98,6 +98,42 @@ def _issuer(host: str, port: int = 443, cafile: str | None = None):
         return False, None, f"{type(exc).__name__}: {exc}"
 
 
+def _live_proof(timeout: int = 10) -> None:
+    """A handshake proves a server answered, not that it was the public
+    internet: a captive portal or proxy error page completes TLS too. So fetch
+    something that *changes* and print it for a human to judge. Standard
+    library only, like the rest of this script, so it still runs during a
+    failed build.
+    """
+    import json
+    import urllib.request
+    from datetime import datetime, timezone
+
+    print("\nLive proof (values that change, so a stub cannot fake them)")
+    url = ("https://api.open-meteo.com/v1/forecast?latitude=51.5074&longitude=-0.1278"
+           "&current=temperature_2m&timezone=auto")
+    try:
+        with urllib.request.urlopen(url, timeout=timeout) as resp:
+            served = resp.headers.get("Date")
+            data = json.load(resp)
+    except Exception as exc:                                  # noqa: BLE001
+        _line("live fetch", f"FAIL {type(exc).__name__}: {exc}")
+        print("  TLS verified but no live data came back. Something on the path")
+        print("  answers handshakes without carrying traffic - a captive portal, or")
+        print("  an inspecting proxy that permits CONNECT and blocks the request.")
+        return
+
+    current = (data.get("current") or {})
+    _line("server time (their clock)", served or "no Date header")
+    _line("local time (ours)",
+          datetime.now(timezone.utc).strftime("%a, %d %b %Y %H:%M:%S GMT"))
+    _line("London now",
+          f"{current.get('temperature_2m')}C at {current.get('time')} "
+          f"({data.get('timezone')})")
+    print("  If that temperature and clock match reality, this container is on the")
+    print("  public internet - not merely completing handshakes with something.")
+
+
 def main() -> int:
     print("TLS diagnosis\n")
 
@@ -178,6 +214,7 @@ def main() -> int:
         if inspected and not corporate:
             print("  Note: verification succeeded against the host's own trust store.")
             print("  Inside the image it will not, unless certs/ holds the CA.")
+        _live_proof()
         return 0
 
     untrusted = [f for f in failures if "not trusted" in (f[1] or "")]

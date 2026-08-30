@@ -1,4 +1,7 @@
-.PHONY: tls-doctor tls-doctor-in-container check up down logs test seed reset psql doctor migrate pins attest
+.PHONY: reach tls-doctor tls-doctor-in-container check up down logs test seed reset psql doctor migrate pins attest
+
+reach:         ## prove the container is really on the internet (live, changing values)
+	docker compose exec api python -c "import json; from app.domain import reachability; print(json.dumps(reachability.check(), indent=2))"
 
 tls-doctor:    ## diagnose TLS on a corporate network (no Docker needed)
 	@python tools/tls_doctor.py || python3 tools/tls_doctor.py
