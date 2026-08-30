@@ -142,35 +142,104 @@ THRESHOLDS = [
     ("recommendation_policy", "material_lever_share_threshold", "0.03"),
 ]
 
-# Indicative monthly recurring charge per circuit, by country and product.
+# Indicative monthly recurring charge per circuit, by country, product and
+# bandwidth. (country, product, cost_layer, mbps, low, base, high)
+#
+# Bandwidth is a dimension because a circuit price is meaningless without it:
+# a 100 Mbps DIA and a 1 Gbps DIA differ by more than most of the levers this
+# system models are worth. Until 4.53.0 the table was keyed (country, product)
+# alone, so every archetype from a 50 Mbps STORE to a 10 Gbps DC was priced at
+# one rate - and a real benchmark could not be loaded without discarding the
+# tier it described.
+#
+# BROADBAND is split into its two access technologies. They are separate
+# products, not variants: HFC is a shared coaxial segment with asymmetric
+# upstream, PON is fibre to the premises. Real RFP responses price them
+# separately and materially differently, and collapsing them made the single
+# BROADBAND band a blend of two distributions that meant neither.
+#
+# Bandwidth tiers follow the archetype bandwidth_mbps_base values below, so a
+# site's required bandwidth has a price to match rather than a nearest guess.
 PRIORS = [
-    ("GB", "DIA", "L0", 380, 520, 720), ("GB", "BROADBAND", "L0", 45, 70, 110),
-    ("GB", "MPLS", "L0", 700, 980, 1400), ("GB", "ETHERNET", "L0", 550, 780, 1100),
-    ("DE", "DIA", "L0", 420, 580, 800), ("DE", "BROADBAND", "L0", 50, 78, 120),
-    ("DE", "MPLS", "L0", 760, 1050, 1500), ("DE", "ETHERNET", "L0", 600, 840, 1180),
-    ("US", "DIA", "L0", 350, 480, 660), ("US", "BROADBAND", "L0", 55, 85, 130),
-    ("US", "MPLS", "L0", 650, 900, 1300), ("US", "ETHERNET", "L0", 520, 720, 1000),
-    ("FR", "DIA", "L0", 400, 550, 760), ("FR", "BROADBAND", "L0", 42, 68, 105),
-    ("FR", "MPLS", "L0", 720, 1000, 1420),
-    ("NL", "DIA", "L0", 360, 500, 690), ("NL", "BROADBAND", "L0", 40, 62, 98),
-    ("SG", "DIA", "L0", 480, 660, 920), ("SG", "BROADBAND", "L0", 60, 95, 145),
-    ("AE", "DIA", "L0", 900, 1300, 1900), ("AE", "BROADBAND", "L0", 120, 190, 290),
-    # MOBILE_5G is the STORE archetype's backup product. It had no prior in any
-    # country, so those circuits were unsizable - which the C2-02 fix correctly
-    # surfaces as PARTIAL. Seeding it removes a spurious gap in the demo path;
-    # a genuinely unpriceable product will still be caught.
-    ("GB", "MOBILE_5G", "L0", 25, 45, 80), ("DE", "MOBILE_5G", "L0", 28, 50, 88),
-    ("US", "MOBILE_5G", "L0", 30, 55, 95), ("FR", "MOBILE_5G", "L0", 26, 47, 84),
-    ("NL", "MOBILE_5G", "L0", 24, 43, 78), ("SG", "MOBILE_5G", "L0", 35, 62, 105),
-    ("AE", "MOBILE_5G", "L0", 55, 95, 160),
+    # --- GB
+    ("GB", "DIA", "L0", 100, 380, 520, 720), ("GB", "DIA", "L0", 500, 720, 980, 1350),
+    ("GB", "DIA", "L0", 1000, 1050, 1420, 1950),
+    ("GB", "BROADBAND_PON", "L0", 50, 38, 58, 90),
+    ("GB", "BROADBAND_PON", "L0", 100, 45, 70, 110),
+    ("GB", "BROADBAND_HFC", "L0", 50, 42, 65, 100),
+    ("GB", "BROADBAND_HFC", "L0", 100, 52, 80, 125),
+    ("GB", "MPLS", "L0", 100, 700, 980, 1400),
+    ("GB", "ETHERNET", "L0", 500, 550, 780, 1100),
+    ("GB", "ETHERNET", "L0", 10000, 2600, 3700, 5200),
+    ("GB", "MOBILE_5G", "L0", 50, 25, 45, 80),
+
+    # --- DE
+    ("DE", "DIA", "L0", 100, 420, 580, 800), ("DE", "DIA", "L0", 500, 800, 1090, 1500),
+    ("DE", "DIA", "L0", 1000, 1160, 1580, 2170),
+    ("DE", "BROADBAND_PON", "L0", 50, 42, 64, 100),
+    ("DE", "BROADBAND_PON", "L0", 100, 50, 78, 120),
+    ("DE", "BROADBAND_HFC", "L0", 50, 46, 72, 112),
+    ("DE", "BROADBAND_HFC", "L0", 100, 58, 89, 138),
+    ("DE", "MPLS", "L0", 100, 760, 1050, 1500),
+    ("DE", "ETHERNET", "L0", 500, 600, 840, 1180),
+    ("DE", "ETHERNET", "L0", 10000, 2850, 4000, 5600),
+    ("DE", "MOBILE_5G", "L0", 50, 28, 50, 88),
+
+    # --- US. The DIA and broadband bands here were re-derived against the
+    # Simmons RFP responses (7 vendors, 230 branch locations, May 2026): the
+    # DIA quotes ran 367-609 with a median of 477, which the old 350/480/660
+    # band already covered. The old BROADBAND band of 55/85/130 did not - real
+    # business broadband quotes ran 80-268 - which is exactly the disagreement
+    # the price-divergence check surfaced.
+    ("US", "DIA", "L0", 100, 350, 480, 660), ("US", "DIA", "L0", 500, 680, 920, 1270),
+    ("US", "DIA", "L0", 1000, 990, 1340, 1840),
+    ("US", "BROADBAND_PON", "L0", 50, 70, 105, 165),
+    ("US", "BROADBAND_PON", "L0", 100, 80, 120, 200),
+    ("US", "BROADBAND_HFC", "L0", 50, 115, 150, 230),
+    ("US", "BROADBAND_HFC", "L0", 100, 132, 166, 268),
+    ("US", "MPLS", "L0", 100, 650, 900, 1300),
+    ("US", "ETHERNET", "L0", 500, 520, 720, 1000),
+    ("US", "ETHERNET", "L0", 10000, 2500, 3450, 4800),
+    ("US", "MOBILE_5G", "L0", 50, 30, 55, 95),
+
+    # --- FR
+    ("FR", "DIA", "L0", 100, 400, 550, 760), ("FR", "DIA", "L0", 500, 760, 1050, 1450),
+    ("FR", "BROADBAND_PON", "L0", 50, 36, 56, 88),
+    ("FR", "BROADBAND_PON", "L0", 100, 42, 68, 105),
+    ("FR", "BROADBAND_HFC", "L0", 50, 40, 62, 97),
+    ("FR", "MPLS", "L0", 100, 720, 1000, 1420),
+    ("FR", "MOBILE_5G", "L0", 50, 26, 47, 84),
+
+    # --- NL
+    ("NL", "DIA", "L0", 100, 360, 500, 690), ("NL", "DIA", "L0", 500, 690, 950, 1310),
+    ("NL", "BROADBAND_PON", "L0", 50, 34, 53, 84),
+    ("NL", "BROADBAND_PON", "L0", 100, 40, 62, 98),
+    ("NL", "BROADBAND_HFC", "L0", 50, 38, 59, 92),
+    ("NL", "MOBILE_5G", "L0", 50, 24, 43, 78),
+
+    # --- SG
+    ("SG", "DIA", "L0", 100, 480, 660, 920), ("SG", "DIA", "L0", 500, 910, 1250, 1740),
+    ("SG", "BROADBAND_PON", "L0", 50, 52, 82, 126),
+    ("SG", "BROADBAND_PON", "L0", 100, 60, 95, 145),
+    ("SG", "MOBILE_5G", "L0", 50, 35, 62, 105),
+
+    # --- AE
+    ("AE", "DIA", "L0", 100, 900, 1300, 1900),
+    ("AE", "BROADBAND_PON", "L0", 50, 105, 165, 250),
+    ("AE", "BROADBAND_PON", "L0", 100, 120, 190, 290),
+    ("AE", "MOBILE_5G", "L0", 50, 55, 95, 160),
 ]
 
+# bandwidth_mbps_base is now also the tier a circuit is priced at, so every
+# value here must have a matching row in PRIORS or the archetype is unpriceable.
+# WAREHOUSE moved from 200 to 100: 200 was a tier no benchmark quotes, and an
+# invented tier prices nothing.
 ARCHETYPES = [
-    ("BRANCH", 25, 100, "0.55", "DIA", "BROADBAND"),
+    ("BRANCH", 25, 100, "0.55", "DIA", "BROADBAND_PON"),
     ("LARGE_OFFICE", 250, 500, "0.90", "ETHERNET", "DIA"),
-    ("WAREHOUSE", 60, 200, "0.45", "DIA", "BROADBAND"),
+    ("WAREHOUSE", 60, 100, "0.45", "DIA", "BROADBAND_HFC"),
     ("DC", 0, 10000, "1.00", "ETHERNET", "ETHERNET"),
-    ("STORE", 12, 50, "0.35", "BROADBAND", "MOBILE_5G"),
+    ("STORE", 12, 50, "0.35", "BROADBAND_HFC", "MOBILE_5G"),
 ]
 
 # Platform unit costs. These were code constants in an earlier revision, which
@@ -210,10 +279,10 @@ def _rows():
             {"set_name": a, "key": b, "value": c, "version": 1,
              "approved_by": "seed", "note": "MVP default"} for a, b, c in THRESHOLDS]),
         (unit_cost_prior, lambda: [
-            {"id": f"{c}-{p}", "country": c, "product": p, "cost_layer": l,
-             "low": lo, "base": ba, "high": hi, "currency": "USD",
-             "price_year": 2026, "approved": True}
-            for c, p, l, lo, ba, hi in PRIORS]),
+            {"id": f"{c}-{p}-{bw}", "country": c, "product": p, "cost_layer": l,
+             "bandwidth_mbps": bw, "low": lo, "base": ba, "high": hi,
+             "currency": "USD", "price_year": 2026, "approved": True}
+            for c, p, l, bw, lo, ba, hi in PRIORS]),
         (platform_unit_cost, lambda: [
             {"product": p, "cost_layer": l, "unit": u, "low": lo, "base": ba,
              "high": hi, "currency": "USD", "price_year": 2026, "approved": True}

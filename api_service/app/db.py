@@ -410,6 +410,10 @@ unit_cost_prior = Table(
     "unit_cost_prior", metadata,
     Column("id", String(64), primary_key=True),
     Column("country", String(2)), Column("product", String(48)), Column("cost_layer", String(16)),
+    # The bandwidth this price is for. A circuit rate without one is not a
+    # rate: a 100 Mbps and a 1 Gbps DIA differ by more than most levers here
+    # are worth, and a benchmark cannot be loaded without the tier it quotes.
+    Column("bandwidth_mbps", Integer),
     Column("low", Numeric(14, 2)), Column("base", Numeric(14, 2)), Column("high", Numeric(14, 2)),
     Column("currency", String(3)), Column("price_year", Integer), Column("approved", Boolean, default=True),
     # Provenance for a researched price. A governed value that appeared from

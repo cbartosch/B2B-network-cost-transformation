@@ -34,7 +34,7 @@ from . import db
 log = logging.getLogger("workbench.migrations")
 
 # Bump when the physical schema changes, and add a step below.
-SCHEMA_VERSION = 16
+SCHEMA_VERSION = 17
 
 VERSION_TABLE = "schema_version"
 VERSION_SCHEMA = "audit"
@@ -525,11 +525,38 @@ def _migrate_v16(conn) -> None:
              "evidenced_footprint introduced, create_all will build it", added)
 
 
+def _migrate_v17(conn) -> None:
+    """4.14.0 -> 4.15.0: circuit prices gain a bandwidth, BROADBAND splits.
+
+    Adds reference.unit_cost_prior.bandwidth_mbps and clears the pre-split
+    rows so the seed can rebuild them. Deleting seeded reference data is
+    something this module otherwise refuses to do - it is safe only because
+    every affected row is identifiable as seed-written (approved_by/source
+    columns untouched, ids in the old `COUNTRY-PRODUCT` form) and because
+    leaving them is worse: a row keyed BROADBAND with a null bandwidth can
+    never be matched by the new lookup, so it would sit in the table pricing
+    nothing while appearing to be coverage.
+
+    A researched row promoted under 4.47.0 uses the id suffix `-researched`
+    and is deliberately left alone: it is not ours to delete, it carries
+    provenance, and its bandwidth is simply unknown until a steward sets one.
+    """
+    added = _add_column(conn, db.unit_cost_prior, "bandwidth_mbps")
+    removed = 0
+    if _has_table(conn, "reference", "unit_cost_prior"):
+        result = conn.execute(text(
+            'DELETE FROM "reference"."unit_cost_prior" '
+            "WHERE bandwidth_mbps IS NULL AND id NOT LIKE '%-researched'"))
+        removed = result.rowcount or 0
+    log.info("v17: bandwidth_mbps added=%s; %d pre-split seeded price row(s) "
+             "cleared for reseed", bool(added), removed)
+
+
 MIGRATIONS = {2: _migrate_v2, 3: _migrate_v3, 4: _migrate_v4, 5: _migrate_v5,
               6: _migrate_v6, 7: _migrate_v7, 8: _migrate_v8, 9: _migrate_v9,
               10: _migrate_v10, 11: _migrate_v11, 12: _migrate_v12,
               13: _migrate_v13, 14: _migrate_v14, 15: _migrate_v15,
-              16: _migrate_v16}
+              16: _migrate_v16, 17: _migrate_v17}
 
 
 class SchemaDrift(RuntimeError):

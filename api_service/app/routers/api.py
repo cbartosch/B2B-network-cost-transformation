@@ -1076,12 +1076,12 @@ def run_estimate(case_id: str, payload: EstimateIn):
         prior_rows = s.execute(select(db.unit_cost_prior).where(
             db.unit_cost_prior.c.country.in_(countries or ["--"]),
             db.unit_cost_prior.c.approved.is_(True))).all()
-        priors = {(r.country, r.product): {"low": r.low, "base": r.base,
+        priors = {(r.country, r.product, r.bandwidth_mbps): {"low": r.low, "base": r.base,
                                            "high": r.high, "price_year": r.price_year}
                   for r in prior_rows}
         # Every approved prior, any country. Used only to *size* scope for the
         # coverage denominator - never to price a component (see derive_scope).
-        sizing_priors = {(r.country, r.product): {"low": r.low, "base": r.base,
+        sizing_priors = {(r.country, r.product, r.bandwidth_mbps): {"low": r.low, "base": r.base,
                                                   "high": r.high, "price_year": r.price_year}
                          for r in s.execute(select(db.unit_cost_prior).where(
                              db.unit_cost_prior.c.approved.is_(True))).all()}

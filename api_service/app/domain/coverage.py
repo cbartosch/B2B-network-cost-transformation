@@ -45,7 +45,8 @@ def _fallback_rates(priors: dict) -> dict:
     for the denominator so it can count against coverage. It never prices a
     component and never reaches the headline."""
     by_product: dict[str, list] = {}
-    for (_country, product), p in priors.items():
+    for key, p in priors.items():
+        product = key[1]                     # (country, product, bandwidth_mbps)
         by_product.setdefault(product, []).append(D(p["base"]))
     return {k: D(median(v)) for k, v in by_product.items() if v}
 
@@ -60,14 +61,20 @@ def derive_scope(*, sim_output: dict, priors: dict,
     size one for the denominator. Keeping the two separate shrinks the unsizable
     population without pricing anything at a rate that does not apply to it.
     """
+    from .estimate import match_prior
     fallback = _fallback_rates(sizing_priors or priors)
     scope = []
     for row in sim_output.get("products", []):
-        key = (row["country"], row["product"])
-        prior = priors.get(key)
+        mbps = row.get("bandwidth_mbps")
+        # Same matcher the estimate prices with. Two different notions of
+        # "priced" between the coverage gate and the calculation would mean the
+        # gate was measuring something the total did not contain.
+        prior, substituted = match_prior(priors, row["country"], row["product"], mbps)
         rate = D(prior["base"]) if prior else fallback.get(row["product"])
         scope.append({
             "country": row["country"], "product": row["product"], "role": row["role"],
+            "bandwidth_mbps": mbps,
+            "priced_at_bandwidth_mbps": substituted,
             "count": int(row["count"]),
             "priced": prior is not None,
             "rate_basis": "APPROVED_PRIOR" if prior

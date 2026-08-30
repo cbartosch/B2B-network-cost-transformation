@@ -130,7 +130,8 @@ _HOW_THE_ESTIMATE_WORKS = (
     "which numbers matter: each site is assigned an archetype; each archetype "
     "implies a primary access circuit, a probability of a second backup "
     "circuit, a headcount and a bandwidth; each circuit is priced at a "
-    "(country, product) monthly benchmark; an SD-WAN overlay is charged per "
+    "(country, product, bandwidth) monthly benchmark - a price without a "
+    "bandwidth cannot be used at all; an SD-WAN overlay is charged per "
     "site and an SSE licence per user; an operating cost is charged per site. "
     "Site counts by country and archetype, and circuit prices by country and "
     "product, therefore drive almost all of the total. A country with no "
@@ -797,7 +798,8 @@ def _build_context(session, case_row, domain_no: int) -> dict:
                         cur=rows[0].currency or "USD",
                         yr=rows[0].price_year or "unknown")
                     + "\n".join(
-                        f"  - {r.country} {r.product}: {r.low} / {r.base} / "
+                        f"  - {r.country} {r.product} @ "
+                        f"{r.bandwidth_mbps or '?'} Mbps: {r.low} / {r.base} / "
                         f"{r.high} per month (low/base/high)"
                         for r in sorted(rows, key=lambda r: (r.country, r.product))))
                 priced_countries = {r.country for r in rows}

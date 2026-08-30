@@ -32,7 +32,7 @@ from app.llm.providers.base import ProviderCall                         # noqa: 
 FOOTPRINT = [{"country": "GB", "archetype": "BRANCH", "sites": 60},
              {"country": "DE", "archetype": "DC", "sites": 3}]
 ARCH = {"BRANCH": {"dual_access_probability": 0.6, "primary_product": "DIA",
-                   "backup_product": "BROADBAND"},
+                   "backup_product": "BROADBAND_PON"},
         "DC": {"dual_access_probability": 1.0, "primary_product": "ETHERNET",
                "backup_product": "ETHERNET"}}
 
@@ -106,14 +106,14 @@ def test_asserted_share_below_trigger_applies_no_ceiling():
 
 # ------------------------------------------------------- coverage gate
 LAYERS = ["L0", "L2", "L4"]
-ALL_PRIORS = {("GB", "DIA"): {"low": 380, "base": 520, "high": 720, "price_year": 2026},
-              ("DE", "DIA"): {"low": 420, "base": 580, "high": 800, "price_year": 2026},
+ALL_PRIORS = {("GB", "DIA", 100): {"low": 380, "base": 520, "high": 720, "price_year": 2026},
+              ("DE", "DIA", 100): {"low": 420, "base": 580, "high": 800, "price_year": 2026},
               ("BR", "DIA"): {"low": 500, "base": 700, "high": 950, "price_year": 2026},
               ("IN", "DIA"): {"low": 300, "base": 420, "high": 600, "price_year": 2026}}
-SIM = {"products": [{"country": "GB", "product": "DIA", "role": "PRIMARY", "count": 800},
-                    {"country": "DE", "product": "DIA", "role": "PRIMARY", "count": 430},
-                    {"country": "BR", "product": "DIA", "role": "PRIMARY", "count": 180},
-                    {"country": "IN", "product": "DIA", "role": "PRIMARY", "count": 80}]}
+SIM = {"products": [{"country": "GB", "product": "DIA", "role": "PRIMARY", "bandwidth_mbps": 100, "count": 800},
+                    {"country": "DE", "product": "DIA", "role": "PRIMARY", "bandwidth_mbps": 100, "count": 430},
+                    {"country": "BR", "product": "DIA", "role": "PRIMARY", "bandwidth_mbps": 100, "count": 180},
+                    {"country": "IN", "product": "DIA", "role": "PRIMARY", "bandwidth_mbps": 100, "count": 80}]}
 
 
 def _cov(priors, layers_priced=None):
@@ -170,10 +170,10 @@ def test_coverage_denominator_is_derived_not_caller_supplied():
 
 def test_coverage_is_assessed_per_country_product_pair():
     """One broadband prior used to make an all-MPLS country count as priced."""
-    sim = {"products": [{"country": "GB", "product": "MPLS", "role": "PRIMARY", "count": 500},
-                        {"country": "GB", "product": "BROADBAND", "role": "BACKUP", "count": 10}]}
-    priors = {("GB", "BROADBAND"): {"low": 45, "base": 70, "high": 110, "price_year": 2026},
-              ("DE", "MPLS"): {"low": 700, "base": 980, "high": 1400, "price_year": 2026}}
+    sim = {"products": [{"country": "GB", "product": "MPLS", "role": "PRIMARY", "bandwidth_mbps": 100, "count": 500},
+                        {"country": "GB", "product": "BROADBAND_PON", "role": "BACKUP", "bandwidth_mbps": 100, "count": 10}]}
+    priors = {("GB", "BROADBAND_PON", 100): {"low": 45, "base": 70, "high": 110, "price_year": 2026},
+              ("DE", "MPLS", 100): {"low": 700, "base": 980, "high": 1400, "price_year": 2026}}
     r = coverage.assess(scope=coverage.derive_scope(sim_output=sim, priors=priors),
                         layers_in_scope=["L0"], layers_priced={"L0"},
                         policy=COV_POLICY)
@@ -183,10 +183,10 @@ def test_coverage_is_assessed_per_country_product_pair():
 
 # --- C2-02: scope that cannot be sized must not vanish from the gate --------
 UNSIZABLE_SIM = {"products": [
-    {"country": "GB", "product": "DIA", "role": "PRIMARY", "count": 800},
-    {"country": "BR", "product": "MPLS", "role": "PRIMARY", "count": 300},
-    {"country": "IN", "product": "MPLS", "role": "PRIMARY", "count": 200}]}
-GB_ONLY = {("GB", "DIA"): {"low": 380, "base": 520, "high": 720, "price_year": 2026}}
+    {"country": "GB", "product": "DIA", "role": "PRIMARY", "bandwidth_mbps": 100, "count": 800},
+    {"country": "BR", "product": "MPLS", "role": "PRIMARY", "bandwidth_mbps": 100, "count": 300},
+    {"country": "IN", "product": "MPLS", "role": "PRIMARY", "bandwidth_mbps": 100, "count": 200}]}
+GB_ONLY = {("GB", "DIA", 100): {"low": 380, "base": 520, "high": 720, "price_year": 2026}}
 
 
 def test_unsizable_scope_cannot_report_complete():
@@ -226,7 +226,7 @@ def test_sizing_priors_size_without_pricing():
     """A German MPLS rate cannot price a Brazilian circuit but can size one, so
     the unsizable population shrinks without anything being priced wrongly."""
     sizing = {**GB_ONLY,
-              ("DE", "MPLS"): {"low": 760, "base": 1050, "high": 1500, "price_year": 2026}}
+              ("DE", "MPLS", 100): {"low": 760, "base": 1050, "high": 1500, "price_year": 2026}}
     scope = coverage.derive_scope(sim_output=UNSIZABLE_SIM, priors=GB_ONLY,
                                   sizing_priors=sizing)
     br = [r for r in scope if r["country"] == "BR"][0]
@@ -240,10 +240,10 @@ def test_sizing_priors_size_without_pricing():
 
 def test_fully_priced_estate_still_reaches_complete():
     """The conservative direction must not swallow the normal case."""
-    sim = {"products": [{"country": "GB", "product": "DIA", "role": "PRIMARY", "count": 800},
-                        {"country": "DE", "product": "DIA", "role": "PRIMARY", "count": 430}]}
-    priors = {("GB", "DIA"): {"low": 380, "base": 520, "high": 720, "price_year": 2026},
-              ("DE", "DIA"): {"low": 420, "base": 580, "high": 800, "price_year": 2026}}
+    sim = {"products": [{"country": "GB", "product": "DIA", "role": "PRIMARY", "bandwidth_mbps": 100, "count": 800},
+                        {"country": "DE", "product": "DIA", "role": "PRIMARY", "bandwidth_mbps": 100, "count": 430}]}
+    priors = {("GB", "DIA", 100): {"low": 380, "base": 520, "high": 720, "price_year": 2026},
+              ("DE", "DIA", 100): {"low": 420, "base": 580, "high": 800, "price_year": 2026}}
     r = coverage.assess(scope=coverage.derive_scope(sim_output=sim, priors=priors),
                         layers_in_scope=["L0"], layers_priced={"L0"},
                         policy=COV_POLICY)
@@ -362,9 +362,9 @@ def test_cost_increases_stay_negative():
 # ------------------------------------------------------- derived simulated share
 from app.domain import estimate                                          # noqa: E402
 
-PRIORS = {("GB", "DIA"): {"low": 380, "base": 520, "high": 720},
-          ("GB", "BROADBAND"): {"low": 45, "base": 70, "high": 110},
-          ("GB", "ETHERNET"): {"low": 550, "base": 780, "high": 1100}}
+PRIORS = {("GB", "DIA", 100): {"low": 380, "base": 520, "high": 720},
+          ("GB", "BROADBAND_PON", 100): {"low": 45, "base": 70, "high": 110},
+          ("GB", "ETHERNET", 100): {"low": 550, "base": 780, "high": 1100}}
 OPS = {"low": 720, "base": 900, "high": 1170}
 # Platform priors now come from reference.platform_unit_cost. There is no code
 # constant fallback: a missing platform prior is unpriced scope (M-01).
@@ -373,7 +373,7 @@ SSE = {"low": 6, "base": 9, "high": 13}
 BIG_FOOTPRINT = [{"country": "GB", "archetype": "BRANCH", "sites": 120},
                  {"country": "GB", "archetype": "DC", "sites": 2}]
 BIG_ARCH = {"BRANCH": {"dual_access_probability": 0.55, "primary_product": "DIA",
-                       "backup_product": "BROADBAND"},
+                       "backup_product": "BROADBAND_PON"},
             "DC": {"dual_access_probability": 1.0, "primary_product": "ETHERNET",
                    "backup_product": "ETHERNET"}}
 
@@ -474,10 +474,10 @@ def test_unpriced_components_are_reported_and_excluded():
                                   archetypes=BIG_ARCH, model_version="sim-1.0.0")
     comps, unpriced = estimate.build_components(
         sim_output=sim, users=1000, ops_cost_per_site=OPS,
-        priors={("GB", "DIA"): {"low": 380, "base": 520, "high": 720}},
+        priors={("GB", "DIA", 100): {"low": 380, "base": 520, "high": 720}},
         overlay_unit=OVERLAY, sse_unit=SSE)
     assert unpriced, "missing priors must be reported"
-    assert all("BROADBAND" not in c.key for c in comps), "unpriced scope must be excluded"
+    assert all("BROADBAND_PON" not in c.key for c in comps), "unpriced scope must be excluded"
 
 
 def test_missing_platform_prior_is_unpriced_not_a_code_constant():
@@ -860,7 +860,7 @@ def test_omitting_a_confidence_guard_input_fails_loudly():
 def test_the_footprint_implies_a_headcount_from_approved_priors():
     from app.domain import simulation
     arch = {"BRANCH": {"dual_access_probability": 0.55, "primary_product": "DIA",
-                       "backup_product": "BROADBAND", "users_base": 25,
+                       "backup_product": "BROADBAND_PON", "users_base": 25,
                        "bandwidth_mbps_base": 100},
             "DC": {"dual_access_probability": 1.0, "primary_product": "ETHERNET",
                    "backup_product": "ETHERNET", "users_base": 0,
@@ -876,7 +876,7 @@ def test_two_estates_of_the_same_site_count_imply_different_headcounts():
     """The defect this closes: a flat default made these identical."""
     from app.domain import simulation
     arch = {"BRANCH": {"dual_access_probability": 0.5, "primary_product": "DIA",
-                       "backup_product": "BROADBAND", "users_base": 25,
+                       "backup_product": "BROADBAND_PON", "users_base": 25,
                        "bandwidth_mbps_base": 100},
             "LARGE_OFFICE": {"dual_access_probability": 0.9,
                              "primary_product": "ETHERNET", "backup_product": "DIA",
@@ -894,7 +894,7 @@ def test_two_estates_of_the_same_site_count_imply_different_headcounts():
 def test_the_bandwidth_profile_is_reported_per_archetype():
     from app.domain import simulation
     arch = {"BRANCH": {"dual_access_probability": 0.5, "primary_product": "DIA",
-                       "backup_product": "BROADBAND", "users_base": 25,
+                       "backup_product": "BROADBAND_PON", "users_base": 25,
                        "bandwidth_mbps_base": 100}}
     out = simulation.one_pass(1, [
         {"country": "GB", "archetype": "BRANCH", "sites": 10}], arch)
@@ -909,7 +909,7 @@ def test_a_missing_users_base_derives_zero_rather_than_guessing():
     headcount."""
     from app.domain import simulation
     arch = {"MYSTERY": {"dual_access_probability": 0.5, "primary_product": "DIA",
-                        "backup_product": "BROADBAND"}}
+                        "backup_product": "BROADBAND_PON"}}
     out = simulation.one_pass(1, [
         {"country": "GB", "archetype": "MYSTERY", "sites": 50}], arch)
     assert out["implied_users"] == 0
@@ -1028,3 +1028,67 @@ def test_tier_a_may_not_be_looser_than_tier_b():
         ReconciliationPolicy.from_rows({
             "tier_a_tolerance_pct": "9.0", "tier_b_tolerance_pct": "5.0",
             "consecutive_gap_incident": "3"})
+
+
+# --- bandwidth as a pricing dimension (4.53.0) -------------------------------
+BW_PRIORS = {
+    ("US", "DIA", 100): {"low": 350, "base": 480, "high": 660},
+    ("US", "DIA", 500): {"low": 680, "base": 920, "high": 1270},
+    ("US", "BROADBAND_HFC", 100): {"low": 132, "base": 166, "high": 268},
+}
+
+
+def test_a_circuit_is_priced_at_the_bandwidth_it_needs():
+    prior, substituted = estimate.match_prior(BW_PRIORS, "US", "DIA", 500)
+    assert prior["base"] == 920 and substituted is None, (
+        "a 500 Mbps circuit priced at the 100 Mbps rate understates the "
+        "baseline by more than most levers here are worth")
+
+
+def test_a_missing_tier_uses_the_next_one_up_and_says_so():
+    """Never downward. A 100 Mbps rate cannot serve a 200 Mbps circuit, and
+    substituting down understates the estimate - the direction that becomes a
+    savings number nobody can deliver."""
+    prior, substituted = estimate.match_prior(BW_PRIORS, "US", "DIA", 200)
+    assert prior["base"] == 920 and substituted == 500
+
+
+def test_a_bandwidth_above_every_tier_is_unpriced_not_approximated():
+    """Same rule the rest of the module applies to a missing prior: excluded
+    and reported, never valued at the nearest thing to hand."""
+    prior, substituted = estimate.match_prior(BW_PRIORS, "US", "DIA", 10000)
+    assert prior is None and substituted is None
+
+
+def test_the_substituted_tier_is_visible_on_the_component():
+    sim = {"products": [{"country": "US", "product": "DIA", "role": "PRIMARY",
+                         "bandwidth_mbps": 200, "count": 10}], "sites": 10}
+    comps, _ = estimate.build_components(
+        sim_output=sim, users=100, ops_cost_per_site=OPS, priors=BW_PRIORS)
+    circuit = [c for c in comps if c.layer == "L0"][0]
+    assert "priced_at_500M" in circuit.key, (
+        "a substitution absorbed into the total is a silent approximation")
+
+
+def test_hfc_and_pon_are_priced_separately():
+    """They are different products. One band covering both was a blend of two
+    distributions that described neither - visible the moment a real RFP put
+    fibre at $80-200 and cable at $132-268 in the same market."""
+    from app.seed import PRIORS
+    us = {(p, bw) for c, p, _l, bw, *_ in PRIORS if c == "US"}
+    assert ("BROADBAND_HFC", 100) in us and ("BROADBAND_PON", 100) in us
+    hfc = next(r for r in PRIORS
+               if r[0] == "US" and r[1] == "BROADBAND_HFC" and r[3] == 100)
+    pon = next(r for r in PRIORS
+               if r[0] == "US" and r[1] == "BROADBAND_PON" and r[3] == 100)
+    assert hfc[5] != pon[5], "identical bands would mean the split bought nothing"
+
+
+def test_every_archetype_can_be_priced_at_its_own_bandwidth():
+    """bandwidth_mbps_base is now the tier a circuit is priced at, so an
+    archetype whose bandwidth no prior quotes is unpriceable everywhere."""
+    from app.seed import ARCHETYPES, PRIORS
+    tiers = {(p, bw) for _c, p, _l, bw, *_ in PRIORS}
+    missing = [(a, prod, bw) for a, _u, bw, _d, pp, bp in ARCHETYPES
+               for prod in (pp, bp) if (prod, bw) not in tiers]
+    assert not missing, f"archetype tiers no prior prices: {missing}"

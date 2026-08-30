@@ -39,7 +39,12 @@ from .. import db
 # but it is not one this model can consume, and silently coercing it would be
 # worse than declining.
 ARCHETYPES = {"BRANCH", "LARGE_OFFICE", "WAREHOUSE", "DC", "STORE"}
-PRODUCTS = {"DIA", "MPLS", "ETHERNET", "BROADBAND", "MOBILE_5G"}
+# HFC and PON are separate products, not variants of one: a shared coaxial
+# segment and fibre to the premises price differently and are quoted
+# separately in real tenders. The single BROADBAND band blended two
+# distributions and described neither.
+PRODUCTS = {"DIA", "MPLS", "ETHERNET", "BROADBAND_HFC", "BROADBAND_PON",
+            "MOBILE_5G"}
 
 
 class NotPromotable(ValueError):
@@ -241,11 +246,18 @@ def promote(session, *, case_id: str, candidate_ids: list[str],
             cmp = compare_to_benchmark(session, country=country,
                                        product=product, value=value,
                                        policy=divergence_policy)
-            row_id = f"{country}-{product}-researched"
+            # A researched price without a bandwidth cannot be matched by the
+            # estimate lookup, so the tier the quantity carries is recorded
+            # where the agent supplied one and left null where it did not -
+            # null being visible as "a steward must set this" rather than a
+            # guess that prices circuits at the wrong tier.
+            mbps = q.get("bandwidth_mbps")
+            row_id = f"{country}-{product}-{mbps or 'unspecified'}-researched"
             session.execute(delete(db.unit_cost_prior).where(
                 db.unit_cost_prior.c.id == row_id))
             session.execute(insert(db.unit_cost_prior).values(
                 id=row_id, country=country, product=product, cost_layer="L0",
+                bandwidth_mbps=int(mbps) if mbps else None,
                 low=value, base=value, high=value, currency="USD",
                 price_year=2026, approved=False,
                 source_agent_run_id=e["agent_run_id"],

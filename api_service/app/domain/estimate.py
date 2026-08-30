@@ -80,13 +80,43 @@ class Component:
                 "source_ref": self.source_ref, "value": self.value.to_dict()}
 
 
+
+def match_prior(priors: dict, country: str, product: str, mbps) -> tuple:
+    """Find the price for this circuit, at the bandwidth it needs.
+
+    `priors` is keyed (country, product, bandwidth_mbps). An exact tier is
+    used as-is. Failing that, the cheapest tier *at or above* the requirement
+    is used - a 100 Mbps rate cannot serve a 500 Mbps circuit, so substituting
+    downward would understate the estimate, which is the direction that turns
+    into a savings number nobody can deliver.
+
+    Returns (prior, substituted_bandwidth). substituted_bandwidth is None on
+    an exact match and the tier actually used otherwise, so the substitution
+    is recorded on the component rather than absorbed - the same rule the rest
+    of this module applies to unpriced scope: report it, never default it
+    silently.
+    """
+    exact = priors.get((country, product, mbps))
+    if exact:
+        return exact, None
+    above = sorted(
+        ((bw, pr) for (c, p, bw), pr in priors.items()
+         if c == country and p == product and bw is not None and mbps is not None
+         and bw >= mbps),
+        key=lambda t: D(t[1]["base"]))
+    if above:
+        return above[0][1], above[0][0]
+    return None, None
+
+
 def build_components(*, sim_output: dict, users: int, ops_cost_per_site: dict,
                      priors: dict,
                      driver_origins: dict | None = None,
                      driver_refs: dict | None = None,
                      overlay_unit: dict | None = None,
                      sse_unit: dict | None = None) -> tuple[list[Component], list[dict]]:
-    """priors keyed by (country, product) with low/base/high monthly recurring charge.
+    """priors keyed by (country, product, bandwidth_mbps) with low/base/high
+    monthly recurring charge. See match_prior for how a circuit finds its tier.
 
     Returns (components, unpriced) - unpriced quantities are excluded from the
     total and reported, never defaulted to a neighbouring country's rate and
@@ -111,16 +141,20 @@ def build_components(*, sim_output: dict, users: int, ops_cost_per_site: dict,
     unpriced: list[dict] = []
 
     for row in sim_output.get("products", []):
-        prior = priors.get((row["country"], row["product"]))
+        mbps = row.get("bandwidth_mbps")
+        prior, substituted = match_prior(priors, row["country"], row["product"], mbps)
         if not prior:
-            unpriced.append({**row, "reason": "NO_APPROVED_PRIOR"})
+            unpriced.append({**row, "reason": "NO_APPROVED_PRIOR_AT_BANDWIDTH"
+                             if mbps else "NO_APPROVED_PRIOR"})
             continue
         # A backup circuit exists only because the seeded draw put it there.
         origin = SIMULATED if row["role"] == "BACKUP" else site_origin
         qty = int(row["count"])
         value = Range(prior["low"], prior["base"], prior["high"]).scale(D(qty) * MONTHS)
         components.append(Component(
-            key=f"L0_{row['role'].lower()}_{row['country']}_{row['product']}",
+            key=(f"L0_{row['role'].lower()}_{row['country']}_{row['product']}"
+                 + (f"_{mbps}M" if mbps else "")
+                 + (f"_priced_at_{substituted}M" if substituted else "")),
             layer="L0", driver="circuits", quantity=qty,
             quantity_origin=origin, unit_cost_origin="BENCHMARK_PRIOR", value=value,
             source_ref=None if row["role"] == "BACKUP" else footprint_ref))

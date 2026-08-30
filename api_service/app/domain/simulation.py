@@ -44,7 +44,7 @@ def one_pass(seed: int, footprint: list[dict], archetypes: dict) -> dict:
         prior = archetypes.get(entry["archetype"], {})
         p_dual = float(prior.get("dual_access_probability", 0.5))
         primary_product = prior.get("primary_product", "DIA")
-        backup_product = prior.get("backup_product", "BROADBAND")
+        backup_product = prior.get("backup_product", "BROADBAND_PON")
         users_base = int(prior.get("users_base") or 0)
         bw_base = int(prior.get("bandwidth_mbps_base") or 0)
         n_sites = int(entry["sites"])
@@ -67,8 +67,11 @@ def one_pass(seed: int, footprint: list[dict], archetypes: dict) -> dict:
                               "product": primary_product, "role": "PRIMARY",
                               "diversity_state": DIVERSITY_STATE})
             primary += 1
-            products[(entry["country"], primary_product, "PRIMARY")] = \
-                products.get((entry["country"], primary_product, "PRIMARY"), 0) + 1
+            # Keyed with the bandwidth the archetype implies, so the circuit
+            # can be priced at the tier it actually needs rather than at
+            # whatever rate happened to exist for the product.
+            products[(entry["country"], primary_product, "PRIMARY", bw_base)] = \
+                products.get((entry["country"], primary_product, "PRIMARY", bw_base), 0) + 1
 
             # The stochastic draw. Whether a site has a second access path is the
             # one thing this simulation actually decides - the primary count
@@ -81,8 +84,8 @@ def one_pass(seed: int, footprint: list[dict], archetypes: dict) -> dict:
                                   "diversity_state": DIVERSITY_STATE})
                 backup += 1
                 dual_sites += 1
-                products[(entry["country"], backup_product, "BACKUP")] = \
-                    products.get((entry["country"], backup_product, "BACKUP"), 0) + 1
+                products[(entry["country"], backup_product, "BACKUP", bw_base)] = \
+                    products.get((entry["country"], backup_product, "BACKUP", bw_base), 0) + 1
 
     sites = sum(int(e["sites"]) for e in footprint)
     circuits = primary + backup
@@ -97,8 +100,9 @@ def one_pass(seed: int, footprint: list[dict], archetypes: dict) -> dict:
             "bandwidth_mbps_total": sum(a["mbps_total"]
                                         for a in bandwidth_by_archetype.values()),
             "circuits_per_site": round(circuits / sites, 4) if sites else 0.0,
-            "products": [{"country": c, "product": p, "role": r, "count": n}
-                         for (c, p, r), n in sorted(products.items())],
+            "products": [{"country": c, "product": p, "role": r,
+                          "bandwidth_mbps": bw, "count": n}
+                         for (c, p, r, bw), n in sorted(products.items())],
             "nodes": nodes, "edges": edges,        # bounded display sample
             "node_count": sites, "edge_count": circuits}
 

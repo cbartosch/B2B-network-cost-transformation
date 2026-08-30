@@ -19,7 +19,7 @@ from app.domain import simulation
 FOOTPRINT = [{"country": "GB", "archetype": "BRANCH", "sites": 40},
              {"country": "DE", "archetype": "DC", "sites": 2}]
 ARCH = {"BRANCH": {"dual_access_probability": 0.55, "primary_product": "DIA",
-                   "backup_product": "BROADBAND"},
+                   "backup_product": "BROADBAND_PON"},
         "DC": {"dual_access_probability": 1.0, "primary_product": "ETHERNET",
                "backup_product": "ETHERNET"}}
 
