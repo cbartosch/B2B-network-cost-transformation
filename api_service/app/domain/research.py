@@ -800,11 +800,21 @@ def _build_context(session, case_row, domain_no: int) -> dict:
                         f"  - {r.country} {r.product}: {r.low} / {r.base} / "
                         f"{r.high} per month (low/base/high)"
                         for r in sorted(rows, key=lambda r: (r.country, r.product))))
+                priced_countries = {r.country for r in rows}
+                unpriced = sorted(set(countries) - priced_countries)
+                if unpriced:
+                    ctx["model_state"] += (
+                        f"\n  These in-scope countries have NO approved price "
+                        f"at all: {', '.join(unpriced)}. Every circuit in them "
+                        f"is excluded from the total rather than estimated, so "
+                        f"a price for one of these is worth more than a "
+                        f"refinement of any band above.")
             else:
                 ctx["model_state"] = (
                     "None of the in-scope countries has an approved price "
                     "benchmark, so every circuit in them is currently unpriced "
-                    "and excluded from the total.")
+                    "and excluded from the total. Any price you find is new "
+                    "coverage rather than a correction.")
 
     # Which in-scope countries can be priced at all - the serviceability
     # question is only interesting where the answer changes coverage.
@@ -828,7 +838,9 @@ def _build_context(session, case_row, domain_no: int) -> dict:
 
 def _build_prompt(domain_name: str, case_row, domain_no: int | None = None,
                   context: dict | None = None,
-                  min_sources: int = 2) -> str:
+                  min_sources: int = 2,
+                  recency_decay: float = 0.15,
+                  recency_floor: float = 0.20) -> str:
     """Returns the user-turn prompt; system comes from AGENT_SYSTEM_PROMPTS,
     provider is chosen by the caller.
 
@@ -865,6 +877,13 @@ def _build_prompt(domain_name: str, case_row, domain_no: int | None = None,
     brief_block = f"\n{rendered}\n" if rendered else "\n"
 
     ctx = context or {}
+    price_year = getattr(case_row, "price_year", None) or 2026
+    # Stated as numbers because the model treats them as numbers: the coverage
+    # policy decays a prior by prior_recency_annual_decay a year to
+    # prior_recency_floor. "Discounted sharply" left the agent to guess
+    # whether a 2019 figure was acceptable; it is worth about a fifth.
+    decay_pct = int(round(float(recency_decay) * 100))
+    floor_pct = int(round(float(recency_floor) * 100))
     state_block = (
         f"\nWHAT THE MODEL CURRENTLY ASSUMES (an assumption, not evidence - "
         f"your job is to confirm or replace it)\n{ctx['model_state']}\n"
@@ -897,10 +916,14 @@ def _build_prompt(domain_name: str, case_row, domain_no: int | None = None,
         f"With fewer it is discarded entirely, however good the single source "
         f"is - so if you find one, spend a further search looking for a "
         f"second rather than stopping.\n"
-        "  - Every quantity is discounted by age, sharply. Put an as_of on "
-        "each one. An undated figure is treated as the weakest possible, and "
-        "a recent figure you are less fond of usually beats an older one you "
-        "prefer.\n"
+        f"  - Every quantity is discounted by age against the {price_year} "
+        f"price year, by roughly {decay_pct}% a year down to a floor of "
+        f"{floor_pct}%. In practice a figure from {price_year - 2} or later "
+        f"carries close to full weight, one from {price_year - 5} carries "
+        f"about half, and anything older is near the floor. Put an as_of on "
+        f"every quantity - an undated figure is treated as the weakest "
+        f"possible - and prefer a recent figure you are less fond of over an "
+        f"older one you prefer.\n"
         "  - Deriving a number from other numbers is not permitted here. "
         "Report what a source states; if you had to calculate it, say so "
         "plainly in confidence_note rather than presenting it as reported.\n"
@@ -1000,6 +1023,7 @@ def _upsert_disposition(session, *, case_id: str, domain_no: int, domain_name: s
 def _research_one_domain(session, *, case_row, domain_no: int, domain_name: str,
                          agent_id: str, provider: str,
                          research_policy: ResearchPolicy,
+                         coverage_policy=None,
                          captures_remaining_in_run: int,
                          request_scope: str) -> DomainResult:
     result = DomainResult(domain_no, domain_name, agent_id)
@@ -1049,6 +1073,10 @@ def _research_one_domain(session, *, case_row, domain_no: int, domain_name: str,
             prompt = _build_prompt(
                 domain_name, case_row, domain_no,
                 context=_build_context(session, case_row, domain_no),
+                recency_decay=float(coverage_policy.prior_recency_annual_decay)
+                if coverage_policy else 0.15,
+                recency_floor=float(coverage_policy.prior_recency_floor)
+                if coverage_policy else 0.20,
                 min_sources=research_policy.min_independent_sources_material_fact)
             # Only the anthropic adapter has a hosted search tool to hand it
             # (see module docstring); passing tools to openai raises rather
@@ -1195,6 +1223,7 @@ def run_domain_research(session, *, case_id: str, agent_ids: list[str] | None = 
                         research_policy: ResearchPolicy,
                         overwrite: bool = False,
                         domain_nos: list[int] | None = None,
+                        coverage_policy=None,
                         idempotency_key: str | None = None) -> dict:
     """Runs the research phase for whichever DOMAIN_AGENT_MAP domains are
     assigned to agent_ids (default: LLM-01 and LLM-08 both) and either have no
@@ -1267,6 +1296,7 @@ def run_domain_research(session, *, case_id: str, agent_ids: list[str] | None = 
         result = _research_one_domain(
             session, case_row=case_row, domain_no=domain_no, domain_name=domain_name,
             agent_id=agent_id, provider=provider, research_policy=research_policy,
+            coverage_policy=coverage_policy,
             captures_remaining_in_run=remaining_captures,
             request_scope=request_scope)
         captures_this_run += result.captures_used

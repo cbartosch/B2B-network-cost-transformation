@@ -34,7 +34,7 @@ from . import db
 log = logging.getLogger("workbench.migrations")
 
 # Bump when the physical schema changes, and add a step below.
-SCHEMA_VERSION = 15
+SCHEMA_VERSION = 16
 
 VERSION_TABLE = "schema_version"
 VERSION_SCHEMA = "audit"
@@ -505,10 +505,31 @@ def _migrate_v15(conn) -> None:
     log.info("v15: %s in_scope_region column added", "1" if added else "0")
 
 
+def _migrate_v16(conn) -> None:
+    """4.13.0 -> 4.14.0: research findings can reach the estimate.
+
+    Two ALTERs on reference.unit_cost_prior, which exists on any database from
+    4.7.x onward, so the provenance columns have to be added rather than
+    appearing with the table. outside_in.evidenced_footprint is wholly new and
+    create_all builds it after this step.
+
+    Without the provenance columns a promoted price would be indistinguishable
+    from a seeded one the moment it was written, which is the defect this
+    bundle keeps finding in other forms: a value whose origin is not recorded
+    is a value nobody can audit or retract.
+    """
+    added = 0
+    for column in ("source_agent_run_id", "source_note"):
+        added += _add_column(conn, db.unit_cost_prior, column)
+    log.info("v16: %d unit_cost_prior provenance column(s) added; "
+             "evidenced_footprint introduced, create_all will build it", added)
+
+
 MIGRATIONS = {2: _migrate_v2, 3: _migrate_v3, 4: _migrate_v4, 5: _migrate_v5,
               6: _migrate_v6, 7: _migrate_v7, 8: _migrate_v8, 9: _migrate_v9,
               10: _migrate_v10, 11: _migrate_v11, 12: _migrate_v12,
-              13: _migrate_v13, 14: _migrate_v14, 15: _migrate_v15}
+              13: _migrate_v13, 14: _migrate_v14, 15: _migrate_v15,
+              16: _migrate_v16}
 
 
 # ---------------------------------------------------------------- version

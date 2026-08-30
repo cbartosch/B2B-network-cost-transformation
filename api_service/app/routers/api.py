@@ -9,7 +9,7 @@ from sqlalchemy import delete, insert, select, text, update
 
 from .. import config, db, jobs, migrations
 from ..domain import (confidence, coverage, dispositions, entity_resolution,
-                      estimate, known_facts, policy, preflight, questionnaire,
+                      estimate, known_facts, policy, preflight, promotion, questionnaire,
                       reachability, reconciliation, research, savings_advisory,
                       scope, simulation, stage)
 from ..domain.money import D, Range
@@ -911,6 +911,47 @@ def domain_research_prompt(case_id: str, domain_no: int):
             "has not been researched, false when the brief or case scope has "
             "changed since it was."),
     }
+
+
+class PromoteIn(BaseModel):
+    candidate_ids: list[str]
+    promoted_by: str
+
+
+@router.get("/v1/outside-in/cases/{case_id}/research-findings")
+def research_findings(case_id: str):
+    """Researched numbers the estimate could consume, and what has already
+    been promoted. Read-only."""
+    with S() as s:
+        _one_or_404(s, db.case, db.case.c.case_id, case_id, "case")
+        return promotion.candidates(s, case_id)
+
+
+@router.post("/v1/outside-in/cases/{case_id}/research-findings:promote")
+def promote_research_findings(case_id: str, payload: PromoteIn):
+    """Move selected findings into the footprint and the price priors.
+
+    Named, like entity confirmation (0.1A): the system proposes, a person
+    disposes. Prices land unapproved - research proposes a governed value
+    under 18.1, it does not set one.
+    """
+    with S() as s:
+        _one_or_404(s, db.case, db.case.c.case_id, case_id, "case")
+        try:
+            return promotion.promote(s, case_id=case_id,
+                                     candidate_ids=payload.candidate_ids,
+                                     promoted_by=payload.promoted_by)
+        except promotion.NotPromotable as exc:
+            raise HTTPException(422, str(exc))
+
+
+@router.get("/v1/outside-in/cases/{case_id}/evidenced-footprint")
+def evidenced_footprint(case_id: str):
+    """The promoted footprint, in the shape simulations:run accepts - so the
+    simulation page can start from evidence rather than from typing."""
+    with S() as s:
+        _one_or_404(s, db.case, db.case.c.case_id, case_id, "case")
+        return {"footprint": promotion.evidenced_footprint(s, case_id)}
 
 
 @router.get("/v1/outside-in/cases/{case_id}/domain-research:plan")

@@ -23,12 +23,33 @@ st.info("Simulated structure can never set EVIDENCED, never supports a resilienc
         "lever, and is permanently barred from benchmark promotion (5.6).")
 
 st.subheader("Footprint")
-default = pd.DataFrame([
-    {"country": "GB", "archetype": "BRANCH", "sites": 120},
-    {"country": "DE", "archetype": "BRANCH", "sites": 80},
-    {"country": "US", "archetype": "LARGE_OFFICE", "sites": 12},
-    {"country": "GB", "archetype": "DC", "sites": 2},
-])
+# Start from promoted research where it exists. Until Tier 3 this editor
+# always opened on four hardcoded demo rows, so a case whose footprint had
+# actually been researched still simulated GB/DE/US placeholders unless
+# someone retyped the findings by hand - which is the shape "the research
+# changes nothing" took in practice.
+_ev = api.get(f"/v1/outside-in/cases/{case_id}/evidenced-footprint")
+_rows = [] if "_error" in _ev else _ev.get("footprint", [])
+if _rows:
+    st.success(f"Starting from {len(_rows)} promoted, evidenced row(s). "
+               f"Edit freely - what you run is what is in the table below.")
+    with st.expander("Where these came from"):
+        st.dataframe(pd.DataFrame(_rows)[
+            ["country", "archetype", "sites", "as_of", "promoted_by"]],
+            use_container_width=True, hide_index=True)
+    default = pd.DataFrame([{"country": r["country"],
+                             "archetype": r["archetype"],
+                             "sites": r["sites"]} for r in _rows])
+else:
+    st.caption("No promoted research findings for this case, so this opens on "
+               "illustrative values. Research a domain and promote its site "
+               "counts on page 5 to start from evidence instead.")
+    default = pd.DataFrame([
+        {"country": "GB", "archetype": "BRANCH", "sites": 120},
+        {"country": "DE", "archetype": "BRANCH", "sites": 80},
+        {"country": "US", "archetype": "LARGE_OFFICE", "sites": 12},
+        {"country": "GB", "archetype": "DC", "sites": 2},
+    ])
 fp = st.data_editor(default, num_rows="dynamic", use_container_width=True)
 
 c1, c2 = st.columns(2)

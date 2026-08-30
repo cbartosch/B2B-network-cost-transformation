@@ -412,7 +412,29 @@ unit_cost_prior = Table(
     Column("country", String(2)), Column("product", String(48)), Column("cost_layer", String(16)),
     Column("low", Numeric(14, 2)), Column("base", Numeric(14, 2)), Column("high", Numeric(14, 2)),
     Column("currency", String(3)), Column("price_year", Integer), Column("approved", Boolean, default=True),
+    # Provenance for a researched price. A governed value that appeared from
+    # nowhere is worse than no value: these say which agent run produced it
+    # and under whose name it was promoted, so a steward approving it can see
+    # what they are approving.
+    Column("source_agent_run_id", String(36)), Column("source_note", Text),
     schema="reference",
+)
+
+# Site counts promoted from research onto a case (Tier 3). Case-scoped rather
+# than governed: these describe one client's estate, not a market rate, so
+# they do not carry an `approved` flag the way unit_cost_prior does. The
+# simulation page reads them as its evidenced starting point.
+evidenced_footprint = Table(
+    "evidenced_footprint", metadata,
+    Column("id", String(36), primary_key=True),
+    Column("case_id", String(36), index=True),
+    Column("country", String(2)), Column("archetype", String(48)),
+    Column("sites", Integer), Column("as_of", String(32)),
+    Column("domain_no", Integer), Column("agent_run_id", String(36)),
+    Column("source_urls", JSON),
+    Column("promoted_by", String(120)),
+    Column("promoted_at", DateTime(timezone=True), default=_now),
+    schema="outside_in",
 )
 
 platform_unit_cost = Table(

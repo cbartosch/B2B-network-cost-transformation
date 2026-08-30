@@ -75,6 +75,69 @@ with st.expander("Run research (LLM-01 / LLM-08)"):
                 st.caption(line)
         st.rerun()
 
+with st.expander("Review research findings and promote them into the estimate"):
+    st.caption("Researched numbers only reach the estimate when a named person "
+               "puts them there. Site counts land on the case as the evidenced "
+               "footprint the simulation starts from. Prices are written "
+               "UNAPPROVED and take no part in any estimate until a steward "
+               "approves them - research proposes a governed value, it does "
+               "not set one.")
+
+    _f = api.get(f"/v1/outside-in/cases/{case_id}/research-findings")
+    if "_error" in _f:
+        st.error(_f["_error"])
+    else:
+        fp = _f.get("footprint_candidates", [])
+        pr = _f.get("price_candidates", [])
+        un = _f.get("unclassified", [])
+
+        chosen = []
+        if fp:
+            st.markdown("**Site counts**")
+            for c in fp:
+                q = c["quantity"]
+                if st.checkbox(
+                        f"{q.get('country')} {q.get('label')}: {q.get('value')} "
+                        f"sites (as of {q.get('as_of') or 'undated'}) "
+                        f"- domain {c['domain_no']}",
+                        key=f"fp_{c['candidate_id']}"):
+                    chosen.append(c["candidate_id"])
+        if pr:
+            st.markdown("**Circuit prices** (promoted unapproved)")
+            for c in pr:
+                q = c["quantity"]
+                if st.checkbox(
+                        f"{q.get('country')} {q.get('label')}: {q.get('value')} "
+                        f"{q.get('unit')} (as of {q.get('as_of') or 'undated'})",
+                        key=f"pr_{c['candidate_id']}"):
+                    chosen.append(c["candidate_id"])
+        if un:
+            st.caption(f"{len(un)} finding(s) are not in a shape this model "
+                       f"consumes. They are not rejected - they stay as "
+                       f"evidence on their domain.")
+        if not (fp or pr or un):
+            st.caption("No researched quantities on this case yet.")
+
+        who = st.text_input("Promoting as (your name)", key="promote_who")
+        if st.button("Promote selected", disabled=not (chosen and who)):
+            r = api.post(
+                f"/v1/outside-in/cases/{case_id}/research-findings:promote",
+                {"candidate_ids": chosen, "promoted_by": who})
+            if "_error" in r:
+                st.error(r["_error"])
+            else:
+                st.success(
+                    f"{len(r['promoted_footprint'])} footprint row(s) promoted, "
+                    f"{len(r['proposed_prices'])} price(s) proposed unapproved.")
+                st.rerun()
+
+        already = _f.get("already_promoted_footprint", [])
+        if already:
+            st.caption("Already promoted:")
+            st.dataframe(pd.DataFrame(already)[
+                ["country", "archetype", "sites", "as_of", "promoted_by"]],
+                use_container_width=True, hide_index=True)
+
 with st.expander("Show the prompt used for a domain"):
     st.caption("Exactly what the agent is sent for one domain - system prompt, "
                "user prompt and search-tool configuration. Nothing runs; this "
