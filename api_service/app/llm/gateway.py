@@ -166,7 +166,8 @@ def verify_liveness(call, local_start: datetime, local_end: datetime) -> None:
 
 
 def execute(session, *, agent_run_id: str, provider: str, system: str,
-            prompt: str, max_tokens: int = 1500) -> dict:
+            prompt: str, max_tokens: int = 1500,
+            tools: list[dict] | None = None) -> dict:
     row = session.execute(
         select(db.agent_run).where(db.agent_run.c.agent_run_id == agent_run_id)).one()
     if row.execution_mode != "LIVE":
@@ -184,7 +185,8 @@ def execute(session, *, agent_run_id: str, provider: str, system: str,
 
     local_start = datetime.now(timezone.utc)
     try:
-        call = adapter.complete(system=system, prompt=prompt, max_tokens=max_tokens)
+        call = adapter.complete(system=system, prompt=prompt, max_tokens=max_tokens,
+                                tools=tools)
     except (_transport.PinMismatch, _transport.PinUnavailable) as exc:
         # A pin failure is a provenance failure, not a transport hiccup: the
         # answer may be genuine, but nothing here can show that it is.
@@ -227,6 +229,11 @@ def execute(session, *, agent_run_id: str, provider: str, system: str,
             "duplicate provider_response_id or provider_request_id")
 
     return {"text": call.text, "provider": call.provider, "model": call.model,
+            # The block list a caller needs to find real tool-result content
+            # (e.g. web_search_tool_result) rather than the model's prose
+            # about it. Empty when no tools were requested or the provider
+            # doesn't surface one (raw.get is defensive against either).
+            "content_blocks": call.raw.get("content", []),
             "provider_response_id": call.provider_response_id,
             "provider_request_id": call.provider_request_id,
             "externally_verifiable": bool(call.provider_request_id),

@@ -5,21 +5,41 @@ at all - every domain was disposed by hand via PUT .../domain-dispositions.
 
 Read this before trusting what this module produces:
 
-**The gateway has no browsing or tool-use capability.** gateway.execute() is a
-single system+prompt completion; it cannot fetch a live page, so a model's
-"found: true" answer is a recalled claim, not a verified one. Spec 0.3A ties
-EVIDENCED_PUBLIC to "a stored source fragment" - an artifact this build could
-not previously produce for a model claim at all. This module does not paper
-over that gap: every source the model names is independently fetched with
-plain httpx (_fetch_source_fragment), separately from the pinned LLM-provider
-transport, which exists for provider APIs and has no reason to extend to
-arbitrary third-party URLs. Only a source that actually resolves counts toward
-min_independent_sources_material_fact. A claimed-but-unfetchable source counts
-for nothing - it is evidence of what the model said, not of the fact.
-That fetch step could not be exercised here (no network egress in this
-sandbox); it is written and typed but unverified against a real URL. Expect to
-find and fix something on first real run, the same posture the rest of this
-bundle takes about anything untested.
+**Anthropic calls now actually search**, via the hosted web_search tool
+(gateway.execute(tools=...), see anthropic_adapter.py). That tool runs
+server-side and returns real search-result blocks in the same response - no
+second round trip - so "found: true" can now be backed by a search that
+actually happened, not just a claim recalled from training. A model can still
+misdescribe or over-interpret what a search turned up, so this is not treated
+as sufficient on its own: _extract_observed_urls reads the real
+web_search_tool_result blocks from the response, and only a claimed source
+whose URL was actually among those results survives - the filter in
+_research_one_domain is a hard drop, not a hint. A URL the model names but
+the tool never returned never reaches _verify_sources.
+
+Spec 0.3A ties EVIDENCED_PUBLIC to "a stored source fragment", so a real
+search result still isn't taken as sufficient by itself: every URL that
+survives the above is independently fetched again with plain httpx
+(_fetch_source_fragment), separately from the pinned LLM-provider transport,
+which exists for provider APIs and has no reason to extend to arbitrary
+third-party URLs. Only a source that both (a) came from a real search-tool
+result and (b) actually resolves on refetch counts toward
+min_independent_sources_material_fact.
+
+**OpenAI calls do not search.** Chat Completions has no equivalent hosted,
+server-executed search tool this codebase can wire up in one request/response
+(openai_adapter.py raises rather than silently completing without one if
+research.py ever passes it tools). Selecting "openai" as the research
+provider means recall-only, with the same evidentiary weakness described
+above for the pre-search build - only the anthropic path currently searches.
+
+None of the search-tool wiring in this module has been exercised against a
+real API response (no network egress in the sandbox this was built in); the
+request/response shape follows Anthropic's documented web_search tool
+contract as of this codebase's training data, but block-type names, field
+names inside a web_search_tool_result, or the tool's exact name string could
+have moved on. Expect to find and fix something on first real run, the same
+posture the rest of this bundle takes about anything untested.
 
 **This module never writes DERIVED_PUBLIC.** Recognising that a value was
 combined from other approved public facts, and recording the derivation method
@@ -95,29 +115,62 @@ _RESPONSE_SHAPE = (
     '"sources": [{"url": str, "publisher": str, "as_of": str}], '
     '"confidence_note": str}')
 
+_SEARCH_INSTRUCTION = (
+    "You have a web_search tool. Use it before answering - actually search "
+    "for current public information about the named entity for this domain; "
+    "do not answer from what you already recall without searching. Every URL "
+    "in \"sources\" must be a URL your search actually returned, not one you "
+    "are recalling or reconstructing from memory - a source that did not come "
+    "back from a search this turn will be discarded regardless of how "
+    "confident you are that it exists.")
+
 AGENT_SYSTEM_PROMPTS = {
     "LLM-01": (
         "You are a research agent proposing public evidence for one input "
         "domain of an outside-in network cost estimate (footprint, "
         "architecture, vendor signals, transformation announcements, "
         "regulatory posture). You may only assert what a named public source "
-        f"states. Respond with a single JSON object and nothing else, "
-        f"matching this shape exactly: {_RESPONSE_SHAPE}. If you cannot "
-        'attribute a finding to a named public source, set "found": false '
-        'and leave "sources" empty - never invent a source to satisfy the '
-        "shape, and never include a source you are not confident actually "
-        "exists at that URL."),
+        f"states. {_SEARCH_INSTRUCTION} Respond with a single JSON object and "
+        f"nothing else, matching this shape exactly: {_RESPONSE_SHAPE}. If "
+        'your search finds nothing you can attribute to a named public '
+        'source, set "found": false and leave "sources" empty - never '
+        "invent a source to satisfy the shape."),
     "LLM-08": (
         "You are a research agent proposing source-backed market data for "
         "one input domain of an outside-in network cost estimate (public "
         "cost evidence, market pricing, serviceability, currency and tax). "
-        f"Respond with a single JSON object and nothing else, matching this "
-        f"shape exactly: {_RESPONSE_SHAPE}. If you cannot attribute a "
-        'finding to a named public source, set "found": false and leave '
-        '"sources" empty - never invent a source to satisfy the shape, and '
-        "never include a source you are not confident actually exists at "
-        "that URL."),
+        f"{_SEARCH_INSTRUCTION} Respond with a single JSON object and "
+        f"nothing else, matching this shape exactly: {_RESPONSE_SHAPE}. If "
+        'your search finds nothing you can attribute to a named public '
+        'source, set "found": false and leave "sources" empty - never '
+        "invent a source to satisfy the shape."),
 }
+
+
+def _web_search_tool(max_uses: int) -> list[dict]:
+    """Anthropic's hosted search tool config. Only meaningful for the
+    anthropic adapter - see the module docstring on the openai path."""
+    return [{"type": "web_search_20250305", "name": "web_search", "max_uses": max_uses}]
+
+
+def _extract_observed_urls(content_blocks: list) -> set[str]:
+    """Real URLs a web_search_tool_result block actually returned this turn -
+    as opposed to a URL the model's own JSON merely claims. Tolerant of the
+    exact block/field shape being wrong: an unrecognised or malformed block
+    contributes nothing rather than raising, since a parsing miss here should
+    fail toward "found no verified sources", not toward a crash that drops
+    an otherwise-successful research call.
+    """
+    urls = set()
+    for block in content_blocks or []:
+        if not isinstance(block, dict) or block.get("type") != "web_search_tool_result":
+            continue
+        content = block.get("content")
+        items = content if isinstance(content, list) else [content]
+        for item in items:
+            if isinstance(item, dict) and isinstance(item.get("url"), str):
+                urls.add(item["url"])
+    return urls
 
 _TAG_RE = re.compile(r"<[^>]+>")
 _WS_RE = re.compile(r"\s+")
@@ -198,6 +251,21 @@ def _verify_sources(claimed: list[dict], captures_remaining: int) -> tuple[list[
     return verified, used
 
 
+# Legal-form suffixes and generic scope words: dropped because they carry no
+# brand identity, not because of their length. Anything else survives the
+# filter regardless of how short it is, so "DHL" or "3M" is not discarded the
+# way a length-only floor discarded it.
+_NOISE_TOKENS = {
+    "gmbh", "inc", "incorporated", "corp", "corporation", "ltd", "limited",
+    "llc", "llp", "plc", "co", "company", "group", "holding", "holdings",
+    "international", "global", "worldwide", "the", "and", "of",
+}
+
+
+def _content_tokens(text: str) -> set:
+    return {t for t in re.split(r"\W+", text) if t and t not in _NOISE_TOKENS}
+
+
 def _looks_out_of_perimeter(subject: str, case_row) -> bool:
     """A heuristic, not a match. Flags a finding whose stated subject shares no
     recognisable token with the confirmed entity's name, so an obviously
@@ -205,13 +273,42 @@ def _looks_out_of_perimeter(subject: str, case_row) -> bool:
     both under- and over-flag on legal-name variants, trading names and
     subsidiaries - a real perimeter check belongs with entity_resolution.py's
     candidate data, not a string comparison, and this is a placeholder for
-    that, not a replacement."""
+    that, not a replacement.
+
+    A short brand name is the single most likely word to appear in *every*
+    public reference to a company - "DHL", "IBM", "3M" - and a >3-char length
+    floor threw exactly those out: a legal name like "DHL International GmbH"
+    kept only "international"/"gmbh", while a public source calling it "DHL
+    Group" or "Deutsche Post DHL Group" kept "group"/"deutsche"/"post" - two
+    token sets sharing nothing despite both plainly describing the same
+    company. Genuinely uninformative words (legal-form suffixes and scope
+    words that attach to almost any entity) are now dropped by name instead
+    of by length, so a real brand token survives the filter on both sides
+    regardless of how short it is.
+    """
     name = (case_row.subject_entity_legal_name or "").lower()
     if not name or not subject:
         return False
-    name_tokens = {t for t in re.split(r"\W+", name) if len(t) > 3}
-    subject_tokens = {t for t in re.split(r"\W+", subject.lower()) if len(t) > 3}
-    return bool(name_tokens) and name_tokens.isdisjoint(subject_tokens)
+    name_tokens = _content_tokens(name)
+    subject_tokens = _content_tokens(subject.lower())
+    if not name_tokens:
+        return False
+    if not name_tokens.isdisjoint(subject_tokens):
+        return False
+    # A brand abbreviation sometimes shows up fused with another word rather
+    # than as its own token - "DPDHL" for "Deutsche Post DHL" - so a name
+    # token appearing as a substring of a subject token (or vice versa) also
+    # counts as a match, provided it is not so short a fragment that almost
+    # anything would contain it.
+    for nt in name_tokens:
+        if len(nt) < 3:
+            continue
+        for st in subject_tokens:
+            if len(st) < 3:
+                continue
+            if nt in st or st in nt:
+                return False
+    return True
 
 
 def _build_prompt(domain_name: str, case_row) -> str:
@@ -317,10 +414,16 @@ def _research_one_domain(session, *, case_row, domain_no: int, domain_name: str,
                 session, agent_id=agent_id, mode="LIVE", case_id=case_row.case_id,
                 idempotency_key=idem_key)
             prompt = _build_prompt(domain_name, case_row)
+            # Only the anthropic adapter has a hosted search tool to hand it
+            # (see module docstring); passing tools to openai raises rather
+            # than silently completing without one.
+            tools = (_web_search_tool(research_policy.max_web_searches_per_domain)
+                    if provider == "anthropic" else None)
             call = gateway.execute(
                 session, agent_run_id=run_id, provider=provider,
-                system=AGENT_SYSTEM_PROMPTS[agent_id], prompt=prompt)
+                system=AGENT_SYSTEM_PROMPTS[agent_id], prompt=prompt, tools=tools)
             parsed = gateway.parse_json_strict(call["text"])
+            observed_urls = _extract_observed_urls(call.get("content_blocks"))
         except (errors.ProviderUnavailable, errors.LivenessProofFailed,
                 errors.StructuredOutputInvalid, errors.ModeNotPermitted) as exc:
             # execute() already calls _fail() internally for ProviderUnavailable/
@@ -369,6 +472,17 @@ def _research_one_domain(session, *, case_row, domain_no: int, domain_name: str,
 
         claimed_sources = [s for s in (parsed.get("sources") or [])
                            if isinstance(s, dict) and s.get("url")]
+        claimed_count = len(claimed_sources)
+        dropped_unobserved = 0
+        if tools:
+            # A real search happened this turn (anthropic path only - see
+            # module docstring). A URL the model names that the search tool
+            # never actually returned is dropped here, before it ever reaches
+            # the independent httpx refetch below - "found: true" with search
+            # available is not licence to recall a source from memory.
+            kept = [s for s in claimed_sources if s["url"] in observed_urls]
+            dropped_unobserved = len(claimed_sources) - len(kept)
+            claimed_sources = kept
         budget_left = min(captures_left_for_domain,
                           captures_remaining_in_run - result.captures_used)
         verified, used = _verify_sources(claimed_sources, budget_left)
@@ -377,7 +491,12 @@ def _research_one_domain(session, *, case_row, domain_no: int, domain_name: str,
 
         gateway.succeed(session, run_id, {
             "found": True, "subject": subject, "finding": parsed.get("finding"),
-            "claimed_sources": len(claimed_sources), "verified_sources": len(verified)})
+            # The count the model actually claimed, before the observed-URL
+            # filter - reporting the post-filter count here would make a run
+            # that cited two unobserved sources look like it cited none.
+            "claimed_sources": claimed_count,
+            "verified_sources": len(verified),
+            "dropped_unobserved_sources": dropped_unobserved})
         result.agent_run_id = run_id
 
         if len(verified) >= research_policy.min_independent_sources_material_fact:

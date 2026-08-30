@@ -46,7 +46,7 @@ POLICY = ResearchPolicy.from_rows(_seeded("research_budget_profile"))
 TIGHT_POLICY = ResearchPolicy(
     set_name="test-tight", max_queries_per_domain=2, max_captures_per_domain=4,
     max_captures_per_run=3, min_independent_sources_material_fact=2,
-    research_wall_clock_budget_minutes=5)
+    research_wall_clock_budget_minutes=5, max_web_searches_per_domain=3)
 
 _response_ids = (f"msg_test_{i}" for i in itertools.count())
 
@@ -84,34 +84,58 @@ def _verified_fetch(url, timeout=10.0):
 class _FakeAdapter:
     """Stands in for AnthropicAdapter/OpenAIAdapter. gateway.execute()'s own
     logic runs for real against whatever this returns; only the network call
-    is replaced."""
+    is replaced.
 
-    def __init__(self, text_fn, configured=True):
+    `raw["content"]` carries synthetic web_search_tool_result blocks echoing
+    whichever URLs the text_fn's JSON claims, so research.py's
+    "was this URL actually returned by a search?" filter sees a consistent
+    response by default. A test that wants to exercise the model naming a
+    source no search returned passes observed_urls explicitly.
+    """
+
+    def __init__(self, text_fn, configured=True, observed_urls=None):
         self._text_fn = text_fn
         self._configured = configured
+        self._observed_urls = observed_urls
         self.name = "anthropic"
         self.reconciliation_tier = "A"
+        self.last_tools = None
 
     def configured(self) -> bool:
         return self._configured
 
-    def complete(self, *, system, prompt, max_tokens=1500) -> ProviderCall:
+    def complete(self, *, system, prompt, max_tokens=1500, tools=None) -> ProviderCall:
         now = datetime.now(timezone.utc)
+        self.last_tools = tools
         text = self._text_fn(system=system, prompt=prompt, max_tokens=max_tokens)
+        if self._observed_urls is None:
+            # Default: the search "returned" exactly what the response claims,
+            # so the filter is satisfied and tests exercise the path after it.
+            urls = []
+            try:
+                urls = [s["url"] for s in (json.loads(text).get("sources") or [])
+                       if isinstance(s, dict) and s.get("url")]
+            except (ValueError, AttributeError):
+                pass
+        else:
+            urls = list(self._observed_urls)
+        content = [{"type": "web_search_tool_result",
+                    "content": [{"url": u, "title": "t"} for u in urls]}]
         return ProviderCall(
             provider="anthropic", model="fake-model", text=text,
             provider_response_id=next(_response_ids),
             provider_request_id=str(uuid.uuid4()),
             provider_request_at=now, input_tokens=50, output_tokens=50,
             local_request_at=now, latency_ms=10, http_status=200,
-            egress_proxy=None, raw={})
+            egress_proxy=None, raw={"content": content})
 
 
-def _wire_fake_provider(monkeypatch, text_fn=None, *, configured=True):
+def _wire_fake_provider(monkeypatch, text_fn=None, *, configured=True,
+                        observed_urls=None):
     """Patches gateway._adapters(), which gateway.execute() calls internally,
     rather than gateway.execute itself - see the module docstring."""
     text_fn = text_fn or (lambda **kw: _found_text())
-    fake = _FakeAdapter(text_fn, configured=configured)
+    fake = _FakeAdapter(text_fn, configured=configured, observed_urls=observed_urls)
     monkeypatch.setattr(research.gateway, "_adapters",
                         lambda: {"anthropic": fake, "openai": fake})
     return fake
@@ -357,3 +381,61 @@ def test_research_never_discards_client_confirmed_data_even_with_overwrite(
     assert row.disposition == "CLIENT_CONFIRMED"
     assert row.evidence["answered_by"] == "Client Contact", (
         "the client's attribution must survive a research re-run")
+
+
+# --------------------------------------------------------------- real search
+# The module previously had no browsing capability at all: "found: true" was a
+# claim recalled from training, and the URLs beside it were recalled too. These
+# cover the two halves of closing that - the search actually being requested,
+# and a source the search never returned being refused.
+
+def test_the_anthropic_path_requests_a_real_web_search(session, monkeypatch):
+    """Without tools on the request the model answers from recall, which is
+    the gap this module's docstring spent three paragraphs apologising for."""
+    case_id = _case(session)
+    fake = _wire_fake_provider(monkeypatch)
+    monkeypatch.setattr(research, "_fetch_source_fragment", _verified_fetch)
+
+    research.run_domain_research(session, case_id=case_id, agent_ids=["LLM-01"],
+                                 provider="anthropic", research_policy=POLICY)
+
+    assert fake.last_tools, "no tool was sent; the model would answer from recall"
+    assert fake.last_tools[0]["name"] == "web_search"
+    assert fake.last_tools[0]["max_uses"] == POLICY.max_web_searches_per_domain, (
+        "the search cap must come from the governed budget, not a constant")
+
+
+def test_a_source_the_search_never_returned_is_not_evidence(session, monkeypatch):
+    """The failure mode real search introduces: the tool runs, and the model
+    still cites a plausible URL from memory beside the results. An unobserved
+    URL must not reach _verify_sources - otherwise a live-looking run
+    launders a recalled citation into EVIDENCED_PUBLIC."""
+    case_id = _case(session)
+    # The response claims two sources; the search returned neither.
+    _wire_fake_provider(monkeypatch, observed_urls=[])
+    # Fetch would succeed for anything, so only the observed-URL filter can
+    # be what stops these.
+    monkeypatch.setattr(research, "_fetch_source_fragment", _verified_fetch)
+
+    research.run_domain_research(session, case_id=case_id, agent_ids=["LLM-01"],
+                                 provider="anthropic", research_policy=POLICY)
+
+    rows = session.execute(select(db.domain_disposition).where(
+        db.domain_disposition.c.case_id == case_id)).all()
+    assert rows, "domains should still be dispositioned"
+    assert not any(r.disposition == "EVIDENCED_PUBLIC" for r in rows), (
+        "a URL the search never returned was accepted as public evidence")
+
+
+def test_a_short_brand_name_is_not_treated_as_out_of_perimeter(session):
+    """The DHL case. A >3-char token floor dropped the one word every public
+    source uses - "DHL" - so "DHL Group" shared nothing with "DHL
+    International GmbH" and real findings were quarantined as wrong-entity,
+    surfacing to the analyst as "no evidence found"."""
+    class _Row:
+        subject_entity_legal_name = "DHL International GmbH"
+
+    for subject in ("DHL Group", "Deutsche Post DHL Group", "DHL Logistics Group"):
+        assert not research._looks_out_of_perimeter(subject, _Row()), subject
+    # Still catches a genuinely different company.
+    assert research._looks_out_of_perimeter("FedEx Corporation", _Row())

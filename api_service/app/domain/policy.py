@@ -292,6 +292,13 @@ class ResearchPolicy:
     max_captures_per_run: int
     min_independent_sources_material_fact: int
     research_wall_clock_budget_minutes: int
+    # Cap on the hosted web-search tool's own invocations per domain
+    # (domain/research.py), distinct from max_queries_per_domain: one query
+    # attempt to the model can itself trigger several searches server-side
+    # before the model answers, and that's a different, provider-billed cost
+    # dimension worth bounding on its own rather than folding into the
+    # query-attempt count.
+    max_web_searches_per_domain: int
 
     @classmethod
     def from_rows(cls, rows: dict, set_name: str = "research_budget_profile"):
@@ -305,13 +312,15 @@ class ResearchPolicy:
                 r("min_independent_sources_material_fact")),
             research_wall_clock_budget_minutes=int(
                 r("research_wall_clock_budget_minutes")),
+            max_web_searches_per_domain=int(r("max_web_searches_per_domain")),
         )
         policy.validate()
         return policy
 
     def validate(self) -> None:
         for name in ("max_queries_per_domain", "max_captures_per_domain",
-                     "max_captures_per_run", "research_wall_clock_budget_minutes"):
+                     "max_captures_per_run", "research_wall_clock_budget_minutes",
+                     "max_web_searches_per_domain"):
             value = getattr(self, name)
             if value <= 0:
                 raise PolicyInvalid(f"{name}={value} must be positive")

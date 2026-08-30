@@ -30,12 +30,21 @@ class AnthropicAdapter:
     def configured(self) -> bool:
         return bool(self._api_key)
 
-    def complete(self, *, system: str, prompt: str, max_tokens: int = 1500) -> ProviderCall:
+    def complete(self, *, system: str, prompt: str, max_tokens: int = 1500,
+                tools: list[dict] | None = None) -> ProviderCall:
         if not self.configured():
             raise errors.ProviderUnavailable("ANTHROPIC_API_KEY is not set")
 
         body = {"model": self.model, "max_tokens": max_tokens, "system": system,
                 "messages": [{"role": "user", "content": prompt}]}
+        if tools:
+            # The hosted web_search tool runs server-side: Anthropic executes
+            # the search and returns the result blocks in this same response,
+            # no second round trip needed. That's what lets domain research
+            # actually search rather than ask the model to recall training
+            # data and self-report sources it cannot verify (see
+            # domain/research.py's module docstring on this gap).
+            body["tools"] = tools
         headers = {"x-api-key": self._api_key, "anthropic-version": API_VERSION,
                    "content-type": "application/json"}
 
@@ -78,4 +87,9 @@ class AnthropicAdapter:
             local_request_at=local_at, latency_ms=latency_ms,
             http_status=resp.status_code, egress_proxy=_transport.EGRESS_PROXY,
             tls_pin=pin, provenance_strength=strength, tls_cert_not_after=not_after,
-            raw={"usage": usage, "stop_reason": data.get("stop_reason")})
+            # `content` carries the full block list - text, and when a tool
+            # was used, server_tool_use / web_search_tool_result blocks too.
+            # A caller that needs the actual search results (not just the
+            # model's prose about them) reads this rather than `text`.
+            raw={"usage": usage, "stop_reason": data.get("stop_reason"),
+                "content": data.get("content", [])})

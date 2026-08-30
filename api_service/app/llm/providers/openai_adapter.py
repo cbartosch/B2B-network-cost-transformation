@@ -29,9 +29,19 @@ class OpenAIAdapter:
     def configured(self) -> bool:
         return bool(self._api_key)
 
-    def complete(self, *, system: str, prompt: str, max_tokens: int = 1500) -> ProviderCall:
+    def complete(self, *, system: str, prompt: str, max_tokens: int = 1500,
+                tools: list[dict] | None = None) -> ProviderCall:
         if not self.configured():
             raise errors.ProviderUnavailable("OPENAI_API_KEY is not set")
+        if tools:
+            # Chat Completions has no hosted, server-executed web-search tool
+            # this adapter can wire up in one request/response the way the
+            # Anthropic adapter does. Failing closed here is deliberate: a
+            # caller asking for tools and silently getting a plain completion
+            # back would look like a search happened when it didn't.
+            raise errors.ProviderUnavailable(
+                "the openai adapter has no hosted web-search tool; route "
+                "tool-using calls to anthropic")
 
         body = {"model": self.model, "max_tokens": max_tokens,
                 "messages": [{"role": "system", "content": system},
