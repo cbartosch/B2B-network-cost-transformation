@@ -532,6 +532,53 @@ MIGRATIONS = {2: _migrate_v2, 3: _migrate_v3, 4: _migrate_v4, 5: _migrate_v5,
               16: _migrate_v16}
 
 
+class SchemaDrift(RuntimeError):
+    """The database is missing a column the code will select."""
+
+
+def verify_model_matches_database(engine) -> list:
+    """Every column the model declares must exist in the database.
+
+    migrations.ensure() applies the steps it knows about; it cannot notice a
+    column that was added to db.py without a corresponding step, or a step
+    that silently skipped. The gap is invisible until a query happens to name
+    the missing column - and which query that is depends on whether it selects
+    the whole table or one column.
+
+    That is exactly how v16 failed in the field: preflight selects
+    unit_cost_prior.c.country and passed, while estimates:run selects the whole
+    table and returned a bare 500 with an SQLAlchemy error in the log. Same
+    database, same request, one endpoint working and one not, with nothing
+    saying "schema".
+
+    Raises rather than warns. A service that starts and 500s on its central
+    calculation is worse than one that refuses to start with a message naming
+    the columns to add.
+    """
+    missing = []
+    with engine.connect() as conn:
+        inspector = inspect(conn)
+        for table in db.metadata.sorted_tables:
+            if not _has_table(conn, table.schema, table.name):
+                continue          # create_all builds it; nothing to compare yet
+            try:
+                actual = {c["name"] for c in inspector.get_columns(
+                    table.name, schema=table.schema)}
+            except Exception:                              # noqa: BLE001
+                continue
+            for column in table.columns:
+                if column.name not in actual:
+                    missing.append(f"{table.schema}.{table.name}.{column.name}")
+    if missing:
+        raise SchemaDrift(
+            "the database is missing columns this build will query: "
+            + ", ".join(sorted(missing))
+            + ". A migration step is missing or did not apply. Run "
+              "`migrations.ensure(db.engine)` and check its report; if the "
+              "column was added to db.py without a step, add one.")
+    return missing
+
+
 # ---------------------------------------------------------------- version
 def _ensure_version_table(conn) -> None:
     if _has_table(conn, VERSION_SCHEMA, VERSION_TABLE):

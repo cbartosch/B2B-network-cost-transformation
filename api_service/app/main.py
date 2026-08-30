@@ -22,6 +22,15 @@ async def lifespan(_app: FastAPI):
     except (migrations.SchemaStateRefused, migrations.MigrationFailed) as exc:
         log.error("REFUSING TO START: %s", exc)
         raise
+    # ensure() applies the steps it knows about. This checks the result: every
+    # column the model will select has to exist. Without it a missing column
+    # surfaces as a 500 from whichever endpoint happens to select the whole
+    # table, with nothing in the message saying "schema".
+    try:
+        migrations.verify_model_matches_database(db.engine)
+    except migrations.SchemaDrift as exc:
+        log.error("REFUSING TO START: %s", exc)
+        raise
     # A pinning configuration that would degrade silently is refused here, for
     # the same reason a wrong schema is: a service that starts and is quietly
     # unprotected is worse than one that does not start.

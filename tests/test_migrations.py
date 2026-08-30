@@ -475,3 +475,32 @@ def test_the_legacy_fixture_describes_a_state_that_can_actually_upgrade():
             f"the legacy fixture for {table} omits {sorted(unexplained)}, and no "
             f"migration adds them - so it describes a database that could never "
             f"reach the current schema")
+
+
+# --- schema drift -----------------------------------------------------------
+def test_a_column_in_the_model_but_not_the_database_is_refused_at_startup():
+    """v16 added two columns to reference.unit_cost_prior. Where the step had
+    not applied, preflight kept passing - it selects one column - while
+    estimates:run returned a bare 500, because it selects the whole table.
+    Same database, one endpoint working and one not, and nothing in the
+    message saying "schema".
+
+    ensure() applies steps; this checks the result."""
+    _drop_everything()
+    db.metadata.create_all(db.engine)
+    # Fine as built.
+    assert migrations.verify_model_matches_database(db.engine) == []
+
+    # Now take a column away behind the model's back.
+    with db.engine.begin() as conn:
+        conn.execute(text('ALTER TABLE "reference"."unit_cost_prior" '
+                          'DROP COLUMN "source_note"'))
+    with pytest.raises(migrations.SchemaDrift, match="source_note"):
+        migrations.verify_model_matches_database(db.engine)
+
+
+def test_the_verifier_ignores_tables_create_all_has_not_built_yet():
+    """A table absent entirely is not drift - create_all builds it complete
+    moments later. Only a table that exists and is short a column is."""
+    _drop_everything()
+    assert migrations.verify_model_matches_database(db.engine) == []
