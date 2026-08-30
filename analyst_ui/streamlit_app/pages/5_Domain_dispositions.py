@@ -76,121 +76,131 @@ with st.expander("Run research (LLM-01 / LLM-08)"):
         st.rerun()
 
 with st.expander("Review research findings and promote them into the estimate"):
-    st.caption("Researched numbers only reach the estimate when a named person "
-               "puts them there. Site counts land on the case as the evidenced "
-               "footprint the simulation starts from. Prices are written "
-               "UNAPPROVED and take no part in any estimate until a steward "
-               "approves them - research proposes a governed value, it does "
-               "not set one.")
+    # Streamlit runs an expander body whether or not it is open, so an
+    # unconditional fetch here cost a round trip on every interaction
+    # with this page - including every keystroke in the editor below.
+    if st.checkbox("Load findings", key="load_findings"):
+        st.caption("Researched numbers only reach the estimate when a named person "
+                   "puts them there. Site counts land on the case as the evidenced "
+                   "footprint the simulation starts from. Prices are written "
+                   "UNAPPROVED and take no part in any estimate until a steward "
+                   "approves them - research proposes a governed value, it does "
+                   "not set one.")
 
-    _f = api.get(f"/v1/outside-in/cases/{case_id}/research-findings")
-    if "_error" in _f:
-        st.error(_f["_error"])
+        _f = api.get(f"/v1/outside-in/cases/{case_id}/research-findings")
+        if "_error" in _f:
+            st.error(_f["_error"])
+        else:
+            fp = _f.get("footprint_candidates", [])
+            pr = _f.get("price_candidates", [])
+            un = _f.get("unclassified", [])
+
+            chosen = []
+            if fp:
+                st.markdown("**Site counts**")
+                for c in fp:
+                    q = c["quantity"]
+                    if st.checkbox(
+                            f"{q.get('country')} {q.get('label')}: {q.get('value')} "
+                            f"sites (as of {q.get('as_of') or 'undated'}) "
+                            f"- domain {c['domain_no']}",
+                            key=f"fp_{c['candidate_id']}"):
+                        chosen.append(c["candidate_id"])
+            if pr:
+                st.markdown("**Circuit prices** (promoted unapproved)")
+                for c in pr:
+                    q = c["quantity"]
+                    if st.checkbox(
+                            f"{q.get('country')} {q.get('label')}: {q.get('value')} "
+                            f"{q.get('unit')} (as of {q.get('as_of') or 'undated'})",
+                            key=f"pr_{c['candidate_id']}"):
+                        chosen.append(c["candidate_id"])
+            if un:
+                st.caption(f"{len(un)} finding(s) are not in a shape this model "
+                           f"consumes. They are not rejected - they stay as "
+                           f"evidence on their domain.")
+            if not (fp or pr or un):
+                st.caption("No researched quantities on this case yet.")
+
+            who = st.text_input("Promoting as (your name)", key="promote_who")
+            if st.button("Promote selected", disabled=not (chosen and who)):
+                r = api.post(
+                    f"/v1/outside-in/cases/{case_id}/research-findings:promote",
+                    {"candidate_ids": chosen, "promoted_by": who})
+                if "_error" in r:
+                    st.error(r["_error"])
+                else:
+                    st.success(
+                        f"{len(r['promoted_footprint'])} footprint row(s) promoted, "
+                        f"{len(r['proposed_prices'])} price(s) proposed unapproved.")
+                    st.rerun()
+
+            already = _f.get("already_promoted_footprint", [])
+            if already:
+                st.caption("Already promoted:")
+                st.dataframe(pd.DataFrame(already)[
+                    ["country", "archetype", "sites", "as_of", "promoted_by"]],
+                    use_container_width=True, hide_index=True)
+
     else:
-        fp = _f.get("footprint_candidates", [])
-        pr = _f.get("price_candidates", [])
-        un = _f.get("unclassified", [])
-
-        chosen = []
-        if fp:
-            st.markdown("**Site counts**")
-            for c in fp:
-                q = c["quantity"]
-                if st.checkbox(
-                        f"{q.get('country')} {q.get('label')}: {q.get('value')} "
-                        f"sites (as of {q.get('as_of') or 'undated'}) "
-                        f"- domain {c['domain_no']}",
-                        key=f"fp_{c['candidate_id']}"):
-                    chosen.append(c["candidate_id"])
-        if pr:
-            st.markdown("**Circuit prices** (promoted unapproved)")
-            for c in pr:
-                q = c["quantity"]
-                if st.checkbox(
-                        f"{q.get('country')} {q.get('label')}: {q.get('value')} "
-                        f"{q.get('unit')} (as of {q.get('as_of') or 'undated'})",
-                        key=f"pr_{c['candidate_id']}"):
-                    chosen.append(c["candidate_id"])
-        if un:
-            st.caption(f"{len(un)} finding(s) are not in a shape this model "
-                       f"consumes. They are not rejected - they stay as "
-                       f"evidence on their domain.")
-        if not (fp or pr or un):
-            st.caption("No researched quantities on this case yet.")
-
-        who = st.text_input("Promoting as (your name)", key="promote_who")
-        if st.button("Promote selected", disabled=not (chosen and who)):
-            r = api.post(
-                f"/v1/outside-in/cases/{case_id}/research-findings:promote",
-                {"candidate_ids": chosen, "promoted_by": who})
-            if "_error" in r:
-                st.error(r["_error"])
-            else:
-                st.success(
-                    f"{len(r['promoted_footprint'])} footprint row(s) promoted, "
-                    f"{len(r['proposed_prices'])} price(s) proposed unapproved.")
-                st.rerun()
-
-        already = _f.get("already_promoted_footprint", [])
-        if already:
-            st.caption("Already promoted:")
-            st.dataframe(pd.DataFrame(already)[
-                ["country", "archetype", "sites", "as_of", "promoted_by"]],
-                use_container_width=True, hide_index=True)
+        st.caption("Tick to load researched quantities for this case.")
 
 with st.expander("Show the prompt used for a domain"):
-    st.caption("Exactly what the agent is sent for one domain - system prompt, "
-               "user prompt and search-tool configuration. Nothing runs; this "
-               "builds the text and shows it. The brief inside it is the main "
-               "lever on how good a domain's research is, so it is worth "
-               "reading before concluding a domain has no public evidence.")
+    if st.checkbox("Load prompt viewer", key="load_prompt"):
+        st.caption("Exactly what the agent is sent for one domain - system prompt, "
+                   "user prompt and search-tool configuration. Nothing runs; this "
+                   "builds the text and shows it. The brief inside it is the main "
+                   "lever on how good a domain's research is, so it is worth "
+                   "reading before concluding a domain has no public evidence.")
 
-    _cat = api.get(f"/v1/outside-in/cases/{case_id}/domain-research:plan",
-                   overwrite=True)
-    _choices = ([] if "_error" in _cat else
-                sorted(_cat.get("pending", []) + _cat.get("skipped", []),
-                       key=lambda d: d["domain_no"]))
-    if not _choices:
-        st.caption("No researchable domains to show.")
-    else:
-        pick = st.selectbox(
-            "Domain", _choices,
-            format_func=lambda d: f"{d['domain_no']}. {d['domain_name']} "
-                                  f"({d['agent_id']})")
-        p = api.get(f"/v1/outside-in/cases/{case_id}/domain-research:prompt",
-                    domain_no=pick["domain_no"])
-        if "_error" in p:
-            st.error(p["_error"])
-        elif not p.get("researchable"):
-            st.info(p.get("note"))
+        _cat = api.get(f"/v1/outside-in/cases/{case_id}/domain-research:plan",
+                       overwrite=True)
+        _choices = ([] if "_error" in _cat else
+                    sorted(_cat.get("pending", []) + _cat.get("skipped", []),
+                           key=lambda d: d["domain_no"]))
+        if not _choices:
+            st.caption("No researchable domains to show.")
         else:
-            match = p.get("matches_last_run")
-            if match is True:
-                st.success("This is the exact text the last run for this domain "
-                           "used - the request hash matches what the gateway "
-                           "recorded.")
-            elif match is False:
-                st.warning("The brief or the case scope has changed since this "
-                           "domain was last researched, so the stored result "
-                           "came from different text than the one below. "
-                           "Re-run before comparing them.")
+            pick = st.selectbox(
+                "Domain", _choices,
+                format_func=lambda d: f"{d['domain_no']}. {d['domain_name']} "
+                                      f"({d['agent_id']})")
+            p = api.get(f"/v1/outside-in/cases/{case_id}/domain-research:prompt",
+                        domain_no=pick["domain_no"])
+            if "_error" in p:
+                st.error(p["_error"])
+            elif not p.get("researchable"):
+                st.info(p.get("note"))
             else:
-                st.caption("This domain has not been researched yet, so there is "
-                           "no recorded prompt to compare against.")
+                match = p.get("matches_last_run")
+                if match is True:
+                    st.success("This is the exact text the last run for this domain "
+                               "used - the request hash matches what the gateway "
+                               "recorded.")
+                elif match is False:
+                    st.warning("The brief or the case scope has changed since this "
+                               "domain was last researched, so the stored result "
+                               "came from different text than the one below. "
+                               "Re-run before comparing them.")
+                else:
+                    st.caption("This domain has not been researched yet, so there is "
+                               "no recorded prompt to compare against.")
 
-            st.markdown("**Brief for this domain**")
-            st.info(p.get("brief") or "No brief - the agent gets the bare "
-                                      "domain name, which is the condition that "
-                                      "produces vague results.")
-            st.markdown("**System prompt**")
-            st.code(p["system"], language="text")
-            st.markdown("**User prompt**")
-            st.code(p["prompt"], language="text")
-            st.markdown("**Search tool**")
-            st.json(p["tools"])
-            st.caption(f"request_hash `{p['request_hash']}` - "
-                       f"{p['hash_note']}")
+                st.markdown("**Brief for this domain**")
+                st.info(p.get("brief") or "No brief - the agent gets the bare "
+                                          "domain name, which is the condition that "
+                                          "produces vague results.")
+                st.markdown("**System prompt**")
+                st.code(p["system"], language="text")
+                st.markdown("**User prompt**")
+                st.code(p["prompt"], language="text")
+                st.markdown("**Search tool**")
+                st.json(p["tools"])
+                st.caption(f"request_hash `{p['request_hash']}` - "
+                           f"{p['hash_note']}")
 
+    else:
+        st.caption("Tick to build and show the prompt for a domain.")
 st.divider()
 current = api.get(f"/v1/outside-in/cases/{case_id}/domain-dispositions")
 catalogue = current.get("catalogue", [])

@@ -95,8 +95,16 @@ def probe_auth(health: dict) -> str | None:
     return None
 
 
-def get(path, **params):
-    return _req("GET", path, params=params or None)
+# Cheap reads. The long default exists for LIVE agent calls; applying it to a
+# page's routine reads means an unhealthy API hangs the interface for minutes
+# per call instead of saying so. Page 5 renders five reads, so at the long
+# timeout an API that is down looks like a page that is stuck.
+FAST_TIMEOUT = float(os.getenv("UI_API_FAST_TIMEOUT_SECONDS", "20"))
+
+
+def get(path, timeout=None, **params):
+    return _req("GET", path, params=params or None,
+                timeout=timeout if timeout is not None else FAST_TIMEOUT)
 
 
 def post(path, payload=None, timeout=None):
