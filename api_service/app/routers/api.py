@@ -10,8 +10,8 @@ from sqlalchemy import delete, insert, select, text, update
 from .. import config, db, jobs, migrations
 from ..domain import (confidence, coverage, dispositions, entity_resolution,
                       estimate, known_facts, policy, preflight, questionnaire,
-                      reconciliation, research, savings_advisory, simulation,
-                      stage)
+                      reconciliation, research, savings_advisory, scope,
+                      simulation, stage)
 from ..domain.money import D, Range
 from ..llm import errors, gateway, registry
 
@@ -288,6 +288,7 @@ class CaseIn(BaseModel):
     country_of_domicile: str | None = None
     group_perimeter: str | None = None
     in_scope_countries: list[str] = []
+    in_scope_region: str | None = None
     in_scope_cost_layers: list[str] = []
     in_scope_service_families: list[str] = []
     base_currency: str = "USD"
@@ -323,6 +324,65 @@ def get_case(case_id: str):
         if not row:
             raise HTTPException(404, "case not found")
         return dict(row._mapping)
+
+
+class CaseUpdate(BaseModel):
+    """Mandatory intake block, partial update.
+
+    Every field optional so a save only touches what the analyst actually
+    edited. `scope_mode` drives how `in_scope_countries` gets populated:
+    COUNTRIES uses `in_scope_countries` as typed, REGION and GLOBAL resolve
+    server-side (domain.scope) so the same literal-country-list contract
+    every downstream consumer already relies on keeps holding.
+    """
+    subject_entity_legal_name: str | None = None
+    entity_identifier: str | None = None
+    country_of_domicile: str | None = None
+    group_perimeter: str | None = None
+    scope_mode: str | None = None
+    in_scope_countries: list[str] | None = None
+    region: str | None = None
+    in_scope_cost_layers: list[str] | None = None
+    in_scope_service_families: list[str] | None = None
+    base_currency: str | None = None
+    price_year: int | None = None
+    fx_convention: str | None = None
+    analysis_horizon_years: int | None = None
+    discount_rate_set_id: str | None = None
+    engagement_purpose: str | None = None
+    client_contact_status: str | None = None
+    baseline_reference_period: str | None = None
+    excluded_entities: list[str] | None = None
+
+
+@router.put("/v1/outside-in/cases/{case_id}")
+def update_case(case_id: str, payload: CaseUpdate):
+    with S() as s:
+        _one_or_404(s, db.case, db.case.c.case_id, case_id, "case")
+        fields = payload.model_dump(exclude_unset=True, exclude={"scope_mode", "region"})
+
+        if payload.scope_mode is not None:
+            try:
+                countries, region = scope.resolve(
+                    s, scope_mode=payload.scope_mode, region=payload.region,
+                    explicit_countries=payload.in_scope_countries)
+            except ValueError as e:
+                raise HTTPException(422, str(e))
+            fields["in_scope_countries"] = countries
+            fields["in_scope_region"] = region
+
+        if not fields:
+            return dict(_one_or_404(s, db.case, db.case.c.case_id, case_id, "case")._mapping)
+
+        s.execute(update(db.case).where(db.case.c.case_id == case_id).values(**fields))
+        s.commit()
+        return dict(_one_or_404(s, db.case, db.case.c.case_id, case_id, "case")._mapping)
+
+
+@router.get("/v1/outside-in/regions")
+def list_regions():
+    return {"regions": scope.region_choices(),
+            "members": scope.REGION_COUNTRIES}
 
 
 class ResolveIn(BaseModel):

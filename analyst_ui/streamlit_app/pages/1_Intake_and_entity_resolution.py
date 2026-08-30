@@ -13,6 +13,26 @@ if not case_id:
 case = api.get(f"/v1/outside-in/cases/{case_id}")
 
 st.subheader("Mandatory intake block")
+
+# Scope mode lives outside the form: a form batches its own widgets and only
+# reruns the script on submit, so a radio inside it can't reveal or hide the
+# field beside it before the analyst has already submitted once. Outside the
+# form, picking a mode immediately swaps in the right input below.
+_scope_modes = ["COUNTRIES", "REGION", "GLOBAL"]
+_current_region = case.get("in_scope_region")
+_default_mode = "GLOBAL" if _current_region == "GLOBAL" else \
+    "REGION" if _current_region else "COUNTRIES"
+scope_mode = st.radio(
+    "In-scope geography *", _scope_modes, index=_scope_modes.index(_default_mode),
+    format_func=lambda m: {"COUNTRIES": "Specific countries", "REGION": "Region",
+                           "GLOBAL": "Global"}[m],
+    horizontal=True,
+    help="Region and Global resolve to a literal country list when you save - "
+         "only countries with an approved pricing benchmark can be priced "
+         "either way, so the resolved list is shown back to you after saving.")
+
+region_options = api.get("/v1/outside-in/regions").get("regions", [])
+
 with st.form("intake"):
     c1, c2, c3 = st.columns(3)
     name = c1.text_input("Subject entity legal name *", case.get("subject_entity_legal_name") or "",
@@ -25,8 +45,22 @@ with st.form("intake"):
     perimeter = c4.selectbox("Group perimeter *",
                              ["SINGLE_ENTITY", "GROUP_CONSOLIDATED", "NAMED_SUBSIDIARIES",
                               "NAMED_DIVISION"])
-    countries = c5.text_input("In-scope countries * (comma separated)",
-                              ",".join(case.get("in_scope_countries") or []))
+
+    countries_text, region_choice = None, None
+    if scope_mode == "COUNTRIES":
+        countries_text = c5.text_input(
+            "In-scope countries * (comma separated ISO codes)",
+            ",".join(case.get("in_scope_countries") or []))
+    elif scope_mode == "REGION":
+        _default_region = _current_region if _current_region in region_options \
+            else (region_options[0] if region_options else None)
+        region_choice = c5.selectbox(
+            "Region *", region_options,
+            index=region_options.index(_default_region) if _default_region in region_options else 0)
+    else:
+        c5.caption("Resolves to every country with an approved pricing "
+                   "benchmark, evaluated when you save.")
+
     layers = c6.multiselect("In-scope cost layers *", ["L0", "L1", "L2", "L3", "L4", "OPS"],
                             case.get("in_scope_cost_layers") or ["L0", "L2", "L4", "OPS"])
 
@@ -48,7 +82,32 @@ with st.form("intake"):
                                   "facts can be recognised and quarantined")
 
     if st.form_submit_button("Save intake block"):
-        st.info("Intake fields are validated at pre-flight. Resolve the entity below.")
+        payload = {
+            "subject_entity_legal_name": name or None,
+            "entity_identifier": ident or None,
+            "country_of_domicile": dom or None,
+            "group_perimeter": perimeter,
+            "scope_mode": scope_mode,
+            "in_scope_countries": ([c.strip().upper() for c in countries_text.split(",") if c.strip()]
+                                   if countries_text else []),
+            "region": region_choice,
+            "in_scope_cost_layers": layers,
+            "in_scope_service_families": [f.strip() for f in families.split(",") if f.strip()],
+            "base_currency": currency or None,
+            "price_year": int(price_year),
+            "analysis_horizon_years": int(horizon),
+            "discount_rate_set_id": drs or None,
+            "client_contact_status": contact,
+        }
+        r = api.put(f"/v1/outside-in/cases/{case_id}", payload)
+        if "_error" in r:
+            st.error(r["_error"])
+        else:
+            resolved = r.get("in_scope_countries") or []
+            st.success(f"Intake block saved. In-scope countries resolved to: "
+                      f"{', '.join(resolved) if resolved else '(none - no approved '
+                      f'priors matched this selection)'}")
+            st.rerun()
 
 st.divider()
 st.subheader("Subject-entity resolution")

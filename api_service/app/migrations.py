@@ -34,7 +34,7 @@ from . import db
 log = logging.getLogger("workbench.migrations")
 
 # Bump when the physical schema changes, and add a step below.
-SCHEMA_VERSION = 14
+SCHEMA_VERSION = 15
 
 VERSION_TABLE = "schema_version"
 VERSION_SCHEMA = "audit"
@@ -489,10 +489,26 @@ def _migrate_v14(conn) -> None:
     log.info("v14: %d questionnaire_item mapping column(s) added", added)
 
 
+def _migrate_v15(conn) -> None:
+    """4.12.0 -> 4.13.0: scope-descriptor column on engagement_case.
+
+    The intake page's only way to set in-scope geography was a free-text
+    country list; the estimate pricing lookup filters unit_cost_prior on
+    exactly what's in that column (routers/api.py, run_estimate), so a
+    region or "global" selection still has to resolve to literal ISO codes -
+    domain/scope.py does that at save time. in_scope_region records which
+    descriptor produced the resolved list (a region code, "GLOBAL", or NULL
+    for an explicit country list) purely so the choice can be shown back and
+    re-edited; nothing downstream reads it for pricing or coverage.
+    """
+    added = _add_column(conn, db.case, "in_scope_region")
+    log.info("v15: %s in_scope_region column added", "1" if added else "0")
+
+
 MIGRATIONS = {2: _migrate_v2, 3: _migrate_v3, 4: _migrate_v4, 5: _migrate_v5,
               6: _migrate_v6, 7: _migrate_v7, 8: _migrate_v8, 9: _migrate_v9,
               10: _migrate_v10, 11: _migrate_v11, 12: _migrate_v12,
-              13: _migrate_v13, 14: _migrate_v14}
+              13: _migrate_v13, 14: _migrate_v14, 15: _migrate_v15}
 
 
 # ---------------------------------------------------------------- version

@@ -53,6 +53,12 @@ case = Table(
     Column("included_entities", JSON), Column("excluded_entities", JSON),
     Column("in_scope_countries", JSON), Column("in_scope_cost_layers", JSON),
     Column("in_scope_service_families", JSON),
+    # Descriptor for how in_scope_countries was chosen: null for an explicit
+    # list, a region code, or "GLOBAL". Never read for pricing or coverage -
+    # in_scope_countries is still the literal list every consumer expects -
+    # this exists so the intake page can show and re-edit the analyst's
+    # actual selection instead of just the countries it expanded to.
+    Column("in_scope_region", String(32)),
     Column("base_currency", String(3)), Column("price_year", Integer),
     Column("fx_convention", String(16)),
     Column("analysis_horizon_years", Integer), Column("discount_rate_set_id", String(64)),
