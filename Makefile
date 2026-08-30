@@ -32,7 +32,7 @@ test:          ## run the integrity + DB control suites inside the api container
 	  -e WORKBENCH_ENVIRONMENT=TEST \
 	  api python -m pytest /app/tests -v
 
-seed:          ## reload reference data - DESTRUCTIVE, overwrites analyst edits
+seed:          ## top up reference data with any new/changed keys (safe: never touches existing rows unless --force)
 	docker compose exec api python -m app.seed --force
 
 pins:          ## show observed TLS pins for bootstrapping TLS_PINS

@@ -204,33 +204,69 @@ def _rows():
 
 
 def seed(force: bool = False):
-    """Idempotent per table.
+    """Idempotent per row, not per table.
 
-    An earlier revision ran unconditionally at startup with DELETE at the top, so
-    every restart destroyed governed reference data. The fix for that skipped the
-    whole seed if `threshold` held any row - which meant a table added by a later
-    build (platform_unit_cost) stayed empty forever, silently dropping about 40%
-    of modelled TCO. "Idempotent" has to mean *ensure present*, not *skip if
-    anything exists*, so each table is now checked and topped up on its own.
+    An earlier revision ran unconditionally at startup with DELETE at the top,
+    so every restart destroyed governed reference data. The fix for that
+    skipped the whole seed if `threshold` held any row - which meant a table
+    added by a later build (platform_unit_cost) stayed empty forever, silently
+    dropping about 40% of modelled TCO. That was fixed per *table*: each table
+    is checked and topped up on its own. But a table can be non-empty and
+    still be missing a row a later build added to its own THRESHOLDS/PRIORS/etc
+    list - `confidence_policy.client_confirmed_evidence_weight` did exactly
+    this: threshold already had 40-odd rows from an older seed, so "any row
+    exists" was true and the newly-added key was never inserted. The run that
+    needed it then failed closed with PolicyIncomplete, which is correct
+    behaviour for a governed value with no code default - but the fix belongs
+    here, not in an operator re-running --force and hoping nothing else in the
+    table had been hand-edited since.
+
+    So the check is now per primary key, not per table: only the rows this
+    build's builder would add that the database doesn't already have. An
+    existing row - including one a steward edited by hand - is left alone
+    whether or not --force is passed; --force only controls whether truly
+    stale rows (a key seed used to produce and no longer does) are removed.
     """
     s = SessionLocal()
     try:
-        loaded, skipped = [], []
+        loaded, topped_up, skipped, removed = [], [], [], []
         for table, builder in _rows():
             name = f"{table.schema}.{table.name}"
-            if force:
-                s.execute(delete(table))
-            elif s.execute(select(table).limit(1)).first():
-                skipped.append(name)
+            pk_cols = [c.name for c in table.primary_key.columns]
+            rows = builder()
+            wanted = {tuple(r[c] for c in pk_cols): r for r in rows}
+
+            existing_pks = {
+                tuple(row) for row in
+                s.execute(select(*[table.c[c] for c in pk_cols])).all()}
+
+            stale_pks = existing_pks - set(wanted)
+            if force and stale_pks:
+                for pk in stale_pks:
+                    cond = [table.c[c] == v for c, v in zip(pk_cols, pk)]
+                    s.execute(delete(table).where(*cond))
+                removed.append(f"{name} ({len(stale_pks)})")
+                existing_pks -= stale_pks
+
+            missing = {pk: r for pk, r in wanted.items() if pk not in existing_pks}
+            if not missing:
+                if existing_pks:
+                    skipped.append(name)
                 continue
-            s.execute(insert(table), builder())
-            loaded.append(name)
+            s.execute(insert(table), list(missing.values()))
+            (loaded if not existing_pks else topped_up).append(
+                f"{name} ({len(missing)})")
         s.commit()
         if loaded:
-            print(f"seeded: {', '.join(loaded)}")
+            print(f"seeded (new table): {', '.join(loaded)}")
+        if topped_up:
+            print(f"topped up (new keys added, existing rows untouched): "
+                 f"{', '.join(topped_up)}")
+        if removed:
+            print(f"removed stale rows (--force): {', '.join(removed)}")
         if skipped:
-            print(f"already populated, left untouched: {', '.join(skipped)}")
-        if not loaded and not skipped:
+            print(f"already complete, left untouched: {', '.join(skipped)}")
+        if not (loaded or topped_up or removed or skipped):
             print("nothing to seed")
     finally:
         s.close()
