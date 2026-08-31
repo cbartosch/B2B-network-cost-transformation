@@ -362,3 +362,62 @@ def test_the_profile_writes_nothing_to_the_case():
     from app.domain import entity_resolution
     src = inspect.getsource(entity_resolution.profile)
     assert "update(db.case)" not in src and "insert(db.case" not in src
+
+
+# ------------------------------------------------- public known-fact prefill
+def test_a_proposal_without_a_source_is_rejected():
+    """A sourceless proposal entering the register would borrow the accepting
+    analyst's authority for something nobody checked - the confidence
+    inflation 0.1B exists to prevent."""
+    from app.llm import quality, schemas
+    unsourced = schemas.PublicFactSweep.model_validate({"facts": [
+        {"fact_class": "Location footprint", "subject": "Acme DE",
+         "value_base": "340", "unit": "sites"}]})
+    assert not quality.evaluate("known_fact.prefill_public", unsourced, {}).accepted
+
+    sourced = schemas.PublicFactSweep.model_validate({"facts": [
+        {"fact_class": "Location footprint", "subject": "Acme DE",
+         "value_base": "340", "unit": "sites",
+         "sources": [{"url": "https://example.com/ar"}]}]})
+    assert quality.evaluate("known_fact.prefill_public", sourced, {}).accepted
+
+
+def test_finding_nothing_is_an_acceptable_answer_if_it_says_so():
+    """Which fact classes have no public answer is useful: it tells the
+    analyst where their own knowledge is the only route."""
+    from app.llm import quality, schemas
+    empty = schemas.PublicFactSweep.model_validate(
+        {"facts": [], "not_found": ["Public cost evidence"]})
+    assert quality.evaluate("known_fact.prefill_public", empty, {}).accepted
+
+    silent = schemas.PublicFactSweep.model_validate({"facts": []})
+    assert not quality.evaluate("known_fact.prefill_public", silent, {}).accepted
+
+
+def test_a_proposal_can_carry_a_band_so_disagreement_is_not_hidden():
+    from app.llm import schemas
+    banded = schemas.ProposedKnownFact.model_validate({
+        "fact_class": "Location footprint", "subject": "HVB",
+        "value_base": "371", "value_low": "341", "value_high": "400",
+        "unit": "sites", "sources": [{"url": "https://a"}, {"url": "https://b"}]})
+    assert banded.value_low < banded.value_base < banded.value_high
+
+
+def test_an_accepted_proposal_enters_as_a_third_party_report():
+    """Not INDUSTRY_KNOWLEDGE. The analyst is attesting that a public source
+    says this, which is a weaker and different claim from attesting that they
+    know it - and conflating them lets a search result borrow their
+    authority."""
+    import inspect
+    from app.domain import known_facts
+    src = inspect.getsource(known_facts.accept_public_proposal)
+    assert 'basis="THIRD_PARTY_REPORT"' in src
+    assert "accepting a proposal is an attribution" in src
+
+
+def test_the_sweep_covers_the_classes_that_bind_a_driver():
+    from app.domain.known_facts import BINDABLE, PREFILL_CLASSES
+    missing = sorted(set(BINDABLE) - set(PREFILL_CLASSES))
+    assert not missing, (
+        f"a fact class that binds an estimate driver is the most valuable to "
+        f"prefill and is not swept: {missing}")

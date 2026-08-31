@@ -156,6 +156,40 @@ class CorroborationResult(Strict):
     unresolved_reasons: list[str] = Field(default_factory=list)
 
 
+# ------------------------------------------------- public known-fact prefill
+class ProposedKnownFact(Strict):
+    """A fact the register could hold, found in public sources.
+
+    A proposal, not a registration. It arrives with its sources attached,
+    which is the difference that matters: an analyst asserting 400 branches
+    from memory creates an uncorroborated assertion that caps confidence under
+    0.6A, while the same figure arriving with two public sources behind it is
+    already most of the way to being evidence.
+
+    `value_low` and `value_high` exist because sources disagree, and a
+    proposal that hides the disagreement to look tidier is the failure
+    triangulation was built to stop. Where several figures were found, the
+    band is stated and every source listed.
+    """
+    fact_class: str
+    subject: str
+    value_base: Decimal | None = None
+    value_low: Decimal | None = None
+    value_high: Decimal | None = None
+    unit: str | None = None
+    currency: str | None = None
+    as_of: str | None = None
+    sources: list[SourceRef] = Field(default_factory=list)
+    confidence: str | None = None
+    note: str | None = None
+
+
+class PublicFactSweep(Strict):
+    facts: list[ProposedKnownFact] = Field(default_factory=list)
+    not_found: list[str] = Field(default_factory=list)
+    abstention_reason: AbstentionReason | None = None
+
+
 # --------------------------------------------------------- entity confirmation
 class EntityProfile(Strict):
     """A short, current profile of the subject, for a person to check against.

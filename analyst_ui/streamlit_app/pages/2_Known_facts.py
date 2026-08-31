@@ -4,13 +4,88 @@ import pandas as pd
 import streamlit as st
 import api_client as api
 
-st.title("2. User-known facts register")
+st.title("2. User- and publicly known facts register")
 st.caption("Specification 0.1B - what the team already knows, captured as an "
-           "attributable assumption. It never satisfies an evidence gate.")
+           "attributable assumption. It never satisfies an evidence gate. "
+           "Start from what is already public, then add what only you know.")
 
 case_id = st.session_state.get("case_id")
 if not case_id:
     st.warning("Select a case on the home page first."); st.stop()
+
+st.subheader("Start from what is already public")
+st.caption("A quick sweep of public sources for the facts this register "
+           "usually holds, run before the deep per-domain research. Nothing "
+           "enters the register until you accept it in your own name. An "
+           "accepted proposal arrives as THIRD_PARTY_REPORT with its sources "
+           "attached, which is a stronger starting position than the same "
+           "number typed from memory - an uncorroborated assertion caps "
+           "confidence under 0.6A, a sourced one does not.")
+
+if st.button("Look up public facts"):
+    with st.spinner("Searching public sources..."):
+        st.session_state["_prefill"] = api.post(
+            f"/v1/outside-in/cases/{case_id}/known-facts:prefill-public", {},
+            timeout=600.0)
+
+_pf = st.session_state.get("_prefill")
+if _pf and "_error" in _pf:
+    st.error(_pf["_error"])
+elif _pf:
+    _props = _pf.get("proposals") or []
+    if not _props:
+        st.info("No public figures found for the swept fact classes. Your own "
+                "knowledge is the only route for these - register it below.")
+    else:
+        st.write(f"Found {len(_props)} proposal(s) for "
+                 f"**{_pf.get('subject')}**.")
+        chosen = []
+        for prop in _props:
+            band = ""
+            if prop.get("value_low") is not None and prop.get("value_high") is not None:
+                band = f"  (sources range {prop['value_low']}-{prop['value_high']})"
+            label = (f"{prop['fact_class']} - {prop['subject']}: "
+                     f"{prop.get('value_base') if prop.get('value_base') is not None else '?'} "
+                     f"{prop.get('unit') or ''}{band}")
+            cols = st.columns([6, 1])
+            picked = cols[0].checkbox(label, key=f"pf_{prop['proposal_id']}",
+                                      value=not prop.get("already_registered"))
+            if prop.get("bindable"):
+                cols[1].caption("binds a driver")
+            if prop.get("already_registered"):
+                st.caption("   Already in the register - shown so you can see "
+                           "whether public sources agree with what is there.")
+            if prop.get("note"):
+                st.caption(f"   {prop['note']}")
+            for src in prop.get("sources") or []:
+                st.caption(f"   source: {src.get('publisher') or ''} "
+                           f"{src.get('url') or ''}"
+                           + (f" ({src['as_of']})" if src.get("as_of") else ""))
+            if picked:
+                chosen.append(prop)
+
+        who = st.text_input("Accepting as (your name)", key="pf_who")
+        if st.button("Add selected to the register",
+                     disabled=not (chosen and who.strip())):
+            r = api.post(
+                f"/v1/outside-in/cases/{case_id}/known-facts:accept-public",
+                {"proposals": chosen, "accepted_by": who})
+            if "_error" in r:
+                st.error(r["_error"])
+            else:
+                st.success(f"{len(r.get('registered') or [])} fact(s) "
+                           f"registered as {who}.")
+                for bad in r.get("refused") or []:
+                    st.warning(f"{bad['fact_class']}: {bad['reason']}")
+                st.session_state.pop("_prefill", None)
+                st.rerun()
+
+    if _pf.get("not_found"):
+        st.caption("Nothing public found for: " + ", ".join(_pf["not_found"])
+                   + ". That is a finding too - these need your knowledge or "
+                     "the client's.")
+
+st.divider()
 
 with st.form("kf"):
     st.markdown("**Register a known fact**")

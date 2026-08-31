@@ -215,6 +215,28 @@ _DEFS = [
         evaluation_suite="conformance/corroboration"),
 
     PromptDefinition(
+        prompt_id="known_fact.prefill_public",
+        prompt_version="1.0.0", agent_id="LLM-01",
+        task=("Find what public sources already state about the named entity "
+              "for each requested fact class, so an analyst starts from what "
+              "is known rather than from an empty form.\n"
+              "This is a quick sweep, not the deep per-domain research that "
+              "runs later: prefer the entity's own annual report, ESG report, "
+              "investor pages and regulator filings, and stop when you have a "
+              "figure and a source rather than exhausting every avenue.\n"
+              "Give value_base where sources agree. Where they disagree, give "
+              "value_low and value_high as well and list every source - a "
+              "proposal that hides disagreement to look tidier is worse than "
+              "one that shows it.\n"
+              "Every proposed fact needs at least one source. List the fact "
+              "classes you could find nothing for in `not_found`; that is a "
+              "useful answer and tells the analyst where their own knowledge "
+              "is the only route."),
+        output_model=schemas.PublicFactSweep,
+        tool_policy=ToolPolicy.WEB_SEARCH,
+        evaluation_suite="conformance/known_fact_prefill"),
+
+    PromptDefinition(
         prompt_id="entity.profile.summarise",
         prompt_version="1.0.0", agent_id="LLM-01",
         task=("Search for the entity named below and write a short, current "

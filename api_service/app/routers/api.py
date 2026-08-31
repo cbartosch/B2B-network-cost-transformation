@@ -584,6 +584,55 @@ class VoidFactIn(BaseModel):
     voided_by: str = "analyst"
 
 
+class PrefillIn(BaseModel):
+    fact_classes: list[str] | None = None
+    provider: str = "anthropic"
+
+
+@router.post("/v1/outside-in/cases/{case_id}/known-facts:prefill-public")
+def prefill_known_facts(case_id: str, payload: PrefillIn):
+    """Propose register entries from public sources, before the deep search.
+
+    Proposals only; nothing enters the register without a named acceptance.
+    """
+    with S() as s:
+        _one_or_404(s, db.case, db.case.c.case_id, case_id, "case")
+        try:
+            return known_facts.prefill_from_public(
+                s, case_id=case_id, fact_classes=payload.fact_classes,
+                provider=payload.provider)
+        except ValueError as exc:
+            raise HTTPException(422, str(exc))
+        except errors.ProviderUnavailable as exc:
+            raise HTTPException(503, f"LIVE run failed closed: {exc}")
+        except (errors.LivenessProofFailed,
+                errors.StructuredOutputInvalid) as exc:
+            raise HTTPException(502, str(exc))
+
+
+class AcceptProposalIn(BaseModel):
+    proposals: list[dict]
+    accepted_by: str
+
+
+@router.post("/v1/outside-in/cases/{case_id}/known-facts:accept-public")
+def accept_public_facts(case_id: str, payload: AcceptProposalIn):
+    """Register accepted proposals in the accepting person's name."""
+    with S() as s:
+        _one_or_404(s, db.case, db.case.c.case_id, case_id, "case")
+        registered, refused = [], []
+        for proposal in payload.proposals:
+            try:
+                registered.append(known_facts.accept_public_proposal(
+                    s, case_id=case_id, proposal=proposal,
+                    accepted_by=payload.accepted_by))
+            except ValueError as exc:
+                refused.append({"fact_class": proposal.get("fact_class"),
+                                "reason": str(exc)})
+        return {"registered": registered, "refused": refused,
+                "accepted_by": payload.accepted_by}
+
+
 @router.post("/v1/outside-in/known-facts/{fact_id}:void")
 def void_known_fact(fact_id: str, payload: VoidFactIn):
     """Remove a fact that carries no subject or no value.

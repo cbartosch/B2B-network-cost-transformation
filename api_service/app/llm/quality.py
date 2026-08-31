@@ -235,6 +235,35 @@ def entity_profile(result, context) -> Verdict:
     return Verdict(not reasons, reasons, detail)
 
 
+def public_fact_prefill(result, context) -> Verdict:
+    """Every proposal must carry a source and a usable value.
+
+    A sourceless proposal is a recollection wearing the shape of a finding,
+    and it would enter the register as though it had been checked - which is
+    precisely the confidence inflation the register exists to prevent.
+    """
+    reasons, detail = [], []
+    for fact in result.facts:
+        if not fact.sources:
+            reasons.append(Rejection.CLAIMED_FINDING_WITHOUT_SOURCE)
+            detail.append(f"{fact.fact_class!r} proposed with no source")
+            break
+        if fact.value_base is None and fact.value_low is None:
+            reasons.append(Rejection.EMPTY_RESULT_WITHOUT_ABSTENTION)
+            detail.append(f"{fact.fact_class!r} proposed with no value")
+            break
+        if not (fact.subject or "").strip():
+            reasons.append(Rejection.EMPTY_RESULT_WITHOUT_ABSTENTION)
+            detail.append(f"{fact.fact_class!r} proposed with no subject")
+            break
+    if not result.facts and not result.not_found and \
+            result.abstention_reason is None:
+        reasons.append(Rejection.EMPTY_RESULT_WITHOUT_ABSTENTION)
+        detail.append("nothing found, nothing listed as not found, and no "
+                      "abstention")
+    return Verdict(not reasons, reasons, detail)
+
+
 def accept_all(result, context) -> Verdict:
     """For services whose whole output is already constrained by the schema.
 
@@ -250,6 +279,7 @@ RULES = {
     "known_fact.corroborate": corroboration,
     "entity.resolve.candidates": entity_candidates,
     "entity.profile.summarise": entity_profile,
+    "known_fact.prefill_public": public_fact_prefill,
     "llm09.benchmark.extract": benchmark_observations,
     "llm02.questionnaire.prefill": questionnaire_prefill,
     # Scenario selection is a two-field enum-constrained choice, and the
