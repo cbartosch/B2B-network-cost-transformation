@@ -517,3 +517,18 @@ def test_the_research_log_survives_the_refresh():
     assert 'st.session_state.get("_research_log")' in text, (
         "the log has to be read back after the rerun or it is written and lost")
     assert "Clear this log" in text
+
+
+def test_the_client_surfaces_the_exception_detail_the_api_sends():
+    """The API's 500 handler reports the exception type, the message and the
+    last frames outside PRODUCTION. The client read only `detail`, which the
+    handler leaves as the bare "Internal Server Error" - so the diagnosis was
+    sent on every failure and thrown away here.
+
+    Several rounds went into narrowing a 500 by inference while its cause sat
+    in a field nobody read."""
+    client = next(p for p in PAGES if p.name == "api_client.py").read_text()
+    assert 'body.get("error_type")' in client
+    assert 'body.get("where")' in client
+    assert '"_error_type"' in client, (
+        "callers should be able to branch on the type, not only print it")

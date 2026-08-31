@@ -142,3 +142,66 @@ def test_promotion_will_not_price_a_string():
     promotion = (APP / "domain" / "promotion.py").read_text()
     assert "triangulate.parse_value" in promotion
     assert "stated in words" in promotion
+
+
+def test_no_schema_object_is_treated_as_a_domain_result():
+    """The defect that killed seven of seventeen domains: structured_call bound
+    to `result`, rebinding the DomainResult the function was filling, so every
+    later field write hit a model that forbids extra fields.
+
+    Checked structurally rather than by name, so renaming the variable back
+    would fail this."""
+    import ast
+
+    src = (APP / "domain" / "research.py").read_text()
+    fields = {"agent_run_id", "disposition", "reason", "failed",
+              "failure_detail", "budget_note", "verified_sources",
+              "queries_used", "captures_used", "triangulated", "qualitative"}
+    offenders = []
+    for fn in ast.walk(ast.parse(src)):
+        if not isinstance(fn, ast.FunctionDef):
+            continue
+        bound = set()
+        for node in ast.walk(fn):
+            if isinstance(node, ast.Assign) and isinstance(node.value, ast.Call):
+                func = node.value.func
+                if getattr(func, "attr", getattr(func, "id", "")) == "structured_call":
+                    for target in node.targets:
+                        elts = target.elts if isinstance(target, ast.Tuple) else [target]
+                        for elt in elts[:1]:
+                            if isinstance(elt, ast.Name):
+                                bound.add(elt.id)
+        for node in ast.walk(fn):
+            if (isinstance(node, ast.Attribute)
+                    and isinstance(node.value, ast.Name)
+                    and node.value.id in bound and node.attr in fields):
+                offenders.append(f"{fn.name} line {node.lineno}: "
+                                 f"{node.value.id}.{node.attr}")
+    assert not offenders, offenders
+
+
+def test_every_domain_result_attribute_is_in_its_slots():
+    """__slots__ makes a typo an AttributeError rather than a silent new
+    attribute, which is the point - but only if the two stay in step."""
+    import ast
+
+    src = (APP / "domain" / "research.py").read_text()
+    for cls in ast.walk(ast.parse(src)):
+        if not (isinstance(cls, ast.ClassDef) and cls.name == "DomainResult"):
+            continue
+        slots, assigned = set(), set()
+        for node in ast.walk(cls):
+            if isinstance(node, ast.Assign):
+                for target in node.targets:
+                    if isinstance(target, ast.Name) and target.id == "__slots__":
+                        slots = {e.value for e in node.value.elts}
+                    if (isinstance(target, ast.Attribute)
+                            and getattr(target.value, "id", "") == "self"):
+                        assigned.add(target.attr)
+            if (isinstance(node, ast.AnnAssign)
+                    and isinstance(node.target, ast.Attribute)
+                    and getattr(node.target.value, "id", "") == "self"):
+                assigned.add(node.target.attr)
+        assert not assigned - slots, f"missing from __slots__: {sorted(assigned - slots)}"
+        return
+    pytest.fail("DomainResult not found")

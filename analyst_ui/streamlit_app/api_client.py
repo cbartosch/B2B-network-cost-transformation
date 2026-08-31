@@ -62,10 +62,28 @@ def _req(method: str, path: str, **kw):
             "_status": 401}
     if r.status_code >= 400:
         try:
-            detail = r.json().get("detail", r.text)
+            body = r.json()
         except Exception:                        # noqa: BLE001
-            detail = r.text
-        return {"_error": detail, "_status": r.status_code}
+            return {"_error": r.text, "_status": r.status_code}
+
+        detail = body.get("detail", r.text)
+        # The API's 500 handler already reports the exception type, the message
+        # and the last frames outside PRODUCTION - and this read only `detail`,
+        # which the handler leaves as the bare "Internal Server Error". So the
+        # diagnosis was sent on every failure and discarded here, and several
+        # rounds went into narrowing a 500 by inference while its cause sat in
+        # a field nobody read.
+        if body.get("error_type") or body.get("error"):
+            parts = [p for p in (body.get("error_type"), body.get("error"))
+                     if p]
+            detail = f"{detail}: " + " - ".join(str(p) for p in parts)
+            where = body.get("where") or []
+            if where:
+                detail += " | at " + " <- ".join(
+                    str(w).strip() for w in list(where)[-3:])
+        return {"_error": detail, "_status": r.status_code,
+                "_error_type": body.get("error_type"),
+                "_where": body.get("where")}
     return r.json()
 
 
