@@ -52,6 +52,8 @@ st.divider()
 
 # ---------------------------------------------------------------- case picker
 st.subheader("Case")
+api.show_flash()
+
 cases = api.get("/v1/outside-in/cases").get("cases", [])
 case_id = None
 if cases:
@@ -126,7 +128,7 @@ with st.expander("Create a new case", expanded=not cases):
                     st.error(r["_error"])
                 else:
                     st.session_state["case_id"] = r["case_id"]
-                    st.success(f"Case created: {r['case_id']}")
+                    api.flash(f"Case created: {r['case_id']}")
                     st.rerun()
 
 # ---------------------------------------------------------------- progress

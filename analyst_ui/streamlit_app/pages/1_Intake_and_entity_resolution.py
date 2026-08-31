@@ -12,6 +12,8 @@ if not case_id:
 
 case = api.get(f"/v1/outside-in/cases/{case_id}")
 
+api.show_flash()
+
 st.subheader("Mandatory intake block")
 
 is_locked = bool(case.get("resolved_entity_id"))
@@ -199,7 +201,7 @@ elif _prof:
                 if "_error" in r:
                     st.error(r["_error"])
                 else:
-                    st.success(f"{len(merged)} alias(es) recorded.")
+                    api.flash(f"{len(merged)} alias(es) recorded.")
                     st.rerun()
 
         if _prof.get("identifiers"):
@@ -265,7 +267,8 @@ if cands:
                 if "_error" in r:
                     st.error(r["_error"])
                 else:
-                    st.success(f"Confirmed {r['legal_name']} - perimeter v{r['perimeter_version']}")
+                    api.flash(f"Confirmed {r['legal_name']} - perimeter "
+                              f"v{r['perimeter_version']}")
                     st.rerun()
 
 if case.get("resolved_entity_id"):

@@ -120,3 +120,25 @@ def delete(path, **params):
 
 def put(path, payload=None):
     return _req("PUT", path, json=payload or [])
+
+
+# --------------------------------------------------------------- flash messages
+def flash(message: str, key: str = "_flash") -> None:
+    """Record a confirmation that must survive an st.rerun().
+
+    st.success() immediately followed by st.rerun() shows nothing: the message
+    is written and the script restarts before the browser renders it. Every
+    place that confirmed an action and then reran was therefore silent, and a
+    successful registration looked exactly like a form that had cleared itself
+    for no reason.
+    """
+    import streamlit as st
+    st.session_state[key] = message
+
+
+def show_flash(key: str = "_flash") -> None:
+    """Render and clear a pending confirmation. Call once, near the top."""
+    import streamlit as st
+    message = st.session_state.pop(key, None)
+    if message:
+        st.success(message)

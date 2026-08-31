@@ -276,3 +276,46 @@ def test_the_simulation_page_resolves_the_footprint_server_side():
     assert "/footprint\")" in text
     for gone in ("elif _saved:", "elif _last:", "/simulations\")"):
         assert gone not in text, f"{gone} is precedence logic that moved server-side"
+
+
+def test_a_register_that_fails_to_load_is_not_reported_as_empty():
+    """The reported symptom: "info entered under known facts is lost, after
+    returning to the page all is empty."
+
+    The list read `.get("known_facts", [])` with no error handling, so a failed
+    load rendered "No known facts registered" - identical to an empty
+    register. Re-entering the facts is the natural response, and it produces
+    duplicates under slightly different subjects that never corroborate each
+    other."""
+    page = next(p for p in PAGES if p.name.startswith("2_"))
+    text = page.read_text()
+    assert "Could not load the register" in text
+    assert "load failure, not an empty register" in text
+    assert "do not re-enter facts" in text
+
+
+def test_the_empty_register_message_names_the_case():
+    """Facts belong to one case. A message that does not say which invites the
+    conclusion that they were lost."""
+    page = next(p for p in PAGES if p.name.startswith("2_"))
+    assert "belong to one case" in page.read_text()
+
+
+@pytest.mark.parametrize("page", PAGES, ids=lambda p: p.name)
+def test_no_confirmation_is_swallowed_by_a_rerun(page):
+    """st.success() immediately followed by st.rerun() shows nothing: the
+    message is written and the script restarts before the browser renders it.
+    Every place that confirmed an action and then reran was silent, so a
+    successful registration looked like a form that had cleared itself for no
+    reason. api.flash() carries the message across."""
+    lines = page.read_text().splitlines()
+    offenders = []
+    for i, line in enumerate(lines):
+        if "st.success(" not in line:
+            continue
+        window = "\n".join(lines[i:i + 4])
+        if "st.rerun()" in window:
+            offenders.append(f"{page.name}:{i + 1}")
+    assert not offenders, (
+        f"confirmation discarded by an immediate rerun at {offenders}; use "
+        f"api.flash() instead")

@@ -24,6 +24,8 @@ _entity = "" if "_error" in _case else (
 _aliases = [] if "_error" in _case else list(_case.get("entity_aliases") or [])
 _countries = [] if "_error" in _case else list(_case.get("in_scope_countries") or [])
 
+api.show_flash()
+
 st.subheader("Start from what is already public")
 st.caption("A quick sweep of public sources for the facts this register "
            "usually holds, run before the deep per-domain research. Nothing "
@@ -172,16 +174,42 @@ with st.form("kf"):
             if "_error" in r:
                 st.error(r["_error"])
             else:
+                # Carried across the rerun. st.success followed immediately by
+                # st.rerun() showed nothing at all: the message was written and
+                # the script restarted before the browser saw it, so a
+                # successful registration looked exactly like a form that had
+                # silently cleared itself.
+                _msg = (f"Registered {fact_class} for {subject} as "
+                        f"{r.get('evidence_origin')} "
+                        f"(id {str(r.get('known_fact_id'))[:8]}).")
                 if r.get("range_widened_from_point"):
-                    st.info("Point value widened to a range; the widening is shown in the record.")
-                st.success(f"Registered as {r['evidence_origin']}")
+                    _msg += (" The point value was widened to a range; the "
+                             "widening is recorded.")
+                api.flash(_msg)
                 st.rerun()
 
 st.divider()
-facts = api.get(f"/v1/outside-in/cases/{case_id}/known-facts").get("known_facts", [])
-if not facts:
-    st.info("No known facts registered. This is fine - the V0 will run without them.")
+_kf_list = api.get(f"/v1/outside-in/cases/{case_id}/known-facts")
+if "_error" in _kf_list:
+    # Silence here is the worst outcome: a register that failed to load looked
+    # exactly like an empty one, so facts that were saved appeared to have been
+    # lost, and re-entering them was the natural response. Same defect as the
+    # footprint load on page 4, left in place here.
+    facts = []
+    st.error(f"**Could not load the register.** {_kf_list['_error']}")
+    st.warning("This is a load failure, not an empty register. Nothing has "
+               "been lost - do not re-enter facts until this is resolved, or "
+               "you will end up with duplicates under slightly different "
+               "subjects, which never corroborate each other.")
 else:
+    facts = _kf_list.get("known_facts", [])
+
+if "_error" not in _kf_list and not facts:
+    st.info(f"No known facts registered on this case "
+            f"({case_id[:8]}). This is fine - the V0 will run without them. "
+            f"Note that facts belong to one case: anything registered on a "
+            f"different case does not appear here.")
+elif facts:
     for f in facts:
         state = f["corroboration_state"]
         icon = {"CORROBORATED": "[+]", "CONTRADICTED": "[!]",
