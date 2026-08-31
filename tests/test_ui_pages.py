@@ -229,3 +229,40 @@ def test_the_known_fact_subject_is_prefilled_from_the_case():
     assert "Also on this case" in text, (
         "the aliases and in-scope countries are the other legitimate subjects; "
         "showing them is cheaper than the analyst guessing the house style")
+
+
+def test_the_register_panel_sits_above_the_footprint_editor():
+    """Its purpose is to fill the editor, so below it is the one place it
+    cannot do that - it rendered off-screen under the table."""
+    page = next(p for p in PAGES if p.name.startswith("4_"))
+    text = page.read_text()
+    assert text.index("/known-facts") < text.index("fp = st.data_editor"), (
+        "the register panel must render before the editor it populates")
+
+
+def test_running_a_footprint_also_saves_it():
+    """Two separate acts meant an analyst could edit, run, move to the next
+    page and lose the edit: it lived in the run's parameters and nowhere the
+    case could see. Running a footprint is a clear enough statement that you
+    meant it."""
+    page = next(p for p in PAGES if p.name.startswith("4_"))
+    text = page.read_text()
+    run_at = text.index('if _run_col.button("Run simulation"')
+    assert '"analyst_footprint": footprint' in text[run_at:run_at + 1200]
+
+
+def test_an_unsaved_edit_warns_before_the_page_is_left():
+    """Streamlit discards an edited table on page switch, so silence here
+    loses work with no trace."""
+    page = next(p for p in PAGES if p.name.startswith("4_"))
+    assert "Unsaved changes" in page.read_text()
+
+
+def test_disagreeing_registered_counts_are_flagged():
+    """Two Location footprint facts filed under different names for the same
+    company are two facts about one thing, and neither will corroborate the
+    other - the register matches on subject."""
+    page = next(p for p in PAGES if p.name.startswith("4_"))
+    text = page.read_text()
+    assert "registered site counts disagree" in text
+    assert "matches on subject" in text
