@@ -366,7 +366,15 @@ def promote(session, *, case_id: str, candidate_ids: list[str],
 
 
 def evidenced_footprint(session, case_id: str) -> list[dict]:
-    """The promoted footprint, in the shape simulations:run expects."""
+    """The promoted footprint, with the provenance behind each count.
+
+    Returns the band and source count as well as the figure. Those columns
+    were added in v22 and this function did not select them, so the interface
+    could only ever show a bare number - and a bare number cannot say whether
+    three sources agreed on it or one source stated it, which is the
+    difference between a count worth building an estimate on and one worth
+    checking first.
+    """
     rows = session.execute(
         select(db.evidenced_footprint)
         .where(db.evidenced_footprint.c.case_id == case_id)
@@ -374,4 +382,7 @@ def evidenced_footprint(session, case_id: str) -> list[dict]:
                   db.evidenced_footprint.c.archetype)).all()
     return [{"country": r.country, "archetype": r.archetype, "sites": r.sites,
              "as_of": r.as_of, "agent_run_id": r.agent_run_id,
-             "promoted_by": r.promoted_by} for r in rows]
+             "promoted_by": r.promoted_by, "domain_no": r.domain_no,
+             "band_low": r.band_low, "band_high": r.band_high,
+             "source_count": r.source_count,
+             "source_urls": r.source_urls or []} for r in rows]

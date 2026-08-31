@@ -166,3 +166,23 @@ def test_promotion_records_the_comparison_where_a_steward_will_see_it(session):
         db.unit_cost_prior.c.id == "DE-DIA-researched")).one()
     assert row.approved is False
     assert "OUTSIDE_BAND" in row.source_note
+
+
+def test_the_evidenced_footprint_carries_its_provenance(session):
+    """The band and source count were added to the table in v22 and the
+    accessor never selected them, so the interface could only show a bare
+    number. A bare number cannot say whether three sources agreed on it or
+    one source stated it - the difference between a count worth building an
+    estimate on and one worth checking first."""
+    q = {"label": "STORE", "value": 371, "unit": "sites", "country": "DE",
+         "as_of": "2023"}
+    case_id, run_id = _case_with_finding(session, q)
+    cid = promotion.candidates(session, case_id)["footprint_candidates"][0]["candidate_id"]
+    promotion.promote(session, case_id=case_id, candidate_ids=[cid],
+                      promoted_by="Priya Raman")
+
+    row = promotion.evidenced_footprint(session, case_id)[0]
+    for field in ("band_low", "band_high", "source_count", "domain_no",
+                  "source_urls", "agent_run_id", "as_of", "promoted_by"):
+        assert field in row, f"{field} is not returned to the interface"
+    assert row["agent_run_id"] == run_id

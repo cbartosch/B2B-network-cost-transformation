@@ -30,35 +30,71 @@ st.subheader("Footprint")
 # changes nothing" took in practice.
 _ev = api.get(f"/v1/outside-in/cases/{case_id}/evidenced-footprint")
 _rows = [] if "_error" in _ev else _ev.get("footprint", [])
+
+st.markdown("**Known sites by type**")
 if _rows:
-    st.success(f"Starting from {len(_rows)} promoted, evidenced row(s). "
-               f"Edit freely - what you run is what is in the table below.")
-    with st.expander("Where these came from"):
-        st.dataframe(pd.DataFrame(_rows)[
-            ["country", "archetype", "sites", "as_of", "promoted_by"]],
-            use_container_width=True, hide_index=True)
+    _total = sum(int(r.get("sites") or 0) for r in _rows)
+    st.success(f"{_total:,} site(s) across {len({r['country'] for r in _rows})} "
+               f"country(ies), promoted from research. Each row below shows "
+               f"what it rests on.")
+    st.dataframe(pd.DataFrame([{
+        "country": r["country"],
+        "type": r["archetype"],
+        "sites": r["sites"],
+        "sources said": (f"{r['band_low']}-{r['band_high']}"
+                         if r.get("band_low") is not None
+                         and r.get("band_high") is not None
+                         and r["band_low"] != r["band_high"] else ""),
+        "sources": r.get("source_count") or "",
+        "as of": r.get("as_of") or "",
+        "promoted by": r.get("promoted_by") or "",
+    } for r in _rows]), use_container_width=True, hide_index=True)
+
+    _by_type = {}
+    for r in _rows:
+        _by_type[r["archetype"]] = _by_type.get(r["archetype"], 0) + int(r.get("sites") or 0)
+    st.caption("By type: " + ", ".join(f"{k} {v:,}" for k, v in sorted(_by_type.items()))
+               + ". A row with one source is a single claim, not a corroborated "
+                 "count - the sources column is worth reading before the number is.")
+
+    with st.expander("Sources behind these counts"):
+        for r in _rows:
+            st.markdown(f"**{r['country']} {r['archetype']}: {r['sites']}**"
+                        + (f"  (domain {r['domain_no']})" if r.get("domain_no") else ""))
+            for url in r.get("source_urls") or []:
+                st.caption(f"   {url}")
+            if not r.get("source_urls"):
+                st.caption("   no source URLs recorded on this row")
+else:
+    st.info(
+        "**No site list for this company yet.** The simulation does not look "
+        "sites up - it takes the counts it is given and generates a circuit "
+        "topology from them, so the number has to come from somewhere first. "
+        "There are three routes, in descending order of what they are worth:\n\n"
+        "1. **Research domain 2** on page 5, then promote the counts. They "
+        "arrive here with their sources, their band and their as-of date, and "
+        "the estimate treats them as public evidence.\n"
+        "2. **Register what you know** on page 2 as a known fact, and "
+        "corroborate it. An uncorroborated assertion caps confidence at 0.50 "
+        "under 0.6A; a corroborated one does not.\n"
+        "3. **Type them below.** They enter as ANALYST_ENTERED_SCOPE and are "
+        "discounted accordingly - fine for a first pass, and visible as such "
+        "in the confidence breakdown.")
+
+st.caption("Whatever is in the table below is what runs. Edit freely.")
+
+# The editor opens on the strongest thing available: promoted evidence, then
+# the case's own in-scope countries at one site each, then illustrative rows
+# only when the case has no scope at all.
+if _rows:
     default = pd.DataFrame([{"country": r["country"],
                              "archetype": r["archetype"],
                              "sites": r["sites"]} for r in _rows])
 else:
-    # The case already declares which countries are in scope - the intake page
-    # writes them, and Region/Global resolve to a literal list there. Opening
-    # on four hardcoded demo rows meant the editor showed GB, DE, US, GB while
-    # the case might be scoped to five other countries, and a country the
-    # analyst never removed simply never appeared. Scope belongs to the case,
-    # not to this page.
     _case = api.get(f"/v1/outside-in/cases/{case_id}")
     _countries = ([] if "_error" in _case
                   else list(_case.get("in_scope_countries") or []))
     if _countries:
-        st.caption(
-            f"No promoted research findings yet, so this opens on the "
-            f"{len(_countries)} in-scope country(ies) from intake with one "
-            f"site each - a placeholder, so the page is runnable, not an "
-            f"estimate of anything. Replace them with real counts, add "
-            f"archetype rows as needed, or research domain 2 and promote its "
-            f"counts on page 5 to start from evidence. Whatever you type here "
-            f"enters as ANALYST_ENTERED_SCOPE and is discounted accordingly.")
         # One, not zero. Zero was the honest default and made the page
         # unusable: the site-count guard refuses an all-zero footprint, so
         # nothing could be run without typing first. One is small enough that
