@@ -319,3 +319,51 @@ with st.expander("Confidence detail and drivers"):
     st.json(conf)
 with st.expander("Coverage detail"):
     st.json(cov)
+
+# --------------------------------------------------------------- refinement
+st.divider()
+st.subheader("How this estimate has changed")
+st.caption("The workflow is meant to produce an estimate that improves as "
+           "evidence arrives. Confidence derives from priced coverage, the "
+           "origin mix and domain completeness, so it does - but every "
+           "snapshot used to be an island, and a re-run after promoting three "
+           "sources gave a different number with no account of why.")
+
+_prog = api.get(f"/v1/outside-in/cases/{case_id}/estimates:progression")
+if "_error" in _prog:
+    st.error(_prog["_error"])
+elif len(_prog.get("snapshots") or []) < 2:
+    st.info("One estimate so far, so there is nothing to compare it with. Run "
+            "V0 again after promoting research or corroborating a fact and the "
+            "movement will be attributed here.")
+else:
+    st.dataframe(pd.DataFrame([{
+        "created": s_["created_at"][:19].replace("T", " "),
+        "method": s_["method"], "status": s_["v0_status"],
+        "confidence": s_["confidence"], "band": s_["band"],
+        "coverage": s_["coverage"],
+    } for s_ in _prog["snapshots"]]), use_container_width=True,
+        hide_index=True)
+    st.caption(f"{_prog['refinements']} of {len(_prog['steps'])} step(s) are "
+               f"refinements - a figure moved and an improvement in the "
+               f"evidence explains it.")
+
+    for step in reversed(_prog["steps"]):
+        _icon = "improved" if step["is_refinement"] else "changed"
+        with st.expander(f"{step['to_created'][:19].replace('T', ' ')} - "
+                         f"{_icon}", expanded=step is _prog["steps"][-1]):
+            st.write(step["summary"])
+            if step["moved"]:
+                st.dataframe(pd.DataFrame([{
+                    "field": m["field"], "from": m["from"], "to": m["to"],
+                    "change": (f"{m['change_pct']:+.1%}"
+                               if m.get("change_pct") is not None else ""),
+                } for m in step["moved"]]), use_container_width=True,
+                    hide_index=True)
+            for cause in step["causes"]:
+                (st.success if cause.get("improves") else st.info)(
+                    cause["statement"])
+            for gap in step["unexplained"]:
+                st.warning(gap)
+
+st.caption(_prog.get("note", "") if "_error" not in _prog else "")

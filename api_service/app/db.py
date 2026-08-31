@@ -279,6 +279,11 @@ estimate_snapshot = Table(
     Column("gross_run_rate_savings", JSON),
     Column("confidence", JSON), Column("coverage", JSON),
     Column("simulated_share", Numeric(4, 3)), Column("asserted_share", Numeric(4, 3)),
+    # What this estimate improves on. Every snapshot was an island: no link to
+    # the one before it, so a re-run after promoting three sources produced a
+    # different number with no account of why - indistinguishable from a number
+    # that changed for no reason.
+    Column("supersedes_snapshot_id", String(36), index=True),
     Column("pins", JSON), Column("levers", JSON),
     schema="analysis",
 )

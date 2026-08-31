@@ -9,6 +9,7 @@ from sqlalchemy import delete, insert, select, text, update
 
 from .. import config, db, jobs, migrations
 from ..domain import (anchor_estimate, benchmark_ingest, case_admin,
+                      refinement,
                       case_export,
                       footprint as footprint_resolver,
                       confidence, coverage,
@@ -1583,6 +1584,11 @@ def _run_anchor_estimate(s, *, case_id, case_row, payload,
     snap_id = str(uuid.uuid4())
     s.execute(insert(db.estimate_snapshot).values(
         estimate_snapshot_id=snap_id, case_id=case_id, version_label="V0",
+        # What this improves on: the most recent snapshot for the case. Set at
+        # write time rather than inferred later, because two snapshots minutes
+        # apart may be a refinement or two unrelated attempts and only the
+        # writer knows which.
+        supersedes_snapshot_id=_latest_snapshot_id(s, case_id),
         v0_status=cov["status"],
         current_tco={**cur["by_layer"], "total": cur["total"]},
         target_tco={k: v["target_tco"] for k, v in scen.items()},
@@ -1595,6 +1601,10 @@ def _run_anchor_estimate(s, *, case_id, case_row, payload,
                  "scenario": l["scenario"], "cost_layers": l["cost_layers"],
                  "earliest_supported_stage": l["earliest_supported_stage"]} for l in lv],
         pins={"calculation_version": config.CALCULATION_VERSION,
+              # Pinned because refinement attribution reads it: a movement in
+              # confidence is explained by the origin mix having shifted, and
+              # that shift is only visible if the mix was recorded.
+              "origin_breakdown": cur["origin_breakdown"],
               "estimate_method": anchor_estimate.METHOD_ANCHOR,
               "anchor_basis": basis,
               "resolved_entity_id": case_row.resolved_entity_id,
@@ -1854,6 +1864,7 @@ def run_estimate(case_id: str, payload: EstimateIn):
         snap_id = str(uuid.uuid4())
         s.execute(insert(db.estimate_snapshot).values(
             estimate_snapshot_id=snap_id, case_id=case_id, version_label="V0",
+            supersedes_snapshot_id=_latest_snapshot_id(s, case_id),
             v0_status=cov["status"],
             current_tco={**cur["by_layer"], "total": cur["total"]},
             target_tco={k: v["target_tco"] for k, v in scen.items()},
@@ -1903,6 +1914,32 @@ def run_estimate(case_id: str, payload: EstimateIn):
                 "bandwidth_mbps_total": sim.output.get("bandwidth_mbps_total", 0),
                 "bandwidth_is_priced": False,
                 "uncorroborated_known_facts": known_facts.uncorroborated_count(s, case_id)}
+
+
+def _latest_snapshot_id(session, case_id: str) -> str | None:
+    """The most recent snapshot for this case, or None for the first."""
+    row = session.execute(
+        select(db.estimate_snapshot.c.estimate_snapshot_id)
+        .where(db.estimate_snapshot.c.case_id == case_id)
+        .order_by(db.estimate_snapshot.c.created_at.desc()).limit(1)).first()
+    return row[0] if row else None
+
+
+@router.get("/v1/outside-in/cases/{case_id}/estimates:progression")
+def estimate_progression(case_id: str):
+    """How this estimate has changed, and what moved it.
+
+    The workflow is meant to produce an estimate that improves as evidence
+    arrives, and the mechanism does that - confidence derives from priced
+    coverage, the origin mix and domain completeness. What was missing was any
+    way to see it: every snapshot was an island, so a re-run after promoting
+    three sources produced a different number with no account of why.
+    """
+    with S() as s:
+        _one_or_404(s, db.case, db.case.c.case_id, case_id, "case")
+        rows = s.execute(select(db.estimate_snapshot).where(
+            db.estimate_snapshot.c.case_id == case_id)).all()
+        return refinement.progression([dict(r._mapping) for r in rows])
 
 
 @router.get("/v1/outside-in/cases/{case_id}/estimates")
