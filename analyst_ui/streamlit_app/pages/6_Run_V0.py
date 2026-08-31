@@ -28,17 +28,63 @@ sim_id = sims[[f"{s['simulation_run_id'][:8]} - seed {s['seed']} x{s['ensemble_s
 
 case = api.get(f"/v1/outside-in/cases/{case_id}")
 countries = case.get("in_scope_countries") or ["GB", "DE", "US"]
-st.subheader("Declared spend by country (cross-check only)")
-st.caption("The coverage denominator is derived from the simulated scope and the approved "
-           "priors. Anything entered here is reconciled against that and reported - it "
-           "cannot move the gate.")
+st.subheader("Declared spend by country (optional cross-check)")
+st.caption("Only fill this in where the client has actually told you what they "
+           "spend. It is reconciled against the derived total and reported; it "
+           "cannot move the coverage gate. Leave it empty if you do not have "
+           "the figures - an invented number produces an invented divergence.")
+
+# Empty, not one million per country. The table used to open pre-filled with
+# 1,000,000 for every in-scope country, which is not a placeholder anyone reads
+# as one: it is the right order of magnitude for a real telecom spend, it feeds
+# the declared-spend crosscheck, and it therefore produced a divergence figure
+# computed against a number nobody supplied.
+_saved_spend = case.get("declared_spend_by_country") or {}
 spend_df = st.data_editor(
-    pd.DataFrame([{"country": c, "estimated_annual_spend": 1_000_000} for c in countries]),
-    num_rows="dynamic", use_container_width=True)
+    pd.DataFrame(
+        [{"country": c, "estimated_annual_spend": v}
+         for c, v in sorted(_saved_spend.items())]
+        or [{"country": "", "estimated_annual_spend": None}]),
+    num_rows="dynamic", use_container_width=True,
+    column_config={"estimated_annual_spend": st.column_config.NumberColumn(
+        "estimated_annual_spend", help="Annual spend as the client stated it. "
+                                       "Leave blank where they have not.")})
 
 c1, c2 = st.columns(2)
-users = c1.number_input("Remote/office users", 100, 500_000, 5_000)
-ops = c2.number_input("Ops cost per site per year", 0.0, 100_000.0, 900.0)
+# Persisted on the case rather than defaulted every visit. 5,000 users and 900
+# per site were invented figures that went straight into the baseline, and they
+# had to be retyped on every visit - so whatever was there last time was
+# whatever the defaults happened to be.
+users = c1.number_input(
+    "Remote/office users", 0, 500_000,
+    int(case.get("declared_users") or 0),
+    help="Zero until you have a figure. It drives the SSE licence line "
+         "directly, so a guess here is a guess in the baseline.")
+ops = c2.number_input(
+    "Ops cost per site per year", 0.0, 100_000.0,
+    float(case.get("declared_ops_cost_per_site") or 0.0),
+    help="Zero until you have a figure, rather than an assumed 900.")
+
+if st.button("Save these inputs to the case"):
+    _r = api.put(f"/v1/outside-in/cases/{case_id}", {
+        "declared_users": int(users),
+        "declared_ops_cost_per_site": float(ops),
+        "declared_spend_by_country": {
+            str(r["country"]).strip().upper(): float(r["estimated_annual_spend"])
+            for r in spend_df.to_dict("records")
+            if str(r.get("country") or "").strip()
+            and r.get("estimated_annual_spend") not in (None, "")
+            and r["estimated_annual_spend"] == r["estimated_annual_spend"]}})
+    if "_error" in _r:
+        st.error(_r["_error"])
+    else:
+        api.flash("Inputs saved to the case.")
+        st.rerun()
+
+if not users:
+    st.warning("Users is zero, so the SSE licence line will be zero. That is "
+               "correct until you have a figure - it is not a placeholder "
+               "standing in for one.")
 
 st.subheader("Quantity provenance")
 st.caption("A quantity is either your typed scope or a registered known fact. Naming the "
@@ -106,8 +152,16 @@ if st.button("Run V0 estimate", type="primary"):
                "ops_cost_per_site_base": float(ops),
                "footprint_known_fact_id": fp_fact, "users_known_fact_id": us_fact,
                # Reconciled and reported, never the coverage denominator.
-               "declared_spend_by_country": {r["country"]: r["estimated_annual_spend"]
-                                             for r in spend_df.to_dict("records")}}
+               # Only rows the analyst actually filled in. A blank row used to
+               # arrive as {"": nan} and a pre-filled one as an invented
+               # million, either of which produces a divergence against a
+               # figure nobody supplied.
+               "declared_spend_by_country": {
+                   str(r["country"]).strip().upper(): float(r["estimated_annual_spend"])
+                   for r in spend_df.to_dict("records")
+                   if str(r.get("country") or "").strip()
+                   and r.get("estimated_annual_spend") not in (None, "")
+                   and r["estimated_annual_spend"] == r["estimated_annual_spend"]}}
     if method == "ANCHOR":
         payload.update({"anchor_value": anchor_value or None,
                         "anchor_known_fact_id": anchor_fact})

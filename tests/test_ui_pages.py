@@ -449,3 +449,33 @@ def test_no_widget_has_both_a_default_and_a_session_state_key(page):
         r'[^)]*\bvalue=[^)]*\bkey="[A-Za-z_0-9]+"', page.read_text())
     assert not offenders, (
         f"{page.name}: {len(offenders)} widget(s) pass both value= and key=")
+
+
+def test_the_declared_spend_table_does_not_open_pre_filled():
+    """It opened with 1,000,000 for every in-scope country - which nobody reads
+    as a placeholder, because it is the right order of magnitude for a real
+    telecom spend. It fed the declared-spend crosscheck, so the run reported a
+    divergence computed against a figure nobody supplied."""
+    page = next(p for p in PAGES if p.name.startswith("6_"))
+    text = page.read_text()
+    assert "1_000_000" not in text and "1000000" not in text
+    assert "an invented number produces an invented divergence" in text
+
+
+def test_the_estimate_drivers_are_not_interface_defaults():
+    """5,000 users and 900 per site went straight into the baseline, and had to
+    be retyped on every visit - so the figure in use was whatever the defaults
+    happened to be."""
+    page = next(p for p in PAGES if p.name.startswith("6_"))
+    text = page.read_text()
+    assert "5_000)" not in text and "900.0)" not in text
+    assert "declared_users" in text and "declared_ops_cost_per_site" in text
+    assert "Save these inputs to the case" in text
+
+
+def test_blank_spend_rows_are_not_sent():
+    """A blank row arrived as {"": nan}, which is a country nobody named."""
+    page = next(p for p in PAGES if p.name.startswith("6_"))
+    text = page.read_text()
+    assert 'r["estimated_annual_spend"] == r["estimated_annual_spend"]' in text, (
+        "NaN must be filtered - it is not a spend figure")

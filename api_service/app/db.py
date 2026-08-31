@@ -76,6 +76,12 @@ case = Table(
     # It exists because typing a site list and having it survive should not
     # require running a simulation on it first.
     Column("analyst_footprint", JSON),
+    # Drivers the analyst supplied, kept on the case. They were interface
+    # defaults - 5,000 users and 900 per site - which meant they went into the
+    # baseline as invented figures and had to be retyped on every visit.
+    Column("declared_users", Integer),
+    Column("declared_ops_cost_per_site", Numeric(14, 2)),
+    Column("declared_spend_by_country", JSON),
     Column("archived", Boolean, default=False),
     Column("archived_by", String(120)),
     Column("base_currency", String(3)), Column("price_year", Integer),
