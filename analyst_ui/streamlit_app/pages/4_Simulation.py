@@ -19,6 +19,8 @@ if _scope != case_id:
 if not case_id:
     st.warning("Select a case on the home page first."); st.stop()
 
+
+api.show_flash()
 st.info("Simulated structure can never set EVIDENCED, never supports a resilience-dependent "
         "lever, and is permanently barred from benchmark promotion (5.6).")
 
@@ -203,8 +205,8 @@ if _save_col.button("Save footprint"):
         if "_error" in _r:
             st.error(_r["_error"])
         else:
-            st.success(f"Saved {len(_rows_to_save)} row(s) to the case. They "
-                       f"will be here next time without running anything.")
+            api.flash(f"Saved {len(_rows_to_save)} row(s) to the case. "
+                      f"They will be here next time without running anything.")
             st.rerun()
 
 if _run_col.button("Run simulation", type="primary"):

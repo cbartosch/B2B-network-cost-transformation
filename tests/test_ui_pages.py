@@ -301,7 +301,8 @@ def test_the_empty_register_message_names_the_case():
     assert "belong to one case" in page.read_text()
 
 
-@pytest.mark.parametrize("page", PAGES, ids=lambda p: p.name)
+@pytest.mark.parametrize("page", [p for p in PAGES if p.name != "api_client.py"],
+                         ids=lambda p: p.name)
 def test_no_confirmation_is_swallowed_by_a_rerun(page):
     """st.success() immediately followed by st.rerun() shows nothing: the
     message is written and the script restarts before the browser renders it.
@@ -313,9 +314,18 @@ def test_no_confirmation_is_swallowed_by_a_rerun(page):
     for i, line in enumerate(lines):
         if "st.success(" not in line:
             continue
-        window = "\n".join(lines[i:i + 4])
+        window = "\n".join(lines[i:i + 5])
         if "st.rerun()" in window:
             offenders.append(f"{page.name}:{i + 1}")
     assert not offenders, (
         f"confirmation discarded by an immediate rerun at {offenders}; use "
         f"api.flash() instead")
+
+
+@pytest.mark.parametrize("page", PAGES, ids=lambda p: p.name)
+def test_a_page_that_flashes_also_renders_it(page):
+    """A flash nobody renders is the silence it was meant to fix."""
+    text = page.read_text()
+    if "api.flash(" in text and page.name != "api_client.py":
+        assert "api.show_flash()" in text, (
+            f"{page.name} records a confirmation and never renders it")

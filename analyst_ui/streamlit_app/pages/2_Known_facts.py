@@ -277,7 +277,7 @@ elif facts:
                         st.error(f"Run failed closed: {r['_error']}")
                     else:
                         st.session_state[f"obs_{f['known_fact_id']}"] = r
-                        st.success(f"{r['corroboration_state']}")
+                        api.flash(f"{r['corroboration_state']}")
                         st.rerun()
 
             # Whatever the verdict, show what the sources said. A result that

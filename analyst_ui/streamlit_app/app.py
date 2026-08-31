@@ -79,7 +79,8 @@ if cases:
             if "_error" in r:
                 st.error(r["_error"])
             else:
-                st.success("Archived.")
+                api.flash("Archived. It has left the picker and kept "
+                          "everything.")
                 st.session_state.pop("case_id", None)
                 st.rerun()
         confirm = b.checkbox("I understand this cannot be undone",
@@ -91,8 +92,8 @@ if cases:
             if "_error" in r:
                 st.error(r["_error"])
             else:
-                st.success(f"Deleted. Removed: "
-                           f"{r.get('removed') or 'nothing else'}")
+                api.flash(f"Deleted. Removed: "
+                          f"{r.get('removed') or 'nothing else'}")
                 st.session_state.pop("case_id", None)
                 st.rerun()
 else:

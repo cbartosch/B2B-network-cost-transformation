@@ -12,6 +12,8 @@ case_id = st.session_state.get("case_id")
 if not case_id:
     st.warning("Select a case on the home page first."); st.stop()
 
+
+api.show_flash()
 stage_info = api.get(f"/v1/outside-in/cases/{case_id}/stage")
 if "_error" not in stage_info:
     c1, c2 = st.columns(2)
@@ -65,7 +67,7 @@ if st.button("Run mapping"):
     if "_error" in r:
         st.error(r["_error"])
     else:
-        st.success(f"{r['upgraded']} upgraded, {r['requiring_adjudication']} need "
+        api.flash(f"{r['upgraded']} upgraded, {r['requiring_adjudication']} need "
                    f"adjudication."); st.rerun()
 
 conf = api.get(f"/v1/outside-in/cases/{case_id}/questionnaire/conflicts")

@@ -12,6 +12,8 @@ case_id = st.session_state.get("case_id")
 if not case_id:
     st.warning("Select a case on the home page first."); st.stop()
 
+
+api.show_flash()
 snaps = api.get(f"/v1/outside-in/cases/{case_id}/estimates").get("snapshots", [])
 if not snaps:
     st.warning("Run a V0 estimate first (page 6) - a recommendation is made against an "
@@ -38,7 +40,7 @@ if st.button("Run LLM-07", type="primary"):
     if "_error" in r:
         st.error(r["_error"])
     else:
-        st.success(f"{r['label']}: scenario {r['scenario_code']}, {r['percentile']} "
+        api.flash(f"{r['label']}: scenario {r['scenario_code']}, {r['percentile']} "
                    f"percentile, {r['gross_run_rate_savings'][r['percentile']]}/yr.")
         st.rerun()
 

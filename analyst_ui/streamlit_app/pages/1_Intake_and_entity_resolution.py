@@ -137,7 +137,7 @@ with st.form("intake"):
             st.error(r["_error"])
         else:
             resolved = r.get("in_scope_countries") or []
-            st.success(f"Intake block saved. In-scope countries resolved to: "
+            api.flash(f"Intake block saved. In-scope countries resolved to: "
                       f"{', '.join(resolved) if resolved else '(none - no approved '
                       f'priors matched this selection)'}")
             st.rerun()

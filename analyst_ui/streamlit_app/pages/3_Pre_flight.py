@@ -8,6 +8,8 @@ case_id = st.session_state.get("case_id")
 if not case_id:
     st.warning("Select a case on the home page first."); st.stop()
 
+
+api.show_flash()
 # Which page clears which condition. A gate that lists what is wrong without
 # saying where to fix it makes the analyst hunt; the mapping is cheap and the
 # hunting is not.
@@ -102,6 +104,6 @@ else:
             st.error(r["_error"])
         else:
             st.session_state.pop("preflight", None)
-            st.success("Acknowledged. The report is persisted and will be reproduced "
-                       "beside the published estimate.")
+            api.flash("Acknowledged. The report is persisted and will be "
+                      "reproduced beside the published estimate.")
             st.rerun()
