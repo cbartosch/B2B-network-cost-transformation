@@ -625,6 +625,30 @@ def _migrate_v21(conn) -> None:
     log.info("v21: quality_reasons column added=%s", bool(added))
 
 
+def _migrate_v21(conn) -> None:
+    """4.18.0 -> 4.19.0: entity aliases, and a new brief catalogue.
+
+    engagement_case.entity_aliases carries the trading names a subject is
+    known by. Without it the perimeter check compares sources against the
+    registered legal name only, which quarantines a source using the brand -
+    the normal case, not the exception.
+
+    Seed-written research briefs from the previous catalogue are deactivated
+    so the new catalogue version becomes active. Only rows written by the seed
+    are touched: a brief a steward published is theirs, and superseding it
+    silently would undo a deliberate act.
+    """
+    added = _add_column(conn, db.case, "entity_aliases")
+    retired = 0
+    if _has_table(conn, "reference", "research_brief"):
+        result = conn.execute(text(
+            'UPDATE "reference"."research_brief" SET active = false '
+            "WHERE approved_by = 'seed'"))
+        retired = result.rowcount or 0
+    log.info("v21: entity_aliases added=%s; %d seed-written brief(s) "
+             "deactivated for the new catalogue", bool(added), retired)
+
+
 MIGRATIONS = {2: _migrate_v2, 3: _migrate_v3, 4: _migrate_v4, 5: _migrate_v5,
               6: _migrate_v6, 7: _migrate_v7, 8: _migrate_v8, 9: _migrate_v9,
               10: _migrate_v10, 11: _migrate_v11, 12: _migrate_v12,

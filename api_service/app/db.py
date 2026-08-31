@@ -59,6 +59,14 @@ case = Table(
     # this exists so the intake page can show and re-edit the analyst's
     # actual selection instead of just the countries it expanded to.
     Column("in_scope_region", String(32)),
+    # Trading names, brands and abbreviations the subject is known by.
+    # A legal name is often not what sources call the entity: UniCredit's
+    # German bank trades as HypoVereinsbank, and a perimeter check comparing
+    # tokens against the legal name alone quarantines every good German source
+    # as being about a different company. Aliases are also the strongest
+    # search terms available - a brand almost always out-searches a registered
+    # legal name.
+    Column("entity_aliases", JSON),
     Column("base_currency", String(3)), Column("price_year", Integer),
     Column("fx_convention", String(16)),
     Column("analysis_horizon_years", Integer), Column("discount_rate_set_id", String(64)),

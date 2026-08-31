@@ -255,7 +255,8 @@ def assert_brief_available(briefs: dict, domain_no: int, agent_id: str) -> None:
 
 
 def _render_brief(domain_no: int, entity_name: str,
-                  briefs: dict | None = None) -> str:
+                  briefs: dict | None = None,
+                  aliases: list | None = None) -> str:
     """Flatten a brief into the prompt. {entity} is substituted so the search
     patterns arrive ready to use rather than as a template the agent has to
     assemble - and the agent is told to vary the name, because a brand
@@ -268,8 +269,15 @@ def _render_brief(domain_no: int, entity_name: str,
     if brief.get("wants"):
         out.append(f"WHAT A GOOD ANSWER CONTAINS\n{brief['wants']}")
     if brief.get("search"):
+        # Each pattern is issued for the legal name and for every alias. A
+        # registered legal name is frequently not what sources call the
+        # entity, and searching only for it is how a case on UniCredit's
+        # German bank finds nothing while every German source discusses
+        # HypoVereinsbank.
+        names = [entity_name] + [a for a in (aliases or []) if a]
         queries = "\n".join(
-            f"  - {q.replace('{entity}', entity_name)}" for q in brief["search"])
+            f"  - {q.replace('{entity}', n)}"
+            for q in brief["search"] for n in names)
         out.append(
             "SEARCHES TO RUN (vary them; try the common brand name as well as "
             f"the registered legal name)\n{queries}")
@@ -407,6 +415,14 @@ def _verify_sources(claimed: list[dict],
 # brand identity, not because of their length. Anything else survives the
 # filter regardless of how short it is, so "DHL" or "3M" is not discarded the
 # way a length-only floor discarded it.
+# Words that are real parts of a name but far too common to establish
+# identity by substring. Distinct from _NOISE_TOKENS, which are dropped
+# entirely: these still count for an exact token match, just not a fuzzy one.
+_GENERIC_TOKENS = {
+    "bank", "group", "services", "solutions", "systems", "technologies",
+    "logistics", "capital", "partners", "industries", "energy", "digital",
+}
+
 _NOISE_TOKENS = {
     "gmbh", "inc", "incorporated", "corp", "corporation", "ltd", "limited",
     "llc", "llp", "plc", "co", "company", "group", "holding", "holdings",
@@ -438,11 +454,30 @@ def _looks_out_of_perimeter(subject: str, case_row) -> bool:
     of by length, so a real brand token survives the filter on both sides
     regardless of how short it is.
     """
-    name = (case_row.subject_entity_legal_name or "").lower()
-    if not name or not subject:
+    # Compared against the legal name AND every alias. A legal name is often
+    # not what sources call the entity - UniCredit's German bank trades as
+    # HypoVereinsbank, and comparing tokens against "UniCredit Germany" alone
+    # threw away every German source as being about a different company. The
+    # same shape as the DHL defect, one step further out: there the brand was
+    # too short to survive tokenising, here the brand shares no tokens with
+    # the legal name at all.
+    names = [(case_row.subject_entity_legal_name or "")]
+    names += list(getattr(case_row, "entity_aliases", None) or [])
+    name_tokens = set()
+    for n in names:
+        name_tokens |= _content_tokens((n or "").lower())
+    if not name_tokens or not subject:
         return False
-    name_tokens = _content_tokens(name)
     subject_tokens = _content_tokens(subject.lower())
+
+    # A generic token never establishes identity, by exact match or substring.
+    # "UniCredit Bank GmbH" contributes "bank", and matching on it made
+    # Deutsche Bank look in-perimeter for a UniCredit case. Kept as a fallback
+    # only for a name that is nothing but generic words, where refusing every
+    # source would be worse than a loose match.
+    distinctive = name_tokens - _GENERIC_TOKENS
+    if distinctive:
+        name_tokens = distinctive
     if not name_tokens:
         return False
     if not name_tokens.isdisjoint(subject_tokens):
@@ -452,11 +487,15 @@ def _looks_out_of_perimeter(subject: str, case_row) -> bool:
     # token appearing as a substring of a subject token (or vice versa) also
     # counts as a match, provided it is not so short a fragment that almost
     # anything would contain it.
+    # Substring matching catches a fused abbreviation ("DPDHL" for "Deutsche
+    # Post DHL"), but a short generic token matches far too much: "bank" is a
+    # substring of "hypovereinsbank", so any two banks looked related. Only a
+    # distinctive token is allowed to match this way.
     for nt in name_tokens:
-        if len(nt) < 3:
+        if len(nt) < 5 or nt in _GENERIC_TOKENS:
             continue
         for st in subject_tokens:
-            if len(st) < 3:
+            if len(st) < 5:
                 continue
             if nt in st or st in nt:
                 return False
@@ -596,6 +635,9 @@ def _build_prompt(domain_name: str, case_row, domain_no: int | None = None,
     """
     entity = gateway.fence("subject_entity_legal_name",
                            case_row.subject_entity_legal_name or "")
+    _aliases = [a for a in (getattr(case_row, "entity_aliases", None) or []) if a]
+    alias_block = (gateway.fence("also_known_as", ", ".join(_aliases)) + "\n"
+                   if _aliases else "")
     country = gateway.fence("country_of_domicile", case_row.country_of_domicile or "")
     domain = gateway.fence("input_domain", domain_name)
 
@@ -609,7 +651,8 @@ def _build_prompt(domain_name: str, case_row, domain_no: int | None = None,
 
     rendered = _render_brief(domain_no or -1,
                              case_row.subject_entity_legal_name or "",
-                             briefs=briefs)
+                             briefs=briefs,
+                             aliases=list(getattr(case_row, "entity_aliases", None) or []))
     brief_block = f"\n{rendered}\n" if rendered else "\n"
 
     ctx = context or {}
@@ -638,7 +681,7 @@ def _build_prompt(domain_name: str, case_row, domain_no: int | None = None,
         "site counts by type, circuits and unit prices per country, so "
         "per-country and per-site-type detail is worth far more than a "
         "group-level summary.\n"
-        f"{entity}\n{country}\n{domain}\n{scope}\n"
+        f"{entity}\n{alias_block}{country}\n{domain}\n{scope}\n"
         f"{brief_block}"
         f"{state_block}"
         f"{archetype_block}"

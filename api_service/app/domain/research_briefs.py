@@ -28,7 +28,7 @@ Keys, all optional except `asks`:
             non-answer is worse than an abstention
 """
 
-BRIEF_CATALOGUE_VERSION = "1.0.0"
+BRIEF_CATALOGUE_VERSION = "1.1.0"
 
 RESEARCH_BRIEFS: dict[int, dict] = {
     # Each brief is a research instruction, not a label. The first version of
@@ -69,32 +69,52 @@ RESEARCH_BRIEFS: dict[int, dict] = {
         "asks": "How many physical sites the entity operates, by country and "
                 "by site type - this drives the whole cost model, so it is the "
                 "single most valuable domain to get right.",
-        "wants": "Counts per country, each mapped to exactly one archetype: "
-                 "DC (data centre), LARGE_OFFICE (headquarters, regional "
-                 "office, campus), WAREHOUSE (distribution centre, depot, "
-                 "sorting or logistics hub, terminal), STORE (retail outlet, "
-                 "service point, parcel shop, branch counter), BRANCH (small "
-                 "operational site). Where only a global total is published, "
-                 "give it and say it is global. Always give the as-of date.",
-        "search": ["{entity} annual report number of facilities",
-                   "{entity} distribution centers by country",
-                   "{entity} sorting hubs locations list",
-                   "{entity} service points retail network count",
-                   "{entity} sustainability report sites buildings",
-                   "{entity} locations Germany United Kingdom United States"],
+        "wants": "Counts per country, each mapped to exactly one archetype. "
+                 "Map by what the site DOES, not by what the sector calls it:\n"
+                 "  DC - data centre or computing facility.\n"
+                 "  LARGE_OFFICE - headquarters, regional office, campus, "
+                 "operations centre.\n"
+                 "  WAREHOUSE - a large operational or storage site: "
+                 "distribution centre, depot, sorting hub, terminal, plant, "
+                 "processing centre.\n"
+                 "  STORE - a customer-facing outlet: retail shop, bank "
+                 "branch, dealership, showroom, service point, agency, "
+                 "pharmacy, restaurant.\n"
+                 "  BRANCH - a small operational site that is not "
+                 "customer-facing.\n"
+                 "Where only a global total is published, give it and say it "
+                 "is global. Always give the as-of date.",
+        # Sector-neutral. The first version of this brief searched for "sorting
+        # hubs" and "distribution centers" because it was written while looking
+        # at a logistics company, and returned nothing for a bank - whose sites
+        # are branches, Filialen, Geschaeftsstellen. The generic patterns run
+        # first; the sector hint tells the agent to substitute the word its own
+        # subject actually uses.
+        "search": ["{entity} annual report number of locations",
+                   "{entity} number of sites by country",
+                   "{entity} branches offices locations count",
+                   "{entity} sustainability report buildings floor area sites",
+                   "{entity} store locator branch finder number of locations",
+                   "{entity} Standorte Filialen Anzahl",
+                   "{entity} facilities list country breakdown"],
         "sources": ["annual report - operations or segment section",
                     "ESG/sustainability report - buildings, energy or "
                     "emissions tables, which usually count sites by type",
-                    "investor day presentation - network slides",
-                    "country subsidiary or 'our locations' pages",
-                    "regulatory filings listing establishments"],
-        "example": '[{"label": "WAREHOUSE", "value": 340, "unit": "sites", '
-                   '"country": "DE", "as_of": "2024-12-31"}, '
-                   '{"label": "STORE", "value": 27000, "unit": "sites", '
+                    "investor day or capital markets day presentation",
+                    "the entity's own branch, store or location finder, and "
+                    "its country subsidiary pages",
+                    "sector regulators, which publish branch counts for banks, "
+                    "pharmacies, and other licensed networks",
+                    "business directories and registry listings",
+                    "trade press covering openings and closures"],
+        "example": '[{"label": "STORE", "value": 340, "unit": "sites", '
                    '"country": "DE", "as_of": "2024-12-31"}]',
-        "reject": "A statement that the entity has 'a large global network' or "
-                  "'operates in over 220 countries' is not a site count. If "
-                  "you cannot find counts, say so rather than restating scale.",
+        "reject": "A statement that the entity is 'a large European network' "
+                  "or 'present in over 40 markets' is not a site count. Use "
+                  "the word the subject's own sector uses - branch, Filiale, "
+                  "depot, plant, store - rather than a word from a different "
+                  "one. If you cannot find counts, say so rather than "
+                  "restating scale.",
     },
     6: {
         "asks": "Data centres and cloud posture.",

@@ -291,6 +291,7 @@ class CaseIn(BaseModel):
     group_perimeter: str | None = None
     in_scope_countries: list[str] = []
     in_scope_region: str | None = None
+    entity_aliases: list[str] = []
     in_scope_cost_layers: list[str] = []
     in_scope_service_families: list[str] = []
     base_currency: str = "USD"
@@ -344,6 +345,7 @@ class CaseUpdate(BaseModel):
     scope_mode: str | None = None
     in_scope_countries: list[str] | None = None
     region: str | None = None
+    entity_aliases: list[str] | None = None
     in_scope_cost_layers: list[str] | None = None
     in_scope_service_families: list[str] | None = None
     base_currency: str | None = None

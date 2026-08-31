@@ -105,3 +105,62 @@ def test_the_plan_version_changes_when_a_brief_changes(session):
 
     _, after = research.load_active_briefs(session)
     assert before != after
+
+
+# ------------------------------------------------------------ trading names
+class _Case:
+    def __init__(self, legal, aliases=None):
+        self.subject_entity_legal_name = legal
+        self.entity_aliases = aliases or []
+
+
+def test_a_trading_name_is_in_perimeter_when_declared_as_an_alias():
+    """UniCredit's German bank trades as HypoVereinsbank, which is what German
+    sources call it. Comparing tokens against the registered legal name alone
+    discarded every one of them as being about a different company - the DHL
+    defect one step further out, where the brand shares no token with the
+    legal name at all rather than merely being too short to survive."""
+    with_alias = _Case("UniCredit Germany",
+                       ["HypoVereinsbank", "HVB", "UniCredit Bank GmbH"])
+    for source_says in ("HypoVereinsbank", "HVB", "UniCredit Bank AG"):
+        assert not research._looks_out_of_perimeter(source_says, with_alias), source_says
+
+
+def test_a_generic_word_does_not_put_a_rival_in_perimeter():
+    """"UniCredit Bank GmbH" contributes the token "bank", which made Deutsche
+    Bank look in-perimeter for a UniCredit case. A generic word never
+    establishes identity."""
+    case = _Case("UniCredit Germany", ["HypoVereinsbank", "UniCredit Bank GmbH"])
+    for rival in ("Deutsche Bank AG", "Commerzbank", "Deutsche Post DHL"):
+        assert research._looks_out_of_perimeter(rival, case), rival
+
+
+def test_without_aliases_the_trading_name_is_still_lost():
+    """Stated so the limit is explicit: aliases are a declaration, not an
+    inference. Nothing here guesses that HypoVereinsbank is UniCredit."""
+    assert research._looks_out_of_perimeter(
+        "HypoVereinsbank", _Case("UniCredit Germany"))
+
+
+def test_the_footprint_brief_is_not_written_for_one_sector():
+    """The first version searched for sorting hubs and distribution centres
+    because it was written while looking at a logistics company, and returned
+    nothing for a bank - whose sites are branches and Filialen."""
+    from app.domain.research_briefs import RESEARCH_BRIEFS
+    brief = RESEARCH_BRIEFS[2]
+    joined = " ".join(brief["search"]).lower()
+    assert "sorting hub" not in joined and "distribution center" not in joined
+    assert "branch" in joined or "filialen" in joined
+    wants = brief["wants"].lower()
+    assert "bank branch" in wants, (
+        "the archetype mapping must name a non-logistics example, or it reads "
+        "as a logistics taxonomy again")
+
+
+def test_search_patterns_are_issued_for_every_alias():
+    from app.domain.research_briefs import RESEARCH_BRIEFS
+    rendered = research._render_brief(
+        2, "UniCredit Bank GmbH", briefs=RESEARCH_BRIEFS,
+        aliases=["HypoVereinsbank", "HVB"])
+    assert "HypoVereinsbank" in rendered and "HVB" in rendered
+    assert "UniCredit Bank GmbH" in rendered

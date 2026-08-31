@@ -52,6 +52,15 @@ with st.form("intake"):
     dom = c3.text_input("Country of domicile *", case.get("country_of_domicile") or "",
                         max_chars=2, disabled=is_locked)
 
+    aliases_text = st.text_input(
+        "Also known as (comma separated)",
+        ",".join(case.get("entity_aliases") or []),
+        help="Trading names, brands and abbreviations sources actually use - "
+             "for example HypoVereinsbank and HVB for UniCredit's German bank. "
+             "Without these, research searches only the registered legal name "
+             "and the perimeter check discards every source that uses the "
+             "brand.", disabled=is_locked)
+
     c4, c5, c6 = st.columns(3)
     _perimeter_options = ["SINGLE_ENTITY", "GROUP_CONSOLIDATED", "NAMED_SUBSIDIARIES",
                           "NAMED_DIVISION"]
@@ -100,6 +109,7 @@ with st.form("intake"):
     if st.form_submit_button("Save intake block"):
         payload = {
             "scope_mode": scope_mode,
+            "entity_aliases": [a.strip() for a in aliases_text.split(",") if a.strip()],
             "in_scope_countries": ([c.strip().upper() for c in countries_text.split(",") if c.strip()]
                                    if countries_text else []),
             "region": region_choice,
