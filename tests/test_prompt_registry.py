@@ -421,3 +421,59 @@ def test_the_sweep_covers_the_classes_that_bind_a_driver():
     assert not missing, (
         f"a fact class that binds an estimate driver is the most valuable to "
         f"prefill and is not swept: {missing}")
+
+
+def test_a_schema_failure_is_not_reported_as_a_self_contradiction():
+    """Observed in the field: an address string in a Decimal field was
+    reported as CONTRADICTS_ITSELF, which sent the reader looking for an
+    inconsistency in the model's reasoning. The reply never became a result at
+    all; that is a different fact about a different thing."""
+    import inspect
+    from app.llm import gateway, quality
+    assert hasattr(quality.Rejection, "SCHEMA_INVALID")
+    src = inspect.getsource(gateway.structured_call)
+    assert "quality.Rejection.SCHEMA_INVALID" in src
+    assert "CONTRADICTS_ITSELF" not in src
+
+
+def test_the_prefill_sweep_only_asks_for_quantities():
+    """The register stores value_base, value_low and value_high and has no
+    column for text. Sweeping a qualitative class put an HQ address into a
+    Decimal and failed three attempts - the model found the right thing and
+    had nowhere to put it."""
+    from app.domain.known_facts import PREFILL_CLASSES
+    qualitative = {"Current vendor and product signals",
+                   "Current architecture hypothesis",
+                   "Data centre and cloud posture",
+                   "Vendor and partner signals",
+                   "Resilience assumptions"}
+    assert not (set(PREFILL_CLASSES) & qualitative), (
+        "a class with no number has nowhere to land in this register")
+
+    task = prompts.get("known_fact.prefill_public").task
+    assert "NUMBER with a unit" in task
+    assert "not_found" in task, (
+        "the agent needs somewhere to report a class that yielded only a "
+        "description, or it will force it into value_base again")
+
+
+def test_every_swept_class_is_one_the_register_offers():
+    """An accepted proposal must land under a class an analyst can also select
+    by hand, or the register grows a vocabulary only the agent uses."""
+    import pathlib
+    from app.domain.known_facts import PREFILL_CLASSES
+    root = pathlib.Path(__file__).resolve().parents[1]
+    page = (root / "analyst_ui" / "streamlit_app" / "pages"
+            / "2_Known_facts.py").read_text()
+    for fact_class in PREFILL_CLASSES:
+        assert f'"{fact_class}"' in page, f"{fact_class} is not offered on page 2"
+
+
+def test_a_number_without_a_unit_is_rejected():
+    from app.llm import quality, schemas
+    unitless = schemas.PublicFactSweep.model_validate({"facts": [
+        {"fact_class": "Location footprint", "subject": "HVB",
+         "value_base": "371",
+         "sources": [{"url": "https://example.com/ar"}]}]})
+    v = quality.evaluate("known_fact.prefill_public", unitless, {})
+    assert not v.accepted and quality.Rejection.QUANTITY_WITHOUT_UNIT in v.reasons

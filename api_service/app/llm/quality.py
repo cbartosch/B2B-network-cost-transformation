@@ -41,6 +41,12 @@ class Rejection(str, Enum):
     CANDIDATE_WITHOUT_IDENTITY = "CANDIDATE_WITHOUT_IDENTITY"
     SOURCE_NOT_RESOLVABLE = "SOURCE_NOT_RESOLVABLE"
     CONTRADICTS_ITSELF = "CONTRADICTS_ITSELF"
+    # The reply did not match the registered output model. Distinct from
+    # CONTRADICTS_ITSELF, which is a judgement about what the model said: this
+    # one says the reply never became a result at all, and reporting it as a
+    # self-contradiction sent a reader looking for an inconsistency that was
+    # not there.
+    SCHEMA_INVALID = "SCHEMA_INVALID"
     # --- task compliance
     SEARCH_NOT_ATTEMPTED = "SEARCH_NOT_ATTEMPTED"
     DERIVED_VALUE_PRESENTED_AS_OBSERVED = "DERIVED_VALUE_PRESENTED_AS_OBSERVED"
@@ -255,6 +261,13 @@ def public_fact_prefill(result, context) -> Verdict:
         if not (fact.subject or "").strip():
             reasons.append(Rejection.EMPTY_RESULT_WITHOUT_ABSTENTION)
             detail.append(f"{fact.fact_class!r} proposed with no subject")
+            break
+        if fact.value_base is not None and not (fact.unit or "").strip():
+            # A number with no unit cannot be compared with anything, which
+            # is the only thing this register does with it.
+            reasons.append(Rejection.QUANTITY_WITHOUT_UNIT)
+            detail.append(f"{fact.fact_class!r} proposed {fact.value_base} with "
+                          f"no unit")
             break
     if not result.facts and not result.not_found and \
             result.abstention_reason is None:

@@ -553,15 +553,25 @@ def _compare_candidates(*, asserted, unit, currency, candidates, tolerance):
 # estimate. BINDABLE classes come first because they bind to a driver; the
 # others still raise domain completeness and give the deep research a starting
 # point rather than a blank page.
+# Fact classes worth sweeping before an analyst types anything. Every one has
+# to be a *quantity*: this register stores value_base, value_low and
+# value_high, and has no column for text. Asking for "Data centre and cloud
+# posture" put an HQ address into a Decimal field and failed the schema three
+# times over - the model found the right thing and had nowhere to put it.
+#
+# Vendor names, architecture descriptions and strategy statements are real
+# findings with a real home: domain research records them as evidence against
+# their domain. They are simply not facts this register can hold.
+#
+# Names match the register's own vocabulary exactly, so an accepted proposal
+# lands under a class the analyst can also select by hand.
 PREFILL_CLASSES = (
-    "Location footprint",
-    "Remote-user population",
-    "Public cost evidence",
-    "Transformation announcements",
-    "Vendor and partner signals",
-    "Data centre and cloud posture",
+    "Location footprint",            # sites
+    "Remote-user population",        # users
+    "Public cost evidence",          # money
+    "Operating-model cost",          # money
+    "Transformation announcements",  # money: announced savings or budget
 )
-
 
 def prefill_from_public(session, *, case_id: str, fact_classes=None,
                         provider: str = "anthropic") -> dict:

@@ -354,7 +354,7 @@ def structured_call(session, *, agent_run_id: str, prompt_id: str,
                 verdict = quality.evaluate(definition.prompt_id, result, ctx)
             except ValidationError as exc:
                 verdict = quality.Verdict(
-                    False, [quality.Rejection.CONTRADICTS_ITSELF],
+                    False, [quality.Rejection.SCHEMA_INVALID],
                     [f"failed the registered schema "
                      f"{definition.output_schema_version}: {str(exc)[:300]}"])
 

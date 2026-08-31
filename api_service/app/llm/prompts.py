@@ -216,7 +216,7 @@ _DEFS = [
 
     PromptDefinition(
         prompt_id="known_fact.prefill_public",
-        prompt_version="1.0.0", agent_id="LLM-01",
+        prompt_version="1.1.0", agent_id="LLM-01",
         task=("Find what public sources already state about the named entity "
               "for each requested fact class, so an analyst starts from what "
               "is known rather than from an empty form.\n"
@@ -224,6 +224,13 @@ _DEFS = [
               "runs later: prefer the entity's own annual report, ESG report, "
               "investor pages and regulator filings, and stop when you have a "
               "figure and a source rather than exhausting every avenue.\n"
+              "Every proposal must be a NUMBER with a unit - a count of "
+              "sites, a headcount, an amount of money, a percentage. This "
+              "register holds quantities and has nowhere to put anything "
+              "else: an address, a vendor name or a description of a strategy "
+              "is a useful finding and does not belong here. If that is all a "
+              "fact class yields, put the class in `not_found` and say what "
+              "you found in the note instead of forcing it into value_base.\n"
               "Give value_base where sources agree. Where they disagree, give "
               "value_low and value_high as well and list every source - a "
               "proposal that hides disagreement to look tidier is worse than "
