@@ -118,6 +118,14 @@ _KF_FIELDS = {
     "kf_date": dt.date.today(),
     "kf_conf": 0.6,
 }
+# Streamlit forbids writing a widget's session-state key once that widget has
+# been instantiated in the same run, so a reset requested by a button cannot be
+# performed where the button is handled. It is requested there and carried out
+# here, before any widget is created.
+if st.session_state.pop("_kf_reset", False):
+    for _k, _default in _KF_FIELDS.items():
+        st.session_state[_k] = _default
+
 for _k, _default in _KF_FIELDS.items():
     st.session_state.setdefault(_k, _default)
 
@@ -178,8 +186,7 @@ if basis == "PRIOR_ENGAGEMENT":
 
 _reg, _clear = st.columns([1, 4])
 if _clear.button("Clear the form"):
-    for _k, _default in _KF_FIELDS.items():
-        st.session_state[_k] = _default
+    st.session_state["_kf_reset"] = True
     st.rerun()
 
 if _reg.button("Register", type="primary"):
@@ -217,10 +224,10 @@ if _reg.button("Register", type="primary"):
                 _msg += (" The point value was widened to a range; the "
                          "widening is recorded.")
             api.flash(_msg)
+            # Requested, not performed: the widgets already exist in this run.
             # Cleared only on success, so a rejected attempt keeps what was
             # typed instead of making the analyst start again.
-            for _k, _default in _KF_FIELDS.items():
-                st.session_state[_k] = _default
+            st.session_state["_kf_reset"] = True
             st.rerun()
 
 st.divider()

@@ -386,3 +386,38 @@ def test_the_case_picker_keeps_its_selection():
 def test_the_known_facts_page_names_the_case_it_is_listing():
     page = next(p for p in PAGES if p.name.startswith("2_"))
     assert "Register for" in page.read_text()
+
+
+@pytest.mark.parametrize("page", PAGES, ids=lambda p: p.name)
+def test_no_widget_key_is_written_after_its_widget_exists(page):
+    """Streamlit raises StreamlitAPIException on this, and only when the
+    branch runs - so it compiles, renders, and fails the first time somebody
+    presses the button.
+
+    The reset that clears the entry form had exactly this shape: it wrote every
+    widget key from inside the button handler, which is necessarily after the
+    widgets were created. The fix is to request the reset and perform it at the
+    top of the next run, before any widget exists.
+    """
+    import re
+
+    lines = page.read_text().splitlines()
+    first_use = {}
+    for i, line in enumerate(lines, 1):
+        for key in re.findall(r'key="([A-Za-z_0-9]+)"', line):
+            first_use.setdefault(key, i)
+
+    offenders = []
+    for i, line in enumerate(lines, 1):
+        match = re.search(
+            r'st\.session_state\[\s*["\']([A-Za-z_0-9]+)["\']\s*\]\s*=', line)
+        if not match:
+            continue
+        key = match.group(1)
+        if key in first_use and i > first_use[key]:
+            offenders.append(
+                f"line {i} assigns {key!r}, whose widget is created at line "
+                f"{first_use[key]}")
+    assert not offenders, (
+        f"{page.name}: " + "; ".join(offenders)
+        + ". Request the change and apply it at the top of the next run.")
