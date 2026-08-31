@@ -108,10 +108,32 @@ st.caption("Whatever is in the table below is what runs. Edit freely.")
 # The editor opens on the strongest thing available: promoted evidence, then
 # the case's own in-scope countries at one site each, then illustrative rows
 # only when the case has no scope at all.
+# What was last run, so a typed footprint survives the rerun that follows
+# running it. The editor was transient: counts entered by hand vanished the
+# moment the simulation started, which read as the page collapsing to
+# defaults. Ranked below promoted evidence and above any placeholder, because
+# what you last ran is a better starting point than a guess and a worse one
+# than a researched count.
+_last = []
+_hist = api.get(f"/v1/outside-in/cases/{case_id}/simulations")
+if "_error" not in _hist:
+    for run in _hist.get("runs", []):
+        _fp = (run.get("params") or {}).get("footprint") or []
+        if _fp:
+            _last = _fp
+            break
+
 if _rows:
     default = pd.DataFrame([{"country": r["country"],
                              "archetype": r["archetype"],
                              "sites": r["sites"]} for r in _rows])
+elif _last:
+    st.caption(f"Opening on the {len(_last)} row(s) from your last run. These "
+               f"are analyst-entered, not researched - promote counts from "
+               f"page 5 to replace them with evidence.")
+    default = pd.DataFrame([{"country": r.get("country"),
+                             "archetype": r.get("archetype"),
+                             "sites": r.get("sites")} for r in _last])
 else:
     _case = api.get(f"/v1/outside-in/cases/{case_id}")
     _countries = ([] if "_error" in _case

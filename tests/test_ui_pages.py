@@ -148,3 +148,20 @@ def test_the_empty_footprint_message_names_the_case():
     that the promotion was lost."""
     page = next(p for p in PAGES if p.name.startswith("4_"))
     assert "belongs to one" in page.read_text()
+
+
+def test_the_footprint_editor_reopens_on_what_was_last_run():
+    """Reported as "it collapses to default". The editor was transient: an
+    analyst typed counts, ran the simulation, and the rerun that followed
+    rebuilt the table from the placeholder - so the numbers they had just
+    entered disappeared, and the page looked as though it had discarded them.
+
+    Precedence is promoted evidence, then the last run, then a placeholder:
+    what you last ran is a better starting point than a guess and a worse one
+    than a researched count."""
+    page = next(p for p in PAGES if p.name.startswith("4_"))
+    text = page.read_text()
+    assert "/simulations\")" in text, "the page must read the run history"
+    assert "elif _last:" in text
+    assert text.index("if _rows:") < text.index("elif _last:"), (
+        "promoted evidence must outrank the last typed footprint")

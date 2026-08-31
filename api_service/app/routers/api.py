@@ -857,7 +857,13 @@ def list_simulations(case_id: str):
             db.simulation_run.c.ensemble_size, db.simulation_run.c.model_version,
             db.simulation_run.c.output_hash, db.simulation_run.c.created_at,
             db.simulation_run.c.status, db.simulation_run.c.progress_completed,
-            db.simulation_run.c.progress_total
+            db.simulation_run.c.progress_total,
+            # The footprint the run was given. Returned so the editor can
+            # reopen on what was last run: it was transient, so a typed
+            # footprint vanished on the rerun that followed the run itself,
+            # and the counts an analyst had just entered collapsed back to
+            # placeholders.
+            db.simulation_run.c.params
         ).where(db.simulation_run.c.case_id == case_id).order_by(
             db.simulation_run.c.created_at.desc())).all()
         return {"runs": [dict(r._mapping) for r in rows]}
