@@ -165,3 +165,19 @@ def test_the_footprint_editor_reopens_on_what_was_last_run():
     assert "elif _last:" in text
     assert text.index("if _rows:") < text.index("elif _last:"), (
         "promoted evidence must outrank the last typed footprint")
+
+
+def test_a_typed_footprint_can_be_saved_without_running_it():
+    """Reported as "still showing 1 site". The editor persisted only what was
+    *run*: typing a site list and not running it lost the list, and running a
+    placeholder made the placeholder the thing that stuck. Saving is now its
+    own act."""
+    page = next(p for p in PAGES if p.name.startswith("4_"))
+    text = page.read_text()
+    assert 'Save footprint' in text
+    assert '"analyst_footprint"' in text
+    assert text.index("elif _saved:") < text.index("elif _last:"), (
+        "a deliberately saved footprint must outrank whatever happened to be "
+        "run last")
+    assert text.index("if _rows:") < text.index("elif _saved:"), (
+        "promoted evidence still outranks anything typed")

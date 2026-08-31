@@ -114,6 +114,10 @@ st.caption("Whatever is in the table below is what runs. Edit freely.")
 # defaults. Ranked below promoted evidence and above any placeholder, because
 # what you last ran is a better starting point than a guess and a worse one
 # than a researched count.
+_case_now = api.get(f"/v1/outside-in/cases/{case_id}")
+_saved = ([] if "_error" in _case_now
+          else list(_case_now.get("analyst_footprint") or []))
+
 _last = []
 _hist = api.get(f"/v1/outside-in/cases/{case_id}/simulations")
 if "_error" not in _hist:
@@ -127,6 +131,13 @@ if _rows:
     default = pd.DataFrame([{"country": r["country"],
                              "archetype": r["archetype"],
                              "sites": r["sites"]} for r in _rows])
+elif _saved:
+    st.caption(f"Opening on the {len(_saved)} saved row(s) for this case. "
+               f"Analyst-entered, not researched - promote counts from page 5 "
+               f"to replace them with evidence.")
+    default = pd.DataFrame([{"country": r.get("country"),
+                             "archetype": r.get("archetype"),
+                             "sites": r.get("sites")} for r in _saved])
 elif _last:
     st.caption(f"Opening on the {len(_last)} row(s) from your last run. These "
                f"are analyst-entered, not researched - promote counts from "
@@ -215,7 +226,22 @@ def _clean_footprint(frame):
     return rows, problems
 
 
-if st.button("Run simulation", type="primary"):
+_save_col, _run_col = st.columns([1, 3])
+if _save_col.button("Save footprint"):
+    _rows_to_save, _problems = _clean_footprint(fp)
+    for _m in _problems:
+        st.error(_m)
+    if not _problems:
+        _r = api.put(f"/v1/outside-in/cases/{case_id}",
+                     {"analyst_footprint": _rows_to_save})
+        if "_error" in _r:
+            st.error(_r["_error"])
+        else:
+            st.success(f"Saved {len(_rows_to_save)} row(s) to the case. They "
+                       f"will be here next time without running anything.")
+            st.rerun()
+
+if _run_col.button("Run simulation", type="primary"):
     footprint, problems = _clean_footprint(fp)
     for message in problems:
         st.error(message)

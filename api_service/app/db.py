@@ -70,6 +70,12 @@ case = Table(
     # Archived cases leave the picker and keep everything. The route for a
     # case that produced something but is not current - which deletion must
     # not be, because a published estimate's provenance is not ours to drop.
+    # The footprint an analyst typed, saved deliberately. Distinct from
+    # outside_in.evidenced_footprint, which holds counts promoted from
+    # research: this one is ANALYST_ENTERED_SCOPE and is discounted as such.
+    # It exists because typing a site list and having it survive should not
+    # require running a simulation on it first.
+    Column("analyst_footprint", JSON),
     Column("archived", Boolean, default=False),
     Column("archived_by", String(120)),
     Column("base_currency", String(3)), Column("price_year", Integer),

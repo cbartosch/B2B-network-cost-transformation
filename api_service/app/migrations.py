@@ -34,7 +34,7 @@ from . import db
 log = logging.getLogger("workbench.migrations")
 
 # Bump when the physical schema changes, and add a step below.
-SCHEMA_VERSION = 23
+SCHEMA_VERSION = 24
 
 VERSION_TABLE = "schema_version"
 VERSION_SCHEMA = "audit"
@@ -676,13 +676,24 @@ def _migrate_v23(conn) -> None:
     log.info("v23: %d archive column(s) added to engagement_case", added)
 
 
+def _migrate_v24(conn) -> None:
+    """4.21.0 -> 4.22.0: engagement_case.analyst_footprint.
+
+    A typed site list survived only by being run: the editor reopened on the
+    last simulation's parameters, so entering counts and not running them lost
+    them. Saving is now its own act and its own column.
+    """
+    added = _add_column(conn, db.case, "analyst_footprint")
+    log.info("v24: analyst_footprint added=%s", bool(added))
+
+
 MIGRATIONS = {2: _migrate_v2, 3: _migrate_v3, 4: _migrate_v4, 5: _migrate_v5,
               6: _migrate_v6, 7: _migrate_v7, 8: _migrate_v8, 9: _migrate_v9,
               10: _migrate_v10, 11: _migrate_v11, 12: _migrate_v12,
               13: _migrate_v13, 14: _migrate_v14, 15: _migrate_v15,
               16: _migrate_v16, 17: _migrate_v17, 18: _migrate_v18,
               19: _migrate_v19, 20: _migrate_v20,
-              21: _migrate_v21, 22: _migrate_v22, 23: _migrate_v23}
+              21: _migrate_v21, 22: _migrate_v22, 23: _migrate_v23, 24: _migrate_v24}
 
 
 class SchemaDrift(RuntimeError):
