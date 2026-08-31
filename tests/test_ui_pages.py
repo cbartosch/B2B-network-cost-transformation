@@ -458,7 +458,13 @@ def test_the_declared_spend_table_does_not_open_pre_filled():
     divergence computed against a figure nobody supplied."""
     page = next(p for p in PAGES if p.name.startswith("6_"))
     text = page.read_text()
-    assert "1_000_000" not in text and "1000000" not in text
+    # step=1_000_000.0 on the anchor input is a stepper increment, not a
+    # value - the test has to distinguish those or it fails on something
+    # legitimate and gets weakened rather than fixed.
+    import re
+    invented = [m.group(0) for m in
+                re.finditer(r'estimated_annual_spend"?\s*:\s*[\d_]{4,}', text)]
+    assert not invented, f"the spend table opens pre-filled: {invented}"
     assert "an invented number produces an invented divergence" in text
 
 
