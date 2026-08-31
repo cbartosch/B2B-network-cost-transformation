@@ -131,3 +131,61 @@ def test_a_valueless_fact_is_ignored(session):
         verifiability="PUBLICLY_VERIFIABLE"))
     session.commit()
     assert footprint.resolve(session, case_id)["origin"] == "SCOPE_PLACEHOLDER"
+
+
+def test_a_saved_placeholder_does_not_outrank_the_register(session):
+    """Two of my own changes combined into this.
+
+    Running a simulation persists the footprint, so an edit is not lost on the
+    rerun that follows - which meant running the placeholder saved the
+    placeholder. That saved placeholder then outranked a registered fact of
+    1000 sites, because a saved footprint is normally a decision. The
+    convenience of one change became the blocker for another.
+
+    A save that exactly matches what the placeholder would produce records
+    nothing anybody decided, so it is treated as absent."""
+    case_id = _case(session, analyst_footprint=[
+        {"country": c, "archetype": "BRANCH", "sites": 1}
+        for c in ["DE", "FR", "GB", "US", "NL", "SG", "AE"]])
+    _fact(session, case_id, 1000)
+
+    out = footprint.resolve(session, case_id)
+    assert out["origin"] == "KNOWN_FACT"
+    assert out["footprint"][0]["sites"] == 1000
+
+
+def test_a_deliberate_single_site_footprint_still_wins(session):
+    """The placeholder rule has to be narrow. One site in one country that an
+    analyst meant is not the placeholder - it does not match the country set -
+    and must not be discarded as though it were."""
+    case_id = _case(session, analyst_footprint=[
+        {"country": "DE", "archetype": "BRANCH", "sites": 1}])
+    _fact(session, case_id, 1000)
+
+    out = footprint.resolve(session, case_id)
+    assert out["origin"] == "ANALYST_SAVED"
+    assert out["footprint"][0]["sites"] == 1
+
+
+def test_a_real_saved_footprint_still_outranks_the_register(session):
+    case_id = _case(session, analyst_footprint=[
+        {"country": "DE", "archetype": "STORE", "sites": 350},
+        {"country": "FR", "archetype": "STORE", "sites": 120}])
+    _fact(session, case_id, 1000)
+    assert footprint.resolve(session, case_id)["origin"] == "ANALYST_SAVED"
+
+
+def test_an_edited_placeholder_is_not_a_placeholder(session):
+    """Changing one count makes it a decision about that country."""
+    rows = [{"country": c, "archetype": "BRANCH", "sites": 1}
+            for c in ["DE", "FR", "GB", "US", "NL", "SG", "AE"]]
+    rows[0]["sites"] = 900
+    case_id = _case(session, analyst_footprint=rows)
+    _fact(session, case_id, 1000)
+    assert footprint.resolve(session, case_id)["origin"] == "ANALYST_SAVED"
+
+
+def test_clearing_the_saved_footprint_falls_back_to_the_register(session):
+    case_id = _case(session, analyst_footprint=[])
+    _fact(session, case_id, 1000)
+    assert footprint.resolve(session, case_id)["origin"] == "KNOWN_FACT"

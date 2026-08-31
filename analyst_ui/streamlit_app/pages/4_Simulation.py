@@ -68,6 +68,18 @@ else:
             "sites": r.get("sites")} for r in _resolved]),
             use_container_width=True, hide_index=True)
 
+    if _origin == "ANALYST_SAVED":
+        # A saved footprint outranks the register, which is right when it was
+        # a decision and wrong when it was left over. Removing it should not
+        # require finding an endpoint.
+        if st.button("Discard the saved footprint and use the register instead"):
+            _c = api.put(f"/v1/outside-in/cases/{case_id}",
+                         {"analyst_footprint": []})
+            if "_error" in _c:
+                st.error(_c["_error"])
+            else:
+                st.rerun()
+
     if _origin == "PROMOTED_RESEARCH":
         with st.expander("Sources behind these counts"):
             for r in _fp.get("provenance") or []:

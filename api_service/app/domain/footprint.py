@@ -63,6 +63,14 @@ def resolve(session, case_id: str) -> dict:
         }
 
     saved = list(case_row.analyst_footprint or [])
+    if saved and _is_placeholder(saved, case_row):
+        # A saved placeholder carries no information, and it must not outrank a
+        # registered fact. This mattered because running a simulation persists
+        # the footprint (so an edit is not lost on the rerun that follows), and
+        # running the placeholder therefore saved the placeholder - which then
+        # took precedence over a known fact of 1000 sites. The convenience of
+        # one change created the blocker for another.
+        saved = []
     if saved:
         return {
             "origin": "ANALYST_SAVED",
@@ -99,6 +107,27 @@ def resolve(session, case_id: str) -> dict:
                   "illustrative values. Set the scope on page 1.",
         "needs_split": False, "provenance": [],
     }
+
+
+def _is_placeholder(saved: list, case_row) -> bool:
+    """Is this saved footprint just the runnable default?
+
+    Exactly one row per in-scope country, the default archetype, one site each
+    - which is what SCOPE_PLACEHOLDER produces. Matching that shape means the
+    save recorded nothing an analyst decided, so it is treated as absent
+    rather than as a statement.
+
+    Deliberately narrow. A footprint with one row of one site that an analyst
+    genuinely meant survives, because it will not match the country set.
+    """
+    countries = list(case_row.in_scope_countries or [])
+    if not countries or len(saved) != len(countries):
+        return False
+    expected = {(c.upper(), DEFAULT_ARCHETYPE, 1) for c in countries}
+    actual = {((r.get("country") or "").upper(),
+               (r.get("archetype") or "").upper(),
+               int(r.get("sites") or 0)) for r in saved}
+    return actual == expected
 
 
 def _from_known_facts(session, case_row) -> dict | None:
