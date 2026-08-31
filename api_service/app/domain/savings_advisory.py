@@ -174,9 +174,13 @@ def recommend(session, *, estimate_snapshot_id: str, mode: str = "LIVE",
         # the model cannot name one. The advisory figures are reloaded from
         # the snapshot after selection - a stronger guarantee than comparing
         # an echoed value for equality, because there is nothing to echo.
+        # "did it pick a scenario that was actually offered" is now a gate
+        # rather than an inline check, so a model choosing something that was
+        # not on the table is a recorded verdict and a retry, not a raise.
         result, call = gateway.structured_call(
             session, agent_run_id=run_id, prompt_id="llm07.advisory.select",
-            prompt=_build_recommend_prompt(snap), provider=provider)
+            prompt=_build_recommend_prompt(snap), provider=provider,
+            gate_context={"offered_scenarios": set(snap.scenarios or {})})
         parsed = result.model_dump()
         if (not isinstance(parsed, dict)
                 or parsed.get("scenario_code") not in snap.scenarios

@@ -761,6 +761,7 @@ def _research_one_domain(session, *, case_row, domain_no: int, domain_name: str,
                          research_policy: ResearchPolicy,
                          coverage_policy=None,
                          briefs: dict | None = None,
+                         quality_attempts: int = 3,
                          captures_remaining_in_run: int,
                          request_scope: str) -> DomainResult:
     result = DomainResult(domain_no, domain_name, agent_id)
@@ -825,12 +826,19 @@ def _research_one_domain(session, *, case_row, domain_no: int, domain_name: str,
             # schema and the tool policy are resolved from the registry and
             # recorded on the run, so a finding can be interpreted against the
             # instructions that produced it.
+            # The observed-URL check moved into the gate set, so a reply that
+            # cites only recalled sources is rejected and retried with that
+            # reason - rather than being silently stripped to nothing, which
+            # made "cited three URLs, none real" look identical to "found
+            # nothing".
             result, provenance = gateway.structured_call(
                 session, agent_run_id=run_id,
                 prompt_id=("llm01.public_evidence.extract" if agent_id == "LLM-01"
                            else "llm08.market_data.extract"),
                 prompt=prompt, provider=provider, tools=tools,
-                max_tokens=research_policy.max_output_tokens_per_call)
+                max_tokens=research_policy.max_output_tokens_per_call,
+                max_attempts=quality_attempts,
+                gate_context={"observed_urls": None})
             call = provenance
             parsed = result.model_dump()
             if call.get("stop_reason") == "max_tokens":
@@ -970,6 +978,7 @@ def run_domain_research(session, *, case_id: str, agent_ids: list[str] | None = 
                         overwrite: bool = False,
                         domain_nos: list[int] | None = None,
                         coverage_policy=None,
+                        quality_attempts: int = 3,
                         idempotency_key: str | None = None) -> dict:
     """Runs the research phase for whichever DOMAIN_AGENT_MAP domains are
     assigned to agent_ids (default: LLM-01 and LLM-08 both) and either have no
@@ -1051,6 +1060,7 @@ def run_domain_research(session, *, case_id: str, agent_ids: list[str] | None = 
             session, case_row=case_row, domain_no=domain_no, domain_name=domain_name,
             agent_id=agent_id, provider=provider, research_policy=research_policy,
             coverage_policy=coverage_policy, briefs=briefs,
+            quality_attempts=quality_attempts,
             captures_remaining_in_run=remaining_captures,
             request_scope=request_scope)
         captures_this_run += result.captures_used

@@ -253,7 +253,7 @@ def execute(session, *, agent_run_id: str, provider: str, system: str,
             "duplicate provider_response_id or provider_request_id")
 
     return {"text": call.text, "provider": call.provider, "model": call.model,
-            "parsed": call.parsed,
+            "parsed": call.parsed, "llm_run_id": llm_run_id,
             # Returned so the quality gate can write its verdict onto the
             # exact call it judged. Without it _record_quality silently did
             # nothing and every verdict was lost.
@@ -286,134 +286,117 @@ def structured_call(session, *, agent_run_id: str, prompt_id: str,
                     max_tokens: int = 4000, tools: list[dict] | None = None,
                     prompt_version: str | None = None,
                     supplied_source_ids: list | None = None,
-                    max_attempts: int | None = None,
-                    quality_context: dict | None = None):
+                    gate_context: dict | None = None,
+                    max_attempts: int = 3):
     """The single entry point for a registered LLM service.
 
     Resolves the prompt from the registry, calls the provider through its
     schema-enforced channel, validates the reply against the registered output
-    model, puts it through the service's quality gate, and records the outcome
-    of every attempt.
+    model, puts it through the registered quality gates, and records which
+    prompt, schema and tool policy produced it - and whether it was accepted.
 
-    Returns (typed_result, provenance). The first is a validated Pydantic
-    object that has also been accepted by the gate - not merely well-shaped.
+    Returns (typed_result, provenance).
 
-    **Why a gate as well as a schema.** Schema validation answers "is this the
-    right shape" and cannot answer "is this a usable answer". A research reply
-    with found=true and no sources, or an entity candidate with no legal name,
-    is schema-valid and useless, and until the gate existed both flowed
-    straight into a disposition.
+    **Every attempt is judged and recorded.** Schema validity says the reply
+    has the right shape; it says nothing about whether the reply is usable.
+    A result with found=true, no sources and no quantities validates perfectly
+    and is worth nothing. The gates in llm/gates.py are deterministic checks
+    for exactly that, and each attempt's verdict is written to its own
+    audit.llm_run row - so a rejection is a measurable event rather than an
+    exception that disappears into a stack trace.
 
-    **Why the retry carries the reason.** Re-issuing an identical prompt is
-    resampling, not correction, and fails the same way at about the same rate.
-    The rejection reasons go back into the next attempt as instructions.
+    **A rejected attempt is retried with the reason**, up to a governed limit,
+    and the retry text repeats that abstaining is acceptable. Telling a model
+    "you returned no sources" is pressure to produce sources, and the cheapest
+    way to satisfy pressure is to invent - so the instruction names the defect
+    and explicitly permits returning nothing.
 
-    **Why exhaustion raises.** Returning the least-bad attempt would hand the
-    caller an answer the gate refused, with no way to tell. A spent budget is
-    a failed run.
+    **Exhausting the attempts fails closed.** No partial accept, no best-of:
+    a reply that never passed the gate is not evidence of anything.
     """
     definition = prompts.get(prompt_id, prompt_version)
-    if max_attempts is None:
-        max_attempts = _attempt_budget(session)
-    attempts = []
-    turn_prompt = prompt
+    ctx = dict(gate_context or {})
+    attempts, last = [], None
+    body = prompt
 
     for attempt in range(1, max(1, max_attempts) + 1):
         call = execute(session, agent_run_id=agent_run_id, provider=provider,
-                       system=definition.system_template, prompt=turn_prompt,
+                       system=definition.system_template, prompt=body,
                        max_tokens=max_tokens, tools=tools,
                        definition=definition,
                        schema_name=definition.output_model.__name__,
                        supplied_source_ids=supplied_source_ids)
+        run_id = call.get("llm_run_id")
+        ctx["stop_reason"] = call.get("stop_reason")
+        ctx["content_blocks"] = call.get("content_blocks")
 
         payload = call.get("parsed")
         if payload is None:
-            raise errors.StructuredOutputInvalid(
-                f"{definition.prompt_id} returned no structured payload; the "
-                f"provider did not use the schema-enforced channel")
-        try:
-            result = definition.output_model.model_validate(payload)
-        except ValidationError as exc:
-            raise errors.StructuredOutputInvalid(
-                f"{definition.prompt_id} output failed the registered schema "
-                f"{definition.output_schema_version}: {exc}") from exc
+            verdict = gates.GateVerdict(
+                False, gate="schema", reason=gates.RejectionReason.SCHEMA_INVALID,
+                detail="the provider returned no structured payload")
+            result = None
+        else:
+            try:
+                result = definition.output_model.model_validate(payload)
+                verdict = gates.evaluate(definition.prompt_id, result, ctx)
+            except ValidationError as exc:
+                result = None
+                verdict = gates.GateVerdict(
+                    False, gate="schema",
+                    reason=gates.RejectionReason.SCHEMA_INVALID,
+                    detail=str(exc)[:500])
 
-        verdict = quality.evaluate(prompt_id, result, quality_context)
-        _record_quality(session, call.get("llm_run_id"), attempt, verdict)
+        _record_verdict(session, run_id, verdict, attempt)
         attempts.append({"attempt": attempt, **verdict.as_dict()})
+        last = verdict
 
-        if verdict.accepted:
+        if verdict:
             provenance = {
                 "prompt_id": definition.prompt_id,
                 "prompt_version": definition.prompt_version,
                 "prompt_hash": definition.prompt_hash,
                 "output_schema_version": definition.output_schema_version,
                 "tool_policy_version": definition.tool_policy_version,
+                "gate_set_version": gates.GATE_SET_VERSION,
                 "provider": call["provider"], "model": call["model"],
                 "provider_response_id": call.get("provider_response_id"),
                 "stop_reason": call.get("stop_reason"),
-                "content_blocks": call.get("content_blocks", []),
-                "quality": {"attempts": attempts, "accepted_on_attempt": attempt},
+                "content_blocks": call.get("content_blocks"),
+                "attempts": attempts,
             }
             return result, provenance
 
-        if not verdict.retryable or attempt >= max_attempts:
-            break
-
-        # Tell the model what was wrong. A retry that repeats the prompt
-        # unchanged is a second roll of the same dice.
-        turn_prompt = (
-            f"{prompt}\n\nYour previous reply was rejected by the quality "
-            f"gate. {verdict.guidance()} Answer again, correcting this.")
+        body = prompt + gates.retry_instruction(verdict)
+        log.info("%s attempt %d rejected: %s", definition.prompt_id, attempt,
+                 verdict.reason)
 
     raise errors.StructuredOutputInvalid(
-        f"{definition.prompt_id} was rejected by the quality gate after "
-        f"{len(attempts)} attempt(s): "
-        f"{', '.join(r for a in attempts for r in a['reasons'])}. "
-        f"Detail: {'; '.join(d for a in attempts for d in a['detail'])}")
+        f"{definition.prompt_id} was rejected on all {len(attempts)} attempt(s); "
+        f"last reason {last.reason.value if last and last.reason else 'unknown'}: "
+        f"{last.detail if last else ''}")
 
 
-def _attempt_budget(session, default: int = 2) -> int:
-    """The governed retry budget, read at call time.
+def _record_verdict(session, llm_run_id, verdict, attempt: int) -> None:
+    """The verdict belongs on the row for the call it judged.
 
-    Falls back rather than failing: a missing quality_policy should not stop
-    every agent call in the system, and the fallback is the seeded value, so a
-    database that has not been re-seeded behaves as the seed intends rather
-    than as an accident.
-    """
-    try:
-        from ..domain import policy as _policy
-        rows = {r.key: r.value for r in session.execute(
-            select(db.threshold).where(
-                db.threshold.c.set_name == "quality_policy")).all()}
-        return _policy.QualityPolicy.from_rows(rows).max_attempts_per_call
-    except Exception:                                       # noqa: BLE001
-        log.warning("quality_policy unreadable; using %d attempts", default)
-        return default
-
-
-def _record_quality(session, llm_run_id, attempt: int, verdict) -> None:
-    """Write the verdict onto the call it judged.
-
-    Every attempt is recorded, not only the last. A service that passes on the
-    first attempt and one that passes on the third are different services, and
-    the difference is the earliest signal that a prompt has drifted.
+    reviewer_outcome was added with the WP1 audit columns and written by
+    nothing, so an accepted call and a rejected one were indistinguishable
+    afterwards. Best-effort: a failure to record a verdict must not fail a
+    call that otherwise succeeded, but it is logged rather than swallowed.
     """
     if not llm_run_id:
         return
+    outcome = ("ACCEPTED" if verdict else
+               f"REJECTED:{verdict.reason.value if verdict.reason else 'UNKNOWN'}")
     try:
         session.execute(update(db.llm_run)
                         .where(db.llm_run.c.llm_run_id == llm_run_id)
-                        .values(reviewer_outcome=("ACCEPTED" if verdict.accepted
-                                                  else "REJECTED"),
-                                quality_reasons={"attempt": attempt,
-                                                 **verdict.as_dict()}))
+                        .values(reviewer_outcome=f"{outcome}@{attempt}"))
         session.commit()
-    except Exception:                                       # noqa: BLE001
-        # The verdict is an audit record, not a gate on the gate. Losing it
-        # must not turn an accepted answer into a failed run.
+    except Exception:                                     # noqa: BLE001
         session.rollback()
-        log.warning("could not record quality verdict for llm_run %s", llm_run_id)
+        log.warning("could not record gate verdict on llm_run %s", llm_run_id)
 
 
 def execute_deterministic(session, *, agent_run_id: str, fn) -> dict:

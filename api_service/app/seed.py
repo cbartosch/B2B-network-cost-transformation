@@ -123,6 +123,15 @@ THRESHOLDS = [
     # cost line to be an estimate of anything.
     ("anchor_policy", "min_addressable_share", "0.25"),
 
+    # --- agent quality gate.
+    # How many times a rejected call is retried with the rejection reason
+    # before the run fails closed. Governed rather than a constant because it
+    # trades provider spend against acceptance rate, and because raising it is
+    # the tempting response to a falling acceptance rate - which is usually
+    # the wrong one. A gate rejecting more often is information about the
+    # agent, not a budget to be increased until the complaints stop.
+    ("agent_quality_policy", "max_attempts_per_call", "3"),
+
     # --- quality gate.
     # How many times a registered call may be re-issued after the gate rejects
     # it. Two means one correction: enough for a drafting slip, not enough for

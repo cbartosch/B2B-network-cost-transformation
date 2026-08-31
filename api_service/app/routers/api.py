@@ -1117,8 +1117,15 @@ def run_domain_research(case_id: str, payload: DomainResearchIn):
     with S() as s:
         research_policy = _research_policy(s)
         try:
+            try:
+                quality = policy.AgentQualityPolicy.from_rows(
+                    _thresholds(s, "agent_quality_policy"))
+            except policy.PolicyIncomplete as exc:
+                raise HTTPException(409, {"error": "governed policy unusable",
+                                          "detail": str(exc)})
             result = research.run_domain_research(
                 s, case_id=case_id, agent_ids=payload.agent_ids,
+                quality_attempts=quality.max_attempts_per_call,
                 provider=payload.provider, research_policy=research_policy,
                 overwrite=payload.overwrite, domain_nos=payload.domain_nos,
                 idempotency_key=payload.idempotency_key)

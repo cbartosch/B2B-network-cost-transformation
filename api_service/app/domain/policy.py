@@ -452,6 +452,31 @@ class QualityPolicy:
                 f"retries, and to spend five times the budget doing it")
 
 
+@dataclass(frozen=True)
+class AgentQualityPolicy:
+    """Bounds the retry loop on a rejected agent call."""
+    set_name: str
+    max_attempts_per_call: int
+
+    @classmethod
+    def from_rows(cls, rows: dict, set_name: str = "agent_quality_policy"):
+        policy = cls(set_name=set_name,
+                     max_attempts_per_call=int(
+                         _require(rows, "max_attempts_per_call", set_name)))
+        policy.validate()
+        return policy
+
+    def validate(self) -> None:
+        if self.max_attempts_per_call < 1:
+            raise PolicyInvalid("max_attempts_per_call must be at least 1")
+        if self.max_attempts_per_call > 5:
+            raise PolicyInvalid(
+                f"max_attempts_per_call is {self.max_attempts_per_call}: past "
+                f"a handful of retries the loop is no longer correcting a "
+                f"transient defect, it is pressing a model until it says "
+                f"something acceptable")
+
+
 # --------------------------------------------------------------- recommendation
 @dataclass(frozen=True)
 class RecommendationPolicy:
