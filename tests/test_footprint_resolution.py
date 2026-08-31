@@ -46,20 +46,33 @@ def test_a_registered_fact_reaches_the_footprint_without_being_applied(session):
     _fact(session, case_id, 1000)
 
     out = footprint.resolve(session, case_id)
-    assert out["origin"] == "KNOWN_FACT"
-    assert out["footprint"] == [{"country": "DE", "archetype": "BRANCH",
-                                 "sites": 1000}]
+    assert out["origin"] == "KNOWN_FACT_UNALLOCATED"
+    assert out["unallocated_sites"] == 1000
+    # Deliberately not a row of 1000. A row asserts that every site in it is
+    # identical, and the whole row is priced at that archetype's tier.
+    assert out["footprint"] == []
     assert out["needs_split"] is True
 
 
-def test_the_total_is_not_spread_across_countries(session):
-    """A fact says how many sites there are, not where. Splitting 1000 evenly
-    across seven in-scope countries would invent six numbers."""
+def test_a_bulk_total_is_never_emitted_as_one_row(session):
+    """100 sites are never identical.
+
+    A footprint row states that every site in it shares one bandwidth, one
+    primary and backup product, one dual-access probability and one
+    users-per-site figure - and the whole row is costed at that archetype's
+    tier. Emitting 1000 sites as a single BRANCH row priced an entire estate at
+    a tier nobody chose, and it looked like a footprint rather than the
+    unallocated number it was.
+
+    Inventing a split would be worse: a plausible mix is still a mix nobody
+    decided, and it would be priced as though someone had."""
     case_id = _case(session)
     _fact(session, case_id, 1000)
     out = footprint.resolve(session, case_id)
-    assert len(out["footprint"]) == 1
-    assert "not a breakdown" in out["split_note"]
+    assert out["footprint"] == []
+    assert out["unallocated_sites"] == 1000
+    assert "cannot sit in one row" in out["split_note"]
+    assert out["suggested_country"] == "DE"
 
 
 def test_a_corroborated_fact_beats_an_uncorroborated_one(session):
@@ -67,7 +80,7 @@ def test_a_corroborated_fact_beats_an_uncorroborated_one(session):
     _fact(session, case_id, 500, subject="Wuerth", state="UNCORROBORATED")
     _fact(session, case_id, 2900, state="CORROBORATED")
     out = footprint.resolve(session, case_id)
-    assert out["footprint"][0]["sites"] == 2900
+    assert out["unallocated_sites"] == 2900
     assert "not used" in out["detail"], (
         "the competing count must be reported, not silently dropped")
 
@@ -76,7 +89,7 @@ def test_a_contradicted_fact_loses_to_a_pending_one(session):
     case_id = _case(session)
     _fact(session, case_id, 9999, state="CONTRADICTED")
     _fact(session, case_id, 1000, state="PENDING")
-    assert footprint.resolve(session, case_id)["footprint"][0]["sites"] == 1000
+    assert footprint.resolve(session, case_id)["unallocated_sites"] == 1000
 
 
 def test_the_register_fixes_the_total_and_the_table_only_splits_it(session):
@@ -165,8 +178,8 @@ def test_a_saved_placeholder_does_not_outrank_the_register(session):
     _fact(session, case_id, 1000)
 
     out = footprint.resolve(session, case_id)
-    assert out["origin"] == "KNOWN_FACT"
-    assert out["footprint"][0]["sites"] == 1000
+    assert out["origin"] == "KNOWN_FACT_UNALLOCATED"
+    assert out["unallocated_sites"] == 1000
 
 
 def test_a_saved_footprint_is_used_when_the_register_holds_nothing(session):

@@ -509,6 +509,30 @@ class TriangulationPolicy:
             raise PolicyInvalid("stale_after_years must be at least 1")
 
 
+@dataclass(frozen=True)
+class FootprintPolicy:
+    """How coarse a footprint row may be.
+
+    A row is a statement that every site in it is identical - same bandwidth,
+    same primary and backup product, same dual-access probability, same users
+    per site. That is fine for five sites and false for five hundred, and the
+    falsehood is priced."""
+    set_name: str
+    max_sites_per_archetype_row: int
+
+    @classmethod
+    def from_rows(cls, rows: dict, set_name: str = "footprint_policy"):
+        policy = cls(set_name=set_name,
+                     max_sites_per_archetype_row=int(_require(
+                         rows, "max_sites_per_archetype_row", set_name)))
+        policy.validate()
+        return policy
+
+    def validate(self) -> None:
+        if self.max_sites_per_archetype_row < 1:
+            raise PolicyInvalid("max_sites_per_archetype_row must be at least 1")
+
+
 # --------------------------------------------------------------- recommendation
 @dataclass(frozen=True)
 class RecommendationPolicy:

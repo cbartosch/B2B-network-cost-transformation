@@ -50,6 +50,7 @@ else:
 
     _labels = {
         "PROMOTED_RESEARCH": ("Promoted from research", st.success),
+        "KNOWN_FACT_UNALLOCATED": ("Registered, not yet allocated", st.warning),
         "KNOWN_FACT": ("From the known-facts register", st.info),
         "KNOWN_FACT_SPLIT": ("Register total, your breakdown", st.info),
         "ANALYST_SAVED": ("Saved on this case", st.info),
@@ -114,6 +115,22 @@ else:
             "To replace these: research domain 2 and promote the counts on "
             "page 5, or register what you know on page 2 - a registered "
             "Location footprint fact is picked up here automatically.")
+
+_unallocated = (_fp or {}).get("unallocated_sites")
+if _unallocated:
+    st.info(
+        f"**{_unallocated:,} registered sites to allocate.** Add a row per "
+        f"country and site type below and the remainder is tracked as you go. "
+        f"Nothing is guessed for you - a plausible mix is still a mix nobody "
+        f"decided, and it would be priced as though someone had.")
+    _sugg = (_fp or {}).get("suggested_country")
+    if _sugg:
+        st.caption(f"Suggested country for the first rows: {_sugg}. Site types: "
+                   f"STORE for a customer-facing outlet (trade counter, bank "
+                   f"branch, shop), WAREHOUSE for a depot, plant or "
+                   f"distribution centre, LARGE_OFFICE for a headquarters or "
+                   f"regional office, DC for a computing facility, BRANCH for a "
+                   f"small non-customer-facing site.")
 
 st.caption("Whatever is in the table below is what runs. Edit it, then Save or "
            "Run - both persist it to the case.")
@@ -184,6 +201,33 @@ def _clean_footprint(frame):
 
 
 _edited, _edit_problems = _clean_footprint(fp)
+
+_ROW_LIMIT = 100          # mirrors footprint_policy.max_sites_per_archetype_row
+_coarse = [r for r in _edited if r["sites"] > _ROW_LIMIT]
+if _coarse:
+    st.error(
+        "**These rows carry too many sites to be one row:** "
+        + "; ".join(f"{r['country']} {r['archetype']} {r['sites']:,}"
+                    for r in _coarse)
+        + f". A row asserts that every site in it is identical - one bandwidth, "
+          f"one primary and backup product, one dual-access probability - and "
+          f"the whole row is priced at that archetype's tier. Split them by "
+          f"site type. The run is refused above {_ROW_LIMIT} per row.")
+
+if _unallocated:
+    _done = sum(r["sites"] for r in _edited)
+    _left = _unallocated - _done
+    if _left > 0:
+        st.warning(f"{_done:,} of {_unallocated:,} allocated - "
+                   f"**{_left:,} still to place.** The run uses what is in the "
+                   f"table, so anything unallocated is simply not modelled.")
+    elif _left < 0:
+        st.error(f"{_done:,} allocated against a registered {_unallocated:,} - "
+                 f"**{abs(_left):,} more than the register holds.** Correct the "
+                 f"table, or change the fact on page 2 if the registered total "
+                 f"is what is wrong.")
+    else:
+        st.success(f"All {_unallocated:,} registered sites allocated.")
 if not _edit_problems and _edited != [
         {"country": (r.get("country") or "").upper(),
          "archetype": (r.get("archetype") or "").upper(),

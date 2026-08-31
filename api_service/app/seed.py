@@ -141,6 +141,16 @@ THRESHOLDS = [
     ("triangulation_policy", "material_spread_share", "0.15"),
     ("triangulation_policy", "stale_after_years", "3"),
 
+    # --- footprint allocation.
+    # The largest number of sites that may sit under a single archetype row.
+    # A row carries one bandwidth, one primary and backup product, one
+    # dual-access probability and one users-per-site figure, so a bulk total in
+    # one row asserts that every site in it is identical. At a handful of sites
+    # that is a reasonable simplification; at several hundred it is a claim
+    # about an estate nobody made, and it prices every one of them at a tier
+    # nobody chose.
+    ("footprint_policy", "max_sites_per_archetype_row", "100"),
+
     # --- quality gate.
     # How many times a registered call may be re-issued after the gate rejects
     # it. Two means one correction: enough for a drafting slip, not enough for

@@ -284,3 +284,40 @@ def test_a_footprint_of_all_zeros_is_refused_by_name(session, client):
     assert detail["error"] == "footprint has no sites"
     assert "promote" in detail["detail"], (
         "the refusal should name the route to evidence, not just the mistake")
+
+
+def test_a_single_row_carrying_hundreds_of_sites_is_refused(session, client):
+    """100 sites are never identical.
+
+    A row asserts that every site in it shares one bandwidth, one primary and
+    backup product and one dual-access probability, and the whole row is costed
+    at that archetype's tier - so a bulk total in one row puts a wrong number
+    into the baseline and looks deliberate. Enforced at the API rather than
+    only in the interface, so no caller can route around it."""
+    case_id = _ready_case(session, countries=("DE",))
+
+    r = client.post(f"/v1/outside-in/cases/{case_id}/simulations:run",
+                    json={"seed": 42, "ensemble_size": 1,
+                          "footprint": [{"country": "DE",
+                                         "archetype": "STORE",
+                                         "sites": 1000}]})
+
+    assert r.status_code == 422, r.text
+    detail = r.json()["detail"]
+    assert detail["error"] == "a single archetype row carries too many sites"
+    assert detail["limit"] == 100
+    assert "STORE" in detail["detail"] or detail["rows"][0]["sites"] == 1000
+
+
+def test_an_allocated_footprint_of_the_same_total_is_accepted(session, client):
+    """The remedy has to work: the same estate, split by site type, runs."""
+    case_id = _ready_case(session, countries=("DE",))
+    _prior(session)
+
+    rows = ([{"country": "DE", "archetype": "STORE", "sites": 100}] * 8
+            + [{"country": "DE", "archetype": "WAREHOUSE", "sites": 90},
+               {"country": "DE", "archetype": "LARGE_OFFICE", "sites": 8},
+               {"country": "DE", "archetype": "DC", "sites": 2}])
+    r = client.post(f"/v1/outside-in/cases/{case_id}/simulations:run",
+                    json={"seed": 42, "ensemble_size": 1, "footprint": rows})
+    assert r.status_code in (200, 202), r.text

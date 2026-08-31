@@ -145,25 +145,41 @@ def resolve(session, case_id: str) -> dict:
                 "provenance": [], "considered": considered,
             }
 
-        _skip("ANALYST_SAVED", "no breakdown is saved, so the whole registered "
-                               "total sits in one row")
+        _skip("ANALYST_SAVED", "no breakdown is saved, so the registered "
+                               "total is unallocated")
         country = (case_row.country_of_domicile
                    or (list(case_row.in_scope_countries or []) or [None])[0])
         if country:
             _use("KNOWN_FACT", detail)
+            # Deliberately NOT one row of `total` sites. A row asserts that
+            # every site in it is identical - one bandwidth, one primary and
+            # backup product, one dual-access probability, one users-per-site
+            # figure - and several hundred sites are never identical. Emitting
+            # the bulk total as a single row priced an entire estate at a tier
+            # nobody chose, and it looked like a footprint rather than like the
+            # unallocated number it was.
+            #
+            # So the total is reported as unallocated and the footprint comes
+            # back empty. Inventing a split would be worse: a plausible mix is
+            # still a mix nobody decided.
             return {
-                "origin": "KNOWN_FACT",
-                "footprint": [{"country": country,
-                               "archetype": DEFAULT_ARCHETYPE, "sites": total}],
+                "origin": "KNOWN_FACT_UNALLOCATED",
+                "footprint": [],
                 "detail": detail,
                 "needs_split": True,
-                "register_total": total, "split_total": total,
+                "unallocated_sites": total,
+                "register_total": total, "split_total": 0,
                 "diverges": False,
                 "split_note": (
-                    f"All {total:,} sites are in one row under {country} / "
-                    f"{DEFAULT_ARCHETYPE}, because the register records a total "
-                    f"and not a breakdown. Split it across countries and site "
-                    f"types, then Save - the registered total stays as it is."),
+                    f"{total:,} sites are registered and none are allocated. A "
+                    f"footprint row states that every site in it is identical - "
+                    f"same bandwidth, same primary and backup product, same "
+                    f"dual-access probability - so {total:,} sites cannot sit "
+                    f"in one row. Allocate them across countries and site "
+                    f"types below: a trade counter or bank branch is a STORE, "
+                    f"a depot or plant is a WAREHOUSE, a regional office is a "
+                    f"LARGE_OFFICE."),
+                "suggested_country": country,
                 "known_fact_id": fact.known_fact_id,
                 "provenance": [], "considered": considered,
             }

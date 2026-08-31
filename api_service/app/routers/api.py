@@ -860,6 +860,38 @@ def run_simulation(case_id: str, payload: SimIn):
         if unknown:
             raise HTTPException(422, f"unknown archetypes: {unknown}")
 
+        # A row asserts that every site in it is identical: one bandwidth, one
+        # primary and backup product, one dual-access probability, one
+        # users-per-site figure. That is a fair simplification for a handful of
+        # sites and a false claim about several hundred - and the falsehood is
+        # priced, because the whole row is costed at the archetype's tier.
+        # Enforced here rather than only in the interface, so no caller can put
+        # a bulk total through the model.
+        try:
+            fp_policy = policy.FootprintPolicy.from_rows(
+                _thresholds(s, "footprint_policy"))
+        except policy.PolicyIncomplete as exc:
+            raise HTTPException(409, {"error": "governed policy unusable",
+                                      "detail": str(exc)})
+        coarse = [r for r in footprint
+                  if int(r["sites"]) > fp_policy.max_sites_per_archetype_row]
+        if coarse:
+            raise HTTPException(422, {
+                "error": "a single archetype row carries too many sites",
+                "limit": fp_policy.max_sites_per_archetype_row,
+                "rows": [{"country": r["country"], "archetype": r["archetype"],
+                          "sites": r["sites"]} for r in coarse],
+                "detail": (
+                    f"A footprint row states that every site in it is "
+                    f"identical - same bandwidth, same primary and backup "
+                    f"product, same dual-access probability - and the whole row "
+                    f"is priced at that archetype's tier. Above "
+                    f"{fp_policy.max_sites_per_archetype_row} sites that is a "
+                    f"claim about the estate nobody made. Split these rows by "
+                    f"site type and country: a trade counter or bank branch is "
+                    f"a STORE, a depot or plant is a WAREHOUSE, a regional "
+                    f"office is a LARGE_OFFICE, a computing facility is a DC.")})
+
         # Ask before creating the row. The candidate must not count itself,
         # and a refused run should never have existed.
         try:
