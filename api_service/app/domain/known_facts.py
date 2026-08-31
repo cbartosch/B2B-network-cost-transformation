@@ -164,7 +164,7 @@ def corroborate(session, *, known_fact_id: str, provider: str,
     # comparison performed, nothing to re-check. schemas.CorroborationResult
     # has no state field at all, which is a stronger control than validating
     # one away, and it is what forced this rewrite.
-    state, matched, reason = _compare_candidates(
+    state, matched, reason, observed = _compare_candidates(
         asserted=fact.value_base, unit=fact.unit, currency=fact.currency,
         candidates=[c.model_dump() for c in result.candidates],
         tolerance=tolerance)
@@ -190,9 +190,16 @@ def corroborate(session, *, known_fact_id: str, provider: str,
                     .values(**values))
     session.commit()
     gateway.succeed(session, run_id, {"state": state, "reason": reason,
-                                      "candidates": len(result.candidates)})
+                                      "candidates": len(result.candidates),
+                                      "observed": observed})
     return {"known_fact_id": known_fact_id, "corroboration_state": state,
             "reason": reason, "matched_source": matched,
+            # What the sources actually said, whatever the verdict. A result
+            # that reports only a verdict throws away the six figures the
+            # search found, which are the answer to the question the analyst
+            # was really asking.
+            "observed": observed,
+            "unresolved_reasons": list(result.unresolved_reasons),
             "note": note, "provenance": provenance}
 
 
@@ -452,45 +459,90 @@ def uncorroborated_count(session, case_id: str) -> int:
 
 
 def _compare_candidates(*, asserted, unit, currency, candidates, tolerance):
-    """Deterministic corroboration. Returns (state, matched_source, reason).
+    """Deterministic corroboration. Returns (state, matched_source, reason, detail).
 
     A candidate corroborates when its public value is within `tolerance` of
-    the asserted one; it contradicts when it is outside and the units agree.
-    Where candidates disagree with each other, the nearest is reported and the
-    disagreement is stated rather than resolved - picking a winner is the
-    model behaviour this replaced.
+    the asserted one, in the same unit. It contradicts when it is outside.
+
+    **A candidate in a different unit is reported, not discarded.** The first
+    version dropped it with `continue` and told the analyst only that "none
+    stated a comparable value" - so a fact asserting 400 *sites*, against six
+    sources stating 30, 304, 371, 579 and 770 *branches*, produced a blank.
+    The unit difference is real and must not be papered over by equating
+    branches with sites, but hiding the figures is worse than either: they
+    are the answer to the question the analyst was actually asking, one
+    derivation away.
+
+    Nothing here derives that composition. Adding branches to headquarters
+    and data centres is a calculation, and a calculation belongs in the
+    promotion path where its method and inputs are recorded, not in a
+    comparison that would then be reporting a number no source stated.
     """
+    detail = {"comparable": [], "other_unit": [], "no_value": []}
     if asserted is None:
-        return "UNCORROBORATED", None, "the assertion carries no value to compare"
+        return ("UNCORROBORATED", None,
+                "the assertion carries no value to compare", detail)
     if not candidates:
-        return "UNCORROBORATED", None, "no public source stated this value"
+        return ("UNCORROBORATED", None,
+                "no public source stated this value", detail)
 
     target = D(asserted)
+    want_unit = (unit or "").strip().lower()
     scored = []
     for c in candidates:
         value = c.get("public_value")
         if value is None:
+            detail["no_value"].append(
+                {"publisher": c.get("publisher"), "url": c.get("url"),
+                 "note": c.get("comparison_notes")})
             continue
-        if unit and c.get("unit") and c["unit"].strip().lower() != unit.strip().lower():
-            continue          # different units are not a disagreement
+        got_unit = (c.get("unit") or "").strip().lower()
+        row = {"publisher": c.get("publisher"), "url": c.get("url"),
+               "value": float(value), "unit": c.get("unit"),
+               "as_of": c.get("as_of")}
+        if want_unit and got_unit and got_unit != want_unit:
+            detail["other_unit"].append(row)
+            continue
         if currency and c.get("currency") and c["currency"].upper() != currency.upper():
+            detail["other_unit"].append({**row, "currency": c.get("currency")})
             continue
-        delta = abs(D(value) - target) / target if target else D(1)
-        scored.append((delta, c))
+        detail["comparable"].append(row)
+        scored.append((abs(D(value) - target) / target if target else D(1), c))
 
     if not scored:
+        if detail["other_unit"]:
+            seen = ", ".join(
+                f"{r['publisher'] or 'a source'} {r['value']:g} {r['unit'] or ''}"
+                f"{' (' + r['as_of'] + ')' if r.get('as_of') else ''}"
+                for r in detail["other_unit"][:6])
+            units = sorted({(r["unit"] or "unstated") for r in detail["other_unit"]})
+            return ("UNCORROBORATED", None,
+                    f"public sources state a count in a different unit: {seen}. "
+                    f"The assertion is in {unit or 'an unstated unit'} and these "
+                    f"are in {', '.join(units)}, so they neither confirm nor "
+                    f"contradict it. If the assertion is meant to be the sum of "
+                    f"these plus other site types, compose it from researched "
+                    f"per-type counts rather than asserting the total - a sum "
+                    f"is a derivation and belongs where its inputs are recorded.",
+                    detail)
         return ("UNCORROBORATED", None,
-                "candidates were found but none stated a comparable value in "
-                "the same unit and currency")
+                "candidates were found but none carried a value", detail)
 
     scored.sort(key=lambda t: t[0])
     delta, best = scored[0]
+    values = sorted(r["value"] for r in detail["comparable"])
+    spread = ""
+    if len(values) > 1 and values[0] and values[-1] / values[0] >= 2:
+        spread = (f" Sources disagree widely among themselves "
+                  f"({values[0]:g} to {values[-1]:g}), so the nearest match is "
+                  f"weak evidence on its own.")
+
     if delta <= D(tolerance):
         return ("CORROBORATED", best.get("url"),
                 f"{best.get('publisher') or 'a public source'} states "
                 f"{best.get('public_value')}, within {float(tolerance):.0%} of "
-                f"the asserted {asserted}")
+                f"the asserted {asserted}.{spread}", detail)
     return ("CONTRADICTED", best.get("url"),
             f"nearest public source states {best.get('public_value')}, "
             f"{float(delta):.0%} from the asserted {asserted} and outside the "
-            f"{float(tolerance):.0%} tolerance")
+            f"{float(tolerance):.0%} tolerance.{spread}", detail)

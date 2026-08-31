@@ -154,7 +154,33 @@ else:
                     if "_error" in r:
                         st.error(f"Run failed closed: {r['_error']}")
                     else:
+                        st.session_state[f"obs_{f['known_fact_id']}"] = r
                         st.success(f"{r['corroboration_state']}")
                         st.rerun()
+
+            # Whatever the verdict, show what the sources said. A result that
+            # reports only a state throws away the figures the search found,
+            # which are usually the answer to the question actually being
+            # asked - here, six sources giving branch counts against an
+            # assertion made in sites.
+            _res = st.session_state.get(f"obs_{f['known_fact_id']}")
+            if isinstance(_res, dict):
+                _obs = _res.get("observed") or {}
+                _rows = (_obs.get("comparable") or []) + (_obs.get("other_unit") or [])
+                if _rows:
+                    st.markdown("**What public sources said**")
+                    st.dataframe(pd.DataFrame(_rows), use_container_width=True,
+                                 hide_index=True)
+                if _obs.get("other_unit") and not _obs.get("comparable"):
+                    st.info("These are in a different unit from the assertion, "
+                            "so they neither confirm nor contradict it. If the "
+                            "asserted total is meant to be these plus other "
+                            "site types, research domain 2 and promote the "
+                            "per-type counts - a sum is a derivation and "
+                            "belongs where its inputs are recorded, not in a "
+                            "comparison that would then report a number no "
+                            "source stated.")
+                for _u in _res.get("unresolved_reasons") or []:
+                    st.caption(f"- {_u}")
     st.caption("A corroborated fact is superseded by the public fact that corroborated it "
                "and stops counting toward asserted share (0.6A).")
