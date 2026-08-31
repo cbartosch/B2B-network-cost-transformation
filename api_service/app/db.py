@@ -79,6 +79,10 @@ case = Table(
     # Drivers the analyst supplied, kept on the case. They were interface
     # defaults - 5,000 users and 900 per site - which meant they went into the
     # baseline as invented figures and had to be retyped on every visit.
+    # Set from the entity profile or Q01. Drives the bandwidth tier per site
+    # type: the archetype says what shape a site is, the industry says what
+    # happens inside it.
+    Column("industry", String(64)),
     Column("declared_users", Integer),
     Column("declared_ops_cost_per_site", Numeric(14, 2)),
     Column("declared_spend_by_country", JSON),
@@ -517,6 +521,29 @@ research_brief = Table(
     Column("active", Boolean, default=True),
     Column("approved_by", String(120)), Column("note", Text),
     Column("updated_at", DateTime(timezone=True), default=_now),
+    schema="reference",
+)
+
+# Bandwidth per site type per industry.
+#
+# archetype_prior carries one bandwidth_mbps_base per archetype, which says a
+# 200-site retail bank branch and a 200-site parts depot need the same circuit.
+# They do not: a branch runs card, teller and video traffic to a data centre,
+# a depot runs scanning and a WMS session. The archetype captures the shape of
+# the site; the industry captures what happens inside it, and the bandwidth
+# follows from both.
+#
+# Resolved by (industry, archetype) with a DEFAULT industry row as the
+# fallback, so an unknown industry is priced at the generic tier rather than
+# refused - and the tier actually used is reported on the run.
+archetype_bandwidth = Table(
+    "archetype_bandwidth", metadata,
+    Column("id", String(80), primary_key=True),          # {industry}-{archetype}
+    Column("industry", String(48), index=True),          # or DEFAULT
+    Column("archetype", String(48)),
+    Column("bandwidth_mbps", Integer),
+    Column("note", Text),
+    Column("approved_by", String(120)),
     schema="reference",
 )
 

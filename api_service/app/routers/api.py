@@ -426,6 +426,7 @@ class CaseUpdate(BaseModel):
     region: str | None = None
     entity_aliases: list[str] | None = None
     analyst_footprint: list[dict] | None = None
+    industry: str | None = None
     declared_users: int | None = None
     declared_ops_cost_per_site: Decimal | None = None
     declared_spend_by_country: dict | None = None
@@ -836,6 +837,7 @@ def run_simulation(case_id: str, payload: SimIn):
             preflight.assert_clear_to_run(s, case_id)
         except PermissionError as e:
             raise HTTPException(409, str(e))
+        case_row = _one_or_404(s, db.case, db.case.c.case_id, case_id, "case")
         # users_base and bandwidth_mbps_base were seeded and never loaded. Five
         # columns exist on the prior; three were read. The footprint therefore
         # implied a headcount the model discarded in favour of a flat default.
@@ -845,6 +847,28 @@ def run_simulation(case_id: str, payload: SimIn):
                               "users_base": r.users_base,
                               "bandwidth_mbps_base": r.bandwidth_mbps_base}
                 for r in s.execute(select(db.archetype_prior)).all()}
+
+        # Industry overrides the generic bandwidth per site type. The archetype
+        # says what shape a site is; the industry says what happens inside it,
+        # and a retail bank branch does not need the same circuit as a parts
+        # depot of the same size. Falls back to the DEFAULT rows where the
+        # industry is unknown, so an unrecognised sector is priced at the
+        # generic tier rather than refused.
+        _industry = (case_row.industry or "DEFAULT").strip().upper()
+        _bw_rows = s.execute(select(db.archetype_bandwidth).where(
+            db.archetype_bandwidth.c.industry.in_([_industry, "DEFAULT"]))).all()
+        _bw = {}
+        for r in sorted(_bw_rows, key=lambda r: r.industry == "DEFAULT",
+                        reverse=True):
+            # DEFAULT first, so a matching industry row overwrites it.
+            _bw[r.archetype] = int(r.bandwidth_mbps)
+        bandwidth_basis = {"industry": _industry,
+                           "matched": _industry in {r.industry for r in _bw_rows},
+                           "by_archetype": dict(sorted(_bw.items()))}
+        for _a, _mbps in _bw.items():
+            if _a in arch:
+                arch[_a]["bandwidth_mbps_base"] = _mbps
+
         footprint = [r.model_dump() for r in payload.footprint]
         total_sites = sum(r["sites"] for r in footprint)
         if total_sites == 0:
@@ -911,7 +935,8 @@ def run_simulation(case_id: str, payload: SimIn):
             model_version=config.SIMULATION_MODEL_VERSION, seed=payload.seed,
             ensemble_size=payload.ensemble_size,
             params={"footprint": footprint},
-            pinned_priors={"archetype_prior": arch},
+            pinned_priors={"archetype_prior": arch,
+                           "bandwidth_basis": bandwidth_basis},
             status=jobs.QUEUED, progress_completed=0,
             progress_total=payload.ensemble_size, cancel_requested=False))
         s.commit()

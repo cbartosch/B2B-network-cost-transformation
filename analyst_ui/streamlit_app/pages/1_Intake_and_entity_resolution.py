@@ -63,6 +63,16 @@ with st.form("intake"):
              "and the perimeter check discards every source that uses the "
              "brand.", disabled=is_locked)
 
+    _INDUSTRIES = ["", "FINANCIAL_SERVICES", "LOGISTICS", "DISTRIBUTION",
+                   "RETAIL", "MANUFACTURING"]
+    _cur_ind = (case.get("industry") or "")
+    industry = st.selectbox(
+        "Industry", _INDUSTRIES,
+        index=_INDUSTRIES.index(_cur_ind) if _cur_ind in _INDUSTRIES else 0,
+        help="Sets the bandwidth tier per site type. A retail bank branch and "
+             "a parts depot of the same size do not need the same circuit; "
+             "leave blank to use the generic tiers.", disabled=is_locked)
+
     c4, c5, c6 = st.columns(3)
     _perimeter_options = ["SINGLE_ENTITY", "GROUP_CONSOLIDATED", "NAMED_SUBSIDIARIES",
                           "NAMED_DIVISION"]
@@ -112,6 +122,7 @@ with st.form("intake"):
         payload = {
             "scope_mode": scope_mode,
             "entity_aliases": [a.strip() for a in aliases_text.split(",") if a.strip()],
+            "industry": industry or None,
             "in_scope_countries": ([c.strip().upper() for c in countries_text.split(",") if c.strip()]
                                    if countries_text else []),
             "region": region_choice,

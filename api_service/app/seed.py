@@ -12,7 +12,7 @@ DOMAIN_AGENT_MAP_SEED = {
     9: 'LLM-08', 10: 'LLM-08', 18: 'LLM-08', 19: 'LLM-08', 20: 'LLM-08',
     21: 'LLM-08', 22: 'LLM-08',
 }
-from .db import (SessionLocal, archetype_prior, lever, platform_unit_cost,
+from .db import (SessionLocal, archetype_bandwidth, archetype_prior, lever, platform_unit_cost,
                  research_brief,
                  threshold, unit_cost_prior)
 
@@ -298,6 +298,61 @@ PRIORS = [
     ("AE", "MOBILE_5G", "L0", 50, 55, 95, 160),
 ]
 
+# Bandwidth per site type per industry. (industry, archetype, mbps)
+#
+# DEFAULT is the fallback for an industry not listed, so an unknown sector is
+# priced at the generic tier rather than refused. Every tier here must exist in
+# PRIORS for the products the archetype uses, or the circuit is unpriceable -
+# the same constraint the archetype defaults are under.
+#
+# The differences are the point. A retail bank branch runs card, teller and
+# video traffic back to a data centre; a parts depot of the same size runs
+# scanning and a warehouse session. A distributor's trade counter sits between
+# the two. Treating them alike is what one bandwidth per archetype did.
+ARCHETYPE_BANDWIDTH = [
+    # --- generic fallback, matching the archetype defaults
+    ("DEFAULT", "BRANCH", 100), ("DEFAULT", "STORE", 50),
+    ("DEFAULT", "WAREHOUSE", 100), ("DEFAULT", "LARGE_OFFICE", 500),
+    ("DEFAULT", "DC", 10000),
+
+    # --- banking and insurance: branches are transaction and video heavy
+    ("FINANCIAL_SERVICES", "STORE", 100),
+    ("FINANCIAL_SERVICES", "BRANCH", 100),
+    ("FINANCIAL_SERVICES", "LARGE_OFFICE", 1000),
+    ("FINANCIAL_SERVICES", "WAREHOUSE", 100),
+    ("FINANCIAL_SERVICES", "DC", 10000),
+
+    # --- logistics: depots and hubs move scan and telemetry traffic, and the
+    # sorting sites are the bandwidth-heavy ones rather than the offices
+    ("LOGISTICS", "WAREHOUSE", 500),
+    ("LOGISTICS", "STORE", 50),
+    ("LOGISTICS", "BRANCH", 100),
+    ("LOGISTICS", "LARGE_OFFICE", 500),
+    ("LOGISTICS", "DC", 10000),
+
+    # --- distribution and wholesale: a trade counter is a small shop with a
+    # stock system behind it
+    ("DISTRIBUTION", "STORE", 100),
+    ("DISTRIBUTION", "WAREHOUSE", 500),
+    ("DISTRIBUTION", "BRANCH", 100),
+    ("DISTRIBUTION", "LARGE_OFFICE", 500),
+    ("DISTRIBUTION", "DC", 10000),
+
+    # --- retail: many small sites, card and stock traffic
+    ("RETAIL", "STORE", 50),
+    ("RETAIL", "WAREHOUSE", 500),
+    ("RETAIL", "BRANCH", 100),
+    ("RETAIL", "LARGE_OFFICE", 500),
+    ("RETAIL", "DC", 10000),
+
+    # --- manufacturing: plants carry machine and telemetry traffic
+    ("MANUFACTURING", "WAREHOUSE", 500),
+    ("MANUFACTURING", "LARGE_OFFICE", 500),
+    ("MANUFACTURING", "BRANCH", 100),
+    ("MANUFACTURING", "STORE", 50),
+    ("MANUFACTURING", "DC", 10000),
+]
+
 # bandwidth_mbps_base is now also the tier a circuit is priced at, so every
 # value here must have a matching row in PRIORS or the archetype is unpriceable.
 # WAREHOUSE moved from 200 to 100: 200 was a tier no benchmark quotes, and an
@@ -346,6 +401,11 @@ def _rows():
         (threshold, lambda: [
             {"set_name": a, "key": b, "value": c, "version": 1,
              "approved_by": "seed", "note": "MVP default"} for a, b, c in THRESHOLDS]),
+        (archetype_bandwidth, lambda: [
+            {"id": f"{ind}-{arch}", "industry": ind, "archetype": arch,
+             "bandwidth_mbps": mbps, "approved_by": "seed",
+             "note": "seed default; retune per engagement"}
+            for ind, arch, mbps in ARCHETYPE_BANDWIDTH]),
         (research_brief, lambda: [
             {"brief_id": f"{no}-{BRIEF_CATALOGUE_VERSION}", "domain_no": no,
              "brief_version": BRIEF_CATALOGUE_VERSION,

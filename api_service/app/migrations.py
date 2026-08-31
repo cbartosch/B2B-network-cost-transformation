@@ -34,7 +34,7 @@ from . import db
 log = logging.getLogger("workbench.migrations")
 
 # Bump when the physical schema changes, and add a step below.
-SCHEMA_VERSION = 25
+SCHEMA_VERSION = 26
 
 VERSION_TABLE = "schema_version"
 VERSION_SCHEMA = "audit"
@@ -703,13 +703,28 @@ def _migrate_v25(conn) -> None:
     log.info("v25: %d declared-driver column(s) added", added)
 
 
+def _migrate_v26(conn) -> None:
+    """4.23.0 -> 4.24.0: bandwidth by industry and site type.
+
+    reference.archetype_bandwidth is new and create_all builds it.
+    engagement_case.industry is added so a case can be resolved against it.
+
+    archetype_prior alone said a retail bank branch and a parts depot of the
+    same size need the same circuit. The archetype describes the shape of a
+    site; the industry describes what happens inside it.
+    """
+    added = _add_column(conn, db.case, "industry")
+    log.info("v26: case.industry added=%s; archetype_bandwidth introduced",
+             bool(added))
+
+
 MIGRATIONS = {2: _migrate_v2, 3: _migrate_v3, 4: _migrate_v4, 5: _migrate_v5,
               6: _migrate_v6, 7: _migrate_v7, 8: _migrate_v8, 9: _migrate_v9,
               10: _migrate_v10, 11: _migrate_v11, 12: _migrate_v12,
               13: _migrate_v13, 14: _migrate_v14, 15: _migrate_v15,
               16: _migrate_v16, 17: _migrate_v17, 18: _migrate_v18,
               19: _migrate_v19, 20: _migrate_v20,
-              21: _migrate_v21, 22: _migrate_v22, 23: _migrate_v23, 24: _migrate_v24, 25: _migrate_v25}
+              21: _migrate_v21, 22: _migrate_v22, 23: _migrate_v23, 24: _migrate_v24, 25: _migrate_v25, 26: _migrate_v26}
 
 
 class SchemaDrift(RuntimeError):

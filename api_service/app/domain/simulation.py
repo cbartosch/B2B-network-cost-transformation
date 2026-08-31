@@ -65,6 +65,11 @@ def one_pass(seed: int, footprint: list[dict], archetypes: dict) -> dict:
             if len(edges) < SAMPLE_EDGES:
                 edges.append({"from": node_id, "to": f"POP-{entry['country']}",
                               "product": primary_product, "role": "PRIMARY",
+                              # On the edge, not only in the aggregate. A
+                              # circuit's bandwidth is the second half of what
+                              # it costs, and a sample that shows the product
+                              # without it shows half the circuit.
+                              "bandwidth_mbps": bw_base,
                               "diversity_state": DIVERSITY_STATE})
             primary += 1
             # Keyed with the bandwidth the archetype implies, so the circuit
@@ -81,6 +86,7 @@ def one_pass(seed: int, footprint: list[dict], archetypes: dict) -> dict:
                 if len(edges) < SAMPLE_EDGES:
                     edges.append({"from": node_id, "to": f"POP2-{entry['country']}",
                                   "product": backup_product, "role": "BACKUP",
+                                  "bandwidth_mbps": bw_base,
                                   "diversity_state": DIVERSITY_STATE})
                 backup += 1
                 dual_sites += 1

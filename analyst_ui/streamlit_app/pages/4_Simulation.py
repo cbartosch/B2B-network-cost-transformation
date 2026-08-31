@@ -332,8 +332,27 @@ if sim:
                "simulated share in step 6 is computed from.")
     st.caption(f"Model `{o['model_version']}` seed `{o['seed']}` ensemble {o['ensemble_size']}. "
                f"Re-running with the same seed and priors reproduces this hash exactly.")
-    st.markdown("**Sample simulated edges** - note the diversity state.")
-    st.dataframe(pd.DataFrame(o["sample_topology"]["edges"][:25]), use_container_width=True)
+    _basis = (sim.get("pinned_priors") or {}).get("bandwidth_basis") or {}
+    if _basis:
+        st.markdown("**Bandwidth by site type**")
+        st.caption(
+            (f"Industry **{_basis.get('industry')}**."
+             if _basis.get("matched") else
+             "No industry set on this case, so the generic DEFAULT tiers are "
+             "used. Set the industry on page 1 to price site types for the "
+             "sector - a retail bank branch and a parts depot of the same size "
+             "do not need the same circuit.")
+            + " The archetype says what shape a site is; the industry says "
+              "what happens inside it, and the bandwidth follows from both.")
+        st.dataframe(pd.DataFrame(
+            [{"site type": a, "bandwidth (Mbps)": b}
+             for a, b in (_basis.get("by_archetype") or {}).items()]),
+            use_container_width=True, hide_index=True)
+
+    st.markdown("**Sample simulated edges** - note the diversity state and the "
+                "bandwidth each circuit is priced at.")
+    st.dataframe(pd.DataFrame(o["sample_topology"]["edges"][:25]),
+                 use_container_width=True)
 
 runs = api.get(f"/v1/outside-in/cases/{case_id}/simulations").get("runs", [])
 if runs:
