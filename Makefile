@@ -1,4 +1,7 @@
-.PHONY: backup restore deck benchmarks reach tls-doctor tls-doctor-in-container check up down logs test seed reset psql doctor migrate pins attest
+.PHONY: verify-domains backup restore deck benchmarks reach tls-doctor tls-doctor-in-container check up down logs test seed reset psql doctor migrate pins attest
+
+verify-domains: ## push a realistic reply for all 17 agent-routed domains through the pipeline
+	python tools/verify_domains.py
 
 backup:        ## save every case's hand-entered content to ./case-backups
 	python tools/backup_cases.py backup --out ./case-backups

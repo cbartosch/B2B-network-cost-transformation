@@ -106,3 +106,25 @@ def test_every_llm_module_fails_closed_on_a_provider_error(module):
     assert "ProviderUnavailable" in src, (
         f"{module} does not distinguish an unreachable provider from a poor "
         f"answer")
+
+
+def test_every_agent_routed_domain_survives_the_pipeline():
+    """The end-to-end check that can run without a network.
+
+    A realistic reply for each of the 17 agent-routed domains is validated
+    against the real schemas, triangulated, graded, given a disposition and
+    JSON-serialised as the evidence blob it would be stored as. Three separate
+    releases died at three different points on this path - the result-object
+    rebinding, a Decimal in a JSON column, and a schema forbidding a field the
+    prompt asked for - and each was only visible once the one before it was
+    cleared.
+    """
+    import subprocess
+    import sys
+    from pathlib import Path
+
+    tool = Path(__file__).resolve().parents[1] / "tools" / "verify_domains.py"
+    result = subprocess.run([sys.executable, str(tool)],
+                            capture_output=True, text=True)
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "All 17 agent-routed domains" in result.stdout
