@@ -47,10 +47,50 @@ class AbstentionReason(str, Enum):
 
 
 # --------------------------------------------------------------- LLM-01 / 08
+class SourceClass(str, Enum):
+    """What kind of publisher this is. A factual classification, not a grade.
+
+    The reliability grader used to infer this by matching keywords against the
+    URL and publisher strings, which is crude and silently wrong for anything
+    unfamiliar. The agent has already read the page and knows; asking it is
+    both cheaper and better founded than guessing from a hostname.
+    """
+    PRIMARY_FILING = "PRIMARY_FILING"        # annual report, 10-K, prospectus
+    REGULATOR = "REGULATOR"                  # regulator or statistics office
+    COMPANY_PUBLISHED = "COMPANY_PUBLISHED"  # the entity's own site, ESG, IR
+    TRADE_PRESS = "TRADE_PRESS"              # Reuters, FT, sector press
+    AGGREGATOR = "AGGREGATOR"                # directories, profile sites
+    OTHER = "OTHER"
+
+
+class HowRead(str, Enum):
+    """Whether the page was actually opened, or only its search snippet seen.
+
+    A snippet is not worthless and it is not the same as having read the
+    document. Reported so the grade can say which it was instead of treating
+    them alike.
+    """
+    FULL_PAGE = "FULL_PAGE"
+    SNIPPET_ONLY = "SNIPPET_ONLY"
+
+
+class FigureBasis(str, Enum):
+    """Whether the source states the figure or it was worked out from it."""
+    STATED = "STATED"
+    CALCULATED_FROM_STATED = "CALCULATED_FROM_STATED"
+    INFERRED = "INFERRED"
+
+
 class SourceRef(Strict):
     url: str
     publisher: str | None = None
     as_of: str | None = None
+    # Provenance the agent observed. These are reports about the source, never
+    # judgements about the finding: the grade is computed from them by code.
+    source_class: SourceClass | None = None
+    how_read: HowRead | None = None
+    figure_basis: FigureBasis | None = None
+    excerpt: str | None = None
 
 
 class QuantityCandidate(Strict):

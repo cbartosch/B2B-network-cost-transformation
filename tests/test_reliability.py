@@ -123,3 +123,69 @@ def test_every_grade_explains_itself():
         out = _grade(**kw)
         assert out["statement"].endswith(".")
         assert out["supports"] or out["shortfalls"]
+
+
+# ------------------------------------------------- provenance drives the grade
+def test_the_agent_reports_provenance_and_never_the_grade():
+    """The division the whole design rests on: the agent says what it read,
+    code says what that is worth. A model grading its own output is the same
+    judgement twice."""
+    from app.llm import schemas
+    fields = set(schemas.SourceRef.model_fields)
+    assert {"source_class", "how_read", "figure_basis"} <= fields
+    assert not {"grade", "reliability", "confidence"} & fields
+
+
+def test_a_declared_source_class_beats_guessing_at_the_hostname():
+    """The grader matched keywords against URLs, so an unfamiliar regulator
+    graded the same as a blog. The agent read the page and knows."""
+    dutch = [{"publisher": "Autoriteit Consument & Markt",
+              "source_class": "REGULATOR", "how_read": "FULL_PAGE",
+              "figure_basis": "STATED"},
+             {"publisher": "KVK register", "source_class": "REGULATOR",
+              "how_read": "FULL_PAGE", "figure_basis": "STATED"}]
+    out = _grade(verified_sources=dutch,
+                 band={"spread_share": 0.03, "newest_year": 2025})
+    assert out["grade"] == R.VERY_RELIABLE, (
+        "a regulator this codebase has never heard of must still grade as one")
+
+
+def test_a_snippet_only_source_is_a_named_downgrade_not_a_rejection():
+    out = _grade(
+        verified_sources=[{"source_class": "PRIMARY_FILING",
+                           "how_read": "SNIPPET_ONLY", "figure_basis": "STATED"},
+                          {"source_class": "REGULATOR",
+                           "how_read": "SNIPPET_ONLY", "figure_basis": "STATED"}],
+        band={"spread_share": 0.03, "newest_year": 2025})
+    assert out["grade"] == R.RELIABLE
+    assert any("search snippet" in s for s in out["shortfalls"])
+
+
+def test_an_inferred_figure_is_downgraded_and_kept():
+    out = _grade(
+        verified_sources=[{"source_class": "TRADE_PRESS",
+                           "how_read": "FULL_PAGE", "figure_basis": "INFERRED"},
+                          {"source_class": "TRADE_PRESS",
+                           "how_read": "FULL_PAGE", "figure_basis": "INFERRED"}],
+        band={"spread_share": 0.03, "newest_year": 2025})
+    assert out["grade"] == R.RELIABLE
+    assert any("do not state the figure" in s for s in out["shortfalls"])
+
+
+def test_the_base_contract_asks_for_findings_not_certainty():
+    """The contract told the agent a snippet "is not evidence", which under
+    grading means discarding an UNRELIABLE finding that was worth keeping."""
+    from app.llm.prompts import BASE_CONTRACT
+    assert "Nothing you find is discarded" in BASE_CONTRACT
+    assert "is not evidence" not in BASE_CONTRACT
+    assert "Withholding either" in BASE_CONTRACT
+    assert "Never invent a source" in BASE_CONTRACT, (
+        "the one prohibition grading cannot work around must survive")
+
+
+def test_the_contract_tells_the_agent_to_stop_searching():
+    """Efficiency: an eighth query rarely changes a grade, and every one is
+    latency and spend."""
+    from app.llm.prompts import BASE_CONTRACT
+    assert "Stop when you have a figure and its provenance" in BASE_CONTRACT
+    assert "Vary the phrasing" in BASE_CONTRACT

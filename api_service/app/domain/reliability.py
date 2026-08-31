@@ -57,8 +57,32 @@ SECONDARY_HINTS = (
 )
 
 
+# What the agent reports, mapped to accountability. A filing, a regulator and
+# a company's own publication are documents someone is answerable for; press
+# and directories report on them.
+ACCOUNTABLE = {"PRIMARY_FILING", "REGULATOR", "COMPANY_PUBLISHED"}
+REPORTING = {"TRADE_PRESS", "AGGREGATOR"}
+
+
 def _classify_source(source: dict) -> str:
-    """PRIMARY, SECONDARY or UNKNOWN, from the publisher and the URL."""
+    """PRIMARY, SECONDARY or UNKNOWN.
+
+    Taken from the agent's reported source_class where it gave one. It read the
+    page and knows; keyword-matching a hostname was a guess that was silently
+    wrong for anything unfamiliar - a regulator this list has never heard of
+    graded the same as a blog.
+
+    The keyword fallback stays for a reply that predates the field or omits it,
+    so an older run still grades rather than dropping to UNKNOWN.
+    """
+    declared = str(source.get("source_class") or "").upper()
+    if declared in ACCOUNTABLE:
+        return "PRIMARY"
+    if declared in REPORTING:
+        return "SECONDARY"
+    if declared == "OTHER":
+        return "UNKNOWN"
+
     text = " ".join(str(source.get(k) or "").lower()
                     for k in ("publisher", "url", "source_url", "title"))
     if any(hint in text for hint in PRIMARY_HINTS):
@@ -96,6 +120,19 @@ def grade(*, verified_sources: list, claimed_sources: int, band: dict | None,
 
     signals.append(f"{n_verified} source(s) independently re-fetched and "
                    f"confirmed to contain the claim")
+
+    snippets = [s for s in verified
+                if str(s.get("how_read") or "").upper() == "SNIPPET_ONLY"]
+    if snippets:
+        penalties.append(
+            f"{len(snippets)} source(s) were seen only as a search snippet, "
+            f"not read")
+    inferred = [s for s in verified
+                if str(s.get("figure_basis") or "").upper() == "INFERRED"]
+    if inferred:
+        penalties.append(
+            f"{len(inferred)} source(s) do not state the figure - it was "
+            f"inferred from them")
     if n_primary:
         signals.append(f"{n_primary} of them publish figures they are "
                        f"accountable for (annual report, regulator, filing)")

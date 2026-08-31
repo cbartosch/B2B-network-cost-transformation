@@ -133,6 +133,13 @@ def _url_ok(value) -> bool:
 
 # --------------------------------------------------------------- rule sets
 def public_evidence(result, context) -> Verdict:
+    """Legibility, not sufficiency.
+
+    Thin is now a grade, not a rejection: a finding with one snippet-only
+    source is UNRELIABLE and kept. So this gate checks only that the reply can
+    be read and graded - a claim with no source at all cannot be, because
+    there is no provenance to compute a grade from.
+    """
     """LLM-01 and LLM-08."""
     reasons, detail = [], []
     if result.found:
