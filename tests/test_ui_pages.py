@@ -363,3 +363,26 @@ def test_the_new_case_entry_does_not_use_a_form():
     text = app_py.read_text()
     assert 'st.form("new_case")' not in text
     assert 'key="nc_by"' in text
+
+
+def test_the_case_picker_keeps_its_selection():
+    """The cause of "I registered a fact and it is not shown".
+
+    The picker had no index, so it reset to the first entry on every visit to
+    the home page - and the list is ordered newest-first. Creating a second
+    case therefore switched the active one silently, and every page showed
+    that case's empty register. The facts were never lost; they were being
+    looked for under the wrong id."""
+    app_py = next(p for p in PAGES if p.name == "app.py")
+    text = app_py.read_text()
+    assert "index=_index" in text, (
+        "without an index the picker resets to the newest case on every visit")
+    assert 'st.session_state.get("case_id")' in text
+    assert "Active case is now" in text, (
+        "a silent switch is indistinguishable from data loss, so it is "
+        "announced")
+
+
+def test_the_known_facts_page_names_the_case_it_is_listing():
+    page = next(p for p in PAGES if p.name.startswith("2_"))
+    assert "Register for" in page.read_text()

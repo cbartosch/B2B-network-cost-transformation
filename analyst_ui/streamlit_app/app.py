@@ -59,9 +59,28 @@ case_id = None
 if cases:
     labels = {f"{c['subject_entity_legal_name'] or '(unresolved)'} · {c['case_id'][:8]}":
               c["case_id"] for c in cases}
-    pick = st.selectbox("Active case", list(labels),
-                        help="Every page below operates on this case.")
+
+    # The selection has to survive navigation. Without an index the picker
+    # reset to the first entry on every visit, and the list is ordered
+    # newest-first - so creating a second case silently switched the active
+    # one, and every page then showed that case's empty register. Facts
+    # registered against the first case were still there and were being looked
+    # for under the wrong id.
+    _current = st.session_state.get("case_id")
+    _ids = list(labels.values())
+    _index = _ids.index(_current) if _current in _ids else 0
+
+    pick = st.selectbox("Active case", list(labels), index=_index,
+                        help="Every page below operates on this case. The "
+                             "selection is kept as you move between pages.")
     case_id = labels[pick]
+    if st.session_state.get("case_id") != case_id:
+        # Switching case changes what every page shows. Said out loud, because
+        # a silent switch is indistinguishable from data loss.
+        st.session_state["case_id"] = case_id
+        st.info(f"Active case is now **{pick}**. Known facts, footprints and "
+                f"dispositions all belong to one case - anything registered "
+                f"on another case will not appear.")
     st.session_state["case_id"] = case_id
 
     with st.expander("Remove this case"):

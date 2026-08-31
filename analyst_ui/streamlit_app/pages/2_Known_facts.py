@@ -241,6 +241,9 @@ if "_error" not in _exp:
              "footprint. Restore with tools/backup_cases.py, or POST it to "
              "/v1/outside-in/cases:import.")
 
+st.caption(f"Register for **{_entity or 'this case'}** (case {case_id[:8]}). "
+           f"Facts belong to one case; the active case is chosen on the home "
+           f"page.")
 _kf_list = api.get(f"/v1/outside-in/cases/{case_id}/known-facts")
 if "_error" in _kf_list:
     # Silence here is the worst outcome: a register that failed to load looked
