@@ -118,6 +118,16 @@ class QuantityCandidate(Strict):
     publisher: str | None = None
     as_of: str | None = None
     note: str | None = None
+    # The same provenance SourceRef carries, because a candidate *is* one
+    # source's figure. The base contract says "for every source, state
+    # source_class, how_read and figure_basis" - the agent complied, put them
+    # here, and this model's extra="forbid" rejected the whole reply with 26
+    # validation errors. The instruction was right and the schema was wrong:
+    # asking for a field and then refusing it is the worst of both.
+    source_class: SourceClass | None = None
+    how_read: HowRead | None = None
+    figure_basis: FigureBasis | None = None
+    excerpt: str | None = None
 
 
 class Quantity(Strict):
@@ -185,6 +195,13 @@ class CorroborationCandidate(Strict):
     url: str
     publisher: str | None = None
     as_of: str | None = None
+    # The provenance the base contract asks for on every source. Present on
+    # every per-source model, because the contract does not say "except here" -
+    # and a model that omits one rejects an agent for following instructions.
+    source_class: SourceClass | None = None
+    how_read: HowRead | None = None
+    figure_basis: FigureBasis | None = None
+
     public_value: Decimal | None = None
     unit: str | None = None
     currency: str | None = None
@@ -229,6 +246,13 @@ class ProposedKnownFact(Strict):
     currency: str | None = None
     as_of: str | None = None
     sources: list[SourceRef] = Field(default_factory=list)
+    # The provenance the base contract asks for on every source. Present on
+    # every per-source model, because the contract does not say "except here" -
+    # and a model that omits one rejects an agent for following instructions.
+    source_class: SourceClass | None = None
+    how_read: HowRead | None = None
+    figure_basis: FigureBasis | None = None
+    excerpt: str | None = None
     confidence: str | None = None
     note: str | None = None
 
@@ -317,6 +341,13 @@ class BenchmarkObservationOut(Strict):
     tax_basis: str | None = None
     sla_compliant: bool | None = None
     as_of: str | None = None
+    # The provenance the base contract asks for on every source. Present on
+    # every per-source model, because the contract does not say "except here" -
+    # and a model that omits one rejects an agent for following instructions.
+    source_class: SourceClass | None = None
+    how_read: HowRead | None = None
+    figure_basis: FigureBasis | None = None
+    excerpt: str | None = None
     raw_text: str | None = None
     inferred_fields: list[str] = Field(default_factory=list)
     confidence: str | None = None

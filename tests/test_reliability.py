@@ -189,3 +189,64 @@ def test_the_contract_tells_the_agent_to_stop_searching():
     from app.llm.prompts import BASE_CONTRACT
     assert "Stop when you have a figure and its provenance" in BASE_CONTRACT
     assert "Vary the phrasing" in BASE_CONTRACT
+
+
+# ---------------------------------------- the prompt and the schema must agree
+def test_every_per_source_model_accepts_the_provenance_the_contract_asks_for():
+    """The failure that cost a 377-second domain: the base contract says "for
+    every source, state source_class, how_read and figure_basis". The agent
+    complied and put them on QuantityCandidate, which did not declare them and
+    forbids extras - so a correct reply was rejected with 26 validation errors.
+
+    Asking for a field and then refusing it is the worst of both. Checked
+    across every per-source model, not just the one that failed."""
+    from app.llm import schemas
+
+    required = {"source_class", "how_read", "figure_basis"}
+    for name in ("SourceRef", "QuantityCandidate", "CorroborationCandidate",
+                 "BenchmarkObservationOut", "ProposedKnownFact"):
+        model = getattr(schemas, name)
+        missing = required - set(model.model_fields)
+        assert not missing, f"{name} would reject the agent for {sorted(missing)}"
+
+
+def test_a_reply_carrying_provenance_on_candidates_validates():
+    """The exact shape that was rejected."""
+    from app.llm import schemas
+    payload = {
+        "found": True, "subject": "Adolf Wuerth GmbH & Co. KG",
+        "finding": "Around 2,600 locations worldwide.",
+        "quantities": [{
+            "label": "STORE", "value": "2600", "unit": "sites",
+            "country": "DE",
+            "candidates": [
+                {"value": "2600", "publisher": "Annual Report 2025",
+                 "source_url": "https://x/ar", "as_of": "2024-12-31",
+                 "source_class": "PRIMARY_FILING", "how_read": "FULL_PAGE",
+                 "figure_basis": "STATED", "excerpt": "2,600 locations"},
+                {"value": "2500", "publisher": "Handelsblatt",
+                 "source_class": "TRADE_PRESS", "how_read": "SNIPPET_ONLY",
+                 "figure_basis": "STATED"}]}],
+        "sources": [{"url": "https://x/ar", "publisher": "Annual Report 2025",
+                     "source_class": "PRIMARY_FILING", "how_read": "FULL_PAGE",
+                     "figure_basis": "STATED"}],
+    }
+    result = schemas.PublicEvidenceResult.model_validate(payload)
+    assert result.quantities[0].candidates[0].source_class.value == "PRIMARY_FILING"
+    assert result.quantities[0].candidates[1].how_read.value == "SNIPPET_ONLY"
+
+
+def test_provenance_stated_on_candidates_reaches_the_grade():
+    """Otherwise the agent reports it, the schema accepts it, and the grade
+    ignores it - which is the same discard in a third disguise."""
+    graded = _grade(
+        verified_sources=[],
+        claimed_sources=2,
+        band={"spread_share": 0.04, "newest_year": 2025, "candidates": [
+            {"source_url": "https://x/ar", "source_class": "PRIMARY_FILING",
+             "how_read": "FULL_PAGE", "figure_basis": "STATED"},
+            {"source_url": "https://y", "source_class": "REGULATOR",
+             "how_read": "FULL_PAGE", "figure_basis": "STATED"}]})
+    assert graded["verified_sources"] == 2, (
+        "candidate provenance must count toward the grade")
+    assert graded["grade"] == R.VERY_RELIABLE

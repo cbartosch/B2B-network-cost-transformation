@@ -102,6 +102,18 @@ def grade(*, verified_sources: list, claimed_sources: int, band: dict | None,
     single signal there is.
     """
     verified = list(verified_sources or [])
+    # A candidate carries the same provenance as a source, because it is one
+    # source's figure. Merging them here means a finding whose provenance the
+    # agent stated on the candidates still grades on it.
+    for extra in (band or {}).get("candidates") or []:
+        if extra.get("source_class") and not any(
+                extra.get("source_url") and
+                extra.get("source_url") == v.get("url") for v in verified):
+            verified.append({"url": extra.get("source_url") or "",
+                             "publisher": extra.get("publisher"),
+                             "source_class": extra.get("source_class"),
+                             "how_read": extra.get("how_read"),
+                             "figure_basis": extra.get("figure_basis")})
     n_verified = len(verified)
     classes = [_classify_source(s) for s in verified]
     n_primary = classes.count("PRIMARY")
