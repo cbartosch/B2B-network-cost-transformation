@@ -52,6 +52,17 @@ class NotPromotable(ValueError):
     """The quantity does not carry what a promotion needs."""
 
 
+def _as_int(value):
+    """A band bound as a whole number, or None. Tolerates "341", "341.0" and
+    a Decimal, because the band is serialised as a string for JSON storage."""
+    if value is None:
+        return None
+    try:
+        return int(round(float(value)))
+    except (TypeError, ValueError):
+        return None
+
+
 def _triangulated_index(evidence: dict) -> dict:
     """Bands by (label, country), so a promotion can carry the range and the
     conflict state rather than only the point the agent happened to state."""
@@ -283,8 +294,12 @@ def promote(session, *, case_id: str, candidate_ids: list[str],
                 id=str(uuid.uuid4()), case_id=case_id, country=country,
                 archetype=archetype, sites=int(q["value"]),
                 as_of=str(q.get("as_of") or ""), domain_no=e["domain_no"],
-                band_low=int(band["low"]) if band.get("low") is not None else None,
-                band_high=int(band["high"]) if band.get("high") is not None else None,
+                # The band is stored as strings, and a price band's low is
+                # "477.5" - int() on that raises rather than truncating. These
+                # columns hold site counts, so rounding is right and crashing
+                # on a decimal string is not.
+                band_low=_as_int(band.get("low")),
+                band_high=_as_int(band.get("high")),
                 source_count=band.get("candidate_count"),
                 agent_run_id=e["agent_run_id"],
                 source_urls=e["sources"], promoted_by=promoted_by,

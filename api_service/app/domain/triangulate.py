@@ -82,6 +82,20 @@ def parse_value(raw):
     return value
 
 
+def _plain(value):
+    """A Decimal as a readable string, or None.
+
+    money.as_str would render a site count as "341.00", which is money
+    formatting applied to a thing that is not money. A band here holds counts,
+    bandwidths and amounts, so the trailing zeros are dropped and whatever the
+    number actually is survives.
+    """
+    if value is None:
+        return None
+    text = format(Decimal(str(value)).normalize(), "f")
+    return text
+
+
 def _year(as_of) -> int | None:
     """Leading four digits of whatever the source said. Deliberately crude:
     a source that writes "FY2024" or "31 Dec 2024" or "2024-12-31" means the
@@ -163,9 +177,20 @@ def triangulate_one(candidates: list[dict], *, policy, price_year: int) -> dict:
             if drift >= D(policy.material_spread_share):
                 flags.append(NEWEST_DIVERGES)
 
+    # Strings, not Decimals. This dict is stored in a JSON column and returned
+    # over HTTP, and json.dumps cannot serialise a Decimal - so every domain
+    # that produced a band died with "Object of type Decimal is not JSON
+    # serializable" after the research itself had succeeded. The rest of this
+    # codebase already stores money and quantities as strings for the same
+    # reason; the band was the one place that did not.
+    #
+    # Consumers parse when they need arithmetic: promotion does int(), the
+    # refinement comparison uses its own Decimal coercion, and a string
+    # displays unchanged.
     return {
-        "low": low, "base": base, "high": high,
-        "newest_value": newest, "newest_year": newest_year,
+        "low": _plain(low), "base": _plain(base), "high": _plain(high),
+        "newest_value": _plain(newest),
+        "newest_year": newest_year,
         "oldest_year": oldest_year,
         "spread_share": round(float(spread), 4),
         "candidate_count": len(usable),
