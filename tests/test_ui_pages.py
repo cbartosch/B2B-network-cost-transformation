@@ -128,3 +128,23 @@ def test_a_bad_archetype_is_reported_not_corrected():
     _, problems = _clean()(pd.DataFrame(
         [{"country": "DE", "archetype": "BRANCHES", "sites": 5}]))
     assert problems and "BRANCH, LARGE_OFFICE" in problems[0]
+
+
+def test_a_failed_footprint_load_is_not_silent():
+    """A promoted footprint that fails to load looked identical to one that was
+    never promoted: the editor fell back to placeholders with no explanation,
+    so researched counts appeared to vanish and the run proceeded on defaults
+    that looked like findings."""
+    page = next(p for p in PAGES if p.name.startswith("4_"))
+    text = page.read_text()
+    assert "_ev_failed" in text
+    assert "Could not load the promoted site list" in text
+    assert "fallen back to placeholder values" in text
+
+
+def test_the_empty_footprint_message_names_the_case():
+    """A promoted footprint belongs to one case. Switching cases empties the
+    list, and a message that does not say which case invites the conclusion
+    that the promotion was lost."""
+    page = next(p for p in PAGES if p.name.startswith("4_"))
+    assert "belongs to one" in page.read_text()

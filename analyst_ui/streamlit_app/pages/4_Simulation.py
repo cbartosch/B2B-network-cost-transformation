@@ -29,10 +29,22 @@ st.subheader("Footprint")
 # someone retyped the findings by hand - which is the shape "the research
 # changes nothing" took in practice.
 _ev = api.get(f"/v1/outside-in/cases/{case_id}/evidenced-footprint")
-_rows = [] if "_error" in _ev else _ev.get("footprint", [])
+_ev_failed = "_error" in _ev
+_rows = [] if _ev_failed else _ev.get("footprint", [])
 
 st.markdown("**Known sites by type**")
-if _rows:
+if _ev_failed:
+    # Silence here reads as "nothing has been promoted", which is a different
+    # situation with a different remedy. A promoted footprint that fails to
+    # load looked identical to one that was never promoted, and the editor
+    # quietly fell back to placeholders - so researched counts appeared to
+    # vanish.
+    st.error(f"**Could not load the promoted site list.** {_ev['_error']}")
+    st.warning("The editor below has fallen back to placeholder values. Do "
+               "not run on them believing they are the researched counts - "
+               "fix the error above first, or the estimate will be built on "
+               "defaults that look like findings.")
+elif _rows:
     _total = sum(int(r.get("sites") or 0) for r in _rows)
     st.success(f"{_total:,} site(s) across {len({r['country'] for r in _rows})} "
                f"country(ies), promoted from research. Each row below shows "
@@ -66,8 +78,18 @@ if _rows:
             if not r.get("source_urls"):
                 st.caption("   no source URLs recorded on this row")
 else:
+    _who = ""
+    try:
+        _c = api.get(f"/v1/outside-in/cases/{case_id}")
+        if "_error" not in _c:
+            _who = (f" for **{_c.get('subject_entity_legal_name') or 'this case'}** "
+                    f"(case {case_id[:8]})")
+    except Exception:                                     # noqa: BLE001
+        pass
     st.info(
-        "**No site list for this company yet.** The simulation does not look "
+        f"**No site list{_who} yet.** A promoted footprint belongs to one "
+        f"case, so counts promoted on a different case do not appear here. "
+        "The simulation does not look "
         "sites up - it takes the counts it is given and generates a circuit "
         "topology from them, so the number has to come from somewhere first. "
         "There are three routes, in descending order of what they are worth:\n\n"
