@@ -37,7 +37,18 @@ DISPOSITIONS = ("EVIDENCED_PUBLIC", "DERIVED_PUBLIC", "CLIENT_CONFIRMED",
                 "BENCHMARK_PRIOR", "ANALYST_ASSERTED_PRIOR", "SIMULATED",
                 "DECLARED_UNKNOWN")
 
-UNKNOWN_REASONS = ("NO_PUBLIC_EVIDENCE", "BUDGET_EXHAUSTED", "OUT_OF_PERIMETER",
+# PARTIAL_EVIDENCE_BELOW_THRESHOLD distinguishes "there is nothing public"
+# from "there is something and it fell short of the governed minimum". Those
+# are different problems with different next steps, and they were recorded
+# identically - the findings discarded, the domain reported as having found
+# nothing, and the provider call paid for and binned.
+#
+# It remains a DECLARED_UNKNOWN reason rather than a disposition of its own,
+# deliberately: summarise() counts any non-DECLARED_UNKNOWN disposition toward
+# domain completeness, which feeds confidence, so a new disposition here would
+# have raised confidence for a domain that found too little evidence to use.
+UNKNOWN_REASONS = ("NO_PUBLIC_EVIDENCE", "PARTIAL_EVIDENCE_BELOW_THRESHOLD",
+                   "BUDGET_EXHAUSTED", "OUT_OF_PERIMETER",
                    "CONFLICTING_EVIDENCE_UNRESOLVED", "NOT_APPLICABLE")
 
 

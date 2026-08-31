@@ -314,6 +314,8 @@ def structured_call(session, *, agent_run_id: str, prompt_id: str,
     reply that never passed the gate is not evidence of anything.
     """
     definition = prompts.get(prompt_id, prompt_version)
+    # The most complete reply seen, kept so a rejection can hand it back.
+    best_payload, best_result = None, None
 
     # A declared tool policy that the call site does not honour makes the
     # registry a description of intentions rather than a contract. Entity
@@ -357,6 +359,12 @@ def structured_call(session, *, agent_run_id: str, prompt_id: str,
                     False, [quality.Rejection.SCHEMA_INVALID],
                     [f"failed the registered schema "
                      f"{definition.output_schema_version}: {str(exc)[:300]}"])
+
+        # A reply that validated against the schema is worth keeping even when
+        # a gate refused it: schema-valid means readable, and the gates judge
+        # sufficiency rather than legibility.
+        if result is not None:
+            best_payload, best_result = payload, result
 
         _record_verdict(session, run_id, verdict, attempt)
         attempts.append({"attempt": attempt, **verdict.as_dict()})
@@ -402,10 +410,24 @@ def structured_call(session, *, agent_run_id: str, prompt_id: str,
                  [r.value for r in verdict.reasons])
 
     reasons = [r.value for r in (last.reasons if last else [])]
-    raise errors.StructuredOutputInvalid(
+    # The exception carries the best reply the run produced, so a caller can
+    # keep what was found at a lower disposition rather than throwing it away.
+    #
+    # This mattered more than the rejection itself. A reply that cited two
+    # sources when three were required, or one quantity that parsed and one
+    # that did not, was discarded whole - so a domain that had genuinely found
+    # something was recorded as having found nothing, and the provider call was
+    # paid for and binned. Rejecting a reply as *sufficient* is not the same as
+    # judging it *worthless*, and only the caller knows which it needs.
+    error = errors.StructuredOutputInvalid(
         f"{definition.prompt_id} rejected after {len(attempts)} attempt(s)"
         + ("" if (last and last.retryable) else " (terminal, not retried)")
         + f": {reasons} {'; '.join(last.detail) if last else ''}")
+    error.rejected_payload = best_payload
+    error.rejected_result = best_result
+    error.reasons = reasons
+    error.attempts = attempts
+    raise error
 
 
 def _record_verdict(session, llm_run_id, verdict, attempt: int) -> None:

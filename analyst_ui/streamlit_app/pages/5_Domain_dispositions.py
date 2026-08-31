@@ -91,6 +91,12 @@ with st.expander("Run research (LLM-01 / LLM-08)"):
                     _bits.append(_res["budget_note"])
                 if _res.get("failure_detail"):
                     _bits.append(_res["failure_detail"])
+                # Findings kept from a run that did not reach a disposition.
+                # Not evidence, and worth seeing: a domain refused for citing
+                # two sources when three were needed still found two.
+                if _res.get("qualitative"):
+                    _bits.append(f"{len(_res['qualitative'])} qualitative "
+                                 f"finding(s) kept")
                 _kind = ("success" if _disp in ("EVIDENCED_PUBLIC", "DERIVED_PUBLIC")
                          else "error" if _res.get("failed") else "info")
                 _line = (_kind, f"{_head} - " + "; ".join(_bits) + f" ({_secs}s)")

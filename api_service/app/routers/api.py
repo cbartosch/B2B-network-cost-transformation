@@ -692,6 +692,12 @@ def prefill_known_facts(case_id: str, payload: PrefillIn):
             raise HTTPException(503, f"LIVE run failed closed: {exc}")
         except (errors.LivenessProofFailed,
                 errors.StructuredOutputInvalid) as exc:
+            # Where the failure carried recoverable content, return it with the
+            # error. A rejected reply is not a worthless one, and re-running to
+            # see what it said costs another provider call.
+            salvaged = getattr(exc, "salvaged", None)
+            if salvaged:
+                raise HTTPException(502, {"error": str(exc)[:800], **salvaged})
             raise HTTPException(502, str(exc))
 
 

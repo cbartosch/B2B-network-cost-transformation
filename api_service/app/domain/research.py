@@ -937,6 +937,33 @@ def _research_one_domain(session, *, case_row, domain_no: int, domain_name: str,
             result.failed = True
             result.failure_detail = f"{type(exc).__name__}: {exc}"
             result.agent_run_id = run_id
+
+            # A gate rejection carries the best schema-valid reply the loop
+            # produced. Keeping it costs nothing and it is often most of an
+            # answer: a reply refused for citing two sources when three were
+            # required still contains two sources and whatever numbers they
+            # supported. Discarding it meant the provider call was paid for,
+            # the fetch had succeeded, a figure was in hand - and the domain
+            # reported nothing at all.
+            #
+            # It is recorded as a finding and never as evidence: `failed` stays
+            # true, no disposition is written, and nothing here can satisfy a
+            # gate or lift a ceiling.
+            _rejected = getattr(exc, "rejected_payload", None)
+            if isinstance(_rejected, dict):
+                _rq = [q for q in (_rejected.get("quantities") or [])
+                       if isinstance(q, dict) and q.get("value") is not None]
+                result.quantities = [
+                    q for q in _rq if triangulate.parse_value(q["value"]) is not None]
+                result.qualitative = [
+                    q for q in _rq if triangulate.parse_value(q["value"]) is None]
+                result.failure_detail += (
+                    f" | the rejected reply is kept: "
+                    f"{len(_rejected.get('sources') or [])} cited source(s), "
+                    f"{len(result.quantities)} parsed quantity(ies), "
+                    f"{len(result.qualitative)} qualitative finding(s). Not "
+                    f"evidence - no disposition was written - but visible on "
+                    f"page 5 rather than binned.")
             return result
 
         if not isinstance(parsed, dict) or "found" not in parsed:
@@ -1054,6 +1081,55 @@ def _research_one_domain(session, *, case_row, domain_no: int, domain_name: str,
         # Found a claim but could not independently verify enough of it -
         # try again if budget allows; a claim without enough verification is
         # not written as evidence of anything.
+        #
+        # It is still written down. Everything verified on this attempt is
+        # kept, so the best partial result survives the loop.
+        if len(verified) > len(result.verified_sources or []):
+            result.verified_sources = verified
+            _all_q = [q for q in (parsed.get("quantities") or [])
+                      if isinstance(q, dict) and q.get("value") is not None]
+            result.quantities = [
+                q for q in _all_q
+                if triangulate.parse_value(q["value"]) is not None]
+            result.qualitative = [
+                q for q in _all_q if triangulate.parse_value(q["value"]) is None]
+            if triangulation_policy is not None:
+                result.triangulated = triangulate.triangulate(
+                    result.quantities, policy=triangulation_policy,
+                    price_year=getattr(case_row, "price_year", None) or 2026)
+
+    # Out of attempts. What was found is recorded at a disposition that does not
+    # claim to be evidence, rather than discarded.
+    #
+    # Writing DECLARED_UNKNOWN over a verified source and a parsed quantity was
+    # the most expensive thing this module did: the provider call had been paid
+    # for, the fetch had succeeded, a figure was in hand - and the domain
+    # reported having found nothing. An analyst then had no way to tell "there
+    # is nothing public" from "there is something and it fell one source short
+    # of the bar", which are different problems with different next steps.
+    #
+    # PARTIAL_PUBLIC_EVIDENCE satisfies no evidence gate and lifts no ceiling.
+    # It is not a weaker kind of evidence; it is a record of work, and the
+    # analyst decides whether one source is enough for their purpose.
+    # The disposition stays DECLARED_UNKNOWN. A new disposition was the
+    # tempting move and the wrong one: dispositions.summarise counts anything
+    # that is not DECLARED_UNKNOWN toward domain completeness, which feeds
+    # confidence - so inventing PARTIAL_PUBLIC_EVIDENCE would have *raised*
+    # confidence for a domain that found too little evidence to use. The
+    # findings are preserved and the reason distinguishes the two cases, which
+    # is what was actually missing.
+    if result.verified_sources or result.quantities or result.qualitative:
+        result.disposition = "DECLARED_UNKNOWN"
+        result.reason = "PARTIAL_EVIDENCE_BELOW_THRESHOLD"
+        result.budget_note = (
+            f"{len(result.verified_sources or [])} independently verified "
+            f"source(s) and {len(result.quantities or [])} parsed quantity(ies) "
+            f"were found, below the governed minimum of "
+            f"{research_policy.min_independent_sources_material_fact}. Kept on "
+            f"the record and not treated as evidence: it satisfies no gate and "
+            f"lifts no ceiling. Review it and either research again or accept a "
+            f"single source deliberately.")
+        return result
 
     result.disposition, result.reason = "DECLARED_UNKNOWN", "NO_PUBLIC_EVIDENCE"
     return result

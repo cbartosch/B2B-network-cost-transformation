@@ -94,6 +94,25 @@ def extract(session, *, text: str, source_document: str,
     except (errors.ProviderUnavailable, errors.LivenessProofFailed,
             errors.StructuredOutputInvalid, errors.ModeNotPermitted) as exc:
         gateway.fail(session, run_id, f"{type(exc).__name__}: {exc}")
+        # A rejected extraction still holds observations, and the source was
+        # converted, uploaded and paid for to obtain them. Returning them costs
+        # nothing and skips none of the controls: they are NOT stored, so
+        # nothing here reaches a band, a rights clearance or an estimate. The
+        # operator reads them and decides whether to re-run - which is cheaper
+        # than converting and re-sending the document to see the same content.
+        _rejected = getattr(exc, "rejected_payload", None)
+        if isinstance(_rejected, dict) and _rejected.get("observations"):
+            exc.salvaged = {
+                "accepted": False,
+                "observations": _rejected["observations"],
+                "unresolved_questions": _rejected.get("unresolved_questions") or [],
+                "note": (
+                    f"The extraction was rejected and "
+                    f"{len(_rejected['observations'])} observation(s) it "
+                    f"produced are attached to the error rather than "
+                    f"discarded. None is stored - review them and re-run, or "
+                    f"split the source."),
+            }
         raise
 
     rows = parsed.get("observations") if isinstance(parsed, dict) else None
