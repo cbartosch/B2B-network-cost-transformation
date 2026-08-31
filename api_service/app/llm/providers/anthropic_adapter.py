@@ -35,16 +35,28 @@ class AnthropicAdapter:
     def parse(self, *, system: str, prompt: str, schema: dict,
               schema_name: str, max_tokens: int = 4000,
               tools: list[dict] | None = None) -> ProviderCall:
-        """Structured output through a forced tool.
+        """Structured output through a tool whose input_schema is the shape.
 
-        Anthropic's native mechanism for a guaranteed shape is a tool whose
-        input_schema is the shape, with tool_choice pinning that tool. The
-        model cannot answer in prose: the response carries a tool_use block
-        whose `input` is the object.
+        Without other tools the emit tool is pinned, so the model cannot
+        answer in prose: the response carries a tool_use block whose `input`
+        is the object.
 
-        A search tool may be supplied alongside. Ordering matters - the
-        emit tool is listed last and pinned, so search runs first and the
-        answer is the final block.
+        **With a search tool it must not be pinned.** Pinning a specific tool
+        forces the model to call that tool immediately, which means it can
+        never search first - so every search-using service answered from
+        memory and the search-attempted gate rejected all three attempts.
+        The first version of this method pinned unconditionally and claimed in
+        this docstring that "search runs first"; it does not, and the claim
+        was wrong rather than merely optimistic.
+
+        With search present the choice is `any`: the model must end on a tool
+        call, but may search before it. That is weaker than pinning - it can
+        take more than one turn's worth of reasoning to get there - and it is
+        the compromise a single-call design forces. The CR's discovery and
+        extraction split exists precisely because a searching turn and a
+        schema-enforced extracting turn should not be the same call. Until
+        that lands, a reply with no emit block is a rejection the retry loop
+        handles rather than something to salvage.
         """
         if not self.configured():
             raise errors.ProviderUnavailable("ANTHROPIC_API_KEY is not set")
@@ -52,10 +64,12 @@ class AnthropicAdapter:
         emit = {"name": schema_name,
                 "description": "Return the result in this exact shape.",
                 "input_schema": strictify(schema)}
+        choice = ({"type": "any"} if tools
+                  else {"type": "tool", "name": schema_name})
         body = {"model": self.model, "max_tokens": max_tokens, "system": system,
                 "messages": [{"role": "user", "content": prompt}],
                 "tools": list(tools or []) + [emit],
-                "tool_choice": {"type": "tool", "name": schema_name}}
+                "tool_choice": choice}
         call = self._request(body)
 
         parsed = None
@@ -69,8 +83,12 @@ class AnthropicAdapter:
             # the prose: a plausible prose answer is exactly what the schema
             # channel exists to stop being accepted.
             raise errors.StructuredOutputInvalid(
-                f"anthropic did not emit the forced {schema_name!r} tool; the "
-                f"reply cannot be treated as schema-conformant")
+                f"anthropic did not emit the {schema_name!r} tool"
+                + (" - with a search tool present the emit tool cannot be "
+                   "pinned, so the model may stop after searching; this is a "
+                   "rejection to retry, not a reply to salvage"
+                   if tools else "; the reply cannot be treated as "
+                                 "schema-conformant"))
         return replace(call, parsed=parsed)
 
     def complete(self, *, system: str, prompt: str, max_tokens: int = 1500,

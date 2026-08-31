@@ -314,6 +314,19 @@ def structured_call(session, *, agent_run_id: str, prompt_id: str,
     reply that never passed the gate is not evidence of anything.
     """
     definition = prompts.get(prompt_id, prompt_version)
+
+    # A declared tool policy that the call site does not honour makes the
+    # registry a description of intentions rather than a contract. Entity
+    # resolution declared web_search and passed no tool, so it was recall-only
+    # while advertising search - and a recalled answer is indistinguishable
+    # from a searched one at the point it is read.
+    if definition.tool_policy_version.startswith("web_search") and not tools:
+        raise errors.ProviderUnavailable(
+            f"{definition.prompt_id} declares tool policy "
+            f"{definition.tool_policy_version} but was called without a search "
+            f"tool. Answering from memory here would be a recall-only result "
+            f"presented as a searched one; the call fails closed instead.")
+
     ctx = dict(gate_context or {})
     attempts, last = [], None
     body = prompt

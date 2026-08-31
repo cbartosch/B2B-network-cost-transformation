@@ -252,3 +252,61 @@ def test_the_corroboration_prompt_tells_the_agent_where_site_counts_live():
     task = prompts.get("known_fact.corroborate").task
     for needle in ("sustainability", "location finder", "director"):
         assert needle in task.lower(), needle
+
+
+# --------------------------------------------------- search must be reachable
+def test_the_emit_tool_is_not_pinned_when_a_search_tool_is_present():
+    """Observed in the field as three consecutive SEARCH_NOT_ATTEMPTED
+    rejections on a well-formed fact.
+
+    tool_choice {"type":"tool","name":X} forces X on the first turn, so with
+    the emit tool pinned the model could never call web_search - every
+    search-using service answered from memory and the gate correctly refused
+    all three attempts. The gate was right; the adapter made searching
+    impossible."""
+    import inspect
+    from app.llm.providers import anthropic_adapter
+
+    src = inspect.getsource(anthropic_adapter.AnthropicAdapter.parse)
+    assert '{"type": "any"} if tools' in src, (
+        "with a search tool present the emit tool must not be pinned")
+    assert 'else {"type": "tool", "name": schema_name}' in src, (
+        "without other tools it should still be pinned - that is the "
+        "stronger guarantee and costs nothing")
+
+
+def test_the_search_using_services_declare_a_search_tool_policy():
+    """If the policy says none, no tool is passed, the adapter pins, and the
+    service is silently recall-only."""
+    for prompt_id in ("llm01.public_evidence.extract",
+                      "llm08.market_data.extract",
+                      "known_fact.corroborate",
+                      "entity.resolve.candidates"):
+        d = prompts.get(prompt_id)
+        assert d.tool_policy_version.startswith("web_search"), (
+            f"{prompt_id} needs search but declares {d.tool_policy_version}")
+
+
+def test_a_search_service_called_without_a_search_tool_fails_closed():
+    """A declared tool policy the call site ignores makes the registry a
+    statement of intent rather than a contract."""
+    import inspect
+    from app.llm import gateway
+    src = inspect.getsource(gateway.structured_call)
+    assert 'startswith("web_search") and not tools' in src
+
+
+def test_every_search_service_passes_a_tool_at_its_call_site():
+    import pathlib
+    root = pathlib.Path(__file__).resolve().parents[1]
+    app = next(c for c in (root / "api_service" / "app", root / "app")
+               if (c / "domain").exists())
+    blob = "\n".join(p.read_text() for p in (app / "domain").rglob("*.py"))
+    for prompt_id in ("llm01.public_evidence.extract",
+                      "known_fact.corroborate",
+                      "entity.resolve.candidates"):
+        idx = blob.find(f'prompt_id="{prompt_id}"')
+        assert idx != -1, f"{prompt_id} has no call site"
+        assert "web_search" in blob[idx:idx + 700], (
+            f"{prompt_id} declares a search policy but its call site passes "
+            f"no search tool")

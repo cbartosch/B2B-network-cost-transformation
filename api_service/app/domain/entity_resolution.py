@@ -40,9 +40,16 @@ def propose_candidates(session, *, case_id: str, name_hint: str,
     # defect it was patching: a response that was valid JSON in the wrong
     # shape used to leave the agent_run QUEUED forever.
     try:
+        # The registered tool policy for this prompt is web_search. Not
+        # passing the tool made the service silently recall-only while its
+        # registry entry advertised search - the precise failure the policy
+        # exists to prevent, and invisible because a recalled answer looks
+        # like a searched one.
         result, provenance = gateway.structured_call(
             session, agent_run_id=run_id, prompt_id="entity.resolve.candidates",
-            prompt=prompt, provider=provider)
+            prompt=prompt, provider=provider,
+            tools=[{"type": "web_search_20250305", "name": "web_search",
+                    "max_uses": 5}])
     except errors.StructuredOutputInvalid as exc:
         gateway.fail(session, run_id, f"ENTITY-RESOLVE: {exc}")
         raise
