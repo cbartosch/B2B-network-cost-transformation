@@ -181,3 +181,36 @@ def test_a_typed_footprint_can_be_saved_without_running_it():
         "run last")
     assert text.index("if _rows:") < text.index("elif _saved:"), (
         "promoted evidence still outranks anything typed")
+
+
+def test_the_simulation_page_reads_the_known_facts_register():
+    """The gap behind "I entered 341 and the code is ignoring it".
+
+    A known fact of class "Location footprint" binds the sites driver at
+    estimate time on page 6, and this page never read the register at all - so
+    a registered count sat there while the editor showed a placeholder and the
+    analyst was told to type it again."""
+    page = next(p for p in PAGES if p.name.startswith("4_"))
+    text = page.read_text()
+    assert "/known-facts" in text, "the page must read the register"
+    assert '"Location footprint"' in text
+    assert "Use this count" in text
+
+
+def test_the_register_count_does_not_invent_a_site_type():
+    """The register records how many sites there are, not what kind. A bank
+    branch is a STORE under the archetype definitions and is priced at a
+    different bandwidth and product from BRANCH, so guessing would silently
+    change the estimate."""
+    page = next(p for p in PAGES if p.name.startswith("4_"))
+    text = page.read_text()
+    assert "asked rather than guessed" in text
+    assert '"Site type"' in text
+
+
+def test_decimal_fields_are_coerced_before_formatting():
+    """value_base arrives as a JSON string, so formatting it with :g raises
+    rather than rendering - a NameError-class defect that only fires on the
+    branch where a fact actually exists."""
+    page = next(p for p in PAGES if p.name.startswith("4_"))
+    assert "def _num(value):" in page.read_text()

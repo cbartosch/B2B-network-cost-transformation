@@ -226,6 +226,79 @@ def _clean_footprint(frame):
     return rows, problems
 
 
+
+# --- what the register already says about site counts -----------------------
+# A known fact of class "Location footprint" binds the sites driver at
+# estimate time (page 6), and this page never read the register at all - so a
+# registered count of 341 sat there while the editor showed a placeholder and
+# the analyst was told to type it again. The register gives a total, not a
+# breakdown by country and type, so the split is asked for rather than
+# invented: the fact says how many sites there are, not what kind.
+_kf = api.get(f"/v1/outside-in/cases/{case_id}/known-facts")
+_site_facts = [] if "_error" in _kf else [
+    f for f in _kf.get("facts", [])
+    if f.get("fact_class") == "Location footprint"
+    and f.get("value_base") is not None]
+
+def _num(value):
+    """Decimal fields arrive as JSON strings, so formatting one with :g raises
+    rather than rendering. Coerced once, here, instead of at four call sites."""
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
+if _site_facts and not _rows:
+    st.markdown("**From the known-facts register**")
+    _options = {}
+    for f in _site_facts:
+        _v = _num(f.get("value_base"))
+        if _v is None:
+            continue
+        _lo, _hi = _num(f.get("value_low")), _num(f.get("value_high"))
+        _band = f"  (registered range {_lo:g}-{_hi:g})" if _lo and _hi else ""
+        st.info(f"**{_v:g} {f.get('unit') or 'sites'}** - "
+                f"{f.get('subject') or 'no subject'}{_band}. "
+                f"{f.get('corroboration_state') or 'PENDING'}, asserted by "
+                f"{f.get('asserted_by') or 'unattributed'}.")
+        _options[f"{_v:g} {f.get('unit') or 'sites'} - "
+                 f"{f.get('subject') or ''}"] = (f, _v)
+
+    if _options:
+        _use = st.selectbox("Use a registered count as the footprint",
+                            ["-"] + list(_options))
+        if _use != "-":
+            _fact, _value = _options[_use]
+            fc1, fc2 = st.columns(2)
+            _country = fc1.selectbox(
+                "Country these sites are in",
+                (_case_now.get("in_scope_countries") or ["DE"])
+                if "_error" not in _case_now else ["DE"])
+            _arch = fc2.selectbox(
+                "Site type",
+                ["STORE", "BRANCH", "LARGE_OFFICE", "WAREHOUSE", "DC"],
+                help="The register records how many sites there are, not what "
+                     "kind. A bank branch is a customer-facing outlet - STORE "
+                     "- which is priced differently from BRANCH, so this is "
+                     "asked rather than guessed.")
+            if st.button("Use this count"):
+                _r = api.put(f"/v1/outside-in/cases/{case_id}", {
+                    "analyst_footprint": [{"country": _country,
+                                           "archetype": _arch,
+                                           "sites": int(_value)}]})
+                if "_error" in _r:
+                    st.error(_r["_error"])
+                else:
+                    st.success(
+                        f"Footprint set to {int(_value)} {_arch} sites in "
+                        f"{_country}. Name this fact as the footprint source "
+                        f"on page 6 so the estimate credits it - an "
+                        f"uncorroborated assertion still caps confidence, a "
+                        f"corroborated one lifts it.")
+                    st.rerun()
+    st.divider()
+
 _save_col, _run_col = st.columns([1, 3])
 if _save_col.button("Save footprint"):
     _rows_to_save, _problems = _clean_footprint(fp)
