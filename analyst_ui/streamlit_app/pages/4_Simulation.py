@@ -82,16 +82,76 @@ seed = c1.number_input("Seed", 0, 10**9, 42,
                        help="The whole ensemble is reproducible from this one integer")
 size = c2.number_input("Ensemble size", 1, 200, 25)
 
+ARCHETYPES = ("BRANCH", "LARGE_OFFICE", "WAREHOUSE", "DC", "STORE")
+
+
+def _clean_footprint(frame):
+    """Turn what the editor hands back into something the API can accept.
+
+    The dynamic editor always shows a trailing blank row, and clicking into it
+    is enough to put {"country": null, "archetype": null, "sites": null} in the
+    payload - which fails schema validation with a message about string types
+    that tells an analyst nothing about the row they half-filled. Rows that
+    carry no country or archetype are dropped as what they are: an artefact of
+    the widget, not an instruction.
+
+    Everything else is reported rather than silently corrected, because a
+    misspelled archetype is a typo the analyst can fix and a coerced one is a
+    site type they did not choose.
+    """
+    def _text(value):
+        # pandas turns an empty editor cell into NaN, and str(nan) is the
+        # truthy string "nan" - so `value or ""` keeps it and the blank row
+        # arrives as country "NAN". Checked explicitly rather than by
+        # truthiness, which is the trap.
+        if value is None or value != value:
+            return ""
+        return str(value).strip().upper()
+
+    rows, problems = [], []
+    for i, raw in enumerate(frame.to_dict("records"), start=1):
+        country = _text(raw.get("country"))
+        archetype = _text(raw.get("archetype"))
+        if not country and not archetype:
+            continue                      # the widget's blank row
+        if not country or len(country) != 2:
+            problems.append(f"row {i}: country {country or '(blank)'!r} is not "
+                            f"a two-letter code")
+            continue
+        if archetype not in ARCHETYPES:
+            problems.append(f"row {i}: archetype {archetype or '(blank)'!r} is "
+                            f"not one of {', '.join(ARCHETYPES)}")
+            continue
+        sites = raw.get("sites")
+        try:
+            sites = int(sites) if sites is not None and sites == sites else 0
+        except (TypeError, ValueError):
+            problems.append(f"row {i}: sites {sites!r} is not a whole number")
+            continue
+        if sites < 0:
+            problems.append(f"row {i}: sites cannot be negative")
+            continue
+        rows.append({"country": country, "archetype": archetype, "sites": sites})
+    return rows, problems
+
+
 if st.button("Run simulation", type="primary"):
-    r = api.post(f"/v1/outside-in/cases/{case_id}/simulations:run",
-                 {"seed": int(seed), "ensemble_size": int(size),
-                  "footprint": fp.to_dict("records")})
-    if "_error" in r:
-        st.error(r["_error"])
-    else:
-        st.session_state["sim_run_id"] = r["simulation_run_id"]
-        st.session_state.pop("sim", None)
-        st.rerun()
+    footprint, problems = _clean_footprint(fp)
+    for message in problems:
+        st.error(message)
+    if not problems and not footprint:
+        st.error("No usable rows. Give at least one country, archetype and "
+                 "site count.")
+    elif not problems:
+        r = api.post(f"/v1/outside-in/cases/{case_id}/simulations:run",
+                     {"seed": int(seed), "ensemble_size": int(size),
+                      "footprint": footprint})
+        if "_error" in r:
+            st.error(r["_error"])
+        else:
+            st.session_state["sim_run_id"] = r["simulation_run_id"]
+            st.session_state.pop("sim", None)
+            st.rerun()
 
 run_id = st.session_state.get("sim_run_id")
 if run_id and "sim" not in st.session_state:

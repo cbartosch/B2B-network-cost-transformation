@@ -81,3 +81,50 @@ def test_the_simulation_footprint_opens_runnable():
         "the in-scope-country default must be at least one site")
     assert '"sites": 0' not in text, (
         "a zero default puts the page behind a guard it cannot pass")
+
+
+# --------------------------------------------- simulation footprint payload
+def _clean():
+    """The page is a Streamlit script, so the helper is lifted out by source
+    rather than imported - importing it would execute the page."""
+    page = next(p for p in PAGES if p.name.startswith("4_"))
+    src = page.read_text()
+    ns = {}
+    exec(src[src.index("ARCHETYPES = ("):
+             src.index('if st.button("Run simulation"')], ns)
+    return ns["_clean_footprint"]
+
+
+@pytest.mark.parametrize("rows,expected_rows,expect_problem", [
+    ([{"country": "DE", "archetype": "BRANCH", "sites": 1}], 1, False),
+    # The dynamic editor always shows a trailing blank row. Clicking into it
+    # used to put {"country": null, ...} in the payload, which failed schema
+    # validation with a message about string types that told the analyst
+    # nothing about the row they had touched.
+    ([{"country": "DE", "archetype": "BRANCH", "sites": 1},
+      {"country": None, "archetype": None, "sites": None}], 1, False),
+    # pandas turns an empty cell into NaN, and str(nan) is the truthy string
+    # "nan" - so a truthiness check keeps it and the row arrives as country
+    # "NAN". Checked explicitly instead.
+    ([{"country": float("nan"), "archetype": float("nan"),
+       "sites": float("nan")}], 0, False),
+    ([{"country": " de ", "archetype": " branch ", "sites": 5}], 1, False),
+    ([{"country": "DE", "archetype": "BRANCHES", "sites": 5}], 0, True),
+    ([{"country": "GER", "archetype": "BRANCH", "sites": 5}], 0, True),
+    ([{"country": "DE", "archetype": "DC", "sites": -1}], 0, True),
+])
+def test_the_footprint_payload_survives_what_the_editor_produces(
+        rows, expected_rows, expect_problem):
+    pd = pytest.importorskip("pandas")
+    cleaned, problems = _clean()(pd.DataFrame(rows))
+    assert len(cleaned) == expected_rows
+    assert bool(problems) is expect_problem
+
+
+def test_a_bad_archetype_is_reported_not_corrected():
+    """A misspelled archetype is a typo the analyst can fix; a coerced one is
+    a site type they did not choose, priced at a bandwidth they did not pick."""
+    pd = pytest.importorskip("pandas")
+    _, problems = _clean()(pd.DataFrame(
+        [{"country": "DE", "archetype": "BRANCHES", "sites": 5}]))
+    assert problems and "BRANCH, LARGE_OFFICE" in problems[0]
