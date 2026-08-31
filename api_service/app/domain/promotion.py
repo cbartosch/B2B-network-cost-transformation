@@ -81,6 +81,9 @@ def _quantities_for_case(session, case_id: str) -> list[dict]:
             out.append({
                 "candidate_id": f"{r.domain_no}:{i}",
                 "band": band,
+                # Carried so the analyst sees what a finding is worth before
+                # promoting it, and so UNRELIABLE can be refused.
+                "reliability": (evidence or {}).get("reliability"),
                 "domain_no": r.domain_no, "domain_name": r.domain_name,
                 "disposition": r.disposition, "agent_run_id": r.agent_run_id,
                 "sources": [s.get("url") for s in (evidence.get("sources") or [])

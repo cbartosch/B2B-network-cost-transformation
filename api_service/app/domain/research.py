@@ -88,6 +88,7 @@ import hashlib
 import logging
 import re
 import uuid
+from decimal import Decimal
 from datetime import datetime, timezone
 
 import httpx
@@ -96,7 +97,7 @@ from sqlalchemy import insert, select, update
 from .. import db
 from ..llm import errors, gateway, registry
 from ..llm.providers import _transport
-from . import dispositions, triangulate
+from . import dispositions, reliability, triangulate
 from .research_briefs import BRIEF_CATALOGUE_VERSION, RESEARCH_BRIEFS
 from .policy import ResearchPolicy
 
@@ -295,6 +296,24 @@ _TAG_RE = re.compile(r"<[^>]+>")
 _WS_RE = re.compile(r"\s+")
 
 
+def _grading_policy(research_policy, triangulation_policy):
+    """The two governed sets grading needs, as one object.
+
+    Composed here rather than threaded through every call site: grading reads
+    a source minimum from the research budget and a spread and staleness window
+    from the triangulation policy, and both are already resolved by the time a
+    finding exists.
+    """
+    class _Composed:
+        min_independent_sources_material_fact = (
+            research_policy.min_independent_sources_material_fact)
+        material_spread_share = getattr(
+            triangulation_policy, "material_spread_share", Decimal("0.15"))
+        stale_after_years = getattr(
+            triangulation_policy, "stale_after_years", 3)
+    return _Composed
+
+
 class DomainResult:
     """One domain's outcome for one research call to run_domain_research.
     disposition is None exactly when failed is True - a failure means no row
@@ -303,7 +322,8 @@ class DomainResult:
     __slots__ = ("domain_no", "domain_name", "agent_id", "disposition",
                  "reason", "agent_run_id", "queries_used", "captures_used",
                  "verified_sources", "failed", "failure_detail", "budget_note",
-                 "quantities", "triangulated", "qualitative")
+                 "quantities", "triangulated", "qualitative",
+                 "reliability")
 
     def __init__(self, domain_no: int, domain_name: str, agent_id: str | None):
         self.domain_no = domain_no
@@ -331,6 +351,10 @@ class DomainResult:
         # Findings the source stated in words rather than as a number. Real,
         # reportable, and never priced.
         self.qualitative: list[dict] = []
+        # How much this finding is worth, computed from observable signals.
+        # Distinct from the disposition: the grade describes what was found,
+        # the disposition governs what may enter an estimate.
+        self.reliability: dict | None = None
 
     def as_dict(self) -> dict:
         return {"domain_no": self.domain_no, "domain_name": self.domain_name,
@@ -343,7 +367,8 @@ class DomainResult:
                 "budget_note": self.budget_note,
                 "quantities": self.quantities,
                 "triangulated": self.triangulated,
-                "qualitative": self.qualitative}
+                "qualitative": self.qualitative,
+                "reliability": self.reliability}
 
 
 class SourceUnreachable(RuntimeError):
@@ -1111,24 +1136,30 @@ def _research_one_domain(session, *, case_row, domain_no: int, domain_name: str,
     # PARTIAL_PUBLIC_EVIDENCE satisfies no evidence gate and lifts no ceiling.
     # It is not a weaker kind of evidence; it is a record of work, and the
     # analyst decides whether one source is enough for their purpose.
-    # The disposition stays DECLARED_UNKNOWN. A new disposition was the
-    # tempting move and the wrong one: dispositions.summarise counts anything
-    # that is not DECLARED_UNKNOWN toward domain completeness, which feeds
-    # confidence - so inventing PARTIAL_PUBLIC_EVIDENCE would have *raised*
-    # confidence for a domain that found too little evidence to use. The
-    # findings are preserved and the reason distinguishes the two cases, which
-    # is what was actually missing.
+    # Nothing found is discarded. Everything found is graded.
+    #
+    # The binary model - clear the source minimum or be binned - reduced the
+    # agent to a deterministic search with extra latency: the reason to use one
+    # is that it can read a hedged footnote, a regulator table and a trade
+    # figure and say what each is worth, and binning the two that fall short
+    # discards exactly that judgement.
+    #
+    # The grade is computed from observable signals, never asserted by the
+    # model, and it is not a permission: only VERY_RELIABLE becomes evidence
+    # without a person, and the disposition mapping keeps confidence honest.
     if result.verified_sources or result.quantities or result.qualitative:
-        result.disposition = "DECLARED_UNKNOWN"
-        result.reason = "PARTIAL_EVIDENCE_BELOW_THRESHOLD"
-        result.budget_note = (
-            f"{len(result.verified_sources or [])} independently verified "
-            f"source(s) and {len(result.quantities or [])} parsed quantity(ies) "
-            f"were found, below the governed minimum of "
-            f"{research_policy.min_independent_sources_material_fact}. Kept on "
-            f"the record and not treated as evidence: it satisfies no gate and "
-            f"lifts no ceiling. Review it and either research again or accept a "
-            f"single source deliberately.")
+        _band = (result.triangulated or [{}])[0] if result.triangulated else None
+        result.reliability = reliability.grade(
+            verified_sources=result.verified_sources or [],
+            claimed_sources=max(len(result.verified_sources or []),
+                                claimed_count),
+            band=_band, policy=_grading_policy(research_policy,
+                                               triangulation_policy),
+            price_year=getattr(case_row, "price_year", None) or 2026,
+            value_parsed=bool(result.quantities))
+        result.disposition, result.reason = reliability.disposition_for(
+            result.reliability["grade"])
+        result.budget_note = result.reliability["statement"]
         return result
 
     result.disposition, result.reason = "DECLARED_UNKNOWN", "NO_PUBLIC_EVIDENCE"
@@ -1233,11 +1264,15 @@ def run_domain_research(session, *, case_id: str, agent_ids: list[str] | None = 
 
         if not result.failed:
             evidence = None
-            if result.verified_sources:
+            # Written whenever anything was found, not only when the source
+            # minimum was cleared. A graded finding that fell short is still a
+            # finding, and the blob is the only place it can be read.
+            if result.verified_sources or result.quantities or result.qualitative:
                 evidence = {"sources": result.verified_sources,
                            "quantities": result.quantities,
                            "triangulated": result.triangulated,
                            "qualitative": result.qualitative,
+                           "reliability": result.reliability,
                            "conflicts": triangulate.review_queue(
                                result.triangulated),
                            "queries_used": result.queries_used,

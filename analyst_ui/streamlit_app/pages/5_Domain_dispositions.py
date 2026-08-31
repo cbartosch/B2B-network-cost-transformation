@@ -80,7 +80,8 @@ with st.expander("Run research (LLM-01 / LLM-08)"):
                 _tri = _res.get("triangulated") or []
                 _qty = _res.get("quantities") or []
                 _srcs = _res.get("verified_source_count") or 0
-                _bits = [f"{_disp}"]
+                _rel = _res.get("reliability") or {}
+                _bits = [f"{_rel.get('grade') or _disp}"]
                 if _res.get("reason"):
                     _bits.append(_res["reason"])
                 if _srcs:
@@ -94,11 +95,18 @@ with st.expander("Run research (LLM-01 / LLM-08)"):
                 # Findings kept from a run that did not reach a disposition.
                 # Not evidence, and worth seeing: a domain refused for citing
                 # two sources when three were needed still found two.
+                if _rel.get("shortfalls"):
+                    _bits.append("short of the bar: "
+                                 + "; ".join(_rel["shortfalls"][:2]))
                 if _res.get("qualitative"):
                     _bits.append(f"{len(_res['qualitative'])} qualitative "
                                  f"finding(s) kept")
-                _kind = ("success" if _disp in ("EVIDENCED_PUBLIC", "DERIVED_PUBLIC")
-                         else "error" if _res.get("failed") else "info")
+                # Coloured by grade, not by disposition: a RELIABLE finding is
+                # a result worth reading, and painting it the same as "found
+                # nothing" was the display half of discarding it.
+                _kind = ("success" if _rel.get("grade") == "VERY_RELIABLE"
+                         else "error" if _res.get("failed")
+                         else "info")
                 _line = (_kind, f"{_head} - " + "; ".join(_bits) + f" ({_secs}s)")
 
                 # The numbers, as they land. A band with a spread is the part

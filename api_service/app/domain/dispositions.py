@@ -47,7 +47,12 @@ DISPOSITIONS = ("EVIDENCED_PUBLIC", "DERIVED_PUBLIC", "CLIENT_CONFIRMED",
 # deliberately: summarise() counts any non-DECLARED_UNKNOWN disposition toward
 # domain completeness, which feeds confidence, so a new disposition here would
 # have raised confidence for a domain that found too little evidence to use.
+# UNRELIABLE_FINDING_RECORDED: the agent found something and could not stand it
+# up. Kept because that is informative in itself - the figure is in
+# circulation and here is where - and because binning it reduces an agent to a
+# deterministic search with extra latency.
 UNKNOWN_REASONS = ("NO_PUBLIC_EVIDENCE", "PARTIAL_EVIDENCE_BELOW_THRESHOLD",
+                   "UNRELIABLE_FINDING_RECORDED",
                    "BUDGET_EXHAUSTED", "OUT_OF_PERIMETER",
                    "CONFLICTING_EVIDENCE_UNRESOLVED", "NOT_APPLICABLE")
 
