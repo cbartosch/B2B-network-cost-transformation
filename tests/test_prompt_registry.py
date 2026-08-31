@@ -205,3 +205,50 @@ def test_the_audit_row_can_record_which_prompt_produced_it():
                 "output_schema_version", "tool_policy_version",
                 "parsed_output", "supplied_source_ids", "reviewer_outcome"}
     assert required <= columns, sorted(required - columns)
+
+
+# ------------------------------------------------------- known-fact hygiene
+def test_a_fact_without_a_subject_or_value_cannot_be_registered(session):
+    """Found in the field as an UNCORROBORATED result nobody could act on:
+    "Location footprint - (None sites)" with an empty subject. The
+    corroboration agent correctly reported there was no claim to check, and
+    the deterministic comparison correctly returned UNCORROBORATED - every
+    stage behaved properly on input that should never have been storable."""
+    import datetime as _dt
+    import uuid as _uuid
+
+    from sqlalchemy import insert
+    from app import db
+    from app.domain import known_facts
+
+    case_id = str(_uuid.uuid4())
+    session.execute(insert(db.case).values(
+        case_id=case_id, created_by="tester",
+        subject_entity_legal_name="Acme Global Logistics"))
+    session.commit()
+
+    common = dict(case_id=case_id, fact_class="Location footprint",
+                  asserted_by="Christian Bartosch",
+                  assertion_date=_dt.date(2026, 8, 31),
+                  basis="INDUSTRY_KNOWLEDGE",
+                  verifiability="PUBLICLY_VERIFIABLE")
+
+    with pytest.raises(ValueError, match="subject is mandatory"):
+        known_facts.register(session, subject="  ", value_base=340, unit="sites",
+                             **common)
+
+    with pytest.raises(ValueError, match="must carry a value"):
+        known_facts.register(session, subject="Acme Global Logistics DE",
+                             unit="sites", **common)
+
+    ok = known_facts.register(session, subject="Acme Global Logistics DE",
+                              value_base=340, unit="sites", **common)
+    assert ok["known_fact_id"]
+
+
+def test_the_corroboration_prompt_tells_the_agent_where_site_counts_live():
+    """A count of sites is rarely on one page, so "look for public sources"
+    was not enough of an instruction to find one."""
+    task = prompts.get("known_fact.corroborate").task
+    for needle in ("sustainability", "location finder", "director"):
+        assert needle in task.lower(), needle

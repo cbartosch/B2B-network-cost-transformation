@@ -69,6 +69,27 @@ def register(session, *, case_id: str, fact_class: str, subject: str,
     if verifiability not in VERIFIABILITY:
         raise ValueError(f"verifiability must be one of {VERIFIABILITY}")
 
+    # A known fact is a quantity about a named subject. Neither was checked,
+    # so a fact with an empty subject and no value was storable - it then
+    # displayed as "(None sites)", could never be corroborated (there is no
+    # claim to check), and was refused by resolve_quantity_source as carrying
+    # no value. Everything downstream behaved correctly on input that should
+    # not have existed, which is why it took a confusing corroboration result
+    # to surface it.
+    if not (subject or "").strip():
+        raise ValueError(
+            "subject is mandatory: corroboration looks for public sources "
+            "about a named subject, and there is nothing to look for without "
+            "one. Name the entity the claim is about, for example the legal "
+            "entity or the country the count applies to.")
+    if value_base is None and value_low is None and value_high is None:
+        raise ValueError(
+            "a known fact must carry a value: a point in value_base, or a "
+            "range in value_low and value_high. A fact with no value cannot "
+            "be corroborated, cannot source a quantity, and is not a fact - "
+            "if the number is genuinely unknown, leave the domain as "
+            "DECLARED_UNKNOWN rather than asserting an empty one.")
+
     widened = False
     if value_base is not None and value_low is None and value_high is None:
         value_low = float(value_base) * (1 - DEFAULT_RANGE_WIDTH)

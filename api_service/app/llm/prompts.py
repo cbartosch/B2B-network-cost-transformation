@@ -182,11 +182,23 @@ _DEFS = [
 
     PromptDefinition(
         prompt_id="known_fact.corroborate",
-        prompt_version="2.0.0", agent_id="LLM-01",
-        task=("Look for public sources that state the asserted value for the "
-              "named subject. Return the candidates you find and what each "
-              "says. Do not judge whether the assertion is corroborated - "
-              "that comparison is made deterministically from your candidates."),
+        prompt_version="2.1.0", agent_id="LLM-01",
+        task=("Search for public sources that state the asserted value for the "
+              "named subject, then return what each one says. Do not judge "
+              "whether the assertion is corroborated - that comparison is made "
+              "deterministically from your candidates.\n"
+              "Run several searches before answering; one is rarely enough. "
+              "Where the claim is a count of sites, locations or facilities, "
+              "the figure is usually published somewhere even when no single "
+              "page states it outright, so look across: the annual report and "
+              "the ESG or sustainability report, whose buildings, energy and "
+              "emissions tables often count sites by type; investor "
+              "presentations and network or facility overviews; the entity's "
+              "own store, branch or location finder and its country "
+              "subsidiary pages; business directories and registry listings; "
+              "and trade press covering openings and closures. If the "
+              "sources give a range or disagree, return each as its own "
+              "candidate with what it says - do not average them."),
         output_model=schemas.CorroborationResult,
         tool_policy=ToolPolicy.WEB_SEARCH,
         evaluation_suite="conformance/corroboration"),

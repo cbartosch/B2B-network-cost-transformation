@@ -108,8 +108,8 @@ def test_asserted_share_below_trigger_applies_no_ceiling():
 LAYERS = ["L0", "L2", "L4"]
 ALL_PRIORS = {("GB", "DIA", 100): {"low": 380, "base": 520, "high": 720, "price_year": 2026},
               ("DE", "DIA", 100): {"low": 420, "base": 580, "high": 800, "price_year": 2026},
-              ("BR", "DIA"): {"low": 500, "base": 700, "high": 950, "price_year": 2026},
-              ("IN", "DIA"): {"low": 300, "base": 420, "high": 600, "price_year": 2026}}
+              ("BR", "DIA", 100): {"low": 500, "base": 700, "high": 950, "price_year": 2026},
+              ("IN", "DIA", 100): {"low": 300, "base": 420, "high": 600, "price_year": 2026}}
 SIM = {"products": [{"country": "GB", "product": "DIA", "role": "PRIMARY", "bandwidth_mbps": 100, "count": 800},
                     {"country": "DE", "product": "DIA", "role": "PRIMARY", "bandwidth_mbps": 100, "count": 430},
                     {"country": "BR", "product": "DIA", "role": "PRIMARY", "bandwidth_mbps": 100, "count": 180},
@@ -135,7 +135,7 @@ def test_material_country_floor_catches_high_aggregate():
 
 
 def test_publication_refused_below_absolute_floor():
-    assert _cov({("IN", "DIA"): ALL_PRIORS[("IN", "DIA")]})["status"] == "REFUSED"
+    assert _cov({("IN", "DIA", 100): ALL_PRIORS[("IN", "DIA", 100)]})["status"] == "REFUSED"
 
 
 def test_unpriced_scope_is_excluded_not_zeroed():
@@ -1092,3 +1092,50 @@ def test_every_archetype_can_be_priced_at_its_own_bandwidth():
     missing = [(a, prod, bw) for a, _u, bw, _d, pp, bp in ARCHETYPES
                for prod in (pp, bp) if (prod, bw) not in tiers]
     assert not missing, f"archetype tiers no prior prices: {missing}"
+
+
+def test_every_prior_key_carries_a_bandwidth():
+    """The seam that produced this class of defect.
+
+    4.53.0 added a bandwidth to the pricing key and updated the paths that
+    happened to be open at the time. match_prior and derive_scope got it; the
+    divergence check, the promotion write and three fixtures here did not -
+    and a 2-tuple key still yields the right product from key[1], so the
+    fixtures kept passing while measuring a code path production no longer
+    uses.
+
+    Checking the shape mechanically is what makes the next dimension change
+    fail loudly rather than quietly."""
+    import ast
+    import pathlib
+
+    root = pathlib.Path(__file__).resolve().parents[1]
+    paths = list((root / "tests").rglob("*.py"))
+    for candidate in (root / "api_service" / "app", root / "app"):
+        if candidate.exists():
+            paths += list(candidate.rglob("*.py"))
+            break
+
+    offenders = []
+    for path in paths:
+        try:
+            tree = ast.parse(path.read_text())
+        except SyntaxError:
+            continue
+        for node in ast.walk(tree):
+            # A dict literal keyed by a tuple of two string constants that look
+            # like (country, product) is the shape that silently misprices.
+            if not isinstance(node, ast.Dict):
+                continue
+            for key in node.keys:
+                if not isinstance(key, ast.Tuple) or len(key.elts) != 2:
+                    continue
+                parts = [e.value for e in key.elts
+                         if isinstance(e, ast.Constant) and isinstance(e.value, str)]
+                if len(parts) != 2:
+                    continue
+                country, product = parts
+                if len(country) == 2 and country.isupper() and product.isupper():
+                    offenders.append(f"{path.name}:{key.lineno} ({country}, {product})")
+    assert not offenders, (
+        "prior keys missing a bandwidth: " + ", ".join(offenders))

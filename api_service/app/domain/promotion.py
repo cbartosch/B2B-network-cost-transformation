@@ -124,6 +124,7 @@ def candidates(session, case_id: str) -> dict:
 
 
 def compare_to_benchmark(session, *, country: str, product: str, value: float,
+                         bandwidth_mbps: int | None = None,
                          policy=None) -> dict:
     """How far a researched price sits from the approved benchmark it would
     displace.
@@ -138,16 +139,37 @@ def compare_to_benchmark(session, *, country: str, product: str, value: float,
     price for a country the model cannot currently price at all is the most
     valuable kind, and saying so is different from saying nothing was found.
     """
-    row = session.execute(
+    # Matched on the tier, not on country and product alone. Since 4.53.0 a
+    # product has several bandwidth bands - US DIA is 480/920/1340 base at
+    # 100/500/1000 Mbps - and this used to take .first() with no ordering, so
+    # a 100 Mbps price could be judged against the 1 Gbps band, and which
+    # band it got was not even stable between runs. A corroborating price
+    # then read as materially divergent, or the reverse.
+    rows = session.execute(
         select(db.unit_cost_prior).where(
             db.unit_cost_prior.c.country == country,
             db.unit_cost_prior.c.product == product,
-            db.unit_cost_prior.c.approved.is_(True))).first()
-    if row is None:
+            db.unit_cost_prior.c.approved.is_(True))).all()
+    if not rows:
         return {"verdict": "NO_BENCHMARK", "material": False,
-                "note": (f"no approved benchmark for {country} {product}, so "
-                         f"this is new coverage rather than a correction - "
-                         f"nothing to contradict")}
+                "note": (f"no approved benchmark for {country} {product} at any "
+                         f"bandwidth, so this is new coverage rather than a "
+                         f"correction - nothing to contradict")}
+
+    row = next((r for r in rows if r.bandwidth_mbps == bandwidth_mbps), None)
+    if row is None:
+        tiers = sorted(r.bandwidth_mbps for r in rows if r.bandwidth_mbps)
+        return {
+            "verdict": "NO_BENCHMARK_AT_BANDWIDTH", "material": False,
+            "observed_bandwidth_mbps": bandwidth_mbps,
+            "benchmarked_bandwidths": tiers,
+            "note": (f"{country} {product} is benchmarked at "
+                     f"{tiers or 'no stated'} Mbps but not at "
+                     f"{bandwidth_mbps or 'an unstated bandwidth'}. Comparing "
+                     f"across tiers would be a comparison of different "
+                     f"products, so this is reported rather than judged - a "
+                     f"price at a tier the model cannot currently price is "
+                     f"new coverage.")}
 
     low, base, high = float(row.low), float(row.base), float(row.high)
     if low <= value <= high:
@@ -245,19 +267,33 @@ def promote(session, *, case_id: str, candidate_ids: list[str],
             # recorded, so a steward saw a number rather than a disagreement.
             cmp = compare_to_benchmark(session, country=country,
                                        product=product, value=value,
+                                       bandwidth_mbps=int(mbps),
                                        policy=divergence_policy)
-            # A researched price without a bandwidth cannot be matched by the
-            # estimate lookup, so the tier the quantity carries is recorded
-            # where the agent supplied one and left null where it did not -
-            # null being visible as "a steward must set this" rather than a
-            # guess that prices circuits at the wrong tier.
+            # A price with no bandwidth is a valid observation and not a
+            # usable prior: match_prior requires a tier, so a null-bandwidth
+            # row would sit in unit_cost_prior pricing nothing while counting
+            # as coverage. That is the exact condition migration v17 deletes
+            # pre-split rows for, and writing it here anyway - which the first
+            # version of this code did, with a comment calling the null
+            # "visible" - reintroduced it two releases later. The observation
+            # keeps its home in the benchmark vault; only a priceable row
+            # reaches the reference table.
             mbps = q.get("bandwidth_mbps")
-            row_id = f"{country}-{product}-{mbps or 'unspecified'}-researched"
+            if not mbps:
+                declined.append({
+                    "candidate_id": e["candidate_id"],
+                    "reason": (f"{country} {product} price of {value} carries no "
+                               f"bandwidth. A circuit rate without a tier cannot "
+                               f"be matched to any circuit, so it is not "
+                               f"promotable to a prior - re-run the domain, or "
+                               f"set the tier on the observation first.")})
+                continue
+            row_id = f"{country}-{product}-{int(mbps)}-researched"
             session.execute(delete(db.unit_cost_prior).where(
                 db.unit_cost_prior.c.id == row_id))
             session.execute(insert(db.unit_cost_prior).values(
                 id=row_id, country=country, product=product, cost_layer="L0",
-                bandwidth_mbps=int(mbps) if mbps else None,
+                bandwidth_mbps=int(mbps),
                 low=value, base=value, high=value, currency="USD",
                 price_year=2026, approved=False,
                 source_agent_run_id=e["agent_run_id"],
