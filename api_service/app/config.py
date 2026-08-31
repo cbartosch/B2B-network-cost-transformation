@@ -59,5 +59,17 @@ HEALTH_DEEP_TTL_SECONDS = int(os.getenv("HEALTH_DEEP_TTL_SECONDS", "30"))
 # move when the output shape changes is a version that means nothing - and a
 # stored 1.0.0 output run through the 1.1.0 pricing lookup prices zero
 # circuits, which reads as a badly evidenced estimate rather than a stale run.
+# Provider read timeouts. Two values because they bound two different things.
+#
+# A plain completion answers in seconds. A call carrying the hosted web-search
+# tool runs the searches server-side before the model replies, so the whole
+# sweep sits inside one HTTP response - eight searches across six fact classes
+# is minutes, not seconds. One 60-second timeout for both meant every
+# search-using service timed out before it could return anything, three times
+# over, and reported it as a transport error.
+LLM_TIMEOUT_SECONDS = float(os.getenv("LLM_TIMEOUT_SECONDS", "60"))
+LLM_SEARCH_TIMEOUT_SECONDS = float(
+    os.getenv("LLM_SEARCH_TIMEOUT_SECONDS", "480"))
+
 SIMULATION_MODEL_VERSION = "sim-1.1.0"
 CALCULATION_VERSION = "calc-1.0.0"

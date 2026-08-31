@@ -51,6 +51,12 @@ services:
       # Explicit trust anchor. The image builds this bundle from certs/, so it
       # contains the corporate CA when one is supplied and the public roots
       # otherwise. Named here rather than inherited from the environment.
+      # A plain completion answers in seconds; a call carrying the hosted
+      # web-search tool runs its searches server-side inside one response and
+      # takes minutes. One timeout for both meant every search-using service
+      # timed out before it could answer.
+      LLM_TIMEOUT_SECONDS: ${LLM_TIMEOUT_SECONDS:-60}
+      LLM_SEARCH_TIMEOUT_SECONDS: ${LLM_SEARCH_TIMEOUT_SECONDS:-480}
       LLM_CA_BUNDLE: ${LLM_CA_BUNDLE:-/etc/ssl/certs/ca-certificates.crt}
       LLM_INSECURE_SKIP_TLS_VERIFY: ${LLM_INSECURE_SKIP_TLS_VERIFY:-false}
       REQUIRE_PROVIDER_REQUEST_ID: ${REQUIRE_PROVIDER_REQUEST_ID:-false}

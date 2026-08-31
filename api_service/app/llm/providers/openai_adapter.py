@@ -10,6 +10,7 @@ import httpx
 
 from . import _transport
 from .base import strictify, ProviderCall, parse_http_date
+from ... import config
 from .. import errors
 
 log = logging.getLogger("workbench.provider.openai")
@@ -23,10 +24,15 @@ class OpenAIAdapter:
     name = "openai"
     reconciliation_tier = "A"
 
-    def __init__(self, api_key: str, model: str, timeout: float = 60.0):
+    def __init__(self, api_key: str, model: str, timeout: float | None = None):
         self._api_key = api_key
         self.model = model
-        self._timeout = timeout
+        # A search-carrying call runs its searches server-side inside one
+        # response, so it needs a materially longer read timeout than a plain
+        # completion. Sharing one value meant every search-using service timed
+        # out before it could answer.
+        self._timeout = timeout or config.LLM_TIMEOUT_SECONDS
+        self._search_timeout = config.LLM_SEARCH_TIMEOUT_SECONDS
 
     def configured(self) -> bool:
         return bool(self._api_key)
@@ -88,7 +94,7 @@ class OpenAIAdapter:
              "messages": [{"role": "system", "content": system},
                           {"role": "user", "content": prompt}]})
 
-    def _request(self, body: dict) -> ProviderCall:
+    def _request(self, body: dict, timeout: float | None = None) -> ProviderCall:
         """Shared transport for complete() and parse(), so the structured path
         cannot drift from the audited one."""
         headers = {"Authorization": f"Bearer {self._api_key}",
@@ -97,7 +103,7 @@ class OpenAIAdapter:
         started = time.perf_counter()
         local_at = datetime.now(timezone.utc)
         try:
-            with _transport.client(self._timeout) as c:
+            with _transport.client(timeout or self._timeout) as c:
                 resp = c.post(ENDPOINT, json=body, headers=headers)
         except httpx.HTTPError as exc:
             raise errors.ProviderUnavailable(

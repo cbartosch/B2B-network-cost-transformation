@@ -581,3 +581,41 @@ def test_provider_error_bodies_are_not_echoed_to_the_caller():
     message = _transport.safe_error("anthropic", 429)
     assert message == "anthropic returned HTTP 429"
     assert "prompt" not in message.lower()
+
+
+# ------------------------------------------------ search calls need longer
+def test_a_search_carrying_call_uses_the_longer_timeout():
+    """Observed in the field as "transport error: The read operation timed
+    out" on the known-facts public prefill.
+
+    The hosted web-search tool runs server-side inside one HTTP response, so a
+    sweep of several fact classes sits behind a single read that takes
+    minutes. The adapter had one 60-second timeout for every call, sized for a
+    plain completion, so every search-using service timed out before it could
+    return anything - and reported it as a transport fault rather than as a
+    budget that was too small."""
+    import inspect
+    from app import config
+    from app.llm.providers import anthropic_adapter
+
+    assert config.LLM_SEARCH_TIMEOUT_SECONDS > config.LLM_TIMEOUT_SECONDS, (
+        "a search-carrying call must be allowed longer than a completion")
+    assert config.LLM_SEARCH_TIMEOUT_SECONDS >= 300, (
+        "several server-side searches in one response take minutes")
+
+    for method in (anthropic_adapter.AnthropicAdapter.parse,
+                   anthropic_adapter.AnthropicAdapter.complete):
+        src = inspect.getsource(method)
+        assert "self._search_timeout if tools else None" in src, (
+            f"{method.__name__} does not lengthen its read when it carries a "
+            f"search tool")
+
+
+def test_the_timeouts_are_configurable_not_hardcoded():
+    """60 seconds was a constant in a default argument, so the only remedy for
+    a slow network or a long sweep was a rebuild."""
+    import inspect
+    from app.llm.providers import anthropic_adapter
+    src = inspect.getsource(anthropic_adapter.AnthropicAdapter.__init__)
+    assert "timeout: float | None = None" in src
+    assert "config.LLM_TIMEOUT_SECONDS" in src

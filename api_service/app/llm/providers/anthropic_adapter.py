@@ -9,6 +9,7 @@ import httpx
 
 from . import _transport
 from .base import ProviderCall, parse_http_date, strictify
+from ... import config
 from .. import errors
 
 log = logging.getLogger("workbench.provider.anthropic")
@@ -23,10 +24,15 @@ class AnthropicAdapter:
     name = "anthropic"
     reconciliation_tier = "A"          # per-model usage via the Admin usage API
 
-    def __init__(self, api_key: str, model: str, timeout: float = 60.0):
+    def __init__(self, api_key: str, model: str, timeout: float | None = None):
         self._api_key = api_key
         self.model = model
-        self._timeout = timeout
+        # A search-carrying call runs its searches server-side inside one
+        # response, so it needs a materially longer read timeout than a plain
+        # completion. Sharing one value meant every search-using service timed
+        # out before it could answer.
+        self._timeout = timeout or config.LLM_TIMEOUT_SECONDS
+        self._search_timeout = config.LLM_SEARCH_TIMEOUT_SECONDS
 
     def configured(self) -> bool:
         return bool(self._api_key)
@@ -70,7 +76,8 @@ class AnthropicAdapter:
                 "messages": [{"role": "user", "content": prompt}],
                 "tools": list(tools or []) + [emit],
                 "tool_choice": choice}
-        call = self._request(body)
+        # Search runs inside this response, so the read has to wait for it.
+        call = self._request(body, timeout=self._search_timeout if tools else None)
 
         parsed = None
         for block in (call.raw.get("content") or []):
@@ -101,9 +108,9 @@ class AnthropicAdapter:
             # The hosted web_search tool runs server-side: Anthropic executes
             # the search and returns the result blocks in this same response.
             body["tools"] = tools
-        return self._request(body)
+        return self._request(body, timeout=self._search_timeout if tools else None)
 
-    def _request(self, body: dict) -> ProviderCall:
+    def _request(self, body: dict, timeout: float | None = None) -> ProviderCall:
         """The shared transport path for complete() and parse().
 
         Factored out when parse() arrived: two copies of the liveness proof,
@@ -117,7 +124,7 @@ class AnthropicAdapter:
         started = time.perf_counter()
         local_at = datetime.now(timezone.utc)
         try:
-            with _transport.client(self._timeout) as c:
+            with _transport.client(timeout or self._timeout) as c:
                 resp = c.post(ENDPOINT, json=body, headers=headers)
         except httpx.HTTPError as exc:
             raise errors.ProviderUnavailable(
