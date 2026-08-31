@@ -158,15 +158,17 @@ if _suggestions:
     b.caption("Also on this case: " + " · ".join(_suggestions[:5]))
 
 c, d, e, f = st.columns(4)
-# value=None rather than 0.0. The field defaulted to 0.0 and the payload then
-# did `base or None`, so an untouched field silently became "no value" - and a
-# legitimate zero became one too. The fact registered as "(None sites)" with an
-# empty subject, and every stage downstream behaved correctly on something that
-# should never have been storable.
-base = c.number_input("Value (base) *", value=None, placeholder="e.g. 340",
-                      key="kf_base")
-low = d.number_input("Low (optional)", value=None, key="kf_low")
-high = e.number_input("High (optional)", value=None, key="kf_high")
+# The default is None, set through _KF_FIELDS above. It used to be 0.0, and the
+# payload then did `base or None` - so an untouched field silently became "no
+# value", and a legitimate zero became one too. The fact registered as
+# "(None sites)" with an empty subject, and every stage downstream behaved
+# correctly on something that should never have been storable.
+# No value= alongside key=: session state already holds the field through
+# setdefault above, and passing both makes Streamlit warn that a widget was
+# given a default and had its value set through session state.
+base = c.number_input("Value (base) *", placeholder="e.g. 340", key="kf_base")
+low = d.number_input("Low (optional)", key="kf_low")
+high = e.number_input("High (optional)", key="kf_high")
 unit = f.text_input("Unit", key="kf_unit")
 
 g, h, i = st.columns(3)
@@ -224,10 +226,11 @@ if _reg.button("Register", type="primary"):
                 _msg += (" The point value was widened to a range; the "
                          "widening is recorded.")
             api.flash(_msg)
-            # Requested, not performed: the widgets already exist in this run.
-            # Cleared only on success, so a rejected attempt keeps what was
-            # typed instead of making the analyst start again.
-            st.session_state["_kf_reset"] = True
+            # The form is NOT cleared. What was entered stays on screen after
+            # registering, because clearing it reads as the entry having been
+            # lost - and because the next fact is usually the same subject with
+            # a different class or value, which is faster to edit than to
+            # retype. Use "Clear the form" to empty it deliberately.
             st.rerun()
 
 st.divider()

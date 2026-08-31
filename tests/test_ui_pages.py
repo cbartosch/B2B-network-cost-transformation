@@ -421,3 +421,31 @@ def test_no_widget_key_is_written_after_its_widget_exists(page):
     assert not offenders, (
         f"{page.name}: " + "; ".join(offenders)
         + ". Request the change and apply it at the top of the next run.")
+
+
+def test_registering_a_fact_does_not_empty_the_form():
+    """Clearing on success reads as the entry having been lost - which is what
+    it was reported as. It is also the wrong default for the work: the next
+    fact is usually the same subject with a different class or value, faster
+    to edit than to retype. Emptying it is a deliberate act."""
+    page = next(p for p in PAGES if p.name.startswith("2_"))
+    text = page.read_text()
+    success = text.index("api.flash(_msg)")
+    after = text[success:success + 600]
+    assert "_kf_reset" not in after, (
+        "the success path must not request a form reset")
+    assert "Clear the form" in text, (
+        "there still has to be a way to empty it on purpose")
+
+
+@pytest.mark.parametrize("page", PAGES, ids=lambda p: p.name)
+def test_no_widget_has_both_a_default_and_a_session_state_key(page):
+    """Streamlit warns that the widget was given a default and also had its
+    value set through session state, and the session-state value silently
+    wins - so the default is misleading rather than wrong."""
+    import re
+    offenders = re.findall(
+        r'\.(?:number_input|text_input|slider|selectbox|date_input)\('
+        r'[^)]*\bvalue=[^)]*\bkey="[A-Za-z_0-9]+"', page.read_text())
+    assert not offenders, (
+        f"{page.name}: {len(offenders)} widget(s) pass both value= and key=")
