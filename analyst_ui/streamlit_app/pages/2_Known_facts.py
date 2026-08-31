@@ -18,12 +18,21 @@ with st.form("kf"):
         "Current vendor and product signals", "Contract and sourcing events",
         "Operating-model cost", "Transformation announcements", "Resilience assumptions",
         "Remote-user population", "Market serviceability"])
-    subject = b.text_input("Subject", help="Entity, country, provider or contract concerned")
+    subject = b.text_input("Subject *",
+                           help="The entity, country, provider or contract the "
+                                "claim is about. Corroboration searches for "
+                                "public sources about this subject, so without "
+                                "one there is nothing to look for.")
 
     c, d, e, f = st.columns(4)
-    base = c.number_input("Value (base)", value=0.0)
-    low = d.number_input("Low (optional)", value=0.0)
-    high = e.number_input("High (optional)", value=0.0)
+    # value=None, not 0.0. The field defaulted to 0.0 and the payload then did
+    # `base or None`, so an untouched field silently became "no value" - and a
+    # legitimate zero became one too. The fact registered as "(None sites)"
+    # with an empty subject, and every stage downstream then behaved correctly
+    # on something that should never have been storable.
+    base = c.number_input("Value (base) *", value=None, placeholder="e.g. 340")
+    low = d.number_input("Low (optional)", value=None)
+    high = e.number_input("High (optional)", value=None)
     unit = f.text_input("Unit", "sites")
 
     g, h, i = st.columns(3)
@@ -42,13 +51,27 @@ with st.form("kf"):
                    "until a rights check passes (2.4).")
 
     if st.form_submit_button("Register"):
+        problems = []
         if not asserted_by.strip():
-            st.error("An unattributed known fact is rejected. Name the asserter.")
+            problems.append("An unattributed known fact is rejected. Name the asserter.")
+        if not subject.strip():
+            problems.append("Name the subject. Corroboration looks for public "
+                            "sources about a named subject.")
+        if base is None and low is None and high is None:
+            problems.append("Give a value - a point in base, or a range in low "
+                            "and high. If the number is genuinely unknown, "
+                            "leave the domain DECLARED_UNKNOWN rather than "
+                            "asserting an empty fact.")
+        if problems:
+            for msg in problems:
+                st.error(msg)
         else:
             r = api.post(f"/v1/outside-in/cases/{case_id}/known-facts", {
                 "fact_class": fact_class, "subject": subject,
-                "value_base": base or None, "value_low": low or None,
-                "value_high": high or None, "unit": unit,
+                # No `or None`: that coerced a legitimate zero to absent
+                # as well as an untouched field.
+                "value_base": base, "value_low": low, "value_high": high,
+                "unit": unit,
                 "asserted_by": asserted_by, "assertion_date": str(adate),
                 "basis": basis, "verifiability": verif,
                 "self_reported_confidence": conf})
@@ -69,8 +92,30 @@ else:
         state = f["corroboration_state"]
         icon = {"CORROBORATED": "[+]", "CONTRADICTED": "[!]",
                 "UNCORROBORATED": "[-]"}.get(state, "[ ]")
-        with st.expander(f"{icon} {f['fact_class']} - {f['subject']} "
-                         f"({f['value_base']} {f['unit'] or ''}) - {state}"):
+        _malformed = not (f.get("subject") or "").strip() or f.get("value_base") is None
+        _label = (f"{icon} {f['fact_class']} - "
+                  f"{f['subject'] or 'NO SUBJECT'} "
+                  f"({'NO VALUE' if f['value_base'] is None else f['value_base']} "
+                  f"{f['unit'] or ''}) - "
+                  f"{'MALFORMED - cannot be corroborated' if _malformed else state}")
+        with st.expander(_label):
+            if _malformed:
+                st.error(
+                    "This fact carries no subject or no value, so there is no "
+                    "claim to check against public sources - corroboration "
+                    "will keep returning UNCORROBORATED however many times it "
+                    "is run. It predates the validation that now refuses such "
+                    "a fact at registration. Remove it and register it again "
+                    "with a subject and a value.")
+                if st.button("Remove this malformed fact",
+                             key=f"rm_{f['known_fact_id']}"):
+                    rr = api.post(
+                        f"/v1/outside-in/known-facts/{f['known_fact_id']}:void",
+                        {"voided_by": "analyst"})
+                    if "_error" in rr:
+                        st.error(rr["_error"])
+                    else:
+                        st.rerun()
             st.write({"asserted_by": f["asserted_by"], "assertion_date": f["assertion_date"],
                       "basis": f["basis"], "verifiability": f["verifiability"],
                       "rights_cleared": f["rights_cleared"],

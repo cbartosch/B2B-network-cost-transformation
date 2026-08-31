@@ -578,6 +578,49 @@ def resolve_conflict(conflict_id: str, payload: ResolveConflictIn):
             raise HTTPException(422, str(exc))
 
 
+class VoidFactIn(BaseModel):
+    voided_by: str = "analyst"
+
+
+@router.post("/v1/outside-in/known-facts/{fact_id}:void")
+def void_known_fact(fact_id: str, payload: VoidFactIn):
+    """Remove a fact that carries no subject or no value.
+
+    Deliberately narrow. This system retains records rather than deleting
+    them, and a corroborated or superseded fact is part of an estimate's
+    provenance. But a fact with no subject and no value was never evidence of
+    anything: it cannot be corroborated, cannot source a quantity, and before
+    the registration check existed it could be created by leaving a form field
+    untouched. Retaining it preserves no history, and leaving it in place
+    means a permanent UNCORROBORATED row nobody can act on.
+
+    A well-formed fact is refused here, whatever its state.
+    """
+    with S() as s:
+        row = _one_or_404(s, db.known_fact, db.known_fact.c.known_fact_id,
+                          fact_id, "known fact")
+        if (row.subject or "").strip() and row.value_base is not None:
+            raise HTTPException(409, {
+                "error": "this fact is well-formed and cannot be voided",
+                "detail": "voiding exists only for facts that were never "
+                          "checkable - no subject, or no value. A fact that "
+                          "carries a claim is part of the record even when it "
+                          "turns out to be wrong; supersede or re-assert it "
+                          "rather than removing it."})
+        if row.superseded_by:
+            raise HTTPException(409, {
+                "error": "this fact has already influenced an estimate",
+                "detail": "it is referenced as a superseding link and is part "
+                          "of the provenance chain."})
+        s.execute(delete(db.known_fact).where(
+            db.known_fact.c.known_fact_id == fact_id))
+        s.commit()
+        return {"known_fact_id": fact_id, "voided": True,
+                "voided_by": payload.voided_by,
+                "note": "the fact carried no checkable claim; re-register it "
+                        "with a subject and a value"}
+
+
 @router.post("/v1/outside-in/known-facts/{fact_id}:corroborate")
 def corroborate(fact_id: str, payload: CorroborateIn):
     with S() as s:

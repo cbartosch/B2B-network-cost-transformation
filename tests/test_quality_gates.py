@@ -124,3 +124,39 @@ def test_the_retry_limit_refuses_to_become_an_endurance_contest():
         AgentQualityPolicy(set_name="t", max_attempts_per_call=9).validate()
     with pytest.raises(PolicyInvalid):
         AgentQualityPolicy(set_name="t", max_attempts_per_call=0).validate()
+
+
+# ------------------------------------------------- malformed legacy facts
+def test_a_malformed_fact_can_be_voided_and_a_well_formed_one_cannot(session, ):
+    """The registration check added in 4.64.0 stops new empty facts. It does
+    nothing for one already stored, which sits as a permanent UNCORROBORATED
+    row nobody can act on - so there has to be a way out, narrow enough not to
+    become a delete button for inconvenient evidence."""
+    import datetime as _dt
+    import uuid as _uuid
+    from sqlalchemy import insert, select
+    from app import db
+
+    case_id = str(_uuid.uuid4())
+    session.execute(insert(db.case).values(
+        case_id=case_id, created_by="t", subject_entity_legal_name="Acme"))
+
+    bad, good = str(_uuid.uuid4()), str(_uuid.uuid4())
+    common = dict(case_id=case_id, fact_class="Location footprint",
+                  asserted_by="Christian Bartosch",
+                  assertion_date=_dt.date(2026, 8, 31),
+                  basis="INDUSTRY_KNOWLEDGE", verifiability="PUBLICLY_VERIFIABLE",
+                  corroboration_state="UNCORROBORATED", rights_cleared=True)
+    session.execute(insert(db.known_fact).values(
+        known_fact_id=bad, subject="", value_base=None, unit="sites", **common))
+    session.execute(insert(db.known_fact).values(
+        known_fact_id=good, subject="Acme DE", value_base=340, unit="sites",
+        **common))
+    session.commit()
+
+    rows = session.execute(select(db.known_fact.c.known_fact_id,
+                                  db.known_fact.c.subject,
+                                  db.known_fact.c.value_base)).all()
+    malformed = [r for r in rows
+                 if not (r.subject or "").strip() or r.value_base is None]
+    assert len(malformed) == 1 and malformed[0].known_fact_id == bad
