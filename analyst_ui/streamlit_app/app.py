@@ -61,6 +61,38 @@ if cases:
                         help="Every page below operates on this case.")
     case_id = labels[pick]
     st.session_state["case_id"] = case_id
+
+    with st.expander("Remove this case"):
+        st.caption("Archiving takes a case out of this picker and keeps "
+                   "everything. Deleting is for a case that is not a record of "
+                   "anything - a typo, a duplicate, a scratch case - and is "
+                   "refused once an estimate has been published, because that "
+                   "snapshot is the provenance for a number that may have left "
+                   "the building.")
+        who = st.text_input("Acting as", key="rm_who")
+        a, b = st.columns(2)
+        if a.button("Archive", disabled=not who.strip()):
+            r = api.post(f"/v1/outside-in/cases/{case_id}:archive"
+                         f"?archived_by={who}&archived=true", {})
+            if "_error" in r:
+                st.error(r["_error"])
+            else:
+                st.success("Archived.")
+                st.session_state.pop("case_id", None)
+                st.rerun()
+        confirm = b.checkbox("I understand this cannot be undone",
+                             key="rm_confirm")
+        if b.button("Delete permanently",
+                    disabled=not (who.strip() and confirm)):
+            r = api.delete(f"/v1/outside-in/cases/{case_id}",
+                           deleted_by=who, force=True)
+            if "_error" in r:
+                st.error(r["_error"])
+            else:
+                st.success(f"Deleted. Removed: "
+                           f"{r.get('removed') or 'nothing else'}")
+                st.session_state.pop("case_id", None)
+                st.rerun()
 else:
     st.info("No cases yet. Create one below to begin.")
 

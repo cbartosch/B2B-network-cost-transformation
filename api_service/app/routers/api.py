@@ -8,7 +8,8 @@ from pydantic import BaseModel, Field
 from sqlalchemy import delete, insert, select, text, update
 
 from .. import config, db, jobs, migrations
-from ..domain import (anchor_estimate, benchmark_ingest, confidence, coverage,
+from ..domain import (anchor_estimate, benchmark_ingest, case_admin,
+                      confidence, coverage,
                       dispositions,
                       entity_resolution,
                       estimate, known_facts, policy, preflight, promotion, questionnaire,
@@ -314,10 +315,57 @@ def create_case(payload: CaseIn):
 
 
 @router.get("/v1/outside-in/cases")
-def list_cases():
+def list_cases(include_archived: bool = False):
     with S() as s:
-        rows = s.execute(select(db.case).order_by(db.case.c.created_at.desc())).all()
+        q = select(db.case)
+        if not include_archived:
+            # `is_not(True)` rather than `== False`: a case that predates the
+            # column has NULL there, and a plain equality test would hide
+            # every existing case the moment archiving shipped.
+            q = q.where(db.case.c.archived.is_not(True))
+        rows = s.execute(q.order_by(db.case.c.created_at.desc())).all()
         return {"cases": [dict(r._mapping) for r in rows]}
+
+
+class DeleteCaseIn(BaseModel):
+    deleted_by: str
+    force: bool = False
+
+
+@router.delete("/v1/outside-in/cases/{case_id}")
+def delete_case(case_id: str, deleted_by: str, force: bool = False):
+    """Remove a case that is not a record of anything.
+
+    Refused outright once an estimate has been published: that snapshot is the
+    provenance for a number that may have left the building, and its
+    dispositions, agent runs and simulations are what make it checkable.
+    Archive such a case instead.
+    """
+    with S() as s:
+        try:
+            return case_admin.delete_case(s, case_id=case_id,
+                                          deleted_by=deleted_by, force=force)
+        except LookupError as exc:
+            raise HTTPException(404, str(exc))
+        except ValueError as exc:
+            raise HTTPException(422, str(exc))
+        except case_admin.CaseIsARecord as exc:
+            raise HTTPException(409, {"error": "case not removable",
+                                      "detail": str(exc),
+                                      "contents": case_admin.summarise(s, case_id)})
+
+
+@router.post("/v1/outside-in/cases/{case_id}:archive")
+def archive_case(case_id: str, archived_by: str, archived: bool = True):
+    """Take a case out of the picker without losing anything. Reversible."""
+    with S() as s:
+        _one_or_404(s, db.case, db.case.c.case_id, case_id, "case")
+        try:
+            return case_admin.archive_case(s, case_id=case_id,
+                                           archived_by=archived_by,
+                                           archived=archived)
+        except ValueError as exc:
+            raise HTTPException(422, str(exc))
 
 
 @router.get("/v1/outside-in/cases/{case_id}")

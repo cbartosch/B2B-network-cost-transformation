@@ -67,6 +67,11 @@ case = Table(
     # search terms available - a brand almost always out-searches a registered
     # legal name.
     Column("entity_aliases", JSON),
+    # Archived cases leave the picker and keep everything. The route for a
+    # case that produced something but is not current - which deletion must
+    # not be, because a published estimate's provenance is not ours to drop.
+    Column("archived", Boolean, default=False),
+    Column("archived_by", String(120)),
     Column("base_currency", String(3)), Column("price_year", Integer),
     Column("fx_convention", String(16)),
     Column("analysis_horizon_years", Integer), Column("discount_rate_set_id", String(64)),

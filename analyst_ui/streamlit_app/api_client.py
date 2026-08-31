@@ -114,5 +114,9 @@ def post(path, payload=None, timeout=None):
     return _req("POST", path, **kw)
 
 
+def delete(path, **params):
+    return _req("DELETE", path, params=params or None)
+
+
 def put(path, payload=None):
     return _req("PUT", path, json=payload or [])

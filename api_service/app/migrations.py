@@ -34,7 +34,7 @@ from . import db
 log = logging.getLogger("workbench.migrations")
 
 # Bump when the physical schema changes, and add a step below.
-SCHEMA_VERSION = 22
+SCHEMA_VERSION = 23
 
 VERSION_TABLE = "schema_version"
 VERSION_SCHEMA = "audit"
@@ -663,13 +663,26 @@ def _migrate_v22(conn) -> None:
     log.info("v22: %d band column(s) added to evidenced_footprint", added)
 
 
+def _migrate_v23(conn) -> None:
+    """4.20.0 -> 4.21.0: archived / archived_by on engagement_case.
+
+    A case that has published an estimate cannot be deleted - the snapshot is
+    the provenance for a number that may have left the building. Archiving is
+    the route for it: out of the picker, nothing lost.
+    """
+    added = 0
+    for column in ("archived", "archived_by"):
+        added += _add_column(conn, db.case, column)
+    log.info("v23: %d archive column(s) added to engagement_case", added)
+
+
 MIGRATIONS = {2: _migrate_v2, 3: _migrate_v3, 4: _migrate_v4, 5: _migrate_v5,
               6: _migrate_v6, 7: _migrate_v7, 8: _migrate_v8, 9: _migrate_v9,
               10: _migrate_v10, 11: _migrate_v11, 12: _migrate_v12,
               13: _migrate_v13, 14: _migrate_v14, 15: _migrate_v15,
               16: _migrate_v16, 17: _migrate_v17, 18: _migrate_v18,
               19: _migrate_v19, 20: _migrate_v20,
-              21: _migrate_v21, 22: _migrate_v22}
+              21: _migrate_v21, 22: _migrate_v22, 23: _migrate_v23}
 
 
 class SchemaDrift(RuntimeError):
