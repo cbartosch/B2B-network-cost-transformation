@@ -43,37 +43,112 @@ with st.expander("Run research (LLM-01 / LLM-08)"):
         status = st.empty()
         st.caption("Each domain is a live provider call carrying a web search, "
                    "plus an independent fetch of every source it cites, so a "
-                   "domain takes minutes rather than seconds. Progress below is "
-                   "per domain - if it is moving, nothing is stuck.")
+                   "domain takes minutes rather than seconds. Each result "
+                   "appears below as it lands.")
+        # Results render inside the loop, not after it. A run is fifteen to
+        # twenty minutes and reported nothing until the last domain finished -
+        # so a domain that found four sourced quantities and one that abstained
+        # were indistinguishable for a quarter of an hour, and there was no
+        # reason to keep watching. Streamlit flushes as the script runs, so
+        # writing per domain is enough.
+        log = st.container()
         tally = {"resolved": 0, "declared_unknown": 0, "failed": 0}
-        problems = []
+        lines = []
         started = time.monotonic()
+
         for i, d in enumerate(pending, start=1):
             status.write(f"({i}/{len(pending)}) {d['domain_no']}. "
                          f"{d['domain_name']} - {d['agent_id']} "
                          f"[{int(time.monotonic() - started)}s elapsed]")
+            _t0 = time.monotonic()
             r = api.post(f"/v1/outside-in/cases/{case_id}/domain-research:run",
                          {"overwrite": overwrite, "domain_nos": [d["domain_no"]]},
                          timeout=600.0)
+            _secs = int(time.monotonic() - _t0)
+            _head = f"{d['domain_no']}. {d['domain_name']}"
+
             if "_error" in r:
                 # Keep going. One domain failing is not a reason to abandon the
                 # other sixteen, and what succeeded is already persisted.
-                problems.append(f"{d['domain_no']}. {d['domain_name']}: {r['_error']}")
+                _line = ("error", f"{_head} - could not be attempted "
+                                  f"({_secs}s): {r['_error']}")
             else:
                 for k in tally:
                     tally[k] += r.get(k, 0)
-            bar.progress(i / len(pending))
-        status.empty()
+                _res = (r.get("results") or [{}])[0]
+                _disp = _res.get("disposition") or "no disposition"
+                _tri = _res.get("triangulated") or []
+                _qty = _res.get("quantities") or []
+                _srcs = _res.get("verified_source_count") or 0
+                _bits = [f"{_disp}"]
+                if _res.get("reason"):
+                    _bits.append(_res["reason"])
+                if _srcs:
+                    _bits.append(f"{_srcs} verified source(s)")
+                if _qty:
+                    _bits.append(f"{len(_qty)} quantity(ies)")
+                if _res.get("budget_note"):
+                    _bits.append(_res["budget_note"])
+                if _res.get("failure_detail"):
+                    _bits.append(_res["failure_detail"])
+                _kind = ("success" if _disp in ("EVIDENCED_PUBLIC", "DERIVED_PUBLIC")
+                         else "error" if _res.get("failed") else "info")
+                _line = (_kind, f"{_head} - " + "; ".join(_bits) + f" ({_secs}s)")
 
-        st.success(
+                # The numbers, as they land. A band with a spread is the part
+                # worth seeing while the run is still going, because it decides
+                # whether the next domain is worth waiting for.
+                for _t in _tri:
+                    if _t.get("base") is not None:
+                        _flags = ", ".join(_t.get("flags") or [])
+                        lines.append((
+                            "detail",
+                            f"    {_t.get('label')} {_t.get('country') or ''}: "
+                            f"{_t.get('low')} / {_t.get('base')} / {_t.get('high')}"
+                            f" from {_t.get('candidate_count')} source(s)"
+                            + (f"  [{_flags}]" if _flags else "")))
+
+            # The headline goes before the band detail collected above it, so
+            # the log reads in the order the analyst thinks: domain, then its
+            # numbers.
+            _details = []
+            while lines and lines[-1][0] == "detail":
+                _details.insert(0, lines.pop())
+            lines.append(_line)
+            lines.extend(_details)
+
+            with log:
+                {"success": st.success, "error": st.error,
+                 "info": st.info}.get(_line[0], st.write)(_line[1])
+                for _kind, _text in _details:
+                    st.caption(_text)
+
+            bar.progress(i / len(pending))
+
+        status.empty()
+        # Kept across the rerun that refreshes the disposition table, so the
+        # per-domain log is still there afterwards rather than being replaced
+        # by a one-line summary.
+        st.session_state["_research_log"] = lines
+        api.flash(
             f"{tally['resolved']} resolved, {tally['declared_unknown']} declared "
-            f"unknown, {tally['failed']} failed (no disposition written for those - "
-            f"a technical failure isn't evidence; see Execution integrity).")
-        if problems:
-            st.warning("Some domains could not be attempted:")
-            for line in problems:
-                st.caption(line)
+            f"unknown, {tally['failed']} failed (no disposition written for "
+            f"those - a technical failure isn't evidence; see Execution "
+            f"integrity).")
         st.rerun()
+
+_prev = st.session_state.get("_research_log")
+if _prev:
+    with st.expander(f"Last research run - {len(_prev)} line(s)", expanded=True):
+        for _kind, _text in _prev:
+            if _kind == "detail":
+                st.caption(_text)
+            else:
+                {"success": st.success, "error": st.error,
+                 "info": st.info}.get(_kind, st.write)(_text)
+        if st.button("Clear this log"):
+            st.session_state.pop("_research_log", None)
+            st.rerun()
 
 with st.expander("Review research findings and promote them into the estimate"):
     # Streamlit runs an expander body whether or not it is open, so an

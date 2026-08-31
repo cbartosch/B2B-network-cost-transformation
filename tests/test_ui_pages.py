@@ -485,3 +485,35 @@ def test_blank_spend_rows_are_not_sent():
     text = page.read_text()
     assert 'r["estimated_annual_spend"] == r["estimated_annual_spend"]' in text, (
         "NaN must be filtered - it is not a spend figure")
+
+
+def test_research_reports_each_domain_as_it_completes():
+    """A run is fifteen to twenty minutes and reported nothing until the last
+    domain finished - so a domain that found four sourced quantities and one
+    that abstained were indistinguishable for a quarter of an hour, and there
+    was no reason to keep watching.
+
+    Streamlit flushes as the script runs, so writing inside the loop is enough;
+    the requirement is that the write is inside it."""
+    page = next(p for p in PAGES if p.name.startswith("5_"))
+    text = page.read_text()
+
+    loop = text.index("for i, d in enumerate(pending, start=1):")
+    after_loop = text.index('st.session_state["_research_log"] = lines')
+    body = text[loop:after_loop]
+    assert "with log:" in body, (
+        "per-domain output must be written inside the walk, not after it")
+    for shown in ("verified source(s)", "quantity(ies)", "budget_note",
+                  "failure_detail"):
+        assert shown in body, f"{shown} is not reported per domain"
+
+
+def test_the_research_log_survives_the_refresh():
+    """The run ended with st.rerun() to refresh the disposition table, which
+    discarded everything the loop had written."""
+    page = next(p for p in PAGES if p.name.startswith("5_"))
+    text = page.read_text()
+    assert '_research_log' in text
+    assert 'st.session_state.get("_research_log")' in text, (
+        "the log has to be read back after the rerun or it is written and lost")
+    assert "Clear this log" in text
