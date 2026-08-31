@@ -522,3 +522,12 @@ def test_the_audit_row_and_the_provenance_agree_on_the_call():
     for key in ("provider_response_id", "provider_request_id", "input_tokens",
                 "output_tokens", "latency_ms"):
         assert key in src, f"execute() no longer records {key}"
+
+
+def test_the_prefill_sweep_files_facts_under_the_case_wording():
+    """Otherwise a proposal filed under a trading name and a fact registered
+    under the legal name are two facts about the same thing, and the duplicate
+    check - which matches on subject - never sees the collision."""
+    task = prompts.get("known_fact.prefill_public").task
+    assert "exactly as it is given to you" in task
+    assert "duplicate check" in task

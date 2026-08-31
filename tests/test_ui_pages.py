@@ -214,3 +214,18 @@ def test_decimal_fields_are_coerced_before_formatting():
     branch where a fact actually exists."""
     page = next(p for p in PAGES if p.name.startswith("4_"))
     assert "def _num(value):" in page.read_text()
+
+
+def test_the_known_fact_subject_is_prefilled_from_the_case():
+    """A blank subject cost a malformed fact - "(None sites)", unresolvable
+    forever - and it fragments the register: corroboration and the public
+    prefill both match on (fact_class, subject), so "HVB" and "UniCredit Bank
+    GmbH" typed on different days are two facts about the same thing that
+    never meet."""
+    page = next(p for p in PAGES if p.name.startswith("2_"))
+    text = page.read_text()
+    assert 'value=_entity' in text, "the subject must default to the case entity"
+    assert "subject_entity_legal_name" in text
+    assert "Also on this case" in text, (
+        "the aliases and in-scope countries are the other legitimate subjects; "
+        "showing them is cheaper than the analyst guessing the house style")

@@ -216,7 +216,7 @@ _DEFS = [
 
     PromptDefinition(
         prompt_id="known_fact.prefill_public",
-        prompt_version="1.1.0", agent_id="LLM-01",
+        prompt_version="1.2.0", agent_id="LLM-01",
         task=("Find what public sources already state about the named entity "
               "for each requested fact class, so an analyst starts from what "
               "is known rather than from an empty form.\n"
@@ -224,6 +224,13 @@ _DEFS = [
               "runs later: prefer the entity's own annual report, ESG report, "
               "investor pages and regulator filings, and stop when you have a "
               "figure and a source rather than exhausting every avenue.\n"
+              "Use the subject entity's name exactly as it is given to you "
+              "for the `subject` of every proposal, even where the source "
+              "calls it something else - note the source's wording in the "
+              "note instead. Corroboration and the duplicate check both match "
+              "on subject, so a proposal filed under a trading name and a "
+              "fact registered under the legal name become two facts about "
+              "the same thing that never meet.\n"
               "Every proposal must be a NUMBER with a unit - a count of "
               "sites, a headcount, an amount of money, a percentage. This "
               "register holds quantities and has nowhere to put anything "

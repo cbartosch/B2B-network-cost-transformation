@@ -13,6 +13,17 @@ case_id = st.session_state.get("case_id")
 if not case_id:
     st.warning("Select a case on the home page first."); st.stop()
 
+# The case already knows who the subject is. Leaving this blank cost a
+# malformed fact - "(None sites)" with no subject, unresolvable forever - and
+# it fragments the register: corroboration and the public-prefill dedupe both
+# match on (fact_class, subject), so "HVB" and "UniCredit Bank GmbH" typed on
+# different days become two facts about the same thing that never meet.
+_case = api.get(f"/v1/outside-in/cases/{case_id}")
+_entity = "" if "_error" in _case else (
+    _case.get("subject_entity_legal_name") or "")
+_aliases = [] if "_error" in _case else list(_case.get("entity_aliases") or [])
+_countries = [] if "_error" in _case else list(_case.get("in_scope_countries") or [])
+
 st.subheader("Start from what is already public")
 st.caption("A quick sweep of public sources for the facts this register "
            "usually holds, run before the deep per-domain research. Nothing "
@@ -95,11 +106,17 @@ with st.form("kf"):
         "Current vendor and product signals", "Contract and sourcing events",
         "Operating-model cost", "Transformation announcements", "Resilience assumptions",
         "Remote-user population", "Market serviceability"])
-    subject = b.text_input("Subject *",
-                           help="The entity, country, provider or contract the "
-                                "claim is about. Corroboration searches for "
-                                "public sources about this subject, so without "
-                                "one there is nothing to look for.")
+    _suggestions = [x for x in ([_entity] + _aliases + _countries) if x]
+    subject = b.text_input(
+        "Subject *", value=_entity,
+        help="The entity, country, provider or contract the claim is about, "
+             "prefilled from the case. Change it where the claim is not about "
+             "the entity itself - a country for market serviceability, a "
+             "carrier for a contract event. Keep the wording consistent "
+             "between facts about the same thing: corroboration and the "
+             "public prefill both match on it.")
+    if _suggestions:
+        b.caption("Also on this case: " + " · ".join(_suggestions[:5]))
 
     c, d, e, f = st.columns(4)
     # value=None, not 0.0. The field defaulted to 0.0 and the payload then did
