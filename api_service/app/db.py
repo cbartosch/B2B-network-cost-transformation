@@ -531,6 +531,11 @@ evidenced_footprint = Table(
     Column("case_id", String(36), index=True),
     Column("country", String(2)), Column("archetype", String(48)),
     Column("sites", Integer), Column("as_of", String(32)),
+    # The observed range behind `sites`, and how many sources produced it. A
+    # single number in an estimate hides whether three sources agreed on it or
+    # one source stated it, and those carry very different weight.
+    Column("band_low", Integer), Column("band_high", Integer),
+    Column("source_count", Integer),
     Column("domain_no", Integer), Column("agent_run_id", String(36)),
     Column("source_urls", JSON),
     Column("promoted_by", String(120)),

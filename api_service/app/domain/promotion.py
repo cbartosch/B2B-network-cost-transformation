@@ -51,6 +51,17 @@ class NotPromotable(ValueError):
     """The quantity does not carry what a promotion needs."""
 
 
+def _triangulated_index(evidence: dict) -> dict:
+    """Bands by (label, country), so a promotion can carry the range and the
+    conflict state rather than only the point the agent happened to state."""
+    out = {}
+    for t in (evidence or {}).get("triangulated") or []:
+        key = ((t.get("label") or "").upper(),
+               (t.get("country") or "").upper() or None)
+        out[key] = t
+    return out
+
+
 def _quantities_for_case(session, case_id: str) -> list[dict]:
     """Every researched quantity on this case, with the disposition and agent
     run that produced it."""
@@ -63,8 +74,12 @@ def _quantities_for_case(session, case_id: str) -> list[dict]:
         for i, q in enumerate(evidence.get("quantities") or []):
             if not isinstance(q, dict):
                 continue
+            band = _triangulated_index(evidence).get(
+                ((q.get("label") or "").upper(),
+                 (q.get("country") or "").upper() or None))
             out.append({
                 "candidate_id": f"{r.domain_no}:{i}",
+                "band": band,
                 "domain_no": r.domain_no, "domain_name": r.domain_name,
                 "disposition": r.disposition, "agent_run_id": r.agent_run_id,
                 "sources": [s.get("url") for s in (evidence.get("sources") or [])
@@ -212,7 +227,8 @@ def compare_to_benchmark(session, *, country: str, product: str, value: float,
 
 
 def promote(session, *, case_id: str, candidate_ids: list[str],
-            promoted_by: str, divergence_policy=None) -> dict:
+            promoted_by: str, divergence_policy=None,
+            accept_conflicts: bool = False) -> dict:
     """Move selected candidates into the numbers the estimate reads.
 
     Idempotent per (case, country, archetype) for footprint and per
@@ -235,6 +251,23 @@ def promote(session, *, case_id: str, candidate_ids: list[str],
 
     for e in entries:
         q, target = e["quantity"], _classify(e["quantity"])
+        band = e.get("band") or {}
+        if band.get("review_required") and not accept_conflicts:
+            # A quantity whose sources materially disagree is not ready to be
+            # a number in an estimate. Promoting the midpoint would resolve
+            # the disagreement by arithmetic and record no trace of it, which
+            # is the outcome conflict retention exists to prevent. The
+            # promotion is refused with the spread named; an analyst who has
+            # looked and decided can pass accept_conflicts.
+            declined.append({
+                "candidate_id": e["candidate_id"],
+                "reason": (f"sources disagree by "
+                           f"{band.get('spread_share', 0):.0%} "
+                           f"({band.get('low')} to {band.get('high')}) and the "
+                           f"conflict has not been reviewed. Look at it and "
+                           f"promote with accept_conflicts, or research the "
+                           f"domain again.")})
+            continue
         if target == "footprint":
             country = str(q["country"]).upper()
             archetype = str(q["label"]).upper()
@@ -246,6 +279,9 @@ def promote(session, *, case_id: str, candidate_ids: list[str],
                 id=str(uuid.uuid4()), case_id=case_id, country=country,
                 archetype=archetype, sites=int(q["value"]),
                 as_of=str(q.get("as_of") or ""), domain_no=e["domain_no"],
+                band_low=int(band["low"]) if band.get("low") is not None else None,
+                band_high=int(band["high"]) if band.get("high") is not None else None,
+                source_count=band.get("candidate_count"),
                 agent_run_id=e["agent_run_id"],
                 source_urls=e["sources"], promoted_by=promoted_by,
                 promoted_at=now))

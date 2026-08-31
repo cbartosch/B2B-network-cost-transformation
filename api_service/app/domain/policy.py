@@ -477,6 +477,38 @@ class AgentQualityPolicy:
                 f"something acceptable")
 
 
+@dataclass(frozen=True)
+class TriangulationPolicy:
+    """When disagreement between sources becomes a finding.
+
+    Both values decide whether a human is asked to look at a quantity, which
+    is why neither is a module constant: how much disagreement is tolerable
+    depends on the engagement, and a threshold nobody can change is one
+    everybody works around."""
+    set_name: str
+    material_spread_share: Decimal
+    stale_after_years: int
+
+    @classmethod
+    def from_rows(cls, rows: dict, set_name: str = "triangulation_policy"):
+        policy = cls(
+            set_name=set_name,
+            material_spread_share=_require(rows, "material_spread_share", set_name),
+            stale_after_years=int(_require(rows, "stale_after_years", set_name)))
+        policy.validate()
+        return policy
+
+    def validate(self) -> None:
+        _in_unit_interval("material_spread_share", self.material_spread_share)
+        if self.material_spread_share <= 0:
+            raise PolicyInvalid(
+                "material_spread_share must be above 0: at zero every band "
+                "with two different figures needs review, and a review queue "
+                "containing everything is read by nobody")
+        if self.stale_after_years < 1:
+            raise PolicyInvalid("stale_after_years must be at least 1")
+
+
 # --------------------------------------------------------------- recommendation
 @dataclass(frozen=True)
 class RecommendationPolicy:

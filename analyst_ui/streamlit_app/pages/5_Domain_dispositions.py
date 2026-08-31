@@ -259,8 +259,29 @@ else:
         with st.expander(head):
             if ev.get("budget_note"):
                 st.warning(f"Stopped early: {ev['budget_note']}")
+            tri = ev.get("triangulated") or []
+            if tri:
+                st.markdown("**Triangulated bands**")
+                st.dataframe(pd.DataFrame([{
+                    "label": t.get("label"), "country": t.get("country"),
+                    "low": t.get("low"), "base": t.get("base"),
+                    "high": t.get("high"),
+                    "sources": t.get("candidate_count"),
+                    "spread": (f"{t['spread_share']:.0%}"
+                               if t.get("spread_share") is not None else ""),
+                    "vintage": f"{t.get('oldest_year') or '?'}-"
+                               f"{t.get('newest_year') or '?'}",
+                    "flags": ", ".join(t.get("flags") or []),
+                } for t in tri]), use_container_width=True, hide_index=True)
+                st.caption("low and high are the observed extremes, not a "
+                           "confidence interval. base is the median.")
+            for c in ev.get("conflicts") or []:
+                st.warning(f"**{c['label']} {c.get('country') or ''}** - "
+                           f"{c['why']}")
+                st.dataframe(pd.DataFrame(c.get("candidates") or []),
+                             use_container_width=True, hide_index=True)
             if qty:
-                st.markdown("**Numbers found**")
+                st.markdown("**Numbers as the agent reported them**")
                 st.dataframe(pd.DataFrame(qty), use_container_width=True,
                              hide_index=True)
             else:

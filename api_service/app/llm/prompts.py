@@ -131,24 +131,35 @@ class PromptDefinition:
 _DEFS = [
     PromptDefinition(
         prompt_id="llm01.public_evidence.extract",
-        prompt_version="2.0.0", agent_id="LLM-01",
+        prompt_version="2.2.0", agent_id="LLM-01",
         task=("Research one input domain of an outside-in enterprise network "
               "cost estimate for the named entity. Search before answering. "
               "Return the facts you can attribute to a named public source, "
               "with every number in `quantities` as well as described in "
-              "`finding`."),
+              "`finding`.\n"
+              "Where more than one source states a figure for the same thing, "
+              "list EVERY one as its own entry in that quantity's "
+              "`candidates`, each with its source, publisher and as-of date. "
+              "Do not average them, pick between them or drop the ones you "
+              "find less convincing: the spread and the vintage range are "
+              "computed downstream and are usually more informative than any "
+              "single figure. Three sources saying 341, 371 and 400 is a "
+              "better answer than one saying 371."),
         output_model=schemas.PublicEvidenceResult,
         tool_policy=ToolPolicy.WEB_SEARCH,
         evaluation_suite="conformance/public_evidence"),
 
     PromptDefinition(
         prompt_id="llm08.market_data.extract",
-        prompt_version="2.0.0", agent_id="LLM-08",
+        prompt_version="2.2.0", agent_id="LLM-08",
         task=("Source the price and serviceability inputs of an enterprise WAN "
               "cost baseline: circuit unit prices by country, product and "
               "bandwidth, carrier availability, contract norms, transformation "
               "costs, and currency and tax parameters. Cite regulators, "
-              "published tariffs and named pricing studies."),
+              "published tariffs and named pricing studies.\n"
+              "Where several sources price the same thing, list each as its "
+              "own entry in `candidates` with its source and date. Do not "
+              "average or choose - the band is computed downstream."),
         output_model=schemas.PublicEvidenceResult,
         tool_policy=ToolPolicy.WEB_SEARCH,
         evaluation_suite="conformance/public_evidence"),

@@ -96,7 +96,7 @@ from sqlalchemy import insert, select, update
 from .. import db
 from ..llm import errors, gateway, registry
 from ..llm.providers import _transport
-from . import dispositions
+from . import dispositions, triangulate
 from .research_briefs import BRIEF_CATALOGUE_VERSION, RESEARCH_BRIEFS
 from .policy import ResearchPolicy
 
@@ -303,7 +303,7 @@ class DomainResult:
     __slots__ = ("domain_no", "domain_name", "agent_id", "disposition",
                  "reason", "agent_run_id", "queries_used", "captures_used",
                  "verified_sources", "failed", "failure_detail", "budget_note",
-                 "quantities")
+                 "quantities", "triangulated")
 
     def __init__(self, domain_no: int, domain_name: str, agent_id: str | None):
         self.domain_no = domain_no
@@ -324,6 +324,10 @@ class DomainResult:
         # Structured numbers from the finding. Kept separate from the prose so
         # the estimate can be checked against them without re-reading English.
         self.quantities: list[dict] = []
+        # Bands computed from the candidates, with spread, vintage range and
+        # review flags. Separate from `quantities` so the raw observations
+        # remain readable beside the figure derived from them.
+        self.triangulated: list[dict] = []
 
     def as_dict(self) -> dict:
         return {"domain_no": self.domain_no, "domain_name": self.domain_name,
@@ -334,7 +338,8 @@ class DomainResult:
                 "verified_source_count": len(self.verified_sources),
                 "failed": self.failed, "failure_detail": self.failure_detail,
                 "budget_note": self.budget_note,
-                "quantities": self.quantities}
+                "quantities": self.quantities,
+                "triangulated": self.triangulated}
 
 
 class SourceUnreachable(RuntimeError):
@@ -805,6 +810,7 @@ def _research_one_domain(session, *, case_row, domain_no: int, domain_name: str,
                          coverage_policy=None,
                          briefs: dict | None = None,
                          quality_attempts: int = 3,
+                         triangulation_policy=None,
                          captures_remaining_in_run: int,
                          request_scope: str) -> DomainResult:
     result = DomainResult(domain_no, domain_name, agent_id)
@@ -1002,9 +1008,18 @@ def _research_one_domain(session, *, case_row, domain_no: int, domain_name: str,
             result.disposition = "EVIDENCED_PUBLIC"
             result.reason = None
             result.verified_sources = verified
-            result.quantities = [
+            raw_quantities = [
                 q for q in (parsed.get("quantities") or [])
                 if isinstance(q, dict) and q.get("value") is not None]
+            result.quantities = raw_quantities
+            # The agent reports what each source says; the band is computed
+            # here. Three sources at 341, 371 and 400 become 341/371/400 with
+            # a 17% spread and a review flag, rather than one of the three
+            # chosen by whichever was listed first.
+            if triangulation_policy is not None:
+                result.triangulated = triangulate.triangulate(
+                    raw_quantities, policy=triangulation_policy,
+                    price_year=getattr(case_row, "price_year", None) or 2026)
             return result
         # Found a claim but could not independently verify enough of it -
         # try again if budget allows; a claim without enough verification is
@@ -1021,6 +1036,7 @@ def run_domain_research(session, *, case_id: str, agent_ids: list[str] | None = 
                         domain_nos: list[int] | None = None,
                         coverage_policy=None,
                         quality_attempts: int = 3,
+                        triangulation_policy=None,
                         idempotency_key: str | None = None) -> dict:
     """Runs the research phase for whichever DOMAIN_AGENT_MAP domains are
     assigned to agent_ids (default: LLM-01 and LLM-08 both) and either have no
@@ -1103,6 +1119,7 @@ def run_domain_research(session, *, case_id: str, agent_ids: list[str] | None = 
             agent_id=agent_id, provider=provider, research_policy=research_policy,
             coverage_policy=coverage_policy, briefs=briefs,
             quality_attempts=quality_attempts,
+            triangulation_policy=triangulation_policy,
             captures_remaining_in_run=remaining_captures,
             request_scope=request_scope)
         captures_this_run += result.captures_used
@@ -1113,6 +1130,9 @@ def run_domain_research(session, *, case_id: str, agent_ids: list[str] | None = 
             if result.verified_sources:
                 evidence = {"sources": result.verified_sources,
                            "quantities": result.quantities,
+                           "triangulated": result.triangulated,
+                           "conflicts": triangulate.review_queue(
+                               result.triangulated),
                            "queries_used": result.queries_used,
                            "captures_used": result.captures_used}
             elif result.budget_note:

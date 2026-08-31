@@ -996,6 +996,9 @@ def domain_research_prompt(case_id: str, domain_no: int):
 class PromoteIn(BaseModel):
     candidate_ids: list[str]
     promoted_by: str
+    # Set only by someone who has looked at the disagreement. Default false so
+    # a conflicted quantity cannot reach an estimate by omission.
+    accept_conflicts: bool = False
 
 
 @router.get("/v1/outside-in/cases/{case_id}/research-findings")
@@ -1027,7 +1030,8 @@ def promote_research_findings(case_id: str, payload: PromoteIn):
             return promotion.promote(s, case_id=case_id,
                                      candidate_ids=payload.candidate_ids,
                                      promoted_by=payload.promoted_by,
-                                     divergence_policy=div)
+                                     divergence_policy=div,
+                                     accept_conflicts=payload.accept_conflicts)
         except promotion.NotPromotable as exc:
             raise HTTPException(422, str(exc))
 
@@ -1168,9 +1172,16 @@ def run_domain_research(case_id: str, payload: DomainResearchIn):
             except policy.PolicyIncomplete as exc:
                 raise HTTPException(409, {"error": "governed policy unusable",
                                           "detail": str(exc)})
+            try:
+                tri = policy.TriangulationPolicy.from_rows(
+                    _thresholds(s, "triangulation_policy"))
+            except policy.PolicyIncomplete as exc:
+                raise HTTPException(409, {"error": "governed policy unusable",
+                                          "detail": str(exc)})
             result = research.run_domain_research(
                 s, case_id=case_id, agent_ids=payload.agent_ids,
                 quality_attempts=quality.max_attempts_per_call,
+                triangulation_policy=tri,
                 provider=payload.provider, research_policy=research_policy,
                 overwrite=payload.overwrite, domain_nos=payload.domain_nos,
                 idempotency_key=payload.idempotency_key)

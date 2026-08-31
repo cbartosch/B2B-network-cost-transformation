@@ -53,14 +53,39 @@ class SourceRef(Strict):
     as_of: str | None = None
 
 
+class QuantityCandidate(Strict):
+    """One source's figure for one quantity.
+
+    The unit of extraction is a *candidate*, not an answer. Three sources
+    saying 341, 371 and 400 branches are three candidates, and the earlier
+    schema had one `value` field - so the agent had to choose one and discard
+    the disagreement, which is the opposite of triangulating. The spread and
+    the vintage range are usually more informative than any single figure.
+
+    The agent never averages, weights or reconciles these. domain/triangulate
+    computes the band deterministically, so the arithmetic between three
+    observations and one band is inspectable rather than a model's assertion.
+    """
+    value: Decimal
+    unit: str | None = None
+    source_url: str | None = None
+    publisher: str | None = None
+    as_of: str | None = None
+    note: str | None = None
+
+
 class Quantity(Strict):
-    """A number the estimate can consume.
+    """A quantity the estimate can consume, and the candidates behind it.
 
     `label`, `country` and `unit` are free strings rather than enumerations
     because the vocabulary differs per domain and a wrong enumeration would
     force the model to mislabel rather than abstain. domain/promotion.py
     classifies them deterministically afterwards and declines what it cannot
     place - a visible refusal rather than a silent coercion.
+
+    `value` remains the agent's single best reading, for the many cases where
+    one source states one figure. Where several sources disagree, the agent
+    lists them all in `candidates` and leaves the band to code.
     """
     label: str
     value: Decimal
@@ -68,6 +93,7 @@ class Quantity(Strict):
     country: str | None = None
     bandwidth_mbps: int | None = None
     as_of: str | None = None
+    candidates: list[QuantityCandidate] = Field(default_factory=list)
 
 
 class PublicEvidenceResult(Strict):

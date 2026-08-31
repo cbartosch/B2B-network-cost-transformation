@@ -132,6 +132,15 @@ THRESHOLDS = [
     # agent, not a budget to be increased until the complaints stop.
     ("agent_quality_policy", "max_attempts_per_call", "3"),
 
+    # --- triangulation.
+    # How far sources may disagree before the disagreement is the finding
+    # rather than noise to be averaged away, and how old the newest source may
+    # be before the band is called stale. Governed because both decide whether
+    # a person is asked to look, and "how much disagreement is acceptable" is
+    # a judgement about the engagement, not a constant.
+    ("triangulation_policy", "material_spread_share", "0.15"),
+    ("triangulation_policy", "stale_after_years", "3"),
+
     # --- quality gate.
     # How many times a registered call may be re-issued after the gate rejects
     # it. Two means one correction: enough for a drafting slip, not enough for
