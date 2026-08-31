@@ -662,7 +662,7 @@ class SchemaDrift(RuntimeError):
     """The database is missing a column the code will select."""
 
 
-def verify_model_matches_database(engine) -> list:
+def verify_model_matches_database(engine, raise_on_drift: bool = True) -> list:
     """Every column the model declares must exist in the database.
 
     migrations.ensure() applies the steps it knows about; it cannot notice a
@@ -695,7 +695,7 @@ def verify_model_matches_database(engine) -> list:
             for column in table.columns:
                 if column.name not in actual:
                     missing.append(f"{table.schema}.{table.name}.{column.name}")
-    if missing:
+    if missing and raise_on_drift:
         raise SchemaDrift(
             "the database is missing columns this build will query: "
             + ", ".join(sorted(missing))
@@ -755,6 +755,49 @@ def _detect(conn) -> tuple[int, str]:
 
 
 # ---------------------------------------------------------------- entrypoint
+def repair_missing_columns(engine=None) -> list:
+    """Add any model column absent from a table that already exists.
+
+    Additive only: it adds columns, never drops, renames or retypes one, so
+    running it cannot lose data. It exists because a stamp that is not earned
+    is worse than no stamp at all.
+
+    The failure it repairs was observed in the field. A migration step calls
+    _add_column, which returns False without acting when it cannot - by
+    design, so a step targeting a table a later build introduces does not
+    fail on an older database. ensure() then stamped the target version
+    regardless. One silent skip and the database records a version it never
+    reached, every later run reports "up to date, nothing to do", and the
+    step is never applied again. The service then refused to start for a
+    column that no migration would ever add.
+
+    Called from ensure() before the final stamp, so the stamp means what it
+    says. Anything it has to add is logged at WARNING with the column names:
+    self-healing that happens quietly is indistinguishable from the defect.
+    """
+    eng = engine or db.engine
+    added = []
+    with eng.begin() as conn:
+        for table in db.metadata.sorted_tables:
+            if not _has_table(conn, table.schema, table.name):
+                continue          # create_all will build it complete
+            for column in table.columns:
+                if _has_column(conn, table.schema, table.name, column.name):
+                    continue
+                ddl_type = column.type.compile(conn.dialect)
+                conn.execute(text(
+                    f"ALTER TABLE {_q(table.schema)}.{_q(table.name)} "
+                    f"ADD COLUMN {_q(column.name)} {ddl_type}"))
+                added.append(f"{table.schema}.{table.name}.{column.name}")
+    if added:
+        log.warning(
+            "reconciled %d column(s) the schema stamp claimed were present: "
+            "%s. A migration step did not take effect on this database; the "
+            "columns have been added additively. Check the step that owns "
+            "them.", len(added), ", ".join(added))
+    return added
+
+
 def ensure(engine=None) -> dict:
     """Bring the schema to SCHEMA_VERSION, or refuse to operate.
 
@@ -799,11 +842,30 @@ def ensure(engine=None) -> dict:
     # defeated by create_all having just made an empty table under the new name.
     db.metadata.create_all(eng)
 
+    # Reconcile before stamping, and verify before stamping. The stamp used to
+    # be written unconditionally, which made it a claim rather than a fact: one
+    # silently skipped ALTER and the database recorded a version it had not
+    # reached, then skipped that step on every subsequent run because it
+    # believed itself current.
+    reconciled = repair_missing_columns(eng)
+    drift = verify_model_matches_database(eng, raise_on_drift=False)
+    if drift:
+        raise MigrationFailed(
+            f"after migrating to v{SCHEMA_VERSION} the database is still "
+            f"missing: {', '.join(drift)}. The version has NOT been stamped, "
+            f"so this will be retried rather than silently skipped. A step "
+            f"owns those columns and did not take effect.")
+
     with eng.begin() as conn:
         _stamp(conn, SCHEMA_VERSION)
 
     report = {"schema_version": SCHEMA_VERSION, "found": found,
-              "detected_by": how, "migrations_applied": applied}
+              "detected_by": how, "migrations_applied": applied,
+              # Surfaced rather than logged only: a reconciliation means a
+              # migration step did not take effect, and that is worth seeing
+              # on /v1/health rather than in a log nobody reads until the
+              # service refuses to start.
+              "columns_reconciled": reconciled}
     if applied:
         log.info("schema migrated %s -> %s (steps: %s)", found, SCHEMA_VERSION, applied)
     else:

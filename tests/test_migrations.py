@@ -529,3 +529,39 @@ def test_v17_clears_archetypes_naming_the_retired_product():
             'SELECT archetype FROM "reference"."archetype_prior"'))}
     assert "BRANCH" not in rows, "the stale row must go so the seed rebuilds it"
     assert "DC" in rows, "a row naming no retired product is a steward's to keep"
+
+
+def test_the_version_stamp_is_earned_not_asserted():
+    """Observed in the field. _add_column returns False without acting when it
+    cannot - by design, so a step targeting a table a later build introduces
+    does not fail on an older database. ensure() then stamped the target
+    version regardless, so one silent skip made the database record a version
+    it had never reached; every later run reported "up to date, nothing to do"
+    and never applied that step again. The service refused to start for a
+    column no migration would ever add.
+
+    ensure() now reconciles additively and verifies before stamping."""
+    _drop_everything()
+    db.metadata.create_all(db.engine)
+    with db.engine.begin() as conn:
+        migrations._stamp(conn, migrations.SCHEMA_VERSION)
+        conn.execute(text('ALTER TABLE "engagement"."engagement_case" '
+                          'DROP COLUMN "entity_aliases"'))
+
+    # The stamp says current; the column is gone. Before the fix this state
+    # was permanent, because nothing would run again.
+    assert migrations.verify_model_matches_database(
+        db.engine, raise_on_drift=False)
+
+    report = migrations.ensure(db.engine)
+    assert "engagement.engagement_case.entity_aliases" in report["columns_reconciled"]
+    assert migrations.verify_model_matches_database(db.engine) == []
+
+
+def test_reconciliation_is_additive_only():
+    """It must never be a licence to drop or retype. A schema this reconciler
+    could shrink would be worse than one it refuses to touch."""
+    import inspect
+    src = inspect.getsource(migrations.repair_missing_columns)
+    for forbidden in ("DROP", "ALTER COLUMN", "TYPE "):
+        assert forbidden not in src.upper().replace("ADD COLUMN", ""), forbidden
