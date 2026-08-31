@@ -371,7 +371,16 @@ def structured_call(session, *, agent_run_id: str, prompt_id: str,
                 "tool_policy_version": definition.tool_policy_version,
                 "provider": call["provider"], "model": call["model"],
                 "provider_response_id": call.get("provider_response_id"),
+                "provider_request_id": call.get("provider_request_id"),
                 "stop_reason": call.get("stop_reason"),
+                # Cost and latency belong in provenance, not only in the audit
+                # row. Callers displayed them from the old execute() return and
+                # broke when structured_call replaced it - and a caller that
+                # can see what a run cost is a caller who notices a retry loop
+                # spending three times over.
+                "input_tokens": call.get("input_tokens"),
+                "output_tokens": call.get("output_tokens"),
+                "latency_ms": call.get("latency_ms"),
                 "content_blocks": call.get("content_blocks"),
                 "attempts": attempts,
             }

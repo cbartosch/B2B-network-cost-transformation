@@ -477,3 +477,48 @@ def test_a_number_without_a_unit_is_rejected():
          "sources": [{"url": "https://example.com/ar"}]}]})
     v = quality.evaluate("known_fact.prefill_public", unitless, {})
     assert not v.accepted and quality.Rejection.QUANTITY_WITHOUT_UNIT in v.reasons
+
+
+# ------------------------------------------------------ provenance contract
+PROVENANCE_KEYS = {
+    # identity - which instructions produced this
+    "prompt_id", "prompt_version", "prompt_hash", "output_schema_version",
+    "tool_policy_version",
+    # the call itself
+    "provider", "model", "provider_response_id", "stop_reason",
+    # cost and latency, which interfaces display
+    "input_tokens", "output_tokens", "latency_ms",
+    # the gate history
+    "attempts",
+}
+
+
+def test_structured_call_provenance_carries_what_callers_display():
+    """The second time a changed return shape reached the browser as a
+    KeyError. WP1 replaced the gateway return that carried input_tokens and
+    latency_ms, and page 1 kept indexing the old shape - so a successful agent
+    run rendered as a stack trace.
+
+    Asserted against the source because building a real provenance dict needs
+    a provider call. Crude, and it fails when a key is removed, which is the
+    event that matters."""
+    import inspect
+    from app.llm import gateway
+
+    src = inspect.getsource(gateway.structured_call)
+    missing = sorted(k for k in PROVENANCE_KEYS if f'"{k}"' not in src)
+    assert not missing, (
+        f"provenance no longer carries {missing}; a caller displaying one of "
+        f"those will raise KeyError")
+
+
+def test_the_audit_row_and_the_provenance_agree_on_the_call():
+    """Both describe the same call, so a figure shown in the interface and one
+    stored for audit must not be able to disagree about which response it
+    came from."""
+    import inspect
+    from app.llm import gateway
+    src = inspect.getsource(gateway.execute)
+    for key in ("provider_response_id", "provider_request_id", "input_tokens",
+                "output_tokens", "latency_ms"):
+        assert key in src, f"execute() no longer records {key}"

@@ -230,10 +230,22 @@ if st.button("Generate candidates (LIVE agent run)", type="primary", disabled=no
         st.caption("No candidates were fabricated. This is the intended behaviour when a "
                    "provider is unavailable (7.2B).")
     else:
-        p = r["provenance"]
-        st.success(f"{len(r['candidates'])} candidates. Provider response "
-                   f"`{p['provider_response_id']}` - {p['input_tokens']} in / "
-                   f"{p['output_tokens']} out tokens, {p['latency_ms']} ms.")
+        # .get throughout: this is a status line, and a missing audit field
+        # should not turn a successful agent run into a stack trace. It did -
+        # WP1 replaced the gateway return that carried these keys and the line
+        # kept indexing the old shape.
+        p = r.get("provenance") or {}
+        _bits = [f"{len(r['candidates'])} candidates"]
+        if p.get("provider_response_id"):
+            _bits.append(f"response `{p['provider_response_id']}`")
+        if p.get("input_tokens") is not None:
+            _bits.append(f"{p['input_tokens']} in / {p.get('output_tokens')} "
+                         f"out tokens")
+        if p.get("latency_ms") is not None:
+            _bits.append(f"{p['latency_ms']} ms")
+        if p.get("prompt_id"):
+            _bits.append(f"prompt {p['prompt_id']} v{p.get('prompt_version')}")
+        st.success(". ".join(_bits) + ".")
 
 cands = api.get(f"/v1/outside-in/cases/{case_id}/entity-candidates").get("candidates", [])
 if cands:
