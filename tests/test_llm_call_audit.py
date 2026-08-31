@@ -128,3 +128,63 @@ def test_every_agent_routed_domain_survives_the_pipeline():
                             capture_output=True, text=True)
     assert result.returncode == 0, result.stdout + result.stderr
     assert "All 17 agent-routed domains" in result.stdout
+
+
+# ------------------------------------------------------- efficiency and yield
+def test_a_domain_inherits_what_earlier_domains_found():
+    """The largest waste in the build. Every domain call started from nothing
+    and searched the same company again: 17 domains at up to 8 searches each,
+    plus four intake calls, is several hundred searches of one entity for one
+    case - most of it rediscovering the same annual report.
+
+    Handing a domain its predecessors' findings is cheaper and better: it can
+    cite a source already verified, and can disagree with a sibling explicitly
+    rather than in ignorance of it."""
+    research = (APP / "domain" / "research.py").read_text()
+    assert "def _prior_findings" in research
+    assert 'ctx["prior_findings"]' in research
+    assert '{prior_block}' in research, (
+        "the block is built and read but must also be rendered into the prompt")
+    block = research[research.index("def _prior_findings"):
+                     research.index("def _build_context")]
+    assert "not evidence for yours unless the same source says so" in block, (
+        "inherited findings must not become citable evidence by proximity")
+
+
+def test_a_terminal_rejection_does_not_burn_its_remaining_attempts():
+    """Retrying a rejection that cannot be satisfied is pure spend."""
+    from app.llm import gateway
+    import inspect
+    src = inspect.getsource(gateway.structured_call)
+    assert "if not verdict.retryable:" in src and "break" in src
+
+
+def test_the_quantity_schema_carries_what_the_briefs_ask_for():
+    """The briefs asked for vendor, currency, contract term and technology and
+    no field carried them, so the agent either dropped them or forced them into
+    `label` where nothing downstream could read them. A price without its
+    currency and term is not comparable with another price."""
+    from app.llm import schemas
+    fields = set(schemas.Quantity.model_fields)
+    for needed in ("currency", "vendor", "term_months", "technology",
+                   "bandwidth_mbps", "country", "as_of"):
+        assert needed in fields, f"Quantity cannot carry {needed}"
+
+
+def test_no_brief_asks_for_something_the_schema_cannot_hold():
+    """Checked across every brief rather than the ones that happened to fail."""
+    import ast
+    from app.domain.research_briefs import RESEARCH_BRIEFS
+    from app.llm import schemas
+
+    carriable = (set(schemas.Quantity.model_fields)
+                 | set(schemas.PublicEvidenceResult.model_fields))
+    wanted = {"vendor": "vendor", "carrier": "vendor", "currency": "currency",
+              "technology": "technology", "bandwidth": "bandwidth_mbps"}
+    gaps = []
+    for no, brief in RESEARCH_BRIEFS.items():
+        text = (brief.get("wants") or "").lower()
+        for term, field in wanted.items():
+            if term in text and field not in carriable:
+                gaps.append(f"domain {no} wants {term}")
+    assert not gaps, gaps

@@ -537,6 +537,53 @@ def _looks_out_of_perimeter(subject: str, case_row) -> bool:
 
 
 
+def _prior_findings(session, case_id: str, domain_no: int, limit: int = 6) -> str:
+    """What earlier domains already established, as context for this one.
+
+    Every domain call started from nothing and searched the same company
+    again: seventeen domains at up to eight searches each, plus four intake
+    calls, is several hundred searches of one entity for one case. Most of
+    that is rediscovering the same annual report.
+
+    Handing a domain what its predecessors found is cheaper and better: the
+    agent can cite a source another domain already verified, and can say
+    "consistent with the 2,600 locations found in domain 2" instead of
+    searching for it again.
+
+    Only approved figures and the sources behind them - not prose, and never
+    another domain's uncertainty presented as settled.
+    """
+    rows = session.execute(select(db.domain_disposition).where(
+        db.domain_disposition.c.case_id == case_id,
+        db.domain_disposition.c.domain_no != domain_no)).all()
+    lines, urls = [], []
+    for r in rows:
+        evidence = r.evidence or {}
+        for q in (evidence.get("quantities") or [])[:2]:
+            lines.append(
+                f"  - domain {r.domain_no}: {q.get('label')} "
+                f"{q.get('value')} {q.get('unit') or ''} "
+                f"{q.get('country') or ''}".rstrip()
+                + f" [{(evidence.get('reliability') or {}).get('grade', 'ungraded')}]")
+        for src in (evidence.get("sources") or [])[:2]:
+            url = src.get("url")
+            if url and url not in urls:
+                urls.append(url)
+        if len(lines) >= limit:
+            break
+    if not lines:
+        return ""
+    block = "\n".join(lines[:limit])
+    seen = "\n".join(f"  - {u}" for u in urls[:limit])
+    return (
+        f"\nALREADY ESTABLISHED ON THIS CASE\n{block}\n"
+        f"Sources already read:\n{seen}\n"
+        f"Use these rather than searching for them again. Cite one only if it "
+        f"genuinely supports your own finding - a figure another domain found "
+        f"is not evidence for yours unless the same source says so. Where your "
+        f"finding disagrees with one above, say so: that is a result.\n")
+
+
 def _build_context(session, case_row, domain_no: int) -> dict:
     """What the model currently believes, for the domain being researched.
 
@@ -576,6 +623,8 @@ def _build_context(session, case_row, domain_no: int) -> dict:
                 f"{bw.get(r.archetype, r.bandwidth_mbps_base)} Mbps per site, "
                 f"primary access {r.primary_product}, backup {r.backup_product}"
                 for r in sorted(rows, key=lambda r: r.archetype))
+
+    ctx["prior_findings"] = _prior_findings(session, case_row.case_id, domain_no)
 
     # The footprint the estimate is currently running on, if any simulation has
     # been set up for this case.
@@ -713,6 +762,10 @@ def _build_prompt(domain_name: str, case_row, domain_no: int | None = None,
         f"\nWHAT THE MODEL CURRENTLY ASSUMES (an assumption, not evidence - "
         f"your job is to confirm or replace it)\n{ctx['model_state']}\n"
         if ctx.get("model_state") else "")
+    # What earlier domains on this case already established. Cheaper than
+    # searching for it again, and it lets a domain agree or disagree with a
+    # sibling explicitly rather than in ignorance of it.
+    prior_block = ctx.get("prior_findings") or ""
     archetype_block = (
         f"\nHOW SITE TYPES MAP, from the approved priors this estimate uses\n"
         f"{ctx['archetypes']}\n"
@@ -730,6 +783,7 @@ def _build_prompt(domain_name: str, case_row, domain_no: int | None = None,
         f"{entity}\n{alias_block}{country}\n{domain}\n{scope}\n"
         f"{brief_block}"
         f"{state_block}"
+        f"{prior_block}"
         f"{archetype_block}"
         "\nHOW YOUR ANSWER WILL BE JUDGED\n"
         f"  - Every URL you cite is fetched again independently. A URL that "

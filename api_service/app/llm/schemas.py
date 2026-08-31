@@ -152,6 +152,15 @@ class Quantity(Strict):
     country: str | None = None
     bandwidth_mbps: int | None = None
     as_of: str | None = None
+    # Dimensions the briefs ask for and the schema could not carry, so the
+    # agent either dropped them or forced them into `label` where nothing
+    # downstream could read them. A price without its currency and contract
+    # term is not comparable with another price; a vendor signal without the
+    # vendor is not a signal.
+    currency: str | None = None
+    vendor: str | None = None
+    term_months: int | None = None
+    technology: str | None = None
     candidates: list[QuantityCandidate] = Field(default_factory=list)
 
 
