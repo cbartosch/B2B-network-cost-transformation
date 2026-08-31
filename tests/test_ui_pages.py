@@ -1,0 +1,70 @@
+"""Static checks on the Streamlit pages.
+
+py_compile catches a syntax error and nothing else, so a page that references
+a name it never imported compiles cleanly and raises NameError in the browser -
+in front of the analyst, on whichever branch happens to run. That is how
+`pd.DataFrame` reached page 2 without pandas being imported: the line sat
+inside a conditional that only fires after a corroboration returns observed
+candidates, so it was never executed until it was.
+
+These run over the pages as source. They cannot prove a page works, but they
+close the two failure modes that are mechanically detectable and have both
+already happened.
+"""
+import ast
+import builtins
+import pathlib
+
+import pytest
+
+PAGES = sorted((pathlib.Path(__file__).resolve().parents[1]
+                / "analyst_ui" / "streamlit_app").rglob("*.py"))
+
+
+def _bound_and_used(tree):
+    bound, used = set(), set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            for alias in node.names:
+                bound.add((alias.asname or alias.name).split(".")[0])
+        elif isinstance(node, ast.ImportFrom):
+            for alias in node.names:
+                bound.add(alias.asname or alias.name)
+        elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef,
+                               ast.ClassDef)):
+            bound.add(node.name)
+        elif isinstance(node, ast.Name):
+            (bound if isinstance(node.ctx, (ast.Store, ast.Del))
+             else used).add(node.id)
+        elif isinstance(node, ast.arg):
+            bound.add(node.arg)
+        elif isinstance(node, ast.ExceptHandler) and node.name:
+            bound.add(node.name)
+        elif isinstance(node, (ast.Global, ast.Nonlocal)):
+            bound |= set(node.names)
+    return bound, used
+
+
+@pytest.mark.parametrize("page", PAGES, ids=lambda p: p.name)
+def test_a_page_imports_every_name_it_uses(page):
+    """The defect this catches reaches the analyst, not the build: a name used
+    on a rarely-taken branch raises NameError mid-render."""
+    bound, used = _bound_and_used(ast.parse(page.read_text()))
+    missing = sorted(used - bound - set(dir(builtins)))
+    assert not missing, (
+        f"{page.name} uses {missing} without importing or defining them")
+
+
+@pytest.mark.parametrize("page", PAGES, ids=lambda p: p.name)
+def test_a_page_does_not_use_browser_storage(page):
+    """Not supported in this environment, and it fails silently rather than
+    loudly - which is worse than not working."""
+    text = page.read_text()
+    for banned in ("localStorage", "sessionStorage"):
+        assert banned not in text, f"{page.name} references {banned}"
+
+
+def test_every_page_compiles():
+    import py_compile
+    for page in PAGES:
+        py_compile.compile(str(page), doraise=True)
