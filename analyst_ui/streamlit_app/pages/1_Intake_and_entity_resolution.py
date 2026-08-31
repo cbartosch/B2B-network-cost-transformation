@@ -141,6 +141,77 @@ with st.form("intake"):
             st.rerun()
 
 st.divider()
+st.subheader("Is this the company you meant?")
+st.caption("A short current profile of the subject, searched fresh. It writes "
+           "nothing and confirms nothing - it is here so you can see the "
+           "company the system is about to research before it starts. A "
+           "registered legal name is often not what sources call an entity, "
+           "and that mismatch is invisible until every source has been "
+           "discarded as being about someone else.")
+
+if st.button("Look up this entity",
+             disabled=not (case.get("subject_entity_legal_name") or "").strip()):
+    with st.spinner("Searching public sources..."):
+        st.session_state["_profile"] = api.post(
+            f"/v1/outside-in/cases/{case_id}/entity:profile", {},
+            timeout=300.0)
+
+_prof = st.session_state.get("_profile")
+if _prof and "_error" in _prof:
+    st.error(_prof["_error"])
+elif _prof:
+    if _prof.get("abstention_reason"):
+        st.warning(f"The entity could not be identified from public sources "
+                   f"({_prof['abstention_reason']}). That is itself worth "
+                   f"knowing: check the spelling and the legal form before "
+                   f"researching anything.")
+    else:
+        if not _prof.get("name_matches_supplied"):
+            st.warning(
+                f"**The name you entered and the name sources use do not "
+                f"match.** You entered *{_prof.get('name_as_supplied')}*; "
+                f"sources call it *{_prof.get('legal_name_as_sources_state')}*. "
+                f"That is not necessarily wrong - a trading name is normal - "
+                f"but it is the point at which to check the perimeter.")
+
+        st.markdown(f"**{_prof.get('legal_name_as_sources_state') or 'Subject'}**"
+                    + (f" — {_prof.get('parent_or_group')}"
+                       if _prof.get("parent_or_group") else ""))
+        st.write(_prof.get("what_it_is") or "")
+        st.write(_prof.get("what_is_current") or "")
+
+        if _prof.get("disambiguation_note"):
+            st.info(f"**More than one entity could be meant.** "
+                    f"{_prof['disambiguation_note']}")
+
+        _proposed = _prof.get("also_known_as") or []
+        if _proposed:
+            st.markdown("**Also known as**")
+            st.caption("The perimeter check and every research search read "
+                       "these. Without them a source using the brand is "
+                       "discarded as being about a different company.")
+            keep = st.multiselect("Aliases to record", _proposed,
+                                  default=_proposed, key="alias_pick")
+            if st.button("Add these aliases to the case", disabled=not keep):
+                merged = sorted(set((case.get("entity_aliases") or []) + keep))
+                r = api.put(f"/v1/outside-in/cases/{case_id}",
+                            {"entity_aliases": merged})
+                if "_error" in r:
+                    st.error(r["_error"])
+                else:
+                    st.success(f"{len(merged)} alias(es) recorded.")
+                    st.rerun()
+
+        if _prof.get("identifiers"):
+            st.caption("Identifiers found: " + ", ".join(_prof["identifiers"]))
+        with st.expander("Sources"):
+            for src in _prof.get("sources") or []:
+                st.write(f"- {src.get('publisher') or 'source'}: "
+                         f"{src.get('url')}"
+                         + (f" ({src['as_of']})" if src.get("as_of") else ""))
+        st.caption(_prof.get("note", ""))
+
+st.divider()
 st.subheader("Subject-entity resolution")
 st.caption("The system proposes; you dispose. Auto-selection is prohibited even when "
            "only one candidate is returned.")

@@ -215,6 +215,31 @@ _DEFS = [
         evaluation_suite="conformance/corroboration"),
 
     PromptDefinition(
+        prompt_id="entity.profile.summarise",
+        prompt_version="1.0.0", agent_id="LLM-01",
+        task=("Search for the entity named below and write a short, current "
+              "profile of it, so a person can check whether it is the company "
+              "they meant.\n"
+              "Paragraph one, `what_it_is`: legal form and registered name, "
+              "who owns it, what it does, roughly how large it is and where. "
+              "Paragraph two, `what_is_current`: what is true of it now - "
+              "recent restructuring, ownership or strategy changes, anything "
+              "that would change how an estimate about it should be read. "
+              "Three to five sentences each; this is meant to be read.\n"
+              "Put every trading name, brand and abbreviation sources actually "
+              "use into `also_known_as`. This matters more than the prose: a "
+              "registered legal name is frequently not what sources call the "
+              "company, and research that searches only the legal name finds "
+              "nothing.\n"
+              "If the supplied name could mean more than one entity - most "
+              "often a group and its national subsidiary - say so in "
+              "`disambiguation_note` and describe both. Do not choose between "
+              "them; a person does that."),
+        output_model=schemas.EntityProfile,
+        tool_policy=ToolPolicy.WEB_SEARCH,
+        evaluation_suite="conformance/entity_profile"),
+
+    PromptDefinition(
         prompt_id="entity.resolve.candidates",
         prompt_version="2.0.0", agent_id="LLM-01",
         task=("Propose candidate legal entities matching the supplied name and "

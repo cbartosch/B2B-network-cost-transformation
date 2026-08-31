@@ -310,3 +310,55 @@ def test_every_search_service_passes_a_tool_at_its_call_site():
         assert "web_search" in blob[idx:idx + 700], (
             f"{prompt_id} declares a search policy but its call site passes "
             f"no search tool")
+
+
+# ------------------------------------------------- entity confirmation profile
+def test_the_entity_profile_asks_for_two_paragraphs_and_the_aliases():
+    """The aliases are the operative output. The prose is how a person decides
+    whether to trust them."""
+    task = prompts.get("entity.profile.summarise").task
+    assert "what_it_is" in task and "what_is_current" in task
+    assert "also_known_as" in task
+    assert "disambiguation_note" in task, (
+        "a group and its national subsidiary is the common ambiguity and the "
+        "one that silently produces an estimate of the wrong perimeter")
+
+
+def test_the_entity_profile_searches():
+    d = prompts.get("entity.profile.summarise")
+    assert d.tool_policy_version.startswith("web_search"), (
+        "a profile from memory cannot tell an analyst whether the company is "
+        "the one they meant today")
+
+
+def test_a_profile_without_a_source_is_rejected():
+    from app.llm import quality, schemas
+    unsourced = schemas.EntityProfile.model_validate({
+        "what_it_is": "A large German bank.",
+        "what_is_current": "Recently restructured."})
+    v = quality.evaluate("entity.profile.summarise", unsourced, {})
+    assert not v.accepted
+
+    sourced = schemas.EntityProfile.model_validate({
+        "what_it_is": "A large German bank.",
+        "what_is_current": "Recently restructured.",
+        "sources": [{"url": "https://example.com/ar"}]})
+    assert quality.evaluate("entity.profile.summarise", sourced, {}).accepted
+
+
+def test_an_unidentifiable_entity_may_abstain():
+    """A mistyped or invented name should produce an honest "I could not
+    identify this", which is the most useful answer available."""
+    from app.llm import quality, schemas
+    abstained = schemas.EntityProfile.model_validate(
+        {"abstention_reason": "NOT_IN_SOURCE"})
+    assert quality.evaluate("entity.profile.summarise", abstained, {}).accepted
+
+
+def test_the_profile_writes_nothing_to_the_case():
+    """Confirmation stays a named act (0.1A). A profile that quietly set the
+    legal name would be an auto-confirmation wearing a different label."""
+    import inspect
+    from app.domain import entity_resolution
+    src = inspect.getsource(entity_resolution.profile)
+    assert "update(db.case)" not in src and "insert(db.case" not in src

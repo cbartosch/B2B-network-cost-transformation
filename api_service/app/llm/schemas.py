@@ -156,6 +156,45 @@ class CorroborationResult(Strict):
     unresolved_reasons: list[str] = Field(default_factory=list)
 
 
+# --------------------------------------------------------- entity confirmation
+class EntityProfile(Strict):
+    """A short, current profile of the subject, for a person to check against.
+
+    Its only job is to let an analyst see whether the name they typed and the
+    company the system is about to research are the same company. That check
+    has failed twice in the field for the same reason: a registered legal name
+    is often not what sources call the entity. "UniCredit Germany" is not a
+    legal entity at all - the bank is UniCredit Bank GmbH and trades as
+    HypoVereinsbank - and nothing surfaced that until every German source was
+    quarantined as being about a different company.
+
+    So `also_known_as` matters as much as the prose: it is offered straight
+    into the case's entity_aliases, which is what the perimeter check and the
+    search patterns read.
+
+    Two paragraphs by design. Enough to recognise a company and notice when it
+    is the wrong one; short enough that it is actually read.
+    """
+    legal_name_as_sources_state: str | None = None
+    also_known_as: list[str] = Field(default_factory=list)
+    country_of_domicile: str | None = None
+    parent_or_group: str | None = None
+    identifiers: list[str] = Field(default_factory=list)
+    # Paragraph one: what this entity is. Legal form, ownership, what it does,
+    # roughly how big, where.
+    what_it_is: str | None = None
+    # Paragraph two: what is currently true of it. Recent restructuring,
+    # ownership changes, strategy, anything that would change how an estimate
+    # about it should be read.
+    what_is_current: str | None = None
+    # Set when the supplied name could plausibly mean more than one entity -
+    # a group versus its national subsidiary being the common case, and the
+    # one that silently produces an estimate of the wrong perimeter.
+    disambiguation_note: str | None = None
+    sources: list[SourceRef] = Field(default_factory=list)
+    abstention_reason: AbstentionReason | None = None
+
+
 # ------------------------------------------------------------ entity resolution
 class EntityCandidate(Strict):
     """No match_score.

@@ -213,6 +213,28 @@ def questionnaire_prefill(result, context) -> Verdict:
     return Verdict(not reasons, reasons, detail)
 
 
+def entity_profile(result, context) -> Verdict:
+    """A profile a person cannot check is not a check.
+
+    Both paragraphs and at least one source are required, because the whole
+    purpose is for a human to compare what the system found against what they
+    meant - and prose with no source behind it gives them nothing to compare.
+    """
+    reasons, detail = [], []
+    if result.abstention_reason is not None:
+        # An honest "I could not identify this entity" is a useful answer and
+        # is exactly what should happen for a mistyped or invented name.
+        return Verdict(True)
+    for field in ("what_it_is", "what_is_current"):
+        if not (getattr(result, field, None) or "").strip():
+            reasons.append(Rejection.EMPTY_RESULT_WITHOUT_ABSTENTION)
+            detail.append(f"{field} is empty and nothing was abstained on")
+    if not result.sources:
+        reasons.append(Rejection.CLAIMED_FINDING_WITHOUT_SOURCE)
+        detail.append("a profile with no source is a recollection")
+    return Verdict(not reasons, reasons, detail)
+
+
 def accept_all(result, context) -> Verdict:
     """For services whose whole output is already constrained by the schema.
 
@@ -227,6 +249,7 @@ RULES = {
     "llm08.market_data.extract": public_evidence,
     "known_fact.corroborate": corroboration,
     "entity.resolve.candidates": entity_candidates,
+    "entity.profile.summarise": entity_profile,
     "llm09.benchmark.extract": benchmark_observations,
     "llm02.questionnaire.prefill": questionnaire_prefill,
     # Scenario selection is a two-field enum-constrained choice, and the

@@ -1117,6 +1117,40 @@ def upsert_research_brief(domain_no: int, payload: BriefIn):
                 "note": "previous versions retained and deactivated"}
 
 
+class EntityProfileIn(BaseModel):
+    name: str | None = None
+    country: str | None = None
+    provider: str = "anthropic"
+
+
+@router.post("/v1/outside-in/cases/{case_id}/entity:profile")
+def entity_profile(case_id: str, payload: EntityProfileIn):
+    """A short current profile of the subject, so a person can check the name.
+
+    Advisory: it writes nothing to the case. Confirmation remains a named
+    act, and the aliases it proposes are applied only if the analyst accepts
+    them.
+    """
+    with S() as s:
+        case_row = _one_or_404(s, db.case, db.case.c.case_id, case_id, "case")
+        name = payload.name or case_row.subject_entity_legal_name
+        if not (name or "").strip():
+            raise HTTPException(422, {
+                "error": "no name to profile",
+                "detail": "supply a name, or set the subject entity legal "
+                          "name on the case first."})
+        try:
+            return entity_resolution.profile(
+                s, case_id=case_id, name_hint=name,
+                country_hint=payload.country or case_row.country_of_domicile,
+                provider=payload.provider)
+        except errors.ProviderUnavailable as exc:
+            raise HTTPException(503, f"LIVE run failed closed: {exc}")
+        except (errors.LivenessProofFailed,
+                errors.StructuredOutputInvalid) as exc:
+            raise HTTPException(502, str(exc))
+
+
 @router.get("/v1/outside-in/cases/{case_id}/domain-research:plan")
 def plan_domain_research(case_id: str, agent_ids: str | None = None,
                          overwrite: bool = False):
