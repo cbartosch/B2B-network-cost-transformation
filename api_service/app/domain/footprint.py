@@ -45,14 +45,31 @@ DEFAULT_ARCHETYPE = "BRANCH"
 
 
 def resolve(session, case_id: str) -> dict:
-    """The best available footprint, its origin, and what to do about it."""
+    """The best available footprint, its origin, and why the others were not used.
+
+    The `considered` trace is not decoration. Five separate rounds went on
+    "the footprint is wrong" and each one was answered by inferring which
+    branch had fired, because the answer was not observable. Every source is
+    now listed with whether it was used and, if not, the reason - so the next
+    question is answered by reading rather than by guessing.
+    """
     case_row = session.execute(select(db.case).where(
         db.case.c.case_id == case_id)).first()
     if case_row is None:
         raise LookupError(f"case {case_id} not found")
 
+    considered = []
+
+    def _skip(source, reason):
+        considered.append({"source": source, "used": False, "reason": reason})
+
+    def _use(source, reason=""):
+        considered.append({"source": source, "used": True, "reason": reason})
+
+    # 1 - promoted research
     promoted = promotion.evidenced_footprint(session, case_id)
     if promoted:
+        _use("PROMOTED_RESEARCH", f"{len(promoted)} promoted row(s)")
         return {
             "origin": "PROMOTED_RESEARCH",
             "footprint": [{"country": r["country"], "archetype": r["archetype"],
@@ -60,41 +77,61 @@ def resolve(session, case_id: str) -> dict:
             "detail": f"{len(promoted)} row(s) promoted from research, with "
                       f"sources and as-of dates.",
             "needs_split": False, "provenance": promoted,
+            "considered": considered,
         }
+    _skip("PROMOTED_RESEARCH", "nothing has been promoted from research on "
+                               "this case")
 
+    # 2 - a footprint someone saved
     saved = list(case_row.analyst_footprint or [])
-    if saved and _is_placeholder(saved, case_row):
-        # A saved placeholder carries no information, and it must not outrank a
-        # registered fact. This mattered because running a simulation persists
-        # the footprint (so an edit is not lost on the rerun that follows), and
-        # running the placeholder therefore saved the placeholder - which then
-        # took precedence over a known fact of 1000 sites. The convenience of
-        # one change created the blocker for another.
+    if not saved:
+        _skip("ANALYST_SAVED", "no footprint is saved on this case")
+    elif _is_placeholder(saved, case_row):
+        # A saved placeholder carries no information and must not outrank a
+        # registered fact. Running a simulation persists the footprint so an
+        # edit is not lost on the rerun that follows - which meant running the
+        # placeholder saved the placeholder, and that then took precedence
+        # over a known fact. The convenience of one change blocked another.
+        _skip("ANALYST_SAVED",
+              f"the {len(saved)} saved row(s) are exactly the runnable "
+              f"placeholder (one site per in-scope country), so they record "
+              f"nothing anybody decided")
         saved = []
-    if saved:
+    else:
+        _use("ANALYST_SAVED", f"{len(saved)} saved row(s)")
         return {
             "origin": "ANALYST_SAVED",
             "footprint": saved,
             "detail": f"{len(saved)} row(s) saved on this case. "
                       f"Analyst-entered, discounted accordingly.",
             "needs_split": False, "provenance": [],
+            "considered": considered,
         }
 
-    derived = _from_known_facts(session, case_row)
+    # 3 - the known-facts register
+    derived, why_not = _from_known_facts(session, case_row)
     if derived:
+        _use("KNOWN_FACT", derived["detail"])
+        derived["considered"] = considered
         return derived
+    _skip("KNOWN_FACT", why_not)
 
+    # 4 - the case's own scope
     countries = list(case_row.in_scope_countries or [])
     if countries:
+        _use("SCOPE_PLACEHOLDER", f"{len(countries)} in-scope country(ies)")
         return {
             "origin": "SCOPE_PLACEHOLDER",
             "footprint": [{"country": c, "archetype": DEFAULT_ARCHETYPE,
                            "sites": 1} for c in countries],
-            "detail": f"One site per in-scope country, so the page is "
-                      f"runnable. Not an estimate of anything.",
+            "detail": "One site per in-scope country, so the page is "
+                      "runnable. Not an estimate of anything.",
             "needs_split": False, "provenance": [],
+            "considered": considered,
         }
+    _skip("SCOPE_PLACEHOLDER", "the case declares no in-scope countries")
 
+    _use("ILLUSTRATIVE", "nothing else was available")
     return {
         "origin": "ILLUSTRATIVE",
         "footprint": [
@@ -106,6 +143,7 @@ def resolve(session, case_id: str) -> dict:
         "detail": "This case declares no in-scope countries, so these are "
                   "illustrative values. Set the scope on page 1.",
         "needs_split": False, "provenance": [],
+        "considered": considered,
     }
 
 
@@ -130,14 +168,28 @@ def _is_placeholder(saved: list, case_row) -> bool:
     return actual == expected
 
 
-def _from_known_facts(session, case_row) -> dict | None:
-    """Derive a footprint from a registered Location footprint fact."""
-    rows = session.execute(select(db.known_fact).where(
-        db.known_fact.c.case_id == case_row.case_id,
-        db.known_fact.c.fact_class == "Location footprint")).all()
+def _from_known_facts(session, case_row) -> tuple:
+    """Derive a footprint from a registered Location footprint fact.
+
+    Returns (result, why_not). The reason matters as much as the result: a
+    fact that is present but unusable looked identical to no fact at all, and
+    that ambiguity is what made "the register is ignored" unanswerable without
+    reading the database by hand.
+    """
+    all_rows = session.execute(select(db.known_fact).where(
+        db.known_fact.c.case_id == case_row.case_id)).all()
+    rows = [r for r in all_rows if r.fact_class == "Location footprint"]
+    if not rows:
+        classes = sorted({r.fact_class for r in all_rows})
+        return None, (
+            f"no known fact of class 'Location footprint' on this case"
+            + (f"; the register holds {classes}" if classes
+               else "; the register is empty"))
     usable = [r for r in rows if r.value_base is not None]
     if not usable:
-        return None
+        return None, (
+            f"{len(rows)} Location footprint fact(s) exist but none carries a "
+            f"value_base, so there is no number to use")
 
     usable.sort(key=lambda r: (_STANDING.get(r.corroboration_state, 2),
                                float(r.value_base)), reverse=True)
@@ -147,7 +199,10 @@ def _from_known_facts(session, case_row) -> dict | None:
     country = (case_row.country_of_domicile
                or (list(case_row.in_scope_countries or []) or [None])[0])
     if not country:
-        return None
+        return None, (
+            "a usable Location footprint fact exists but the case has neither "
+            "a country of domicile nor any in-scope country, so there is "
+            "nowhere to put the sites")
 
     detail = (f"Derived from a registered known fact: {float(best.value_base):g} "
               f"{best.unit or 'sites'} for {best.subject or 'the subject'}, "
@@ -177,4 +232,4 @@ def _from_known_facts(session, case_row) -> dict | None:
             f"differently."),
         "known_fact_id": best.known_fact_id,
         "provenance": [],
-    }
+    }, ""

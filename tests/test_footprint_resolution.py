@@ -189,3 +189,49 @@ def test_clearing_the_saved_footprint_falls_back_to_the_register(session):
     case_id = _case(session, analyst_footprint=[])
     _fact(session, case_id, 1000)
     assert footprint.resolve(session, case_id)["origin"] == "KNOWN_FACT"
+
+
+def test_the_resolver_says_why_each_source_was_not_used(session):
+    """The control that should have existed five rounds ago. "The register is
+    ignored" was unanswerable from the interface, so each round was spent
+    inferring which branch had fired."""
+    case_id = _case(session)
+    out = footprint.resolve(session, case_id)
+    trace = {c["source"]: c for c in out["considered"]}
+    assert set(trace) >= {"PROMOTED_RESEARCH", "ANALYST_SAVED", "KNOWN_FACT"}
+    assert trace["PROMOTED_RESEARCH"]["used"] is False
+    assert "promoted" in trace["PROMOTED_RESEARCH"]["reason"]
+    assert "register is empty" in trace["KNOWN_FACT"]["reason"]
+
+
+def test_the_reason_distinguishes_a_missing_fact_from_an_unusable_one(session):
+    """A fact that is present but unusable looked identical to no fact at all,
+    and that ambiguity is what made this undiagnosable without reading the
+    database by hand."""
+    from sqlalchemy import insert
+    case_id = _case(session)
+    session.execute(insert(db.known_fact).values(
+        known_fact_id=str(uuid.uuid4()), case_id=case_id,
+        fact_class="Remote-user population", subject="Wuerth",
+        value_base=5000, unit="users", asserted_by="CB",
+        basis="INDUSTRY_KNOWLEDGE", verifiability="PUBLICLY_VERIFIABLE"))
+    session.commit()
+
+    out = footprint.resolve(session, case_id)
+    reason = next(c["reason"] for c in out["considered"]
+                  if c["source"] == "KNOWN_FACT")
+    assert "Remote-user population" in reason, (
+        "naming what the register does hold is what turns a dead end into a "
+        "diagnosis")
+
+
+def test_a_placeholder_save_says_so_in_the_trace(session):
+    case_id = _case(session, analyst_footprint=[
+        {"country": c, "archetype": "BRANCH", "sites": 1}
+        for c in ["DE", "FR", "GB", "US", "NL", "SG", "AE"]])
+    _fact(session, case_id, 1000)
+    out = footprint.resolve(session, case_id)
+    assert out["origin"] == "KNOWN_FACT"
+    reason = next(c["reason"] for c in out["considered"]
+                  if c["source"] == "ANALYST_SAVED")
+    assert "placeholder" in reason

@@ -62,6 +62,19 @@ else:
     if _fp.get("needs_split"):
         st.warning(_fp.get("split_note", ""))
 
+    # Why the stronger sources were not used. Five rounds went on "the
+    # footprint is wrong" because the answer was not observable from the page.
+    _considered = _fp.get("considered") or []
+    _skipped = [c for c in _considered if not c.get("used")]
+    if _skipped:
+        with st.expander(f"Why not the other {len(_skipped)} source(s)?",
+                         expanded=_origin in ("SCOPE_PLACEHOLDER",
+                                              "ILLUSTRATIVE")):
+            for c in _considered:
+                _mark = "used" if c.get("used") else "not used"
+                st.markdown(f"**{c['source']}** - {_mark}")
+                st.caption(f"   {c.get('reason') or ''}")
+
     if _resolved:
         st.dataframe(pd.DataFrame([{
             "country": r.get("country"), "type": r.get("archetype"),
