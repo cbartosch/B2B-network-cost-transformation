@@ -48,8 +48,9 @@ else:
 
     _labels = {
         "PROMOTED_RESEARCH": ("Promoted from research", st.success),
+        "KNOWN_FACT": ("From the known-facts register", st.info),
+        "KNOWN_FACT_SPLIT": ("Register total, your breakdown", st.info),
         "ANALYST_SAVED": ("Saved on this case", st.info),
-        "KNOWN_FACT": ("Derived from the known-facts register", st.info),
         "SCOPE_PLACEHOLDER": ("Placeholder", st.warning),
         "ILLUSTRATIVE": ("Illustrative", st.warning),
     }
@@ -59,8 +60,14 @@ else:
             f"{len({r.get('country') for r in _resolved})} country(ies). "
             f"{_detail}")
 
-    if _fp.get("needs_split"):
+    if _fp.get("diverges"):
+        st.error(_fp.get("split_note", ""))
+    elif _fp.get("needs_split"):
         st.warning(_fp.get("split_note", ""))
+    if _fp.get("register_total") is not None:
+        st.caption(f"Registered total: {_fp['register_total']:,} sites. This "
+                   f"page never changes it - the register is altered only on "
+                   f"page 2.")
 
     # Why the stronger sources were not used. Five rounds went on "the
     # footprint is wrong" because the answer was not observable from the page.
@@ -81,11 +88,9 @@ else:
             "sites": r.get("sites")} for r in _resolved]),
             use_container_width=True, hide_index=True)
 
-    if _origin == "ANALYST_SAVED":
-        # A saved footprint outranks the register, which is right when it was
-        # a decision and wrong when it was left over. Removing it should not
-        # require finding an endpoint.
-        if st.button("Discard the saved footprint and use the register instead"):
+    if _origin in ("ANALYST_SAVED", "KNOWN_FACT_SPLIT"):
+        # Clearing a stale breakdown should not require finding an endpoint.
+        if st.button("Clear the saved breakdown"):
             _c = api.put(f"/v1/outside-in/cases/{case_id}",
                          {"analyst_footprint": []})
             if "_error" in _c:

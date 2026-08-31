@@ -79,13 +79,28 @@ def test_a_contradicted_fact_loses_to_a_pending_one(session):
     assert footprint.resolve(session, case_id)["footprint"][0]["sites"] == 1000
 
 
-def test_a_saved_footprint_outranks_the_register(session):
-    """What a person deliberately saved beats a derivation from a total."""
+def test_the_register_fixes_the_total_and_the_table_only_splits_it(session):
+    """The ordering was backwards, and that was the whole complaint.
+
+    A registered fact is a deliberate, attributed, dated statement by a named
+    person; the footprint table is a working surface. Ranking the surface above
+    the register let a scratch edit silently override what the team had
+    recorded - and a register anything can override is not a register.
+
+    So the fact fixes the total, the saved rows provide the breakdown, and a
+    disagreement between them is named rather than resolved."""
     case_id = _case(session, analyst_footprint=[
         {"country": "DE", "archetype": "STORE", "sites": 350}])
     _fact(session, case_id, 1000)
+
     out = footprint.resolve(session, case_id)
-    assert out["origin"] == "ANALYST_SAVED"
+    assert out["origin"] == "KNOWN_FACT_SPLIT"
+    assert out["register_total"] == 1000
+    assert out["split_total"] == 350
+    assert out["diverges"] is True
+    assert "register is not changed by this page" in out["split_note"]
+    # The analyst's breakdown is still what runs - overwriting it would be its
+    # own kind of discarding.
     assert out["footprint"][0]["sites"] == 350
 
 
@@ -154,6 +169,25 @@ def test_a_saved_placeholder_does_not_outrank_the_register(session):
     assert out["footprint"][0]["sites"] == 1000
 
 
+def test_a_saved_footprint_is_used_when_the_register_holds_nothing(session):
+    """With no registered fact there is no total to reconcile against, so the
+    saved rows are simply what runs."""
+    case_id = _case(session, analyst_footprint=[
+        {"country": "DE", "archetype": "STORE", "sites": 350}])
+    out = footprint.resolve(session, case_id)
+    assert out["origin"] == "ANALYST_SAVED"
+    assert out["footprint"][0]["sites"] == 350
+
+
+def test_nothing_in_this_module_writes_to_the_register():
+    """A fact is immutable until a user changes it on page 2. This module
+    reads."""
+    import inspect
+    src = inspect.getsource(footprint)
+    for write in ("insert(", "update(", "delete(", "session.commit"):
+        assert write not in src, f"footprint resolution must not {write}"
+
+
 def test_a_deliberate_single_site_footprint_still_wins(session):
     """The placeholder rule has to be narrow. One site in one country that an
     analyst meant is not the placeholder - it does not match the country set -
@@ -163,16 +197,21 @@ def test_a_deliberate_single_site_footprint_still_wins(session):
     _fact(session, case_id, 1000)
 
     out = footprint.resolve(session, case_id)
-    assert out["origin"] == "ANALYST_SAVED"
+    assert out["origin"] == "KNOWN_FACT_SPLIT"
     assert out["footprint"][0]["sites"] == 1
+    assert out["diverges"] is True
 
 
-def test_a_real_saved_footprint_still_outranks_the_register(session):
+def test_a_breakdown_that_sums_to_the_registered_total_does_not_diverge(session):
+    """The normal case once an analyst has split it: same total, distributed."""
     case_id = _case(session, analyst_footprint=[
-        {"country": "DE", "archetype": "STORE", "sites": 350},
+        {"country": "DE", "archetype": "STORE", "sites": 880},
         {"country": "FR", "archetype": "STORE", "sites": 120}])
     _fact(session, case_id, 1000)
-    assert footprint.resolve(session, case_id)["origin"] == "ANALYST_SAVED"
+    out = footprint.resolve(session, case_id)
+    assert out["origin"] == "KNOWN_FACT_SPLIT"
+    assert out["diverges"] is False
+    assert sum(r["sites"] for r in out["footprint"]) == 1000
 
 
 def test_an_edited_placeholder_is_not_a_placeholder(session):
@@ -182,7 +221,7 @@ def test_an_edited_placeholder_is_not_a_placeholder(session):
     rows[0]["sites"] = 900
     case_id = _case(session, analyst_footprint=rows)
     _fact(session, case_id, 1000)
-    assert footprint.resolve(session, case_id)["origin"] == "ANALYST_SAVED"
+    assert footprint.resolve(session, case_id)["origin"] == "KNOWN_FACT_SPLIT"
 
 
 def test_clearing_the_saved_footprint_falls_back_to_the_register(session):

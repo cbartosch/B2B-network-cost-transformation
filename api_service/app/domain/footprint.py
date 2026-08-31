@@ -82,39 +82,112 @@ def resolve(session, case_id: str) -> dict:
     _skip("PROMOTED_RESEARCH", "nothing has been promoted from research on "
                                "this case")
 
-    # 2 - a footprint someone saved
+    # 2 - the known-facts register.
+    #
+    # The register outranks the footprint table, which is the reverse of how
+    # this was first written and the reverse of what the ordering implied. A
+    # registered fact is a deliberate, attributed, dated statement by a named
+    # person; the footprint table is a working surface. Ranking the working
+    # surface above the register meant a scratch edit silently overrode what
+    # the team had recorded that it knows - and a register that anything can
+    # override is not a register.
+    #
+    # So a Location footprint fact fixes the TOTAL, and a saved footprint is
+    # read as the breakdown of that total across countries and site types. It
+    # is not a competing number. Where the two totals disagree the saved split
+    # is still used - overwriting an analyst's breakdown would be its own kind
+    # of discarding - but the disagreement is named rather than absorbed.
     saved = list(case_row.analyst_footprint or [])
-    if not saved:
-        _skip("ANALYST_SAVED", "no footprint is saved on this case")
-    elif _is_placeholder(saved, case_row):
-        # A saved placeholder carries no information and must not outrank a
-        # registered fact. Running a simulation persists the footprint so an
-        # edit is not lost on the rerun that follows - which meant running the
-        # placeholder saved the placeholder, and that then took precedence
-        # over a known fact. The convenience of one change blocked another.
+    if saved and _is_placeholder(saved, case_row):
+        # Running a simulation persists the footprint so an edit is not lost on
+        # the rerun that follows, which meant running the placeholder saved the
+        # placeholder. A saved placeholder records nothing anybody decided.
         _skip("ANALYST_SAVED",
               f"the {len(saved)} saved row(s) are exactly the runnable "
               f"placeholder (one site per in-scope country), so they record "
               f"nothing anybody decided")
         saved = []
+
+    fact, why_not = _best_footprint_fact(session, case_row)
+
+    if fact is not None:
+        total = int(float(fact.value_base))
+        detail = (f"{total:g} {fact.unit or 'sites'} registered for "
+                  f"{fact.subject or 'the subject'}, "
+                  f"{fact.corroboration_state or 'PENDING'}, asserted by "
+                  f"{fact.asserted_by or 'unattributed'}.")
+
+        if saved:
+            saved_total = sum(int(r.get("sites") or 0) for r in saved)
+            diverges = saved_total != total
+            _use("KNOWN_FACT", detail + f" Total fixed by the register.")
+            _use("ANALYST_SAVED",
+                 f"{len(saved)} row(s) used as the breakdown of that total"
+                 + (f", but they sum to {saved_total:,} rather than "
+                    f"{total:,}" if diverges else ""))
+            return {
+                "origin": "KNOWN_FACT_SPLIT",
+                "footprint": saved,
+                "detail": detail + (
+                    f" Your saved breakdown is used for the split across "
+                    f"countries and site types."),
+                "needs_split": False,
+                "register_total": total,
+                "split_total": saved_total,
+                "diverges": diverges,
+                "split_note": (
+                    f"**Your breakdown sums to {saved_total:,} sites; the "
+                    f"register says {total:,}.** The register is not changed "
+                    f"by this page - correct the breakdown here, or change the "
+                    f"fact on page 2 if the registered total is the thing that "
+                    f"is wrong." if diverges else ""),
+                "known_fact_id": fact.known_fact_id,
+                "provenance": [], "considered": considered,
+            }
+
+        _skip("ANALYST_SAVED", "no breakdown is saved, so the whole registered "
+                               "total sits in one row")
+        country = (case_row.country_of_domicile
+                   or (list(case_row.in_scope_countries or []) or [None])[0])
+        if country:
+            _use("KNOWN_FACT", detail)
+            return {
+                "origin": "KNOWN_FACT",
+                "footprint": [{"country": country,
+                               "archetype": DEFAULT_ARCHETYPE, "sites": total}],
+                "detail": detail,
+                "needs_split": True,
+                "register_total": total, "split_total": total,
+                "diverges": False,
+                "split_note": (
+                    f"All {total:,} sites are in one row under {country} / "
+                    f"{DEFAULT_ARCHETYPE}, because the register records a total "
+                    f"and not a breakdown. Split it across countries and site "
+                    f"types, then Save - the registered total stays as it is."),
+                "known_fact_id": fact.known_fact_id,
+                "provenance": [], "considered": considered,
+            }
+        _skip("KNOWN_FACT",
+              "a usable Location footprint fact exists but the case has "
+              "neither a country of domicile nor any in-scope country, so "
+              "there is nowhere to put the sites")
     else:
-        _use("ANALYST_SAVED", f"{len(saved)} saved row(s)")
+        _skip("KNOWN_FACT", why_not)
+
+    # 3 - a saved footprint with no register entry behind it
+    if saved:
+        _use("ANALYST_SAVED", f"{len(saved)} saved row(s), no registered "
+                              f"Location footprint fact to reconcile against")
         return {
             "origin": "ANALYST_SAVED",
             "footprint": saved,
             "detail": f"{len(saved)} row(s) saved on this case. "
                       f"Analyst-entered, discounted accordingly.",
-            "needs_split": False, "provenance": [],
-            "considered": considered,
+            "needs_split": False, "diverges": False,
+            "provenance": [], "considered": considered,
         }
-
-    # 3 - the known-facts register
-    derived, why_not = _from_known_facts(session, case_row)
-    if derived:
-        _use("KNOWN_FACT", derived["detail"])
-        derived["considered"] = considered
-        return derived
-    _skip("KNOWN_FACT", why_not)
+    if not case_row.analyst_footprint:
+        _skip("ANALYST_SAVED", "no footprint is saved on this case")
 
     # 4 - the case's own scope
     countries = list(case_row.in_scope_countries or [])
@@ -168,68 +241,33 @@ def _is_placeholder(saved: list, case_row) -> bool:
     return actual == expected
 
 
-def _from_known_facts(session, case_row) -> tuple:
-    """Derive a footprint from a registered Location footprint fact.
+def _best_footprint_fact(session, case_row) -> tuple:
+    """The registered Location footprint fact to trust, and why not if none.
 
-    Returns (result, why_not). The reason matters as much as the result: a
-    fact that is present but unusable looked identical to no fact at all, and
-    that ambiguity is what made "the register is ignored" unanswerable without
-    reading the database by hand.
+    Returns (row, why_not). The reason matters as much as the row: a fact that
+    is present but unusable looked identical to no fact at all, which is what
+    made "the register is ignored" undiagnosable from the interface.
+
+    Where several compete, corroboration standing decides and the losers are
+    named. Nothing here edits the register - a fact is immutable until a user
+    changes it on page 2, and this module only reads.
     """
     all_rows = session.execute(select(db.known_fact).where(
         db.known_fact.c.case_id == case_row.case_id)).all()
     rows = [r for r in all_rows if r.fact_class == "Location footprint"]
     if not rows:
-        classes = sorted({r.fact_class for r in all_rows})
+        classes = sorted({r.fact_class for r in all_rows if r.fact_class})
         return None, (
-            f"no known fact of class 'Location footprint' on this case"
+            "no known fact of class 'Location footprint' on this case"
             + (f"; the register holds {classes}" if classes
                else "; the register is empty"))
+
     usable = [r for r in rows if r.value_base is not None]
     if not usable:
         return None, (
             f"{len(rows)} Location footprint fact(s) exist but none carries a "
-            f"value_base, so there is no number to use")
+            f"value, so there is no number to use")
 
     usable.sort(key=lambda r: (_STANDING.get(r.corroboration_state, 2),
                                float(r.value_base)), reverse=True)
-    best = usable[0]
-    others = usable[1:]
-
-    country = (case_row.country_of_domicile
-               or (list(case_row.in_scope_countries or []) or [None])[0])
-    if not country:
-        return None, (
-            "a usable Location footprint fact exists but the case has neither "
-            "a country of domicile nor any in-scope country, so there is "
-            "nowhere to put the sites")
-
-    detail = (f"Derived from a registered known fact: {float(best.value_base):g} "
-              f"{best.unit or 'sites'} for {best.subject or 'the subject'}, "
-              f"{best.corroboration_state or 'PENDING'}, asserted by "
-              f"{best.asserted_by or 'unattributed'}.")
-    if others:
-        detail += (f" {len(others)} other registered count(s) were not used "
-                   f"({', '.join(f'{float(o.value_base):g} for {o.subject}' for o in others)}) "
-                   f"- filed under a different subject they will never "
-                   f"corroborate each other.")
-
-    return {
-        "origin": "KNOWN_FACT",
-        "footprint": [{"country": country, "archetype": DEFAULT_ARCHETYPE,
-                       "sites": int(float(best.value_base))}],
-        "detail": detail,
-        # The fact says how many, not what type or where. Splitting it evenly
-        # across the in-scope countries would invent numbers; guessing the
-        # archetype would price it at a bandwidth nobody chose.
-        "needs_split": True,
-        "split_note": (
-            f"All {int(float(best.value_base))} sites are in one row under "
-            f"{country} / {DEFAULT_ARCHETYPE}, because the register records a "
-            f"total and not a breakdown. Split it across countries and site "
-            f"types before running - a bank branch is a STORE, a trade counter "
-            f"is a STORE, a depot is a WAREHOUSE, and each is priced "
-            f"differently."),
-        "known_fact_id": best.known_fact_id,
-        "provenance": [],
-    }, ""
+    return usable[0], ""
