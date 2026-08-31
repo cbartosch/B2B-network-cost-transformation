@@ -115,8 +115,12 @@ def _classify(q: dict) -> str:
     label = str(q.get("label") or "").strip().upper()
     unit = str(q.get("unit") or "").strip().lower()
     country = str(q.get("country") or "").strip().upper()
-    value = q.get("value")
-    if not isinstance(value, (int, float)):
+    # Parsed, not type-checked. `value` became a string in 4.104.0 so that a
+    # source stating "2 halls, 2.75 MW" could be kept as a qualitative finding
+    # instead of failing the schema - and this isinstance check then classified
+    # every quantity as unclassified, so nothing at all could be promoted. The
+    # two changes were three releases apart and nothing connected them.
+    if triangulate.parse_value(q.get("value")) is None:
         return "unclassified"
     if label in ARCHETYPES and len(country) == 2 and "site" in unit:
         return "footprint"

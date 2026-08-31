@@ -186,3 +186,34 @@ def test_the_evidenced_footprint_carries_its_provenance(session):
                   "source_urls", "agent_run_id", "as_of", "promoted_by"):
         assert field in row, f"{field} is not returned to the interface"
     assert row["agent_run_id"] == run_id
+
+
+def test_a_string_value_can_still_be_classified(session):
+    """A live break found while tracing the disposition-to-simulation chain.
+
+    `value` became a string in 4.104.0 so a source stating "2 halls, 2.75 MW"
+    could be kept as a qualitative finding instead of failing the schema. This
+    classifier still tested isinstance(value, (int, float)), so from that
+    release every quantity classified as unclassified and nothing at all could
+    be promoted. The two changes were three releases apart and nothing
+    connected them."""
+    assert promotion._classify(
+        {"label": "STORE", "country": "DE", "unit": "sites",
+         "value": "341"}) == "footprint"
+    assert promotion._classify(
+        {"label": "DIA 100Mbps MRC", "country": "US", "unit": "USD/month",
+         "value": "477.5"}) == "price"
+    assert promotion._classify(
+        {"label": "STORE", "country": "DE", "unit": "sites",
+         "value": "2 halls, 2.75 MW"}) == "unclassified"
+
+
+def test_only_counts_and_prices_can_reach_the_estimate(session):
+    """The chain is deliberately narrow, and the narrowness is worth asserting:
+    a quantity is routed only where it plainly carries what that destination
+    needs, and everything else is declined visibly rather than guessed at."""
+    for label, unit in (("HEADCOUNT", "people"), ("REVENUE", "EUR"),
+                        ("DUAL_ACCESS", "percent")):
+        assert promotion._classify(
+            {"label": label, "country": "DE", "unit": unit,
+             "value": "100"}) == "unclassified"
