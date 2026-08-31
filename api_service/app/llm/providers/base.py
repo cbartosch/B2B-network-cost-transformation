@@ -52,6 +52,11 @@ class ProviderCall:
     http_status: int
     egress_proxy: str | None
     raw: dict
+    # The provider-parsed object when parse() was used. Distinct from `text`:
+    # this came out of a schema-enforced channel, so a caller reading it is
+    # not parsing prose and cannot be handed a plausible string where a
+    # number was required.
+    parsed: dict | None = None
 
     # --- transport provenance ------------------------------------------
     # The clock comparison is only as strong as the connection it arrived on,
@@ -74,3 +79,48 @@ class ProviderAdapter(Protocol):
     def configured(self) -> bool: ...
     def complete(self, *, system: str, prompt: str, max_tokens: int,
                 tools: list[dict] | None = None) -> ProviderCall: ...
+
+    # Structured output. The provider is handed a JSON schema and must return
+    # an object conforming to it, using whatever native mechanism it has -
+    # a forced tool, a response format, a grammar. An adapter that cannot
+    # enforce the schema is non-conformant for that service and says so by
+    # raising; it must not fall back to asking for JSON in prose, because a
+    # plausible prose answer is the failure this replaces.
+    def parse(self, *, system: str, prompt: str, schema: dict,
+              schema_name: str, max_tokens: int,
+              tools: list[dict] | None = None) -> ProviderCall: ...
+
+
+def strictify(schema: dict) -> dict:
+    """Make a Pydantic JSON schema acceptable to a provider's strict mode.
+
+    Both approved providers require every property to be listed in `required`
+    and `additionalProperties` to be false at each object level. Pydantic
+    marks a field with a default as optional, which is correct for Python and
+    rejected by strict mode - so optional fields become required-but-nullable
+    rather than being dropped, which keeps abstention expressible.
+    """
+    def walk(node):
+        if not isinstance(node, dict):
+            return node
+        node = {k: walk(v) if isinstance(v, (dict, list)) else v
+                for k, v in node.items()}
+        for key in ("properties", "$defs", "definitions"):
+            if isinstance(node.get(key), dict):
+                node[key] = {k: walk(v) for k, v in node[key].items()}
+        if isinstance(node.get("items"), dict):
+            node["items"] = walk(node["items"])
+        if node.get("type") == "object" or "properties" in node:
+            node["additionalProperties"] = False
+            if isinstance(node.get("properties"), dict):
+                node["required"] = sorted(node["properties"])
+        return node
+
+    def walk_list(node):
+        return [walk(x) for x in node] if isinstance(node, list) else node
+
+    out = walk(schema)
+    for key in ("anyOf", "oneOf", "allOf"):
+        if key in out:
+            out[key] = walk_list(out[key])
+    return out

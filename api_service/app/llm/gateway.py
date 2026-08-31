@@ -34,8 +34,10 @@ from datetime import datetime, timedelta, timezone
 from sqlalchemy import insert, select, update
 from sqlalchemy.exc import IntegrityError
 
+from pydantic import ValidationError
+
 from .. import config, db
-from . import errors, registry
+from . import errors, prompts, registry
 from .providers import _transport
 from .providers.anthropic_adapter import AnthropicAdapter
 from .providers.openai_adapter import OpenAIAdapter
@@ -167,7 +169,9 @@ def verify_liveness(call, local_start: datetime, local_end: datetime) -> None:
 
 def execute(session, *, agent_run_id: str, provider: str, system: str,
             prompt: str, max_tokens: int = 1500,
-            tools: list[dict] | None = None) -> dict:
+            tools: list[dict] | None = None,
+            definition=None, schema_name: str | None = None,
+            supplied_source_ids: list | None = None) -> dict:
     row = session.execute(
         select(db.agent_run).where(db.agent_run.c.agent_run_id == agent_run_id)).one()
     if row.execution_mode != "LIVE":
@@ -185,8 +189,18 @@ def execute(session, *, agent_run_id: str, provider: str, system: str,
 
     local_start = datetime.now(timezone.utc)
     try:
-        call = adapter.complete(system=system, prompt=prompt, max_tokens=max_tokens,
-                                tools=tools)
+        if definition is not None and schema_name:
+            # Schema-enforced channel. The adapter must return an object
+            # conforming to the registered model or raise; there is no prose
+            # fallback, because accepting a plausible prose answer is the
+            # failure this path replaces.
+            call = adapter.parse(system=system, prompt=prompt,
+                                 schema=definition.output_model.model_json_schema(),
+                                 schema_name=schema_name, max_tokens=max_tokens,
+                                 tools=tools)
+        else:
+            call = adapter.complete(system=system, prompt=prompt,
+                                    max_tokens=max_tokens, tools=tools)
     except (_transport.PinMismatch, _transport.PinUnavailable) as exc:
         # A pin failure is a provenance failure, not a transport hiccup: the
         # answer may be genuine, but nothing here can show that it is.
@@ -218,7 +232,16 @@ def execute(session, *, agent_run_id: str, provider: str, system: str,
             tls_cert_not_after=call.tls_cert_not_after,
             externally_verifiable=bool(call.provider_request_id),
             input_tokens=call.input_tokens, output_tokens=call.output_tokens,
-            latency_ms=call.latency_ms, policy_version="policy-1.0.0"))
+            latency_ms=call.latency_ms, policy_version="policy-1.0.0",
+            # Registered-call identity. Null for a call made outside the
+            # registry, which is the truth about it rather than a gap.
+            prompt_id=getattr(definition, "prompt_id", None),
+            prompt_version=getattr(definition, "prompt_version", None),
+            prompt_hash=getattr(definition, "prompt_hash", None),
+            output_schema_version=getattr(definition, "output_schema_version", None),
+            tool_policy_version=getattr(definition, "tool_policy_version", None),
+            parsed_output=call.parsed,
+            supplied_source_ids=list(supplied_source_ids or []) or None))
         session.commit()
     except IntegrityError:
         session.rollback()
@@ -229,6 +252,7 @@ def execute(session, *, agent_run_id: str, provider: str, system: str,
             "duplicate provider_response_id or provider_request_id")
 
     return {"text": call.text, "provider": call.provider, "model": call.model,
+            "parsed": call.parsed,
             # The block list a caller needs to find real tool-result content
             # (e.g. web_search_tool_result) rather than the model's prose
             # about it. Empty when no tools were requested or the provider
@@ -250,6 +274,64 @@ def execute(session, *, agent_run_id: str, provider: str, system: str,
             "provenance_strength": call.provenance_strength,
             "input_tokens": call.input_tokens, "output_tokens": call.output_tokens,
             "latency_ms": call.latency_ms}
+
+
+def structured_call(session, *, agent_run_id: str, prompt_id: str,
+                    prompt: str, provider: str = "anthropic",
+                    max_tokens: int = 4000, tools: list[dict] | None = None,
+                    prompt_version: str | None = None,
+                    supplied_source_ids: list | None = None):
+    """The single entry point for a registered LLM service.
+
+    Resolves the prompt from the registry, calls the provider through its
+    schema-enforced channel, validates the reply against the registered output
+    model, and records which prompt, schema and tool policy produced it.
+
+    Returns (typed_result, provenance). The first is a validated Pydantic
+    object - not a dict, not text - so a caller cannot read a field the schema
+    does not define, and cannot receive a string where a number was required.
+
+    Replaces the pattern this codebase used everywhere: a prose shape in the
+    prompt, `parse_json_strict` on the reply, and a hand-check of two or three
+    fields afterwards. That pattern could not detect a missing field, an extra
+    one, or a wrong type, and three of those four failures were silent.
+
+    A reply that does not validate raises. There is deliberately no partial
+    acceptance: a half-conformant answer from a schema-enforced channel means
+    the channel is not enforcing, and continuing would hide that.
+    """
+    definition = prompts.get(prompt_id, prompt_version)
+
+    call = execute(session, agent_run_id=agent_run_id, provider=provider,
+                   system=definition.system_template, prompt=prompt,
+                   max_tokens=max_tokens, tools=tools,
+                   definition=definition,
+                   schema_name=definition.output_model.__name__,
+                   supplied_source_ids=supplied_source_ids)
+
+    payload = call.get("parsed")
+    if payload is None:
+        raise errors.StructuredOutputInvalid(
+            f"{definition.prompt_id} returned no structured payload; the "
+            f"provider did not use the schema-enforced channel")
+    try:
+        result = definition.output_model.model_validate(payload)
+    except ValidationError as exc:
+        raise errors.StructuredOutputInvalid(
+            f"{definition.prompt_id} output failed the registered schema "
+            f"{definition.output_schema_version}: {exc}") from exc
+
+    provenance = {
+        "prompt_id": definition.prompt_id,
+        "prompt_version": definition.prompt_version,
+        "prompt_hash": definition.prompt_hash,
+        "output_schema_version": definition.output_schema_version,
+        "tool_policy_version": definition.tool_policy_version,
+        "provider": call["provider"], "model": call["model"],
+        "provider_response_id": call.get("provider_response_id"),
+        "stop_reason": call.get("stop_reason"),
+    }
+    return result, provenance
 
 
 def execute_deterministic(session, *, agent_run_id: str, fn) -> dict:

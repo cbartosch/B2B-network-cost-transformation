@@ -319,6 +319,17 @@ llm_run = Table(
     Column("tls_pin", String(96)),
     Column("tls_cert_not_after", DateTime(timezone=True)),
     Column("provenance_strength", String(32)),
+    # --- registered-call identity (WP1). Which instructions produced this
+    # answer. Without these a stored finding cannot be interpreted against the
+    # prompt that produced it, and a prompt change cannot be correlated with a
+    # change in what the agents find.
+    Column("prompt_id", String(80)), Column("prompt_version", String(24)),
+    Column("prompt_hash", String(64)),
+    Column("output_schema_version", String(80)),
+    Column("tool_policy_version", String(48)),
+    Column("parsed_output", JSON),
+    Column("supplied_source_ids", JSON),
+    Column("reviewer_outcome", String(32)),
     # Whether this call carries a provider-issued request identifier, which is
     # the handle the provider's own logs are indexed by. Not a barrier to
     # forgery - anyone controlling the endpoint mints both identifiers - but it

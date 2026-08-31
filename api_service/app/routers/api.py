@@ -15,7 +15,7 @@ from ..domain import (anchor_estimate, benchmark_ingest, confidence, coverage,
                       reachability, reconciliation, research, savings_advisory,
                       scope, simulation, stage)
 from ..domain.money import D, Range
-from ..llm import errors, gateway, registry
+from ..llm import errors, gateway, prompts, registry
 
 router = APIRouter()
 
@@ -582,9 +582,13 @@ def resolve_conflict(conflict_id: str, payload: ResolveConflictIn):
 def corroborate(fact_id: str, payload: CorroborateIn):
     with S() as s:
         try:
+            # The tolerance that decides whether an assertion becomes public
+            # evidence is governed, not a module default.
+            _, _, fact_policy = _policies(s)
             return known_facts.corroborate(s, known_fact_id=fact_id,
                                            provider=payload.provider,
-                                           mode=payload.mode)
+                                           mode=payload.mode,
+                                           tolerance=fact_policy.agreement_tolerance)
         except errors.ProviderUnavailable as e:
             raise HTTPException(503, f"LIVE run failed closed: {e}")
         except errors.StructuredOutputInvalid as e:
@@ -888,7 +892,12 @@ def domain_research_prompt(case_id: str, domain_no: int):
     with S() as s:
         case_row = _one_or_404(s, db.case, db.case.c.case_id, case_id, "case")
         research_policy = _research_policy(s)
-        system = research.AGENT_SYSTEM_PROMPTS[agent_id]
+        # The registry is the source of the system text now, so the preview
+        # cannot show something the run would not send.
+        definition = prompts.get("llm01.public_evidence.extract"
+                                 if agent_id == "LLM-01"
+                                 else "llm08.market_data.extract")
+        system = definition.system_template
         briefs, plan_version = research.load_active_briefs(s)
         prompt = research._build_prompt(
             name, case_row, domain_no,
@@ -924,6 +933,11 @@ def domain_research_prompt(case_id: str, domain_no: int):
         "tools": research._web_search_tool(
             research_policy.max_web_searches_per_domain),
         "request_hash": request_hash,
+        "prompt_id": definition.prompt_id,
+        "prompt_version": definition.prompt_version,
+        "prompt_hash": definition.prompt_hash,
+        "output_schema": definition.output_schema_version,
+        "tool_policy": definition.tool_policy_version,
         "last_run_request_hash": last_hash,
         "matches_last_run": matches,
         "hash_note": (

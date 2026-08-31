@@ -72,18 +72,7 @@ QUESTIONS = [
 
 QUESTION_KEYS = {q[0] for q in QUESTIONS}
 
-_PREFILL_SHAPE = '{"prefill_value": str|null, "basis": str}'
 
-_PREFILL_SYSTEM_PROMPT = (
-    "You are drafting a suggested answer to one question on a client "
-    "questionnaire, from evidence the system has already gathered about that "
-    "client. This is a suggestion the client will review and correct - never "
-    "presented to them as fact, and never counted as their answer. Propose a "
-    "value only if the supplied evidence actually supports one. If it does "
-    'not, set prefill_value to null and say so in basis: an unsupported '
-    "guess wastes the client's time and damages their trust in everything "
-    "else on the form. Respond with a single JSON object and nothing else, "
-    f"matching this shape exactly: {_PREFILL_SHAPE}.")
 
 
 def create(session, *, case_id: str) -> dict:
@@ -211,16 +200,15 @@ def prefill(session, *, case_id: str, mode: str = "LIVE",
                 run_id = gateway.create_agent_run(
                     session, agent_id="LLM-02", mode="LIVE", case_id=case_id,
                     idempotency_key=f"prefill:{request_scope}:{item.question_key}")
-                call = gateway.execute(
-                    session, agent_run_id=run_id, provider=provider,
-                    system=_PREFILL_SYSTEM_PROMPT,
-                    prompt=_build_prefill_prompt(item, evidence))
-                parsed = gateway.parse_json_strict(call["text"])
-                if not isinstance(parsed, dict) or "prefill_value" not in parsed:
-                    gateway.fail(session, run_id,
-                                 "LLM-02 output was valid JSON but not the agreed shape")
-                    raise errors.StructuredOutputInvalid(
-                        "LLM-02 output was valid JSON but not the agreed shape")
+                # The shape check below the old parse call is gone: the
+                # registered schema makes "valid JSON but not the agreed
+                # shape" unrepresentable rather than something to detect.
+                result, provenance = gateway.structured_call(
+                    session, agent_run_id=run_id,
+                    prompt_id="llm02.questionnaire.prefill",
+                    prompt=_build_prefill_prompt(item, evidence),
+                    provider=provider)
+                parsed = result.model_dump()
             except (errors.ProviderUnavailable, errors.LivenessProofFailed,
                     errors.StructuredOutputInvalid, errors.ModeNotPermitted) as exc:
                 if run_id is not None:
@@ -260,7 +248,7 @@ def _build_prefill_prompt(item, evidence: dict | None) -> str:
         fenced_e = gateway.fence("public_evidence",
                                  "(no public evidence recorded for this domain)")
     return (f"Input domain: {domain_name}\n{fenced_q}\n{fenced_e}\n"
-            f"Respond with the JSON object only.")
+            f"Return the registered output schema.")
 
 
 def answer(session, *, case_id: str, question_key: str, answer_value: str,

@@ -5,6 +5,7 @@ when exactly one candidate is returned, because a lone confident candidate is
 the shape a misresolution takes.
 """
 import json
+import re
 import uuid
 
 from sqlalchemy import insert, select, update
@@ -12,14 +13,9 @@ from sqlalchemy import insert, select, update
 from .. import db
 from ..llm import errors, gateway
 
-SYSTEM = (
-    "You are a corporate-registry research assistant. You return only facts you can "
-    "attribute. Reply with a JSON array and nothing else - no prose, no code fence. "
-    "Each element: {\"legal_name\", \"identifier\", \"domicile\" (ISO-3166-1 alpha-2), "
-    "\"industry\", \"revenue\", \"employees\", \"group_parent\", \"website\", "
-    "\"match_score\" (0-1), \"differentiator\"}. "
-    "Use null for anything you cannot support. Never invent an identifier."
-)
+# The system text is registered in llm/prompts.py and resolved by
+# gateway.structured_call. A local copy would be a prompt nobody could tell
+# was unused.
 
 
 def propose_candidates(session, *, case_id: str, name_hint: str,
@@ -38,29 +34,24 @@ def propose_candidates(session, *, case_id: str, name_hint: str,
         "Return every plausible candidate including group parents and national "
         "subsidiaries, so the analyst can pick the right level.")
 
-    call = gateway.execute(session, agent_run_id=run_id, provider=provider,
-                           system=SYSTEM, prompt=prompt)
-    parsed = gateway.parse_json_strict(call["text"])
-    if isinstance(parsed, dict):
-        parsed = parsed.get("candidates", [])
-
-    # Shape rejection must terminate the run. parse_json_strict is pure and has
-    # no session, and execute() only fails runs for problems execute() itself
-    # detects - so a response that is valid JSON in the wrong shape was
-    # rejected here and the agent_run left QUEUED forever. Same defect as the
-    # one fixed in research.py and savings_advisory.py; these two older call
-    # sites were never audited for it. Found by the agent-API audit.
-    if not isinstance(parsed, list) or not all(isinstance(c, dict) for c in parsed):
-        gateway.fail(session, run_id,
-                     "ENTITY-RESOLVE returned valid JSON that is not a list of "
-                     "candidate objects")
-        raise errors.StructuredOutputInvalid(
-            "ENTITY-RESOLVE returned valid JSON that is not a list of candidate "
-            "objects")
+    # Registered structured call. The shape is enforced by the provider and
+    # validated against schemas.EntityResolutionResult, so the hand-rolled
+    # "is this a list of dicts" check below is gone along with the class of
+    # defect it was patching: a response that was valid JSON in the wrong
+    # shape used to leave the agent_run QUEUED forever.
+    try:
+        result, provenance = gateway.structured_call(
+            session, agent_run_id=run_id, prompt_id="entity.resolve.candidates",
+            prompt=prompt, provider=provider)
+    except errors.StructuredOutputInvalid as exc:
+        gateway.fail(session, run_id, f"ENTITY-RESOLVE: {exc}")
+        raise
 
     rows = []
     try:
-        for c in parsed:
+        for candidate in result.candidates:
+            c = candidate.model_dump()
+            c["domicile"] = c.pop("country_of_domicile", None)
             cid = str(uuid.uuid4())
             rows.append({
                 "candidate_id": cid, "case_id": case_id,
@@ -69,9 +60,19 @@ def propose_candidates(session, *, case_id: str, name_hint: str,
                 "industry": c.get("industry"), "revenue": str(c.get("revenue") or ""),
                 "employees": str(c.get("employees") or ""),
                 "group_parent": c.get("group_parent"), "website": c.get("website"),
-                "match_score": min(1.0, max(0.0, float(c.get("match_score") or 0))),
-                "sources": {"differentiator": c.get("differentiator"),
-                            "provider_response_id": call["provider_response_id"]},
+                # Deterministic, from the supplied name. The model used to
+                # supply this and the system believed it, which meant candidate
+                # ranking changed when the model changed - neither reproducible
+                # nor auditable. schemas.EntityCandidate has no field for it,
+                # so the path cannot be reopened by an accommodating prompt.
+                # A versioned match rule (WP4) replaces this arithmetic; the
+                # property that matters now is that no model authored it.
+                "match_score": _name_similarity(name_hint, c.get("legal_name")),
+                "sources": {"differentiators": c.get("differentiators") or [],
+                            "unresolved_attributes": c.get("unresolved_attributes") or [],
+                            "prompt_id": provenance["prompt_id"],
+                            "prompt_version": provenance["prompt_version"],
+                            "provider_response_id": provenance["provider_response_id"]},
                 "agent_run_id": run_id,
             })
     except (AttributeError, TypeError, ValueError) as exc:
@@ -121,3 +122,20 @@ def is_confirmed(session, case_id: str) -> bool:
                                  db.case.c.entity_confirmed_by)
                           .where(db.case.c.case_id == case_id)).first()
     return bool(row and row.resolved_entity_id and row.entity_confirmed_by)
+
+
+def _name_similarity(supplied: str, candidate: str | None) -> float:
+    """Token-overlap score, deterministic and reproducible.
+
+    A placeholder for the versioned match rule WP4 specifies, not a pretence
+    at one: it is here because removing model authority over match_score left
+    the field needing a value, and an arbitrary constant would rank candidates
+    by insertion order while looking like a judgement.
+    """
+    if not candidate:
+        return 0.0
+    a = {t for t in re.split(r"\W+", (supplied or "").lower()) if t}
+    b = {t for t in re.split(r"\W+", candidate.lower()) if t}
+    if not a or not b:
+        return 0.0
+    return round(len(a & b) / len(a | b), 4)

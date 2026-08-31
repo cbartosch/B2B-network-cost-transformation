@@ -52,40 +52,7 @@ RIGHTS_BASES = ("PUBLISHED", "VENDOR_SUPPLIED", "PRIOR_ENGAGEMENT")
 PRODUCTS = ("DIA", "MPLS", "ETHERNET", "BROADBAND_HFC", "BROADBAND_PON",
             "MOBILE_5G")
 
-_SHAPE = (
-    '{"observations": [{"metric": str, "country": str|null, "product": str|null, '
-    '"bandwidth_mbps": number|null, "vendor": str|null, "value": number, '
-    '"unit": str, "currency": str|null, "price_year": number|null, '
-    '"term_months": number|null, "tax_basis": str|null, '
-    '"sla_compliant": bool|null, "as_of": str|null, "raw_text": str, '
-    '"inferred_fields": [str], "confidence": "HIGH"|"MEDIUM"|"LOW", '
-    '"note": str|null}]}')
 
-SYSTEM = (
-    "You are a telecoms benchmark analyst structuring a heterogeneous source "
-    "into individual observations for a pricing vault. You extract and "
-    "classify. You do not calculate.\n\n"
-    "Rules that matter more than completeness:\n"
-    "  - Never convert a currency, annualise a monthly figure, average "
-    "several numbers, or infer a band. Report each number as the source "
-    "states it, in the units the source uses. Downstream code does the "
-    "arithmetic from named rates so it can be checked.\n"
-    "  - One observation per data point. A table of seven vendors' prices is "
-    "seven observations, not one range.\n"
-    "  - Distinguish a QUOTED price from an INCUMBENT price being paid today. "
-    "They are observations of different things; say which in note.\n"
-    f"  - metric must be one of {METRICS}.\n"
-    f"  - product must be one of {PRODUCTS} or null. Map access technology "
-    "honestly: coaxial/cable/HFC is BROADBAND_HFC, fibre-to-the-premises/GPON "
-    "is BROADBAND_PON. If a source says only 'broadband' without saying which, "
-    "leave product null and say so - the two price differently and guessing "
-    "between them corrupts the band.\n"
-    "  - country is ISO-3166-1 alpha-2 or null. Infer it only from strong "
-    "evidence (a national regulator, a market-specific vendor set) and list "
-    "'country' in inferred_fields when you do.\n"
-    "  - Anything you inferred rather than read goes in inferred_fields. A "
-    "bandwidth that was not stated is null, not a typical value.\n"
-    f"Reply with a single JSON object and nothing else, matching: {_SHAPE}")
 
 
 def _prompt(text: str, hint: dict) -> str:
@@ -97,7 +64,7 @@ def _prompt(text: str, hint: dict) -> str:
         f"{fenced}\n"
         + (f"\nWhat the operator says about this source: {context}\n"
            if context else "")
-        + "\nReturn the JSON object only.")
+        + "\nReturn the registered output schema.")
 
 
 def extract(session, *, text: str, source_document: str,
@@ -113,17 +80,17 @@ def extract(session, *, text: str, source_document: str,
     run_id = gateway.create_agent_run(session, agent_id="LLM-09", mode="LIVE",
                                       case_id=None)
     try:
-        call = gateway.execute(
-            session, agent_run_id=run_id, provider=provider, system=SYSTEM,
+        result, call = gateway.structured_call(
+            session, agent_run_id=run_id, prompt_id="llm09.benchmark.extract",
             prompt=_prompt(text, {"source": source_document, "org": source_org,
                                   "as_of": as_of}),
-            max_tokens=max_tokens)
+            provider=provider, max_tokens=max_tokens)
         if call.get("stop_reason") == "max_tokens":
             raise errors.StructuredOutputInvalid(
                 f"the reply was truncated at {max_tokens} output tokens, so "
                 f"the observation list is incomplete. Split the source or "
                 f"raise max_tokens.")
-        parsed = gateway.parse_json_strict(call["text"])
+        parsed = result.model_dump()
     except (errors.ProviderUnavailable, errors.LivenessProofFailed,
             errors.StructuredOutputInvalid, errors.ModeNotPermitted) as exc:
         gateway.fail(session, run_id, f"{type(exc).__name__}: {exc}")

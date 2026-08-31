@@ -59,32 +59,9 @@ from .policy import RecommendationPolicy
 
 log = logging.getLogger("workbench.savings_advisory")
 
-_RECOMMEND_SHAPE = '{"scenario_code": "A"|"B"|"C"|"D", "percentile": "low"|"base"|"high", "basis": str}'
 
-_RECOMMEND_SYSTEM_PROMPT = (
-    "You are a savings-advisory agent reviewing modeled cost-transformation "
-    "scenarios for one client. Each scenario's savings range is already "
-    "computed deterministically - you do not calculate figures. Choose which "
-    "scenario and which percentile of its savings range (low, base or high) "
-    "best fits this client's likely risk tolerance and transformation "
-    "appetite, and explain why in your own words. Do not restate a dollar "
-    "figure yourself - the system looks up the authoritative number for your "
-    "choice independently, so a transcription error in your own text would "
-    "only mislead, never correct anything. Respond with a single JSON object "
-    f"and nothing else, matching this shape exactly: {_RECOMMEND_SHAPE}. "
-    "scenario_code must be one of the codes given; percentile must be low, "
-    "base or high.")
 
-_NARRATE_SHAPE = '{"narrative": str}'
 
-_NARRATE_SYSTEM_PROMPT = (
-    "You are writing the recommendation narrative for one client-facing "
-    "cost-transformation deliverable, from a scenario, percentile, dollar "
-    "figure and basis that have already been decided and recalculated - you "
-    "are not choosing or calculating anything, only writing the prose that "
-    "presents it. Use only the figures and reasoning you are given; do not "
-    "invent additional numbers, sources or claims. Respond with a single JSON "
-    f"object and nothing else, matching this shape exactly: {_NARRATE_SHAPE}.")
 
 
 def _fenced_scenario_summary(scenarios: dict) -> str:
@@ -104,7 +81,7 @@ def _fenced_scenario_summary(scenarios: dict) -> str:
 def _build_recommend_prompt(snap) -> str:
     return (f"Review these modeled scenarios and choose one.\n"
             f"{_fenced_scenario_summary(snap.scenarios)}\n"
-            f"Respond with the JSON object only.")
+            f"Return the registered output schema.")
 
 
 def _build_narrate_prompt(rec: dict, scenario: dict, *, final: bool) -> str:
@@ -115,7 +92,7 @@ def _build_narrate_prompt(rec: dict, scenario: dict, *, final: bool) -> str:
         f"gross_run_rate_savings={savings[rec['percentile']]}; "
         f"basis={rec['basis']}; "
         f"draft_or_final={'final' if final else 'draft'}"))
-    return f"Write the narrative for this decided recommendation.\n{fenced}\nRespond with the JSON object only."
+    return f"Write the narrative for this decided recommendation.\n{fenced}\nReturn the registered output schema."
 
 
 def deterministic_recommend(scenarios: dict) -> tuple[str, str, str]:
@@ -193,10 +170,14 @@ def recommend(session, *, estimate_snapshot_id: str, mode: str = "LIVE",
                                       case_id=snap.case_id, idempotency_key=idem_key)
 
     if mode == "LIVE":
-        call = gateway.execute(session, agent_run_id=run_id, provider=provider,
-                               system=_RECOMMEND_SYSTEM_PROMPT,
-                               prompt=_build_recommend_prompt(snap))
-        parsed = gateway.parse_json_strict(call["text"])
+        # schemas.ScenarioSelection has no field for a monetary amount, so
+        # the model cannot name one. The advisory figures are reloaded from
+        # the snapshot after selection - a stronger guarantee than comparing
+        # an echoed value for equality, because there is nothing to echo.
+        result, call = gateway.structured_call(
+            session, agent_run_id=run_id, prompt_id="llm07.advisory.select",
+            prompt=_build_recommend_prompt(snap), provider=provider)
+        parsed = result.model_dump()
         if (not isinstance(parsed, dict)
                 or parsed.get("scenario_code") not in snap.scenarios
                 or parsed.get("percentile") not in ("low", "base", "high")):
@@ -291,10 +272,11 @@ def narrate(session, *, recommendation_id: str, mode: str = "LIVE",
                                       case_id=rec["case_id"], idempotency_key=idem_key)
 
     if mode == "LIVE":
-        call = gateway.execute(session, agent_run_id=run_id, provider=provider,
-                               system=_NARRATE_SYSTEM_PROMPT,
-                               prompt=_build_narrate_prompt(rec, scenario, final=final))
-        parsed = gateway.parse_json_strict(call["text"])
+        result, call = gateway.structured_call(
+            session, agent_run_id=run_id, prompt_id="llm07.advisory.narrate",
+            prompt=_build_narrate_prompt(rec, scenario, final=final),
+            provider=provider)
+        parsed = result.model_dump()
         if not isinstance(parsed, dict) or "narrative" not in parsed:
             gateway.fail(session, run_id,
                         "LLM-06 output was valid JSON but not the agreed shape")

@@ -7,6 +7,7 @@ from urllib.parse import urlparse
 import httpx
 
 from . import _transport
+from .base import strictify
 from .base import ProviderCall, parse_http_date
 from .. import errors
 
@@ -30,21 +31,68 @@ class AnthropicAdapter:
     def configured(self) -> bool:
         return bool(self._api_key)
 
+
+    def parse(self, *, system: str, prompt: str, schema: dict,
+              schema_name: str, max_tokens: int = 4000,
+              tools: list[dict] | None = None) -> ProviderCall:
+        """Structured output through a forced tool.
+
+        Anthropic's native mechanism for a guaranteed shape is a tool whose
+        input_schema is the shape, with tool_choice pinning that tool. The
+        model cannot answer in prose: the response carries a tool_use block
+        whose `input` is the object.
+
+        A search tool may be supplied alongside. Ordering matters - the
+        emit tool is listed last and pinned, so search runs first and the
+        answer is the final block.
+        """
+        if not self.configured():
+            raise errors.ProviderUnavailable("ANTHROPIC_API_KEY is not set")
+
+        emit = {"name": schema_name,
+                "description": "Return the result in this exact shape.",
+                "input_schema": strictify(schema)}
+        body = {"model": self.model, "max_tokens": max_tokens, "system": system,
+                "messages": [{"role": "user", "content": prompt}],
+                "tools": list(tools or []) + [emit],
+                "tool_choice": {"type": "tool", "name": schema_name}}
+        call = self._request(body)
+
+        parsed = None
+        for block in (call.raw.get("content") or []):
+            if isinstance(block, dict) and block.get("type") == "tool_use" \
+                    and block.get("name") == schema_name:
+                parsed = block.get("input")
+        if parsed is None:
+            # The provider answered without using the pinned tool. That is a
+            # conformance failure, not something to recover from by reading
+            # the prose: a plausible prose answer is exactly what the schema
+            # channel exists to stop being accepted.
+            raise errors.StructuredOutputInvalid(
+                f"anthropic did not emit the forced {schema_name!r} tool; the "
+                f"reply cannot be treated as schema-conformant")
+        return replace(call, parsed=parsed)
+
     def complete(self, *, system: str, prompt: str, max_tokens: int = 1500,
                 tools: list[dict] | None = None) -> ProviderCall:
         if not self.configured():
             raise errors.ProviderUnavailable("ANTHROPIC_API_KEY is not set")
-
         body = {"model": self.model, "max_tokens": max_tokens, "system": system,
                 "messages": [{"role": "user", "content": prompt}]}
         if tools:
             # The hosted web_search tool runs server-side: Anthropic executes
-            # the search and returns the result blocks in this same response,
-            # no second round trip needed. That's what lets domain research
-            # actually search rather than ask the model to recall training
-            # data and self-report sources it cannot verify (see
-            # domain/research.py's module docstring on this gap).
+            # the search and returns the result blocks in this same response.
             body["tools"] = tools
+        return self._request(body)
+
+    def _request(self, body: dict) -> ProviderCall:
+        """The shared transport path for complete() and parse().
+
+        Factored out when parse() arrived: two copies of the liveness proof,
+        the pin check and the Date-header requirement would have been two
+        places for the structured path to quietly diverge from the audited
+        one, and the structured path is the one that will carry the evidence.
+        """
         headers = {"x-api-key": self._api_key, "anthropic-version": API_VERSION,
                    "content-type": "application/json"}
 
@@ -88,9 +136,5 @@ class AnthropicAdapter:
             local_request_at=local_at, latency_ms=latency_ms,
             http_status=resp.status_code, egress_proxy=_transport.EGRESS_PROXY,
             tls_pin=pin, provenance_strength=strength, tls_cert_not_after=not_after,
-            # `content` carries the full block list - text, and when a tool
-            # was used, server_tool_use / web_search_tool_result blocks too.
-            # A caller that needs the actual search results (not just the
-            # model's prose about them) reads this rather than `text`.
             raw={"usage": usage, "stop_reason": data.get("stop_reason"),
                 "content": data.get("content", [])})

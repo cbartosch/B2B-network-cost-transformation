@@ -1,13 +1,15 @@
 """OpenAI Chat Completions adapter. One code path, and it is an HTTPS call."""
+import json
 import logging
 import time
+from dataclasses import replace
 from datetime import datetime, timezone
 from urllib.parse import urlparse
 
 import httpx
 
 from . import _transport
-from .base import ProviderCall, parse_http_date
+from .base import strictify, ProviderCall, parse_http_date
 from .. import errors
 
 log = logging.getLogger("workbench.provider.openai")
@@ -29,6 +31,44 @@ class OpenAIAdapter:
     def configured(self) -> bool:
         return bool(self._api_key)
 
+    def parse(self, *, system: str, prompt: str, schema: dict,
+              schema_name: str, max_tokens: int = 4000,
+              tools: list[dict] | None = None) -> ProviderCall:
+        """Structured output through a strict response_format.
+
+        Chat Completions enforces a JSON schema natively when strict is set,
+        so the shape is guaranteed by the provider rather than requested in
+        prose. There is no prose fallback: an adapter that cannot enforce the
+        schema is non-conformant for that service and says so.
+
+        A service whose tool policy requires search is refused outright here.
+        Answering it without search would be a recall-only research task
+        wearing the shape of a searched one, which reads as evidence and is
+        not - the failure mode the registry exists to make impossible.
+        """
+        if not self.configured():
+            raise errors.ProviderUnavailable("OPENAI_API_KEY is not set")
+        if tools:
+            raise errors.ProviderUnavailable(
+                "the openai adapter has no hosted web-search tool, so a "
+                "service whose tool policy requires search is non-conformant "
+                "here; route it to anthropic")
+        body = {"model": self.model, "max_tokens": max_tokens,
+                "messages": [{"role": "system", "content": system},
+                             {"role": "user", "content": prompt}],
+                "response_format": {
+                    "type": "json_schema",
+                    "json_schema": {"name": schema_name, "strict": True,
+                                    "schema": strictify(schema)}}}
+        call = self._request(body)
+        try:
+            parsed = json.loads(call.text)
+        except ValueError as exc:
+            raise errors.StructuredOutputInvalid(
+                f"openai returned a strict json_schema response that did not "
+                f"parse: {exc}") from exc
+        return replace(call, parsed=parsed)
+
     def complete(self, *, system: str, prompt: str, max_tokens: int = 1500,
                 tools: list[dict] | None = None) -> ProviderCall:
         if not self.configured():
@@ -43,9 +83,14 @@ class OpenAIAdapter:
                 "the openai adapter has no hosted web-search tool; route "
                 "tool-using calls to anthropic")
 
-        body = {"model": self.model, "max_tokens": max_tokens,
-                "messages": [{"role": "system", "content": system},
-                             {"role": "user", "content": prompt}]}
+        return self._request(
+            {"model": self.model, "max_tokens": max_tokens,
+             "messages": [{"role": "system", "content": system},
+                          {"role": "user", "content": prompt}]})
+
+    def _request(self, body: dict) -> ProviderCall:
+        """Shared transport for complete() and parse(), so the structured path
+        cannot drift from the audited one."""
         headers = {"Authorization": f"Bearer {self._api_key}",
                    "Content-Type": "application/json"}
 

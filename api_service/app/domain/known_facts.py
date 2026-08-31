@@ -13,6 +13,7 @@ from decimal import Decimal
 from sqlalchemy import insert, select, update
 
 from .. import db
+from .money import D
 from ..llm import errors, gateway
 
 BASES = ("PRIOR_ENGAGEMENT", "CLIENT_CONVERSATION", "INDUSTRY_KNOWLEDGE",
@@ -52,13 +53,9 @@ CONFLICT_RESOLUTIONS = ("SCOPE_IS_CORRECT",)
 ANALYST_ENTERED_SCOPE_ORIGIN = "ANALYST_ENTERED_SCOPE"
 DEFAULT_RANGE_WIDTH = 0.25          # a point value is widened, and the widening is shown
 
-CORROBORATION_SYSTEM = (
-    "You are a public-source research assistant. Given an asserted fact about a company, "
-    "search your knowledge for corroborating public evidence. Reply with JSON only: "
-    "{\"state\": \"CORROBORATED\"|\"UNCORROBORATED\"|\"CONTRADICTED\", "
-    "\"public_value\": string|null, \"note\": string}. "
-    "Answer UNCORROBORATED rather than guessing. Never invent a source."
-)
+# The system text is registered in llm/prompts.py and resolved by
+# gateway.structured_call. A local copy would be a prompt nobody could tell
+# was unused.
 
 
 def register(session, *, case_id: str, fact_class: str, subject: str,
@@ -104,7 +101,15 @@ def clear_rights(session, known_fact_id: str, cleared_by: str) -> dict:
     return {"known_fact_id": known_fact_id, "rights_cleared": True}
 
 
-def corroborate(session, *, known_fact_id: str, provider: str, mode: str = "LIVE") -> dict:
+def corroborate(session, *, known_fact_id: str, provider: str,
+                mode: str = "LIVE", tolerance=Decimal("0.10")) -> dict:
+    """Search for public sources stating the asserted value, then decide.
+
+    `tolerance` is the governed agreement tolerance from known_fact_policy.
+    It is a parameter rather than a module constant because the comparison it
+    governs is the one that turns an assertion into public evidence, and a
+    threshold that decides that belongs to the steward, not to this file.
+    """
     fact = session.execute(select(db.known_fact).where(
         db.known_fact.c.known_fact_id == known_fact_id)).first()
     if fact is None:
@@ -119,39 +124,55 @@ def corroborate(session, *, known_fact_id: str, provider: str, mode: str = "LIVE
                         f"class: {fact.fact_class}\nsubject: {fact.subject}\n"
                         f"value: {fact.value_base} {fact.unit or ''} "
                         f"{fact.currency or ''}\nasserted_on: {fact.assertion_date}"))
-    call = gateway.execute(session, agent_run_id=run_id, provider=provider,
-                           system=CORROBORATION_SYSTEM, prompt=prompt)
-    parsed = gateway.parse_json_strict(call["text"])
-    # A JSON array or bare string reached .get() and raised AttributeError,
-    # unhandled, orphaning the run at QUEUED. Same gap as entity_resolution;
-    # both predate the fix applied to research.py and savings_advisory.py.
-    if not isinstance(parsed, dict):
-        gateway.fail(session, run_id,
-                     "KNOWN-FACT-CORROBORATE returned valid JSON that is not an "
-                     "object")
-        raise errors.StructuredOutputInvalid(
-            "KNOWN-FACT-CORROBORATE returned valid JSON that is not an object")
-    state = parsed.get("state", "UNCORROBORATED")
-    if state not in ("CORROBORATED", "UNCORROBORATED", "CONTRADICTED"):
-        state = "UNCORROBORATED"
+    try:
+        result, provenance = gateway.structured_call(
+            session, agent_run_id=run_id, prompt_id="known_fact.corroborate",
+            prompt=prompt, provider=provider,
+            tools=[{"type": "web_search_20250305", "name": "web_search",
+                    "max_uses": 5}])
+    except errors.StructuredOutputInvalid as exc:
+        gateway.fail(session, run_id, f"KNOWN-FACT-CORROBORATE: {exc}")
+        raise
 
-    # The failed attempt is recorded, so absence of evidence is distinguishable
-    # from absence of search (spec 0.1B.3 step 3).
-    note = f"[{call['provider_response_id']}] {parsed.get('note', '')}"[:2000]
-    # 0.1B: a corroborated fact is superseded by the public fact that
-    # corroborated it. The column was filtered on and never written, so the
-    # documented mechanism did not exist. The agent run is the reference to the
-    # evidence that did the superseding.
+    # The state is decided here, from the candidates, against a governed
+    # tolerance - not by the model.
+    #
+    # This is the P0 in the defect register. The model used to return
+    # CORROBORATED and the system wrote it, so an assertion became public
+    # evidence because a model said the word: no public source stored, no
+    # comparison performed, nothing to re-check. schemas.CorroborationResult
+    # has no state field at all, which is a stronger control than validating
+    # one away, and it is what forced this rewrite.
+    state, matched, reason = _compare_candidates(
+        asserted=fact.value_base, unit=fact.unit, currency=fact.currency,
+        candidates=[c.model_dump() for c in result.candidates],
+        tolerance=tolerance)
+
+    note_parts = [f"[{provenance['provider_response_id']}]",
+                  f"searched={result.search_attempted}",
+                  f"candidates={len(result.candidates)}", reason]
+    if result.unresolved_reasons:
+        note_parts.append("unresolved: " + "; ".join(result.unresolved_reasons))
+    note = " ".join(p for p in note_parts if p)[:2000]
+
     values = {"corroboration_state": state, "corroboration_note": note}
     if state == "CORROBORATED":
+        # 0.1B says the assertion is superseded by the public fact that
+        # corroborated it. There is no public_fact table until WP2, so the
+        # supporting source is recorded in the note and the link is left for
+        # that work rather than pointing the column at an agent run - a
+        # provider response ID is provenance for a call, not the fact that
+        # superseded the assertion.
         values["superseded_by"] = run_id
     session.execute(update(db.known_fact)
                     .where(db.known_fact.c.known_fact_id == known_fact_id)
                     .values(**values))
     session.commit()
-    gateway.succeed(session, run_id, {"state": state})
+    gateway.succeed(session, run_id, {"state": state, "reason": reason,
+                                      "candidates": len(result.candidates)})
     return {"known_fact_id": known_fact_id, "corroboration_state": state,
-            "note": parsed.get("note"), "provenance": call}
+            "reason": reason, "matched_source": matched,
+            "note": note, "provenance": provenance}
 
 
 # Fact classes that can supply a model quantity, and what they drive.
@@ -407,3 +428,48 @@ def uncorroborated_count(session, case_id: str) -> int:
     return len(session.execute(select(db.known_fact).where(
         db.known_fact.c.case_id == case_id,
         db.known_fact.c.corroboration_state.in_(["PENDING", "UNCORROBORATED"]))).all())
+
+
+def _compare_candidates(*, asserted, unit, currency, candidates, tolerance):
+    """Deterministic corroboration. Returns (state, matched_source, reason).
+
+    A candidate corroborates when its public value is within `tolerance` of
+    the asserted one; it contradicts when it is outside and the units agree.
+    Where candidates disagree with each other, the nearest is reported and the
+    disagreement is stated rather than resolved - picking a winner is the
+    model behaviour this replaced.
+    """
+    if asserted is None:
+        return "UNCORROBORATED", None, "the assertion carries no value to compare"
+    if not candidates:
+        return "UNCORROBORATED", None, "no public source stated this value"
+
+    target = D(asserted)
+    scored = []
+    for c in candidates:
+        value = c.get("public_value")
+        if value is None:
+            continue
+        if unit and c.get("unit") and c["unit"].strip().lower() != unit.strip().lower():
+            continue          # different units are not a disagreement
+        if currency and c.get("currency") and c["currency"].upper() != currency.upper():
+            continue
+        delta = abs(D(value) - target) / target if target else D(1)
+        scored.append((delta, c))
+
+    if not scored:
+        return ("UNCORROBORATED", None,
+                "candidates were found but none stated a comparable value in "
+                "the same unit and currency")
+
+    scored.sort(key=lambda t: t[0])
+    delta, best = scored[0]
+    if delta <= D(tolerance):
+        return ("CORROBORATED", best.get("url"),
+                f"{best.get('publisher') or 'a public source'} states "
+                f"{best.get('public_value')}, within {float(tolerance):.0%} of "
+                f"the asserted {asserted}")
+    return ("CONTRADICTED", best.get("url"),
+            f"nearest public source states {best.get('public_value')}, "
+            f"{float(delta):.0%} from the asserted {asserted} and outside the "
+            f"{float(tolerance):.0%} tolerance")

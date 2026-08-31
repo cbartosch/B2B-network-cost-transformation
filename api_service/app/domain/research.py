@@ -113,12 +113,6 @@ DOMAIN_AGENT_MAP: dict[int, str | None] = {
     22: "LLM-08", 23: None, 24: None,
 }
 
-_RESPONSE_SHAPE = (
-    '{"found": bool, "subject": str, "finding": str, '
-    '"quantities": [{"label": str, "value": number, "unit": str, '
-    '"country": str|null, "as_of": str|null}], '
-    '"sources": [{"url": str, "publisher": str, "as_of": str}], '
-    '"confidence_note": str}')
 
 # `quantities` exists because the estimate consumes numbers, not prose. A
 # "finding" of "DHL operates a large European network" is unusable;
@@ -151,31 +145,10 @@ _SEARCH_INSTRUCTION = (
     "back from a search this turn will be discarded regardless of how "
     "confident you are that it exists.")
 
-AGENT_SYSTEM_PROMPTS = {
-    "LLM-01": (
-        "You are a telecoms and enterprise-network analyst building an "
-        "outside-in cost baseline for a large enterprise WAN and network "
-        "security estate. You know how carriers price circuits, how site "
-        "archetypes map to connectivity, and where enterprises disclose "
-        "facility counts, IT spend, vendors and transformation programmes. "
-        "You may only assert what a named public source "
-        f"states.\n\n{_HOW_THE_ESTIMATE_WORKS}\n\n{_SEARCH_INSTRUCTION} Respond with a single JSON object and "
-        f"nothing else, matching this shape exactly: {_RESPONSE_SHAPE}. If "
-        'your search finds nothing you can attribute to a named public '
-        'source, set "found": false and leave "sources" empty - never '
-        "invent a source to satisfy the shape."),
-    "LLM-08": (
-        "You are a telecoms market analyst sourcing the price and "
-        "serviceability inputs of an enterprise WAN cost baseline: circuit "
-        "unit prices by country and product, carrier availability, contract "
-        "norms, transformation costs, and currency and tax parameters. You "
-        "cite regulators, published tariffs and named pricing studies. "
-        f"\n\n{_HOW_THE_ESTIMATE_WORKS}\n\n{_SEARCH_INSTRUCTION} Respond with a single JSON object and "
-        f"nothing else, matching this shape exactly: {_RESPONSE_SHAPE}. If "
-        'your search finds nothing you can attribute to a named public '
-        'source, set "found": false and leave "sources" empty - never '
-        "invent a source to satisfy the shape."),
-}
+# The system text now comes from llm/prompts.py, which is what
+# gateway.structured_call resolves and what the audit row records. Keeping a
+# second copy here would be a prompt nobody could tell was unused - the shape
+# of drift this work exists to remove.
 
 
 def _web_search_tool(max_uses: int) -> list[dict]:
@@ -602,7 +575,8 @@ def _build_prompt(domain_name: str, case_row, domain_no: int | None = None,
                   recency_decay: float = 0.15,
                   recency_floor: float = 0.20,
                   briefs: dict | None = None) -> str:
-    """Returns the user-turn prompt; system comes from AGENT_SYSTEM_PROMPTS,
+    """Returns the user-turn prompt; the system text comes from the prompt
+    registry (llm/prompts.py),
     provider is chosen by the caller.
 
     Carries three things the earlier version did not, all of which showed up
@@ -698,7 +672,7 @@ def _build_prompt(domain_name: str, case_row, domain_no: int | None = None,
         "of silently picking one. If the searches genuinely turn up nothing "
         "attributable, return found=false - a plausible guess is worse than an "
         "abstention here, because it will be priced.\n\n"
-        "Respond with the JSON object only.")
+        "Return the registered output schema.")
 
 
 
@@ -847,10 +821,18 @@ def _research_one_domain(session, *, case_row, domain_no: int, domain_name: str,
             # than silently completing without one.
             tools = (_web_search_tool(research_policy.max_web_searches_per_domain)
                     if provider == "anthropic" else None)
-            call = gateway.execute(
-                session, agent_run_id=run_id, provider=provider,
-                system=AGENT_SYSTEM_PROMPTS[agent_id], prompt=prompt, tools=tools,
+            # Registered structured call. The prompt, its version, the output
+            # schema and the tool policy are resolved from the registry and
+            # recorded on the run, so a finding can be interpreted against the
+            # instructions that produced it.
+            result, provenance = gateway.structured_call(
+                session, agent_run_id=run_id,
+                prompt_id=("llm01.public_evidence.extract" if agent_id == "LLM-01"
+                           else "llm08.market_data.extract"),
+                prompt=prompt, provider=provider, tools=tools,
                 max_tokens=research_policy.max_output_tokens_per_call)
+            call = provenance
+            parsed = result.model_dump()
             if call.get("stop_reason") == "max_tokens":
                 # Cut off mid-answer. Parsing it would raise
                 # StructuredOutputInvalid and blame the model for bad JSON,
@@ -860,8 +842,8 @@ def _research_one_domain(session, *, case_row, domain_no: int, domain_name: str,
                     f"({research_policy.max_output_tokens_per_call}), so the "
                     f"JSON is incomplete. Raise "
                     f"research_budget_profile.max_output_tokens_per_call.")
-            parsed = gateway.parse_json_strict(_answer_text(call))
-            observed_urls = _extract_observed_urls(call.get("content_blocks"))
+            observed_urls = _extract_observed_urls(
+                provenance.get("content_blocks"))
         except (errors.ProviderUnavailable, errors.LivenessProofFailed,
                 errors.StructuredOutputInvalid, errors.ModeNotPermitted) as exc:
             # execute() already calls _fail() internally for ProviderUnavailable/
@@ -1003,7 +985,7 @@ def run_domain_research(session, *, case_id: str, agent_ids: list[str] | None = 
     for a in agent_ids:
         if a not in registry.AGENTS:
             raise ValueError(f"{a!r} is not a registered agent")
-        if a not in AGENT_SYSTEM_PROMPTS:
+        if a not in ("LLM-01", "LLM-08"):
             raise ValueError(
                 f"{a!r} is registered but this module has no prompt for it "
                 f"(only LLM-01 and LLM-08 are wired)")
