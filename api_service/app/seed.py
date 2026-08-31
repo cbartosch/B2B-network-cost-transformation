@@ -123,6 +123,13 @@ THRESHOLDS = [
     # cost line to be an estimate of anything.
     ("anchor_policy", "min_addressable_share", "0.25"),
 
+    # --- quality gate.
+    # How many times a registered call may be re-issued after the gate rejects
+    # it. Two means one correction: enough for a drafting slip, not enough for
+    # a service that is failing systematically to hide behind retries. Raising
+    # it makes a broken prompt look healthy and costs provider spend to do so.
+    ("quality_policy", "max_attempts_per_call", "2"),
+
     # --- 0.3A research budget
     ("research_budget_profile", "max_queries_per_domain", "6"),
     ("research_budget_profile", "max_captures_per_domain", "12"),

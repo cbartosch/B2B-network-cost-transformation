@@ -421,6 +421,37 @@ class AnchorPolicy:
                 f"account for itself would silently drop or double-count spend")
 
 
+@dataclass(frozen=True)
+class QualityPolicy:
+    """How many attempts a rejected call gets.
+
+    Governed rather than a keyword default because the number decides how much
+    provider spend a systematically failing service can consume before anyone
+    notices, and because a retry budget that can be raised at a call site is a
+    retry budget nobody reviews."""
+    set_name: str
+    max_attempts_per_call: int
+
+    @classmethod
+    def from_rows(cls, rows: dict, set_name: str = "quality_policy"):
+        policy = cls(set_name=set_name,
+                     max_attempts_per_call=int(
+                         _require(rows, "max_attempts_per_call", set_name)))
+        policy.validate()
+        return policy
+
+    def validate(self) -> None:
+        if self.max_attempts_per_call < 1:
+            raise PolicyInvalid(
+                "max_attempts_per_call must be at least 1 - zero would mean no "
+                "call is ever made")
+        if self.max_attempts_per_call > 5:
+            raise PolicyInvalid(
+                f"max_attempts_per_call={self.max_attempts_per_call} is high "
+                f"enough to hide a systematically failing service behind "
+                f"retries, and to spend five times the budget doing it")
+
+
 # --------------------------------------------------------------- recommendation
 @dataclass(frozen=True)
 class RecommendationPolicy:

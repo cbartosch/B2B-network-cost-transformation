@@ -330,6 +330,12 @@ llm_run = Table(
     Column("parsed_output", JSON),
     Column("supplied_source_ids", JSON),
     Column("reviewer_outcome", String(32)),
+    # The quality gate's verdict on this specific call: accepted or rejected,
+    # the typed reasons, and which attempt it was. Every attempt is recorded,
+    # so a service that passes first time and one that passes on the third are
+    # distinguishable - that difference is the earliest signal a prompt has
+    # drifted, and an average hides it.
+    Column("quality_reasons", JSON),
     # Whether this call carries a provider-issued request identifier, which is
     # the handle the provider's own logs are indexed by. Not a barrier to
     # forgery - anyone controlling the endpoint mints both identifiers - but it
