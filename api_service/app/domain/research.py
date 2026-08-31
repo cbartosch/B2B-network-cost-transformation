@@ -530,10 +530,22 @@ def _build_context(session, case_row, domain_no: int) -> dict:
     if domain_no in (2, 6, 15):
         rows = session.execute(select(db.archetype_prior)).all()
         if rows:
+            # The bandwidth quoted has to be the one the simulation will use.
+            # archetype_prior.bandwidth_mbps_base is overridden per industry
+            # from reference.archetype_bandwidth, so reading the prior alone
+            # told the agent a tier the model would not apply - two sources of
+            # truth, and the agent was given the one that loses.
+            industry = (getattr(case_row, "industry", None) or "DEFAULT").upper()
+            bw_rows = session.execute(select(db.archetype_bandwidth).where(
+                db.archetype_bandwidth.c.industry.in_([industry, "DEFAULT"]))).all()
+            bw = {}
+            for r in sorted(bw_rows, key=lambda r: r.industry == "DEFAULT",
+                            reverse=True):
+                bw[r.archetype] = int(r.bandwidth_mbps)
             ctx["archetypes"] = "\n".join(
                 f"  - {r.archetype}: about {r.users_base} users and "
-                f"{r.bandwidth_mbps_base} Mbps per site, primary access "
-                f"{r.primary_product}, backup {r.backup_product}"
+                f"{bw.get(r.archetype, r.bandwidth_mbps_base)} Mbps per site, "
+                f"primary access {r.primary_product}, backup {r.backup_product}"
                 for r in sorted(rows, key=lambda r: r.archetype))
 
     # The footprint the estimate is currently running on, if any simulation has

@@ -71,5 +71,11 @@ LLM_TIMEOUT_SECONDS = float(os.getenv("LLM_TIMEOUT_SECONDS", "60"))
 LLM_SEARCH_TIMEOUT_SECONDS = float(
     os.getenv("LLM_SEARCH_TIMEOUT_SECONDS", "480"))
 
-SIMULATION_MODEL_VERSION = "sim-1.1.0"
+# 1.2.0: sample edges carry bandwidth_mbps (4.100.0), and the tier itself now
+# comes from reference.archetype_bandwidth rather than archetype_prior - so the
+# same seed and footprint produce a different output_hash than 1.1.0 did. The
+# page states that a re-run reproduces the hash exactly; leaving the version at
+# 1.1.0 made that claim false across builds, which is the defect the bump to
+# 1.1.0 was itself introduced to fix.
+SIMULATION_MODEL_VERSION = "sim-1.2.0"
 CALCULATION_VERSION = "calc-1.0.0"

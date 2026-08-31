@@ -51,7 +51,6 @@ else:
     _labels = {
         "PROMOTED_RESEARCH": ("Promoted from research", st.success),
         "KNOWN_FACT_UNALLOCATED": ("Registered, not yet allocated", st.warning),
-        "KNOWN_FACT": ("From the known-facts register", st.info),
         "KNOWN_FACT_SPLIT": ("Register total, your breakdown", st.info),
         "ANALYST_SAVED": ("Saved on this case", st.info),
         "SCOPE_PLACEHOLDER": ("Placeholder", st.warning),
@@ -202,7 +201,10 @@ def _clean_footprint(frame):
 
 _edited, _edit_problems = _clean_footprint(fp)
 
-_ROW_LIMIT = 100          # mirrors footprint_policy.max_sites_per_archetype_row
+# Read from the resolver rather than restated here. A literal copy of a
+# governed threshold means a steward who retunes it gets an interface that
+# disagrees with the API about what will be accepted.
+_ROW_LIMIT = (_fp or {}).get("max_sites_per_archetype_row") or 100
 _coarse = [r for r in _edited if r["sites"] > _ROW_LIMIT]
 if _coarse:
     st.error(

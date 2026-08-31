@@ -1244,9 +1244,20 @@ def resolve_footprint(case_id: str):
     """
     with S() as s:
         try:
-            return footprint_resolver.resolve(s, case_id)
+            resolved = footprint_resolver.resolve(s, case_id)
         except LookupError as exc:
             raise HTTPException(404, str(exc))
+        # Published with the footprint so the interface has one source for it.
+        # A literal copy in the page meant a steward retuning the governed
+        # value got an interface that disagreed with the API about what would
+        # be accepted.
+        try:
+            resolved["max_sites_per_archetype_row"] = policy.FootprintPolicy \
+                .from_rows(_thresholds(s, "footprint_policy")) \
+                .max_sites_per_archetype_row
+        except policy.PolicyIncomplete:
+            resolved["max_sites_per_archetype_row"] = None
+        return resolved
 
 
 @router.get("/v1/outside-in/cases/{case_id}/evidenced-footprint")
@@ -1462,7 +1473,12 @@ class EstimateIn(BaseModel):
     # the same in platform terms. An explicit value still wins, and the
     # response records which was used.
     users: int | None = Field(default=None, ge=0, le=5_000_000)
-    ops_cost_per_site_base: Decimal = Field(default=Decimal("900"), ge=0)
+    # No default. 900 per site was a server-side invention that reached the
+    # baseline whenever a caller omitted the field - and the interface saved a
+    # figure to the case that this endpoint never read, so saving it was
+    # cosmetic. Both now resolve from the case, and a case with neither is
+    # refused rather than costed at a number nobody supplied.
+    ops_cost_per_site_base: Decimal | None = Field(default=None, ge=0)
     # Reconciled and reported. Never used as the coverage denominator - that is
     # derived from the simulated scope and the priors.
     declared_spend_by_country: dict = {}
@@ -1622,6 +1638,24 @@ def run_estimate(case_id: str, payload: EstimateIn):
         confidence_policy, coverage_policy, fact_policy = _policies(s)
         case_row = _one_or_404(s, db.case, db.case.c.case_id, case_id, "case")
 
+        # Drivers come from the case where the caller does not supply them.
+        # The interface saved declared_users and declared_ops_cost_per_site and
+        # this endpoint read neither, so saving them changed nothing - the same
+        # "stored and consumed by nothing" defect that made researched
+        # quantities inert before promotion existed.
+        _users = payload.users if payload.users is not None else case_row.declared_users
+        _ops = (payload.ops_cost_per_site_base
+                if payload.ops_cost_per_site_base is not None
+                else case_row.declared_ops_cost_per_site)
+        if _ops is None:
+            raise HTTPException(422, {
+                "error": "no ops cost per site",
+                "detail": "This drives the OPS layer directly. Supply it on "
+                          "page 6 and save it to the case, or pass it on the "
+                          "request - it is not defaulted, because a per-site "
+                          "operating cost nobody stated would be costed as "
+                          "though somebody had."})
+
         if payload.method not in anchor_estimate.METHODS:
             raise HTTPException(422, {
                 "error": f"unknown method {payload.method!r}",
@@ -1712,7 +1746,7 @@ def run_estimate(case_id: str, payload: EstimateIn):
                 continue
             # Pass the figure the run actually uses, so a fact cannot be
             # credited as the source of a number it contradicts.
-            used = sim.output.get("sites") if driver == "footprint" else payload.users
+            used = sim.output.get("sites") if driver == "footprint" else _users
             try:
                 sources[driver] = known_facts.resolve_quantity_source(
                     s, case_id=case_id, known_fact_id=fact_id, driver=driver,
@@ -1732,8 +1766,11 @@ def run_estimate(case_id: str, payload: EstimateIn):
         # is reported, because a derived headcount and a typed one are different
         # claims and the reader should not have to guess.
         _implied = int(sim.output.get("implied_users") or 0)
-        if payload.users is not None:
-            _resolved_users, _users_source = payload.users, "ANALYST_SUPPLIED"
+        if _users is not None:
+            # _users is the request figure where one was given, otherwise the
+            # one saved on the case. Both are the analyst's, so both report as
+            # supplied rather than derived.
+            _resolved_users, _users_source = _users, "ANALYST_SUPPLIED"
         elif _implied > 0:
             _resolved_users, _users_source = _implied, "DERIVED_FROM_FOOTPRINT"
         else:
@@ -1746,7 +1783,7 @@ def run_estimate(case_id: str, payload: EstimateIn):
                           "every archetype in it has users_base 0 (a DC-only "
                           "estate, for example). Supply `users` explicitly."})
 
-        ops = D(payload.ops_cost_per_site_base)
+        ops = D(_ops)
         components, unpriced = estimate.build_components(
             sim_output=sim.output, users=_resolved_users,
             ops_cost_per_site={"low": ops * D("0.8"), "base": ops, "high": ops * D("1.3")},
