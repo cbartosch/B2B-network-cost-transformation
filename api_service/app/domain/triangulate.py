@@ -42,6 +42,46 @@ UNIT_MISMATCH = "UNIT_MISMATCH"
 UNDATED = "UNDATED"
 
 
+NUMERIC = __import__("re").compile(
+    r"^\s*[^\d\-+]{0,3}\s*([-+]?[\d][\d,\u00a0 ]*(?:\.\d+)?)\s*"
+    r"(?:mbps|gbps|m|k|bn|million|thousand|billion)?\s*$", __import__("re").I)
+_SCALE = {"k": 1_000, "thousand": 1_000, "m": 1_000_000, "million": 1_000_000,
+          "bn": 1_000_000_000, "billion": 1_000_000_000}
+
+
+def parse_value(raw):
+    """A source's wording into a number, or None if it is not one.
+
+    The schema used to demand a Decimal, so a domain whose honest answer is
+    "2 halls, 2.75 MW" or "T-Systems (Deutsche Telekom)" failed validation
+    three times and wrote no disposition - the agent was punished for
+    reporting what the source said. Prose is a real finding; it is simply not
+    a quantity, and deciding which is which is arithmetic, not a reason to
+    reject a reply.
+
+    Deliberately narrow. "1,250" and "2.75" and "3 million" parse; "2 halls,
+    2.75 MW" does not, because picking one of two numbers out of it would be
+    inventing which one was meant.
+    """
+    if raw is None:
+        return None
+    if isinstance(raw, (int, float, Decimal)):
+        return D(raw)
+    match = NUMERIC.match(str(raw))
+    if not match:
+        return None
+    digits = match.group(1).replace(",", "").replace("\u00a0", "").replace(" ", "")
+    try:
+        value = D(digits)
+    except (ArithmeticError, ValueError):
+        return None
+    suffix = str(raw).strip().lower().split()[-1] if str(raw).strip() else ""
+    for token, factor in _SCALE.items():
+        if suffix == token:
+            return value * D(factor)
+    return value
+
+
 def _year(as_of) -> int | None:
     """Leading four digits of whatever the source said. Deliberately crude:
     a source that writes "FY2024" or "31 Dec 2024" or "2024-12-31" means the
@@ -74,10 +114,12 @@ def triangulate_one(candidates: list[dict], *, policy, price_year: int) -> dict:
         flags.append(UNIT_MISMATCH)
 
     for c in candidates:
-        try:
-            value = D(c["value"])
-        except (KeyError, TypeError, ArithmeticError, ValueError):
-            set_aside.append({**c, "set_aside_reason": "value is not a number"})
+        value = parse_value(c.get("value"))
+        if value is None:
+            set_aside.append({
+                **c, "set_aside_reason":
+                    f"{c.get('value')!r} is a finding but not a single number, "
+                    f"so it cannot be banded with the others"})
             continue
         if units and len(units) > 1 and (c.get("unit") or "").strip().lower() != \
                 sorted(units)[0]:

@@ -131,7 +131,7 @@ class PromptDefinition:
 _DEFS = [
     PromptDefinition(
         prompt_id="llm01.public_evidence.extract",
-        prompt_version="2.2.0", agent_id="LLM-01",
+        prompt_version="2.3.0", agent_id="LLM-01",
         task=("Research one input domain of an outside-in enterprise network "
               "cost estimate for the named entity. Search before answering. "
               "Return the facts you can attribute to a named public source, "
@@ -151,7 +151,7 @@ _DEFS = [
 
     PromptDefinition(
         prompt_id="llm08.market_data.extract",
-        prompt_version="2.2.0", agent_id="LLM-08",
+        prompt_version="2.3.0", agent_id="LLM-08",
         task=("Source the price and serviceability inputs of an enterprise WAN "
               "cost baseline: circuit unit prices by country, product and "
               "bandwidth, carrier availability, contract norms, transformation "
@@ -159,7 +159,11 @@ _DEFS = [
               "published tariffs and named pricing studies.\n"
               "Where several sources price the same thing, list each as its "
               "own entry in `candidates` with its source and date. Do not "
-              "average or choose - the band is computed downstream."),
+              "average or choose - the band is computed downstream.\n"
+              "`value` is text: give a plain number where the source gives "
+              "one, and the source's own wording where it does not. A "
+              "non-numeric answer is kept as a qualitative finding rather "
+              "than discarded."),
         output_model=schemas.PublicEvidenceResult,
         tool_policy=ToolPolicy.WEB_SEARCH,
         evaluation_suite="conformance/public_evidence"),

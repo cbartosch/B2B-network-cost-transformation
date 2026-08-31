@@ -303,7 +303,7 @@ class DomainResult:
     __slots__ = ("domain_no", "domain_name", "agent_id", "disposition",
                  "reason", "agent_run_id", "queries_used", "captures_used",
                  "verified_sources", "failed", "failure_detail", "budget_note",
-                 "quantities", "triangulated")
+                 "quantities", "triangulated", "qualitative")
 
     def __init__(self, domain_no: int, domain_name: str, agent_id: str | None):
         self.domain_no = domain_no
@@ -328,6 +328,9 @@ class DomainResult:
         # review flags. Separate from `quantities` so the raw observations
         # remain readable beside the figure derived from them.
         self.triangulated: list[dict] = []
+        # Findings the source stated in words rather than as a number. Real,
+        # reportable, and never priced.
+        self.qualitative: list[dict] = []
 
     def as_dict(self) -> dict:
         return {"domain_no": self.domain_no, "domain_name": self.domain_name,
@@ -339,7 +342,8 @@ class DomainResult:
                 "failed": self.failed, "failure_detail": self.failure_detail,
                 "budget_note": self.budget_note,
                 "quantities": self.quantities,
-                "triangulated": self.triangulated}
+                "triangulated": self.triangulated,
+                "qualitative": self.qualitative}
 
 
 class SourceUnreachable(RuntimeError):
@@ -892,7 +896,15 @@ def _research_one_domain(session, *, case_row, domain_no: int, domain_name: str,
             # reason - rather than being silently stripped to nothing, which
             # made "cited three URLs, none real" look identical to "found
             # nothing".
-            result, provenance = gateway.structured_call(
+            # `extracted`, not `result`. WP1 replaced a parsed dict with a
+            # Pydantic model and kept the name, which rebound the DomainResult
+            # this function has been filling since line one - so every
+            # subsequent `result.agent_run_id = ...` assigned to a model whose
+            # config forbids extra fields, and the domain died with
+            # `"PublicEvidenceResult" object has no field "agent_run_id"`.
+            # Where the field did exist the write silently landed on the wrong
+            # object instead, which is worse.
+            extracted, provenance = gateway.structured_call(
                 session, agent_run_id=run_id,
                 prompt_id=("llm01.public_evidence.extract" if agent_id == "LLM-01"
                            else "llm08.market_data.extract"),
@@ -900,7 +912,7 @@ def _research_one_domain(session, *, case_row, domain_no: int, domain_name: str,
                 max_tokens=research_policy.max_output_tokens_per_call,
                 max_attempts=quality_attempts)
             call = provenance
-            parsed = result.model_dump()
+            parsed = extracted.model_dump()
             if call.get("stop_reason") == "max_tokens":
                 # Cut off mid-answer. Parsing it would raise
                 # StructuredOutputInvalid and blame the model for bad JSON,
@@ -1020,9 +1032,15 @@ def _research_one_domain(session, *, case_row, domain_no: int, domain_name: str,
             result.disposition = "EVIDENCED_PUBLIC"
             result.reason = None
             result.verified_sources = verified
+            # A quantity whose value is prose - "2 halls, 2.75 MW" - is kept
+            # as a qualitative finding and never enters the estimate. It used
+            # to fail the schema and cost the whole domain its disposition.
+            _all_q = [q for q in (parsed.get("quantities") or [])
+                      if isinstance(q, dict) and q.get("value") is not None]
             raw_quantities = [
-                q for q in (parsed.get("quantities") or [])
-                if isinstance(q, dict) and q.get("value") is not None]
+                q for q in _all_q if triangulate.parse_value(q["value"]) is not None]
+            result.qualitative = [
+                q for q in _all_q if triangulate.parse_value(q["value"]) is None]
             result.quantities = raw_quantities
             # The agent reports what each source says; the band is computed
             # here. Three sources at 341, 371 and 400 become 341/371/400 with
@@ -1143,6 +1161,7 @@ def run_domain_research(session, *, case_id: str, agent_ids: list[str] | None = 
                 evidence = {"sources": result.verified_sources,
                            "quantities": result.quantities,
                            "triangulated": result.triangulated,
+                           "qualitative": result.qualitative,
                            "conflicts": triangulate.review_queue(
                                result.triangulated),
                            "queries_used": result.queries_used,

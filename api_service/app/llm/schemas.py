@@ -66,7 +66,13 @@ class QuantityCandidate(Strict):
     computes the band deterministically, so the arithmetic between three
     observations and one band is inspectable rather than a model's assertion.
     """
-    value: Decimal
+    # A string, parsed to a number by code. The field was Decimal, and a
+    # domain whose honest answer is "2 halls, 2.75 MW" or "T-Systems (Deutsche
+    # Telekom)" then failed the schema three times and wrote no disposition -
+    # so the agent was punished for reporting what the source said. Prose here
+    # is a real finding; it is simply not a quantity, and the difference is
+    # decided deterministically rather than by refusing the reply.
+    value: str
     unit: str | None = None
     source_url: str | None = None
     publisher: str | None = None
@@ -88,7 +94,10 @@ class Quantity(Strict):
     lists them all in `candidates` and leaves the band to code.
     """
     label: str
-    value: Decimal
+    # As above: a string the code parses. A quantity that cannot be parsed is
+    # kept as a qualitative finding rather than discarded, and never reaches
+    # the estimate.
+    value: str
     unit: str | None = None
     country: str | None = None
     bandwidth_mbps: int | None = None

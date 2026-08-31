@@ -33,6 +33,7 @@ from datetime import datetime, timezone
 from sqlalchemy import delete, insert, select
 
 from .. import db
+from . import triangulate
 
 # The archetypes the simulation understands. A quantity naming anything else
 # cannot be promoted to a footprint row - it may be a perfectly good finding,
@@ -291,7 +292,15 @@ def promote(session, *, case_id: str, candidate_ids: list[str],
         elif target == "price":
             country = str(q["country"]).upper()
             product = str(q["label"]).split()[0].upper()
-            value = float(q["value"])
+            _parsed = triangulate.parse_value(q["value"])
+            if _parsed is None:
+                declined.append({
+                    "candidate_id": e["candidate_id"],
+                    "reason": (f"{q.get('value')!r} is a finding stated in "
+                               f"words, not a number, so it cannot be "
+                               f"promoted to a priced input.")})
+                continue
+            value = float(_parsed)
             # A single observed price is a point, not a band. Recorded as the
             # base with the band left equal to it and approved=False, so a
             # steward has to widen it deliberately rather than the system

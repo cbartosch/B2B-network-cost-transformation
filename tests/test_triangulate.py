@@ -131,3 +131,39 @@ def test_an_unparseable_candidate_is_set_aside_not_dropped():
     assert t["candidate_count"] == 1
     assert len(t["set_aside"]) == 1
     assert T.SINGLE_SOURCE in t["flags"]
+
+
+# ------------------------------------------------- prose is a finding, not a fault
+@pytest.mark.parametrize("raw,expected", [
+    ("1250", 1250), ("1,250", 1250), ("2.75", None), ("450 Mbps", 450),
+    ("3 million", 3_000_000), ("~340", 340), ("EUR 213000000", 213_000_000),
+    ("2 halls, 2.75 MW", None), ("T-Systems (Deutsche Telekom)", None),
+    ("", None), (None, None),
+])
+def test_a_value_parses_or_is_a_qualitative_finding(raw, expected):
+    """Both of these killed a live run. The schema demanded a Decimal, so a
+    domain whose honest answer was "2 halls, 2.75 MW" or "T-Systems (Deutsche
+    Telekom)" failed validation three times and wrote no disposition - the
+    agent was punished for reporting what the source said.
+
+    Prose is a real finding; it is simply not a quantity, and deciding which is
+    which is arithmetic rather than grounds for rejecting a reply."""
+    got = T.parse_value(raw)
+    if expected is None:
+        assert got is None
+    else:
+        assert got == D(str(expected))
+
+
+def test_two_numbers_in_one_string_is_not_a_number():
+    """Picking one of them would be inventing which was meant."""
+    assert T.parse_value("2 halls, 2.75 MW") is None
+    assert T.parse_value("between 300 and 400") is None
+
+
+def test_an_unparseable_candidate_is_set_aside_with_a_readable_reason():
+    t = T.triangulate([{"label": "DC_CAPACITY", "country": "DE",
+                        "unit": "halls", "value": "2 halls, 2.75 MW"}],
+                      policy=_policy(), price_year=2026)[0]
+    assert t["candidate_count"] == 0
+    assert "not a single number" in t["set_aside"][0]["set_aside_reason"]

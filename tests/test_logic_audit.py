@@ -106,3 +106,39 @@ def test_every_seeded_policy_set_is_consumed(name):
     blob = "\n".join(p.read_text() for p in APP.rglob("*.py")
                      if p.name != "seed.py")
     assert f'"{name}"' in blob, f"{name} is seeded and read nowhere"
+
+
+def test_no_function_rebinds_a_result_it_is_still_filling():
+    """The defect that killed seven of seventeen domains in a live run.
+
+    WP1 replaced a parsed dict with a Pydantic model and kept the variable
+    name, which rebound the DomainResult the function had been filling since
+    its first line. Every later `result.agent_run_id = ...` then assigned to a
+    model whose config forbids extra fields, so the domain died with
+    `"PublicEvidenceResult" object has no field "agent_run_id"` - and where the
+    field did exist the write landed silently on the wrong object, which is
+    worse."""
+    research = (APP / "domain" / "research.py").read_text()
+    start = research.index("result = DomainResult(")
+    end = research.index("def ", start)
+    body = research[start:end]
+    assert "result, provenance = gateway.structured_call" not in body, (
+        "structured_call must not bind to `result` while a DomainResult of "
+        "that name is being filled")
+
+
+def test_a_quantity_value_is_not_typed_as_a_decimal():
+    """A domain whose honest answer is "2 halls, 2.75 MW" must not fail
+    validation. Prose is a finding; the parse decides, not the schema."""
+    schemas = (APP / "llm" / "schemas.py").read_text()
+    block = schemas[schemas.index("class QuantityCandidate"):
+                    schemas.index("class PublicEvidenceResult")]
+    assert "value: Decimal" not in block, (
+        "a Decimal here rejects the reply instead of classifying the answer")
+    assert "value: str" in block
+
+
+def test_promotion_will_not_price_a_string():
+    promotion = (APP / "domain" / "promotion.py").read_text()
+    assert "triangulate.parse_value" in promotion
+    assert "stated in words" in promotion
