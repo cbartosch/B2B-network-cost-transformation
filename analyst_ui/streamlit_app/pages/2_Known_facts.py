@@ -189,6 +189,23 @@ with st.form("kf"):
                 st.rerun()
 
 st.divider()
+
+# Downloadable, because the register is where hand-entered work accumulates and
+# `docker compose down -v` drops the database volume - a command that appears in
+# this project's own troubleshooting notes. Losing typed facts to a maintenance
+# instruction is a failure of this system whichever layer removed the row.
+_exp = api.get(f"/v1/outside-in/cases/{case_id}:export")
+if "_error" not in _exp:
+    import json as _json
+    _counts = _exp.get("counts", {})
+    st.download_button(
+        f"Download this case ({_counts.get('known_facts', 0)} fact(s))",
+        data=_json.dumps(_exp, indent=2, ensure_ascii=False),
+        file_name=f"case_{case_id[:8]}.json", mime="application/json",
+        help="The case, its known facts, its dispositions and any promoted "
+             "footprint. Restore with tools/backup_cases.py, or POST it to "
+             "/v1/outside-in/cases:import.")
+
 _kf_list = api.get(f"/v1/outside-in/cases/{case_id}/known-facts")
 if "_error" in _kf_list:
     # Silence here is the worst outcome: a register that failed to load looked

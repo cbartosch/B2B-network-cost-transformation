@@ -1,4 +1,10 @@
-.PHONY: deck benchmarks reach tls-doctor tls-doctor-in-container check up down logs test seed reset psql doctor migrate pins attest
+.PHONY: backup restore deck benchmarks reach tls-doctor tls-doctor-in-container check up down logs test seed reset psql doctor migrate pins attest
+
+backup:        ## save every case's hand-entered content to ./case-backups
+	python tools/backup_cases.py backup --out ./case-backups
+
+restore:       ## restore backed-up cases (DIR=./case-backups)
+	python tools/backup_cases.py restore --dir $(or $(DIR),./case-backups)
 
 deck:          ## render a V0 snapshot as a PowerPoint (CASE=<case-id> OUT=v0.pptx)
 	python tools/render_v0_deck.py --case $(CASE) -o $(or $(OUT),v0_estimate.pptx)
@@ -26,7 +32,13 @@ up: check      ## build and start the stack
 down:
 	docker compose down
 
-reset:         ## destroy data and rebuild from scratch
+reset:         ## DESTROYS EVERY CASE - backs up first, and tells you where
+	@echo "This drops the database volume. Backing up every case first."
+	python tools/backup_cases.py backup --out ./case-backups
+	@echo ""
+	@echo "Backups are in ./case-backups - restore with 'make restore' after."
+	@echo "Press Ctrl-C now if that is not what you want."
+	@sleep 5
 	docker compose down -v
 	docker compose up --build -d
 

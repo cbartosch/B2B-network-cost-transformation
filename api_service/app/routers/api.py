@@ -9,6 +9,7 @@ from sqlalchemy import delete, insert, select, text, update
 
 from .. import config, db, jobs, migrations
 from ..domain import (anchor_estimate, benchmark_ingest, case_admin,
+                      case_export,
                       footprint as footprint_resolver,
                       confidence, coverage,
                       dispositions,
@@ -355,6 +356,31 @@ def delete_case(case_id: str, deleted_by: str, force: bool = False):
             raise HTTPException(409, {"error": "case not removable",
                                       "detail": str(exc),
                                       "contents": case_admin.summarise(s, case_id)})
+
+
+@router.get("/v1/outside-in/cases/{case_id}:export")
+def export_case(case_id: str):
+    """Everything a person entered on this case, as a readable document.
+
+    Exists because a maintenance instruction can drop the database volume, and
+    a person losing what they typed to that is a failure of this system
+    whichever layer removed the row.
+    """
+    with S() as s:
+        try:
+            return case_export.export_case(s, case_id)
+        except LookupError as exc:
+            raise HTTPException(404, str(exc))
+
+
+@router.post("/v1/outside-in/cases:import")
+def import_case(payload: dict = Body(...), new_case: bool = True):
+    """Restore an exported case. Never overwrites an existing row."""
+    with S() as s:
+        try:
+            return case_export.import_case(s, payload, new_case=new_case)
+        except ValueError as exc:
+            raise HTTPException(422, str(exc))
 
 
 @router.post("/v1/outside-in/cases/{case_id}:archive")
