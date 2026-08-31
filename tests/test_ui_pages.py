@@ -329,3 +329,37 @@ def test_a_page_that_flashes_also_renders_it(page):
     if "api.flash(" in text and page.name != "api_client.py":
         assert "api.show_flash()" in text, (
             f"{page.name} records a confirmation and never renders it")
+
+
+# ------------------------------------------------ drafts must survive a switch
+def test_the_known_fact_entry_does_not_use_a_form():
+    """This was the actual complaint, reported four times, and I kept fixing
+    the register instead.
+
+    st.form withholds its widget values from session state until submit, so
+    navigating to another page mid-entry discards everything typed. Keyed
+    widgets outside a form write as they change, so a half-finished fact
+    survives a page switch."""
+    page = next(p for p in PAGES if p.name.startswith("2_"))
+    text = page.read_text()
+    assert "st.form(" not in text, (
+        "a form on this page loses a part-typed fact the moment the analyst "
+        "looks at another page")
+    for key in ("kf_subject", "kf_base", "kf_asserted_by", "kf_unit"):
+        assert f'key="{key}"' in text, f"{key} is not keyed, so it is not kept"
+
+
+def test_the_draft_is_cleared_only_on_success():
+    """A rejected registration must keep what was typed. Clearing on failure
+    makes the analyst enter it twice to find out what was wrong."""
+    page = next(p for p in PAGES if p.name.startswith("2_"))
+    text = page.read_text()
+    assert "Cleared only on success" in text
+
+
+def test_the_new_case_entry_does_not_use_a_form():
+    """Same trap, same cost: a part-typed case starts from nothing."""
+    app_py = next(p for p in PAGES if p.name == "app.py")
+    text = app_py.read_text()
+    assert 'st.form("new_case")' not in text
+    assert 'key="nc_by"' in text

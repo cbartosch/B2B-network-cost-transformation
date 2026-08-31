@@ -100,37 +100,42 @@ else:
     st.info("No cases yet. Create one below to begin.")
 
 with st.expander("Create a new case", expanded=not cases):
-    with st.form("new_case"):
-        a, b = st.columns(2)
-        created_by = a.text_input(
-            "Your name", help="Recorded for named confirmation and audit. Not a role "
-                              "or a team - a person.")
-        entity = b.text_input(
-            "Subject entity (legal name)",
-            help="Optional here; entity resolution on page 1 confirms it properly.")
-        c, d = st.columns(2)
-        purpose = c.selectbox("Engagement purpose",
-                              ["PRE_OUTREACH", "PROPOSAL_QUALIFICATION",
-                               "ACTIVE_ENGAGEMENT"])
-        country = d.text_input("Country of domicile", value="",
-                               max_chars=2, help="ISO 3166-1 alpha-2, e.g. GB")
-        submitted = st.form_submit_button("Create case", type="primary")
-        if submitted:
-            if not created_by.strip():
-                st.error("Your name is required - an unattributed case cannot be audited.")
+    # Not st.form: a form withholds its widget values from session state until
+    # submit, so navigating away mid-entry discards them. Keyed widgets keep a
+    # part-typed case across a page switch.
+    for _k, _d in (("nc_by", ""), ("nc_entity", ""),
+                   ("nc_purpose", "PROPOSAL_QUALIFICATION"), ("nc_country", "")):
+        st.session_state.setdefault(_k, _d)
+    a, b = st.columns(2)
+    created_by = a.text_input(
+        "Your name", key="nc_by",
+        help="Recorded for named confirmation and audit. Not a role "
+             "or a team - a person.")
+    entity = b.text_input(
+        "Subject entity (legal name)", key="nc_entity",
+        help="Optional here; entity resolution on page 1 confirms it properly.")
+    c, d = st.columns(2)
+    purpose = c.selectbox("Engagement purpose",
+                          ["PRE_OUTREACH", "PROPOSAL_QUALIFICATION",
+                           "ACTIVE_ENGAGEMENT"], key="nc_purpose")
+    country = d.text_input("Country of domicile", key="nc_country",
+                           max_chars=2, help="ISO 3166-1 alpha-2, e.g. GB")
+    if st.button("Create case", type="primary"):
+        if not created_by.strip():
+            st.error("Your name is required - an unattributed case cannot be audited.")
+        else:
+            body = {"created_by": created_by.strip(), "engagement_purpose": purpose}
+            if entity.strip():
+                body["subject_entity_legal_name"] = entity.strip()
+            if country.strip():
+                body["country_of_domicile"] = country.strip().upper()
+            r = api.post("/v1/outside-in/cases", body)
+            if "_error" in r:
+                st.error(r["_error"])
             else:
-                body = {"created_by": created_by.strip(), "engagement_purpose": purpose}
-                if entity.strip():
-                    body["subject_entity_legal_name"] = entity.strip()
-                if country.strip():
-                    body["country_of_domicile"] = country.strip().upper()
-                r = api.post("/v1/outside-in/cases", body)
-                if "_error" in r:
-                    st.error(r["_error"])
-                else:
-                    st.session_state["case_id"] = r["case_id"]
-                    api.flash(f"Case created: {r['case_id']}")
-                    st.rerun()
+                st.session_state["case_id"] = r["case_id"]
+                api.flash(f"Case created: {r['case_id']}")
+                st.rerun()
 
 # ---------------------------------------------------------------- progress
 STEPS = [

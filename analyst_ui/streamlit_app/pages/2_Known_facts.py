@@ -100,93 +100,128 @@ elif _pf:
 
 st.divider()
 
-with st.form("kf"):
-    st.markdown("**Register a known fact**")
-    a, b = st.columns(2)
-    fact_class = a.selectbox("Fact class", [
-        "Location footprint", "Current architecture hypothesis", "Public cost evidence",
-        "Current vendor and product signals", "Contract and sourcing events",
-        "Operating-model cost", "Transformation announcements", "Resilience assumptions",
-        "Remote-user population", "Market serviceability"])
-    _suggestions = [x for x in ([_entity] + _aliases + _countries) if x]
-    subject = b.text_input(
-        "Subject *", value=_entity,
-        help="The entity, country, provider or contract the claim is about, "
-             "prefilled from the case. Change it where the claim is not about "
-             "the entity itself - a country for market serviceability, a "
-             "carrier for a contract event. Keep the wording consistent "
-             "between facts about the same thing: corroboration and the "
-             "public prefill both match on it.")
-    if _suggestions:
-        b.caption("Also on this case: " + " · ".join(_suggestions[:5]))
+# Deliberately not st.form. A form does not write its widget values to session
+# state until it is submitted, so navigating to another page mid-entry discarded
+# everything typed - which is what "the information I entered is gone" meant all
+# along, and it was the register I kept fixing. Plain keyed widgets write to
+# session state as they change, so a half-finished fact survives a page switch.
+#
+# The cost is a rerun per keystroke-group, which on this page is unnoticeable.
+_KF_FIELDS = {
+    "kf_fact_class": "Location footprint",
+    "kf_subject": _entity,
+    "kf_base": None, "kf_low": None, "kf_high": None,
+    "kf_unit": "sites",
+    "kf_asserted_by": "",
+    "kf_basis": "CLIENT_CONVERSATION",
+    "kf_verif": "PUBLICLY_VERIFIABLE",
+    "kf_date": dt.date.today(),
+    "kf_conf": 0.6,
+}
+for _k, _default in _KF_FIELDS.items():
+    st.session_state.setdefault(_k, _default)
 
-    c, d, e, f = st.columns(4)
-    # value=None, not 0.0. The field defaulted to 0.0 and the payload then did
-    # `base or None`, so an untouched field silently became "no value" - and a
-    # legitimate zero became one too. The fact registered as "(None sites)"
-    # with an empty subject, and every stage downstream then behaved correctly
-    # on something that should never have been storable.
-    base = c.number_input("Value (base) *", value=None, placeholder="e.g. 340")
-    low = d.number_input("Low (optional)", value=None)
-    high = e.number_input("High (optional)", value=None)
-    unit = f.text_input("Unit", "sites")
+st.markdown("**Register a known fact**")
+if any(st.session_state.get(k) not in (None, "", _KF_FIELDS[k])
+       for k in ("kf_base", "kf_low", "kf_high", "kf_asserted_by")):
+    st.caption("Draft in progress - it is kept if you move to another page and "
+               "come back.")
 
-    g, h, i = st.columns(3)
-    asserted_by = g.text_input("Asserted by *", help="A named individual. Not a team or a role.")
-    basis = h.selectbox("Basis", ["CLIENT_CONVERSATION", "INDUSTRY_KNOWLEDGE",
-                                  "THIRD_PARTY_REPORT", "PRIOR_ENGAGEMENT", "UNSTATED"])
-    verif = i.selectbox("Verifiability", ["PUBLICLY_VERIFIABLE", "CLIENT_CONFIRMABLE",
-                                          "UNVERIFIABLE"])
-    j, k = st.columns(2)
-    adate = j.date_input("Assertion date", dt.date.today())
-    conf = k.slider("Self-reported confidence", 0.0, 1.0, 0.6)
+_CLASSES = ["Location footprint", "Current architecture hypothesis",
+            "Public cost evidence", "Current vendor and product signals",
+            "Contract and sourcing events", "Operating-model cost",
+            "Transformation announcements", "Resilience assumptions",
+            "Remote-user population", "Market serviceability"]
+_BASES = ["CLIENT_CONVERSATION", "INDUSTRY_KNOWLEDGE", "THIRD_PARTY_REPORT",
+          "PRIOR_ENGAGEMENT", "UNSTATED"]
+_VERIF = ["PUBLICLY_VERIFIABLE", "CLIENT_CONFIRMABLE", "UNVERIFIABLE"]
 
-    if basis == "PRIOR_ENGAGEMENT":
-        st.warning("A PRIOR_ENGAGEMENT fact may carry another client's confidential "
-                   "information. It starts un-cleared and cannot influence the estimate "
-                   "until a rights check passes (2.4).")
+a, b = st.columns(2)
+fact_class = a.selectbox("Fact class", _CLASSES, key="kf_fact_class")
+_suggestions = [x for x in ([_entity] + _aliases + _countries) if x]
+subject = b.text_input(
+    "Subject *", key="kf_subject",
+    help="The entity, country, provider or contract the claim is about, "
+         "prefilled from the case. Change it where the claim is not about the "
+         "entity itself - a country for market serviceability, a carrier for a "
+         "contract event. Keep the wording consistent between facts about the "
+         "same thing: corroboration and the public prefill both match on it.")
+if _suggestions:
+    b.caption("Also on this case: " + " · ".join(_suggestions[:5]))
 
-    if st.form_submit_button("Register"):
-        problems = []
-        if not asserted_by.strip():
-            problems.append("An unattributed known fact is rejected. Name the asserter.")
-        if not subject.strip():
-            problems.append("Name the subject. Corroboration looks for public "
-                            "sources about a named subject.")
-        if base is None and low is None and high is None:
-            problems.append("Give a value - a point in base, or a range in low "
-                            "and high. If the number is genuinely unknown, "
-                            "leave the domain DECLARED_UNKNOWN rather than "
-                            "asserting an empty fact.")
-        if problems:
-            for msg in problems:
-                st.error(msg)
+c, d, e, f = st.columns(4)
+# value=None rather than 0.0. The field defaulted to 0.0 and the payload then
+# did `base or None`, so an untouched field silently became "no value" - and a
+# legitimate zero became one too. The fact registered as "(None sites)" with an
+# empty subject, and every stage downstream behaved correctly on something that
+# should never have been storable.
+base = c.number_input("Value (base) *", value=None, placeholder="e.g. 340",
+                      key="kf_base")
+low = d.number_input("Low (optional)", value=None, key="kf_low")
+high = e.number_input("High (optional)", value=None, key="kf_high")
+unit = f.text_input("Unit", key="kf_unit")
+
+g, h, i = st.columns(3)
+asserted_by = g.text_input("Asserted by *", key="kf_asserted_by",
+                           help="A named individual. Not a team or a role.")
+basis = h.selectbox("Basis", _BASES, key="kf_basis")
+verif = i.selectbox("Verifiability", _VERIF, key="kf_verif")
+
+j, k = st.columns(2)
+adate = j.date_input("Assertion date", key="kf_date")
+conf = k.slider("Self-reported confidence", 0.0, 1.0, key="kf_conf")
+
+if basis == "PRIOR_ENGAGEMENT":
+    st.warning("A PRIOR_ENGAGEMENT fact may carry another client's "
+               "confidential information. It starts un-cleared and cannot "
+               "influence the estimate until a rights check passes (2.4).")
+
+_reg, _clear = st.columns([1, 4])
+if _clear.button("Clear the form"):
+    for _k, _default in _KF_FIELDS.items():
+        st.session_state[_k] = _default
+    st.rerun()
+
+if _reg.button("Register", type="primary"):
+    problems = []
+    if not (asserted_by or "").strip():
+        problems.append("An unattributed known fact is rejected. Name the asserter.")
+    if not (subject or "").strip():
+        problems.append("Name the subject. Corroboration looks for public "
+                        "sources about a named subject.")
+    if base is None and low is None and high is None:
+        problems.append("Give a value - a point in base, or a range in low and "
+                        "high. If the number is genuinely unknown, leave the "
+                        "domain DECLARED_UNKNOWN rather than asserting an "
+                        "empty fact.")
+    if problems:
+        for msg in problems:
+            st.error(msg)
+    else:
+        r = api.post(f"/v1/outside-in/cases/{case_id}/known-facts", {
+            "fact_class": fact_class, "subject": subject,
+            # No `or None`: that coerced a legitimate zero to absent as well
+            # as an untouched field.
+            "value_base": base, "value_low": low, "value_high": high,
+            "unit": unit,
+            "asserted_by": asserted_by, "assertion_date": str(adate),
+            "basis": basis, "verifiability": verif,
+            "self_reported_confidence": conf})
+        if "_error" in r:
+            st.error(r["_error"])
         else:
-            r = api.post(f"/v1/outside-in/cases/{case_id}/known-facts", {
-                "fact_class": fact_class, "subject": subject,
-                # No `or None`: that coerced a legitimate zero to absent
-                # as well as an untouched field.
-                "value_base": base, "value_low": low, "value_high": high,
-                "unit": unit,
-                "asserted_by": asserted_by, "assertion_date": str(adate),
-                "basis": basis, "verifiability": verif,
-                "self_reported_confidence": conf})
-            if "_error" in r:
-                st.error(r["_error"])
-            else:
-                # Carried across the rerun. st.success followed immediately by
-                # st.rerun() showed nothing at all: the message was written and
-                # the script restarted before the browser saw it, so a
-                # successful registration looked exactly like a form that had
-                # silently cleared itself.
-                _msg = (f"Registered {fact_class} for {subject} as "
-                        f"{r.get('evidence_origin')} "
-                        f"(id {str(r.get('known_fact_id'))[:8]}).")
-                if r.get("range_widened_from_point"):
-                    _msg += (" The point value was widened to a range; the "
-                             "widening is recorded.")
-                api.flash(_msg)
-                st.rerun()
+            _msg = (f"Registered {fact_class} for {subject} as "
+                    f"{r.get('evidence_origin')} "
+                    f"(id {str(r.get('known_fact_id'))[:8]}).")
+            if r.get("range_widened_from_point"):
+                _msg += (" The point value was widened to a range; the "
+                         "widening is recorded.")
+            api.flash(_msg)
+            # Cleared only on success, so a rejected attempt keeps what was
+            # typed instead of making the analyst start again.
+            for _k, _default in _KF_FIELDS.items():
+                st.session_state[_k] = _default
+            st.rerun()
 
 st.divider()
 
