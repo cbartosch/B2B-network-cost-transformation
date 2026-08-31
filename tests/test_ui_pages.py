@@ -68,3 +68,16 @@ def test_every_page_compiles():
     import py_compile
     for page in PAGES:
         py_compile.compile(str(page), doraise=True)
+
+
+def test_the_simulation_footprint_opens_runnable():
+    """Zero was the honest default and made the page unusable: the site-count
+    guard refuses an all-zero footprint, so nothing could be run without
+    typing first. One site per country is small enough that nobody mistakes it
+    for a finding - the actual concern - while leaving the page reachable."""
+    page = next(p for p in PAGES if p.name.startswith("4_"))
+    text = page.read_text()
+    assert '"archetype": "BRANCH", "sites": 1' in text, (
+        "the in-scope-country default must be at least one site")
+    assert '"sites": 0' not in text, (
+        "a zero default puts the page behind a guard it cannot pass")

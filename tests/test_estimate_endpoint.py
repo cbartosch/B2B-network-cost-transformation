@@ -265,10 +265,10 @@ def test_a_snapshot_is_persisted_and_readable(session, client):
 
 # --------------------------------------------------------------- simulation scope
 def test_a_footprint_of_all_zeros_is_refused_by_name(session, client):
-    """The footprint editor opens on the case's in-scope countries with zero
-    sites, so submitting it unchanged is an easy mistake. Unguarded it
+    """Zeroing every row is now a deliberate act - the editor opens on one
+    site per in-scope country - but it must still refuse. Unguarded it
     simulates nothing successfully and the failure surfaces two pages later as
-    "no priced components" - a true statement about an empty estate that reads
+    "no priced components": a true statement about an empty estate that reads
     as a pricing problem."""
     case_id = _ready_case(session, countries=("GB", "DE", "US"))
 

@@ -53,12 +53,18 @@ else:
     if _countries:
         st.caption(
             f"No promoted research findings yet, so this opens on the "
-            f"{len(_countries)} in-scope country(ies) from intake with zero "
-            f"sites. Enter counts, add archetype rows as needed, or research "
-            f"domain 2 and promote its counts on page 5 to start from "
-            f"evidence. Zero is deliberate: a pre-filled number would be an "
-            f"assumption wearing the shape of a finding.")
-        default = pd.DataFrame([{"country": c, "archetype": "BRANCH", "sites": 0}
+            f"{len(_countries)} in-scope country(ies) from intake with one "
+            f"site each - a placeholder, so the page is runnable, not an "
+            f"estimate of anything. Replace them with real counts, add "
+            f"archetype rows as needed, or research domain 2 and promote its "
+            f"counts on page 5 to start from evidence. Whatever you type here "
+            f"enters as ANALYST_ENTERED_SCOPE and is discounted accordingly.")
+        # One, not zero. Zero was the honest default and made the page
+        # unusable: the site-count guard refuses an all-zero footprint, so
+        # nothing could be run without typing first. One is small enough that
+        # nobody mistakes it for a finding - which was the actual concern -
+        # while leaving the simulation reachable.
+        default = pd.DataFrame([{"country": c, "archetype": "BRANCH", "sites": 1}
                                 for c in _countries])
     else:
         st.caption("This case has no in-scope countries set, so this opens on "
