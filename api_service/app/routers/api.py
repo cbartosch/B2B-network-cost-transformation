@@ -9,6 +9,7 @@ from sqlalchemy import delete, insert, select, text, update
 
 from .. import config, db, jobs, migrations
 from ..domain import (anchor_estimate, benchmark_ingest, case_admin,
+                      footprint as footprint_resolver,
                       confidence, coverage,
                       dispositions,
                       entity_resolution,
@@ -1139,6 +1140,24 @@ def promote_research_findings(case_id: str, payload: PromoteIn):
                                      accept_conflicts=payload.accept_conflicts)
         except promotion.NotPromotable as exc:
             raise HTTPException(422, str(exc))
+
+
+@router.get("/v1/outside-in/cases/{case_id}/footprint")
+def resolve_footprint(case_id: str):
+    """The best available footprint for this case, and where it came from.
+
+    One endpoint, one precedence chain: promoted research, then a saved
+    analyst footprint, then a registered known fact, then a placeholder. The
+    rule used to live as four branches of interface logic and was wrong in a
+    different way on four occasions - most recently by never reading the
+    known-facts register at all, so a registered count sat there while the
+    simulation ran on placeholders.
+    """
+    with S() as s:
+        try:
+            return footprint_resolver.resolve(s, case_id)
+        except LookupError as exc:
+            raise HTTPException(404, str(exc))
 
 
 @router.get("/v1/outside-in/cases/{case_id}/evidenced-footprint")

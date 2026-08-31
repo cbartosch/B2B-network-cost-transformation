@@ -266,3 +266,13 @@ def test_disagreeing_registered_counts_are_flagged():
     text = page.read_text()
     assert "registered site counts disagree" in text
     assert "matches on subject" in text
+
+
+def test_the_simulation_page_resolves_the_footprint_server_side():
+    """The precedence was four branches of interface logic and wrong four
+    times. One endpoint, one rule, tested in test_footprint_resolution.py."""
+    page = next(p for p in PAGES if p.name.startswith("4_"))
+    text = page.read_text()
+    assert "/footprint\")" in text
+    for gone in ("elif _saved:", "elif _last:", "/simulations\")"):
+        assert gone not in text, f"{gone} is precedence logic that moved server-side"
