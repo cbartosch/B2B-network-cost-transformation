@@ -1,14 +1,14 @@
 """Anthropic Messages API adapter. One code path, and it is an HTTPS call."""
 import logging
 import time
+from dataclasses import replace
 from datetime import datetime, timezone
 from urllib.parse import urlparse
 
 import httpx
 
 from . import _transport
-from .base import strictify
-from .base import ProviderCall, parse_http_date
+from .base import ProviderCall, parse_http_date, strictify
 from .. import errors
 
 log = logging.getLogger("workbench.provider.anthropic")

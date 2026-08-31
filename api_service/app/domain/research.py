@@ -880,8 +880,7 @@ def _research_one_domain(session, *, case_row, domain_no: int, domain_name: str,
                            else "llm08.market_data.extract"),
                 prompt=prompt, provider=provider, tools=tools,
                 max_tokens=research_policy.max_output_tokens_per_call,
-                max_attempts=quality_attempts,
-                gate_context={"observed_urls": None})
+                max_attempts=quality_attempts)
             call = provenance
             parsed = result.model_dump()
             if call.get("stop_reason") == "max_tokens":

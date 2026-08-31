@@ -88,7 +88,8 @@ def propose_candidates(session, *, case_id: str, name_hint: str,
         session.commit()
 
     gateway.succeed(session, run_id, {"candidates": len(rows)})
-    return {"agent_run_id": run_id, "provenance": call, "candidates": rows}
+    return {"agent_run_id": run_id, "provenance": provenance,
+            "candidates": rows}
 
 
 def confirm(session, *, case_id: str, candidate_id: str, confirmed_by: str,
