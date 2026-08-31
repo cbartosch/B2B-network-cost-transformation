@@ -889,6 +889,7 @@ def domain_research_prompt(case_id: str, domain_no: int):
         case_row = _one_or_404(s, db.case, db.case.c.case_id, case_id, "case")
         research_policy = _research_policy(s)
         system = research.AGENT_SYSTEM_PROMPTS[agent_id]
+        briefs, plan_version = research.load_active_briefs(s)
         prompt = research._build_prompt(
             name, case_row, domain_no,
             context=research._build_context(s, case_row, domain_no),
@@ -911,7 +912,13 @@ def domain_research_prompt(case_id: str, domain_no: int):
     return {
         "domain_no": domain_no, "domain_name": name, "agent_id": agent_id,
         "researchable": True,
-        "brief": research.DOMAIN_BRIEFS.get(domain_no),
+        # The stored brief, which is what a run would actually send. Reading
+        # the module dict here would show the code default even after a
+        # steward had retuned the brief - a preview that disagrees with the
+        # run is worse than no preview.
+        "brief": briefs.get(domain_no),
+        "brief_version": (briefs.get(domain_no) or {}).get("_version"),
+        "research_plan_version": plan_version,
         "system": system,
         "prompt": prompt,
         "tools": research._web_search_tool(
@@ -973,6 +980,78 @@ def evidenced_footprint(case_id: str):
     with S() as s:
         _one_or_404(s, db.case, db.case.c.case_id, case_id, "case")
         return {"footprint": promotion.evidenced_footprint(s, case_id)}
+
+
+class BriefIn(BaseModel):
+    asks: str
+    wants: str | None = None
+    search: list[str] = []
+    sources: list[str] = []
+    example: str | None = None
+    reject: str | None = None
+    brief_version: str
+    approved_by: str
+    note: str | None = None
+
+
+@router.get("/v1/reference/research-briefs")
+def list_research_briefs(domain_no: int | None = None, active_only: bool = True):
+    with S() as s:
+        q = select(db.research_brief)
+        if domain_no is not None:
+            q = q.where(db.research_brief.c.domain_no == domain_no)
+        if active_only:
+            q = q.where(db.research_brief.c.active.is_(True))
+        rows = s.execute(q.order_by(db.research_brief.c.domain_no,
+                                    db.research_brief.c.brief_version)).all()
+        return {"briefs": [dict(r._mapping) for r in rows]}
+
+
+@router.put("/v1/reference/research-briefs/{domain_no}")
+def upsert_research_brief(domain_no: int, payload: BriefIn):
+    """Publish a new version of a domain's brief and make it active.
+
+    Versioned rather than mutable: a stored finding is only interpretable
+    against the brief that produced it, so a new version supersedes rather
+    than overwrites and the old row is retained. Named, like every other
+    reference change - a brief is the largest single lever on what research
+    finds, and an anonymous edit to it is an untraceable change to every
+    subsequent estimate.
+    """
+    if not (payload.approved_by or "").strip():
+        raise HTTPException(422, "a brief revision must be attributed")
+    if research.DOMAIN_AGENT_MAP.get(domain_no) is None:
+        raise HTTPException(422, {
+            "error": f"domain {domain_no} is not researched by an agent",
+            "detail": "seven of the 24 domains are benchmark-prior or "
+                      "simulation territory by design and have no brief."})
+    brief_id = f"{domain_no}-{payload.brief_version}"
+    with S() as s:
+        exists = s.execute(select(db.research_brief.c.brief_id).where(
+            db.research_brief.c.brief_id == brief_id)).first()
+        if exists:
+            raise HTTPException(409, {
+                "error": f"version {payload.brief_version} already exists for "
+                         f"domain {domain_no}",
+                "detail": "bump the version rather than overwriting: a "
+                          "finding is interpreted against the brief that "
+                          "produced it."})
+        s.execute(update(db.research_brief)
+                  .where(db.research_brief.c.domain_no == domain_no)
+                  .values(active=False))
+        s.execute(insert(db.research_brief).values(
+            brief_id=brief_id, domain_no=domain_no,
+            brief_version=payload.brief_version,
+            agent_id=research.DOMAIN_AGENT_MAP[domain_no],
+            asks=payload.asks, wants=payload.wants, search=payload.search,
+            sources=payload.sources, example=payload.example,
+            reject=payload.reject, active=True,
+            approved_by=payload.approved_by, note=payload.note))
+        s.commit()
+        _, plan_version = research.load_active_briefs(s)
+        return {"brief_id": brief_id, "active": True,
+                "research_plan_version": plan_version,
+                "note": "previous versions retained and deactivated"}
 
 
 @router.get("/v1/outside-in/cases/{case_id}/domain-research:plan")

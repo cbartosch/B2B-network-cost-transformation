@@ -611,11 +611,11 @@ def test_every_agent_routed_domain_has_a_brief():
     """A domain routed to an agent with no brief falls back to its bare name -
     the exact condition that produced empty findings."""
     missing = sorted(no for no, agent in research.DOMAIN_AGENT_MAP.items()
-                     if agent and no not in research.DOMAIN_BRIEFS)
+                     if agent and no not in research.RESEARCH_BRIEFS)
     assert not missing, f"domains routed to an agent with no research brief: {missing}"
     # A brief without search patterns is the old failure in a new shape: the
     # agent is told what to find and left to guess how to look for it.
-    thin = sorted(no for no, b in research.DOMAIN_BRIEFS.items()
+    thin = sorted(no for no, b in research.RESEARCH_BRIEFS.items()
                   if not b.get("search"))
     assert not thin, f"briefs with no search patterns: {thin}"
 

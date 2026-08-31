@@ -34,7 +34,7 @@ from . import db
 log = logging.getLogger("workbench.migrations")
 
 # Bump when the physical schema changes, and add a step below.
-SCHEMA_VERSION = 18
+SCHEMA_VERSION = 19
 
 VERSION_TABLE = "schema_version"
 VERSION_SCHEMA = "audit"
@@ -580,11 +580,25 @@ def _migrate_v18(conn) -> None:
     log.info("v18: benchmark_observation introduced, create_all will build it")
 
 
+def _migrate_v19(conn) -> None:
+    """4.16.0 -> 4.17.0: reference.research_brief.
+
+    Wholly new; create_all builds it after this step and the seed populates
+    catalogue version 1.0.0 from domain/research_briefs.py. The version bump
+    exists so an operator can tell that research now reads briefs from the
+    database rather than from the module, and that editing the module alone
+    no longer changes what an agent is sent.
+    """
+    log.info("v19: research_brief introduced; briefs move from code to "
+             "governed reference data")
+
+
 MIGRATIONS = {2: _migrate_v2, 3: _migrate_v3, 4: _migrate_v4, 5: _migrate_v5,
               6: _migrate_v6, 7: _migrate_v7, 8: _migrate_v8, 9: _migrate_v9,
               10: _migrate_v10, 11: _migrate_v11, 12: _migrate_v12,
               13: _migrate_v13, 14: _migrate_v14, 15: _migrate_v15,
-              16: _migrate_v16, 17: _migrate_v17, 18: _migrate_v18}
+              16: _migrate_v16, 17: _migrate_v17, 18: _migrate_v18,
+              19: _migrate_v19}
 
 
 class SchemaDrift(RuntimeError):

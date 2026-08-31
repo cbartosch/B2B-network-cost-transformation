@@ -2,7 +2,18 @@
 exist only as a code constant - they live here and are versioned in the database."""
 from sqlalchemy import delete, insert, select
 
+from .domain.research_briefs import (
+    BRIEF_CATALOGUE_VERSION, RESEARCH_BRIEFS)
+# The agent map lives with the research module; the brief rows record which
+# agent a domain routes to so a steward editing a brief can see it.
+DOMAIN_AGENT_MAP_SEED = {
+    1: 'LLM-01', 2: 'LLM-01', 6: 'LLM-01', 7: 'LLM-01', 8: 'LLM-01',
+    12: 'LLM-01', 13: 'LLM-01', 14: 'LLM-01', 15: 'LLM-01', 16: 'LLM-01',
+    9: 'LLM-08', 10: 'LLM-08', 18: 'LLM-08', 19: 'LLM-08', 20: 'LLM-08',
+    21: 'LLM-08', 22: 'LLM-08',
+}
 from .db import (SessionLocal, archetype_prior, lever, platform_unit_cost,
+                 research_brief,
                  threshold, unit_cost_prior)
 
 # Every governed number the analytical model uses. Nothing in the domain layer
@@ -300,6 +311,16 @@ def _rows():
         (threshold, lambda: [
             {"set_name": a, "key": b, "value": c, "version": 1,
              "approved_by": "seed", "note": "MVP default"} for a, b, c in THRESHOLDS]),
+        (research_brief, lambda: [
+            {"brief_id": f"{no}-{BRIEF_CATALOGUE_VERSION}", "domain_no": no,
+             "brief_version": BRIEF_CATALOGUE_VERSION,
+             "agent_id": DOMAIN_AGENT_MAP_SEED.get(no),
+             "asks": b.get("asks"), "wants": b.get("wants"),
+             "search": b.get("search") or [], "sources": b.get("sources") or [],
+             "example": b.get("example"), "reject": b.get("reject"),
+             "active": True, "approved_by": "seed",
+             "note": "catalogue default; retune in place and bump the version"}
+            for no, b in sorted(RESEARCH_BRIEFS.items())]),
         (unit_cost_prior, lambda: [
             {"id": f"{c}-{p}-{bw}", "country": c, "product": p, "cost_layer": l,
              "bandwidth_mbps": bw, "low": lo, "base": ba, "high": hi,

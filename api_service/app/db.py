@@ -451,6 +451,33 @@ benchmark_observation = Table(
     schema="benchmark",
 )
 
+# Research briefs as governed reference data, one row per domain per version.
+#
+# These were a dict in the research module, so retuning the single largest
+# lever on whether a domain finds anything required a code change and a
+# rebuild. The loop they sit in - read the prompt, run the domain, look at
+# what came back, adjust the wording - is one an analyst runs, and it should
+# not need an engineer.
+#
+# Versioned rather than mutable: a finding is only interpretable against the
+# brief that produced it, and overwriting a brief in place would silently
+# change what a stored disposition means. The active row per domain is the
+# one research uses; superseded rows are retained.
+research_brief = Table(
+    "research_brief", metadata,
+    Column("brief_id", String(64), primary_key=True),      # {domain_no}-{version}
+    Column("domain_no", Integer, index=True),
+    Column("brief_version", String(24)),
+    Column("agent_id", String(16)),
+    Column("asks", Text), Column("wants", Text),
+    Column("search", JSON), Column("sources", JSON),
+    Column("example", Text), Column("reject", Text),
+    Column("active", Boolean, default=True),
+    Column("approved_by", String(120)), Column("note", Text),
+    Column("updated_at", DateTime(timezone=True), default=_now),
+    schema="reference",
+)
+
 unit_cost_prior = Table(
     "unit_cost_prior", metadata,
     Column("id", String(64), primary_key=True),
