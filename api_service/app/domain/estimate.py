@@ -146,6 +146,26 @@ def build_components(*, sim_output: dict, users: int, ops_cost_per_site: dict,
     components: list[Component] = []
     unpriced: list[dict] = []
 
+    def _estate_components(base: Component) -> list[Component]:
+        """A component driven by the whole site count rather than one country.
+
+        The overlay and the operations line are per site across the estate, so
+        there is no country to look up - the split uses the overall enumerated
+        share. These carried one origin for the whole estate while the L0
+        circuits were split, so the origin mix was only partly
+        enumeration-aware.
+        """
+        if not enumeration or not enumeration.get("total"):
+            return [base]
+        share = D(enumeration.get("enumerated_share") or 0)
+        if share <= 0 or share >= 1:
+            return [base]
+        residual = locations._residual_origin(base.quantity_origin)
+        if residual == base.quantity_origin:
+            return [base]
+        return _split(base, [(base.quantity_origin, share),
+                             (residual, D(1) - share)])
+
     def _site_components(base: Component, country: str) -> list[Component]:
         """One site-driven component, split by how much of that country is named.
 
@@ -163,16 +183,39 @@ def build_components(*, sim_output: dict, users: int, ops_cost_per_site: dict,
                  if enumeration else [(base.quantity_origin, D(1))])
         if len(split) == 1:
             return [base]
+        return _split(base, split)
+
+    def _split(base: Component, split: list) -> list[Component]:
+        """Apportion one component's quantity and value across an origin split.
+
+        Largest remainder, not truncation: int(350 * 0.107) + int(350 * 0.893)
+        is 349, so every split lost a circuit and a quantity of 1 vanished
+        entirely. The component list is serialised into the snapshot, so the
+        audit record showed fewer circuits than the simulation produced - which
+        is the one thing that list exists to make checkable.
+        """
+        raw = [D(base.quantity) * share for _o, share in split]
+        counts = [int(r) for r in raw]
+        remaining = base.quantity - sum(counts)
+        for index in sorted(range(len(raw)),
+                            key=lambda i: raw[i] - counts[i],
+                            reverse=True)[:remaining]:
+            counts[index] += 1
+
         out = []
-        for origin, share in split:
+        for (origin, share), quantity in zip(split, counts):
             if share <= 0:
                 continue
             out.append(Component(
                 key=f"{base.key}_{origin.lower()}",
                 layer=base.layer, driver=base.driver,
-                quantity=int(D(base.quantity) * share),
+                quantity=quantity,
                 quantity_origin=origin,
                 unit_cost_origin=base.unit_cost_origin,
+                # Value scales by the exact share, not by the apportioned
+                # count: the shares sum to one so the parts sum to the whole,
+                # and rounding a value to follow a rounded quantity would move
+                # money to make a count tidy.
                 value=base.value.scale(share),
                 source_ref=base.source_ref))
         return out
@@ -203,12 +246,16 @@ def build_components(*, sim_output: dict, users: int, ops_cost_per_site: dict,
 
     sites = int(sim_output.get("sites", 0))
     if overlay_unit:
-        components.append(Component(
+        # Split like the circuits. This carried one origin for the whole
+        # estate while the L0 circuits were split, so the origin mix was only
+        # partly enumeration-aware - and the overlay is per site, which is
+        # exactly the quantity the enumeration describes.
+        components.extend(_estate_components(Component(
             key="L2_overlay", layer="L2", driver="sites", quantity=sites,
             quantity_origin=site_origin, unit_cost_origin="BENCHMARK_PRIOR",
             source_ref=footprint_ref,
             value=Range(overlay_unit["low"], overlay_unit["base"],
-                        overlay_unit["high"]).scale(D(sites) * MONTHS)))
+                        overlay_unit["high"]).scale(D(sites) * MONTHS))))
     else:
         unpriced.append({"product": "SDWAN_OVERLAY", "role": "PLATFORM",
                          "reason": "NO_APPROVED_PRIOR"})
@@ -224,7 +271,12 @@ def build_components(*, sim_output: dict, users: int, ops_cost_per_site: dict,
         unpriced.append({"product": "SSE_LICENCE", "role": "PLATFORM",
                          "reason": "NO_APPROVED_PRIOR"})
 
-    components.append(Component(
+    # Split like the circuits and the overlay. This is per site across the
+    # estate, so leaving it on one origin meant the OPS layer's whole value
+    # counted as evidenced while the circuits driven by the same site count
+    # were split - the origin mix was partly enumeration-aware, which is worse
+    # than not at all because it is not visible in the total.
+    components.extend(_estate_components(Component(
         # Quantity is sites, so it inherits the footprint's provenance. The
         # per-site rate is a separate axis: unit_cost_origin. A known fact about
         # operating cost supplies a rate, not a quantity, and the 0.6A shares are
@@ -233,7 +285,7 @@ def build_components(*, sim_output: dict, users: int, ops_cost_per_site: dict,
         quantity_origin=site_origin, unit_cost_origin="BENCHMARK_PRIOR",
         source_ref=footprint_ref,
         value=Range(ops_cost_per_site["low"], ops_cost_per_site["base"],
-                    ops_cost_per_site["high"]).scale(D(sites))))
+                    ops_cost_per_site["high"]).scale(D(sites)))))
 
     return components, unpriced
 

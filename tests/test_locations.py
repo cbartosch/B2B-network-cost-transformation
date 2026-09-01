@@ -180,3 +180,75 @@ def test_an_empty_case_reports_nothing_to_enumerate_against():
     assert out["total"] == 0
     assert out["enumerated_share"] == "0"
     assert "nothing to enumerate" in out["note"]
+
+
+# -------------------------------------------- the split conserves what it splits
+def _apportion(total, shares):
+    """The apportionment build_components uses, lifted for a direct check."""
+    raw = [D(total) * s for s in shares]
+    counts = [int(r) for r in raw]
+    left = total - sum(counts)
+    for i in sorted(range(len(raw)), key=lambda i: raw[i] - counts[i],
+                    reverse=True)[:left]:
+        counts[i] += 1
+    return counts
+
+
+@pytest.mark.parametrize("quantity", [1, 2, 7, 47, 90, 350, 443, 2600])
+def test_the_split_never_loses_a_circuit(quantity):
+    """int(350 * 0.107) + int(350 * 0.893) is 349. Every split lost one, and a
+    quantity of 1 vanished entirely - so the component list in the snapshot
+    showed fewer circuits than the simulation produced, which is the one thing
+    that list exists to make checkable."""
+    shares = [D("0.107"), D("1") - D("0.107")]
+    assert sum(_apportion(quantity, shares)) == quantity
+
+
+def test_a_single_circuit_goes_to_the_larger_share():
+    """Largest remainder, not "give it to the last part": one circuit with 90%
+    named belongs to the named side."""
+    assert _apportion(1, [D("0.9"), D("0.1")]) == [1, 0]
+    assert _apportion(1, [D("0.1"), D("0.9")]) == [0, 1]
+
+
+def test_the_value_is_scaled_by_the_share_not_the_rounded_count():
+    """Rounding a value to follow a rounded quantity would move money to make a
+    count tidy. The shares sum to one, so the parts sum to the whole."""
+    value = D("1234567.89")
+    shares = [D("0.107"), D("1") - D("0.107")]
+    parts = [value * s for s in shares]
+    assert sum(parts) == value
+    # and still after the 2dp rounding serialisation applies
+    assert sum(p.quantize(D("0.01")) for p in parts) == value
+
+
+def test_every_site_driven_component_is_split():
+    """L2_overlay and OPS_operations were left on one origin while the L0
+    circuits driven by the same site count were split - the origin mix was
+    partly enumeration-aware, which is worse than not at all because it is not
+    visible in the total.
+
+    L4_sse is driven by users, not sites, so it correctly keeps its own
+    origin: the enumeration describes locations."""
+    import ast
+    import re
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1]
+    app = next(c for c in (root / "api_service" / "app", root / "app")
+               if (c / "domain").exists())
+    src = (app / "domain" / "estimate.py").read_text()
+    fn = next(n for n in ast.walk(ast.parse(src))
+              if isinstance(n, ast.FunctionDef) and n.name == "build_components")
+    body = ast.unparse(fn)
+
+    unsplit = []
+    for match in re.finditer(r"Component\(\s*key=(?:f)?['\"]([^'\"{]+)", body):
+        key = match.group(1)
+        if key.startswith("L4"):
+            continue                      # users-driven, not site-driven
+        context = body[max(0, match.start() - 90):match.start()]
+        if not any(h in context for h in ("_site_components", "_estate_components",
+                                          "_base = ")):
+            unsplit.append(key)
+    assert not unsplit, f"site-driven and not split: {unsplit}"
