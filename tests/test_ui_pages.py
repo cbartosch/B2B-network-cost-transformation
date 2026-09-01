@@ -743,6 +743,8 @@ PRIMARY_ACTIONS = {
     "6_Run_V0.py": ("Run V0", "Ask"),
     "8_Savings_recommendation.py": ("Run LLM-07", "Approve"),
     "9_V1_questionnaire.py": ("Save",),
+    "10_Benchmark_vault.py": ("Extract observations", "Dry run",
+                              "Publish this brief"),
 }
 
 
@@ -764,3 +766,41 @@ def test_a_page_keeps_the_action_it_exists_for(filename, actions):
     text = page.read_text()
     missing = [a for a in actions if f'button("{a}' not in text]
     assert not missing, f"{filename} no longer offers {missing}"
+
+
+def test_every_endpoint_is_reachable_or_documented_as_not():
+    """Eleven endpoints were implemented and no page called any of them - the
+    whole benchmark governance path, the conflict review queue, the research
+    brief editor and three integrity views.
+
+    That is not dead code and it is not a working feature: it is a control an
+    external audit called bypassable, which was bypassable partly because it
+    had no screen. An endpoint is either reachable or it says in its own
+    docstring why it is not."""
+    import pathlib
+    import re
+
+    root = pathlib.Path(__file__).resolve().parents[1]
+    app = next(c for c in (root / "api_service" / "app", root / "app")
+               if (c / "routers" / "api.py").exists())
+    api_src = (app / "routers" / "api.py").read_text()
+    ui = "\n".join(p.read_text() for p in
+                   (root / "analyst_ui" / "streamlit_app").rglob("*.py"))
+
+    unreachable = []
+    for verb, path in re.findall(r'@router\.(get|post|put|delete)\("([^"]+)"',
+                                 api_src):
+        if path in ui:
+            continue
+        parts = [p for p in re.sub(r"\{[^}]+\}", "", path).split("/") if p]
+        if parts and parts[-1] in ui:
+            continue
+        # the handler may declare itself deliberately off-screen
+        after = api_src[api_src.index(f'"{path}"'):]
+        docstring = after[:after.index("\n@router") if "\n@router" in after
+                          else 1500]
+        if "deliberately not on a screen" in docstring:
+            continue
+        unreachable.append(f"{verb.upper()} {path}")
+    assert not unreachable, (
+        "no page calls these, and none says why:\n  " + "\n  ".join(unreachable))

@@ -380,6 +380,62 @@ else:
 
 st.caption(_prog.get("note", "") if "_error" not in _prog else "")
 
+# ------------------------------------------------- known-fact conflicts
+st.divider()
+st.subheader("Conflicts between what was asserted and what ran")
+st.caption("A run that used a different value from the one someone registered "
+           "records the disagreement here. It was written by the estimate and "
+           "read by no screen, so a case could carry an open conflict that "
+           "nothing surfaced - and V0 reports OPEN_CONFLICT without saying "
+           "what conflicts.")
+
+_cf = api.get(f"/v1/outside-in/cases/{case_id}/known-fact-conflicts")
+if "_error" in _cf:
+    st.error(_cf["_error"])
+else:
+    _open = _cf.get("conflicts") or []
+    if not _open:
+        st.success("No open conflict on this case.")
+    else:
+        st.warning(f"{len(_open)} open conflict(s). Each is a figure a person "
+                   f"asserted and the run did not use.")
+        for _c in _open:
+            with st.expander(
+                    f"{_c.get('driver')}: asserted {_c.get('asserted_value')}, "
+                    f"run used {_c.get('value_used_by_run')}", expanded=True):
+                st.caption(
+                    f"asserted by {_c.get('asserted_by') or 'unattributed'}"
+                    f" - detected {str(_c.get('detected_at') or '')[:19]}"
+                    f" - fact {str(_c.get('known_fact_id') or '')[:8]}")
+                st.markdown(
+                    "**Resolving accepts the scope the run used and leaves the "
+                    "fact on record.** SCOPE_IS_CORRECT is the only resolution "
+                    "the register accepts: if the *fact* is what is right, "
+                    "change the scope or the footprint and re-run instead - a "
+                    "conflict is not closed by declaring the assertion wrong.")
+                _who = st.text_input("Resolving as (your name)",
+                                     key=f"cf_who_{_c['conflict_id']}")
+                _why = st.text_area(
+                    "Why the scope the run used is the correct one",
+                    key=f"cf_why_{_c['conflict_id']}",
+                    placeholder="e.g. the 341 figure covers retail branches "
+                                "only; the run includes the 30 advisory "
+                                "centres, which are in perimeter.")
+                if st.button("Resolve as SCOPE_IS_CORRECT",
+                             key=f"cf_go_{_c['conflict_id']}",
+                             disabled=not (_who.strip() and _why.strip())):
+                    _r = api.post(
+                        f"/v1/outside-in/known-fact-conflicts/"
+                        f"{_c['conflict_id']}:resolve",
+                        {"resolution": "SCOPE_IS_CORRECT", "reason": _why,
+                         "resolved_by": _who})
+                    if "_error" in _r:
+                        st.error(_r["_error"])
+                    else:
+                        api.flash(f"Conflict resolved by {_who}.")
+                        st.rerun()
+
+
 # ------------------------------------------------------------- ask about it
 st.divider()
 st.subheader("Ask about this estimate")

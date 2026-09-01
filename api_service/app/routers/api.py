@@ -1323,8 +1323,16 @@ def resolve_footprint(case_id: str):
 
 @router.get("/v1/outside-in/cases/{case_id}/evidenced-footprint")
 def evidenced_footprint(case_id: str):
-    """The promoted footprint, in the shape simulations:run accepts - so the
-    simulation page can start from evidence rather than from typing."""
+    """The promoted footprint, in the shape simulations:run accepts.
+
+    Superseded by GET /footprint, which resolves promoted evidence, a saved
+    footprint, the known-facts register and the case scope in one precedence
+    chain and reports which layer won. The simulation page uses that.
+
+    Kept because it is the narrow question - "what did research establish?" -
+    and a caller who wants only that should not have to read a resolution it
+    does not care about. Not orphaned: deliberately not on a screen.
+    """
     with S() as s:
         _one_or_404(s, db.case, db.case.c.case_id, case_id, "case")
         return {"footprint": promotion.evidenced_footprint(s, case_id)}
