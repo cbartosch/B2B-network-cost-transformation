@@ -164,3 +164,36 @@ def test_search_patterns_are_issued_for_every_alias():
         aliases=["HypoVereinsbank", "HVB"])
     assert "HypoVereinsbank" in rendered and "HVB" in rendered
     assert "UniCredit Bank GmbH" in rendered
+
+
+# --------------------------------- verification means the claim, not the status
+@pytest.mark.parametrize("claim,body,expected", [
+    ("2,600 locations worldwide", "Wuerth operates 2,600 locations.", True),
+    ("2600 locations", "The group runs 2,600 locations in 80 countries.", True),
+    ("2.600 Standorte", "Wuerth hat 2.600 Standorte in 80 Laendern.", True),
+    ("around 371 branches in Germany", "HVB has around 371 branches in Germany.", True),
+    ("EUR 213 million", "Telecommunication costs were EUR 213 million.", True),
+    ("we operate 5,000 depots", "The annual report mentions warehousing.", False),
+    ("", "anything at all", False),
+])
+def test_a_claim_is_checked_against_the_page_that_was_fetched(claim, body, expected):
+    """Every cited source was fetched and only its status code was checked, so
+    "independently verified" meant "the URL resolves" - a page that exists and
+    does not contain the claim counted exactly the same as one that does. That
+    is the single thing independent verification was supposed to establish.
+
+    Deliberately lenient: digit separators are dropped on both sides, and a
+    long distinctive run or the figures alone will match. A check that rejects
+    a true claim is worse than no check, because everybody learns to ignore
+    it."""
+    found, how = research._claim_in_body(claim, body)
+    assert found is expected, how
+
+
+def test_the_match_strength_is_reported_not_just_the_verdict():
+    """FIGURES_ONLY is weaker than EXACT and the grade has to be able to tell."""
+    _, how = research._claim_in_body(
+        "around 371 branches", "The bank reported 371 sites at year end.")
+    assert how in ("EXACT", "PARTIAL_4_WORDS", "FIGURES_ONLY")
+    _, missing = research._claim_in_body("5,000 depots", "nothing relevant")
+    assert missing == "NOT_FOUND"

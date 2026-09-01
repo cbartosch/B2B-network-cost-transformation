@@ -316,8 +316,14 @@ def test_liveness_rejects_a_provider_clock_far_from_ours():
 
 
 def test_liveness_accepts_a_real_looking_call():
+    """Paired with a rejection, so "accepts" means something. On its own it
+    passes on a build whose liveness check returns immediately."""
     now = datetime.now(timezone.utc)
-    gateway.verify_liveness(_call(), now, now)      # must not raise
+    gateway.verify_liveness(_call(), now, now)
+
+    with pytest.raises(errors.LivenessProofFailed):
+        gateway.verify_liveness(
+            _call(provider_request_at=now - timedelta(days=2)), now, now)
 
 
 def test_deterministic_only_is_not_offered_without_an_executor():

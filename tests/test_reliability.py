@@ -250,3 +250,61 @@ def test_provenance_stated_on_candidates_reaches_the_grade():
     assert graded["verified_sources"] == 2, (
         "candidate provenance must count toward the grade")
     assert graded["grade"] == R.VERY_RELIABLE
+
+
+# ------------------------------------ the grade rests on checkable provenance
+def test_a_claim_not_found_in_its_own_page_cannot_be_very_reliable():
+    """The audit finding: the grade was computed entirely from provenance the
+    agent reported, which is a division of labour and not a control - the agent
+    chooses the inputs, so "how_read: FULL_PAGE" was worth a grade on its own
+    word.
+
+    Every cited source is already fetched independently. Checking the claimed
+    excerpt against what came back is the difference between verification and
+    a status code."""
+    found = _grade(verified_sources=[
+        {"source_class": "PRIMARY_FILING", "how_read": "FULL_PAGE",
+         "figure_basis": "STATED", "claim_verified": True,
+         "claim_checked": "EXACT"},
+        {"source_class": "REGULATOR", "how_read": "FULL_PAGE",
+         "figure_basis": "STATED", "claim_verified": True,
+         "claim_checked": "EXACT"}],
+        band={"spread_share": 0.03, "newest_year": 2025})
+    assert found["grade"] == R.VERY_RELIABLE
+
+    absent = _grade(verified_sources=[
+        {"source_class": "PRIMARY_FILING", "how_read": "SNIPPET_ONLY",
+         "figure_basis": "STATED", "claim_verified": False,
+         "claim_checked": "NOT_FOUND"},
+        {"source_class": "REGULATOR", "how_read": "SNIPPET_ONLY",
+         "figure_basis": "STATED", "claim_verified": False,
+         "claim_checked": "NOT_FOUND"}],
+        band={"spread_share": 0.03, "newest_year": 2025})
+    assert absent["grade"] == R.RELIABLE
+    assert any("was not found in the page" in s for s in absent["shortfalls"])
+
+
+def test_an_unchecked_claim_is_labelled_as_the_agent_s_word():
+    unchecked = _grade(verified_sources=[
+        {"source_class": "PRIMARY_FILING", "how_read": "FULL_PAGE",
+         "figure_basis": "STATED"},
+        {"source_class": "REGULATOR", "how_read": "FULL_PAGE",
+         "figure_basis": "STATED"}],
+        band={"spread_share": 0.03, "newest_year": 2025})
+    assert unchecked["grade"] == R.RELIABLE
+    assert any("the agent's word" in s for s in unchecked["shortfalls"])
+
+
+def test_a_figures_only_match_is_a_weaker_match_and_says_so():
+    """A claim whose numbers appear but whose wording does not is weak evidence
+    and is not nothing - the distinction has to survive into the grade."""
+    weak = _grade(verified_sources=[
+        {"source_class": "PRIMARY_FILING", "how_read": "FULL_PAGE",
+         "figure_basis": "STATED", "claim_verified": True,
+         "claim_checked": "FIGURES_ONLY"},
+        {"source_class": "REGULATOR", "how_read": "FULL_PAGE",
+         "figure_basis": "STATED", "claim_verified": True,
+         "claim_checked": "FIGURES_ONLY"}],
+        band={"spread_share": 0.03, "newest_year": 2025})
+    assert weak["grade"] == R.RELIABLE
+    assert any("only on the numbers" in s for s in weak["shortfalls"])

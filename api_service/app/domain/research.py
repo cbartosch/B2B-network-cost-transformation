@@ -416,7 +416,11 @@ def _fetch_source_fragment(url: str, timeout: float = 10.0) -> dict | None:
     text = _WS_RE.sub(" ", _TAG_RE.sub(" ", resp.text[:20_000])).strip()
     if not text:
         return None
-    return {"url": url, "status_code": resp.status_code, "fragment": text[:600]}
+    # The full stripped text is returned as well as the display fragment: a
+    # claim can only be checked against what the page actually says, and 600
+    # characters of the top of a page is not that.
+    return {"url": url, "status_code": resp.status_code,
+            "fragment": text[:600], "_body": text}
 
 
 def _verify_sources(claimed: list[dict],
@@ -440,9 +444,73 @@ def _verify_sources(claimed: list[dict],
             unreachable += 1
             detail = detail or str(exc)
             continue
-        if fetched is not None:
-            verified.append({**source, **fetched})
+        if fetched is None:
+            continue
+
+        # Does the page actually say it? This fetched every cited source and
+        # checked only that it returned 200, so "independently verified" meant
+        # "the URL resolves" - a source that exists and does not contain the
+        # claim counted exactly the same as one that does. That is the single
+        # thing independent verification was supposed to establish.
+        body = fetched.pop("_body", "") or ""
+        claim = str(source.get("excerpt") or "").strip()
+        found, how = _claim_in_body(claim, body)
+        record = {**source, **fetched, "claim_checked": how}
+        if claim and not found:
+            # Kept and marked, not dropped. The page is real and the claim is
+            # not in the part of it that was read, which is a downgrade rather
+            # than a fabrication - a figure can sit in a table this naive
+            # tag-strip mangles. The grade decides what that is worth.
+            record["claim_verified"] = False
+            record["how_read"] = "SNIPPET_ONLY"
+        else:
+            record["claim_verified"] = bool(claim) and found
+        verified.append(record)
     return verified, used, unreachable, detail
+
+
+def _claim_in_body(claim: str, body: str) -> tuple:
+    """Is the claimed excerpt in the fetched page? Returns (found, how).
+
+    Deliberately lenient. An exact substring match fails on whitespace, curly
+    quotes and a figure the page writes as "2,600" and the agent quotes as
+    "2600" - and a check that rejects a true claim is worse than no check,
+    because it teaches everyone to ignore it.
+
+    So: normalised substring first, then the longest distinctive run of the
+    claim, then the numbers in it. A claim whose numbers all appear in the page
+    is treated as present: that is weak evidence and it is not nothing, and the
+    grade is told which of the three matched.
+    """
+    if not claim:
+        return False, "NO_EXCERPT_CLAIMED"
+
+    def _norm(text):
+        # Digit separators are dropped on both sides, so a page writing
+        # "2,600" matches a claim quoting "2600". Leaving them in made a true
+        # claim read as absent, and a check that rejects a true claim is worse
+        # than no check - everybody learns to ignore it.
+        text = re.sub(r"(?<=\d)[,.\u00a0 ](?=\d)", "", text)
+        return re.sub(r"[^a-z0-9]+", " ", text.lower()).strip()
+
+    n_claim, n_body = _norm(claim), _norm(body)
+    if n_claim and n_claim in n_body:
+        return True, "EXACT"
+
+    words = n_claim.split()
+    for size in (8, 6, 4):
+        if len(words) >= size:
+            for i in range(len(words) - size + 1):
+                if " ".join(words[i:i + size]) in n_body:
+                    return True, f"PARTIAL_{size}_WORDS"
+
+    numbers = re.findall(r"\d[\d,.]*", claim)
+    if numbers and all(
+            re.sub(r"[,.]", "", n) in re.sub(r"[,.]", "", n_body)
+            for n in numbers):
+        return True, "FIGURES_ONLY"
+
+    return False, "NOT_FOUND"
 
 
 # Legal-form suffixes and generic scope words: dropped because they carry no

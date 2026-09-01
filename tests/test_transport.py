@@ -385,7 +385,14 @@ def test_the_exposure_can_be_accepted_deliberately(monkeypatch):
     monkeypatch.setattr(_transport, "PIN_MODE", _transport.PIN_ENFORCE)
     monkeypatch.setattr(_transport, "_CRYPTO", False)
     monkeypatch.setattr(_transport, "ALLOW_CERT_ONLY_PINNING", True)
-    _transport.assert_pinning_supported()            # must not raise
+    # The accepted exposure has to remain observable afterwards. Asserting only
+    # that nothing raised would pass on a build that had silently stopped
+    # checking, which is the state this test exists to rule out.
+    _transport.assert_pinning_supported()
+    assert _transport.PIN_MODE == _transport.PIN_ENFORCE
+    assert _transport.ALLOW_CERT_ONLY_PINNING is True
+    assert _transport._CRYPTO is False, (
+        "the point of this case is enforcement without SPKI support")
 
 
 def test_observe_without_spki_support_starts_but_warns(monkeypatch):

@@ -223,3 +223,49 @@ def test_confirming_an_entity_never_wipes_a_typed_identifier():
     assert "identifier_note" in confirm, (
         "an empty identifier after a locking confirmation has to be reported "
         "at that moment, not discovered at pre-flight")
+
+
+def test_no_test_is_vacuous():
+    """753 test functions is only reassuring if each of them can fail.
+
+    A test asserting a literal, or comparing two constants, passes forever and
+    reads as coverage. Tests that assert nothing at all are allowed here when
+    they fail by raising - `policy.validate()`, `py_compile(doraise=True)`, a
+    helper that calls pytest.fail - because "this does not raise" is a real
+    check, just an implicit one.
+    """
+    import ast
+    import pathlib
+
+    RAISES_ON_FAILURE = ("validate(", "doraise", "pytest.fail", "_assert_json",
+                         "model_validate", "pytest.raises", "compile(")
+    tests_dir = pathlib.Path(__file__).resolve().parent
+    vacuous, total = [], 0
+
+    for path in sorted(tests_dir.rglob("test_*.py")):
+        source = path.read_text()
+        tree = ast.parse(source)
+        for fn in ast.walk(tree):
+            if not (isinstance(fn, ast.FunctionDef)
+                    and fn.name.startswith("test_")):
+                continue
+            total += 1
+            body = ast.get_source_segment(source, fn) or ""
+            asserts = [n for n in ast.walk(fn) if isinstance(n, ast.Assert)]
+
+            for node in asserts:
+                test = node.test
+                if isinstance(test, ast.Constant) and test.value:
+                    vacuous.append(f"{path.name}::{fn.name} asserts a literal")
+                elif isinstance(test, ast.Compare) and all(
+                        isinstance(c, ast.Constant)
+                        for c in [test.left, *test.comparators]):
+                    vacuous.append(
+                        f"{path.name}::{fn.name} compares two constants")
+
+            if not asserts and not any(h in body for h in RAISES_ON_FAILURE):
+                vacuous.append(
+                    f"{path.name}::{fn.name} neither asserts nor raises")
+
+    assert total > 500, f"only {total} tests found - the sweep is not seeing them"
+    assert not vacuous, "\n".join(vacuous)

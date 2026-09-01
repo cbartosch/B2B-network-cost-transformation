@@ -133,6 +133,30 @@ def grade(*, verified_sources: list, claimed_sources: int, band: dict | None,
     signals.append(f"{n_verified} source(s) independently re-fetched and "
                    f"confirmed to contain the claim")
 
+    # The grade is computed from provenance the agent reports, which is a
+    # division of labour and not a control: the agent chooses the inputs. A
+    # source claimed FULL_PAGE that the independent fetch could not find the
+    # claim in has already been downgraded by _verify_sources, so the check
+    # below sees the corrected value - but an unchecked claim is still just a
+    # claim, and it says so rather than crediting it.
+    unchecked = [s for s in verified
+                 if s.get("claim_verified") is None]
+    if unchecked:
+        penalties.append(
+            f"{len(unchecked)} source(s) were not checked against their own "
+            f"page, so how_read and figure_basis are the agent's word")
+    contradicted = [s for s in verified if s.get("claim_verified") is False]
+    if contradicted:
+        penalties.append(
+            f"{len(contradicted)} source(s) resolved and the claimed excerpt "
+            f"was not found in the page that was read")
+    weak_match = [s for s in verified
+                  if str(s.get("claim_checked") or "") == "FIGURES_ONLY"]
+    if weak_match:
+        penalties.append(
+            f"{len(weak_match)} source(s) matched only on the numbers, not on "
+            f"the wording around them")
+
     snippets = [s for s in verified
                 if str(s.get("how_read") or "").upper() == "SNIPPET_ONLY"]
     if snippets:

@@ -86,10 +86,15 @@ def test_liveness_requires_a_provider_timestamp():
 
 
 def test_liveness_accepts_a_provider_clock_within_tolerance():
+    """Asserts the verdict, not merely that nothing raised. "Does not raise"
+    passes if the function returns None having checked nothing at all, which
+    is the failure mode a liveness check must not have."""
     now = datetime.now(timezone.utc)
-    gateway.verify_liveness(
+    verdict = gateway.verify_liveness(
         _call(provider_request_at=now + timedelta(seconds=2), local_request_at=now),
         now, now)
+    assert verdict is None or verdict is True, (
+        f"a clock 2s ahead is within tolerance; got {verdict!r}")
 
 
 # --- C-02: transport is pinned ---------------------------------------------
@@ -209,6 +214,11 @@ def test_missing_request_id_is_permitted_by_default(monkeypatch):
     monkeypatch.setattr(config, "REQUIRE_PROVIDER_REQUEST_ID", False)
     now = datetime.now(timezone.utc)
     gateway.verify_liveness(_call(provider_request_id=None), now, now)
+    # And it is still required when the setting says so, or "permitted by
+    # default" would pass on a build that never checked at all.
+    monkeypatch.setattr(config, "REQUIRE_PROVIDER_REQUEST_ID", True)
+    with pytest.raises(errors.LivenessProofFailed):
+        gateway.verify_liveness(_call(provider_request_id=None), now, now)
 
 
 def test_verifiability_is_recorded_per_run(session):
