@@ -26,7 +26,8 @@ def _rng(seed: int, salt: str) -> random.Random:
 SAMPLE_NODES, SAMPLE_EDGES = 200, 400
 
 
-def one_pass(seed: int, footprint: list[dict], archetypes: dict) -> dict:
+def one_pass(seed: int, footprint: list[dict], archetypes: dict,
+             backbone: dict | None = None) -> dict:
     """One synthetic estate. footprint = [{country, archetype, sites}, ...]"""
     rng = _rng(seed, "topology")
     nodes, edges = [], []
@@ -127,7 +128,8 @@ def summarise_pass(result: dict, index: int) -> dict:
 
 
 def aggregate(summaries: list[dict], *, seed: int, ensemble_size: int,
-              footprint: list[dict], archetypes: dict, model_version: str) -> dict:
+              footprint: list[dict], archetypes: dict, model_version: str,
+              backbone: dict | None = None) -> dict:
     """Build the ensemble payload from per-pass summaries.
 
     Deliberately a pure function of the summaries, so a run assembled from a
@@ -147,7 +149,8 @@ def aggregate(summaries: list[dict], *, seed: int, ensemble_size: int,
     median_summary = sorted(passes, key=lambda p: (p["circuits"], p["dual_sites"],
                                                    p["index"]))[len(passes) // 2]
     # Re-run the one pass the sample comes from. Same seed, same output.
-    median_pass = one_pass(seed + median_summary["index"], footprint, archetypes)
+    median_pass = one_pass(seed + median_summary["index"], footprint,
+                           archetypes, backbone=backbone)
 
     def pct(values, q):
         if not values:
@@ -175,20 +178,23 @@ def aggregate(summaries: list[dict], *, seed: int, ensemble_size: int,
                               "high": pct(dual, 0.90)},
         "circuits_per_site_base": median_pass["circuits_per_site"],
         "diversity_state": DIVERSITY_STATE,
+        "backbone": backbone or {},
         "sample_topology": {"nodes": median_pass["nodes"], "edges": median_pass["edges"]},
         "node_count": median_pass["node_count"], "edge_count": median_pass["edge_count"],
     }
 
 
 def run_ensemble(*, seed: int, ensemble_size: int, footprint: list[dict],
-                 archetypes: dict, model_version: str) -> dict:
+                 archetypes: dict, model_version: str,
+                 backbone: dict | None = None) -> dict:
     """Convenience wrapper: run every pass, then aggregate. The job runner drives
     the two halves separately so it can checkpoint, cancel and resume."""
-    summaries = [summarise_pass(one_pass(seed + i, footprint, archetypes), i)
+    summaries = [summarise_pass(
+        one_pass(seed + i, footprint, archetypes, backbone=backbone), i)
                  for i in range(ensemble_size)]
     return aggregate(summaries, seed=seed, ensemble_size=ensemble_size,
                      footprint=footprint, archetypes=archetypes,
-                     model_version=model_version)
+                     model_version=model_version, backbone=backbone)
 
 
 def output_hash(payload: dict) -> str:

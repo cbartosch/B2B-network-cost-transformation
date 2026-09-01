@@ -541,6 +541,35 @@ research_brief = Table(
 # Resolved by (industry, archetype) with a DEFAULT industry row as the
 # fallback, so an unknown industry is priced at the generic tier rather than
 # refused - and the tier actually used is reported on the run.
+# Which region a country clusters into. Governed, because which countries
+# belong together is a design decision that varies by client - a European
+# bank's regions are not a logistics group's - and a hardcoded list would be a
+# modelling assumption nobody could see or change.
+country_region = Table(
+    "country_region", metadata,
+    Column("country", String(2), primary_key=True),
+    Column("region", String(24), index=True),
+    Column("note", Text),
+    schema="reference",
+)
+
+# The backbone tiers: product and bandwidth for a DC-to-region link and a
+# region-to-core link. Versioned, because changing it changes every estimate
+# built on it and the output hash has to move with it.
+topology_template = Table(
+    "topology_template", metadata,
+    Column("name", String(32), primary_key=True),
+    Column("version", String(16)),
+    Column("dc_to_region_product", String(32)),
+    Column("dc_to_region_mbps", Integer),
+    Column("region_to_core_product", String(32)),
+    Column("region_to_core_mbps", Integer),
+    Column("dc_dual", Boolean, default=True),
+    Column("core_dual", Boolean, default=True),
+    Column("note", Text),
+    schema="reference",
+)
+
 archetype_bandwidth = Table(
     "archetype_bandwidth", metadata,
     Column("id", String(80), primary_key=True),          # {industry}-{archetype}
@@ -588,6 +617,28 @@ unit_cost_prior = Table(
 # other case. `origin` records whether it came from promoted research or from
 # the known-facts register, because the two carry different weight and the
 # simulation reports which it used.
+# A disclosed annual cost line this case's research established, for the
+# ANCHOR estimation method to rest on.
+#
+# Domains 9 and 10 exist to find exactly this. The figure was researched,
+# graded and stored in the disposition, and reached nothing - an analyst still
+# typed it into page 6 by hand, which made the anchor an assertion and capped
+# the estimate under 0.6A when the evidence for it was sitting in the case.
+evidenced_anchor = Table(
+    "evidenced_anchor", metadata,
+    Column("id", String(96), primary_key=True),      # {case}-{label}
+    Column("case_id", String(36), index=True),
+    Column("label", String(64)),                     # TELECOM_SPEND etc.
+    Column("value", Text), Column("currency", String(8)),
+    Column("as_of", String(32)),
+    Column("domain_no", Integer), Column("agent_run_id", String(36)),
+    Column("source_urls", JSON),
+    Column("reliability_grade", String(16)),
+    Column("promoted_by", String(120)),
+    Column("promoted_at", DateTime(timezone=True), default=_now),
+    schema="outside_in",
+)
+
 evidenced_archetype = Table(
     "evidenced_archetype", metadata,
     Column("id", String(96), primary_key=True),      # {case}-{archetype}-{field}

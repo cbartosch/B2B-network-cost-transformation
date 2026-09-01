@@ -141,6 +141,29 @@ def archetype_field(q: dict) -> str | None:
     return None
 
 
+# A disclosed annual spend line: what the ANCHOR estimation method is anchored
+# on. Domains 9 and 10 exist to find exactly this and it reached nothing - the
+# figure was researched, graded and stored, and an analyst still typed it into
+# page 6 by hand.
+SPEND_LABEL_HINTS = ("SPEND", "COST", "OPEX", "EXPENSE", "CHARGES")
+ANNUAL_UNIT_HINTS = ("/year", "per year", "annual", "p.a.", "pa", "/yr")
+
+
+def anchor_candidate(q: dict) -> bool:
+    """Is this an annual money figure the anchor method could rest on?"""
+    label = str(q.get("label") or "").upper()
+    unit = str(q.get("unit") or "").lower()
+    if not any(hint in label for hint in SPEND_LABEL_HINTS):
+        return False
+    if not any(hint in unit for hint in ANNUAL_UNIT_HINTS):
+        return False
+    # A per-site or per-user figure is a rate, not an anchor.
+    if any(per in unit for per in ("/site", "per site", "/user", "per user",
+                                   "/circuit", "per circuit")):
+        return False
+    return triangulate.parse_value(q.get("value")) is not None
+
+
 def _classify(q: dict) -> str:
     """footprint | price | unclassified.
 
@@ -168,6 +191,11 @@ def _classify(q: dict) -> str:
     # independent, because an architecture standard usually is.
     if archetype_field(q):
         return "archetype"
+    # The disclosed cost line the ANCHOR method multiplies by an addressable
+    # share. Checked before the price branch, because "TELECOM_SPEND ...
+    # EUR/year" is a total and not a unit rate.
+    if anchor_candidate(q):
+        return "anchor"
     # "DIA 100Mbps MRC" -> product is the first token.
     head = label.split()[0] if label else ""
     if head in PRODUCTS and len(country) == 2 and (
@@ -311,7 +339,7 @@ def promote(session, *, case_id: str, candidate_ids: list[str],
 
     now = datetime.now(timezone.utc)
     promoted_footprint, proposed_prices, declined = [], [], []
-    promoted_archetype = []
+    promoted_archetype, promoted_anchor = [], []
 
     for e in entries:
         q, target = e["quantity"], _classify(e["quantity"])
@@ -332,6 +360,29 @@ def promote(session, *, case_id: str, candidate_ids: list[str],
                            f"promote with accept_conflicts, or research the "
                            f"domain again.")})
             continue
+        if target == "anchor":
+            # A disclosed cost line, for the ANCHOR method. Promoted as
+            # evidence rather than retyped as an assertion, which is the
+            # difference between an anchor that reports EVIDENCED_PUBLIC and
+            # one that caps the whole estimate under 0.6A.
+            label = str(q["label"]).upper()
+            row_id = f"{case_id}-{label}"
+            session.execute(delete(db.evidenced_anchor).where(
+                db.evidenced_anchor.c.id == row_id))
+            session.execute(insert(db.evidenced_anchor).values(
+                id=row_id, case_id=case_id, label=label,
+                value=str(triangulate.parse_value(q["value"])),
+                currency=(q.get("currency")
+                          or str(q.get("unit") or "").split("/")[0].strip()
+                          or None),
+                as_of=str(q.get("as_of") or ""), domain_no=e["domain_no"],
+                agent_run_id=e["agent_run_id"], source_urls=e["sources"],
+                reliability_grade=(e.get("reliability") or {}).get("grade"),
+                promoted_by=promoted_by, promoted_at=now))
+            promoted_anchor.append({"label": label, "value": q["value"],
+                                    "domain_no": e["domain_no"]})
+            continue
+
         if target == "archetype":
             # How a site type is built, for this case only. Never written to
             # reference.archetype_prior: one client's estate is not a
@@ -449,6 +500,7 @@ def promote(session, *, case_id: str, candidate_ids: list[str],
     material = [p for p in proposed_prices
                 if (p.get("benchmark_comparison") or {}).get("material")]
     return {
+        "promoted_anchor": promoted_anchor,
         "promoted_archetype": promoted_archetype,
         "promoted_footprint": promoted_footprint,
         "proposed_prices": proposed_prices,

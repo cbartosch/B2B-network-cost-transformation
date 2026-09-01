@@ -105,6 +105,9 @@ def run_job(run_id: str, session=None) -> dict:
         params = row.params or {}
         footprint = params.get("footprint", [])
         archetypes = (row.pinned_priors or {}).get("archetype_prior", {})
+        # Pinned on the run, so a resumed pass rebuilds the same core
+        # rather than one planned from a footprint that may have moved.
+        backbone = (row.params or {}).get("backbone") or {}
         total = row.progress_total or row.ensemble_size
 
         # Resume from the checkpoint. Replaying an earlier index would be safe
@@ -127,7 +130,8 @@ def run_job(run_id: str, session=None) -> dict:
                         "completed": len(summaries), "total": total}
 
             summaries.append(simulation.summarise_pass(
-                simulation.one_pass(row.seed + i, footprint, archetypes), i))
+                simulation.one_pass(row.seed + i, footprint, archetypes,
+                                    backbone=backbone), i))
 
             if len(summaries) % config.SIM_CHECKPOINT_EVERY == 0:
                 _set(s, run_id, partial={"summaries": summaries},

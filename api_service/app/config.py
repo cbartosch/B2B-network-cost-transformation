@@ -77,5 +77,11 @@ LLM_SEARCH_TIMEOUT_SECONDS = float(
 # page states that a re-run reproduces the hash exactly; leaving the version at
 # 1.1.0 made that claim false across builds, which is the defect the bump to
 # 1.1.0 was itself introduced to fix.
-SIMULATION_MODEL_VERSION = "sim-1.2.0"
+# 1.3.0: three-tier topology. Every site used to get an access circuit and
+# nothing else, which is a set of unconnected local loops rather than a WAN -
+# so the baseline understated itself and no backbone lever had anything to act
+# on. Data centres now cluster into regional hubs and hubs into a global core,
+# which adds circuits and changes the output hash for the same seed and
+# footprint.
+SIMULATION_MODEL_VERSION = "sim-1.3.0"
 CALCULATION_VERSION = "calc-1.0.0"

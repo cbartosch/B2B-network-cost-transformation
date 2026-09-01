@@ -34,7 +34,7 @@ from . import db
 log = logging.getLogger("workbench.migrations")
 
 # Bump when the physical schema changes, and add a step below.
-SCHEMA_VERSION = 28
+SCHEMA_VERSION = 30
 
 VERSION_TABLE = "schema_version"
 VERSION_SCHEMA = "audit"
@@ -742,13 +742,37 @@ def _migrate_v28(conn) -> None:
              "inform topology as well as counts")
 
 
+def _migrate_v29(conn) -> None:
+    """4.26.0 -> 4.27.0: outside_in.evidenced_anchor.
+
+    Wholly new; create_all builds it. The disclosed cost line the ANCHOR method
+    rests on was researched, graded and stored, and reached nothing - so the
+    anchor was typed by hand and the estimate capped itself under 0.6A while
+    the evidence for it sat in the same case.
+    """
+    log.info("v29: evidenced_anchor introduced; a researched cost line can "
+             "now be the anchor rather than being retyped as an assertion")
+
+
+def _migrate_v30(conn) -> None:
+    """4.27.0 -> 4.28.0: reference.country_region and reference.topology_template.
+
+    Both new; create_all builds them and the seed fills them. Until now every
+    site got an access circuit and nothing else, which is not a WAN but a set
+    of unconnected local loops - so the baseline understated itself and no
+    backbone lever had anything to act on.
+    """
+    log.info("v30: country_region and topology_template introduced; the "
+             "simulation gains a core")
+
+
 MIGRATIONS = {2: _migrate_v2, 3: _migrate_v3, 4: _migrate_v4, 5: _migrate_v5,
               6: _migrate_v6, 7: _migrate_v7, 8: _migrate_v8, 9: _migrate_v9,
               10: _migrate_v10, 11: _migrate_v11, 12: _migrate_v12,
               13: _migrate_v13, 14: _migrate_v14, 15: _migrate_v15,
               16: _migrate_v16, 17: _migrate_v17, 18: _migrate_v18,
               19: _migrate_v19, 20: _migrate_v20,
-              21: _migrate_v21, 22: _migrate_v22, 23: _migrate_v23, 24: _migrate_v24, 25: _migrate_v25, 26: _migrate_v26, 27: _migrate_v27, 28: _migrate_v28}
+              21: _migrate_v21, 22: _migrate_v22, 23: _migrate_v23, 24: _migrate_v24, 25: _migrate_v25, 26: _migrate_v26, 27: _migrate_v27, 28: _migrate_v28, 29: _migrate_v29, 30: _migrate_v30}
 
 
 class SchemaDrift(RuntimeError):

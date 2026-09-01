@@ -12,7 +12,8 @@ DOMAIN_AGENT_MAP_SEED = {
     9: 'LLM-08', 10: 'LLM-08', 18: 'LLM-08', 19: 'LLM-08', 20: 'LLM-08',
     21: 'LLM-08', 22: 'LLM-08',
 }
-from .db import (SessionLocal, archetype_bandwidth, archetype_prior, lever, platform_unit_cost,
+from .db import (SessionLocal, archetype_bandwidth, archetype_prior,
+                 country_region, topology_template, lever, platform_unit_cost,
                  research_brief,
                  threshold, unit_cost_prior)
 
@@ -258,6 +259,21 @@ PRIORS = [
     ("DE", "ETHERNET", "L0", 10000, 2850, 4000, 5600),
     ("DE", "MOBILE_5G", "L0", 50, 28, 50, 88),
 
+    # --- Regional backbone. Priced against the region, not a country, because
+    # a hub-to-core circuit belongs to a region: match_prior keys on
+    # (country, product, bandwidth) and the simulation puts the region name in
+    # the country position for these rows.
+    #
+    # Without these every backbone circuit is unpriced, and adding a core would
+    # have dragged coverage down rather than improving the baseline - a change
+    # that made the estimate worse while looking more complete.
+    #
+    # Indicative 10 GbE wavelength / carrier-ethernet monthly rates. Wide bands
+    # because a regional average spans metro and long-haul.
+    ("EMEA", "ETHERNET", "L0", 10000, 4500, 7000, 11000),
+    ("AMER", "ETHERNET", "L0", 10000, 4000, 6200, 9800),
+    ("APAC", "ETHERNET", "L0", 10000, 6500, 9500, 15000),
+
     # --- US. The business-broadband bands are wider and higher than the
     # single pre-split BROADBAND band they replace, which described
     # residential-grade service and understated business connectivity at
@@ -302,6 +318,29 @@ PRIORS = [
     ("AE", "BROADBAND_PON", "L0", 50, 105, 165, 250),
     ("AE", "BROADBAND_PON", "L0", 100, 120, 190, 290),
     ("AE", "MOBILE_5G", "L0", 50, 55, 95, 160),
+]
+
+# Which region each country clusters into. Only the countries this build seeds
+# prices for, plus the ones the illustrative footprint uses - a mapping is
+# useless without prices behind the products it implies, and an unmapped
+# country is reported rather than guessed.
+COUNTRY_REGION = [
+    ("GB", "EMEA"), ("DE", "EMEA"), ("FR", "EMEA"), ("NL", "EMEA"),
+    ("AE", "EMEA"), ("US", "AMER"), ("BR", "AMER"), ("SG", "APAC"),
+    ("IN", "APAC"),
+]
+
+# The backbone. ETHERNET at 10 Gbps between a data centre and its regional hub,
+# and between a regional hub and the global core - which is the shape and the
+# order of magnitude a real enterprise core runs at, and both tiers are dual by
+# default because a core with one path is a design nobody ships.
+TOPOLOGY_TEMPLATE = [
+    ("standard-3-tier", "1.0.0", "ETHERNET", 10000, "ETHERNET", 10000,
+     True, True,
+     "Access per site from the archetype; data centres clustered into regional "
+     "hubs; regional hubs connected to a global core. Head offices are access "
+     "tier by design - a large office is a big local connection, not a core "
+     "node."),
 ]
 
 # Bandwidth per site type per industry. (industry, archetype, mbps)
@@ -407,6 +446,15 @@ def _rows():
         (threshold, lambda: [
             {"set_name": a, "key": b, "value": c, "version": 1,
              "approved_by": "seed", "note": "MVP default"} for a, b, c in THRESHOLDS]),
+        (country_region, lambda: [
+            {"country": c, "region": r, "note": "seed default"}
+            for c, r in COUNTRY_REGION]),
+        (topology_template, lambda: [
+            {"name": n, "version": v, "dc_to_region_product": dp,
+             "dc_to_region_mbps": dm, "region_to_core_product": cp,
+             "region_to_core_mbps": cm, "dc_dual": dd, "core_dual": cd,
+             "note": note}
+            for n, v, dp, dm, cp, cm, dd, cd, note in TOPOLOGY_TEMPLATE]),
         (archetype_bandwidth, lambda: [
             {"id": f"{ind}-{arch}", "industry": ind, "archetype": arch,
              "bandwidth_mbps": mbps, "approved_by": "seed",

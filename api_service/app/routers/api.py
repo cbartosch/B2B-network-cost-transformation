@@ -10,6 +10,7 @@ from sqlalchemy import delete, insert, select, text, update
 from .. import config, db, jobs, migrations
 from ..domain import (anchor_estimate, archetype as archetype_resolver,
                       benchmark_ingest, case_admin,
+                      topology as topology_planner,
                       refinement,
                       case_export,
                       footprint as footprint_resolver,
@@ -899,6 +900,27 @@ def run_simulation(case_id: str, payload: SimIn):
         arch, topology_basis = archetype_resolver.resolve(
             s, case_id=case_id, seeded=arch, industry_bandwidth=_bw)
 
+        # The backbone this estate implies: data centres clustered into
+        # regional hubs, hubs connected to a global core. Deterministic from the
+        # footprint and the governed template, so it carries no seeded draw.
+        _regions = {r.country: r.region
+                    for r in s.execute(select(db.country_region)).all()}
+        _tpl_row = s.execute(select(db.topology_template).where(
+            db.topology_template.c.name == "standard-3-tier")).first()
+        if _tpl_row is None:
+            raise HTTPException(409, {
+                "error": "no topology template",
+                "detail": "reference.topology_template has no "
+                          "'standard-3-tier' row. Re-seed: the simulation "
+                          "cannot decide the shape of a network on its own."})
+        _template = {k: getattr(_tpl_row, k) for k in (
+            "version", "dc_to_region_product", "dc_to_region_mbps",
+            "region_to_core_product", "region_to_core_mbps", "dc_dual",
+            "core_dual")}
+        backbone = topology_planner.plan(
+            [r.model_dump() for r in payload.footprint],
+            regions=_regions, template=_template)
+
         footprint = [r.model_dump() for r in payload.footprint]
         total_sites = sum(r["sites"] for r in footprint)
         if total_sites == 0:
@@ -964,10 +986,15 @@ def run_simulation(case_id: str, payload: SimIn):
             simulation_run_id=rid, case_id=case_id,
             model_version=config.SIMULATION_MODEL_VERSION, seed=payload.seed,
             ensemble_size=payload.ensemble_size,
-            params={"footprint": footprint},
+            # The backbone goes in params, not pinned_priors: the job runner
+            # rebuilds a resumed pass from params, and a core planned there and
+            # read from somewhere else is a resumed run that quietly differs
+            # from the one it resumed.
+            params={"footprint": footprint, "backbone": backbone},
             pinned_priors={"archetype_prior": arch,
                            "bandwidth_basis": bandwidth_basis,
-                           "topology_basis": topology_basis},
+                           "topology_basis": topology_basis,
+                           "backbone": backbone},
             status=jobs.QUEUED, progress_completed=0,
             progress_total=payload.ensemble_size, cancel_requested=False))
         s.commit()
@@ -1559,6 +1586,20 @@ def _run_anchor_estimate(s, *, case_id, case_row, payload,
             raise HTTPException(422, str(exc))
         anchor_ref = src.get("known_fact_id")
         anchor_origin = src["origin"]
+
+    if anchor_value is None:
+        # A promoted cost line, where research established one. This is the
+        # point of researching domains 9 and 10: the figure arrives as evidence
+        # with its sources and its grade, instead of being retyped as an
+        # assertion that caps the estimate under 0.6A.
+        promoted = s.execute(
+            select(db.evidenced_anchor)
+            .where(db.evidenced_anchor.c.case_id == case_id)
+            .order_by(db.evidenced_anchor.c.promoted_at.desc()).limit(1)).first()
+        if promoted is not None:
+            anchor_value = Decimal(str(promoted.value))
+            anchor_origin = anchor_estimate.ANCHOR_DISCLOSED
+            anchor_ref = f"domain {promoted.domain_no} / {promoted.label}"
 
     if anchor_value is None:
         raise HTTPException(422, {
