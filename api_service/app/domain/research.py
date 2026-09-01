@@ -1072,10 +1072,49 @@ def _research_one_domain(session, *, case_row, domain_no: int, domain_name: str,
 
         subject = str(parsed.get("subject", ""))
         if _looks_out_of_perimeter(subject, case_row):
+            # Retained, not discarded. The run said "quarantined:
+            # OUT_OF_PERIMETER" and then threw the finding away, so
+            # audit.quarantined_row reported nothing had ever been quarantined
+            # while the integrity endpoint promised "Nothing was deleted".
+            #
+            # A finding about the wrong subject is informative twice over: the
+            # perimeter may be wrong, or the aliases may be missing - which is
+            # exactly how HypoVereinsbank was lost - and neither is diagnosable
+            # from a disposition that says only DECLARED_UNKNOWN.
+            #
+            # Quarantined means retained and inert: it satisfies no gate, is
+            # not evidence, and reaches no estimate.
+            session.execute(insert(db.quarantined_row).values(
+                id=str(uuid.uuid4()), incident_id=run_id,
+                source_schema="agent_runtime", source_table="agent_run",
+                reason="OUT_OF_PERIMETER",
+                original_row={
+                    "domain_no": domain_no, "domain_name": domain_name,
+                    "agent_id": agent_id, "agent_run_id": run_id,
+                    "subject_as_source_states": subject,
+                    "case_subject": case_row.subject_entity_legal_name,
+                    "case_aliases": list(
+                        getattr(case_row, "entity_aliases", None) or []),
+                    "finding": parsed.get("finding"),
+                    "quantities": parsed.get("quantities") or [],
+                    "sources": parsed.get("sources") or [],
+                    "note": (
+                        "Out of perimeter, so inert: no disposition, no "
+                        "evidence, no estimate. Retained because the perimeter "
+                        "may be wrong or an alias may be missing, and neither "
+                        "is diagnosable from a DECLARED_UNKNOWN.")}))
+            session.commit()
             gateway.succeed(session, run_id,
-                            {"found": True, "quarantined": "OUT_OF_PERIMETER"})
+                            {"found": True, "quarantined": "OUT_OF_PERIMETER",
+                             "subject_as_source_states": subject})
             result.agent_run_id = run_id
             result.disposition, result.reason = "DECLARED_UNKNOWN", "OUT_OF_PERIMETER"
+            result.failure_detail = (
+                f"the source describes {subject!r}, which does not match "
+                f"{case_row.subject_entity_legal_name!r} or any declared "
+                f"alias. The finding is retained in audit.quarantined_row - if "
+                f"{subject!r} is the same company under another name, add it "
+                f"as an alias on page 1 and research again.")
             return result
 
         claimed_sources = [s for s in (parsed.get("sources") or [])

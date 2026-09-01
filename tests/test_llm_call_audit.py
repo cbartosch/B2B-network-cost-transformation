@@ -188,3 +188,41 @@ def test_no_brief_asks_for_something_the_schema_cannot_hold():
             if term in text and field not in carriable:
                 gaps.append(f"domain {no} wants {term}")
     assert not gaps, gaps
+
+
+def test_every_stage_boundary_agrees_on_what_crosses_it():
+    """Every functional defect in this build has been the same shape: one stage
+    wrote something and the next read something slightly different. A parameter
+    renamed and not updated at the call site, a dict key that moved, a
+    classifier gaining a target the bucket dict never got, a Decimal in a JSON
+    column, a field the prompt asked for that the schema forbade.
+
+    None of those are visible by reading one file, and none survive a check
+    that names the producer and the consumer and compares them."""
+    import subprocess
+    import sys
+    from pathlib import Path
+
+    tool = Path(__file__).resolve().parents[1] / "tools" / "validate_flow.py"
+    result = subprocess.run([sys.executable, str(tool)],
+                            capture_output=True, text=True)
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
+def test_an_out_of_perimeter_finding_is_retained_not_discarded():
+    """The integrity endpoint promised "Nothing was deleted" while
+    audit.quarantined_row had never been written to: research detected a finding
+    about the wrong subject, logged "quarantined: OUT_OF_PERIMETER", and threw
+    it away.
+
+    Such a finding is informative twice over - the perimeter may be wrong, or
+    an alias may be missing, which is exactly how HypoVereinsbank was lost -
+    and neither is diagnosable from a disposition that says only
+    DECLARED_UNKNOWN."""
+    research = (APP / "domain" / "research.py").read_text()
+    assert "insert(db.quarantined_row)" in research
+    block = research[research.index("if _looks_out_of_perimeter"):]
+    block = block[:block.index("return result")]
+    assert "add it" in block and "alias" in block, (
+        "the remedy has to be named where the finding is lost")
+    assert 'reason="OUT_OF_PERIMETER"' in block

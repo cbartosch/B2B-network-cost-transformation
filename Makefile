@@ -1,4 +1,7 @@
-.PHONY: verify-domains backup restore deck benchmarks reach tls-doctor tls-doctor-in-container check up down logs test seed reset psql doctor migrate pins attest
+.PHONY: validate-flow verify-domains backup restore deck benchmarks reach tls-doctor tls-doctor-in-container check up down logs test seed reset psql doctor migrate pins attest
+
+validate-flow: ## check that what each stage writes is read by the next
+	python tools/validate_flow.py
 
 verify-domains: ## push a realistic reply for all 17 agent-routed domains through the pipeline
 	python tools/verify_domains.py
