@@ -383,67 +383,6 @@ st.caption(_prog.get("note", "") if "_error" not in _prog else "")
 # ------------------------------------------------------------- ask about it
 st.divider()
 st.subheader("Ask about this estimate")
-st.caption("How a figure was reached, what it rests on, what to go and find. "
-           "The figures and the gap list are computed from the estimate; the "
-           "answer explains them and cannot introduce a number the estimate "
-           "does not contain - an answer that tries is refused rather than "
-           "shown with a caveat.")
-
-_snap_id = (v0 or {}).get("estimate_snapshot_id") if v0 else None
-if not _snap_id:
-    _hist = api.get(f"/v1/outside-in/cases/{case_id}/estimates")
-    _snaps = [] if "_error" in _hist else _hist.get("snapshots", [])
-    _snap_id = _snaps[0]["estimate_snapshot_id"] if _snaps else None
-
-if not _snap_id:
-    st.info("No estimate to ask about yet. Run V0 above.")
-else:
-    _q = st.text_input(
-        "Question", key="v0_ask",
-        placeholder="Why is confidence only C? What is the single best thing "
-                    "to research next?")
-    _examples = [
-        "How was the current annual cost calculated?",
-        "What is capping the confidence band?",
-        "What is the most valuable thing to research next, and why?",
-        "Which parts of the topology are assumptions rather than evidence?",
-        "How much of this rests on numbers an analyst typed?",
-    ]
-    st.caption("For example: " + " · ".join(f"*{e}*" for e in _examples[:3]))
-
-    if st.button("Ask", disabled=not (_q or "").strip()):
-        with st.spinner("Reading the estimate..."):
-            st.session_state["_ask"] = api.post(
-                f"/v1/outside-in/cases/{case_id}/estimates/{_snap_id}:ask",
-                {"question": _q}, timeout=180.0)
-
-    _a = st.session_state.get("_ask")
-    if _a and "_error" in _a:
-        st.error(_a["_error"])
-    elif _a:
-        if _a.get("unanswerable"):
-            st.warning(f"**The estimate does not record that.** "
-                       f"{_a.get('unanswerable_reason') or ''}")
-        else:
-            st.markdown(_a.get("answer") or "")
-        if _a.get("suggested_next"):
-            st.markdown("**Next**")
-            for step in _a["suggested_next"]:
-                st.markdown(f"- {step}")
-        with st.expander("What the answer was allowed to see"):
-            if _a.get("figures_cited"):
-                st.caption("Cited: " + ", ".join(_a["figures_cited"]))
-            st.markdown("**Computed gaps, strongest first**")
-            for g in _a.get("gaps") or []:
-                st.markdown(f"- **{g['gap']}** - {g['detail']}. "
-                            f"Closes with {g['closes_with']}; would change "
-                            f"{g['would_change']}.")
-            st.markdown("**Figures**")
-            st.json(_a.get("figures") or {})
-
-# ------------------------------------------------------------------ ask it
-st.divider()
-st.subheader("Ask about this estimate")
 st.caption("How was it calculated, why is confidence where it is, what would "
            "improve it. Answers are drawn from what the run recorded: an "
            "answer stating a figure the estimate does not contain is refused, "

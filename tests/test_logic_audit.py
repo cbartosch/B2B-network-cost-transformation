@@ -269,3 +269,69 @@ def test_no_test_is_vacuous():
 
     assert total > 500, f"only {total} tests found - the sweep is not seeing them"
     assert not vacuous, "\n".join(vacuous)
+
+
+def test_no_module_defines_the_same_name_twice():
+    """An external audit found this; I had done it twice in one session.
+
+    Python silently keeps the last definition, so a duplicate is not an error -
+    it is a working module in which an earlier definition has been replaced by
+    an unrelated one. In 4.123 that produced: two EstimateAnswer schemas whose
+    surviving pair raised AttributeError on every gate call; two ClearRightsIn
+    and two PrefillIn models, so two working endpoints silently took a request
+    model written for a different route; and a second _migrate_v21, so the
+    column it added was never added by any step.
+
+    None of that is visible by reading either definition. All of it is visible
+    in one pass over the module's top level.
+    """
+    import ast
+    import pathlib
+
+    root = pathlib.Path(__file__).resolve().parents[1]
+    app = next(c for c in (root / "api_service" / "app", root / "app")
+               if (c / "routers" / "api.py").exists())
+
+    offenders = []
+    for path in sorted(app.rglob("*.py")):
+        seen = {}
+        for node in ast.parse(path.read_text()).body:
+            if isinstance(node, (ast.ClassDef, ast.FunctionDef)):
+                seen.setdefault(node.name, []).append(node.lineno)
+        for name, lines in seen.items():
+            if len(lines) > 1:
+                offenders.append(
+                    f"{path.name}: {name} defined at lines {lines}")
+    assert not offenders, "\n".join(offenders)
+
+
+def test_every_migration_number_is_registered_exactly_once():
+    """A second function with an existing step's name loses the collision and
+    its column is never added - the reconciler then supplies it and logs a
+    warning saying a step did not take effect, which is a control doing a
+    migration's job."""
+    import re
+
+    src = (APP / "migrations.py").read_text()
+    registered = re.findall(r"(\d+): _migrate_v(\d+)", src)
+    for key, fn in registered:
+        assert key == fn, f"step {key} is mapped to _migrate_v{fn}"
+    numbers = sorted(int(k) for k, _ in registered)
+    assert len(numbers) == len(set(numbers)), "a step number is registered twice"
+    expected = list(range(numbers[0], numbers[-1] + 1))
+    assert numbers == expected, (
+        f"gap in the migration chain: {sorted(set(expected) - set(numbers))}")
+    declared = int(re.search(r"SCHEMA_VERSION = (\d+)", src).group(1))
+    assert declared == numbers[-1], (
+        f"SCHEMA_VERSION is {declared} and the last step is {numbers[-1]}")
+
+
+def test_a_guard_precedes_the_code_that_needs_its_value():
+    """`mbps` was read at the comparison and assigned by the guard below it -
+    an UnboundLocalError on the first price candidate, and on later ones the
+    *previous* candidate's bandwidth, which silently priced a circuit at a tier
+    from a different finding."""
+    src = (APP / "domain" / "promotion.py").read_text()
+    guard = src.index('mbps = q.get("bandwidth_mbps")')
+    use = src.index("bandwidth_mbps=int(mbps)")
+    assert guard < use, "the bandwidth guard must run before the comparison"

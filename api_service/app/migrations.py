@@ -34,7 +34,7 @@ from . import db
 log = logging.getLogger("workbench.migrations")
 
 # Bump when the physical schema changes, and add a step below.
-SCHEMA_VERSION = 32
+SCHEMA_VERSION = 33
 
 VERSION_TABLE = "schema_version"
 VERSION_SCHEMA = "audit"
@@ -613,16 +613,6 @@ def _migrate_v20(conn) -> None:
     log.info("v20: %d registered-call audit column(s) added", added)
 
 
-def _migrate_v21(conn) -> None:
-    """4.18.0 -> 4.19.0: audit.llm_run.quality_reasons.
-
-    One additive column carrying the quality gate's verdict on each call.
-    Historical rows keep null: a call made before the gate existed was not
-    judged by it, and stamping ACCEPTED on it would assert a review that never
-    happened.
-    """
-    added = _add_column(conn, db.llm_run, "quality_reasons")
-    log.info("v21: quality_reasons column added=%s", bool(added))
 
 
 def _migrate_v21(conn) -> None:
@@ -803,13 +793,31 @@ def _migrate_v32(conn) -> None:
     log.info("v32: run_settings added=%s", bool(added))
 
 
+def _migrate_v33(conn) -> None:
+    """4.29.0 -> 4.30.0: audit.llm_run.quality_reasons.
+
+    This was written as a second _migrate_v21 in the same module, so Python
+    kept the other one and the column was never added by any step. Only the
+    4.68.0 reconciler was supplying it - a control doing a migration's job, and
+    logging a warning that said exactly that to nobody who read it.
+
+    One additive column carrying the quality gate's verdict on each call.
+    Historical rows keep null: a call made before the gate existed was not
+    judged by it, and stamping a verdict on it would assert a review that never
+    happened.
+    """
+    added = _add_column(conn, db.llm_run, "quality_reasons")
+    log.info("v33: quality_reasons added=%s (lost to a name collision at v21)",
+             bool(added))
+
+
 MIGRATIONS = {2: _migrate_v2, 3: _migrate_v3, 4: _migrate_v4, 5: _migrate_v5,
               6: _migrate_v6, 7: _migrate_v7, 8: _migrate_v8, 9: _migrate_v9,
               10: _migrate_v10, 11: _migrate_v11, 12: _migrate_v12,
               13: _migrate_v13, 14: _migrate_v14, 15: _migrate_v15,
               16: _migrate_v16, 17: _migrate_v17, 18: _migrate_v18,
               19: _migrate_v19, 20: _migrate_v20,
-              21: _migrate_v21, 22: _migrate_v22, 23: _migrate_v23, 24: _migrate_v24, 25: _migrate_v25, 26: _migrate_v26, 27: _migrate_v27, 28: _migrate_v28, 29: _migrate_v29, 30: _migrate_v30, 31: _migrate_v31, 32: _migrate_v32}
+              21: _migrate_v21, 22: _migrate_v22, 23: _migrate_v23, 24: _migrate_v24, 25: _migrate_v25, 26: _migrate_v26, 27: _migrate_v27, 28: _migrate_v28, 29: _migrate_v29, 30: _migrate_v30, 31: _migrate_v31, 32: _migrate_v32, 33: _migrate_v33}
 
 
 class SchemaDrift(RuntimeError):

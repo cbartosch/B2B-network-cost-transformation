@@ -260,7 +260,7 @@ def agents():
 # Body(...) gives a KeyError and a 500 on a malformed payload; a model gives a
 # 422 naming the field. Six routes took raw bodies, one of which indexed a
 # caller-supplied list directly.
-class ClearRightsIn(BaseModel):
+class KnownFactClearRightsIn(BaseModel):
     cleared_by: str = Field(min_length=1, max_length=120)
 
 
@@ -644,7 +644,7 @@ def quantity_sources(case_id: str):
 
 
 @router.post("/v1/outside-in/known-facts/{fact_id}:clear-rights")
-def clear_rights(fact_id: str, payload: ClearRightsIn):
+def clear_rights(fact_id: str, payload: KnownFactClearRightsIn):
     with S() as s:
         return known_facts.clear_rights(s, fact_id, payload.cleared_by)
 
@@ -675,13 +675,13 @@ class VoidFactIn(BaseModel):
     voided_by: str = "analyst"
 
 
-class PrefillIn(BaseModel):
+class KnownFactPrefillIn(BaseModel):
     fact_classes: list[str] | None = None
     provider: str = "anthropic"
 
 
 @router.post("/v1/outside-in/cases/{case_id}/known-facts:prefill-public")
-def prefill_known_facts(case_id: str, payload: PrefillIn):
+def prefill_known_facts(case_id: str, payload: KnownFactPrefillIn):
     """Propose register entries from public sources, before the deep search.
 
     Proposals only; nothing enters the register without a named acceptance.
@@ -2014,55 +2014,8 @@ def _latest_snapshot_id(session, case_id: str) -> str | None:
     return row[0] if row else None
 
 
-class AskIn(BaseModel):
-    question: str
-    provider: str = "anthropic"
 
 
-@router.post("/v1/outside-in/cases/{case_id}/estimates/{snapshot_id}:ask")
-def ask_about_estimate(case_id: str, snapshot_id: str, payload: AskIn):
-    """Answer a question about how an estimate was reached and what is missing.
-
-    The packet is computed - the figures come from the snapshot and the gaps
-    from the estimate's own state - and the model explains it. A quality gate
-    refuses an answer containing a figure the packet does not contain, because
-    a number the model worked out is indistinguishable in prose from one the
-    estimate produced.
-    """
-    if not (payload.question or "").strip():
-        raise HTTPException(422, "ask a question")
-    with S() as s:
-        _one_or_404(s, db.case, db.case.c.case_id, case_id, "case")
-        snapshot = _one_or_404(s, db.estimate_snapshot,
-                               db.estimate_snapshot.c.estimate_snapshot_id,
-                               snapshot_id, "estimate snapshot")
-        packet = explain_estimate.build_packet(s, case_id=case_id,
-                                              snapshot=snapshot)
-        run_id = gateway.create_agent_run(s, agent_id="LLM-06", mode="LIVE",
-                                          case_id=case_id)
-        prompt = (
-            "Answer the question using only the packet below.\n"
-            + gateway.fence("question", payload.question) + "\n"
-            + gateway.fence("estimate_packet", json.dumps(packet, indent=1,
-                                                          default=str)))
-        try:
-            result, provenance = gateway.structured_call(
-                s, agent_run_id=run_id, prompt_id="estimate.explain.answer",
-                prompt=prompt, provider=payload.provider,
-                gate_context={"packet": packet})
-        except errors.ProviderUnavailable as exc:
-            raise HTTPException(503, f"LIVE run failed closed: {exc}")
-        except (errors.LivenessProofFailed,
-                errors.StructuredOutputInvalid) as exc:
-            raise HTTPException(502, str(exc))
-
-        gateway.succeed(s, run_id, {"question": payload.question[:200]})
-        return {**result.model_dump(), "snapshot_id": snapshot_id,
-                "provenance": provenance,
-                # Returned with the answer so a reader can check it rather
-                # than trust it.
-                "gaps": packet["gaps"],
-                "figures": packet["figures"]}
 
 
 class AskIn(BaseModel):
@@ -2284,7 +2237,7 @@ def get_recommendation(case_id: str, recommendation_id: str):
 
 
 # --------------------------------------------------------------- Tranche 3: V1 stage
-class PrefillIn(BaseModel):
+class QuestionnairePrefillIn(BaseModel):
     mode: str = "LIVE"          # LIVE | DETERMINISTIC_ONLY - never inferred
     provider: str = "anthropic"
     overwrite: bool = False     # never overwrites an *answered* item regardless
@@ -2338,7 +2291,7 @@ def get_questionnaire(case_id: str):
 
 
 @router.post("/v1/outside-in/cases/{case_id}/questionnaire:prefill")
-def prefill_questionnaire(case_id: str, payload: PrefillIn):
+def prefill_questionnaire(case_id: str, payload: QuestionnairePrefillIn):
     with S() as s:
         try:
             return questionnaire.prefill(s, case_id=case_id, mode=payload.mode,
@@ -2689,13 +2642,13 @@ def list_benchmark_observations(metric: str | None = None,
         return {"observations": [dict(r._mapping) for r in rows]}
 
 
-class ClearRightsIn(BaseModel):
+class BenchmarkClearRightsIn(BaseModel):
     observation_ids: list[str]
     cleared_by: str
 
 
 @router.post("/v1/benchmarks/observations:clear-rights")
-def clear_benchmark_rights(payload: ClearRightsIn):
+def clear_benchmark_rights(payload: BenchmarkClearRightsIn):
     """Named clearance. A benchmark from prior client work carries another
     client's commercial position and contributes to nothing until someone
     puts their name to that decision (2.4)."""

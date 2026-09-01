@@ -475,10 +475,6 @@ def promote(session, *, case_id: str, candidate_ids: list[str],
             # the most informative outcome here and used to be the least
             # visible one: the row landed unapproved with no comparison
             # recorded, so a steward saw a number rather than a disagreement.
-            cmp = compare_to_benchmark(session, country=country,
-                                       product=product, value=value,
-                                       bandwidth_mbps=int(mbps),
-                                       policy=divergence_policy)
             # A price with no bandwidth is a valid observation and not a
             # usable prior: match_prior requires a tier, so a null-bandwidth
             # row would sit in unit_cost_prior pricing nothing while counting
@@ -498,6 +494,10 @@ def promote(session, *, case_id: str, candidate_ids: list[str],
                                f"promotable to a prior - re-run the domain, or "
                                f"set the tier on the observation first.")})
                 continue
+            cmp = compare_to_benchmark(session, country=country,
+                                       product=product, value=value,
+                                       bandwidth_mbps=int(mbps),
+                                       policy=divergence_policy)
             row_id = f"{country}-{product}-{int(mbps)}-researched"
             session.execute(delete(db.unit_cost_prior).where(
                 db.unit_cost_prior.c.id == row_id))

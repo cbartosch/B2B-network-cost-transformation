@@ -661,3 +661,19 @@ def test_an_edited_proposal_changes_its_basis():
     src = inspect.getsource(known_facts.accept_public_proposal)
     assert 'edited = bool(proposal.get("edited"))' in src
     assert '"INDUSTRY_KNOWLEDGE" if edited else "THIRD_PARTY_REPORT"' in src
+
+
+@pytest.mark.parametrize("page", PAGES, ids=lambda p: p.name)
+def test_no_page_renders_the_same_panel_twice(page):
+    """An external audit found two "Ask about this estimate" panels on page 6:
+    the feature was built twice in one session and the second commit did not
+    notice the first. Both rendered, one of them calling a gate that raised.
+
+    Duplicated UI does not fail - it just shows the analyst two of something
+    and lets them use whichever they find first."""
+    import re
+    from collections import Counter
+
+    headers = re.findall(r'st\.subheader\("([^"]+)"\)', page.read_text())
+    repeated = [h for h, n in Counter(headers).items() if n > 1]
+    assert not repeated, f"{page.name} renders {repeated} more than once"
