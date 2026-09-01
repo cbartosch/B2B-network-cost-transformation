@@ -166,8 +166,37 @@ else:
     for _c in _enum.get("conflicts") or []:
         st.error(_c["note"])
     for _d in _enum.get("duplicates") or []:
-        st.warning(f"Possible duplicate: {_d['location_id'][:8]} and "
-                   f"{str(_d['duplicate_of'])[:8]} - {_d['note']}")
+        _byid = {r["location_id"]: r for r in _rows_loc}
+        _a, _b = _d["location_id"], _d["duplicate_of"]
+        def _label(_i):
+            _r = _byid.get(_i) or {}
+            return (f"{_r.get('city') or ''} {_r.get('name') or ''}".strip()
+                    or str(_i)[:8])
+        st.warning(f"**Possible duplicate:** {_label(_a)} and {_label(_b)}. "
+                   f"{_d['note']}")
+        _dc1, _dc2 = st.columns(2)
+        if _dc1.button(f"Same site - fold {_label(_a)} into {_label(_b)}",
+                       key=f"dup_y_{_a}"):
+            _r = api.post(
+                f"/v1/outside-in/cases/{case_id}/locations/{_a}:duplicate-of"
+                f"?of={_b}", {})
+            if "_error" in _r:
+                st.error(_r["_error"])
+            else:
+                api.flash("Marked as one site. It stops counting toward the "
+                          "named share and is not deleted - reversible, because "
+                          "the key that suspected it folds accents and drops "
+                          "branch words.")
+                st.rerun()
+        if _dc2.button("Different sites - dismiss", key=f"dup_n_{_a}"):
+            _r = api.post(
+                f"/v1/outside-in/cases/{case_id}/locations/{_a}:duplicate-of"
+                f"?of=", {})
+            if "_error" in _r:
+                st.error(_r["_error"])
+            else:
+                api.flash("Dismissed.")
+                st.rerun()
 
     with st.expander(f"The {len(_rows_loc)} named site(s)",
                      expanded=bool(_rows_loc) and len(_rows_loc) <= 30):
