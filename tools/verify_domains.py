@@ -117,7 +117,12 @@ def _classify(q):
           "ARCHETYPES": {"BRANCH", "STORE", "WAREHOUSE", "LARGE_OFFICE", "DC"},
           "PRODUCTS": {"DIA", "MPLS", "ETHERNET", "BROADBAND_HFC",
                        "BROADBAND_PON", "MOBILE_5G"}}
-    exec(src[src.index("def _classify"):src.index("def candidates")], ns)
+    # From ARCHETYPE_FIELDS, not from def _classify: the classifier now calls
+    # archetype_field, which is declared above it. Slicing from the narrower
+    # point left that undefined and the harness died on the first domain -
+    # a harness that breaks when the code it checks is extended is worse than
+    # none, because it stops being run.
+    exec(src[src.index("ARCHETYPE_FIELDS = {"):src.index("def candidates")], ns)
     return ns["_classify"](q)
 
 
