@@ -22,7 +22,7 @@ if not sims:
 
 pick = st.selectbox("Simulation run",
                     [f"{s['simulation_run_id'][:8]} - seed {s['seed']} x{s['ensemble_size']}"
-                     for s in sims])
+                     for s in sims], key="v0_pick")
 sim_id = sims[[f"{s['simulation_run_id'][:8]} - seed {s['seed']} x{s['ensemble_size']}"
                for s in sims].index(pick)]["simulation_run_id"]
 
@@ -49,7 +49,7 @@ spend_df = st.data_editor(
     num_rows="dynamic", use_container_width=True,
     column_config={"estimated_annual_spend": st.column_config.NumberColumn(
         "estimated_annual_spend", help="Annual spend as the client stated it. "
-                                       "Leave blank where they have not.")})
+                                       "Leave blank where they have not.")}, key="v0_spend_df")
 
 c1, c2 = st.columns(2)
 # Persisted on the case rather than defaulted every visit. 5,000 users and 900
@@ -60,11 +60,11 @@ users = c1.number_input(
     "Remote/office users", 0, 500_000,
     int(case.get("declared_users") or 0),
     help="Zero until you have a figure. It drives the SSE licence line "
-         "directly, so a guess here is a guess in the baseline.")
+         "directly, so a guess here is a guess in the baseline.", key="v0_users")
 ops = c2.number_input(
     "Ops cost per site per year", 0.0, 100_000.0,
     float(case.get("declared_ops_cost_per_site") or 0.0),
-    help="Zero until you have a figure, rather than an assumed 900.")
+    help="Zero until you have a figure, rather than an assumed 900.", key="v0_ops")
 
 if st.button("Save these inputs to the case"):
     _r = api.put(f"/v1/outside-in/cases/{case_id}", {
@@ -111,7 +111,7 @@ def _picker(label, driver, column):
         tag = "corroborated" if f["corroboration_state"] == "CORROBORATED" else "asserted"
         labels[f"{f['subject']} — {f['value_base']} ({f['asserted_by']}, {tag})"] = \
             f["known_fact_id"]
-    choice = column.selectbox(label, list(labels))
+    choice = column.selectbox(label, list(labels), key="v0_choice")
     picked = labels[choice]
     if picked:
         f = next(x for x in options if x["known_fact_id"] == picked)
@@ -141,7 +141,7 @@ method = st.radio("Method", _methods, horizontal=True,
                   index=_methods.index(_rs.get("method"))
                   if _rs.get("method") in _methods else 0,
                   help="BUILD_UP needs a completed simulation. ANCHOR needs a "
-                       "disclosed annual spend figure.")
+                       "disclosed annual spend figure.", key="v0_method")
 
 anchor_value, anchor_fact = None, None
 if method == "ANCHOR":
@@ -152,7 +152,7 @@ if method == "ANCHOR":
         help="The cost line the addressable pool is a share of - a "
              "telecommunication costs or IT services figure from the annual "
              "report. It is an upper bound: it carries voice, mobile and "
-             "non-WAN services the transformation cannot touch.")
+             "non-WAN services the transformation cannot touch.", key="v0_anchor_value")
     anchor_fact = _picker("Anchor source", "anchor_spend", a2)
     if not anchor_fact:
         a2.caption("Typed: the estimate will rest on an assertion and report "

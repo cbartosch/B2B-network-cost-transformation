@@ -46,128 +46,132 @@ scope_mode = st.radio(
 
 region_options = api.get("/v1/outside-in/regions").get("regions", [])
 
-with st.form("intake"):
-    c1, c2, c3 = st.columns(3)
-    name = c1.text_input("Subject entity legal name *", case.get("subject_entity_legal_name") or "",
-                         help="Exact registered legal name - not a trading or brand name",
-                         disabled=is_locked)
-    ident = c2.text_input(
-        "Entity identifier *", case.get("entity_identifier") or "",
-        help="LEI (search gleif.org), registration number, ticker plus "
-             "exchange, or primary domain. Autofilled when you confirm an "
-             "entity below, if the candidate carries one.",
-        disabled=is_locked)
-    if not (ident or "").strip():
-        # Warned here, blocked at pre-flight. The asterisk used to be the only
-        # signal and it stopped nothing: a case could carry an empty identifier
-        # through intake, research and simulation, and the BLOCK surfaced only
-        # when V0 was attempted. Parking a half-finished case is a real
-        # workflow; being surprised at publication is not.
-        c2.warning("Empty. You can save and come back, but pre-flight will "
-                   "BLOCK and V0 will refuse to run until this is filled. "
-                   "Confirming an entity below fills it automatically where "
-                   "the candidate has one.")
-    dom = c3.text_input("Country of domicile *", case.get("country_of_domicile") or "",
-                        max_chars=2, disabled=is_locked)
+# Deliberately not st.form. A form withholds every widget value until it is
+# submitted, so navigating away mid-entry discarded all sixteen fields - and
+# an intake block is exactly what an analyst fills in over several sittings
+# while looking things up. Keyed widgets write to session state as they
+# change, so a part-finished block survives a page switch.
+c1, c2, c3 = st.columns(3)
+name = c1.text_input("Subject entity legal name *", case.get("subject_entity_legal_name") or "",
+                     help="Exact registered legal name - not a trading or brand name",
+                     disabled=is_locked, key="ik_name")
+ident = c2.text_input(
+    "Entity identifier *", case.get("entity_identifier") or "",
+    help="LEI (search gleif.org), registration number, ticker plus "
+         "exchange, or primary domain. Autofilled when you confirm an "
+         "entity below, if the candidate carries one.",
+    disabled=is_locked, key="ik_ident")
+if not (ident or "").strip():
+    # Warned here, blocked at pre-flight. The asterisk used to be the only
+    # signal and it stopped nothing: a case could carry an empty identifier
+    # through intake, research and simulation, and the BLOCK surfaced only
+    # when V0 was attempted. Parking a half-finished case is a real
+    # workflow; being surprised at publication is not.
+    c2.warning("Empty. You can save and come back, but pre-flight will "
+               "BLOCK and V0 will refuse to run until this is filled. "
+               "Confirming an entity below fills it automatically where "
+               "the candidate has one.")
+dom = c3.text_input("Country of domicile *", case.get("country_of_domicile") or "",
+                    max_chars=2, disabled=is_locked, key="ik_dom")
 
-    aliases_text = st.text_input(
-        "Also known as (comma separated)",
-        ",".join(case.get("entity_aliases") or []),
-        help="Trading names, brands and abbreviations sources actually use - "
-             "for example HypoVereinsbank and HVB for UniCredit's German bank. "
-             "Without these, research searches only the registered legal name "
-             "and the perimeter check discards every source that uses the "
-             "brand.", disabled=is_locked)
+aliases_text = st.text_input(
+    "Also known as (comma separated)",
+    ",".join(case.get("entity_aliases") or []),
+    help="Trading names, brands and abbreviations sources actually use - "
+         "for example HypoVereinsbank and HVB for UniCredit's German bank. "
+         "Without these, research searches only the registered legal name "
+         "and the perimeter check discards every source that uses the "
+         "brand.", disabled=is_locked, key="ik_aliases_text")
 
-    _INDUSTRIES = ["", "FINANCIAL_SERVICES", "LOGISTICS", "DISTRIBUTION",
-                   "RETAIL", "MANUFACTURING"]
-    _cur_ind = (case.get("industry") or "")
-    industry = st.selectbox(
-        "Industry", _INDUSTRIES,
-        index=_INDUSTRIES.index(_cur_ind) if _cur_ind in _INDUSTRIES else 0,
-        help="Sets the bandwidth tier per site type. A retail bank branch and "
-             "a parts depot of the same size do not need the same circuit; "
-             "leave blank to use the generic tiers.", disabled=is_locked)
+_INDUSTRIES = ["", "FINANCIAL_SERVICES", "LOGISTICS", "DISTRIBUTION",
+               "RETAIL", "MANUFACTURING"]
+_cur_ind = (case.get("industry") or "")
+industry = st.selectbox(
+    "Industry", _INDUSTRIES,
+    index=_INDUSTRIES.index(_cur_ind) if _cur_ind in _INDUSTRIES else 0,
+    help="Sets the bandwidth tier per site type. A retail bank branch and "
+         "a parts depot of the same size do not need the same circuit; "
+         "leave blank to use the generic tiers.", disabled=is_locked, key="ik_industry")
 
-    c4, c5, c6 = st.columns(3)
-    _perimeter_options = ["SINGLE_ENTITY", "GROUP_CONSOLIDATED", "NAMED_SUBSIDIARIES",
-                          "NAMED_DIVISION"]
-    _current_perimeter = case.get("group_perimeter")
-    perimeter = c4.selectbox(
-        "Group perimeter *", _perimeter_options,
-        index=(_perimeter_options.index(_current_perimeter)
-              if _current_perimeter in _perimeter_options else 0),
-        disabled=is_locked)
+c4, c5, c6 = st.columns(3)
+_perimeter_options = ["SINGLE_ENTITY", "GROUP_CONSOLIDATED", "NAMED_SUBSIDIARIES",
+                      "NAMED_DIVISION"]
+_current_perimeter = case.get("group_perimeter")
+perimeter = c4.selectbox(
+    "Group perimeter *", _perimeter_options,
+    index=(_perimeter_options.index(_current_perimeter)
+          if _current_perimeter in _perimeter_options else 0),
+    disabled=is_locked, key="ik_perimeter")
 
-    countries_text, region_choice = None, None
-    if scope_mode == "COUNTRIES":
-        countries_text = c5.text_input(
-            "In-scope countries * (comma separated ISO codes)",
-            ",".join(case.get("in_scope_countries") or []))
-    elif scope_mode == "REGION":
-        _default_region = _current_region if _current_region in region_options \
-            else (region_options[0] if region_options else None)
-        region_choice = c5.selectbox(
-            "Region *", region_options,
-            index=region_options.index(_default_region) if _default_region in region_options else 0)
+countries_text, region_choice = None, None
+if scope_mode == "COUNTRIES":
+    countries_text = c5.text_input(
+        "In-scope countries * (comma separated ISO codes)",
+        ",".join(case.get("in_scope_countries") or []), key="ik_countries_text")
+elif scope_mode == "REGION":
+    _default_region = _current_region if _current_region in region_options \
+        else (region_options[0] if region_options else None)
+    region_choice = c5.selectbox(
+        "Region *", region_options,
+        index=region_options.index(_default_region) if _default_region in region_options else 0, key="ik_region_choice")
+else:
+    c5.caption("Resolves to every country with an approved pricing "
+               "benchmark, evaluated when you save.")
+
+layers = c6.multiselect("In-scope cost layers *", ["L0", "L1", "L2", "L3", "L4", "OPS"],
+                        case.get("in_scope_cost_layers") or ["L0", "L2", "L4", "OPS"], key="ik_layers")
+
+c7, c8, c9 = st.columns(3)
+families = c7.text_input("In-scope service families *",
+                         ",".join(case.get("in_scope_service_families") or ["WAN", "SSE"]), key="ik_families")
+currency = c8.text_input("Base currency *", case.get("base_currency") or "USD", max_chars=3, key="ik_currency")
+price_year = c9.number_input("Price year *", 2020, 2035, case.get("price_year") or 2026, key="ik_price_year")
+
+c10, c11, c12 = st.columns(3)
+horizon = c10.number_input("Analysis horizon (years) *", 1, 10,
+                           case.get("analysis_horizon_years") or 5, key="ik_horizon")
+drs = c11.text_input("Discount rate set *", case.get("discount_rate_set_id") or "DRS-2026-USD", key="ik_drs")
+contact = c12.selectbox("Client contact status *",
+                        ["NO_CONTACT", "AWARE", "PARTICIPATING"], key="ik_contact")
+
+excluded = st.text_input("Known-but-excluded entities (comma separated)",
+                         help="Stored explicitly, not merely omitted, so out-of-perimeter "
+                              "facts can be recognised and quarantined", key="ik_excluded")
+
+if st.button("Save intake block", type="primary"):
+    payload = {
+        "scope_mode": scope_mode,
+        "entity_aliases": [a.strip() for a in aliases_text.split(",") if a.strip()],
+        "industry": industry or None,
+        "in_scope_countries": ([c.strip().upper() for c in countries_text.split(",") if c.strip()]
+                               if countries_text else []),
+        "region": region_choice,
+        "in_scope_cost_layers": layers,
+        "in_scope_service_families": [f.strip() for f in families.split(",") if f.strip()],
+        "base_currency": currency or None,
+        "price_year": int(price_year),
+        "analysis_horizon_years": int(horizon),
+        "discount_rate_set_id": drs or None,
+        "client_contact_status": contact,
+    }
+    if not is_locked:
+        # Only sent pre-confirmation: once entity_resolution.confirm() has
+        # run, the backend refuses these four - they're re-set only by
+        # confirming again, which is what actually advances
+        # perimeter_version and re-stamps who confirmed what.
+        payload["subject_entity_legal_name"] = name or None
+        payload["entity_identifier"] = ident or None
+        payload["country_of_domicile"] = dom or None
+        payload["group_perimeter"] = perimeter
+    r = api.put(f"/v1/outside-in/cases/{case_id}", payload)
+    if "_error" in r:
+        st.error(r["_error"])
     else:
-        c5.caption("Resolves to every country with an approved pricing "
-                   "benchmark, evaluated when you save.")
-
-    layers = c6.multiselect("In-scope cost layers *", ["L0", "L1", "L2", "L3", "L4", "OPS"],
-                            case.get("in_scope_cost_layers") or ["L0", "L2", "L4", "OPS"])
-
-    c7, c8, c9 = st.columns(3)
-    families = c7.text_input("In-scope service families *",
-                             ",".join(case.get("in_scope_service_families") or ["WAN", "SSE"]))
-    currency = c8.text_input("Base currency *", case.get("base_currency") or "USD", max_chars=3)
-    price_year = c9.number_input("Price year *", 2020, 2035, case.get("price_year") or 2026)
-
-    c10, c11, c12 = st.columns(3)
-    horizon = c10.number_input("Analysis horizon (years) *", 1, 10,
-                               case.get("analysis_horizon_years") or 5)
-    drs = c11.text_input("Discount rate set *", case.get("discount_rate_set_id") or "DRS-2026-USD")
-    contact = c12.selectbox("Client contact status *",
-                            ["NO_CONTACT", "AWARE", "PARTICIPATING"])
-
-    excluded = st.text_input("Known-but-excluded entities (comma separated)",
-                             help="Stored explicitly, not merely omitted, so out-of-perimeter "
-                                  "facts can be recognised and quarantined")
-
-    if st.form_submit_button("Save intake block"):
-        payload = {
-            "scope_mode": scope_mode,
-            "entity_aliases": [a.strip() for a in aliases_text.split(",") if a.strip()],
-            "industry": industry or None,
-            "in_scope_countries": ([c.strip().upper() for c in countries_text.split(",") if c.strip()]
-                                   if countries_text else []),
-            "region": region_choice,
-            "in_scope_cost_layers": layers,
-            "in_scope_service_families": [f.strip() for f in families.split(",") if f.strip()],
-            "base_currency": currency or None,
-            "price_year": int(price_year),
-            "analysis_horizon_years": int(horizon),
-            "discount_rate_set_id": drs or None,
-            "client_contact_status": contact,
-        }
-        if not is_locked:
-            # Only sent pre-confirmation: once entity_resolution.confirm() has
-            # run, the backend refuses these four - they're re-set only by
-            # confirming again, which is what actually advances
-            # perimeter_version and re-stamps who confirmed what.
-            payload["subject_entity_legal_name"] = name or None
-            payload["entity_identifier"] = ident or None
-            payload["country_of_domicile"] = dom or None
-            payload["group_perimeter"] = perimeter
-        r = api.put(f"/v1/outside-in/cases/{case_id}", payload)
-        if "_error" in r:
-            st.error(r["_error"])
-        else:
-            resolved = r.get("in_scope_countries") or []
-            api.flash(f"Intake block saved. In-scope countries resolved to: "
-                      f"{', '.join(resolved) if resolved else '(none - no approved '
-                      f'priors matched this selection)'}")
-            st.rerun()
+        resolved = r.get("in_scope_countries") or []
+        api.flash(f"Intake block saved. In-scope countries resolved to: "
+                  f"{', '.join(resolved) if resolved else '(none - no approved '
+                  f'priors matched this selection)'}")
+        st.rerun()
 
 st.divider()
 st.subheader("Is this the company you meant?")

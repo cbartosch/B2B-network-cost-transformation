@@ -22,7 +22,7 @@ if not snaps:
 
 snap_label = {f"{s['estimate_snapshot_id'][:8]} - {s['version_label']} "
              f"({s['created_at'][:19]})": s["estimate_snapshot_id"] for s in snaps}
-picked = st.selectbox("Estimate snapshot", list(snap_label))
+picked = st.selectbox("Estimate snapshot", list(snap_label), key="sr_picked")
 snapshot_id = snap_label[picked]
 
 st.subheader("Generate a recommendation")
@@ -31,8 +31,8 @@ mode = c1.selectbox("Mode", ["LIVE", "DETERMINISTIC_ONLY"],
                     help="DETERMINISTIC_ONLY never calls a model - a fixed rule (highest "
                          "base-case savings, base percentile) instead. Neither mode is "
                          "ever chosen automatically for you; a failed LIVE call fails, it "
-                         "does not fall back to this silently.")
-provider = c2.selectbox("Provider", ["anthropic", "openai"], disabled=(mode != "LIVE"))
+                         "does not fall back to this silently.", key="sr_mode")
+provider = c2.selectbox("Provider", ["anthropic", "openai"], disabled=(mode != "LIVE"), key="sr_provider")
 if st.button("Run LLM-07", type="primary"):
     with st.spinner("Running LLM-07..."):
         r = api.post(f"/v1/outside-in/cases/{case_id}/estimates/{snapshot_id}"

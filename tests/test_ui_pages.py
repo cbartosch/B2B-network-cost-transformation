@@ -608,3 +608,56 @@ def test_unsaved_disposition_edits_warn_before_the_page_is_left():
     text = page.read_text()
     assert "unsaved change(s)" in text
     assert "_changed" in text
+
+
+# --------------------------------------------------- persistence across pages
+@pytest.mark.parametrize("page", PAGES, ids=lambda p: p.name)
+def test_no_page_uses_a_form_for_data_entry(page):
+    """st.form withholds every widget value until submit, so navigating away
+    mid-entry discards the lot. The intake block was sixteen fields behind one
+    - and it is exactly what an analyst fills in over several sittings while
+    looking things up."""
+    assert "st.form(" not in page.read_text(), (
+        f"{page.name} still has a form; a part-finished block will not survive "
+        f"a page switch")
+
+
+def test_the_intake_fields_are_keyed():
+    page = next(p for p in PAGES if p.name.startswith("1_"))
+    text = page.read_text()
+    assert text.count('key="ik_') >= 15, (
+        "each intake field needs its own key or its value dies on navigation")
+    assert 'st.button("Save intake block"' in text
+
+
+def test_the_estimate_inputs_are_keyed():
+    """Page 6 had seven inputs and no keys, so the method, the anchor value and
+    the driver figures were all lost on leaving the page."""
+    page = next(p for p in PAGES if p.name.startswith("6_"))
+    assert page.read_text().count('key="v0_') >= 5
+
+
+# ----------------------------------------------- the register is prefillable
+def test_the_prefilled_proposals_are_editable():
+    """A searched figure is usually nearly right and occasionally off by a unit
+    or a perimeter. Forcing an analyst to reject the whole proposal and retype
+    it discarded the part that was correct."""
+    page = next(p for p in PAGES if p.name.startswith("2_"))
+    text = page.read_text()
+    assert "st.data_editor(" in text
+    assert '"value_base": r["value_base"]' in text, (
+        "the edited value must be what is registered, not the original")
+    assert '"edited"' in text, (
+        "an edited figure is no longer what the source said and the record has "
+        "to know")
+
+
+def test_an_edited_proposal_changes_its_basis():
+    """THIRD_PARTY_REPORT attests that a public source states this. Once the
+    number has been changed that attestation is false - it is the analyst's
+    judgement informed by a source."""
+    import inspect
+    from app.domain import known_facts
+    src = inspect.getsource(known_facts.accept_public_proposal)
+    assert 'edited = bool(proposal.get("edited"))' in src
+    assert '"INDUSTRY_KNOWLEDGE" if edited else "THIRD_PARTY_REPORT"' in src

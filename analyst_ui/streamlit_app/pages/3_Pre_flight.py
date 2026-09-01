@@ -48,7 +48,7 @@ elif cached:
 mode = st.radio("Intended execution mode", ["LIVE", "DETERMINISTIC_ONLY"],
                 horizontal=True,
                 help="LIVE requires a configured provider. DETERMINISTIC_ONLY "
-                     "never calls a model.")
+                     "never calls a model.", key="pf_mode")
 
 col_run, col_note = st.columns([1, 3])
 if col_run.button("Run readiness check", type="primary"):
@@ -96,7 +96,7 @@ elif report.get("acknowledged_by"):
 else:
     who = st.text_input("Acknowledged by (your name)",
                         help="A named person, not a role or a team. Reproduced beside "
-                             "the published estimate.")
+                             "the published estimate.", key="pf_who")
     if st.button("Acknowledge and unlock V0", disabled=not who.strip(), type="primary"):
         r = api.post(f"/v1/outside-in/cases/{case_id}/preflight:acknowledge",
                      {"report_id": report["report_id"], "acknowledged_by": who.strip()})

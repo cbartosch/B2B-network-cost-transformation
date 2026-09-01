@@ -676,6 +676,17 @@ def accept_public_proposal(session, *, case_id: str, proposal: dict,
         raise ValueError(
             "accepting a proposal is an attribution: name the person who is "
             "putting it in the register")
+    # An edited figure is no longer what the source said, and the basis has to
+    # say so. THIRD_PARTY_REPORT attests that a public source states this; once
+    # the analyst has changed the number, that attestation is false - it is
+    # their judgement informed by a source, which is INDUSTRY_KNOWLEDGE.
+    #
+    # The sources still travel with it. An analyst correcting a figure is still
+    # relying on the source that found it, and dropping the citation because
+    # the number moved would turn a corrected finding into an unattributed
+    # assertion.
+    edited = bool(proposal.get("edited"))
+    basis = "INDUSTRY_KNOWLEDGE" if edited else "THIRD_PARTY_REPORT"
     return register(
         session, case_id=case_id,
         fact_class=proposal["fact_class"], subject=proposal["subject"],

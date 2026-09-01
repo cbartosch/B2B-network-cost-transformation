@@ -139,7 +139,7 @@ default = pd.DataFrame(
       "sites": r.get("sites")} for r in _resolved]
     or [{"country": "", "archetype": "", "sites": 0}])
 
-fp = st.data_editor(default, num_rows="dynamic", use_container_width=True)
+fp = st.data_editor(default, num_rows="dynamic", use_container_width=True, key="sim_fp")
 
 c1, c2 = st.columns(2)
 # Read from the case, not defaulted. A pinned seed is the whole basis of the
@@ -149,9 +149,9 @@ _rs = ({} if "_error" in _case_settings else (_case_settings.get("run_settings")
 seed = c1.number_input("Seed", 0, 10**9, int(_rs.get("seed") or 42),
                        help="The whole ensemble is reproducible from this one "
                             "integer. Saved with the footprint, so it survives "
-                            "a page switch.")
+                            "a page switch.", key="sim_seed")
 size = c2.number_input("Ensemble size", 1, 200,
-                       int(_rs.get("ensemble_size") or 25))
+                       int(_rs.get("ensemble_size") or 25), key="sim_size")
 
 ARCHETYPES = ("BRANCH", "LARGE_OFFICE", "WAREHOUSE", "DC", "STORE")
 
