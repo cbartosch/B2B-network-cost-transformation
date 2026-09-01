@@ -28,6 +28,7 @@ Properties this module guarantees:
 import hashlib
 import json
 import logging
+import time
 import uuid
 from datetime import datetime, timedelta, timezone
 
@@ -281,13 +282,30 @@ def execute(session, *, agent_run_id: str, provider: str, system: str,
             "latency_ms": call.latency_ms}
 
 
+# A cut or timed-out connection may succeed on the next attempt. A refusal, an
+# auth failure or an unsupported request will not, and retrying it wastes the
+# operator's time while hiding the real cause.
+_TRANSIENT = ("UNEXPECTED_EOF", "EOF occurred", "reset by peer", "timed out",
+              "timeout", "Connection aborted", "Server disconnected",
+              "Temporary failure", "502", "503", "504", "529")
+
+
+def _is_transient(exc: Exception) -> bool:
+    text = str(exc)
+    if any(bad in text for bad in ("API_KEY", "authentication", "401", "403")):
+        return False
+    return any(hint.lower() in text.lower() for hint in _TRANSIENT)
+
+
 def structured_call(session, *, agent_run_id: str, prompt_id: str,
                     prompt: str, provider: str = "anthropic",
                     max_tokens: int = 4000, tools: list[dict] | None = None,
                     prompt_version: str | None = None,
                     supplied_source_ids: list | None = None,
                     gate_context: dict | None = None,
-                    max_attempts: int = 3):
+                    max_attempts: int = 3,
+                    max_transport_retries: int = 2,
+                    transport_backoff_seconds: int = 5):
     """The single entry point for a registered LLM service.
 
     Resolves the prompt from the registry, calls the provider through its
@@ -334,12 +352,34 @@ def structured_call(session, *, agent_run_id: str, prompt_id: str,
     body = prompt
 
     for attempt in range(1, max(1, max_attempts) + 1):
-        call = execute(session, agent_run_id=agent_run_id, provider=provider,
-                       system=definition.system_template, prompt=body,
-                       max_tokens=max_tokens, tools=tools,
-                       definition=definition,
-                       schema_name=definition.output_model.__name__,
-                       supplied_source_ids=supplied_source_ids)
+        # A cut connection is not a poor answer, and it escaped this loop
+        # entirely: ProviderUnavailable propagated on the first failure, so a
+        # firewall dropping one long-lived request out of seventeen cost that
+        # domain its research after twenty seconds of work.
+        #
+        # Retried on its own budget, with a pause, and never at the expense of
+        # the attempts reserved for judging what the model said. An auth
+        # failure or a refused request is not retried: those do not improve by
+        # asking again, and hiding them behind a retry is worse than failing.
+        call = None
+        for transport_try in range(max(1, max_transport_retries + 1)):
+            try:
+                call = execute(session, agent_run_id=agent_run_id,
+                               provider=provider,
+                               system=definition.system_template, prompt=body,
+                               max_tokens=max_tokens, tools=tools,
+                               definition=definition,
+                               schema_name=definition.output_model.__name__,
+                               supplied_source_ids=supplied_source_ids)
+                break
+            except errors.ProviderUnavailable as exc:
+                if not _is_transient(exc) or transport_try >= max_transport_retries:
+                    raise
+                wait = transport_backoff_seconds * (transport_try + 1)
+                log.warning("%s: connection cut (%s), retrying in %ds "
+                            "[%d/%d]", definition.prompt_id, exc, wait,
+                            transport_try + 1, max_transport_retries)
+                time.sleep(wait)
         run_id = call.get("llm_run_id")
         ctx["stop_reason"] = call.get("stop_reason")
         ctx["content_blocks"] = call.get("content_blocks")

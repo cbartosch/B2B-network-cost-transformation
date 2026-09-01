@@ -1446,6 +1446,8 @@ def run_domain_research(case_id: str, payload: DomainResearchIn):
             result = research.run_domain_research(
                 s, case_id=case_id, agent_ids=payload.agent_ids,
                 quality_attempts=quality.max_attempts_per_call,
+                transport_retries=quality.max_transport_retries,
+                transport_backoff=quality.transport_retry_backoff_seconds,
                 triangulation_policy=tri,
                 provider=payload.provider, research_policy=research_policy,
                 overwrite=payload.overwrite, domain_nos=payload.domain_nos,

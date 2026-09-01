@@ -619,3 +619,67 @@ def test_the_timeouts_are_configurable_not_hardcoded():
     src = inspect.getsource(anthropic_adapter.AnthropicAdapter.__init__)
     assert "timeout: float | None = None" in src
     assert "config.LLM_TIMEOUT_SECONDS" in src
+
+
+# ------------------------------------------------- a cut connection is retried
+def test_a_cut_connection_is_retried_and_a_refusal_is_not():
+    """Observed in the field: one domain of seventeen lost to
+    [SSL: UNEXPECTED_EOF_WHILE_READING] after 21 seconds, while the rest of the
+    run succeeded. ProviderUnavailable escaped the retry loop entirely, so a
+    firewall dropping one long-lived request - which is what a searching call
+    is - cost that domain its research outright.
+
+    An auth failure or an unsupported request is not retried: those do not
+    improve by asking again, and hiding them behind a retry is worse than
+    failing."""
+    import pathlib
+    from app.llm import gateway
+
+    src = pathlib.Path(gateway.__file__).read_text()
+    ns = {}
+    exec(src[src.index("_TRANSIENT = ("):src.index("def structured_call")], ns)
+    is_transient = ns["_is_transient"]
+
+    for message in ("[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred",
+                    "The read operation timed out",
+                    "anthropic 529: overloaded",
+                    "Server disconnected without sending a response"):
+        assert is_transient(Exception(message)), message
+    for message in ("ANTHROPIC_API_KEY is not set",
+                    "anthropic 401: authentication_error",
+                    "anthropic 403: permission denied",
+                    "the openai adapter has no hosted web-search tool"):
+        assert not is_transient(Exception(message)), message
+
+
+def test_a_transport_retry_does_not_spend_a_quality_attempt():
+    """A cut connection is not a poor answer. Sharing the budget would mean a
+    flaky network exhausted the attempts reserved for judging what the model
+    said."""
+    import inspect
+    from app.llm import gateway
+    src = inspect.getsource(gateway.structured_call)
+    assert "for transport_try in range(" in src
+    inner = src[src.index("for transport_try"):]
+    assert "max_transport_retries" in inner
+    assert "attempts.append" not in inner.split("break")[0], (
+        "a transport retry must not record a quality attempt")
+
+
+def test_the_transport_budget_is_governed_and_bounded():
+    from decimal import Decimal  # noqa: F401
+    from app.domain.policy import AgentQualityPolicy, PolicyInvalid
+    with pytest.raises(PolicyInvalid, match="network is down rather than flaky"):
+        AgentQualityPolicy(set_name="t", max_attempts_per_call=3,
+                           max_transport_retries=9).validate()
+
+
+def test_the_advice_distinguishes_a_one_off_cut_from_a_misconfiguration():
+    """The message told the operator to check LLM_EGRESS_PROXY. If sixteen of
+    seventeen domains succeeded on the same connection, that is the wrong
+    remedy and an expensive one to try."""
+    import pathlib
+    from app.llm.providers import _transport
+    src = pathlib.Path(_transport.__file__).read_text()
+    assert "If other calls in the same run succeeded" in src
+    assert "re-run that domain, not to change the configuration" in src

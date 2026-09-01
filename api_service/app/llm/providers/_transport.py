@@ -472,7 +472,13 @@ def transport_error(provider: str, exc: Exception) -> str:
                    "value is reachable and permitted to reach this host. This "
                    "is not a certificate problem; adding a CA will not fix it.")
         else:
-            hint = (" The connection was cut rather than refused. This is not a "
+            hint = (" The connection was cut rather than refused, after "
+                   "retrying. If other calls in the same run succeeded this is "
+                   "a transient cut - most often an intermediary dropping a "
+                   "long-lived request, which is what a searching call is - and "
+                   "the remedy is to re-run that domain, not to change the "
+                   "configuration. If every call fails the same way, it is "
+                   "configuration. This is not a "
                    "certificate problem - adding a CA to certs/ will not fix "
                    "it. If this network requires a proxy for outbound HTTPS, "
                    "set LLM_EGRESS_PROXY in .env: provider calls ignore the "

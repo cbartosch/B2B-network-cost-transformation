@@ -445,6 +445,10 @@ class QualityPolicy:
             raise PolicyInvalid(
                 "max_attempts_per_call must be at least 1 - zero would mean no "
                 "call is ever made")
+        if self.max_transport_retries < 0 or self.max_transport_retries > 5:
+            raise PolicyInvalid(
+                "max_transport_retries must be between 0 and 5: past a handful "
+                "the network is down rather than flaky, and retrying hides it")
         if self.max_attempts_per_call > 5:
             raise PolicyInvalid(
                 f"max_attempts_per_call={self.max_attempts_per_call} is high "
@@ -457,12 +461,22 @@ class AgentQualityPolicy:
     """Bounds the retry loop on a rejected agent call."""
     set_name: str
     max_attempts_per_call: int
+    # A transport failure is not a rejected answer, so it does not share the
+    # quality budget: retrying a cut connection is worth doing and retrying a
+    # schema violation three more times is not.
+    max_transport_retries: int = 2
+    transport_retry_backoff_seconds: int = 5
 
     @classmethod
     def from_rows(cls, rows: dict, set_name: str = "agent_quality_policy"):
-        policy = cls(set_name=set_name,
-                     max_attempts_per_call=int(
-                         _require(rows, "max_attempts_per_call", set_name)))
+        policy = cls(
+            set_name=set_name,
+            max_attempts_per_call=int(
+                _require(rows, "max_attempts_per_call", set_name)),
+            max_transport_retries=int(
+                _require(rows, "max_transport_retries", set_name)),
+            transport_retry_backoff_seconds=int(
+                _require(rows, "transport_retry_backoff_seconds", set_name)))
         policy.validate()
         return policy
 

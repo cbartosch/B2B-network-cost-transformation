@@ -905,6 +905,8 @@ def _research_one_domain(session, *, case_row, domain_no: int, domain_name: str,
                          coverage_policy=None,
                          briefs: dict | None = None,
                          quality_attempts: int = 3,
+                         transport_retries: int = 2,
+                         transport_backoff: int = 5,
                          triangulation_policy=None,
                          captures_remaining_in_run: int,
                          request_scope: str) -> DomainResult:
@@ -1227,6 +1229,8 @@ def run_domain_research(session, *, case_id: str, agent_ids: list[str] | None = 
                         domain_nos: list[int] | None = None,
                         coverage_policy=None,
                         quality_attempts: int = 3,
+                        transport_retries: int = 2,
+                        transport_backoff: int = 5,
                         triangulation_policy=None,
                         idempotency_key: str | None = None) -> dict:
     """Runs the research phase for whichever DOMAIN_AGENT_MAP domains are
@@ -1310,6 +1314,8 @@ def run_domain_research(session, *, case_id: str, agent_ids: list[str] | None = 
             agent_id=agent_id, provider=provider, research_policy=research_policy,
             coverage_policy=coverage_policy, briefs=briefs,
             quality_attempts=quality_attempts,
+            transport_retries=transport_retries,
+            transport_backoff=transport_backoff,
             triangulation_policy=triangulation_policy,
             captures_remaining_in_run=remaining_captures,
             request_scope=request_scope)

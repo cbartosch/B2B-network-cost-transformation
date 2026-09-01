@@ -131,6 +131,12 @@ THRESHOLDS = [
     # the wrong one. A gate rejecting more often is information about the
     # agent, not a budget to be increased until the complaints stop.
     ("agent_quality_policy", "max_attempts_per_call", "3"),
+    # A cut connection is not a poor answer. It gets its own small budget so a
+    # transient network fault does not consume the attempts reserved for
+    # judging what the model said - and so a domain is not lost to a firewall
+    # dropping one long-lived request out of seventeen.
+    ("agent_quality_policy", "max_transport_retries", "2"),
+    ("agent_quality_policy", "transport_retry_backoff_seconds", "5"),
 
     # --- triangulation.
     # How far sources may disagree before the disagreement is the finding
