@@ -132,6 +132,112 @@ if _unallocated:
                    f"regional office, DC for a computing facility, BRANCH for a "
                    f"small non-customer-facing site.")
 
+# --------------------------------------------------- the named locations
+st.markdown("**Named locations**")
+_loc = api.get(f"/v1/outside-in/cases/{case_id}/locations")
+if "_error" in _loc:
+    st.error(_loc["_error"])
+else:
+    _enum = _loc.get("enumeration") or {}
+    _rows_loc = _loc.get("locations") or []
+    _share = float(_enum.get("enumerated_share") or 0)
+
+    # Stated plainly. An itemised list of what is known beats no list, and it
+    # is only useful if the reader can see how much of the estate it covers -
+    # a list of 47 sites out of 440 read as a footprint would be worse than
+    # having no list at all.
+    if _enum.get("total"):
+        (st.success if _share >= 0.9 else st.info if _share > 0 else st.warning)(
+            f"**{_enum.get('enumerated', 0)} of {_enum.get('total', 0)} site(s) "
+            f"are named** ({_share:.0%}). The rest are a tally: real, counted, "
+            f"and not individually known. The unnamed share is priced by "
+            f"applying the named mix to it, which is an inference - so it "
+            f"carries PUBLIC_DERIVED and lowers the origin mix accordingly.")
+
+    if _enum.get("by_country"):
+        st.dataframe(pd.DataFrame([{
+            "country": c, "total": v["total"], "named": v["enumerated"],
+            "named share": v["enumerated_share"], "tallied": v["residual"],
+            "named mix": ", ".join(f"{k} {n}" for k, n in
+                                   (v["enumerated_mix"] or {}).items()) or "-",
+        } for c, v in (_enum.get("by_country") or {}).items()]),
+            use_container_width=True, hide_index=True)
+
+    for _c in _enum.get("conflicts") or []:
+        st.error(_c["note"])
+    for _d in _enum.get("duplicates") or []:
+        st.warning(f"Possible duplicate: {_d['location_id'][:8]} and "
+                   f"{str(_d['duplicate_of'])[:8]} - {_d['note']}")
+
+    with st.expander(f"The {len(_rows_loc)} named site(s)",
+                     expanded=bool(_rows_loc) and len(_rows_loc) <= 30):
+        if _rows_loc:
+            st.dataframe(pd.DataFrame([{
+                "country": r.get("country"), "city": r.get("city"),
+                "name": r.get("name"), "type": r.get("archetype"),
+                "as of": r.get("as_of"), "source": r.get("publisher")
+                or (r.get("source_url") or "")[:40],
+                "grade": r.get("reliability_grade") or "",
+                "by": r.get("entered_by"),
+            } for r in _rows_loc]), use_container_width=True, hide_index=True)
+            _rm = st.selectbox(
+                "Remove a site (closed, or outside the perimeter)",
+                ["-"] + [f"{r.get('country')} {r.get('city') or ''} "
+                         f"{r.get('name') or ''} [{r['location_id'][:8]}]"
+                         for r in _rows_loc], key="sim_loc_rm")
+            if _rm != "-" and st.button("Remove it"):
+                _id = _rm.rsplit("[", 1)[1].rstrip("]")
+                _full = next((r["location_id"] for r in _rows_loc
+                              if r["location_id"].startswith(_id)), None)
+                _r = api.delete(
+                    f"/v1/outside-in/cases/{case_id}/locations/{_full}")
+                if "_error" in _r:
+                    st.error(_r["_error"])
+                else:
+                    api.flash("Site removed. The footprint total is unchanged - "
+                              "correct it on page 2 if the total is what is wrong.")
+                    st.rerun()
+        else:
+            st.caption("None yet. Most companies publish enough to name some: "
+                       "a store locator, a service-hub page, a branch list in "
+                       "an annual report. Even a dozen makes the count "
+                       "checkable and shows in the named share above.")
+
+    with st.expander("Add a named site"):
+        _l1, _l2, _l3 = st.columns(3)
+        _lc = _l1.text_input("Country", max_chars=2, key="sim_loc_c")
+        _lcity = _l2.text_input("City", key="sim_loc_city")
+        # Read from the resolver's own list rather than the module constant
+        # below, which is declared after this panel - referencing it here was a
+        # NameError at render that compiles clean.
+        _lart = _l3.selectbox(
+            "Site type",
+            ["BRANCH", "STORE", "WAREHOUSE", "LARGE_OFFICE", "DC"],
+            key="sim_loc_a",
+            help="The same five the footprint uses; the API refuses anything "
+                 "not in reference.archetype_prior.")
+        _l4, _l5 = st.columns(2)
+        _lname = _l4.text_input("Name", key="sim_loc_n")
+        _lsrc = _l5.text_input("Source URL or publisher", key="sim_loc_s")
+        _l6, _l7 = st.columns(2)
+        _lasof = _l6.text_input("As of", key="sim_loc_asof",
+                                placeholder="2025 or 2025-06-30")
+        _lby = _l7.text_input("Entered by *", key="sim_loc_by")
+        if st.button("Add this site",
+                     disabled=not (_lc.strip() and _lby.strip())):
+            _r = api.post(f"/v1/outside-in/cases/{case_id}/locations", {
+                "country": _lc.upper(), "archetype": _lart,
+                "city": _lcity or None, "name": _lname or None,
+                "source_url": _lsrc if (_lsrc or "").startswith("http") else None,
+                "publisher": None if (_lsrc or "").startswith("http") else (_lsrc or None),
+                "as_of": _lasof or None, "entered_by": _lby})
+            if "_error" in _r:
+                st.error(_r["_error"])
+            else:
+                api.flash("Site added. The footprint total is unchanged: a list "
+                          "is evidence for the count, not a replacement of it.")
+                st.rerun()
+
 st.caption("Whatever is in the table below is what runs. Edit it, then Save or "
            "Run - both persist it to the case.")
 default = pd.DataFrame(

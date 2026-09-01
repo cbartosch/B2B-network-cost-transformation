@@ -11,6 +11,7 @@ from sqlalchemy import delete, insert, select, text, update
 from .. import config, db, jobs, migrations
 from ..domain import (anchor_estimate, archetype as archetype_resolver,
                       benchmark_ingest, case_admin, estimate_qa,
+                      locations as location_svc,
                       topology as topology_planner,
                       refinement,
                       case_export,
@@ -1292,6 +1293,99 @@ def promote_research_findings(case_id: str, payload: PromoteIn):
             raise HTTPException(422, str(exc))
 
 
+class LocationIn(BaseModel):
+    country: str = Field(min_length=2, max_length=2)
+    archetype: str
+    city: str | None = None
+    name: str | None = None
+    address: str | None = None
+    source_url: str | None = None
+    publisher: str | None = None
+    as_of: str | None = None
+    entered_by: str = Field(min_length=1, max_length=120)
+
+
+@router.get("/v1/outside-in/cases/{case_id}/locations")
+def list_locations(case_id: str):
+    """The named sites, and what share of the estate they cover.
+
+    The footprint is a count per country and site type, so "371 branches in
+    Germany" and a list of 371 addresses were stored identically - and the
+    second is far better evidence. The list does not replace the count: it
+    makes the count checkable, and the enumerated share is a confidence signal
+    that reads directly, which the origin mix does not.
+    """
+    with S() as s:
+        _one_or_404(s, db.case, db.case.c.case_id, case_id, "case")
+        rows = [dict(r._mapping) for r in s.execute(select(db.location).where(
+            db.location.c.case_id == case_id)
+            .order_by(db.location.c.country, db.location.c.city)).all()]
+        resolved = footprint_resolver.resolve(s, case_id)
+        return {
+            "locations": rows,
+            "enumeration": location_svc.enumeration(
+                s, case_id=case_id, footprint=resolved.get("footprint") or []),
+        }
+
+
+@router.post("/v1/outside-in/cases/{case_id}/locations")
+def add_location(case_id: str, payload: LocationIn):
+    """Record one named site. Never changes the footprint total.
+
+    A total from a filing and a list from a locator are different evidence, and
+    the list is partial by nature. Where the enumeration exceeds the total the
+    disagreement is reported rather than resolved by raising it.
+    """
+    with S() as s:
+        _one_or_404(s, db.case, db.case.c.case_id, case_id, "case")
+        arch = {r.archetype for r in s.execute(select(db.archetype_prior)).all()}
+        if payload.archetype.upper() not in arch:
+            raise HTTPException(422, {
+                "error": "unknown archetype",
+                "detail": f"{payload.archetype!r} is not one of {sorted(arch)}"})
+        loc_id = str(uuid.uuid4())
+        s.execute(insert(db.location).values(
+            location_id=loc_id, case_id=case_id,
+            country=payload.country.upper(),
+            archetype=payload.archetype.upper(), city=payload.city,
+            name=payload.name, address=payload.address,
+            source_url=payload.source_url, publisher=payload.publisher,
+            as_of=payload.as_of, entered_by=payload.entered_by))
+        s.commit()
+        resolved = footprint_resolver.resolve(s, case_id)
+        return {"location_id": loc_id,
+                "enumeration": location_svc.enumeration(
+                    s, case_id=case_id,
+                    footprint=resolved.get("footprint") or [])}
+
+
+@router.delete("/v1/outside-in/cases/{case_id}/locations/{location_id}")
+def remove_location(case_id: str, location_id: str):
+    """Remove a named site - a closed branch, or one outside the perimeter."""
+    with S() as s:
+        s.execute(delete(db.location).where(
+            db.location.c.location_id == location_id,
+            db.location.c.case_id == case_id))
+        s.commit()
+        return {"removed": location_id}
+
+
+@router.post("/v1/outside-in/cases/{case_id}/locations/{location_id}:duplicate-of")
+def mark_duplicate(case_id: str, location_id: str, of: str):
+    """Confirm one named site is another under a different name.
+
+    Marked, not merged, and reversible: the key that suspected it folds accents
+    and drops branch words, so it will be wrong sometimes.
+    """
+    with S() as s:
+        s.execute(update(db.location).where(
+            db.location.c.location_id == location_id,
+            db.location.c.case_id == case_id).values(
+                suspected_duplicate_of=of or None))
+        s.commit()
+        return {"location_id": location_id, "duplicate_of": of or None}
+
+
 @router.get("/v1/outside-in/cases/{case_id}/footprint")
 def resolve_footprint(case_id: str):
     """The best available footprint for this case, and where it came from.
@@ -1689,6 +1783,8 @@ def _run_anchor_estimate(s, *, case_id, case_row, payload,
               # confidence is explained by the origin mix having shifted, and
               # that shift is only visible if the mix was recorded.
               "origin_breakdown": cur["origin_breakdown"],
+              # No enumeration here: ANCHOR prices a share of a disclosed
+              # cost line and has no footprint to name sites against.
               "estimate_method": anchor_estimate.METHOD_ANCHOR,
               "anchor_basis": basis,
               "resolved_entity_id": case_row.resolved_entity_id,
@@ -1896,8 +1992,17 @@ def run_estimate(case_id: str, payload: EstimateIn):
                           "estate, for example). Supply `users` explicitly."})
 
         ops = D(_ops)
+        # How much of the estate is named. The named share keeps the
+        # footprint's origin; the tallied share takes the weaker of
+        # PUBLIC_DERIVED and that origin - so naming sites raises confidence
+        # for the part that was named and never for the rest.
+        _enumeration = location_svc.enumeration(
+            s, case_id=case_id,
+            footprint=(sim.params or {}).get("footprint") or [])
+
         components, unpriced = estimate.build_components(
             sim_output=sim.output, users=_resolved_users,
+            enumeration=_enumeration,
             ops_cost_per_site={"low": ops * D("0.8"), "base": ops, "high": ops * D("1.3")},
             priors=priors,
             # build_components takes driver_origins/driver_refs keyed by the

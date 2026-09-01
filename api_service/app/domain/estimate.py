@@ -18,6 +18,7 @@ That is the double-counting control in 0.2D.
 from dataclasses import dataclass, field
 from decimal import Decimal
 
+from . import locations
 from .money import D, Range, as_str
 
 SIMULATED = "SIMULATED"
@@ -112,6 +113,11 @@ def match_prior(priors: dict, country: str, product: str, mbps) -> tuple:
 def build_components(*, sim_output: dict, users: int, ops_cost_per_site: dict,
                      priors: dict,
                      driver_origins: dict | None = None,
+                     # What share of each country's estate exists as a named
+                     # location. Optional: without it every site-driven
+                     # component keeps one origin, which is how this behaved
+                     # before locations existed.
+                     enumeration: dict | None = None,
                      driver_refs: dict | None = None,
                      overlay_unit: dict | None = None,
                      sse_unit: dict | None = None) -> tuple[list[Component], list[dict]]:
@@ -140,6 +146,37 @@ def build_components(*, sim_output: dict, users: int, ops_cost_per_site: dict,
     components: list[Component] = []
     unpriced: list[dict] = []
 
+    def _site_components(base: Component, country: str) -> list[Component]:
+        """One site-driven component, split by how much of that country is named.
+
+        A footprint that is part named and part tallied cannot be described by a
+        single origin, and Component carries one - so the value is apportioned
+        by exact share across the split the enumeration reports. Deterministic:
+        no sampling, and the shares sum to the original value.
+
+        The residual takes the weaker of PUBLIC_DERIVED and the footprint's own
+        origin, so naming sites raises confidence for the part that was named
+        and never for the rest.
+        """
+        split = (locations.origin_split(enumeration, country,
+                                        base.quantity_origin)
+                 if enumeration else [(base.quantity_origin, D(1))])
+        if len(split) == 1:
+            return [base]
+        out = []
+        for origin, share in split:
+            if share <= 0:
+                continue
+            out.append(Component(
+                key=f"{base.key}_{origin.lower()}",
+                layer=base.layer, driver=base.driver,
+                quantity=int(D(base.quantity) * share),
+                quantity_origin=origin,
+                unit_cost_origin=base.unit_cost_origin,
+                value=base.value.scale(share),
+                source_ref=base.source_ref))
+        return out
+
     for row in sim_output.get("products", []):
         mbps = row.get("bandwidth_mbps")
         prior, substituted = match_prior(priors, row["country"], row["product"], mbps)
@@ -151,13 +188,18 @@ def build_components(*, sim_output: dict, users: int, ops_cost_per_site: dict,
         origin = SIMULATED if row["role"] == "BACKUP" else site_origin
         qty = int(row["count"])
         value = Range(prior["low"], prior["base"], prior["high"]).scale(D(qty) * MONTHS)
-        components.append(Component(
+        _base = Component(
             key=(f"L0_{row['role'].lower()}_{row['country']}_{row['product']}"
                  + (f"_{mbps}M" if mbps else "")
                  + (f"_priced_at_{substituted}M" if substituted else "")),
             layer="L0", driver="circuits", quantity=qty,
-            quantity_origin=origin, unit_cost_origin="BENCHMARK_PRIOR", value=value,
-            source_ref=None if row["role"] == "BACKUP" else footprint_ref))
+            quantity_origin=origin, unit_cost_origin="BENCHMARK_PRIOR",
+            value=value,
+            source_ref=None if row["role"] == "BACKUP" else footprint_ref)
+        # A backup circuit is SIMULATED whatever the enumeration says, so it is
+        # not split: the seeded draw put it there, not a named site.
+        components.extend([_base] if row["role"] == "BACKUP"
+                          else _site_components(_base, row["country"]))
 
     sites = int(sim_output.get("sites", 0))
     if overlay_unit:

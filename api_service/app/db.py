@@ -641,6 +641,43 @@ unit_cost_prior = Table(
 # graded and stored in the disposition, and reached nothing - an analyst still
 # typed it into page 6 by hand, which made the anchor an assertion and capped
 # the estimate under 0.6A when the evidence for it was sitting in the case.
+# Named locations, as far as they are known.
+#
+# The footprint is a count per country and site type, which stores "371
+# branches in Germany" and a list of 371 addresses identically - and the second
+# is far better evidence. This holds the ones that are named.
+#
+# It does not replace the count. The total usually comes from a filing and the
+# list from a store locator, which is partial by nature, may include closed
+# sites and is often paginated behind script a fetch cannot read. So the list is
+# evidence *for* the count: it makes the count checkable, and the share of the
+# estate it covers is a confidence signal in its own right.
+#
+# `suspected_duplicate_of` rather than a merge: a locator's "Wuerth
+# Niederlassung Berlin-Spandau" and a filing appendix's "Berlin Spandau" are one
+# site, and any key that decides that will be wrong sometimes. Flagged for a
+# person, the way a triangulation conflict is.
+location = Table(
+    "location", metadata,
+    Column("location_id", String(36), primary_key=True),
+    Column("case_id", String(36), index=True),
+    Column("country", String(2), index=True),
+    Column("city", Text), Column("name", Text),
+    Column("archetype", String(48)),
+    Column("address", Text),
+    # Where this one came from, per location rather than per list: a locator
+    # page and a filing appendix are different strengths of evidence and a case
+    # will hold both.
+    Column("source_url", Text), Column("publisher", Text),
+    Column("as_of", String(32)),
+    Column("reliability_grade", String(16)),
+    Column("domain_no", Integer), Column("agent_run_id", String(36)),
+    Column("entered_by", String(120)),
+    Column("entered_at", DateTime(timezone=True), default=_now),
+    Column("suspected_duplicate_of", String(36)),
+    schema="outside_in",
+)
+
 evidenced_anchor = Table(
     "evidenced_anchor", metadata,
     Column("id", String(96), primary_key=True),      # {case}-{label}
