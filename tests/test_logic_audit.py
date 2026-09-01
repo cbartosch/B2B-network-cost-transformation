@@ -416,3 +416,88 @@ def test_no_test_file_targets_a_module_that_no_longer_exists():
                     assert candidate.exists() or alias.name in ("policy",), (
                         f"{path.name} imports app.domain.{alias.name}, "
                         f"which does not exist")
+
+
+# ----------------------------------------- duplication, in every shape it took
+def test_no_two_handlers_share_a_verb_and_path():
+    """Two ask_about_estimate handlers both decorated the same POST path.
+    FastAPI registers both and routes to the first, so the second is dead code
+    that reads as live - and Python had already replaced the first by name."""
+    import re
+    from collections import Counter
+
+    routes = re.findall(r'@router\.(get|post|put|delete)\("([^"]+)"',
+                        (APP / "routers" / "api.py").read_text())
+    clashes = [f"{v.upper()} {p}" for (v, p), n in Counter(routes).items() if n > 1]
+    assert not clashes, clashes
+
+
+def test_no_test_name_appears_in_two_files():
+    """A shared name makes a failure report ambiguous about which test failed,
+    which cost real time reading the 146-failure list. Distinct behaviour
+    deserves a distinct name."""
+    import ast
+    import pathlib
+    from collections import defaultdict
+
+    seen = defaultdict(list)
+    for path in sorted(pathlib.Path(__file__).resolve().parent.glob("test_*.py")):
+        for node in ast.parse(path.read_text()).body:
+            if isinstance(node, ast.FunctionDef) and node.name.startswith("test_"):
+                seen[node.name].append(path.name)
+    clashes = {k: v for k, v in seen.items() if len(v) > 1}
+    assert not clashes, "\n".join(f"{k} in {v}" for k, v in sorted(clashes.items()))
+
+
+def test_no_two_migrations_add_the_same_column():
+    """Two _migrate_v21 functions existed and one lost the name collision, so
+    its column was never added. Two steps adding the same column is the same
+    mistake with both surviving - the second is a no-op that reads as work."""
+    import ast
+    import re
+    from collections import defaultdict
+
+    bodies = defaultdict(list)
+    for node in ast.parse((APP / "migrations.py").read_text()).body:
+        if not (isinstance(node, ast.FunctionDef)
+                and node.name.startswith("_migrate_v")):
+            continue
+        columns = tuple(sorted(re.findall(
+            r'_add_column\(conn, db\.(\w+), "(\w+)"', ast.unparse(node))))
+        if columns:
+            bodies[columns].append(node.name)
+    clashes = {k: v for k, v in bodies.items() if len(v) > 1}
+    assert not clashes, "\n".join(
+        f"{v} all add {list(k)}" for k, v in clashes.items())
+
+
+def test_no_class_name_is_defined_in_two_modules():
+    """Distinct from the same-module check: two EstimateAnswer classes in one
+    file were caught by that, and two modules each defining one would not be."""
+    import ast
+    from collections import defaultdict
+
+    where = defaultdict(set)
+    for path in sorted(APP.rglob("*.py")):
+        for node in ast.parse(path.read_text()).body:
+            if isinstance(node, ast.ClassDef):
+                where[node.name].add(path.name)
+    clashes = {k: sorted(v) for k, v in where.items() if len(v) > 1}
+    assert not clashes, "\n".join(f"{k} in {v}" for k, v in sorted(clashes.items()))
+
+
+def test_no_panel_heading_appears_on_two_pages():
+    """Two "Ask about this estimate" panels lived on the same page and were
+    caught per-page. The same heading on two different pages is the same
+    duplicated feature, one level out."""
+    import pathlib
+    import re
+    from collections import defaultdict
+
+    ui = pathlib.Path(__file__).resolve().parents[1] / "analyst_ui" / "streamlit_app"
+    where = defaultdict(set)
+    for path in sorted(ui.rglob("*.py")):
+        for heading in re.findall(r'st\.subheader\("([^"]+)"\)', path.read_text()):
+            where[heading].add(path.name)
+    clashes = {k: sorted(v) for k, v in where.items() if len(v) > 1}
+    assert not clashes, "\n".join(f"{k!r} on {v}" for k, v in sorted(clashes.items()))

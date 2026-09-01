@@ -49,7 +49,7 @@ def test_a_reply_that_both_asserts_and_abstains_is_rejected():
     assert Rejection.CONTRADICTS_ITSELF in v.reasons
 
 
-def test_a_number_without_a_unit_is_rejected():
+def test_a_researched_quantity_without_a_unit_is_rejected():
     v = quality.evaluate("llm01.public_evidence.extract", _evidence(
         quantities=[{"label": "WAREHOUSE", "value": "340", "unit": None,
                      "country": "DE", "bandwidth_mbps": None, "as_of": None}]))

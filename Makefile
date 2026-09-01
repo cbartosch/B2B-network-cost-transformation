@@ -1,4 +1,7 @@
-.PHONY: validate-flow verify-domains backup restore deck benchmarks reach tls-doctor tls-doctor-in-container check up down logs test seed reset psql doctor migrate pins attest
+.PHONY: check-duplication validate-flow verify-domains backup restore deck benchmarks reach tls-doctor tls-doctor-in-container check up down logs test seed reset psql doctor migrate pins attest
+
+check-duplication: ## seven shapes duplication has taken here, in one pass
+	python tools/check_duplication.py
 
 validate-flow: ## check that what each stage writes is read by the next
 	python tools/validate_flow.py

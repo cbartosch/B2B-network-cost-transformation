@@ -469,7 +469,7 @@ def test_every_swept_class_is_one_the_register_offers():
         assert f'"{fact_class}"' in page, f"{fact_class} is not offered on page 2"
 
 
-def test_a_number_without_a_unit_is_rejected():
+def test_a_swept_fact_without_a_unit_is_rejected():
     from app.llm import quality, schemas
     unitless = schemas.PublicFactSweep.model_validate({"facts": [
         {"fact_class": "Location footprint", "subject": "HVB",
