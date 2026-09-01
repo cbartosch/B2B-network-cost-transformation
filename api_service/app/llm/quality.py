@@ -41,6 +41,9 @@ class Rejection(str, Enum):
     CANDIDATE_WITHOUT_IDENTITY = "CANDIDATE_WITHOUT_IDENTITY"
     SOURCE_NOT_RESOLVABLE = "SOURCE_NOT_RESOLVABLE"
     CONTRADICTS_ITSELF = "CONTRADICTS_ITSELF"
+    # A figure the estimate does not contain. Distinct from a contradiction:
+    # the answer is internally coherent and states a number nobody computed.
+    FIGURE_NOT_IN_PACKET = "FIGURE_NOT_IN_PACKET"
     # The reply did not match the registered output model. Distinct from
     # CONTRADICTS_ITSELF, which is a judgement about what the model said: this
     # one says the reply never became a result at all, and reporting it as a
@@ -361,6 +364,40 @@ def estimate_answer(result, context) -> Verdict:
     return Verdict(not reasons, reasons, detail)
 
 
+def estimate_answer(result, context) -> Verdict:
+    """Refuse an answer that states a figure the packet does not contain.
+
+    The strongest control available here: the model is explaining what was
+    computed, so a number it introduces is either a rounding of a packet figure
+    or an invention. Checked deterministically rather than trusted, because an
+    explanation of a cost model is exactly where an invented figure would be
+    believed - and it would be read as the estimate's own output.
+    """
+    from ..domain import estimate_qa
+
+    reasons, detail = [], []
+    packet = (context or {}).get("packet") or {}
+    if result.cannot_answer_from_packet:
+        # Saying the packet does not contain it is a correct answer.
+        return Verdict(True)
+    if not (result.answer or "").strip():
+        reasons.append(Rejection.EMPTY_RESULT_WITHOUT_ABSTENTION)
+        detail.append("no answer and no statement that it could not be given")
+    invented = estimate_qa.unsupported_figures(result.answer or "", packet)
+    if invented:
+        reasons.append(Rejection.FIGURE_NOT_IN_PACKET)
+        detail.append(
+            f"states {invented[:4]}, which the estimate does not contain")
+    supplied = len((packet.get("gaps") or []))
+    bad_refs = [i for i in (result.gaps_referenced or [])
+                if not 0 <= i < supplied]
+    if bad_refs:
+        reasons.append(Rejection.OPTION_NOT_SUPPLIED)
+        detail.append(f"references gap index {bad_refs}, and {supplied} were "
+                      f"supplied")
+    return Verdict(not reasons, reasons, detail)
+
+
 def accept_all(result, context) -> Verdict:
     """For services whose whole output is already constrained by the schema.
 
@@ -376,6 +413,7 @@ RULES = {
     "known_fact.corroborate": corroboration,
     "entity.resolve.candidates": entity_candidates,
     "entity.profile.summarise": entity_profile,
+    "estimate.explain": estimate_answer,
     "known_fact.prefill_public": public_fact_prefill,
     "llm09.benchmark.extract": benchmark_observations,
     "estimate.explain.answer": estimate_answer,

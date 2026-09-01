@@ -440,3 +440,56 @@ else:
                             f"{g['would_change']}.")
             st.markdown("**Figures**")
             st.json(_a.get("figures") or {})
+
+# ------------------------------------------------------------------ ask it
+st.divider()
+st.subheader("Ask about this estimate")
+st.caption("How was it calculated, why is confidence where it is, what would "
+           "improve it. Answers are drawn from what the run recorded: an "
+           "answer stating a figure the estimate does not contain is refused, "
+           "and the gaps are computed from the run rather than composed.")
+
+_q = st.text_input(
+    "Question", key="v0_question",
+    placeholder="Why is coverage 55% and what would raise it?")
+_examples = [
+    "How was the current cost calculated?",
+    "Why is confidence band C rather than B?",
+    "What is the single most valuable thing to research next?",
+    "Which figures rest on an assertion rather than evidence?",
+    "What would it take to move from V0 to a defensible V1?",
+]
+st.caption("Try: " + " · ".join(f"*{e}*" for e in _examples[:3]))
+
+if st.button("Ask", disabled=not (_q or "").strip()):
+    with st.spinner("Reading the estimate..."):
+        st.session_state["_ask"] = api.post(
+            f"/v1/outside-in/cases/{case_id}/estimates:ask",
+            {"question": _q}, timeout=300.0)
+
+_ans = st.session_state.get("_ask")
+if _ans and "_error" in _ans:
+    st.error(_ans["_error"])
+elif _ans:
+    if _ans.get("cannot_answer_from_packet"):
+        st.warning(f"**Not answerable from what the estimate recorded.** "
+                   f"{_ans['cannot_answer_from_packet']}")
+    if _ans.get("answer"):
+        st.markdown(_ans["answer"])
+
+    if _ans.get("gaps"):
+        st.markdown("**The gaps this answer refers to**")
+        for g in _ans["gaps"]:
+            st.info(f"**{g['gap']}** - {g['detail']}\n\n"
+                    f"Costs: {g['costs']}.\n\n"
+                    f"To close it: {g['closes_it']}.")
+
+    with st.expander(f"Every measured gap ({len(_ans.get('all_gaps') or [])})"):
+        for g in _ans.get("all_gaps") or []:
+            st.markdown(f"- **{g['gap']}**: {g['detail']}  \n"
+                        f"  *costs* {g['costs']}  \n"
+                        f"  *to close it* {g['closes_it']}")
+        if not _ans.get("all_gaps"):
+            st.caption("No gaps measured - unusual, and worth checking against "
+                       "the coverage figures above rather than believed.")
+    st.caption(_ans.get("note", ""))

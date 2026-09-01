@@ -181,6 +181,29 @@ class QuestionnairePrefill(Strict):
     abstention_reason: AbstentionReason | None = None
 
 
+# ------------------------------------------------- explaining an estimate
+class EstimateAnswer(Strict):
+    """An answer about a published estimate, and what it rests on.
+
+    `answer` explains; it does not compute. Every figure in it must already be
+    in the supplied packet - a number the snapshot does not contain is a
+    fabrication however plausible, and an explanation of a cost model is
+    exactly where one would be believed.
+
+    `gaps_referenced` points at the deterministic gap list rather than
+    restating it, so the recommendation an analyst acts on is the computed one.
+    """
+    answer: str
+    # Which of the supplied gaps the answer is about, by their index in the
+    # packet. Naming them keeps "what would improve this" tied to what was
+    # actually measured as absent.
+    gaps_referenced: list[int] = Field(default_factory=list)
+    # Set when the packet does not contain what the question needs. Saying so
+    # is the correct answer; inferring it is not.
+    cannot_answer_from_packet: str | None = None
+    abstention_reason: AbstentionReason | None = None
+
+
 # ------------------------------------------------------------------- LLM-07
 class ScenarioSelection(Strict):
     """Selection only.

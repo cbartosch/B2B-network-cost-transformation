@@ -249,6 +249,31 @@ _DEFS = [
         evaluation_suite="conformance/questionnaire"),
 
     PromptDefinition(
+        prompt_id="estimate.explain",
+        prompt_version="1.0.0", agent_id="LLM-06",
+        task=("Answer the analyst's question about the published estimate in "
+              "the packet below.\n"
+              "You are explaining a calculation, not performing one. Every "
+              "figure you state must already appear in the packet: quote it or "
+              "round it, and say where in the packet it comes from. A number "
+              "the packet does not contain is refused, however reasonable it "
+              "looks - an explanation of a cost model is exactly where an "
+              "invented figure would be believed.\n"
+              "The gaps are already computed and listed. Where the question is "
+              "about what would improve the estimate, explain and prioritise "
+              "those gaps and reference them by index - do not compose your "
+              "own list, because a plausible one would compete with the "
+              "measured one.\n"
+              "Where the packet does not contain what the question needs, say "
+              "so in `cannot_answer_from_packet` and name what would have to "
+              "be recorded for it to be answerable. That is a useful answer.\n"
+              "Be direct and specific. Cite the mechanism - a ceiling, an "
+              "origin mix, an unpriced tier - rather than describing "
+              "confidence as low."),
+        output_model=schemas.EstimateAnswer,
+        evaluation_suite="conformance/estimate_explain"),
+
+    PromptDefinition(
         prompt_id="llm07.advisory.select",
         prompt_version="2.0.0", agent_id="LLM-07",
         task=("Select one scenario and one percentile from the supplied "
