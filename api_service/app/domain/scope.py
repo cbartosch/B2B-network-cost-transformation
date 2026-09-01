@@ -58,9 +58,15 @@ def resolve(session, *, scope_mode: str, region: str | None,
             raise ValueError(f"unknown region {region!r}; expected one of {region_choices()}")
         return list(REGION_COUNTRIES[region]), region
 
-    # GLOBAL: every country with at least one approved prior, today.
+    # GLOBAL: every *country* with at least one approved prior, today.
+    #
+    # scope_kind is filtered because a price may now be scoped to a region -
+    # a backbone circuit belongs to EMEA - and offering "EMEA" as an in-scope
+    # country would put a region into a country list, where every downstream
+    # consumer would treat it as an ISO code.
     rows = session.execute(
         select(db.unit_cost_prior.c.country)
-        .where(db.unit_cost_prior.c.approved.is_(True))
+        .where(db.unit_cost_prior.c.approved.is_(True),
+               db.unit_cost_prior.c.scope_kind != "REGION")
         .distinct()).all()
     return sorted({r.country for r in rows}), "GLOBAL"

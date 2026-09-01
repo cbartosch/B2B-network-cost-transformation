@@ -121,3 +121,52 @@ def test_the_simulation_version_moved_with_the_shape():
     from app import config
     major, minor = config.SIMULATION_MODEL_VERSION.split("-")[1].split(".")[:2]
     assert (int(major), int(minor)) >= (1, 3)
+
+
+# ------------------------------------------------- a price may be regional
+def test_a_price_scope_may_be_a_region_and_says_so():
+    """The first regional backbone row failed to insert: country was an ISO
+    alpha-2 field and I put "EMEA" in it.
+
+    Widening the column alone would have left country = 'EMEA', which is false
+    data that reads as a fact - so scope_kind records which it is instead of
+    leaving the kind to be inferred from the length of a string."""
+    from app import db
+    columns = {c.name: c for c in db.unit_cost_prior.columns}
+    assert "scope_kind" in columns
+    assert columns["country"].type.length >= 16, (
+        "a region code does not fit in an ISO alpha-2 field")
+
+
+def test_the_seed_labels_regional_rows_as_regions():
+    from app.seed import COUNTRY_REGION, PRIORS, REGION_CODES
+    assert REGION_CODES == sorted({r for _c, r in COUNTRY_REGION}), (
+        "the region codes a price may use must come from the region table, or "
+        "a backbone price can be scoped to a region nobody maps to")
+    regional = [c for c, *_ in PRIORS if c in REGION_CODES]
+    assert set(regional) == set(REGION_CODES), (
+        "every region needs a backbone price or its core circuits are unpriced")
+
+
+def test_a_region_is_never_offered_as_an_in_scope_country():
+    """GLOBAL resolves from distinct prior scopes. Offering "EMEA" there would
+    put a region into a country list, where every downstream consumer treats it
+    as an ISO code."""
+    import inspect
+    from app.domain import scope
+    src = inspect.getsource(scope)
+    assert 'scope_kind != "REGION"' in src
+
+
+def test_the_estimate_loads_the_regions_its_countries_map_into():
+    """The prior filter was the case's country list alone, so every backbone
+    circuit would have landed unpriced - a change that makes the estimate worse
+    while looking more complete. And only the regions the case actually reaches:
+    a case with no APAC sites has no business pricing an APAC backbone."""
+    import pathlib
+    root = pathlib.Path(__file__).resolve().parents[1]
+    app = next(c for c in (root / "api_service" / "app", root / "app")
+               if (c / "routers" / "api.py").exists())
+    api = (app / "routers" / "api.py").read_text()
+    assert "in_scope_regions" in api
+    assert "(countries or [\"--\"]) + in_scope_regions" in api

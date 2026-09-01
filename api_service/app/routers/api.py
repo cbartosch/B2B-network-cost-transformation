@@ -1796,8 +1796,20 @@ def run_estimate(case_id: str, payload: EstimateIn):
             raise HTTPException(409, {"error": "V0 cannot publish", "blockers": blockers})
 
         countries = case_row.in_scope_countries or []
+        # Region-scoped priors as well as the in-scope countries. A backbone
+        # circuit is priced against EMEA, and this filtered on the case's
+        # country list alone - so every core circuit would have landed unpriced
+        # and dragged coverage down, which is a change that makes the estimate
+        # worse while looking more complete.
+        #
+        # Only the regions this case's countries actually map into: a case with
+        # no APAC sites has no business pricing an APAC backbone.
+        in_scope_regions = sorted({
+            r.region for r in s.execute(select(db.country_region).where(
+                db.country_region.c.country.in_(countries or ["--"]))).all()})
         prior_rows = s.execute(select(db.unit_cost_prior).where(
-            db.unit_cost_prior.c.country.in_(countries or ["--"]),
+            db.unit_cost_prior.c.country.in_(
+                (countries or ["--"]) + in_scope_regions),
             db.unit_cost_prior.c.approved.is_(True))).all()
         priors = {(r.country, r.product, r.bandwidth_mbps): {"low": r.low, "base": r.base,
                                            "high": r.high, "price_year": r.price_year}

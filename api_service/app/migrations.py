@@ -34,7 +34,7 @@ from . import db
 log = logging.getLogger("workbench.migrations")
 
 # Bump when the physical schema changes, and add a step below.
-SCHEMA_VERSION = 30
+SCHEMA_VERSION = 31
 
 VERSION_TABLE = "schema_version"
 VERSION_SCHEMA = "audit"
@@ -766,13 +766,37 @@ def _migrate_v30(conn) -> None:
              "simulation gains a core")
 
 
+def _migrate_v31(conn) -> None:
+    """4.28.0 -> 4.29.0: a price may be scoped to a region, not only a country.
+
+    unit_cost_prior.country widens from 2 to 16 characters and gains
+    scope_kind. A hub-to-core circuit belongs to EMEA rather than to Germany,
+    and the column was an ISO alpha-2 field - so the first regional backbone
+    row failed to insert with "value too long for type character varying(2)".
+
+    Widening alone would have left country = 'EMEA', which is false data that
+    reads as a fact. Existing rows are stamped COUNTRY, which is what they are.
+    """
+    added = _add_column(conn, db.unit_cost_prior, "scope_kind")
+    widened = 0
+    if _has_table(conn, "reference", "unit_cost_prior"):
+        conn.execute(text(
+            'ALTER TABLE "reference"."unit_cost_prior" '
+            "ALTER COLUMN country TYPE VARCHAR(16)"))
+        widened = conn.execute(text(
+            'UPDATE "reference"."unit_cost_prior" SET scope_kind = \'COUNTRY\' '
+            "WHERE scope_kind IS NULL")).rowcount or 0
+    log.info("v31: country widened to 16; scope_kind added=%s; %d existing "
+             "row(s) stamped COUNTRY", bool(added), widened)
+
+
 MIGRATIONS = {2: _migrate_v2, 3: _migrate_v3, 4: _migrate_v4, 5: _migrate_v5,
               6: _migrate_v6, 7: _migrate_v7, 8: _migrate_v8, 9: _migrate_v9,
               10: _migrate_v10, 11: _migrate_v11, 12: _migrate_v12,
               13: _migrate_v13, 14: _migrate_v14, 15: _migrate_v15,
               16: _migrate_v16, 17: _migrate_v17, 18: _migrate_v18,
               19: _migrate_v19, 20: _migrate_v20,
-              21: _migrate_v21, 22: _migrate_v22, 23: _migrate_v23, 24: _migrate_v24, 25: _migrate_v25, 26: _migrate_v26, 27: _migrate_v27, 28: _migrate_v28, 29: _migrate_v29, 30: _migrate_v30}
+              21: _migrate_v21, 22: _migrate_v22, 23: _migrate_v23, 24: _migrate_v24, 25: _migrate_v25, 26: _migrate_v26, 27: _migrate_v27, 28: _migrate_v28, 29: _migrate_v29, 30: _migrate_v30, 31: _migrate_v31}
 
 
 class SchemaDrift(RuntimeError):

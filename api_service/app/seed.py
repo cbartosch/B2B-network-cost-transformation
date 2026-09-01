@@ -330,6 +330,11 @@ COUNTRY_REGION = [
     ("IN", "APAC"),
 ]
 
+# The regions a price may be scoped to, taken from COUNTRY_REGION so the two
+# cannot drift: a backbone price for a region nobody maps to is unreachable,
+# and a region that has no price leaves its core circuits unpriced.
+REGION_CODES = sorted({r for _c, r in COUNTRY_REGION})
+
 # The backbone. ETHERNET at 10 Gbps between a data centre and its regional hub,
 # and between a regional hub and the global core - which is the shape and the
 # order of magnitude a real enterprise core runs at, and both tiers are dual by
@@ -472,6 +477,11 @@ def _rows():
             for no, b in sorted(RESEARCH_BRIEFS.items())]),
         (unit_cost_prior, lambda: [
             {"id": f"{c}-{p}-{bw}", "country": c, "product": p, "cost_layer": l,
+             # Derived from the region table rather than from the length of the
+             # code: a two-letter region would otherwise be stamped COUNTRY,
+             # and "infer the kind from the string" is the guess this column
+             # was added to remove.
+             "scope_kind": "REGION" if c in REGION_CODES else "COUNTRY",
              "bandwidth_mbps": bw, "low": lo, "base": ba, "high": hi,
              "currency": "USD", "price_year": 2026, "approved": True}
             for c, p, l, bw, lo, ba, hi in PRIORS]),

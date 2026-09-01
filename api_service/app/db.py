@@ -584,7 +584,18 @@ archetype_bandwidth = Table(
 unit_cost_prior = Table(
     "unit_cost_prior", metadata,
     Column("id", String(64), primary_key=True),
-    Column("country", String(2)), Column("product", String(48)), Column("cost_layer", String(16)),
+    # A price is scoped to an ISO alpha-2 country or to a region - a
+    # hub-to-core circuit belongs to EMEA, not to Germany. `scope_kind` says
+    # which, so the data does not have to be inferred from the length of a
+    # string: this column was String(2) and the first regional row failed to
+    # insert, and widening it alone would have left `country = "EMEA"`, which
+    # is a lie in the data and exactly the kind that reads as a fact.
+    #
+    # match_prior keys on (scope, product, bandwidth) either way, so there is
+    # still one lookup path.
+    Column("country", String(16)),
+    Column("scope_kind", String(8), default="COUNTRY"),    # COUNTRY | REGION
+    Column("product", String(48)), Column("cost_layer", String(16)),
     # The bandwidth this price is for. A circuit rate without one is not a
     # rate: a 100 Mbps and a 1 Gbps DIA differ by more than most levers here
     # are worth, and a benchmark cannot be loaded without the tier it quotes.
