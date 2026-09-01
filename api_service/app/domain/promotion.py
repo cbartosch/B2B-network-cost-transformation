@@ -104,6 +104,43 @@ def _quantities_for_case(session, case_id: str) -> list[dict]:
     return out
 
 
+# Archetype dimensions a finding can establish, and the unit wording that
+# declares which one it carries. The unit is the discriminator because it is
+# the field an agent naturally fills with "sites", "Mbps", "users per site" -
+# a separate type tag would be one more field to get wrong.
+ARCHETYPE_FIELDS = {
+    "bandwidth_mbps_base": ("mbps", "mbit", "megabit"),
+    "users_base": ("users", "headcount/site", "staff/site"),
+    "dual_access_probability": ("share", "percent", "%", "proportion"),
+    "primary_product": ("primary access", "primary product", "primary"),
+    "backup_product": ("backup access", "backup product", "backup"),
+}
+
+
+def archetype_field(q: dict) -> str | None:
+    """Which archetype dimension this quantity carries, if any."""
+    label = str(q.get("label") or "").strip().upper()
+    if label not in ARCHETYPES:
+        return None
+    unit = str(q.get("unit") or "").strip().lower()
+    value = str(q.get("value") or "").strip().upper()
+    # A product override carries a product name rather than a number.
+    if value in PRODUCTS:
+        for field in ("primary_product", "backup_product"):
+            if any(h in unit for h in ARCHETYPE_FIELDS[field]):
+                return field
+        return None
+    for field in ("bandwidth_mbps_base", "users_base",
+                  "dual_access_probability"):
+        if any(h in unit for h in ARCHETYPE_FIELDS[field]):
+            # A bare share means nothing on its own; it has to say what of.
+            if field == "dual_access_probability" and not any(
+                    w in unit for w in ("dual", "backup", "diverse")):
+                continue
+            return field
+    return None
+
+
 def _classify(q: dict) -> str:
     """footprint | price | unclassified.
 
@@ -120,10 +157,17 @@ def _classify(q: dict) -> str:
     # instead of failing the schema - and this isinstance check then classified
     # every quantity as unclassified, so nothing at all could be promoted. The
     # two changes were three releases apart and nothing connected them.
-    if triangulate.parse_value(q.get("value")) is None:
+    # A product override carries a product name, so a value that is not a
+    # number is not automatically unusable here.
+    if triangulate.parse_value(q.get("value")) is None and \
+            str(q.get("value") or "").strip().upper() not in PRODUCTS:
         return "unclassified"
     if label in ARCHETYPES and len(country) == 2 and "site" in unit:
         return "footprint"
+    # How a site type is built rather than how many there are. Country-
+    # independent, because an architecture standard usually is.
+    if archetype_field(q):
+        return "archetype"
     # "DIA 100Mbps MRC" -> product is the first token.
     head = label.split()[0] if label else ""
     if head in PRODUCTS and len(country) == 2 and (
@@ -267,6 +311,7 @@ def promote(session, *, case_id: str, candidate_ids: list[str],
 
     now = datetime.now(timezone.utc)
     promoted_footprint, proposed_prices, declined = [], [], []
+    promoted_archetype = []
 
     for e in entries:
         q, target = e["quantity"], _classify(e["quantity"])
@@ -287,6 +332,31 @@ def promote(session, *, case_id: str, candidate_ids: list[str],
                            f"promote with accept_conflicts, or research the "
                            f"domain again.")})
             continue
+        if target == "archetype":
+            # How a site type is built, for this case only. Never written to
+            # reference.archetype_prior: one client's estate is not a
+            # benchmark, and establishing this for one case must not retune
+            # every other.
+            arch_name = str(q["label"]).upper()
+            field = archetype_field(q)
+            raw = str(q["value"]).strip()
+            if field in ("primary_product", "backup_product"):
+                raw = raw.upper()
+            row_id = f"{case_id}-{arch_name}-{field}"
+            session.execute(delete(db.evidenced_archetype).where(
+                db.evidenced_archetype.c.id == row_id))
+            session.execute(insert(db.evidenced_archetype).values(
+                id=row_id, case_id=case_id, archetype=arch_name, field=field,
+                value=raw, origin="PROMOTED_RESEARCH",
+                domain_no=e["domain_no"], agent_run_id=e["agent_run_id"],
+                source_urls=e["sources"],
+                reliability_grade=(e.get("reliability") or {}).get("grade"),
+                recorded_by=promoted_by, recorded_at=now))
+            promoted_archetype.append({"archetype": arch_name, "field": field,
+                                       "value": raw,
+                                       "domain_no": e["domain_no"]})
+            continue
+
         if target == "footprint":
             country = str(q["country"]).upper()
             archetype = str(q["label"]).upper()
@@ -379,6 +449,7 @@ def promote(session, *, case_id: str, candidate_ids: list[str],
     material = [p for p in proposed_prices
                 if (p.get("benchmark_comparison") or {}).get("material")]
     return {
+        "promoted_archetype": promoted_archetype,
         "promoted_footprint": promoted_footprint,
         "proposed_prices": proposed_prices,
         # Lifted out of the list rather than left to be noticed inside it. A

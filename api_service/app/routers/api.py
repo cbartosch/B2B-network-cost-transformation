@@ -8,7 +8,8 @@ from pydantic import BaseModel, Field
 from sqlalchemy import delete, insert, select, text, update
 
 from .. import config, db, jobs, migrations
-from ..domain import (anchor_estimate, benchmark_ingest, case_admin,
+from ..domain import (anchor_estimate, archetype as archetype_resolver,
+                      benchmark_ingest, case_admin,
                       refinement,
                       case_export,
                       footprint as footprint_resolver,
@@ -855,26 +856,48 @@ def run_simulation(case_id: str, payload: SimIn):
                               "bandwidth_mbps_base": r.bandwidth_mbps_base}
                 for r in s.execute(select(db.archetype_prior)).all()}
 
-        # Industry overrides the generic bandwidth per site type. The archetype
-        # says what shape a site is; the industry says what happens inside it,
-        # and a retail bank branch does not need the same circuit as a parts
-        # depot of the same size. Falls back to the DEFAULT rows where the
-        # industry is unknown, so an unrecognised sector is priced at the
-        # generic tier rather than refused.
+        # Every archetype dimension resolved across four layers - seeded
+        # prior, industry default, the known-facts register, this case's
+        # promoted research - with the layer that won recorded per field.
+        #
+        # The simulation used site counts and nothing else: product pairs,
+        # dual-access probability, bandwidth and users per site were global
+        # constants, so a finding about a client's architecture reached
+        # nothing. Counts were evidence-driven and topology was not.
         _industry = (case_row.industry or "DEFAULT").strip().upper()
         _bw_rows = s.execute(select(db.archetype_bandwidth).where(
             db.archetype_bandwidth.c.industry.in_([_industry, "DEFAULT"]))).all()
         _bw = {}
         for r in sorted(_bw_rows, key=lambda r: r.industry == "DEFAULT",
                         reverse=True):
-            # DEFAULT first, so a matching industry row overwrites it.
             _bw[r.archetype] = int(r.bandwidth_mbps)
         bandwidth_basis = {"industry": _industry,
                            "matched": _industry in {r.industry for r in _bw_rows},
                            "by_archetype": dict(sorted(_bw.items()))}
-        for _a, _mbps in _bw.items():
-            if _a in arch:
-                arch[_a]["bandwidth_mbps_base"] = _mbps
+
+        # Register statements are read here rather than written on
+        # registration, so a fact edited on page 2 takes effect without a
+        # second promotion step.
+        _from_facts = archetype_resolver.from_known_facts(s, case_id=case_id)
+        for _f in _from_facts:
+            if _f["value"] is None:
+                continue
+            _row_id = f"{case_id}-{_f['archetype']}-{_f['field']}"
+            _exists = s.execute(select(db.evidenced_archetype.c.origin).where(
+                db.evidenced_archetype.c.id == _row_id)).first()
+            if _exists and _exists[0] == "PROMOTED_RESEARCH":
+                continue          # evidence outranks the assertion
+            s.execute(delete(db.evidenced_archetype).where(
+                db.evidenced_archetype.c.id == _row_id))
+            s.execute(insert(db.evidenced_archetype).values(
+                id=_row_id, case_id=case_id, archetype=_f["archetype"],
+                field=_f["field"], value=_f["value"], origin="KNOWN_FACT",
+                known_fact_id=_f["known_fact_id"],
+                recorded_by=_f["asserted_by"]))
+        s.commit()
+
+        arch, topology_basis = archetype_resolver.resolve(
+            s, case_id=case_id, seeded=arch, industry_bandwidth=_bw)
 
         footprint = [r.model_dump() for r in payload.footprint]
         total_sites = sum(r["sites"] for r in footprint)
@@ -889,7 +912,7 @@ def run_simulation(case_id: str, payload: SimIn):
                 "error": "footprint has no sites",
                 "detail": "Every row is zero, so there is nothing to simulate. "
                           "Enter site counts, or research domain 2 and promote "
-                          "its counts on page 5 to start from evidence."})
+                          "its counts on page 4 to start from evidence."})
         if total_sites > config.MAX_SIM_SITES:
             raise HTTPException(422, f"total sites {total_sites} exceeds "
                                      f"MAX_SIM_SITES={config.MAX_SIM_SITES}")
@@ -943,7 +966,8 @@ def run_simulation(case_id: str, payload: SimIn):
             ensemble_size=payload.ensemble_size,
             params={"footprint": footprint},
             pinned_priors={"archetype_prior": arch,
-                           "bandwidth_basis": bandwidth_basis},
+                           "bandwidth_basis": bandwidth_basis,
+                           "topology_basis": topology_basis},
             status=jobs.QUEUED, progress_completed=0,
             progress_total=payload.ensemble_size, cancel_requested=False))
         s.commit()
@@ -1691,7 +1715,7 @@ def run_estimate(case_id: str, payload: EstimateIn):
             raise HTTPException(422, {
                 "error": "BUILD_UP requires a simulation",
                 "detail": "the method prices an enumerated estate, so there "
-                          "has to be one. Run a simulation on page 4, or use "
+                          "has to be one. Run a simulation on page 5, or use "
                           "method=ANCHOR where a site-level inventory is not "
                           "available."})
         sim = _one_or_404(s, db.simulation_run,
@@ -1713,7 +1737,7 @@ def run_estimate(case_id: str, payload: EstimateIn):
                     "This simulation's circuits carry no bandwidth, so none of "
                     "them can be matched to a price and the estimate would "
                     "report 0% coverage for a reason that has nothing to do "
-                    "with coverage. Re-run the simulation on page 4 - the "
+                    "with coverage. Re-run the simulation on page 5 - the "
                     "footprint and seed are unchanged, so the result is "
                     "reproducible, not merely similar.")})
 

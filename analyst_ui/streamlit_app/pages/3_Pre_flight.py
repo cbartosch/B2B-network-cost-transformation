@@ -92,7 +92,7 @@ if report["blocked"]:
                "no override - a gate that can be waived silently is not a gate.")
 elif report.get("acknowledged_by"):
     st.caption("Already acknowledged. Nothing further is needed here; continue to "
-               "page 4 (Simulation) or page 6 (Run V0).")
+               "page 5 (Simulation) or page 6 (Run V0).")
 else:
     who = st.text_input("Acknowledged by (your name)",
                         help="A named person, not a role or a team. Reproduced beside "

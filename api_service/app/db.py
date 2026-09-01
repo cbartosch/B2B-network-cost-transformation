@@ -574,6 +574,38 @@ unit_cost_prior = Table(
 # than governed: these describe one client's estate, not a market rate, so
 # they do not carry an `approved` flag the way unit_cost_prior does. The
 # simulation page reads them as its evidenced starting point.
+# How a site type is built, for one case, established by that case's own
+# evidence rather than by the global seed.
+#
+# The simulation consumed site counts and nothing else: every product pair,
+# dual-access probability, bandwidth and users-per-site came from
+# reference.archetype_prior, so research could establish that a client runs
+# dual MPLS at 60% of branches and the model would still use the seeded 0.55.
+# Counts were evidence-driven and topology was not.
+#
+# Case-scoped rather than an edit to the reference table, because one client's
+# estate is not a benchmark: establishing this for Wuerth must not retune every
+# other case. `origin` records whether it came from promoted research or from
+# the known-facts register, because the two carry different weight and the
+# simulation reports which it used.
+evidenced_archetype = Table(
+    "evidenced_archetype", metadata,
+    Column("id", String(96), primary_key=True),      # {case}-{archetype}-{field}
+    Column("case_id", String(36), index=True),
+    Column("archetype", String(48)),
+    Column("field", String(40)),
+    Column("value", Text),                           # string; parsed on read
+    Column("origin", String(24)),                    # PROMOTED_RESEARCH | KNOWN_FACT
+    Column("domain_no", Integer),
+    Column("known_fact_id", String(36)),
+    Column("agent_run_id", String(36)),
+    Column("source_urls", JSON),
+    Column("reliability_grade", String(16)),
+    Column("recorded_by", String(120)),
+    Column("recorded_at", DateTime(timezone=True), default=_now),
+    schema="outside_in",
+)
+
 evidenced_footprint = Table(
     "evidenced_footprint", metadata,
     Column("id", String(36), primary_key=True),

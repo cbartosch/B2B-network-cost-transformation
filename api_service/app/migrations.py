@@ -34,7 +34,7 @@ from . import db
 log = logging.getLogger("workbench.migrations")
 
 # Bump when the physical schema changes, and add a step below.
-SCHEMA_VERSION = 27
+SCHEMA_VERSION = 28
 
 VERSION_TABLE = "schema_version"
 VERSION_SCHEMA = "audit"
@@ -730,13 +730,25 @@ def _migrate_v27(conn) -> None:
     log.info("v27: supersedes_snapshot_id added=%s", bool(added))
 
 
+def _migrate_v28(conn) -> None:
+    """4.25.0 -> 4.26.0: outside_in.evidenced_archetype.
+
+    Wholly new; create_all builds it. Lets a case's own evidence inform the
+    topology and not only the counts: product pairs, dual-access probability,
+    bandwidth and users per site were global seeded constants, so a researched
+    or asserted finding about a client's architecture reached nothing.
+    """
+    log.info("v28: evidenced_archetype introduced; a case's evidence can now "
+             "inform topology as well as counts")
+
+
 MIGRATIONS = {2: _migrate_v2, 3: _migrate_v3, 4: _migrate_v4, 5: _migrate_v5,
               6: _migrate_v6, 7: _migrate_v7, 8: _migrate_v8, 9: _migrate_v9,
               10: _migrate_v10, 11: _migrate_v11, 12: _migrate_v12,
               13: _migrate_v13, 14: _migrate_v14, 15: _migrate_v15,
               16: _migrate_v16, 17: _migrate_v17, 18: _migrate_v18,
               19: _migrate_v19, 20: _migrate_v20,
-              21: _migrate_v21, 22: _migrate_v22, 23: _migrate_v23, 24: _migrate_v24, 25: _migrate_v25, 26: _migrate_v26, 27: _migrate_v27}
+              21: _migrate_v21, 22: _migrate_v22, 23: _migrate_v23, 24: _migrate_v24, 25: _migrate_v25, 26: _migrate_v26, 27: _migrate_v27, 28: _migrate_v28}
 
 
 class SchemaDrift(RuntimeError):

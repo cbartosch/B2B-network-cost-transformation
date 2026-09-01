@@ -112,7 +112,7 @@ else:
     elif _origin in ("SCOPE_PLACEHOLDER", "ILLUSTRATIVE"):
         st.caption(
             "To replace these: research domain 2 and promote the counts on "
-            "page 5, or register what you know on page 2 - a registered "
+            "page 4, or register what you know on page 2 - a registered "
             "Location footprint fact is picked up here automatically.")
 
 _unallocated = (_fp or {}).get("unallocated_sites")
@@ -334,6 +334,27 @@ if sim:
                "simulated share in step 6 is computed from.")
     st.caption(f"Model `{o['model_version']}` seed `{o['seed']}` ensemble {o['ensemble_size']}. "
                f"Re-running with the same seed and priors reproduces this hash exactly.")
+    _topo = (sim.get("pinned_priors") or {}).get("topology_basis") or {}
+    if _topo:
+        _ev, _as = _topo.get("evidenced_fields") or [], _topo.get("assumed_fields") or []
+        st.markdown("**How each site type is built**")
+        (st.success if _ev else st.warning)(
+            f"{len(_ev)} of {len(_ev) + len(_as)} topology field(s) come from "
+            f"this case's own evidence; {len(_as)} are still seeded "
+            f"assumptions.")
+        st.dataframe(pd.DataFrame([{
+            "site type": k.split(".")[0], "dimension": k.split(".")[1],
+            "value": v.get("value"),
+            "from": {"SEEDED_PRIOR": "seeded default",
+                     "INDUSTRY_DEFAULT": "industry default",
+                     "KNOWN_FACT": "known-facts register",
+                     "PROMOTED_RESEARCH": "promoted research"}.get(
+                         v.get("layer"), v.get("layer")),
+            "grade": v.get("grade") or "",
+        } for k, v in (_topo.get("by_field") or {}).items()]),
+            use_container_width=True, hide_index=True)
+        st.caption(_topo.get("note", ""))
+
     _basis = (sim.get("pinned_priors") or {}).get("bandwidth_basis") or {}
     if _basis:
         st.markdown("**Bandwidth by site type**")
