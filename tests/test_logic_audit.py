@@ -205,3 +205,21 @@ def test_every_domain_result_attribute_is_in_its_slots():
         assert not assigned - slots, f"missing from __slots__: {sorted(assigned - slots)}"
         return
     pytest.fail("DomainResult not found")
+
+
+def test_confirming_an_entity_never_wipes_a_typed_identifier():
+    """Confirmation locks entity_identifier, and it wrote cand.identifier
+    unconditionally - so confirming a candidate the agent found without one
+    wiped a hand-typed LEI and left a mandatory field permanently empty,
+    unfillable without re-resolving.
+
+    The candidate is the better source when it has one and no source at all
+    when it does not."""
+    src = (APP / "domain" / "entity_resolution.py").read_text()
+    confirm = src[src.index("def confirm("):src.index("def profile(")]
+    assert "cand.identifier or (" in confirm, (
+        "a null identifier on the candidate must not overwrite the case's")
+    assert "identifier_source" in confirm
+    assert "identifier_note" in confirm, (
+        "an empty identifier after a locking confirmation has to be reported "
+        "at that moment, not discovered at pre-flight")

@@ -13,6 +13,9 @@ if not case_id:
 case = api.get(f"/v1/outside-in/cases/{case_id}")
 
 api.show_flash()
+_iw = st.session_state.pop("_ident_warn", None)
+if _iw:
+    st.error(_iw)
 
 st.subheader("Mandatory intake block")
 
@@ -48,9 +51,22 @@ with st.form("intake"):
     name = c1.text_input("Subject entity legal name *", case.get("subject_entity_legal_name") or "",
                          help="Exact registered legal name - not a trading or brand name",
                          disabled=is_locked)
-    ident = c2.text_input("Entity identifier *", case.get("entity_identifier") or "",
-                          help="LEI, ticker plus exchange, registration number or primary domain",
-                          disabled=is_locked)
+    ident = c2.text_input(
+        "Entity identifier *", case.get("entity_identifier") or "",
+        help="LEI (search gleif.org), registration number, ticker plus "
+             "exchange, or primary domain. Autofilled when you confirm an "
+             "entity below, if the candidate carries one.",
+        disabled=is_locked)
+    if not (ident or "").strip():
+        # Warned here, blocked at pre-flight. The asterisk used to be the only
+        # signal and it stopped nothing: a case could carry an empty identifier
+        # through intake, research and simulation, and the BLOCK surfaced only
+        # when V0 was attempted. Parking a half-finished case is a real
+        # workflow; being surprised at publication is not.
+        c2.warning("Empty. You can save and come back, but pre-flight will "
+                   "BLOCK and V0 will refuse to run until this is filled. "
+                   "Confirming an entity below fills it automatically where "
+                   "the candidate has one.")
     dom = c3.text_input("Country of domicile *", case.get("country_of_domicile") or "",
                         max_chars=2, disabled=is_locked)
 
@@ -216,7 +232,22 @@ elif _prof:
                     st.rerun()
 
         if _prof.get("identifiers"):
-            st.caption("Identifiers found: " + ", ".join(_prof["identifiers"]))
+            # Acceptable in one click. The profile searched for these and
+            # displayed them as a caption, so an analyst who had just been
+            # shown the LEI still had to retype it.
+            st.markdown("**Identifiers found**")
+            _pick = st.selectbox("Use one as the entity identifier",
+                                 ["-"] + list(_prof["identifiers"]),
+                                 key="prof_ident")
+            if _pick != "-" and st.button("Set as entity identifier"):
+                _r = api.put(f"/v1/outside-in/cases/{case_id}",
+                             {"entity_identifier": _pick})
+                if "_error" in _r:
+                    st.error(_r["_error"] + "  (a confirmed entity locks this "
+                                            "field - re-resolve to change it)")
+                else:
+                    api.flash(f"Entity identifier set to {_pick}.")
+                    st.rerun()
         with st.expander("Sources"):
             for src in _prof.get("sources") or []:
                 st.write(f"- {src.get('publisher') or 'source'}: "
@@ -278,8 +309,17 @@ if cands:
                 if "_error" in r:
                     st.error(r["_error"])
                 else:
-                    api.flash(f"Confirmed {r['legal_name']} - perimeter "
-                              f"v{r['perimeter_version']}")
+                    _msg = (f"Confirmed {r['legal_name']} - perimeter "
+                            f"v{r['perimeter_version']}")
+                    if r.get("entity_identifier"):
+                        _msg += (f". Entity identifier "
+                                 f"{r['entity_identifier']} "
+                                 f"({str(r.get('identifier_source', '')).lower().replace('_', ' ')})")
+                    api.flash(_msg)
+                    if r.get("identifier_note"):
+                        # Confirmation locks the field, so an empty one has to
+                        # be said now rather than discovered at pre-flight.
+                        st.session_state["_ident_warn"] = r["identifier_note"]
                     st.rerun()
 
 if case.get("resolved_entity_id"):

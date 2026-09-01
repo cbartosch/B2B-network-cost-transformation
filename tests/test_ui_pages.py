@@ -532,3 +532,25 @@ def test_the_client_surfaces_the_exception_detail_the_api_sends():
     assert 'body.get("where")' in client
     assert '"_error_type"' in client, (
         "callers should be able to branch on the type, not only print it")
+
+
+def test_an_empty_entity_identifier_warns_at_save_and_names_the_gate():
+    """The asterisk was the only signal and it stopped nothing: a case could
+    carry an empty identifier through intake, research and simulation, and the
+    pre-flight BLOCK surfaced only when V0 was attempted.
+
+    Parking a half-finished case is a real workflow; being surprised at
+    publication is not."""
+    page = next(p for p in PAGES if p.name.startswith("1_"))
+    text = page.read_text()
+    assert "pre-flight will " in text and "BLOCK" in text
+    assert "You can save and come back" in text
+
+
+def test_a_found_identifier_can_be_accepted_in_one_click():
+    """The profile searched for these and showed them as a caption, so an
+    analyst who had just been shown the LEI still had to retype it."""
+    page = next(p for p in PAGES if p.name.startswith("1_"))
+    text = page.read_text()
+    assert "Set as entity identifier" in text
+    assert '"entity_identifier": _pick' in text

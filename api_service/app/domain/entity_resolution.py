@@ -106,15 +106,31 @@ def confirm(session, *, case_id: str, candidate_id: str, confirmed_by: str,
         db.entity_candidate.c.candidate_id == candidate_id)).first()
     if cand is None:
         raise LookupError(f"entity candidate {candidate_id!r} not found")
-    current = session.execute(select(db.case.c.perimeter_version).where(
-        db.case.c.case_id == case_id)).scalar() or 0
+    case_row = session.execute(select(db.case).where(
+        db.case.c.case_id == case_id)).first()
+    current = (case_row.perimeter_version if case_row else 0) or 0
+
+    # Autofilled from the confirmed candidate where it has an identifier, and
+    # the analyst's own value kept where it does not.
+    #
+    # This wrote cand.identifier unconditionally, and confirmation locks the
+    # field - so confirming a candidate the agent found without an identifier
+    # wiped a hand-typed LEI and left a mandatory field permanently empty,
+    # unfillable without re-resolving. The candidate is the better source when
+    # it has one and no source at all when it does not.
+    identifier = cand.identifier or (
+        case_row.entity_identifier if case_row else None)
+    identifier_source = ("CONFIRMED_CANDIDATE" if cand.identifier
+                         else "KEPT_FROM_INTAKE" if identifier
+                         else "NONE")
 
     from datetime import datetime, timezone
     session.execute(update(db.case).where(db.case.c.case_id == case_id).values(
         resolved_entity_id=candidate_id,
         subject_entity_legal_name=cand.legal_name,
-        entity_identifier=cand.identifier,
-        country_of_domicile=cand.domicile,
+        entity_identifier=identifier,
+        country_of_domicile=cand.domicile or (
+            case_row.country_of_domicile if case_row else None),
         group_perimeter=group_perimeter,
         included_entities=included, excluded_entities=excluded,
         perimeter_version=current + 1,
@@ -122,7 +138,19 @@ def confirm(session, *, case_id: str, candidate_id: str, confirmed_by: str,
         entity_confirmed_at=datetime.now(timezone.utc)))
     session.commit()
     return {"resolved_entity_id": candidate_id, "legal_name": cand.legal_name,
-            "perimeter_version": current + 1, "confirmed_by": confirmed_by}
+            "perimeter_version": current + 1, "confirmed_by": confirmed_by,
+            "entity_identifier": identifier,
+            "identifier_source": identifier_source,
+            # Said out loud, because confirmation locks the field: an analyst
+            # who learns only at pre-flight that it is empty has to re-resolve
+            # to fill it.
+            "identifier_note": (
+                "The confirmed candidate carried no identifier and none was "
+                "typed at intake, so this case has no entity identifier. "
+                "Pre-flight will BLOCK until it has one, and confirmation has "
+                "locked the field - re-resolve with an identifier in the hint, "
+                "or confirm a candidate that has one."
+                if identifier_source == "NONE" else "")}
 
 
 def is_confirmed(session, case_id: str) -> bool:
