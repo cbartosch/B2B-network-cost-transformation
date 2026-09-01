@@ -175,20 +175,20 @@ def test_an_inferred_figure_is_downgraded_and_kept():
 def test_the_base_contract_asks_for_findings_not_certainty():
     """The contract told the agent a snippet "is not evidence", which under
     grading means discarding an UNRELIABLE finding that was worth keeping."""
-    from app.llm.prompts import BASE_CONTRACT
-    assert "Nothing you find is discarded" in BASE_CONTRACT
-    assert "is not evidence" not in BASE_CONTRACT
-    assert "Withholding either" in BASE_CONTRACT
-    assert "Never invent a source" in BASE_CONTRACT, (
+    from app.llm.prompts import CORE_CONTRACT, RESEARCH_CONTRACT
+    assert "Nothing you find is discarded" in (CORE_CONTRACT + RESEARCH_CONTRACT)
+    assert "is not evidence" not in (CORE_CONTRACT + RESEARCH_CONTRACT)
+    assert "Withholding either" in (CORE_CONTRACT + RESEARCH_CONTRACT)
+    assert "Never invent a source" in (CORE_CONTRACT + RESEARCH_CONTRACT), (
         "the one prohibition grading cannot work around must survive")
 
 
 def test_the_contract_tells_the_agent_to_stop_searching():
     """Efficiency: an eighth query rarely changes a grade, and every one is
     latency and spend."""
-    from app.llm.prompts import BASE_CONTRACT
-    assert "Stop when you have a figure and its provenance" in BASE_CONTRACT
-    assert "Vary the phrasing" in BASE_CONTRACT
+    from app.llm.prompts import CORE_CONTRACT, RESEARCH_CONTRACT
+    assert "Stop when you have a figure and its provenance" in (CORE_CONTRACT + RESEARCH_CONTRACT)
+    assert "Vary the phrasing" in (CORE_CONTRACT + RESEARCH_CONTRACT)
 
 
 # ---------------------------------------- the prompt and the schema must agree

@@ -531,3 +531,53 @@ def test_the_prefill_sweep_files_facts_under_the_case_wording():
     task = prompts.get("known_fact.prefill_public").task
     assert "exactly as it is given to you" in task
     assert "duplicate check" in task
+
+
+# ------------------------------------------- the contract fits the service
+def test_a_service_that_does_not_search_is_not_told_how_to_search():
+    """One contract for all ten meant a narrating agent - one field, no
+    sources, no search - was given several hundred words about provenance,
+    search discipline and disagreement between sources.
+
+    Attention spent reading that is attention not spent on the task, and
+    instructions that cannot apply teach a model to skim the ones that do."""
+    narrate = prompts.get("llm07.advisory.narrate")
+    template = narrate.system_template
+    assert "SEARCHING EFFICIENTLY" not in template
+    assert "REPORT THE PROVENANCE" not in template
+    # The parts that apply to everything must survive.
+    for section in ("WHAT YOU MUST NOT DO", "UNTRUSTED CONTENT",
+                    "NORMALISATION", "SUBJECT AND RIGHTS"):
+        assert section in template, section
+
+
+def test_a_searching_service_still_gets_the_research_contract():
+    template = prompts.get("llm01.public_evidence.extract").system_template
+    for section in ("REPORT THE PROVENANCE", "SEARCHING EFFICIENTLY",
+                    "DISAGREEMENT IS A FINDING", "UNTRUSTED CONTENT"):
+        assert section in template, section
+
+
+def test_whether_a_service_cites_sources_is_read_from_its_schema():
+    """A separate flag would be one more thing to forget; the schema knows."""
+    assert prompts.get("known_fact.corroborate").cites_sources is True
+    assert prompts.get("llm07.advisory.narrate").cites_sources is False
+    assert prompts.get("entity.resolve.candidates").cites_sources is True
+
+
+def test_the_shorter_contract_is_materially_shorter():
+    narrate = len(prompts.get("llm07.advisory.narrate").system_template.split())
+    research = len(prompts.get("llm01.public_evidence.extract")
+                   .system_template.split())
+    assert narrate < research * 0.75, (
+        f"a non-searching service reads {narrate} words against {research} - "
+        f"if the split saves nothing it is complexity for nothing")
+
+
+def test_splitting_the_contract_moved_every_affected_prompt_hash():
+    """The system template changed for all ten, so prompt_hash changed for all
+    ten - and a stored finding is interpreted against the version recorded
+    beside it."""
+    for definition in prompts.PROMPTS.values():
+        assert definition.prompt_hash, definition.prompt_id
+    assert prompts.validate_registry() == []

@@ -168,7 +168,11 @@ def prompt_schema_agreement() -> list[str]:
     """Asking for a field and then refusing it is the worst of both, and it
     cost a 377-second domain three times over."""
     prompts = _read("llm", "prompts.py")
-    contract = prompts[prompts.index("BASE_CONTRACT"):
+    # Both halves. The contract was split into a core every service reads and a
+    # research part only the six that search or cite sources read, and this
+    # check named the old single constant - so it crashed rather than passing
+    # falsely, which is the right failure but still a failure.
+    contract = prompts[prompts.index("CORE_CONTRACT = "):
                        prompts.index("class ToolPolicy")]
     schemas = _read("llm", "schemas.py")
     tree = ast.parse(schemas)
