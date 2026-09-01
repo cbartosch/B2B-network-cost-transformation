@@ -321,3 +321,32 @@ def test_an_allocated_footprint_of_the_same_total_is_accepted(session, client):
     r = client.post(f"/v1/outside-in/cases/{case_id}/simulations:run",
                     json={"seed": 42, "ensemble_size": 1, "footprint": rows})
     assert r.status_code in (200, 202), r.text
+
+
+def test_anchor_does_not_require_a_driver_it_never_uses(session, client):
+    """ANCHOR derives its OPS layer as a governed share of the addressable
+    pool and never multiplies a per-site rate - anchor_estimate.py does not
+    mention ops at all.
+
+    Making the figure mandatory for every method therefore refused a valid
+    request for a driver the calculation would not have used. Two existing
+    tests caught it on the first real run."""
+    case_id = _ready_case(session, countries=("DE",))
+    _dispose_all(session, case_id)
+
+    r = client.post(f"/v1/outside-in/cases/{case_id}/estimates:run",
+                    json={"method": "ANCHOR", "anchor_value": 213_000_000})
+    assert r.status_code != 422 or "no ops cost per site" not in r.text, (
+        "ANCHOR must not be refused for a BUILD_UP driver")
+
+
+def test_build_up_still_refuses_a_missing_ops_cost(session, client):
+    """The refusal exists because 900 per site used to be a server-side
+    default that reached the baseline whenever a caller omitted the field."""
+    case_id = _ready_case(session, countries=("DE",))
+    _dispose_all(session, case_id)
+
+    r = client.post(f"/v1/outside-in/cases/{case_id}/estimates:run",
+                    json={"method": "BUILD_UP", "users": 500})
+    assert r.status_code == 422
+    assert r.json()["detail"]["error"] == "no ops cost per site"

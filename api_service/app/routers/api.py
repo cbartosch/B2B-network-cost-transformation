@@ -1734,7 +1734,13 @@ def run_estimate(case_id: str, payload: EstimateIn):
         _ops = (payload.ops_cost_per_site_base
                 if payload.ops_cost_per_site_base is not None
                 else case_row.declared_ops_cost_per_site)
-        if _ops is None:
+        # Only BUILD_UP needs it. ANCHOR derives its OPS layer as a governed
+        # share of the addressable pool and never multiplies a per-site rate -
+        # anchor_estimate.py does not mention ops at all - so requiring the
+        # figure for that method refused a valid request for a driver the
+        # calculation would not have used. Two tests caught this and I had not
+        # run them.
+        if _ops is None and payload.method != anchor_estimate.METHOD_ANCHOR:
             raise HTTPException(422, {
                 "error": "no ops cost per site",
                 "detail": "This drives the OPS layer directly. Supply it on "

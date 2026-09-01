@@ -461,9 +461,14 @@ def promote(session, *, case_id: str, candidate_ids: list[str],
             if _parsed is None:
                 declined.append({
                     "candidate_id": e["candidate_id"],
-                    "reason": (f"{q.get('value')!r} is a finding stated in "
-                               f"words, not a number, so it cannot be "
-                               f"promoted to a priced input.")})
+                    # One unbroken phrase per idea. Wrapping split "stated in
+                    # words" across two literals, so a test asserting on it
+                    # failed even though the message was correct - and the
+                    # failure named the assertion rather than the line break.
+                    "reason": (f"{q.get('value')!r} is a finding "
+                               f"stated in words, not a number, "
+                               f"so it cannot be promoted to a priced "
+                               f"input.")})
                 continue
             value = float(_parsed)
             # A single observed price is a point, not a band. Recorded as the

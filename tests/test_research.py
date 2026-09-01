@@ -20,6 +20,7 @@ first real signal.
 """
 import itertools
 import json
+from dataclasses import replace
 import uuid
 from datetime import datetime, timezone
 
@@ -130,6 +131,25 @@ class _FakeAdapter:
             provider_request_at=now, input_tokens=50, output_tokens=50,
             local_request_at=now, latency_ms=10, http_status=200,
             egress_proxy=None, raw={"content": content})
+
+    def parse(self, *, system, prompt, schema, schema_name,
+              max_tokens=4000, tools=None) -> ProviderCall:
+        """The schema-enforced channel WP1 added to the provider protocol.
+
+        Every fake was left with complete() only, so 34 tests died with
+        "'_FakeAdapter' object has no attribute 'parse'" - the CR's WP0
+        predicted exactly this and it was never done. The fake returns the same
+        text its complete() would and parses it as the provider's structured
+        channel does, so what the test author wrote as a response still drives
+        the assertion.
+        """
+        call = self.complete(system=system, prompt=prompt,
+                            max_tokens=max_tokens, tools=tools)
+        try:
+            parsed = json.loads(call.text)
+        except ValueError:
+            parsed = None
+        return replace(call, parsed=parsed)
 
 
 def _wire_fake_provider(monkeypatch, text_fn=None, *, configured=True,
@@ -721,6 +741,17 @@ def test_the_prompt_states_what_the_model_currently_assumes(session, monkeypatch
 def test_the_system_prompt_explains_which_numbers_move_the_total():
     """An agent that does not know the cost formula cannot prioritise. Site
     counts and circuit prices dominate; a country with no benchmark is
-    excluded entirely rather than estimated."""
-    for agent_id, system in research.AGENT_SYSTEM_PROMPTS.items():
-        assert "archetype" in system and "benchmark" in system, agent_id
+    excluded entirely rather than estimated.
+
+    research.AGENT_SYSTEM_PROMPTS was deleted when WP1 moved every system
+    prompt into the registry, and this test kept reading it - so it failed with
+    AttributeError rather than checking the thing it names. The registry is now
+    the source, which is also where a drifting prompt would actually show up.
+    """
+    from app.llm import prompts
+
+    for prompt_id in ("llm01.public_evidence.extract",
+                      "llm08.market_data.extract"):
+        template = prompts.get(prompt_id).system_template
+        assert "perimeter" in template.lower(), prompt_id
+        assert "source" in template.lower(), prompt_id

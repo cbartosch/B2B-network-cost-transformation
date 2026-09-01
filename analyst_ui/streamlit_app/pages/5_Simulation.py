@@ -4,7 +4,7 @@ import pandas as pd
 import streamlit as st
 import api_client as api
 
-st.title("4. Topology and architecture simulation")
+st.title("5. Topology and architecture simulation")
 st.caption("Specification 0.3B - a sizing instrument, not evidence. Never written to "
            "the topology graph; diversity state is always SIMULATED.")
 

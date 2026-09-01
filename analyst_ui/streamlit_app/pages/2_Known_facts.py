@@ -156,6 +156,146 @@ elif _pf:
                    + ". That is a finding too - these need your knowledge or "
                      "the client's.")
 
+
+# --- registering a fact by hand ------------------------------------------
+# Restored. The 4.119.0 edit that turned the public-prefill proposals into an
+# editable table sliced from the proposals block to the next divider, and the
+# entry form sat between them - so for five releases the only way to add a fact
+# was to accept one the sweep had proposed. A register you cannot write to by
+# hand is not a register of what the team knows.
+# Deliberately not st.form. A form does not write its widget values to session
+# state until it is submitted, so navigating to another page mid-entry discarded
+# everything typed - which is what "the information I entered is gone" meant all
+# along, and it was the register I kept fixing. Plain keyed widgets write to
+# session state as they change, so a half-finished fact survives a page switch.
+#
+# The cost is a rerun per keystroke-group, which on this page is unnoticeable.
+_KF_FIELDS = {
+    "kf_fact_class": "Location footprint",
+    "kf_subject": _entity,
+    "kf_base": None, "kf_low": None, "kf_high": None,
+    "kf_unit": "sites",
+    "kf_asserted_by": "",
+    "kf_basis": "CLIENT_CONVERSATION",
+    "kf_verif": "PUBLICLY_VERIFIABLE",
+    "kf_date": dt.date.today(),
+    "kf_conf": 0.6,
+}
+# Streamlit forbids writing a widget's session-state key once that widget has
+# been instantiated in the same run, so a reset requested by a button cannot be
+# performed where the button is handled. It is requested there and carried out
+# here, before any widget is created.
+if st.session_state.pop("_kf_reset", False):
+    for _k, _default in _KF_FIELDS.items():
+        st.session_state[_k] = _default
+
+for _k, _default in _KF_FIELDS.items():
+    st.session_state.setdefault(_k, _default)
+
+st.markdown("**Register a known fact**")
+if any(st.session_state.get(k) not in (None, "", _KF_FIELDS[k])
+       for k in ("kf_base", "kf_low", "kf_high", "kf_asserted_by")):
+    st.caption("Draft in progress - it is kept if you move to another page and "
+               "come back.")
+
+_CLASSES = ["Location footprint", "Current architecture hypothesis",
+            "Public cost evidence", "Current vendor and product signals",
+            "Contract and sourcing events", "Operating-model cost",
+            "Transformation announcements", "Resilience assumptions",
+            "Remote-user population", "Market serviceability"]
+_BASES = ["CLIENT_CONVERSATION", "INDUSTRY_KNOWLEDGE", "THIRD_PARTY_REPORT",
+          "PRIOR_ENGAGEMENT", "UNSTATED"]
+_VERIF = ["PUBLICLY_VERIFIABLE", "CLIENT_CONFIRMABLE", "UNVERIFIABLE"]
+
+a, b = st.columns(2)
+fact_class = a.selectbox("Fact class", _CLASSES, key="kf_fact_class")
+_suggestions = [x for x in ([_entity] + _aliases + _countries) if x]
+subject = b.text_input(
+    "Subject *", key="kf_subject",
+    help="The entity, country, provider or contract the claim is about, "
+         "prefilled from the case. Change it where the claim is not about the "
+         "entity itself - a country for market serviceability, a carrier for a "
+         "contract event. Keep the wording consistent between facts about the "
+         "same thing: corroboration and the public prefill both match on it.")
+if _suggestions:
+    b.caption("Also on this case: " + " · ".join(_suggestions[:5]))
+
+c, d, e, f = st.columns(4)
+# The default is None, set through _KF_FIELDS above. It used to be 0.0, and the
+# payload then did `base or None` - so an untouched field silently became "no
+# value", and a legitimate zero became one too. The fact registered as
+# "(None sites)" with an empty subject, and every stage downstream behaved
+# correctly on something that should never have been storable.
+# No value= alongside key=: session state already holds the field through
+# setdefault above, and passing both makes Streamlit warn that a widget was
+# given a default and had its value set through session state.
+base = c.number_input("Value (base) *", placeholder="e.g. 340", key="kf_base")
+low = d.number_input("Low (optional)", key="kf_low")
+high = e.number_input("High (optional)", key="kf_high")
+unit = f.text_input("Unit", key="kf_unit")
+
+g, h, i = st.columns(3)
+asserted_by = g.text_input("Asserted by *", key="kf_asserted_by",
+                           help="A named individual. Not a team or a role.")
+basis = h.selectbox("Basis", _BASES, key="kf_basis")
+verif = i.selectbox("Verifiability", _VERIF, key="kf_verif")
+
+j, k = st.columns(2)
+adate = j.date_input("Assertion date", key="kf_date")
+conf = k.slider("Self-reported confidence", 0.0, 1.0, key="kf_conf")
+
+if basis == "PRIOR_ENGAGEMENT":
+    st.warning("A PRIOR_ENGAGEMENT fact may carry another client's "
+               "confidential information. It starts un-cleared and cannot "
+               "influence the estimate until a rights check passes (2.4).")
+
+_reg, _clear = st.columns([1, 4])
+if _clear.button("Clear the form"):
+    st.session_state["_kf_reset"] = True
+    st.rerun()
+
+if _reg.button("Register", type="primary"):
+    problems = []
+    if not (asserted_by or "").strip():
+        problems.append("An unattributed known fact is rejected. Name the asserter.")
+    if not (subject or "").strip():
+        problems.append("Name the subject. Corroboration looks for public "
+                        "sources about a named subject.")
+    if base is None and low is None and high is None:
+        problems.append("Give a value - a point in base, or a range in low and "
+                        "high. If the number is genuinely unknown, leave the "
+                        "domain DECLARED_UNKNOWN rather than asserting an "
+                        "empty fact.")
+    if problems:
+        for msg in problems:
+            st.error(msg)
+    else:
+        r = api.post(f"/v1/outside-in/cases/{case_id}/known-facts", {
+            "fact_class": fact_class, "subject": subject,
+            # No `or None`: that coerced a legitimate zero to absent as well
+            # as an untouched field.
+            "value_base": base, "value_low": low, "value_high": high,
+            "unit": unit,
+            "asserted_by": asserted_by, "assertion_date": str(adate),
+            "basis": basis, "verifiability": verif,
+            "self_reported_confidence": conf})
+        if "_error" in r:
+            st.error(r["_error"])
+        else:
+            _msg = (f"Registered {fact_class} for {subject} as "
+                    f"{r.get('evidence_origin')} "
+                    f"(id {str(r.get('known_fact_id'))[:8]}).")
+            if r.get("range_widened_from_point"):
+                _msg += (" The point value was widened to a range; the "
+                         "widening is recorded.")
+            api.flash(_msg)
+            # The form is NOT cleared. What was entered stays on screen after
+            # registering, because clearing it reads as the entry having been
+            # lost - and because the next fact is usually the same subject with
+            # a different class or value, which is faster to edit than to
+            # retype. Use "Clear the form" to empty it deliberately.
+            st.rerun()
+
 st.divider()
 
 # Downloadable, because the register is where hand-entered work accumulates and

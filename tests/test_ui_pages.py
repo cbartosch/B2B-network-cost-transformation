@@ -21,6 +21,22 @@ PAGES = sorted((pathlib.Path(__file__).resolve().parents[1]
                 / "analyst_ui" / "streamlit_app").rglob("*.py"))
 
 
+def _page(fragment: str):
+    """Find a page by a distinctive part of its name, not its number.
+
+    33 lookups used `startswith("4_")`. Reordering the workflow so dispositions
+    precede simulation renumbered both files, and every one of those tests
+    silently began asserting against the wrong page - which is how a rename
+    turned into twenty-odd failures that named the assertion rather than the
+    cause.
+    """
+    matches = [p for p in PAGES if fragment.lower() in p.name.lower()]
+    assert len(matches) == 1, (
+        f"{fragment!r} matches {[m.name for m in matches]} - the lookup has to "
+        f"be unambiguous or a test can assert against the wrong page")
+    return matches[0]
+
+
 def _bound_and_used(tree):
     bound, used = set(), set()
     for node in ast.walk(tree):
@@ -75,7 +91,7 @@ def test_the_simulation_footprint_opens_runnable():
     guard refuses an all-zero footprint, so nothing could be run without
     typing first. One site per country is small enough that nobody mistakes it
     for a finding - the actual concern - while leaving the page reachable."""
-    page = next(p for p in PAGES if p.name.startswith("4_"))
+    page = _page("Simulation")
     text = page.read_text()
     assert '"archetype": "BRANCH", "sites": 1' in text, (
         "the in-scope-country default must be at least one site")
@@ -86,12 +102,27 @@ def test_the_simulation_footprint_opens_runnable():
 # --------------------------------------------- simulation footprint payload
 def _clean():
     """The page is a Streamlit script, so the helper is lifted out by source
-    rather than imported - importing it would execute the page."""
-    page = next(p for p in PAGES if p.name.startswith("4_"))
-    src = page.read_text()
-    ns = {}
-    exec(src[src.index("ARCHETYPES = ("):
-             src.index('if st.button("Run simulation"')], ns)
+    rather than imported - importing it would execute the page.
+
+    Bounded by the function definition rather than by a constant above it:
+    slicing from `ARCHETYPES = (` broke when the constant moved, and eight
+    tests failed with "substring not found", which names the slice and not the
+    cause."""
+    src = _page("Simulation").read_text()
+    # Bounded by the next line at column zero that is not part of the
+    # function, found by indentation rather than by guessing a marker: `\nif `
+    # matched an `if` *inside* the function and the slice ran into page code
+    # that referenced undefined names.
+    start = src.index("def _clean_footprint(")
+    tail = src[start:].splitlines()
+    end = start + len(tail[0]) + 1
+    for line in tail[1:]:
+        if line.strip() and not line.startswith((" ", "\t")):
+            break
+        end += len(line) + 1
+    ns = {"re": __import__("re")}
+    exec("ARCHETYPES = (\"BRANCH\", \"LARGE_OFFICE\", \"WAREHOUSE\", "
+         "\"DC\", \"STORE\")\n" + src[start:end], ns)
     return ns["_clean_footprint"]
 
 
@@ -135,7 +166,7 @@ def test_a_failed_footprint_load_is_not_silent():
     never promoted: the editor fell back to placeholders with no explanation,
     so researched counts appeared to vanish and the run proceeded on defaults
     that looked like findings."""
-    page = next(p for p in PAGES if p.name.startswith("4_"))
+    page = _page("Simulation")
     text = page.read_text()
     assert "_ev_failed" in text
     assert "Could not load the promoted site list" in text
@@ -146,7 +177,7 @@ def test_the_empty_footprint_message_names_the_case():
     """A promoted footprint belongs to one case. Switching cases empties the
     list, and a message that does not say which case invites the conclusion
     that the promotion was lost."""
-    page = next(p for p in PAGES if p.name.startswith("4_"))
+    page = _page("Simulation")
     assert "belongs to one" in page.read_text()
 
 
@@ -159,7 +190,7 @@ def test_the_footprint_editor_reopens_on_what_was_last_run():
     Precedence is promoted evidence, then the last run, then a placeholder:
     what you last ran is a better starting point than a guess and a worse one
     than a researched count."""
-    page = next(p for p in PAGES if p.name.startswith("4_"))
+    page = _page("Simulation")
     text = page.read_text()
     assert "/simulations\")" in text, "the page must read the run history"
     assert "elif _last:" in text
@@ -172,7 +203,7 @@ def test_a_typed_footprint_can_be_saved_without_running_it():
     *run*: typing a site list and not running it lost the list, and running a
     placeholder made the placeholder the thing that stuck. Saving is now its
     own act."""
-    page = next(p for p in PAGES if p.name.startswith("4_"))
+    page = _page("Simulation")
     text = page.read_text()
     assert 'Save footprint' in text
     assert '"analyst_footprint"' in text
@@ -190,7 +221,7 @@ def test_the_simulation_page_reads_the_known_facts_register():
     estimate time on page 6, and this page never read the register at all - so
     a registered count sat there while the editor showed a placeholder and the
     analyst was told to type it again."""
-    page = next(p for p in PAGES if p.name.startswith("4_"))
+    page = _page("Simulation")
     text = page.read_text()
     assert "/known-facts" in text, "the page must read the register"
     assert '"Location footprint"' in text
@@ -202,7 +233,7 @@ def test_the_register_count_does_not_invent_a_site_type():
     branch is a STORE under the archetype definitions and is priced at a
     different bandwidth and product from BRANCH, so guessing would silently
     change the estimate."""
-    page = next(p for p in PAGES if p.name.startswith("4_"))
+    page = _page("Simulation")
     text = page.read_text()
     assert "asked rather than guessed" in text
     assert '"Site type"' in text
@@ -212,7 +243,7 @@ def test_decimal_fields_are_coerced_before_formatting():
     """value_base arrives as a JSON string, so formatting it with :g raises
     rather than rendering - a NameError-class defect that only fires on the
     branch where a fact actually exists."""
-    page = next(p for p in PAGES if p.name.startswith("4_"))
+    page = _page("Simulation")
     assert "def _num(value):" in page.read_text()
 
 
@@ -222,7 +253,7 @@ def test_the_known_fact_subject_is_prefilled_from_the_case():
     prefill both match on (fact_class, subject), so "HVB" and "UniCredit Bank
     GmbH" typed on different days are two facts about the same thing that
     never meet."""
-    page = next(p for p in PAGES if p.name.startswith("2_"))
+    page = _page("Known_facts")
     text = page.read_text()
     assert 'value=_entity' in text, "the subject must default to the case entity"
     assert "subject_entity_legal_name" in text
@@ -234,7 +265,7 @@ def test_the_known_fact_subject_is_prefilled_from_the_case():
 def test_the_register_panel_sits_above_the_footprint_editor():
     """Its purpose is to fill the editor, so below it is the one place it
     cannot do that - it rendered off-screen under the table."""
-    page = next(p for p in PAGES if p.name.startswith("4_"))
+    page = _page("Simulation")
     text = page.read_text()
     assert text.index("/known-facts") < text.index("fp = st.data_editor"), (
         "the register panel must render before the editor it populates")
@@ -245,7 +276,7 @@ def test_running_a_footprint_also_saves_it():
     page and lose the edit: it lived in the run's parameters and nowhere the
     case could see. Running a footprint is a clear enough statement that you
     meant it."""
-    page = next(p for p in PAGES if p.name.startswith("4_"))
+    page = _page("Simulation")
     text = page.read_text()
     run_at = text.index('if _run_col.button("Run simulation"')
     assert '"analyst_footprint": footprint' in text[run_at:run_at + 1200]
@@ -254,7 +285,7 @@ def test_running_a_footprint_also_saves_it():
 def test_an_unsaved_edit_warns_before_the_page_is_left():
     """Streamlit discards an edited table on page switch, so silence here
     loses work with no trace."""
-    page = next(p for p in PAGES if p.name.startswith("4_"))
+    page = _page("Simulation")
     assert "Unsaved changes" in page.read_text()
 
 
@@ -262,7 +293,7 @@ def test_disagreeing_registered_counts_are_flagged():
     """Two Location footprint facts filed under different names for the same
     company are two facts about one thing, and neither will corroborate the
     other - the register matches on subject."""
-    page = next(p for p in PAGES if p.name.startswith("4_"))
+    page = _page("Simulation")
     text = page.read_text()
     assert "registered site counts disagree" in text
     assert "matches on subject" in text
@@ -271,7 +302,7 @@ def test_disagreeing_registered_counts_are_flagged():
 def test_the_simulation_page_resolves_the_footprint_server_side():
     """The precedence was four branches of interface logic and wrong four
     times. One endpoint, one rule, tested in test_footprint_resolution.py."""
-    page = next(p for p in PAGES if p.name.startswith("4_"))
+    page = _page("Simulation")
     text = page.read_text()
     assert "/footprint\")" in text
     for gone in ("elif _saved:", "elif _last:", "/simulations\")"):
@@ -287,7 +318,7 @@ def test_a_register_that_fails_to_load_is_not_reported_as_empty():
     register. Re-entering the facts is the natural response, and it produces
     duplicates under slightly different subjects that never corroborate each
     other."""
-    page = next(p for p in PAGES if p.name.startswith("2_"))
+    page = _page("Known_facts")
     text = page.read_text()
     assert "Could not load the register" in text
     assert "load failure, not an empty register" in text
@@ -297,7 +328,7 @@ def test_a_register_that_fails_to_load_is_not_reported_as_empty():
 def test_the_empty_register_message_names_the_case():
     """Facts belong to one case. A message that does not say which invites the
     conclusion that they were lost."""
-    page = next(p for p in PAGES if p.name.startswith("2_"))
+    page = _page("Known_facts")
     assert "belong to one case" in page.read_text()
 
 
@@ -340,7 +371,7 @@ def test_the_known_fact_entry_does_not_use_a_form():
     navigating to another page mid-entry discards everything typed. Keyed
     widgets outside a form write as they change, so a half-finished fact
     survives a page switch."""
-    page = next(p for p in PAGES if p.name.startswith("2_"))
+    page = _page("Known_facts")
     text = page.read_text()
     assert "st.form(" not in text, (
         "a form on this page loses a part-typed fact the moment the analyst "
@@ -349,12 +380,20 @@ def test_the_known_fact_entry_does_not_use_a_form():
         assert f'key="{key}"' in text, f"{key} is not keyed, so it is not kept"
 
 
-def test_the_draft_is_cleared_only_on_success():
-    """A rejected registration must keep what was typed. Clearing on failure
-    makes the analyst enter it twice to find out what was wrong."""
-    page = next(p for p in PAGES if p.name.startswith("2_"))
-    text = page.read_text()
-    assert "Cleared only on success" in text
+def test_a_rejected_registration_keeps_what_was_typed():
+    """This asserted "Cleared only on success", which 4.97.0 removed: the form
+    is no longer cleared at all, because clearing it read as the entry having
+    been lost.
+
+    So this test and test_registering_a_fact_does_not_empty_the_form asserted
+    opposite behaviour for six releases, and the suite was never run to find
+    out. What both actually protect is that a failure never costs the analyst
+    their typing - checked here on the failure path."""
+    text = _page("Known_facts").read_text()
+    error_path = text.index('st.error(r["_error"])')
+    after = text[error_path:error_path + 400]
+    assert "_kf_reset" not in after, (
+        "a rejected registration must not request a form reset")
 
 
 def test_the_new_case_entry_does_not_use_a_form():
@@ -384,7 +423,7 @@ def test_the_case_picker_keeps_its_selection():
 
 
 def test_the_known_facts_page_names_the_case_it_is_listing():
-    page = next(p for p in PAGES if p.name.startswith("2_"))
+    page = _page("Known_facts")
     assert "Register for" in page.read_text()
 
 
@@ -428,7 +467,7 @@ def test_registering_a_fact_does_not_empty_the_form():
     it was reported as. It is also the wrong default for the work: the next
     fact is usually the same subject with a different class or value, faster
     to edit than to retype. Emptying it is a deliberate act."""
-    page = next(p for p in PAGES if p.name.startswith("2_"))
+    page = _page("Known_facts")
     text = page.read_text()
     success = text.index("api.flash(_msg)")
     after = text[success:success + 600]
@@ -456,7 +495,7 @@ def test_the_declared_spend_table_does_not_open_pre_filled():
     as a placeholder, because it is the right order of magnitude for a real
     telecom spend. It fed the declared-spend crosscheck, so the run reported a
     divergence computed against a figure nobody supplied."""
-    page = next(p for p in PAGES if p.name.startswith("6_"))
+    page = _page("Run_V0")
     text = page.read_text()
     # step=1_000_000.0 on the anchor input is a stepper increment, not a
     # value - the test has to distinguish those or it fails on something
@@ -472,7 +511,7 @@ def test_the_estimate_drivers_are_not_interface_defaults():
     """5,000 users and 900 per site went straight into the baseline, and had to
     be retyped on every visit - so the figure in use was whatever the defaults
     happened to be."""
-    page = next(p for p in PAGES if p.name.startswith("6_"))
+    page = _page("Run_V0")
     text = page.read_text()
     assert "5_000)" not in text and "900.0)" not in text
     assert "declared_users" in text and "declared_ops_cost_per_site" in text
@@ -481,7 +520,7 @@ def test_the_estimate_drivers_are_not_interface_defaults():
 
 def test_blank_spend_rows_are_not_sent():
     """A blank row arrived as {"": nan}, which is a country nobody named."""
-    page = next(p for p in PAGES if p.name.startswith("6_"))
+    page = _page("Run_V0")
     text = page.read_text()
     assert 'r["estimated_annual_spend"] == r["estimated_annual_spend"]' in text, (
         "NaN must be filtered - it is not a spend figure")
@@ -495,7 +534,7 @@ def test_research_reports_each_domain_as_it_completes():
 
     Streamlit flushes as the script runs, so writing inside the loop is enough;
     the requirement is that the write is inside it."""
-    page = next(p for p in PAGES if p.name.startswith("5_"))
+    page = _page("Domain_dispositions")
     text = page.read_text()
 
     loop = text.index("for i, d in enumerate(pending, start=1):")
@@ -511,7 +550,7 @@ def test_research_reports_each_domain_as_it_completes():
 def test_the_research_log_survives_the_refresh():
     """The run ended with st.rerun() to refresh the disposition table, which
     discarded everything the loop had written."""
-    page = next(p for p in PAGES if p.name.startswith("5_"))
+    page = _page("Domain_dispositions")
     text = page.read_text()
     assert '_research_log' in text
     assert 'st.session_state.get("_research_log")' in text, (
@@ -541,7 +580,7 @@ def test_an_empty_entity_identifier_warns_at_save_and_names_the_gate():
 
     Parking a half-finished case is a real workflow; being surprised at
     publication is not."""
-    page = next(p for p in PAGES if p.name.startswith("1_"))
+    page = _page("Intake")
     text = page.read_text()
     assert "pre-flight will " in text and "BLOCK" in text
     assert "You can save and come back" in text
@@ -550,7 +589,7 @@ def test_an_empty_entity_identifier_warns_at_save_and_names_the_gate():
 def test_a_found_identifier_can_be_accepted_in_one_click():
     """The profile searched for these and showed them as a caption, so an
     analyst who had just been shown the LEI still had to retype it."""
-    page = next(p for p in PAGES if p.name.startswith("1_"))
+    page = _page("Intake")
     text = page.read_text()
     assert "Set as entity identifier" in text
     assert '"entity_identifier": _pick' in text
@@ -578,7 +617,7 @@ def test_the_prefilled_known_facts_are_editable():
     as-of date, a loose unit, a value that needs rounding to the perimeter -
     and a take-it-or-leave-it control forced a retype into the form below to
     fix one cell."""
-    page = next(p for p in PAGES if p.name.startswith("2_"))
+    page = _page("Known_facts")
     text = page.read_text()
     assert "st.data_editor(" in text
     assert 'key="pf_editor"' in text
@@ -604,7 +643,7 @@ def test_unsaved_disposition_edits_warn_before_the_page_is_left():
     Warned rather than auto-saved: a disposition is a statement about evidence,
     and writing 24 of them because somebody scrolled would be worse than
     losing them."""
-    page = next(p for p in PAGES if p.name.startswith("4_"))
+    page = _page("Domain_dispositions")
     text = page.read_text()
     assert "unsaved change(s)" in text
     assert "_changed" in text
@@ -623,7 +662,7 @@ def test_no_page_uses_a_form_for_data_entry(page):
 
 
 def test_the_intake_fields_are_keyed():
-    page = next(p for p in PAGES if p.name.startswith("1_"))
+    page = _page("Intake")
     text = page.read_text()
     assert text.count('key="ik_') >= 15, (
         "each intake field needs its own key or its value dies on navigation")
@@ -633,7 +672,7 @@ def test_the_intake_fields_are_keyed():
 def test_the_estimate_inputs_are_keyed():
     """Page 6 had seven inputs and no keys, so the method, the anchor value and
     the driver figures were all lost on leaving the page."""
-    page = next(p for p in PAGES if p.name.startswith("6_"))
+    page = _page("Run_V0")
     assert page.read_text().count('key="v0_') >= 5
 
 
@@ -642,7 +681,7 @@ def test_the_prefilled_proposals_are_editable():
     """A searched figure is usually nearly right and occasionally off by a unit
     or a perimeter. Forcing an analyst to reject the whole proposal and retype
     it discarded the part that was correct."""
-    page = next(p for p in PAGES if p.name.startswith("2_"))
+    page = _page("Known_facts")
     text = page.read_text()
     assert "st.data_editor(" in text
     assert '"value_base": r["value_base"]' in text, (
@@ -677,3 +716,51 @@ def test_no_page_renders_the_same_panel_twice(page):
     headers = re.findall(r'st\.subheader\("([^"]+)"\)', page.read_text())
     repeated = [h for h, n in Counter(headers).items() if n > 1]
     assert not repeated, f"{page.name} renders {repeated} more than once"
+
+
+@pytest.mark.parametrize("page", [p for p in PAGES if p.parent.name == "pages"],
+                         ids=lambda p: p.name)
+def test_the_heading_number_matches_the_page_position(page):
+    """Reordering the workflow renamed two files and left their headings, so
+    the menu said "4. Domain dispositions" and the page itself said "5." - and
+    every instruction in the codebase that names a page by number became
+    ambiguous about which one it meant."""
+    import re
+
+    heading = re.search(r'st\.title\("(\d+)\.', page.read_text())
+    if not heading:
+        return
+    assert heading.group(1) == page.name.split("_")[0], (
+        f"{page.name} displays '{heading.group(1)}.'")
+
+
+PRIMARY_ACTIONS = {
+    "1_Intake_and_entity_resolution.py": ("Save intake block", "Confirm"),
+    "2_Known_facts.py": ("Register", "Clear the form"),
+    "3_Pre_flight.py": ("Acknowledge",),
+    "4_Domain_dispositions.py": ("Run research now", "Promote"),
+    "5_Simulation.py": ("Run simulation", "Save footprint"),
+    "6_Run_V0.py": ("Run V0", "Ask"),
+    "8_Savings_recommendation.py": ("Run LLM-07", "Approve"),
+    "9_V1_questionnaire.py": ("Save",),
+}
+
+
+@pytest.mark.parametrize("filename,actions", sorted(PRIMARY_ACTIONS.items()))
+def test_a_page_keeps_the_action_it_exists_for(filename, actions):
+    """The worst defect the first real test run exposed.
+
+    The 4.119.0 edit that turned the public-prefill proposals into an editable
+    table sliced from the proposals block to the next divider - and the manual
+    entry form sat between them. For five releases the only way to add a known
+    fact was to accept one the sweep had proposed, and no test noticed because
+    every test about that form asserted on a phrase inside it rather than on the
+    form being there.
+
+    A register you cannot write to by hand is not a register of what the team
+    knows."""
+    page = next((p for p in PAGES if p.name == filename), None)
+    assert page is not None, f"{filename} is gone"
+    text = page.read_text()
+    missing = [a for a in actions if f'button("{a}' not in text]
+    assert not missing, f"{filename} no longer offers {missing}"

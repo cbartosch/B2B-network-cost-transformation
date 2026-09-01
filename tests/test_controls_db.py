@@ -1030,7 +1030,14 @@ def _fake_provider(monkeypatch, module, text, configured=True):
 
     class _A:
         def configured(self): return configured
-        def complete(self, *, system, prompt, max_tokens=1500):
+        def parse(self, *, system, prompt, schema, schema_name,
+                  max_tokens=4000, tools=None):
+            # WP1 gave the provider protocol a schema-enforced channel and left
+            # every fake with complete() only.
+            return self.complete(system=system, prompt=prompt,
+                                 max_tokens=max_tokens)
+
+        def complete(self, *, system, prompt, max_tokens=1500, tools=None):
             now = datetime.now(timezone.utc)
             return ProviderCall(
                 provider="anthropic", model="m", text=text,

@@ -69,6 +69,18 @@ TERMINAL = frozenset({
 # What each code should tell the model on the next attempt. Written as an
 # instruction rather than a diagnosis, because the retry has to act on it.
 GUIDANCE = {
+    # A retry that repeats the prompt unchanged is resampling rather than
+    # correction, so every retryable reason has to be able to say what to fix.
+    # Both of these were added as reasons and never given guidance - so a
+    # rejection for either told the model it had failed and not how.
+    Rejection.FIGURE_NOT_IN_PACKET: (
+        "You stated a figure the estimate does not contain. Quote or round a "
+        "number that is in the packet, or describe the mechanism without a "
+        "number. Do not compute one."),
+    Rejection.SCHEMA_INVALID: (
+        "Your reply did not fit the registered schema. Return only the fields "
+        "the schema declares, with the types it declares, and nothing else - "
+        "an extra field is refused as firmly as a missing one."),
     Rejection.CLAIMED_FINDING_WITHOUT_SOURCE:
         "You reported a finding but cited no source. Either cite the source "
         "that states it, or set found=false with an abstention_reason.",

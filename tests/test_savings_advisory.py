@@ -9,6 +9,7 @@ Written and traced by hand; `make test` is the first real signal.
 """
 import itertools
 import json
+from dataclasses import replace
 import uuid
 from datetime import datetime, timezone
 from decimal import Decimal
@@ -110,6 +111,25 @@ class _FakeAdapter:
             provider_request_at=now, input_tokens=50, output_tokens=50,
             local_request_at=now, latency_ms=10, http_status=200,
             egress_proxy=None, raw={})
+
+    def parse(self, *, system, prompt, schema, schema_name,
+              max_tokens=4000, tools=None) -> ProviderCall:
+        """The schema-enforced channel WP1 added to the provider protocol.
+
+        Every fake was left with complete() only, so 34 tests died with
+        "'_FakeAdapter' object has no attribute 'parse'" - the CR's WP0
+        predicted exactly this and it was never done. The fake returns the same
+        text its complete() would and parses it as the provider's structured
+        channel does, so what the test author wrote as a response still drives
+        the assertion.
+        """
+        call = self.complete(system=system, prompt=prompt,
+                            max_tokens=max_tokens, tools=tools)
+        try:
+            parsed = json.loads(call.text)
+        except ValueError:
+            parsed = None
+        return replace(call, parsed=parsed)
 
 
 def _wire_fake_provider(monkeypatch, text_fn, *, configured=True):

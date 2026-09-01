@@ -29,10 +29,22 @@ def _grade(**kw):
 
 
 def test_several_accountable_sources_agreeing_recently_is_very_reliable():
+    # claim_verified is what 4.122.0 added: a source whose claimed excerpt was
+    # not found in the page it was fetched from cannot carry a top grade, and a
+    # source nobody checked is the agent's word. These fixtures predate the
+    # control and asserted the grade the code gave before it existed.
     out = _grade(
-        verified_sources=[{"publisher": "Annual Report 2025"},
-                          {"publisher": "Bundesnetzagentur"},
-                          {"publisher": "Sustainability report"}],
+        verified_sources=[
+            {"publisher": "Annual Report 2025", "source_class": "PRIMARY_FILING",
+             "how_read": "FULL_PAGE", "figure_basis": "STATED",
+             "claim_verified": True, "claim_checked": "EXACT"},
+            {"publisher": "Bundesnetzagentur", "source_class": "REGULATOR",
+             "how_read": "FULL_PAGE", "figure_basis": "STATED",
+             "claim_verified": True, "claim_checked": "EXACT"},
+            {"publisher": "Sustainability report",
+             "source_class": "COMPANY_PUBLISHED", "how_read": "FULL_PAGE",
+             "figure_basis": "STATED", "claim_verified": True,
+             "claim_checked": "EXACT"}],
         band={"spread_share": 0.04, "newest_year": 2025})
     assert out["grade"] == R.VERY_RELIABLE
     assert out["may_evidence_without_review"] is True
@@ -141,9 +153,11 @@ def test_a_declared_source_class_beats_guessing_at_the_hostname():
     graded the same as a blog. The agent read the page and knows."""
     dutch = [{"publisher": "Autoriteit Consument & Markt",
               "source_class": "REGULATOR", "how_read": "FULL_PAGE",
-              "figure_basis": "STATED"},
+              "figure_basis": "STATED", "claim_verified": True,
+              "claim_checked": "EXACT"},
              {"publisher": "KVK register", "source_class": "REGULATOR",
-              "how_read": "FULL_PAGE", "figure_basis": "STATED"}]
+              "how_read": "FULL_PAGE", "figure_basis": "STATED",
+              "claim_verified": True, "claim_checked": "EXACT"}]
     out = _grade(verified_sources=dutch,
                  band={"spread_share": 0.03, "newest_year": 2025})
     assert out["grade"] == R.VERY_RELIABLE, (

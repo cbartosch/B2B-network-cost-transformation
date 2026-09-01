@@ -2,7 +2,7 @@ import pandas as pd
 import streamlit as st
 import api_client as api
 
-st.title("5. Domain dispositions")
+st.title("4. Domain dispositions")
 st.caption("Specification 0.3A - maximalist means every in-scope input domain carries a "
            "recorded disposition, not that the search ran longer.")
 
