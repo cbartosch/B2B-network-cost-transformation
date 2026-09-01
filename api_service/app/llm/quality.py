@@ -351,7 +351,6 @@ RULES = {
     "estimate.explain": estimate_answer,
     "known_fact.prefill_public": public_fact_prefill,
     "llm09.benchmark.extract": benchmark_observations,
-    "estimate.explain.answer": estimate_answer,
     "llm02.questionnaire.prefill": questionnaire_prefill,
     # Scenario selection is a two-field enum-constrained choice, and the
     # narrative has no checkable property beyond being present.

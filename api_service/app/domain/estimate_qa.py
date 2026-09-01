@@ -215,6 +215,34 @@ def gaps(*, snapshot: dict, dispositions: list[dict],
                          "stops counting toward asserted share",
         })
 
+    # Ported from the duplicate implementation before deleting it. Two gaps
+    # existed only there, and removing the module without them would have
+    # repeated exactly the mistake that lost page 2 its entry form: a slice
+    # that took a feature out with the thing it was replacing.
+    if (snapshot.get("pins") or {}).get("footprint_basis", {}).get("needs_split"):
+        found.append({
+            "gap": "unallocated footprint",
+            "detail": "a registered site total is not split by country and "
+                      "site type, so the whole estate sits in one row.",
+            "costs": "every circuit's product and bandwidth - a row states "
+                     "that every site in it is identical, and the whole row is "
+                     "priced at that archetype's tier",
+            "closes_it": "allocate it by country and site type on the "
+                         "simulation page",
+        })
+
+    anchor = (snapshot.get("pins") or {}).get("anchor_basis") or {}
+    if anchor and anchor.get("anchor_origin") not in (None, "", "EVIDENCED_PUBLIC"):
+        found.append({
+            "gap": "asserted anchor",
+            "detail": f"the anchor is a typed figure "
+                      f"({anchor.get('anchor_origin')}), not a disclosed one.",
+            "costs": "the whole ANCHOR method rests on it, and an asserted "
+                     "anchor caps the baseline component under 0.6A",
+            "closes_it": "research domain 9 or 10 and promote the cost line - "
+                         "it then arrives as evidence with its sources",
+        })
+
     ceilings = confidence.get("ceilings_applied") or []
     if ceilings:
         found.append({

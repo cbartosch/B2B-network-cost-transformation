@@ -11,7 +11,6 @@ from sqlalchemy import delete, insert, select, text, update
 from .. import config, db, jobs, migrations
 from ..domain import (anchor_estimate, archetype as archetype_resolver,
                       benchmark_ingest, case_admin, estimate_qa,
-                      explain as explain_estimate,
                       topology as topology_planner,
                       refinement,
                       case_export,

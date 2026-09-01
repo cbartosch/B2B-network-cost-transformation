@@ -335,3 +335,84 @@ def test_a_guard_precedes_the_code_that_needs_its_value():
     guard = src.index('mbps = q.get("bandwidth_mbps")')
     use = src.index("bandwidth_mbps=int(mbps)")
     assert guard < use, "the bandwidth guard must run before the comparison"
+
+
+def test_no_two_modules_implement_the_same_thing():
+    """4.124.0 removed a duplicated class, gate and route and left both first
+    implementations in place - domain/explain.py, tests/test_explain.py, a
+    second prompt id, a gate mapping for it, and a dead import. The
+    same-module duplicate check passed because they sat in different files.
+
+    Two modules exporting the same function names for the same purpose is the
+    same defect one directory up, and it survives every per-file check.
+    """
+    import ast
+    import pathlib
+    from collections import defaultdict
+
+    root = pathlib.Path(__file__).resolve().parents[1]
+    app = next(c for c in (root / "api_service" / "app", root / "app")
+               if (c / "routers" / "api.py").exists())
+
+    # A signature is the set of public functions a domain module exports.
+    # Names shared by chance are common; a whole overlapping set is not.
+    exports = {}
+    for path in sorted((app / "domain").glob("*.py")):
+        names = {n.name for n in ast.parse(path.read_text()).body
+                 if isinstance(n, ast.FunctionDef)
+                 and not n.name.startswith("_")}
+        if len(names) >= 2:
+            exports[path.name] = names
+
+    overlaps = []
+    modules = sorted(exports)
+    for i, first in enumerate(modules):
+        for second in modules[i + 1:]:
+            shared = exports[first] & exports[second]
+            smaller = min(len(exports[first]), len(exports[second]))
+            if shared and len(shared) >= max(2, smaller * 0.6):
+                overlaps.append(
+                    f"{first} and {second} both export {sorted(shared)}")
+    assert not overlaps, "\n".join(overlaps)
+
+
+def test_every_registered_prompt_is_gated_and_every_gate_has_a_prompt():
+    """A gate mapping for a prompt that no longer exists is dead governance
+    that reads as live, and an ungated prompt is a call nobody judges."""
+    import re
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1]
+    app = next(c for c in (root / "api_service" / "app", root / "app")
+               if (c / "llm").exists())
+    registered = set(re.findall(
+        r'prompt_id="([\w.]+)",\n\s*prompt_version',
+        (app / "llm" / "prompts.py").read_text()))
+    gated = set(re.findall(r'"([\w.]+)": \w+,',
+                           (app / "llm" / "quality.py").read_text()))
+    gated = {g for g in gated if "." in g}
+    assert not registered - gated, f"ungated: {sorted(registered - gated)}"
+    assert not gated - registered, (
+        f"gated but no longer registered: {sorted(gated - registered)}")
+
+
+def test_no_test_file_targets_a_module_that_no_longer_exists():
+    """tests/test_explain.py survived the module it tested, so six failures
+    named assertions about a file nobody could import."""
+    import ast
+    import pathlib
+
+    root = pathlib.Path(__file__).resolve().parent
+    app_root = root.parent
+    for path in sorted(root.glob("test_*.py")):
+        for node in ast.walk(ast.parse(path.read_text())):
+            if not (isinstance(node, ast.ImportFrom) and node.module
+                    and node.module.startswith("app.domain")):
+                continue
+            for alias in node.names:
+                candidate = (app_root / "api_service" / "app" / "domain"
+                             / f"{alias.name}.py")
+                if candidate.parent.exists():
+                    assert candidate.exists() or alias.name in ("policy",), (
+                        f"{path.name} imports app.domain.{alias.name}, "
+                        f"which does not exist")

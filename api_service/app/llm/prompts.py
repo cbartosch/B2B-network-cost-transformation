@@ -387,31 +387,6 @@ _DEFS = [
         evaluation_suite="conformance/entity"),
 
     PromptDefinition(
-        prompt_id="estimate.explain.answer",
-        prompt_version="1.0.0", agent_id="LLM-06",
-        task=("Answer the analyst's question about this estimate, using only "
-              "the packet supplied.\n"
-              "You explain; you do not calculate. Every figure you use must "
-              "already be in the packet, quoted as it appears there - the "
-              "estimate is the authority and this answer is not. Name the "
-              "packet keys you relied on in `figures_cited`.\n"
-              "For what is missing, use the `gaps` list. It is computed from "
-              "the estimate, ordered by what each gap caps, and it is the only "
-              "list of gaps this system stands behind: a plausible gap you add "
-              "yourself sends someone to look for the wrong thing. Reference "
-              "them by name in `gaps_referenced` and put the useful next steps "
-              "in `suggested_next`, strongest first.\n"
-              "Where the packet does not contain what was asked, set "
-              "`unanswerable` and say what is absent. That is a better answer "
-              "than an inference, and a good many reasonable questions about "
-              "an outside-in estimate genuinely have it.\n"
-              "Write for an analyst who will put this in front of a client: "
-              "plain, specific, no hedging padding. Say what the number rests "
-              "on and how much weight it carries."),
-        output_model=schemas.EstimateAnswer,
-        evaluation_suite="conformance/estimate_explain"),
-
-    PromptDefinition(
         prompt_id="llm09.benchmark.extract",
         prompt_version="2.0.0", agent_id="LLM-09",
         task=("Structure the supplied source into individual benchmark "
