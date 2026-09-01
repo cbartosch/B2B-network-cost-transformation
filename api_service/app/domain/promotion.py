@@ -207,19 +207,41 @@ def _classify(q: dict) -> str:
 def candidates(session, case_id: str) -> dict:
     """What research has produced that the estimate could consume."""
     found = _quantities_for_case(session, case_id)
-    buckets: dict[str, list] = {"footprint": [], "price": [], "unclassified": []}
+    # Every target _classify can return needs a bucket. It gained "archetype"
+    # and "anchor" and this dict did not, so buckets[target] raised KeyError
+    # the moment research produced one - the classification and the promote
+    # branch both existed and nothing could reach them, because the list an
+    # analyst selects from was never built.
+    buckets: dict[str, list] = {t: [] for t in
+                                ("footprint", "price", "archetype", "anchor",
+                                 "unclassified")}
     for entry in found:
         entry["target"] = _classify(entry["quantity"])
-        buckets[entry["target"]].append(entry)
+        buckets.setdefault(entry["target"], []).append(entry)
+
     promoted = session.execute(
         select(db.evidenced_footprint).where(
             db.evidenced_footprint.c.case_id == case_id)).all()
+    promoted_arch = session.execute(
+        select(db.evidenced_archetype).where(
+            db.evidenced_archetype.c.case_id == case_id)).all()
+    promoted_anchor = session.execute(
+        select(db.evidenced_anchor).where(
+            db.evidenced_anchor.c.case_id == case_id)).all()
     return {
         "case_id": case_id,
         "footprint_candidates": buckets["footprint"],
         "price_candidates": buckets["price"],
+        # How a site type is built: product pair, dual-access rate, bandwidth,
+        # users per site. These reach the simulation's topology rather than its
+        # counts.
+        "archetype_candidates": buckets["archetype"],
+        # A disclosed annual cost line, for the ANCHOR estimation method.
+        "anchor_candidates": buckets["anchor"],
         "unclassified": buckets["unclassified"],
         "already_promoted_footprint": [dict(r._mapping) for r in promoted],
+        "already_promoted_archetype": [dict(r._mapping) for r in promoted_arch],
+        "already_promoted_anchor": [dict(r._mapping) for r in promoted_anchor],
         "note": (
             "A candidate is a researched number the estimate could use. "
             "Nothing here is in the estimate until a named person promotes it. "

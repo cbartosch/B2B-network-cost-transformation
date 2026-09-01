@@ -5,6 +5,7 @@ read by nothing - the footprint came from what an analyst typed, so a perfect
 answer on domain 2 moved the confidence score and not one number in the
 estimate. These cover the promotion path and, as importantly, its limits.
 """
+import re
 import uuid
 
 import pytest
@@ -217,3 +218,54 @@ def test_only_counts_and_prices_can_reach_the_estimate(session):
         assert promotion._classify(
             {"label": label, "country": "DE", "unit": unit,
              "value": "100"}) == "unclassified"
+
+
+def test_every_classification_target_has_a_candidate_bucket():
+    """The gap behind "I am not seeing how simulation connects to domain
+    disposition data".
+
+    _classify gained "archetype" and "anchor" and the bucket dict in
+    candidates() did not, so buckets[target] raised KeyError the moment
+    research produced one. Both the classification and the promote branch
+    existed and nothing could reach them, because the list an analyst selects
+    from was never built - the plumbing was in and the tap was not attached.
+    """
+    import ast
+    import inspect
+
+    from app.domain import promotion
+
+    classify = inspect.getsource(promotion._classify)
+    targets = set(re.findall(r'return "(\w+)"', classify))
+
+    src = inspect.getsource(promotion.candidates)
+    buckets = set(re.findall(r'"(\w+)"', src[src.index("buckets"):
+                                             src.index("for entry in found")]))
+    missing = targets - buckets
+    assert not missing, f"_classify can return {sorted(missing)} with no bucket"
+
+
+def test_candidates_surfaces_each_target_for_promotion():
+    """A bucket nobody returns is a finding nobody can select."""
+    import inspect
+    from app.domain import promotion
+    src = inspect.getsource(promotion.candidates)
+    for key in ("footprint_candidates", "price_candidates",
+                "archetype_candidates", "anchor_candidates"):
+        assert f'"{key}"' in src, key
+    for key in ("already_promoted_archetype", "already_promoted_anchor"):
+        assert f'"{key}"' in src, (
+            f"{key} - what is already promoted has to be visible or an analyst "
+            f"cannot tell whether a finding took effect")
+
+
+def test_the_review_panel_offers_every_target():
+    """Surfaced by the API and not rendered is the same dead end one layer up."""
+    import pathlib
+    root = pathlib.Path(__file__).resolve().parents[1]
+    page = (root / "analyst_ui" / "streamlit_app" / "pages"
+            / "4_Domain_dispositions.py").read_text()
+    for key in ("archetype_candidates", "anchor_candidates"):
+        assert key in page, key
+    assert "feeds the simulation" in page, (
+        "an analyst has to be told what promoting a topology field changes")

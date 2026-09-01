@@ -182,6 +182,8 @@ with st.expander("Review research findings and promote them into the estimate"):
         else:
             fp = _f.get("footprint_candidates", [])
             pr = _f.get("price_candidates", [])
+            ar = _f.get("archetype_candidates", [])
+            an = _f.get("anchor_candidates", [])
             un = _f.get("unclassified", [])
 
             chosen = []
@@ -204,11 +206,40 @@ with st.expander("Review research findings and promote them into the estimate"):
                             f"{q.get('unit')} (as of {q.get('as_of') or 'undated'})",
                             key=f"pr_{c['candidate_id']}"):
                         chosen.append(c["candidate_id"])
+            if ar:
+                # These reach the simulation's topology rather than its counts:
+                # a product pair, a dual-access rate, a bandwidth, a headcount
+                # per site. Until this list existed the finding was classified
+                # and never offered, so it could not be promoted.
+                st.markdown("**How a site type is built** (feeds the simulation "
+                            "topology)")
+                for c in ar:
+                    q = c["quantity"]
+                    _g = (c.get("reliability") or {}).get("grade", "")
+                    if st.checkbox(
+                            f"{q.get('label')}: {q.get('value')} "
+                            f"{q.get('unit')} - domain {c['domain_no']}"
+                            + (f" [{_g}]" if _g else ""),
+                            key=f"ar_{c['candidate_id']}"):
+                        chosen.append(c["candidate_id"])
+            if an:
+                st.markdown("**Disclosed cost line** (the ANCHOR method's "
+                            "anchor)")
+                st.caption("Promoted as evidence, so the anchor reports "
+                           "EVIDENCED_PUBLIC instead of being retyped on page "
+                           "6 as an assertion that caps the estimate at 0.50.")
+                for c in an:
+                    q = c["quantity"]
+                    if st.checkbox(
+                            f"{q.get('label')}: {q.get('value')} "
+                            f"{q.get('unit')} - domain {c['domain_no']}",
+                            key=f"an_{c['candidate_id']}"):
+                        chosen.append(c["candidate_id"])
             if un:
                 st.caption(f"{len(un)} finding(s) are not in a shape this model "
                            f"consumes. They are not rejected - they stay as "
                            f"evidence on their domain.")
-            if not (fp or pr or un):
+            if not (fp or pr or ar or an or un):
                 st.caption("No researched quantities on this case yet.")
 
             who = st.text_input("Promoting as (your name)", key="promote_who")
@@ -220,8 +251,19 @@ with st.expander("Review research findings and promote them into the estimate"):
                     st.error(r["_error"])
                 else:
                     st.success(
-                        f"{len(r['promoted_footprint'])} footprint row(s) promoted, "
-                        f"{len(r['proposed_prices'])} price(s) proposed unapproved.")
+                        f"{len(r['promoted_footprint'])} footprint row(s), "
+                        f"{len(r.get('promoted_archetype') or [])} topology "
+                        f"field(s), {len(r.get('promoted_anchor') or [])} "
+                        f"anchor(s) promoted; "
+                        f"{len(r['proposed_prices'])} price(s) proposed "
+                        f"unapproved.")
+                    for _a in r.get("promoted_archetype") or []:
+                        st.caption(f"   topology: {_a['archetype']}."
+                                   f"{_a['field']} = {_a['value']} "
+                                   f"(domain {_a['domain_no']})")
+                    for _a in r.get("promoted_anchor") or []:
+                        st.caption(f"   anchor: {_a['label']} = {_a['value']} "
+                                   f"(domain {_a['domain_no']})")
                     for px in r.get("proposed_prices", []):
                         cx = px.get("benchmark_comparison") or {}
                         line = (f"{px['country']} {px['product']} @ "
@@ -241,6 +283,20 @@ with st.expander("Review research findings and promote them into the estimate"):
                             "is right before approving either - the "
                             "disagreement is the finding.")
                     st.rerun()
+
+            for _label, _key, _cols in (
+                    ("topology fields", "already_promoted_archetype",
+                     ["archetype", "field", "value", "origin",
+                      "reliability_grade", "recorded_by"]),
+                    ("anchors", "already_promoted_anchor",
+                     ["label", "value", "currency", "reliability_grade",
+                      "promoted_by"])):
+                _rows = _f.get(_key) or []
+                if _rows:
+                    st.caption(f"Already promoted {_label}:")
+                    st.dataframe(pd.DataFrame(_rows)[
+                        [c for c in _cols if c in _rows[0]]],
+                        use_container_width=True, hide_index=True)
 
             already = _f.get("already_promoted_footprint", [])
             if already:
