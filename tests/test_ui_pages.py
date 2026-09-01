@@ -554,3 +554,57 @@ def test_a_found_identifier_can_be_accepted_in_one_click():
     text = page.read_text()
     assert "Set as entity identifier" in text
     assert '"entity_identifier": _pick' in text
+
+
+# -------------------------------------------------- persistence across a switch
+@pytest.mark.parametrize("page_prefix,widgets", [
+    ("5_", ("seed", "ensemble_size")),
+    ("6_", ("method", "anchor_value")),
+])
+def test_run_choices_survive_a_page_switch(page_prefix, widgets):
+    """A pinned seed is the whole basis of the reproducibility claim, and an
+    estimation method decides which question the estimate answers. Both were
+    widget state, so switching page reverted them to 42/25/BUILD_UP without
+    saying so - and a claim resting on a seed nobody kept is not a claim."""
+    page = next(p for p in PAGES if p.name.startswith(page_prefix))
+    text = page.read_text()
+    assert "run_settings" in text
+    for widget in widgets:
+        assert f'"{widget}"' in text, f"{widget} is not persisted"
+
+
+def test_the_prefilled_known_facts_are_editable():
+    """A proposal is usually nearly right and wrong in one field - a stale
+    as-of date, a loose unit, a value that needs rounding to the perimeter -
+    and a take-it-or-leave-it control forced a retype into the form below to
+    fix one cell."""
+    page = next(p for p in PAGES if p.name.startswith("2_"))
+    text = page.read_text()
+    assert "st.data_editor(" in text
+    assert 'key="pf_editor"' in text
+    for editable in ("value_base", "value_low", "value_high", "unit", "as_of"):
+        assert editable in text, editable
+    assert 'disabled=["fact_class"' in text, (
+        "the class routes the fact, so it is not a free-text field")
+
+
+def test_editing_a_proposal_does_not_launder_the_source():
+    """THIRD_PARTY_REPORT means a public source states this. Once the analyst
+    has changed the number that is no longer true, and leaving the basis alone
+    would let an edited value borrow the source's standing."""
+    import inspect
+    from app.domain import known_facts
+    src = inspect.getsource(known_facts.accept_public_proposal)
+    assert 'proposal.get("edited")' in src
+    assert '"INDUSTRY_KNOWLEDGE"' in src
+
+
+def test_unsaved_disposition_edits_warn_before_the_page_is_left():
+    """An unsaved change to 24 dispositions is lost silently on a page switch.
+    Warned rather than auto-saved: a disposition is a statement about evidence,
+    and writing 24 of them because somebody scrolled would be worse than
+    losing them."""
+    page = next(p for p in PAGES if p.name.startswith("4_"))
+    text = page.read_text()
+    assert "unsaved change(s)" in text
+    assert "_changed" in text

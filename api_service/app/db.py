@@ -83,6 +83,12 @@ case = Table(
     # type: the archetype says what shape a site is, the industry says what
     # happens inside it.
     Column("industry", String(64)),
+    # Choices an analyst makes about how to run, kept so they are not silently
+    # reverted to a default on the next visit. A seed is pinned for
+    # reproducibility and an estimation method decides which question the
+    # estimate answers - both were widget state, so switching page reset them
+    # and the next run used 42/25/BUILD_UP whatever had been chosen.
+    Column("run_settings", JSON),
     Column("declared_users", Integer),
     Column("declared_ops_cost_per_site", Numeric(14, 2)),
     Column("declared_spend_by_country", JSON),

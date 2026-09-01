@@ -27,6 +27,7 @@ sim_id = sims[[f"{s['simulation_run_id'][:8]} - seed {s['seed']} x{s['ensemble_s
                for s in sims].index(pick)]["simulation_run_id"]
 
 case = api.get(f"/v1/outside-in/cases/{case_id}")
+_rs = case.get("run_settings") or {}
 countries = case.get("in_scope_countries") or ["GB", "DE", "US"]
 st.subheader("Declared spend by country (optional cross-check)")
 st.caption("Only fill this in where the client has actually told you what they "
@@ -67,6 +68,9 @@ ops = c2.number_input(
 
 if st.button("Save these inputs to the case"):
     _r = api.put(f"/v1/outside-in/cases/{case_id}", {
+        "run_settings": {**(case.get("run_settings") or {}),
+                         "method": method,
+                         "anchor_value": float(anchor_value or 0.0)},
         "declared_users": int(users),
         "declared_ops_cost_per_site": float(ops),
         "declared_spend_by_country": {
@@ -128,7 +132,14 @@ st.caption("BUILD_UP enumerates the estate and prices every circuit. ANCHOR "
            "confidence model and the same ceilings; neither is a fallback that "
            "fires on its own, because a method that switches itself produces a "
            "number whose basis nobody chose.")
-method = st.radio("Method", ["BUILD_UP", "ANCHOR"], horizontal=True,
+# Read from the case. The method decides which question the estimate answers,
+# and it was widget state - so switching page reverted an ANCHOR case to
+# BUILD_UP and the next run priced an estate the analyst had deliberately
+# chosen not to enumerate.
+_methods = ["BUILD_UP", "ANCHOR"]
+method = st.radio("Method", _methods, horizontal=True,
+                  index=_methods.index(_rs.get("method"))
+                  if _rs.get("method") in _methods else 0,
                   help="BUILD_UP needs a completed simulation. ANCHOR needs a "
                        "disclosed annual spend figure.")
 
@@ -136,7 +147,8 @@ anchor_value, anchor_fact = None, None
 if method == "ANCHOR":
     a1, a2 = st.columns(2)
     anchor_value = a1.number_input(
-        "Disclosed annual spend (anchor)", min_value=0.0, value=0.0, step=1_000_000.0,
+        "Disclosed annual spend (anchor)", min_value=0.0,
+        value=float(_rs.get("anchor_value") or 0.0), step=1_000_000.0,
         help="The cost line the addressable pool is a share of - a "
              "telecommunication costs or IT services figure from the annual "
              "report. It is an upper bound: it carries voice, mobile and "

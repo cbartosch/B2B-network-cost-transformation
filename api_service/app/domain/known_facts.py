@@ -684,5 +684,12 @@ def accept_public_proposal(session, *, case_id: str, proposal: dict,
         value_high=proposal.get("value_high"),
         unit=proposal.get("unit"), currency=proposal.get("currency"),
         asserted_by=accepted_by, assertion_date=date.today(),
-        basis="THIRD_PARTY_REPORT", verifiability="PUBLICLY_VERIFIABLE",
+        # An edited figure is no longer what the source said, so it stops
+        # claiming to be a third-party report. THIRD_PARTY_REPORT means "a
+        # public source states this"; once the analyst has changed the number
+        # that is INDUSTRY_KNOWLEDGE informed by a source, and conflating them
+        # would let an edited value borrow the source's standing.
+        basis=("INDUSTRY_KNOWLEDGE" if proposal.get("edited")
+               else "THIRD_PARTY_REPORT"),
+        verifiability="PUBLICLY_VERIFIABLE",
         self_reported_confidence=proposal.get("self_reported_confidence"))

@@ -35,6 +35,7 @@ st.subheader("Footprint")
 # domain/footprint.py, where it can be tested. It lived here as four branches
 # and was wrong in a different way four times running.
 _fp = api.get(f"/v1/outside-in/cases/{case_id}/footprint")
+_case_settings = api.get(f"/v1/outside-in/cases/{case_id}")
 
 st.markdown("**Known sites by type**")
 if "_error" in _fp:
@@ -141,9 +142,16 @@ default = pd.DataFrame(
 fp = st.data_editor(default, num_rows="dynamic", use_container_width=True)
 
 c1, c2 = st.columns(2)
-seed = c1.number_input("Seed", 0, 10**9, 42,
-                       help="The whole ensemble is reproducible from this one integer")
-size = c2.number_input("Ensemble size", 1, 200, 25)
+# Read from the case, not defaulted. A pinned seed is the whole basis of the
+# reproducibility claim, and it was widget state - so switching page reverted
+# it to 42 and the next run was a different ensemble with no notice.
+_rs = ({} if "_error" in _case_settings else (_case_settings.get("run_settings") or {}))
+seed = c1.number_input("Seed", 0, 10**9, int(_rs.get("seed") or 42),
+                       help="The whole ensemble is reproducible from this one "
+                            "integer. Saved with the footprint, so it survives "
+                            "a page switch.")
+size = c2.number_input("Ensemble size", 1, 200,
+                       int(_rs.get("ensemble_size") or 25))
 
 ARCHETYPES = ("BRANCH", "LARGE_OFFICE", "WAREHOUSE", "DC", "STORE")
 
@@ -247,7 +255,9 @@ if _save_col.button("Save footprint"):
         st.error(_m)
     if not _problems:
         _r = api.put(f"/v1/outside-in/cases/{case_id}",
-                     {"analyst_footprint": _rows_to_save})
+                     {"analyst_footprint": _rows_to_save,
+                      "run_settings": {**_rs, "seed": int(seed),
+                                       "ensemble_size": int(size)}})
         if "_error" in _r:
             st.error(_r["_error"])
         else:
@@ -268,7 +278,9 @@ if _run_col.button("Run simulation", type="primary"):
         # run's parameters and nowhere the case could see. Running a footprint
         # is a clear enough statement that you meant it.
         api.put(f"/v1/outside-in/cases/{case_id}",
-                {"analyst_footprint": footprint})
+                {"analyst_footprint": footprint,
+                 "run_settings": {**_rs, "seed": int(seed),
+                                  "ensemble_size": int(size)}})
         r = api.post(f"/v1/outside-in/cases/{case_id}/simulations:run",
                      {"seed": int(seed), "ensemble_size": int(size),
                       "footprint": footprint})

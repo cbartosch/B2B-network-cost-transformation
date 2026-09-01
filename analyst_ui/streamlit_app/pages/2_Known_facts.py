@@ -26,6 +26,16 @@ _countries = [] if "_error" in _case else list(_case.get("in_scope_countries") o
 
 api.show_flash()
 
+
+def _num(value):
+    """A Decimal field arrives as a JSON string, so an editable numeric column
+    has to be given a number rather than the string it came as."""
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
 st.subheader("Start from what is already public")
 st.caption("A quick sweep of public sources for the facts this register "
            "usually holds, run before the deep per-domain research. Nothing "
@@ -48,46 +58,94 @@ elif _pf:
     _props = _pf.get("proposals") or []
     if not _props:
         st.info("No public figures found for the swept fact classes. Your own "
-                "knowledge is the only route for these - register it below.")
+                "knowledge is the only route for these - register them below.")
+        if _pf.get("not_found"):
+            st.caption("Nothing public found for: "
+                       + ", ".join(_pf["not_found"]))
     else:
-        st.write(f"Found {len(_props)} proposal(s) for "
-                 f"**{_pf.get('subject')}**.")
-        chosen = []
+        st.write(f"{len(_props)} proposal(s) for **{_pf.get('subject')}**. "
+                 f"Edit any cell before accepting: a searched figure is a "
+                 f"starting point and the analyst is the one who decides what "
+                 f"goes in the register.")
+
+        # An editable table rather than a list of checkboxes. A proposal is
+        # usually nearly right and wrong in one field - a stale as-of date, a
+        # unit the source stated loosely, a value that needs rounding to the
+        # perimeter - and a take-it-or-leave-it control forced a retype into
+        # the form below to fix one cell.
+        #
+        # Editing does not launder the source: the sources stay attached to the
+        # row, and `edited` is set on any row whose value the analyst changed,
+        # so the register records that the figure is no longer exactly what the
+        # source said.
+        _rows = []
         for prop in _props:
-            band = ""
-            if prop.get("value_low") is not None and prop.get("value_high") is not None:
-                band = f"  (sources range {prop['value_low']}-{prop['value_high']})"
-            label = (f"{prop['fact_class']} - {prop['subject']}: "
-                     f"{prop.get('value_base') if prop.get('value_base') is not None else '?'} "
-                     f"{prop.get('unit') or ''}{band}")
-            cols = st.columns([6, 1])
-            picked = cols[0].checkbox(label, key=f"pf_{prop['proposal_id']}",
-                                      value=not prop.get("already_registered"))
-            if prop.get("bindable"):
-                cols[1].caption("binds a driver")
-            if prop.get("already_registered"):
-                st.caption("   Already in the register - shown so you can see "
-                           "whether public sources agree with what is there.")
-            if prop.get("note"):
-                st.caption(f"   {prop['note']}")
-            for src in prop.get("sources") or []:
-                st.caption(f"   source: {src.get('publisher') or ''} "
-                           f"{src.get('url') or ''}"
-                           + (f" ({src['as_of']})" if src.get("as_of") else ""))
-            if picked:
-                chosen.append(prop)
+            _srcs = prop.get("sources") or []
+            _rows.append({
+                "accept": not prop.get("already_registered"),
+                "fact_class": prop.get("fact_class"),
+                "subject": prop.get("subject"),
+                "value_base": _num(prop.get("value_base")),
+                "value_low": _num(prop.get("value_low")),
+                "value_high": _num(prop.get("value_high")),
+                "unit": prop.get("unit") or "",
+                "currency": prop.get("currency") or "",
+                "as_of": prop.get("as_of") or "",
+                "sources": len(_srcs),
+                "already_in_register": bool(prop.get("already_registered")),
+                "_id": prop.get("proposal_id"),
+            })
+        _df = pd.DataFrame(_rows)
+        _edited = st.data_editor(
+            _df.drop(columns=["_id"]),
+            use_container_width=True, hide_index=True, num_rows="fixed",
+            disabled=["fact_class", "sources", "already_in_register"],
+            column_config={
+                "accept": st.column_config.CheckboxColumn(
+                    "accept", help="Ticked rows are registered in your name."),
+                "sources": st.column_config.NumberColumn(
+                    "sources", help="How many public sources support this row. "
+                                    "One is a thin finding, not a wrong one."),
+                "already_in_register": st.column_config.CheckboxColumn(
+                    "already registered",
+                    help="Shown so you can see whether public sources agree "
+                         "with what is already there."),
+            }, key="pf_editor")
+
+        with st.expander("Sources behind these proposals"):
+            for prop in _props:
+                st.markdown(f"**{prop['fact_class']} - {prop.get('subject')}**")
+                for src in prop.get("sources") or []:
+                    st.caption(
+                        f"   {src.get('source_class') or ''} "
+                        f"{src.get('publisher') or ''} {src.get('url') or ''}"
+                        + (f" ({src['as_of']})" if src.get("as_of") else "")
+                        + (f" [{src['how_read']}]" if src.get("how_read") else ""))
+                if not prop.get("sources"):
+                    st.caption("   no sources recorded on this proposal")
 
         who = st.text_input("Accepting as (your name)", key="pf_who")
-        if st.button("Add selected to the register",
-                     disabled=not (chosen and who.strip())):
+        _picked = [
+            {**_props[i], "value_base": r["value_base"],
+             "value_low": r["value_low"], "value_high": r["value_high"],
+             "unit": r["unit"] or None, "currency": r["currency"] or None,
+             "as_of": r["as_of"] or None, "subject": r["subject"],
+             # Recorded because an edited figure is no longer what the source
+             # said, and the note is where that has to be visible.
+             "edited": (r["value_base"] != _rows[i]["value_base"]
+                        or r["subject"] != _rows[i]["subject"])}
+            for i, r in enumerate(_edited.to_dict("records")) if r["accept"]]
+
+        if st.button(f"Add {len(_picked)} row(s) to the register",
+                     disabled=not (_picked and who.strip())):
             r = api.post(
                 f"/v1/outside-in/cases/{case_id}/known-facts:accept-public",
-                {"proposals": chosen, "accepted_by": who})
+                {"proposals": _picked, "accepted_by": who})
             if "_error" in r:
                 st.error(r["_error"])
             else:
-                st.success(f"{len(r.get('registered') or [])} fact(s) "
-                           f"registered as {who}.")
+                api.flash(f"{len(r.get('registered') or [])} fact(s) "
+                          f"registered as {who}. Edit any of them below.")
                 for bad in r.get("refused") or []:
                     st.warning(f"{bad['fact_class']}: {bad['reason']}")
                 st.session_state.pop("_prefill", None)
@@ -97,141 +155,6 @@ elif _pf:
         st.caption("Nothing public found for: " + ", ".join(_pf["not_found"])
                    + ". That is a finding too - these need your knowledge or "
                      "the client's.")
-
-st.divider()
-
-# Deliberately not st.form. A form does not write its widget values to session
-# state until it is submitted, so navigating to another page mid-entry discarded
-# everything typed - which is what "the information I entered is gone" meant all
-# along, and it was the register I kept fixing. Plain keyed widgets write to
-# session state as they change, so a half-finished fact survives a page switch.
-#
-# The cost is a rerun per keystroke-group, which on this page is unnoticeable.
-_KF_FIELDS = {
-    "kf_fact_class": "Location footprint",
-    "kf_subject": _entity,
-    "kf_base": None, "kf_low": None, "kf_high": None,
-    "kf_unit": "sites",
-    "kf_asserted_by": "",
-    "kf_basis": "CLIENT_CONVERSATION",
-    "kf_verif": "PUBLICLY_VERIFIABLE",
-    "kf_date": dt.date.today(),
-    "kf_conf": 0.6,
-}
-# Streamlit forbids writing a widget's session-state key once that widget has
-# been instantiated in the same run, so a reset requested by a button cannot be
-# performed where the button is handled. It is requested there and carried out
-# here, before any widget is created.
-if st.session_state.pop("_kf_reset", False):
-    for _k, _default in _KF_FIELDS.items():
-        st.session_state[_k] = _default
-
-for _k, _default in _KF_FIELDS.items():
-    st.session_state.setdefault(_k, _default)
-
-st.markdown("**Register a known fact**")
-if any(st.session_state.get(k) not in (None, "", _KF_FIELDS[k])
-       for k in ("kf_base", "kf_low", "kf_high", "kf_asserted_by")):
-    st.caption("Draft in progress - it is kept if you move to another page and "
-               "come back.")
-
-_CLASSES = ["Location footprint", "Current architecture hypothesis",
-            "Public cost evidence", "Current vendor and product signals",
-            "Contract and sourcing events", "Operating-model cost",
-            "Transformation announcements", "Resilience assumptions",
-            "Remote-user population", "Market serviceability"]
-_BASES = ["CLIENT_CONVERSATION", "INDUSTRY_KNOWLEDGE", "THIRD_PARTY_REPORT",
-          "PRIOR_ENGAGEMENT", "UNSTATED"]
-_VERIF = ["PUBLICLY_VERIFIABLE", "CLIENT_CONFIRMABLE", "UNVERIFIABLE"]
-
-a, b = st.columns(2)
-fact_class = a.selectbox("Fact class", _CLASSES, key="kf_fact_class")
-_suggestions = [x for x in ([_entity] + _aliases + _countries) if x]
-subject = b.text_input(
-    "Subject *", key="kf_subject",
-    help="The entity, country, provider or contract the claim is about, "
-         "prefilled from the case. Change it where the claim is not about the "
-         "entity itself - a country for market serviceability, a carrier for a "
-         "contract event. Keep the wording consistent between facts about the "
-         "same thing: corroboration and the public prefill both match on it.")
-if _suggestions:
-    b.caption("Also on this case: " + " · ".join(_suggestions[:5]))
-
-c, d, e, f = st.columns(4)
-# The default is None, set through _KF_FIELDS above. It used to be 0.0, and the
-# payload then did `base or None` - so an untouched field silently became "no
-# value", and a legitimate zero became one too. The fact registered as
-# "(None sites)" with an empty subject, and every stage downstream behaved
-# correctly on something that should never have been storable.
-# No value= alongside key=: session state already holds the field through
-# setdefault above, and passing both makes Streamlit warn that a widget was
-# given a default and had its value set through session state.
-base = c.number_input("Value (base) *", placeholder="e.g. 340", key="kf_base")
-low = d.number_input("Low (optional)", key="kf_low")
-high = e.number_input("High (optional)", key="kf_high")
-unit = f.text_input("Unit", key="kf_unit")
-
-g, h, i = st.columns(3)
-asserted_by = g.text_input("Asserted by *", key="kf_asserted_by",
-                           help="A named individual. Not a team or a role.")
-basis = h.selectbox("Basis", _BASES, key="kf_basis")
-verif = i.selectbox("Verifiability", _VERIF, key="kf_verif")
-
-j, k = st.columns(2)
-adate = j.date_input("Assertion date", key="kf_date")
-conf = k.slider("Self-reported confidence", 0.0, 1.0, key="kf_conf")
-
-if basis == "PRIOR_ENGAGEMENT":
-    st.warning("A PRIOR_ENGAGEMENT fact may carry another client's "
-               "confidential information. It starts un-cleared and cannot "
-               "influence the estimate until a rights check passes (2.4).")
-
-_reg, _clear = st.columns([1, 4])
-if _clear.button("Clear the form"):
-    st.session_state["_kf_reset"] = True
-    st.rerun()
-
-if _reg.button("Register", type="primary"):
-    problems = []
-    if not (asserted_by or "").strip():
-        problems.append("An unattributed known fact is rejected. Name the asserter.")
-    if not (subject or "").strip():
-        problems.append("Name the subject. Corroboration looks for public "
-                        "sources about a named subject.")
-    if base is None and low is None and high is None:
-        problems.append("Give a value - a point in base, or a range in low and "
-                        "high. If the number is genuinely unknown, leave the "
-                        "domain DECLARED_UNKNOWN rather than asserting an "
-                        "empty fact.")
-    if problems:
-        for msg in problems:
-            st.error(msg)
-    else:
-        r = api.post(f"/v1/outside-in/cases/{case_id}/known-facts", {
-            "fact_class": fact_class, "subject": subject,
-            # No `or None`: that coerced a legitimate zero to absent as well
-            # as an untouched field.
-            "value_base": base, "value_low": low, "value_high": high,
-            "unit": unit,
-            "asserted_by": asserted_by, "assertion_date": str(adate),
-            "basis": basis, "verifiability": verif,
-            "self_reported_confidence": conf})
-        if "_error" in r:
-            st.error(r["_error"])
-        else:
-            _msg = (f"Registered {fact_class} for {subject} as "
-                    f"{r.get('evidence_origin')} "
-                    f"(id {str(r.get('known_fact_id'))[:8]}).")
-            if r.get("range_widened_from_point"):
-                _msg += (" The point value was widened to a range; the "
-                         "widening is recorded.")
-            api.flash(_msg)
-            # The form is NOT cleared. What was entered stays on screen after
-            # registering, because clearing it reads as the entry having been
-            # lost - and because the next fact is usually the same subject with
-            # a different class or value, which is faster to edit than to
-            # retype. Use "Clear the form" to empty it deliberately.
-            st.rerun()
 
 st.divider()
 

@@ -299,6 +299,7 @@ class CaseIn(BaseModel):
     in_scope_region: str | None = None
     entity_aliases: list[str] = []
     analyst_footprint: list[dict] = []
+    run_settings: dict = {}
     declared_users: int | None = None
     declared_ops_cost_per_site: Decimal | None = None
     declared_spend_by_country: dict = {}
@@ -430,6 +431,7 @@ class CaseUpdate(BaseModel):
     entity_aliases: list[str] | None = None
     analyst_footprint: list[dict] | None = None
     industry: str | None = None
+    run_settings: dict | None = None
     declared_users: int | None = None
     declared_ops_cost_per_site: Decimal | None = None
     declared_spend_by_country: dict | None = None

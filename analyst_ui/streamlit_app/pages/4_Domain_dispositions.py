@@ -455,6 +455,21 @@ edited = st.data_editor(
         "reason": st.column_config.SelectboxColumn("Reason (DECLARED_UNKNOWN only)",
                                                    options=REASONS)})
 
+# Streamlit discards an edited table on a page switch, so an unsaved change to
+# 24 dispositions is lost silently. Warned rather than auto-saved: a
+# disposition is a statement about evidence and writing 24 of them because
+# somebody scrolled would be worse than losing them.
+_changed = [r for r, o in zip(edited.to_dict("records"), rows)
+            if (r.get("disposition"), r.get("reason") or None)
+            != (o.get("disposition"), o.get("reason") or None)]
+if _changed:
+    st.warning(
+        f"**{len(_changed)} unsaved change(s).** Streamlit discards an edited "
+        f"table when you switch page, so save before leaving: "
+        + ", ".join(f"{r['domain_no']}. {r['domain_name']}"
+                    for r in _changed[:4])
+        + (" and others." if len(_changed) > 4 else ""))
+
 if st.button("Save dispositions", type="primary"):
     payload = [{"domain_no": int(r["domain_no"]), "domain_name": r["domain_name"],
                 "disposition": r["disposition"], "reason": r["reason"] or None}
