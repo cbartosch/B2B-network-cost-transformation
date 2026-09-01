@@ -1,4 +1,5 @@
 """FastAPI control plane. Streamlit reaches the system only through here."""
+import json
 import uuid
 from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal
@@ -10,6 +11,7 @@ from sqlalchemy import delete, insert, select, text, update
 from .. import config, db, jobs, migrations
 from ..domain import (anchor_estimate, archetype as archetype_resolver,
                       benchmark_ingest, case_admin,
+                      explain as explain_estimate,
                       topology as topology_planner,
                       refinement,
                       case_export,
@@ -2010,6 +2012,57 @@ def _latest_snapshot_id(session, case_id: str) -> str | None:
         .where(db.estimate_snapshot.c.case_id == case_id)
         .order_by(db.estimate_snapshot.c.created_at.desc()).limit(1)).first()
     return row[0] if row else None
+
+
+class AskIn(BaseModel):
+    question: str
+    provider: str = "anthropic"
+
+
+@router.post("/v1/outside-in/cases/{case_id}/estimates/{snapshot_id}:ask")
+def ask_about_estimate(case_id: str, snapshot_id: str, payload: AskIn):
+    """Answer a question about how an estimate was reached and what is missing.
+
+    The packet is computed - the figures come from the snapshot and the gaps
+    from the estimate's own state - and the model explains it. A quality gate
+    refuses an answer containing a figure the packet does not contain, because
+    a number the model worked out is indistinguishable in prose from one the
+    estimate produced.
+    """
+    if not (payload.question or "").strip():
+        raise HTTPException(422, "ask a question")
+    with S() as s:
+        _one_or_404(s, db.case, db.case.c.case_id, case_id, "case")
+        snapshot = _one_or_404(s, db.estimate_snapshot,
+                               db.estimate_snapshot.c.estimate_snapshot_id,
+                               snapshot_id, "estimate snapshot")
+        packet = explain_estimate.build_packet(s, case_id=case_id,
+                                              snapshot=snapshot)
+        run_id = gateway.create_agent_run(s, agent_id="LLM-06", mode="LIVE",
+                                          case_id=case_id)
+        prompt = (
+            "Answer the question using only the packet below.\n"
+            + gateway.fence("question", payload.question) + "\n"
+            + gateway.fence("estimate_packet", json.dumps(packet, indent=1,
+                                                          default=str)))
+        try:
+            result, provenance = gateway.structured_call(
+                s, agent_run_id=run_id, prompt_id="estimate.explain.answer",
+                prompt=prompt, provider=payload.provider,
+                gate_context={"packet": packet})
+        except errors.ProviderUnavailable as exc:
+            raise HTTPException(503, f"LIVE run failed closed: {exc}")
+        except (errors.LivenessProofFailed,
+                errors.StructuredOutputInvalid) as exc:
+            raise HTTPException(502, str(exc))
+
+        gateway.succeed(s, run_id, {"question": payload.question[:200]})
+        return {**result.model_dump(), "snapshot_id": snapshot_id,
+                "provenance": provenance,
+                # Returned with the answer so a reader can check it rather
+                # than trust it.
+                "gaps": packet["gaps"],
+                "figures": packet["figures"]}
 
 
 @router.get("/v1/outside-in/cases/{case_id}/estimates:progression")

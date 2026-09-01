@@ -284,6 +284,83 @@ def public_fact_prefill(result, context) -> Verdict:
     return Verdict(not reasons, reasons, detail)
 
 
+def estimate_answer(result, context) -> Verdict:
+    """An answer may only contain figures the packet already contains.
+
+    This is the control that makes a natural-language layer over an estimate
+    safe. A model discussing numbers will produce numbers, and one it worked
+    out itself is indistinguishable in prose from one the estimate produced -
+    so every number in the answer is checked against the packet, and an answer
+    carrying an invented one is refused rather than shown with a caveat.
+
+    Deliberately tolerant of formatting: the packet holds "34000000.00" and a
+    readable answer says "EUR 34 million" or "34.0m". Digits are compared after
+    separators and scale words are normalised, because a gate that rejects a
+    correct answer for writing a number well is a gate that gets turned off.
+
+    Years, percentages, small counts and anything under three digits are
+    ignored: they are prose, not the estimate's figures.
+    """
+    import re
+
+    packet = (context or {}).get("packet") or {}
+    if result.unanswerable:
+        return Verdict(True)
+
+    def _digits(text):
+        return re.sub(r"[^0-9]", "", str(text))
+
+    known = set()
+    def _harvest(node):
+        if isinstance(node, dict):
+            for v in node.values():
+                _harvest(v)
+        elif isinstance(node, list):
+            for v in node:
+                _harvest(v)
+        elif node is not None:
+            d = _digits(node)
+            if len(d) >= 3:
+                known.add(d.rstrip("0") or d)
+                known.add(d)
+    _harvest(packet)
+
+    reasons, detail = [], []
+    for raw in re.findall(r"\d[\d,.\u00a0 ]*\d|\d{3,}", result.answer):
+        scale = 1
+        tail = result.answer[result.answer.find(raw) + len(raw):
+                             result.answer.find(raw) + len(raw) + 12].lower()
+        for word, factor in (("bn", 1_000_000_000), ("billion", 1_000_000_000),
+                             ("m", 1_000_000), ("million", 1_000_000),
+                             ("k", 1_000), ("thousand", 1_000)):
+            if tail.strip().startswith(word):
+                scale = factor
+                break
+        digits = _digits(raw)
+        if len(digits) < 3 and scale == 1:
+            continue
+        scaled = _digits(int(float(digits or 0) * scale)) if scale > 1 else digits
+        if not any(candidate in known or candidate.rstrip("0") in
+                   {k.rstrip("0") for k in known}
+                   for candidate in (digits, scaled)):
+            reasons.append(Rejection.CLAIMED_FINDING_WITHOUT_SOURCE)
+            detail.append(f"the answer contains {raw!r}, which is not in the "
+                          f"packet - a figure the model worked out is "
+                          f"indistinguishable in prose from one the estimate "
+                          f"produced")
+            break
+
+    for gap in result.gaps_referenced:
+        if gap not in {g["gap"] for g in packet.get("gaps") or []}:
+            reasons.append(Rejection.OPTION_NOT_SUPPLIED)
+            detail.append(f"{gap!r} is not in the computed gap list; a "
+                          f"plausible gap sends someone to look for the wrong "
+                          f"thing")
+            break
+
+    return Verdict(not reasons, reasons, detail)
+
+
 def accept_all(result, context) -> Verdict:
     """For services whose whole output is already constrained by the schema.
 
@@ -301,6 +378,7 @@ RULES = {
     "entity.profile.summarise": entity_profile,
     "known_fact.prefill_public": public_fact_prefill,
     "llm09.benchmark.extract": benchmark_observations,
+    "estimate.explain.answer": estimate_answer,
     "llm02.questionnaire.prefill": questionnaire_prefill,
     # Scenario selection is a two-field enum-constrained choice, and the
     # narrative has no checkable property beyond being present.

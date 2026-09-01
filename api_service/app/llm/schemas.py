@@ -231,6 +231,33 @@ class CorroborationResult(Strict):
     unresolved_reasons: list[str] = Field(default_factory=list)
 
 
+# ------------------------------------------------------ estimate explanation
+class EstimateAnswer(Strict):
+    """An answer about an estimate, grounded in the packet it was given.
+
+    No field carries a number the model worked out. `figures_cited` names the
+    packet keys the answer relies on, and the quality gate rejects an answer
+    containing a figure the packet does not contain - which is the only way to
+    let a model discuss numbers without letting it invent them.
+
+    `unanswerable` exists because "the estimate does not record that" is the
+    correct answer to a good many reasonable questions, and a model with no way
+    to say it will guess instead.
+    """
+    answer: str
+    # Packet keys the answer relies on: figures.confidence_score,
+    # derivation.method, gaps.UNPRICED_SCOPE.
+    figures_cited: list[str] = Field(default_factory=list)
+    # Gaps the answer points at, taken from the computed list rather than
+    # invented: a plausible gap sends someone to look for the wrong thing.
+    gaps_referenced: list[str] = Field(default_factory=list)
+    # What the analyst should do next, in the order the packet's priorities
+    # imply. Empty is a valid answer to "why is this number what it is".
+    suggested_next: list[str] = Field(default_factory=list)
+    unanswerable: bool = False
+    unanswerable_reason: str | None = None
+
+
 # ------------------------------------------------- public known-fact prefill
 class ProposedKnownFact(Strict):
     """A fact the register could hold, found in public sources.
