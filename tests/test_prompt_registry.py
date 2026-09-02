@@ -596,10 +596,14 @@ def test_the_sweep_must_account_for_every_class_it_was_asked_about():
     reply = schemas.PublicFactSweep.model_validate({
         "subject": "Boots",
         "facts": [],
-        # not_found is list[str]: the class names. The first version of this
-        # test passed dicts, matching the shape of `facts` rather than the
-        # declared one - so it asserted the same wrong thing the gate did.
-        "not_found": ["Remote-user population"],
+        # not_found carries the class, what was searched and why. It was
+        # list[str] while the prompt asked for the class "with what you
+        # searched for" - two things one string cannot hold - so the agent
+        # returned an empty object rather than an unsatisfiable shape.
+        "not_found": [{"fact_class": "Remote-user population",
+                       "searched_for": "remote headcount, work-from-home share",
+                       "reason": "no public source isolates this from total "
+                                 "headcount"}],
     })
     verdict = quality.evaluate(
         "known_fact.prefill_public", reply,
@@ -619,7 +623,8 @@ def test_a_sweep_that_accounts_for_everything_is_accepted():
                    "value_base": "1800", "unit": "sites",
                    "sources": [{"url": "https://boots-uk.example/about",
                                 "publisher": "Boots UK"}]}],
-        "not_found": ["Remote-user population"],
+        "not_found": [{"fact_class": "Remote-user population",
+                       "reason": "no public source isolates this"}],
     })
     assert quality.evaluate(
         "known_fact.prefill_public", reply,
@@ -633,3 +638,51 @@ def test_the_prompt_states_the_coverage_requirement():
     task = prompts.get("known_fact.prefill_public").task
     assert "Answer for every fact class" in task
     assert "stronger claim" in task
+    # and it must name the fields the schema actually has, or the instruction
+    # is unsatisfiable and the agent returns nothing rather than a shape it
+    # cannot build
+    assert "searched_for" in task and "reason" in task
+
+
+def test_a_prompt_only_names_fields_its_schema_declares():
+    """The defect twice over, and the second time it cost three attempts and
+    an empty reply.
+
+    The base contract asked every source for `source_class` while
+    QuantityCandidate forbade extras - 26 validation errors for a correct
+    reply. Then the sweep prompt asked for the class "with what you searched
+    for" in a `not_found` declared list[str], which cannot hold both, and the
+    agent returned an empty object rather than an unsatisfiable shape.
+
+    Asking for a field the schema has no room for is the worst kind of
+    instruction: the model is right to fail it and the failure looks like
+    incompetence.
+    """
+    import ast
+    import re
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1]
+    app = next(c for c in (root / "api_service" / "app", root / "app")
+               if (c / "llm").exists())
+
+    declared = set()
+    for cls in ast.parse((app / "llm" / "schemas.py").read_text()).body:
+        if isinstance(cls, ast.ClassDef):
+            declared |= {n.target.id for n in cls.body
+                         if isinstance(n, ast.AnnAssign)
+                         and isinstance(n.target, ast.Name)}
+    assert declared, "no schema fields found - the sweep is not seeing them"
+
+    offenders = []
+    for definition in prompts.PROMPTS.values():
+        for name in set(re.findall(r"`(\w+)`", definition.task)):
+            # Only names that look like fields: lowercase with an underscore,
+            # or a known field name. A backticked ENUM value is not a field.
+            if not (name.islower() and ("_" in name or name in declared)):
+                continue
+            if name not in declared:
+                offenders.append(
+                    f"{definition.prompt_id} asks for `{name}`, which no "
+                    f"schema declares")
+    assert not offenders, "\n".join(sorted(set(offenders)))

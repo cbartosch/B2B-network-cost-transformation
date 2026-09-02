@@ -168,11 +168,18 @@ elif _pf:
     # own website, the first is implausible and the second is a sweep that
     # under-delivered.
     if _pf.get("not_found"):
-        st.caption(
-            "**Searched, nothing usable:** "
-            + ", ".join(str(n) for n in _pf["not_found"])
-            + ". That is a finding - these need your knowledge or the "
-              "client's.")
+        st.markdown("**Searched, nothing usable**")
+        for _n in _pf["not_found"]:
+            _cls = (_n or {}).get("fact_class") if isinstance(_n, dict) else _n
+            _why = (_n or {}).get("reason") if isinstance(_n, dict) else None
+            _what = (_n or {}).get("searched_for") if isinstance(_n, dict) else None
+            st.caption(
+                f"**{_cls}** - {_why or 'no reason given'}"
+                + (f"  (searched: {_what})" if _what else ""))
+        st.caption("That is a finding - these need your knowledge or the "
+                   "client's. The reason matters: \"no public source isolates "
+                   "this\" needs the client, \"nobody publishes it\" needs a "
+                   "different approach.")
     if _pf.get("unaccounted"):
         st.warning(
             f"**The sweep said nothing at all about "

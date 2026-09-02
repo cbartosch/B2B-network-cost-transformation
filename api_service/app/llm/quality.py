@@ -74,11 +74,10 @@ TERMINAL = frozenset({
 # instruction rather than a diagnosis, because the retry has to act on it.
 GUIDANCE = {
     Rejection.INCOMPLETE_COVERAGE: (
-        "You did not mention every fact class you were asked about. For each "
-        "one, either propose a figure with its source, or add it to not_found "
-        "saying what you searched for and why nothing was usable. Silence on "
-        "a class is read as 'nothing exists', which is a different and "
-        "stronger claim than 'I did not find it'."),
+        "You did not answer for every fact class. For each missing one, add "
+        "either a fact to `facts` or an entry to `not_found` with "
+        "`fact_class`, `searched_for` and `reason`. Both are complete "
+        "answers; silence is not."),
     # A retry that repeats the prompt unchanged is resampling rather than
     # correction, so every retryable reason has to be able to say what to fix.
     # Both of these were added as reasons and never given guidance - so a
@@ -292,14 +291,13 @@ def public_fact_prefill(result, context) -> Verdict:
     # Those are different findings and they were indistinguishable.
     requested = {c for c in ((context or {}).get("fact_classes") or [])}
     if requested:
-        # not_found is list[str] - the class names themselves. This read
-        # n.fact_class off each entry, which is the shape the *facts* list has,
-        # and every sweep raised AttributeError: 'str' object has no attribute
-        # 'fact_class'. Written against an assumed shape rather than the
-        # declared one, and the test I wrote alongside it made the same
-        # assumption, so it would have failed on its first run too.
+        # not_found carries the class, what was searched and why nothing was
+        # usable. It was list[str] while the prompt asked for the class "with
+        # what you searched for" - two things one string cannot hold - so the
+        # agent returned an empty object rather than an unsatisfiable shape.
+        # The instruction was right and the schema was wrong.
         accounted = ({f.fact_class for f in result.facts}
-                     | {str(n) for n in (result.not_found or [])})
+                     | {n.fact_class for n in (result.not_found or [])})
         missing = sorted(requested - accounted)
         if missing:
             reasons.append(Rejection.INCOMPLETE_COVERAGE)

@@ -289,9 +289,29 @@ class ProposedKnownFact(Strict):
     note: str | None = None
 
 
+class NotFoundClass(Strict):
+    """A fact class the sweep looked for and could not usably answer.
+
+    `not_found` was list[str], and the prompt asked the agent to name the class
+    "with what you searched for" - two things one string cannot hold. The
+    agent's earlier replies put the reason inside the string, which reads
+    correctly and parses as nothing, and after the instruction was tightened it
+    returned an empty object three times rather than an unsatisfiable shape.
+    Same defect as asking every source for a source_class the candidate schema
+    forbade: the instruction was right and the schema was wrong.
+
+    The reason is the useful part. "No public source isolates remote headcount
+    from total headcount" tells an analyst the figure needs the client, which
+    is a different next step from "nobody publishes this".
+    """
+    fact_class: str
+    searched_for: str | None = None
+    reason: str | None = None
+
+
 class PublicFactSweep(Strict):
     facts: list[ProposedKnownFact] = Field(default_factory=list)
-    not_found: list[str] = Field(default_factory=list)
+    not_found: list[NotFoundClass] = Field(default_factory=list)
     abstention_reason: AbstentionReason | None = None
 
 
