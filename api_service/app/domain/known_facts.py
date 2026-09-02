@@ -28,6 +28,62 @@ BINDABLE = {
     "Remote-user population": "users",
 }
 
+# What a bindable class is a count of, and what it plainly is not.
+#
+# BINDABLE already says Location footprint means sites, and nothing enforced
+# it: register() checked the asserter, the basis, the verifiability and that
+# some value existed, and never the unit against the class. So a disclosed cost
+# line filed under Location footprint - "460,000,000 EUR per year" - became 460
+# million sites, and every stage downstream behaved correctly on it. The
+# footprint resolver reported 460,000,000 sites to allocate, and the divergence
+# message told the analyst that *their* breakdown of 100 real stores was wrong.
+#
+# Deliberately not an allowlist of units. "sites", "locations", "Standorte",
+# "branches", "stores", "outlets" are all correct for a footprint, and a strict
+# list would reject a correct entry - which teaches people to fight the field.
+# So this refuses only units that plainly belong to another dimension.
+INCOMPATIBLE_UNITS = {
+    "sites": (
+        # money
+        "eur", "usd", "gbp", "chf", "jpy", "cny", "sek", "nok", "dkk", "pln",
+        "currency", "cost", "spend", "revenue", "budget",
+        # rates and other dimensions
+        "/year", "per year", "p.a.", "/month", "per month", "/mo", "annual",
+        "users", "employees", "headcount", "fte", "staff",
+        "mbps", "gbps", "mbit", "circuits", "%", "percent", "share",
+    ),
+    "users": (
+        "eur", "usd", "gbp", "chf", "currency", "cost", "spend", "revenue",
+        "sites", "locations", "branches", "stores", "mbps", "gbps",
+        "%", "percent", "share",
+    ),
+}
+
+
+def unit_conflicts_with_class(fact_class: str, unit) -> str | None:
+    """The reason this unit cannot be what this class counts, or None.
+
+    Returns a sentence rather than a boolean, because the analyst has to be
+    able to tell what to change - the class or the unit - and both are
+    plausible corrections.
+    """
+    driver = BINDABLE.get(fact_class)
+    if not driver:
+        return None
+    text = str(unit or "").strip().lower()
+    if not text:
+        return None
+    for token in INCOMPATIBLE_UNITS.get(driver, ()):
+        if token in text:
+            return (
+                f"{fact_class!r} is a count of {driver}, and {unit!r} is not a "
+                f"unit of {driver}. Either the class is wrong - a disclosed "
+                f"cost line belongs under 'Public cost evidence' - or the unit "
+                f"is. A figure filed here becomes the site count the estimate "
+                f"builds on, so it is refused rather than stored.")
+    return None
+
+
 # Corroboration outcome -> the origin the bound quantity carries.
 #
 # This is the whole point of the register. An uncorroborated claim substitutes
@@ -82,6 +138,9 @@ def register(session, *, case_id: str, fact_class: str, subject: str,
             "about a named subject, and there is nothing to look for without "
             "one. Name the entity the claim is about, for example the legal "
             "entity or the country the count applies to.")
+    conflict = unit_conflicts_with_class(fact_class, unit)
+    if conflict:
+        raise ValueError(conflict)
     if value_base is None and value_low is None and value_high is None:
         raise ValueError(
             "a known fact must carry a value: a point in value_base, or a "

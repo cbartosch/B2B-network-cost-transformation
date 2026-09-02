@@ -174,6 +174,8 @@ _KF_FIELDS = {
     "kf_fact_class": "Location footprint",
     "kf_subject": _entity,
     "kf_base": None, "kf_low": None, "kf_high": None,
+    # Overwritten by the class-driven suggestion below; kept only so the
+    # key exists before its widget.
     "kf_unit": "sites",
     "kf_asserted_by": "",
     "kf_basis": "CLIENT_CONVERSATION",
@@ -232,7 +234,29 @@ c, d, e, f = st.columns(4)
 base = c.number_input("Value (base) *", placeholder="e.g. 340", key="kf_base")
 low = d.number_input("Low (optional)", key="kf_low")
 high = e.number_input("High (optional)", key="kf_high")
-unit = f.text_input("Unit", key="kf_unit")
+# The unit that class counts, suggested rather than fixed. "sites" was a
+# static default for every class, so picking "Public cost evidence" left it
+# saying sites - and picking "Location footprint" after entering a cost line
+# left the money unit in place, which is how a disclosed spend became 460
+# million sites.
+_UNIT_FOR = {"Location footprint": "sites",
+             "Remote-user population": "users",
+             "Public cost evidence": "EUR/year",
+             "Operating-model cost": "EUR/site/year",
+             "Transformation announcements": "EUR/year",
+             "Market serviceability": "share"}
+if st.session_state.get("_kf_last_class") != fact_class:
+    st.session_state["_kf_last_class"] = fact_class
+    _suggested = _UNIT_FOR.get(fact_class)
+    if _suggested and st.session_state.get("kf_unit") in (
+            None, "", *(_UNIT_FOR.values())):
+        st.session_state["kf_unit"] = _suggested
+        st.rerun()
+unit = f.text_input(
+    "Unit", key="kf_unit",
+    help=f"What {fact_class!r} counts. A unit belonging to another dimension "
+         f"is refused: a cost line filed as a footprint becomes the site count "
+         f"the estimate builds on.")
 
 g, h, i = st.columns(3)
 asserted_by = g.text_input("Asserted by *", key="kf_asserted_by",

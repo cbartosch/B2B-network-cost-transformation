@@ -278,6 +278,25 @@ def _best_footprint_fact(session, case_row) -> tuple:
             + (f"; the register holds {classes}" if classes
                else "; the register is empty"))
 
+    # Defence at the consumer as well as the producer. register() now refuses
+    # a unit that plainly belongs to another dimension, but rows written before
+    # that check exists already carry whatever was typed - and a disclosed cost
+    # line read as a site count is the failure this whole chain is worst at
+    # noticing, because every stage after it behaves correctly.
+    from .known_facts import unit_conflicts_with_class
+
+    mismatched = [r for r in rows
+                  if unit_conflicts_with_class("Location footprint", r.unit)]
+    rows = [r for r in rows if r not in mismatched]
+    if mismatched and not rows:
+        return None, (
+            f"{len(mismatched)} fact(s) are filed as 'Location footprint' with "
+            f"a unit that is not a count of sites "
+            f"({', '.join(sorted({str(r.unit) for r in mismatched}))}). They "
+            f"are ignored rather than read as site counts. Correct the class or "
+            f"the unit on page 2 - a cost line belongs under 'Public cost "
+            f"evidence'.")
+
     usable = [r for r in rows if r.value_base is not None]
     if not usable:
         return None, (
