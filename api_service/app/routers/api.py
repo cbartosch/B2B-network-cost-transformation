@@ -1400,9 +1400,14 @@ def footprint_total_candidates(case_id: str):
     """
     with S() as s:
         case_row = _one_or_404(s, db.case, db.case.c.case_id, case_id, "case")
+        # getattr, not a bare attribute: a database that has not run v39 yet
+        # has no such column, and a 500 here rendered the whole choice panel as
+        # nothing - which reads as "there is no choice to make" rather than
+        # "this call failed".
         return {**footprint_resolver.total_candidates(s, case_id=case_id),
-                "chosen": case_row.footprint_total_choice,
-                "chosen_by": case_row.footprint_total_chosen_by}
+                "chosen": getattr(case_row, "footprint_total_choice", None),
+                "chosen_by": getattr(case_row, "footprint_total_chosen_by",
+                                     None)}
 
 
 @router.put("/v1/outside-in/cases/{case_id}/footprint:total-choice")

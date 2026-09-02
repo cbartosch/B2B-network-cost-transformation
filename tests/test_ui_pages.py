@@ -1104,3 +1104,36 @@ def test_the_total_choice_is_offered_regardless_of_resolver_branch():
             "output, so it renders on some branches and not others")
         return
     raise AssertionError("the total-candidates call is gone")
+
+
+def test_a_failing_call_never_renders_as_nothing():
+    """The choice panel silently did not appear, and "there is no choice to
+    make" and "this call failed" looked identical.
+
+    The condition was `if "_error" not in _tc and len(choices) > 1`, so a 500 -
+    most likely a migration that had not run - hid the panel with no message.
+    A panel that is absent because something broke has to say so; that is the
+    same lesson as the serviceability table reading empty."""
+    text = _page("Simulation").read_text()
+    call = text.index("footprint:total-candidates")
+    following = text[call:call + 1600]
+    assert 'if "_error" in _tc:' in following, (
+        "the error branch must come first and be visible")
+    assert "Could not read the registered totals" in following
+    # and the two empty cases are distinguished from each other
+    assert "No registered site total on this case yet" in following
+    assert "nothing to choose between" in following
+
+
+def test_a_new_column_is_read_defensively_until_its_migration_is_certain():
+    """`case_row.footprint_total_choice` on a database that had not run v39
+    raised, the endpoint 500'd, and the panel that would have shown the error
+    was the panel the error hid."""
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1]
+    app = next(c for c in (root / "api_service" / "app", root / "app")
+               if (c / "routers").exists())
+    api = (app / "routers" / "api.py").read_text()
+    for column in ("footprint_total_choice", "footprint_total_chosen_by"):
+        assert f'getattr(case_row, "{column}"' in api, column

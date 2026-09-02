@@ -38,7 +38,27 @@ st.subheader("Footprint")
 # Whether there is a choice to make is answered by the candidates call, not by
 # which path the resolver happened to take.
 _tc = api.get(f"/v1/outside-in/cases/{case_id}/footprint:total-candidates")
-if "_error" not in _tc and len(_tc.get("choices") or []) > 1:
+if "_error" in _tc:
+    # A failing call rendered as nothing at all, which is indistinguishable
+    # from "there is no choice to make" - and the most likely cause is a
+    # migration that has not run, which the analyst can act on.
+    st.error(f"Could not read the registered totals: {_tc['_error']}")
+elif not (_tc.get("choices") or []):
+    st.caption(
+        "No registered site total on this case yet. Register one on page 2, "
+        "or accept a Location footprint proposal from the public sweep - the "
+        "footprint below is then reconciled against it.")
+elif len(_tc["choices"]) == 1:
+    _only = _tc["choices"][0]
+    st.caption(
+        f"One registered total: **{_only['sites']:,} "
+        f"{_only['unit'] or 'sites'}** for {_only.get('subject')}, so there is "
+        f"nothing to choose between. Register another on page 2 if the estate "
+        f"spans scopes this one does not cover."
+        + (f" Not offered: {len(_tc.get('rejected') or [])} fact(s) filed as "
+           f"Location footprint that cannot be a count of sites."
+           if _tc.get("rejected") else ""))
+elif len(_tc.get("choices") or []) > 1:
     st.markdown("**Which total describes the estate you are modelling?**")
     st.caption(_tc.get("note", ""))
 
