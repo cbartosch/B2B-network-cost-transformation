@@ -246,6 +246,10 @@ commit whose parent is genuinely yours and fast-forwards. `bundle-in <path>` fet
 review before merging. A bundle is an ordinary file containing your history — if that
 history holds anything sensitive, it travels with it.
 
+**`docs/running-from-a-bundle.md` is the step-by-step**: loading a bundle, configuring,
+starting the stack, seeding, and what to do when a step does not behave. It covers the
+failures that have actually happened here rather than the ones that might.
+
 ---
 
 **`docs/build-history.md` records why any of this is the way it is** — 56 build entries,

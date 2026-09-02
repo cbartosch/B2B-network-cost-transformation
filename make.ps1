@@ -167,8 +167,25 @@ switch ($Target) {
         Write-Host ""
         Write-Host "Refs in the bundle:" -ForegroundColor Cyan
         $refs | ForEach-Object { Write-Host "  $_" }
-        $first = ($refs | Select-Object -First 1) -replace '^\S+\s+refs/heads/', ''
+
+        <#
+        Filtered to refs/heads, not "the first ref".
+
+        A bundle carries remote-tracking refs too - this one holds
+        refs/remotes/origin/HEAD alongside the branch - and taking the first
+        line worked only because the branch happened to be listed first. If the
+        ordering ever put a remote ref first, the strip below would not match
+        it and git would be handed "refs/remotes/origin/HEAD:incoming-..." as a
+        refspec, which fails in a way that reads like a corrupt bundle.
+        #>
+        $branches = $refs | Where-Object { $_ -match '\srefs/heads/' } |
+                    ForEach-Object { $_ -replace '^\S+\s+refs/heads/', '' }
+        $first = $branches | Select-Object -First 1
         if (-not $first) { throw "The bundle contains no branch refs." }
+        if ($branches.Count -gt 1) {
+            Write-Host ""
+            Write-Host "More than one branch; taking '$first'." -ForegroundColor Yellow
+        }
 
         Invoke-Checked 'git' @('fetch', $Path, "${first}:incoming-$first")
         Write-Host ""
