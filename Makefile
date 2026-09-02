@@ -1,4 +1,10 @@
-.PHONY: check-duplication validate-flow verify-domains backup restore deck benchmarks reach tls-doctor tls-doctor-in-container check up down logs test seed reset psql doctor migrate pins attest
+.PHONY: audit-contract audit-identity check-duplication validate-flow verify-domains backup restore deck benchmarks reach tls-doctor tls-doctor-in-container check up down logs test seed reset psql doctor migrate pins attest
+
+audit-contract: ## every input field's unit, period and currency
+	python tools/audit_data_contract.py
+
+audit-identity: ## what exactly is being audited: commit, versions, surface
+	python tools/audit_identity.py
 
 check-duplication: ## seven shapes duplication has taken here, in one pass
 	python tools/check_duplication.py
