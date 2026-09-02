@@ -79,6 +79,13 @@ def derive_scope(*, sim_output: dict, priors: dict,
             "priced": prior is not None,
             "rate_basis": "APPROVED_PRIOR" if prior
                           else ("CROSS_COUNTRY_MEDIAN" if rate else "UNSIZED"),
+            # Where the approved price itself came from. "APPROVED_PRIOR" said
+            # a price existed and not whether it was an indicative seeded
+            # figure or a steward-approved benchmark - so coverage reported
+            # 100% priced on a portfolio made entirely of placeholders, which
+            # measures the seed rather than the client.
+            "price_basis": (getattr(prior, "price_basis", None) or "SEED")
+                           if prior is not None else None,
             "annual_value": as_str(D(rate) * D(row["count"]) * MONTHS) if rate else "0.00",
         })
     return scope
@@ -191,7 +198,7 @@ def assess(*, scope: list[dict], layers_in_scope: list, layers_priced: set,
         # not of the client.
         "seeded_price_share": str(
             (D(sum(int(r["count"]) for r in scope
-                   if r.get("priced") and r.get("price_basis", "SEED") == "SEED"))
+                   if r["priced"] and r.get("price_basis") == "SEED"))
              / D(priced_circuits)).quantize(D("0.001")))
         if priced_circuits else "0",
         "unsizable_pairs": [f"{c}/{p}" for c, p in unsizable],
