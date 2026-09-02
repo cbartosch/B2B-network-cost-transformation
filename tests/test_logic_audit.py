@@ -633,3 +633,35 @@ def test_every_return_from_one_function_has_the_same_arity():
                     f"{path.name}::{fn.name} returns arities "
                     f"{ {k: v for k, v in sorted(arities.items())} }")
     assert not offenders, "\n".join(offenders)
+
+
+def test_no_numeric_column_is_written_from_a_float():
+    """float(Decimal("0.55")) round-trips as 0.55000000000000004440892098,
+    which is strictly greater than 0.55 - so a share sitting exactly on a
+    governed ceiling flips the wrong way.
+
+    Three shares were stored this way, two of them feeding the 0.6A confidence
+    components, and both call sites already had a Decimal in hand."""
+    import re
+
+    columns = set(re.findall(r'Column\("(\w+)",\s*Numeric',
+                             (APP / "db.py").read_text()))
+    assert columns, "no Numeric columns found - the sweep is blind"
+
+    offenders = []
+    for path in sorted(APP.rglob("*.py")):
+        if path.name == "db.py":
+            continue
+        source = path.read_text()
+        for column in columns:
+            if f"{column}=float(" in source:
+                offenders.append(f"{path.name}: {column}=float(...)")
+    assert not offenders, "\n".join(sorted(offenders))
+
+
+def test_the_float_round_trip_really_does_break_a_boundary():
+    """The test above is only worth having if the risk is real."""
+    from decimal import Decimal
+
+    assert Decimal(float(Decimal("0.55"))) != Decimal("0.55")
+    assert Decimal(float(Decimal("0.55"))) > Decimal("0.55")

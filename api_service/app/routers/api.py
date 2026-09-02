@@ -1938,7 +1938,11 @@ def _run_anchor_estimate(s, *, case_id, case_row, payload,
         gross_run_rate_savings={k: v["gross_run_rate_savings"] for k, v in scen.items()},
         confidence=conf, coverage=cov,
         simulated_share=0.0,
-        asserted_share=float(estimate.asserted_share(components)),
+        # Decimal, not float. A share is compared against a governed ceiling,
+        # and float(Decimal("0.55")) round-trips as
+        # 0.55000000000000004440892098500626 - strictly greater than 0.55 - so
+        # a share sitting exactly on a ceiling flips the wrong way.
+        asserted_share=estimate.asserted_share(components),
         levers=[{"lever_id": l["lever_id"], "family": l["family"],
                  "scenario": l["scenario"], "cost_layers": l["cost_layers"],
                  "earliest_supported_stage": l["earliest_supported_stage"]} for l in lv],
@@ -2243,7 +2247,9 @@ def run_estimate(case_id: str, payload: EstimateIn):
             gross_run_rate_savings={k: v["gross_run_rate_savings"] for k, v in scen.items()},
             confidence=conf,
             coverage={**cov, "unpriced_components": unpriced},
-            simulated_share=float(sim_share), asserted_share=float(asserted),
+            # Decimal on both: see the note at the build-up snapshot. These
+            # feed the 0.6A shares, which are threshold comparisons.
+            simulated_share=sim_share, asserted_share=asserted,
             levers=[{"lever_id": l["lever_id"], "family": l["family"],
                      "scenario": l["scenario"], "cost_layers": l["cost_layers"],
                      "earliest_supported_stage": l["earliest_supported_stage"]} for l in lv],

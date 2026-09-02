@@ -39,7 +39,38 @@ from . import triangulate
 # cannot be promoted to a footprint row - it may be a perfectly good finding,
 # but it is not one this model can consume, and silently coercing it would be
 # worse than declining.
-ARCHETYPES = {"BRANCH", "LARGE_OFFICE", "WAREHOUSE", "DC", "STORE"}
+def _archetype_names() -> frozenset:
+    """The archetype names, derived from the seeded priors.
+
+    This was a hardcoded set of five, while seed.ARCHETYPES holds the actual
+    priors. Adding a sixth archetype to the seed would leave the classifier
+    rejecting it - a promoted finding about a real site type refused because
+    two lists disagreed.
+
+    Imported lazily: seed imports db and the domain modules, so a module-level
+    import here would be circular.
+    """
+    from ..seed import ARCHETYPES as SEEDED
+    return frozenset(row[0] for row in SEEDED)
+
+
+class _ArchetypeNames(frozenset):
+    """Late-bound so the seed stays the single source.
+
+    `label not in ARCHETYPES` reads the same as before and now asks the seed.
+    """
+
+    def __contains__(self, item):
+        return item in _archetype_names()
+
+    def __iter__(self):
+        return iter(_archetype_names())
+
+    def __len__(self):
+        return len(_archetype_names())
+
+
+ARCHETYPES = _ArchetypeNames()
 # HFC and PON are separate products, not variants of one: a shared coaxial
 # segment and fibre to the premises price differently and are quoted
 # separately in real tenders. The single BROADBAND band blended two

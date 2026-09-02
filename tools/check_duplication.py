@@ -97,6 +97,33 @@ def class_across_modules():
     return [f"{n} in {sorted(ps)}" for n, ps in sorted(where.items()) if len(ps) > 1]
 
 
+def shared_constants():
+    """A module-level constant table defined in two modules.
+
+    ORIGIN_RANK - the ladder that decides which evidence outranks which - was
+    defined in refinement.py and locations.py, identically. Identical is how
+    this stays invisible: a second ladder ranks the same evidence in two
+    places, and the one that drifts is the one nobody is reading.
+
+    Only upper-case names bound to a dict, set, tuple or list: a scalar
+    constant repeated is usually a coincidence, a repeated table is a
+    vocabulary.
+    """
+    where = defaultdict(set)
+    for path in sorted(APP.rglob("*.py")):
+        for node in ast.parse(path.read_text()).body:
+            if not (isinstance(node, ast.Assign)
+                    and isinstance(node.value, (ast.Dict, ast.Set, ast.Tuple,
+                                                ast.List))):
+                continue
+            for target in node.targets:
+                if (isinstance(target, ast.Name) and target.id.isupper()
+                        and len(target.id) > 3):
+                    where[target.id].add(path.name)
+    return [f"{name} defined in {sorted(paths)}"
+            for name, paths in sorted(where.items()) if len(paths) > 1]
+
+
 def panel_headings():
     where = defaultdict(set)
     for path in sorted(UI.rglob("*.py")):
@@ -113,6 +140,7 @@ CHECKS = (
     ("two migrations adding one column", migration_columns),
     ("one class defined in two modules", class_across_modules),
     ("one panel heading on two pages", panel_headings),
+    ("one constant table in two modules", shared_constants),
 )
 
 

@@ -33,8 +33,11 @@ FIELDS = ("primary_product", "backup_product", "dual_access_probability",
           "users_base", "bandwidth_mbps_base")
 
 # Weakest first. A layer only overrides one below it, never above.
-LAYERS = ("SEEDED_PRIOR", "INDUSTRY_DEFAULT", "KNOWN_FACT",
-          "PROMOTED_RESEARCH")
+# Named EVIDENCE_LAYERS, not LAYERS. estimate.py has its own LAYERS - L0 to L4
+# and OPS, the cost layers - and two unrelated vocabularies under one name is
+# how a reader imports the wrong one and a checker cannot tell them apart.
+EVIDENCE_LAYERS = ("SEEDED_PRIOR", "INDUSTRY_DEFAULT", "KNOWN_FACT",
+                   "PROMOTED_RESEARCH")
 
 # Register classes whose subject may name an archetype. A fact filed under one
 # of these, about a site type, is a statement about how that site type is built.
@@ -106,7 +109,7 @@ def resolve(session, *, case_id: str, seeded: dict,
 
     return resolved, {
         "by_field": dict(sorted(basis.items())),
-        "layers": list(LAYERS),
+        "layers": list(EVIDENCE_LAYERS),
         "evidenced_fields": sorted(
             k for k, v in basis.items()
             if v["layer"] in ("KNOWN_FACT", "PROMOTED_RESEARCH")),

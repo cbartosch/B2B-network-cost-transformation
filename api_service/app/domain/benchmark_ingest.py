@@ -49,8 +49,13 @@ METRICS = ("MRC", "NRC", "LEAD_TIME_DAYS", "COVERAGE_SITES",
 
 RIGHTS_BASES = ("PUBLISHED", "VENDOR_SUPPLIED", "PRIOR_ENGAGEMENT")
 
-PRODUCTS = ("DIA", "MPLS", "ETHERNET", "BROADBAND_HFC", "BROADBAND_PON",
-            "MOBILE_5G")
+# The product vocabulary lives in promotion.py, which owns classification.
+#
+# Both modules declared the same six products, one as a tuple and one as a set.
+# Identical today, and a product added to one would be rejected by the other -
+# the drift would surface as a benchmark that ingests and cannot be promoted,
+# or the reverse.
+from .promotion import PRODUCTS
 
 
 

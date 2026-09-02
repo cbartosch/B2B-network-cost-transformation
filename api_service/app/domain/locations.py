@@ -38,28 +38,16 @@ from .. import db
 
 DERIVED_ORIGIN = "PUBLIC_DERIVED"
 
-# Origin strength, weakest first - the same ladder the confidence model prices.
-# The residual takes the *weaker* of PUBLIC_DERIVED and the footprint's own
-# origin, which is the difference between this being a control and a loophole:
+# The origin ladder lives in refinement.py, which owns the concept: it is the
+# module that attributes a movement in confidence to a shift in the origin mix.
 #
-#   typed footprint + 47 named sites   -> named share is evidenced, residual
-#                                         stays ANALYST_ENTERED_SCOPE. Naming
-#                                         sites raises confidence for the part
-#                                         that was named and not for the rest.
-#   promoted footprint + 47 named      -> residual downgrades to
-#                                         PUBLIC_DERIVED. The count is
-#                                         evidenced; the mix applied to the
-#                                         unnamed part is inferred.
-#
-# Taking PUBLIC_DERIVED unconditionally would have *upgraded* a typed footprint
-# from ANALYST_ENTERED_SCOPE, so a case with no locations at all would have
-# gained confidence from this feature. That is the failure mode this whole
-# module exists to avoid.
-ORIGIN_RANK = {
-    "ANALYST_ASSERTED_PRIOR": 1, "ANALYST_ENTERED_SCOPE": 2, "SIMULATED": 2,
-    "PUBLIC_SPEND_ANCHOR": 3, "PUBLIC_DERIVED": 4, "EVIDENCED_PUBLIC": 5,
-    "PUBLIC_OBSERVED": 5, "CLIENT_CONFIRMED": 6,
-}
+# Two copies existed here and there, identical - which is how this defect stays
+# invisible until one is edited. A second ladder would silently rank the same
+# evidence differently in two places, and the one that drifted would be the one
+# nobody was reading.
+from .refinement import ORIGIN_RANK
+
+
 
 
 def _residual_origin(enumerated_origin: str) -> str:
