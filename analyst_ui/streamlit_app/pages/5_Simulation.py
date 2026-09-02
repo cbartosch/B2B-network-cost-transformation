@@ -1,5 +1,7 @@
 import time
 
+import hashlib
+
 import pandas as pd
 import streamlit as st
 import api_client as api
@@ -295,6 +297,7 @@ else:
 
 st.caption("Whatever is in the table below is what runs. Edit it, then Save or "
            "Run - both persist it to the case.")
+ARCHETYPES = ("BRANCH", "LARGE_OFFICE", "WAREHOUSE", "DC", "STORE")
 DENSITY_BANDS = ["", "DENSE_URBAN", "URBAN", "SUBURBAN", "RURAL"]
 # A proposal the analyst accepted into the editor. Held in session rather than
 # saved, so it is still theirs to change and still requires Save or Run - the
@@ -310,7 +313,32 @@ default = pd.DataFrame(
      for r in _resolved]
     or [{"country": "", "archetype": "", "density": "", "sites": 0}])
 
-fp = st.data_editor(default, num_rows="dynamic", use_container_width=True, key="sim_fp")
+# The key changes with the data, which is the only way a keyed data_editor can
+# also be refreshed programmatically.
+#
+# A bare key="sim_fp" made Streamlit cache the frame and ignore the `data`
+# argument on every later run. So a proposed split never appeared, the cleaner
+# read the stale empty frame and reported "no usable rows", and Save then
+# persisted that emptiness over whatever the analyst had - one bug that looked
+# like three.
+#
+# Hashing the content keeps the key stable while the analyst edits cells, so
+# their edits survive a rerun, and changes the moment the source rows do, so a
+# proposal or a promotion re-initialises the table.
+_fp_key = "sim_fp_" + hashlib.sha256(
+    default.to_json(orient="records").encode()).hexdigest()[:12]
+fp = st.data_editor(
+    default, num_rows="dynamic", use_container_width=True, key=_fp_key,
+    column_config={
+        "density": st.column_config.SelectboxColumn(
+            "density", options=DENSITY_BANDS,
+            help="Where these sites are. Leave blank and the row prices as it "
+                 "always did. Set it and what can actually be delivered there "
+                 "is resolved against what this site type asks for - which is "
+                 "the difference between a rural discounter and an urban one."),
+        "archetype": st.column_config.SelectboxColumn(
+            "archetype", options=[""] + list(ARCHETYPES)),
+    })
 
 c1, c2 = st.columns(2)
 # Read from the case, not defaulted. A pinned seed is the whole basis of the
@@ -323,8 +351,6 @@ seed = c1.number_input("Seed", 0, 10**9, int(_rs.get("seed") or 42),
                             "a page switch.", key="sim_seed")
 size = c2.number_input("Ensemble size", 1, 200,
                        int(_rs.get("ensemble_size") or 25), key="sim_size")
-
-ARCHETYPES = ("BRANCH", "LARGE_OFFICE", "WAREHOUSE", "DC", "STORE")
 
 
 def _clean_footprint(frame):

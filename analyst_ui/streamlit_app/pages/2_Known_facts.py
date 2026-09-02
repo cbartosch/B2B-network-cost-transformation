@@ -1,5 +1,7 @@
 import datetime as dt
 
+import hashlib
+
 import pandas as pd
 import streamlit as st
 import api_client as api

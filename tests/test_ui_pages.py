@@ -804,3 +804,48 @@ def test_every_endpoint_is_reachable_or_documented_as_not():
         unreachable.append(f"{verb.upper()} {path}")
     assert not unreachable, (
         "no page calls these, and none says why:\n  " + "\n  ".join(unreachable))
+
+
+@pytest.mark.parametrize("page", PAGES, ids=lambda p: p.name)
+def test_a_keyed_data_editor_keys_on_its_own_data(page):
+    """A keyed st.data_editor caches its frame and ignores the `data` argument
+    on every run after the first.
+
+    On the simulation page that made one bug look like three: a proposed split
+    never appeared, the cleaner read the stale empty frame and reported "no
+    usable rows", and Save then persisted that emptiness over the analyst's
+    table. The key came from an automated pass that added keys to every widget
+    on the page - correct for a text input, wrong for an editor whose contents
+    are loaded.
+
+    Hashing the content keeps the key stable while cells are edited, so those
+    edits survive a rerun, and changes the moment the source rows do.
+    """
+    import ast
+
+    source = page.read_text()
+    for node in ast.walk(ast.parse(source)):
+        if not (isinstance(node, ast.Call)
+                and getattr(node.func, "attr", "") == "data_editor"):
+            continue
+        key = next((k for k in node.keywords if k.arg == "key"), None)
+        if key is None:
+            continue                      # unkeyed re-reads its data each run
+        rendered = ast.unparse(key.value)
+        if "sha256" in rendered:
+            continue
+        # The key may be a variable holding the hash. Follow it rather than
+        # reading its name: asserting on the expression alone flagged two
+        # correct editors, and a check that cries wolf is a check that gets
+        # weakened rather than fixed.
+        if isinstance(key.value, ast.Name):
+            assignment = next(
+                (n for n in ast.walk(ast.parse(source))
+                 if isinstance(n, ast.Assign)
+                 and any(getattr(t, "id", None) == key.value.id
+                         for t in n.targets)), None)
+            if assignment and "sha256" in ast.unparse(assignment.value):
+                continue
+        raise AssertionError(
+            f"{page.name}:{node.lineno} keys a data_editor on a constant, so "
+            f"it will ignore its data after the first run")
