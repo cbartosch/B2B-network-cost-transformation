@@ -553,33 +553,44 @@ def test_no_code_reads_an_attribute_off_a_string_list_field():
 
     Written against an assumed shape rather than the declared one, and the test
     I wrote alongside it made the same assumption, so it asserted the same
-    wrong thing. Checked here against the schema itself, which is the only
-    source that cannot be assumed."""
+    wrong thing.
+
+    Done with the AST rather than a regex: the first version of this check
+    matched only `for x in ...` and the defect was a set comprehension, so it
+    passed on the exact code it was written to catch.
+    """
     import ast
-    import re
 
     schemas = ast.parse((APP / "llm" / "schemas.py").read_text())
-    plain = set()
-    for cls in schemas.body:
-        if not isinstance(cls, ast.ClassDef):
-            continue
-        for node in cls.body:
-            if (isinstance(node, ast.AnnAssign)
-                    and isinstance(node.target, ast.Name)
-                    and ast.unparse(node.annotation).startswith("list[str]")):
-                plain.add(node.target.id)
+    plain = {node.target.id for cls in schemas.body
+             if isinstance(cls, ast.ClassDef)
+             for node in cls.body
+             if isinstance(node, ast.AnnAssign)
+             and isinstance(node.target, ast.Name)
+             and ast.unparse(node.annotation).startswith("list[str]")}
     assert plain, "no list[str] fields found - the sweep is not seeing them"
 
     offenders = []
     for path in sorted(APP.rglob("*.py")):
         if path.name == "schemas.py":
             continue
-        src = path.read_text()
-        for field in plain:
-            for match in re.finditer(
-                    rf"for (\w+) in \(?[\w.]*\.?{field}\b[^\n]*\n?[^\n]*?\1\."
-                    rf"(\w+)", src):
-                offenders.append(
-                    f"{path.name}: iterates {field} (list[str]) and reads "
-                    f".{match.group(2)}")
+        for node in ast.walk(ast.parse(path.read_text())):
+            pairs = [(g.target, g.iter)
+                     for g in (getattr(node, "generators", None) or [])]
+            if isinstance(node, ast.For):
+                pairs = [(node.target, node.iter)]
+            for target, iterated in pairs:
+                if not isinstance(target, ast.Name):
+                    continue
+                source = ast.unparse(iterated)
+                if not any(f".{field}" in source or source.endswith(field)
+                           for field in plain):
+                    continue
+                for inner in ast.walk(node):
+                    if (isinstance(inner, ast.Attribute)
+                            and isinstance(inner.value, ast.Name)
+                            and inner.value.id == target.id):
+                        offenders.append(
+                            f"{path.name}: iterates {source} (list[str]) and "
+                            f"reads .{inner.attr}")
     assert not offenders, "\n".join(sorted(set(offenders)))
