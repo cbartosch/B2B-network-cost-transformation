@@ -62,7 +62,10 @@ def table_flow() -> list[str]:
                 "threshold", "archetype_prior", "platform_unit_cost", "lever",
                 "assessment_question", "answer_option", "question_feature_map",
                 "country_region", "topology_template", "archetype_bandwidth",
-                "research_brief", "unit_cost_prior"):
+                "research_brief", "unit_cost_prior",
+                # Governed reference data: filled by the seed and retuned by a
+                # steward, never written by the application.
+                "serviceability"):
             problems.append(
                 f"{table}: read and never written outside the seed - the stage "
                 f"that should fill it does not")
