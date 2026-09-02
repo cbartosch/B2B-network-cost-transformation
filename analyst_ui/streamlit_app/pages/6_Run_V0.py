@@ -111,7 +111,7 @@ users = c1.number_input(
     help="Zero until you have a figure. It drives the SSE licence line "
          "directly, so a guess here is a guess in the baseline.", key="v0_users")
 ops = c2.number_input(
-    "Ops cost per site per year", 0.0, 100_000.0,
+    "Ops cost per site per YEAR (not per month)", 0.0, 100_000.0,
     float(case.get("declared_ops_cost_per_site") or 0.0),
     help="Zero until you have a figure, rather than an assumed 900.", key="v0_ops")
 

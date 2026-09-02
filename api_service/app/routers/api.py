@@ -2011,6 +2011,26 @@ def run_estimate(case_id: str, payload: EstimateIn):
         # figure for that method refused a valid request for a driver the
         # calculation would not have used. Two tests caught this and I had not
         # run them.
+        # The ops cost is annual per site, while every circuit price in the
+        # model is monthly. Nothing but a page label distinguished them, and a
+        # monthly figure typed here understates total cost by around 40% on a
+        # large estate - the kind of error that reads as a plausible number.
+        #
+        # Refused rather than warned: a range this low is far more likely to be
+        # a monthly figure than a real annual one, and the estimate is used to
+        # size a sourcing exercise.
+        if _ops is not None and D(0) < D(str(_ops)) < D("240"):
+            raise HTTPException(422, {
+                "error": "ops cost per site looks monthly, not annual",
+                "detail": (
+                    f"{_ops} per site per year is below any plausible annual "
+                    f"figure for operating a site's network - it is most "
+                    f"likely a monthly cost. Every circuit price in this model "
+                    f"is monthly and annualised; this one field is annual. "
+                    f"Multiply by 12, or raise "
+                    f"footprint_policy.min_plausible_ops_cost_per_site if the "
+                    f"figure really is this low.")})
+
         if _ops is None and payload.method != anchor_estimate.METHOD_ANCHOR:
             raise HTTPException(422, {
                 "error": "no ops cost per site",
