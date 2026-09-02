@@ -914,7 +914,16 @@ def test_no_page_uses_a_name_before_the_line_that_binds_it():
     for page in PAGES:
         tree = ast.parse(page.read_text())
         first_bind, loads = {}, []
+        # Module-level statements only, and not inside a def: a name used in a
+        # function body may legitimately be defined further down the module,
+        # because the body does not run until it is called. Walking into
+        # function bodies flagged api_client's own helpers, and a check that
+        # cries wolf gets weakened rather than fixed.
         for statement in tree.body:
+            if isinstance(statement, (ast.FunctionDef, ast.AsyncFunctionDef,
+                                      ast.ClassDef)):
+                first_bind.setdefault(statement.name, statement.lineno)
+                continue
             for node in ast.walk(statement):
                 if isinstance(node, ast.Name) and isinstance(node.ctx, ast.Store):
                     first_bind.setdefault(node.id, node.lineno)
