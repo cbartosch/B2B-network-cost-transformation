@@ -216,7 +216,48 @@ def case_fields() -> list[str]:
     return problems
 
 
+def unbound_names() -> list[str]:
+    """A name used and never bound anywhere in the module.
+
+    A NameError compiles clean, imports clean, and fails the first time the
+    branch runs - `propose_split` used Decimal in a module that never imported
+    it, and it surfaced as a 500 after a full build and re-seed. The same check
+    existed for the interface pages and had never been run on the API modules,
+    which is where the arithmetic lives.
+    """
+    import builtins
+
+    problems = []
+    for path in sorted(APP.rglob("*.py")):
+        tree = ast.parse(path.read_text())
+        bound, used = set(), set()
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Import):
+                for alias in node.names:
+                    bound.add((alias.asname or alias.name).split(".")[0])
+            elif isinstance(node, ast.ImportFrom):
+                for alias in node.names:
+                    bound.add(alias.asname or alias.name)
+            elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef,
+                                   ast.ClassDef)):
+                bound.add(node.name)
+            elif isinstance(node, ast.Name):
+                (bound if isinstance(node.ctx, (ast.Store, ast.Del))
+                 else used).add(node.id)
+            elif isinstance(node, ast.arg):
+                bound.add(node.arg)
+            elif isinstance(node, ast.ExceptHandler) and node.name:
+                bound.add(node.name)
+            elif isinstance(node, ast.Global):
+                bound.update(node.names)
+        missing = sorted(used - bound - set(dir(builtins)))
+        if missing:
+            problems.append(f"{path.name} uses {missing} and never binds them")
+    return problems
+
+
 CHECKS = [
+    ("every name a module uses is bound", unbound_names),
     ("tables written and read", table_flow),
     ("classifier targets reach a bucket, a branch and the interface",
      classifier_targets),

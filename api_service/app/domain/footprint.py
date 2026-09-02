@@ -30,6 +30,8 @@ row, `needs_split` is set, and the caller is told to divide it. Spreading it
 evenly across seven countries would be inventing six numbers, and putting it
 under a guessed archetype would price it at a bandwidth nobody chose.
 """
+from decimal import Decimal
+
 from sqlalchemy import select
 
 from .. import db

@@ -501,3 +501,46 @@ def test_no_panel_heading_appears_on_two_pages():
             where[heading].add(path.name)
     clashes = {k: sorted(v) for k, v in where.items() if len(v) > 1}
     assert not clashes, "\n".join(f"{k!r} on {v}" for k, v in sorted(clashes.items()))
+
+
+@pytest.mark.parametrize("module", sorted(
+    p.relative_to(APP).as_posix() for p in APP.rglob("*.py")),
+    ids=lambda m: m)
+def test_no_module_references_a_name_it_never_binds(module):
+    """A NameError compiles clean, imports clean, and fails the first time the
+    branch runs.
+
+    `propose_split` used Decimal in a module that never imported it. py_compile
+    passed, the import passed, and it failed as a 500 the first time an analyst
+    pressed the button - after a full build and re-seed.
+
+    This exact check already existed for the interface pages and was never run
+    on the API modules, which is where the arithmetic lives.
+    """
+    import ast
+    import builtins
+
+    tree = ast.parse((APP / module).read_text())
+    bound, used = set(), set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            for alias in node.names:
+                bound.add((alias.asname or alias.name).split(".")[0])
+        elif isinstance(node, ast.ImportFrom):
+            for alias in node.names:
+                bound.add(alias.asname or alias.name)
+        elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef,
+                               ast.ClassDef)):
+            bound.add(node.name)
+        elif isinstance(node, ast.Name):
+            (bound if isinstance(node.ctx, (ast.Store, ast.Del))
+             else used).add(node.id)
+        elif isinstance(node, ast.arg):
+            bound.add(node.arg)
+        elif isinstance(node, ast.ExceptHandler) and node.name:
+            bound.add(node.name)
+        elif isinstance(node, ast.Global):
+            bound.update(node.names)
+
+    missing = sorted(used - bound - set(dir(builtins)))
+    assert not missing, f"{module} uses {missing} and never binds them"
