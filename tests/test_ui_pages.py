@@ -963,3 +963,50 @@ def test_the_simulation_page_says_what_it_judged_serviceability_against():
     text = page.read_text()
     assert "table_basis" in text
     assert "treat any 'cannot be served' above as an artefact" in text
+
+
+def test_the_simulation_selector_does_not_pin_to_a_stale_run():
+    """How the simulation reaches the estimate, and where it broke.
+
+    The selector was keyed, and a keyed selectbox preserves the selected
+    *value* - so after running a new simulation the page stayed on the old one,
+    the new run sat unselected at the top, and the estimate was built from the
+    previous estate. The label was "<id prefix> - seed 42 x25" for every run
+    with those settings, so two runs were near-indistinguishable.
+
+    Not keyed is correct here: the run is a derived choice rather than entered
+    data, and defaulting to the newest is what an analyst who has just run one
+    expects. That is the opposite of the rule for an input field, and the
+    difference is whether a person typed it."""
+    import ast
+
+    page = _page("Run_V0")
+    source = page.read_text()
+    for node in ast.walk(ast.parse(source)):
+        if not (isinstance(node, ast.Assign) and isinstance(node.value, ast.Call)
+                and getattr(node.value.func, "attr", "") == "selectbox"):
+            continue
+        args = ast.unparse(node.value)
+        if "Simulation run" not in args:
+            continue
+        assert not any(k.arg == "key" for k in node.value.keywords), (
+            "keying this selector pins the estimate to whichever run was "
+            "chosen last, which after a new simulation is the wrong one")
+        return
+    raise AssertionError("the simulation selector is gone")
+
+
+def test_only_a_completed_simulation_can_be_selected():
+    """The API refuses a queued or failed run rather than pricing a partial
+    estate. Offering one in the picker makes that refusal look like a bug."""
+    text = _page("Run_V0").read_text()
+    assert 's_.get("status") == "SUCCEEDED"' in text
+    assert "not selectable" in text
+
+
+def test_the_label_says_what_estate_is_being_priced():
+    """Two runs with the same seed and size differed only by an id prefix. The
+    estate is the thing being chosen, so the estate belongs in the label."""
+    text = _page("Run_V0").read_text()
+    assert "def _sim_label" in text
+    assert "site(s) in" in text and "clustered" in text

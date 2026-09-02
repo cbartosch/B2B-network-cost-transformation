@@ -22,11 +22,54 @@ sims = api.get(f"/v1/outside-in/cases/{case_id}/simulations").get("runs", [])
 if not sims:
     st.warning("Run a simulation first - V0 quantities derive from it."); st.stop()
 
-pick = st.selectbox("Simulation run",
-                    [f"{s['simulation_run_id'][:8]} - seed {s['seed']} x{s['ensemble_size']}"
-                     for s in sims], key="v0_pick")
-sim_id = sims[[f"{s['simulation_run_id'][:8]} - seed {s['seed']} x{s['ensemble_size']}"
-               for s in sims].index(pick)]["simulation_run_id"]
+# ------------------------------------------------- choosing the simulation
+# Newest first, with the status and the shape of the estate in the label, and
+# deliberately NOT keyed.
+#
+# A keyed selectbox preserves the selected *value*, so after running a new
+# simulation the page stayed on the old one - the new run sat unselected at the
+# top and the estimate was built from the previous estate. The label was also
+# "<id prefix> - seed 42 x25" for every run with those settings, so two runs
+# were near-indistinguishable.
+#
+# Not keyed means it defaults to the newest on each visit, which is what an
+# analyst who has just run a simulation expects. The selection does not need to
+# survive navigation: the run it points at is a derived choice, not entered
+# data, and pointing at the newest is never wrong by surprise.
+_usable = [s_ for s_ in sims if s_.get("status") == "SUCCEEDED"]
+_unusable = [s_ for s_ in sims if s_.get("status") != "SUCCEEDED"]
+
+
+def _sim_label(run):
+    fp = (run.get("params") or {}).get("footprint") or []
+    sites = sum(int(r.get("sites") or 0) for r in fp)
+    clustered = sum(1 for r in fp if r.get("density"))
+    return (f"{str(run.get('created_at') or '')[:16].replace('T', ' ')} - "
+            f"{sites:,} site(s) in {len(fp)} row(s)"
+            + (f", {clustered} clustered" if clustered else "")
+            + f" - seed {run['seed']} x{run['ensemble_size']}"
+            + f" [{run['simulation_run_id'][:8]}]")
+
+
+if not _usable:
+    st.error(
+        f"No completed simulation on this case. "
+        f"{len(_unusable)} run(s) exist with status "
+        f"{sorted({str(s_.get('status')) for s_ in _unusable})} - a queued or "
+        f"failed run cannot carry an estimate, and the API refuses it rather "
+        f"than pricing a partial estate. Re-run on page 5.")
+    st.stop()
+
+pick = st.selectbox(
+    "Simulation run", [_sim_label(s_) for s_ in _usable],
+    help="Newest first. This is what the estimate's site and circuit counts "
+         "come from, so the estate in the label is the estate being priced.")
+sim_id = _usable[[_sim_label(s_) for s_ in _usable].index(pick)]["simulation_run_id"]
+
+if _unusable:
+    st.caption(f"{len(_unusable)} other run(s) are not selectable: "
+               + ", ".join(f"{s_['simulation_run_id'][:8]} {s_.get('status')}"
+                           for s_ in _unusable[:4]))
 
 case = api.get(f"/v1/outside-in/cases/{case_id}")
 _rs = case.get("run_settings") or {}
