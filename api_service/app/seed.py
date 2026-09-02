@@ -213,6 +213,12 @@ THRESHOLDS = [
     # roughly 4,900 characters, and surfaced as "model output was not valid
     # JSON" - a prompt problem that was really a budget problem.
     ("research_budget_profile", "max_output_tokens_per_call", "8000"),
+    # The public sweep asks about one fact class per call now, so its replies
+    # are small - but a searching call carries its results in the response, so
+    # the budget is not just the prose. Governed rather than hardcoded because
+    # the right number depends on the provider and the search volume, and
+    # discovering it should not need a rebuild.
+    ("research_budget_profile", "max_output_tokens_per_sweep_call", "6000"),
     # Hosted web-search tool invocations per domain (domain/research.py) -
     # a separate, provider-billed cost dimension from max_queries_per_domain.
     ("research_budget_profile", "max_web_searches_per_domain", "8"),

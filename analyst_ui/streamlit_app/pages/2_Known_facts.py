@@ -198,6 +198,13 @@ elif _pf:
                    "client's. The reason matters: \"no public source isolates "
                    "this\" needs the client, \"nobody publishes it\" needs a "
                    "different approach.")
+    # A class whose own call failed. The sweep runs one call per class now, so
+    # one failure costs only that class - it used to lose the whole sweep to
+    # whichever class was hardest.
+    for _f in _pf.get("failed") or []:
+        st.error(f"**{_f['fact_class']}** - the call for this class failed: "
+                 f"{_f['reason']}. The other classes are unaffected; run again "
+                 f"to retry just this one.")
     if _pf.get("unaccounted"):
         st.warning(
             f"**The sweep said nothing at all about "

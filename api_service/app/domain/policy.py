@@ -319,6 +319,7 @@ class ResearchPolicy:
     # which bounds a whole pass and cannot bound a domain researched alone.
     max_seconds_per_domain: int
     max_output_tokens_per_call: int
+    max_output_tokens_per_sweep_call: int = 6000
 
     @classmethod
     def from_rows(cls, rows: dict, set_name: str = "research_budget_profile"):
@@ -335,6 +336,8 @@ class ResearchPolicy:
             max_web_searches_per_domain=int(r("max_web_searches_per_domain")),
             max_seconds_per_domain=int(r("max_seconds_per_domain")),
             max_output_tokens_per_call=int(r("max_output_tokens_per_call")),
+            max_output_tokens_per_sweep_call=int(
+                r("max_output_tokens_per_sweep_call")),
         )
         policy.validate()
         return policy

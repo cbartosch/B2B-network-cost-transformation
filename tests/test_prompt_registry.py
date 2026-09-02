@@ -686,3 +686,52 @@ def test_a_prompt_only_names_fields_its_schema_declares():
                     f"{definition.prompt_id} asks for `{name}`, which no "
                     f"schema declares")
     assert not offenders, "\n".join(sorted(set(offenders)))
+
+
+def test_the_sweep_asks_about_one_class_per_call():
+    """A single call asking about five classes, each with a figure, a unit and
+    its sources, and each triggering searches, ran past 8,000 output tokens and
+    was cut off - so the whole sweep failed and nothing came back for any
+    class. Raising the budget again just moves the cliff.
+
+    Research already works this way: seventeen domains, one call each. The same
+    reasons apply - a class that fails costs only itself, each reply is small
+    enough that truncation is not a live risk, and the coverage gate becomes
+    trivially satisfiable because each call is asked about exactly one thing."""
+    import ast
+    import inspect
+
+    from app.domain import known_facts
+
+    src = inspect.getsource(known_facts.prefill_from_public)
+    tree = ast.parse(inspect.cleandoc(src))
+    calls = [n for n in ast.walk(tree)
+             if isinstance(n, ast.Call)
+             and getattr(n.func, "attr", "") == "structured_call"]
+    assert len(calls) == 1, "one call site, inside the per-class loop"
+    loops = [n for n in ast.walk(tree) if isinstance(n, ast.For)
+             and "fact_class" in ast.unparse(n.target)]
+    assert loops, "the call must sit inside a loop over the fact classes"
+    assert any(call in ast.walk(loop) for loop in loops for call in calls)
+    # and each call is told about exactly one class
+    assert 'gate_context={"fact_classes": [fact_class]}' in src
+
+
+def test_one_class_failing_does_not_lose_the_others():
+    """The whole sweep used to be lost to whichever class was hardest."""
+    import inspect
+
+    from app.domain import known_facts
+
+    src = inspect.getsource(known_facts.prefill_from_public)
+    assert "failed.append(" in src
+    assert "continue" in src, "a failed class must not abort the loop"
+    assert '"failed": failed' in src, "and must be reported to the analyst"
+
+
+def test_the_sweep_budget_is_governed():
+    """Discovering the right number should not need a rebuild."""
+    from app.domain import policy
+
+    assert hasattr(policy.ResearchBudgetProfile,
+                   "max_output_tokens_per_sweep_call")
