@@ -157,3 +157,57 @@ def test_the_resolver_applies_both_checks_to_stored_rows():
     assert "unit_conflicts_with_class" in src
     assert "value_implausible_for_class" in src
     assert "cannot be a count of sites" in src
+
+
+# ------------------------------------ a unit is a measure, not a qualification
+def test_the_unit_that_broke_the_insert_is_split_not_truncated():
+    """The reported failure: accepting twelve Boots proposals raised
+    StringDataRightTruncation and wrote none of them.
+
+    known_fact.unit was VARCHAR(32) and the sweep supplied "employees (total UK
+    entity headcount band, Boots Management Services Ltd)" - 68 characters.
+
+    Widening the column stops the error. It does not stop a scope
+    qualification living in a field meant for a measure, where nothing can
+    read it and grouping by unit breaks - and that qualification decides
+    whether the figure is usable at all."""
+    unit, note = known_facts.split_unit(
+        "employees (total UK entity headcount band, "
+        "Boots Management Services Ltd)")
+    assert unit == "employees"
+    assert "Boots Management Services Ltd" in note, (
+        "the qualification must be kept, not discarded - it says which legal "
+        "entity the headcount covers")
+
+
+@pytest.mark.parametrize("unit", [
+    "sites", "employees", "EUR/site/year", "retail stores (UK)",
+    "employees (UK total workforce)", "GBP millions (FY2024 group revenue)",
+])
+def test_a_unit_that_fits_is_left_exactly_as_supplied(unit):
+    """Splitting a short unit would rewrite correct data to no purpose."""
+    assert known_facts.split_unit(unit) == (unit, None)
+
+
+def test_a_long_unit_with_no_natural_break_keeps_its_head_and_the_whole_text():
+    """Nothing is lost even when there is nowhere sensible to cut."""
+    long = "an extremely long unit with no natural break point anywhere in it"
+    unit, note = known_facts.split_unit(long)
+    assert len(unit) <= known_facts.UNIT_MAX
+    assert note == long
+
+
+def test_an_empty_unit_stays_empty():
+    assert known_facts.split_unit(None) == (None, None)
+    assert known_facts.split_unit("") == (None, None)
+
+
+def test_the_split_survives_the_unit_class_check():
+    """The two rules have to compose: a split unit is then checked against the
+    class, and "employees" under Remote-user population must pass."""
+    unit, _ = known_facts.split_unit(
+        "employees (total UK entity headcount band, Boots Management Services Ltd)")
+    assert known_facts.unit_conflicts_with_class(
+        "Remote-user population", unit) is None
+    # and the same figure filed as a footprint is still refused
+    assert known_facts.unit_conflicts_with_class("Location footprint", unit)

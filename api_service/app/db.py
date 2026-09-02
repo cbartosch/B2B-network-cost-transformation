@@ -193,7 +193,7 @@ known_fact = Table(
     Column("fact_class", String(64), nullable=False), Column("subject", Text, nullable=False),
     Column("value_low", Numeric(20, 4)), Column("value_base", Numeric(20, 4)),
     Column("value_high", Numeric(20, 4)),
-    Column("unit", String(32)), Column("currency", String(3)),
+    Column("unit", String(128)), Column("currency", String(3)),
     Column("asserted_by", String(120), nullable=False),      # 0.1B: never a team or a role
     Column("assertion_date", Date, nullable=False),
     Column("basis", String(32), nullable=False),
@@ -201,6 +201,13 @@ known_fact = Table(
     Column("self_reported_confidence", Numeric(4, 3)),
     Column("corroboration_state", String(24), default="PENDING"),
     Column("corroboration_note", Text),
+    # What the source said about the figure's scope, kept out of `unit`.
+    # The public sweep wrote "employees (total UK entity headcount band, Boots
+    # Management Services Ltd)" into a 32-character unit column: the measure
+    # is "employees" and the rest decides whether the figure is usable, so it
+    # needs somewhere a reader can find it. Distinct from corroboration_note,
+    # which records what a later check concluded rather than what was supplied.
+    Column("supplied_note", Text),
     Column("rights_cleared", Boolean, default=False),        # required when basis=PRIOR_ENGAGEMENT
     Column("superseded_by", String(64)),
     Column("created_at", DateTime(timezone=True), default=_now),
@@ -492,11 +499,11 @@ benchmark_observation = Table(
     Column("rights_cleared", Boolean, default=False),
     Column("rights_cleared_by", String(120)),
     # --- what was observed
-    Column("metric", String(48)),                # MRC | NRC | LEAD_TIME_DAYS | ...
+    Column("metric", String(96)),                # MRC | NRC | LEAD_TIME_DAYS | ...
     Column("country", String(2)), Column("product", String(48)),
     Column("bandwidth_mbps", Integer),
     Column("vendor", String(120)),
-    Column("value", Numeric(16, 4)), Column("unit", String(32)),
+    Column("value", Numeric(16, 4)), Column("unit", String(128)),
     Column("currency", String(3)), Column("price_year", Integer),
     Column("term_months", Integer), Column("tax_basis", String(24)),
     Column("sla_compliant", Boolean),
@@ -742,7 +749,7 @@ evidenced_anchor = Table(
     "evidenced_anchor", metadata,
     Column("id", String(96), primary_key=True),      # {case}-{label}
     Column("case_id", String(36), index=True),
-    Column("label", String(64)),                     # TELECOM_SPEND etc.
+    Column("label", String(128)),                     # TELECOM_SPEND etc.
     Column("value", Text), Column("currency", String(8)),
     Column("as_of", String(32)),
     Column("domain_no", Integer), Column("agent_run_id", String(36)),
@@ -792,7 +799,7 @@ evidenced_footprint = Table(
 platform_unit_cost = Table(
     "platform_unit_cost", metadata,
     Column("product", String(48), primary_key=True),
-    Column("cost_layer", String(16)), Column("unit", String(24)),
+    Column("cost_layer", String(16)), Column("unit", String(128)),
     Column("low", Numeric(14, 2)), Column("base", Numeric(14, 2)),
     Column("high", Numeric(14, 2)),
     Column("currency", String(3)), Column("price_year", Integer),

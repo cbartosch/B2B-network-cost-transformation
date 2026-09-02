@@ -316,7 +316,7 @@ _DEFS = [
 
     PromptDefinition(
         prompt_id="known_fact.prefill_public",
-        prompt_version="2.0.0", agent_id="LLM-01",
+        prompt_version="2.1.0", agent_id="LLM-01",
         task=("Find what public sources already state about the named entity "
               "for each requested fact class, so an analyst starts from what "
               "is known rather than from an empty form.\n"
@@ -344,6 +344,11 @@ _DEFS = [
               "remote headcount from total headcount\" tells the reader the "
               "figure needs the client, which is a different next step from "
               "\"nobody publishes this\".\n"
+              "Keep the unit to the measure itself - \"employees\", "
+              "\"sites\", \"GBP millions\". Anything about which entity or "
+              "period the figure covers belongs in the fact's own note, not in "
+              "the unit: a unit is what the number is counted in, and a "
+              "qualification crammed into it cannot be read or grouped.\n"
               "Every proposal must be a NUMBER with a unit - a count of "
               "sites, a headcount, an amount of money, a percentage. This "
               "register holds quantities and has nowhere to put anything "

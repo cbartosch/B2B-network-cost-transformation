@@ -34,7 +34,7 @@ from . import db
 log = logging.getLogger("workbench.migrations")
 
 # Bump when the physical schema changes, and add a step below.
-SCHEMA_VERSION = 37
+SCHEMA_VERSION = 38
 
 VERSION_TABLE = "schema_version"
 VERSION_SCHEMA = "audit"
@@ -861,13 +861,46 @@ def _migrate_v37(conn) -> None:
              "that says what it is")
 
 
+def _migrate_v38(conn) -> None:
+    """4.34.0 -> 4.35.0: room for a unit an agent actually writes.
+
+    known_fact.unit was VARCHAR(32) and the public sweep supplied "employees
+    (total UK entity headcount band, Boots Management Services Ltd)" - 68
+    characters - so accepting the proposal failed with
+    StringDataRightTruncation and none of the twelve rows was written.
+
+    Widening is only half the answer: the agent was putting a scope
+    qualification in a unit field, which belongs in the note. The other half
+    is in known_facts.register, which now splits an over-long unit rather than
+    storing prose in a column meant for a measure.
+
+    Widening a VARCHAR in Postgres rewrites no rows and takes no exclusive
+    lock, so this is safe on a live table.
+    """
+    widened = 0
+    for schema, table, column, width in (
+            ("outside_in", "known_fact", "unit", 128),
+            ("reference", "benchmark_observation", "unit", 128),
+            ("reference", "benchmark_observation", "metric", 96),
+            ("reference", "platform_unit_cost", "unit", 128),
+            ("outside_in", "evidenced_anchor", "label", 128)):
+        if _has_table(conn, schema, table):
+            conn.execute(text(
+                f'ALTER TABLE "{schema}"."{table}" '
+                f"ALTER COLUMN {column} TYPE VARCHAR({width})"))
+            widened += 1
+    added = _add_column(conn, db.known_fact, "supplied_note")
+    log.info("v38: %d column(s) widened for agent-supplied text; "
+             "supplied_note added=%s", widened, bool(added))
+
+
 MIGRATIONS = {2: _migrate_v2, 3: _migrate_v3, 4: _migrate_v4, 5: _migrate_v5,
               6: _migrate_v6, 7: _migrate_v7, 8: _migrate_v8, 9: _migrate_v9,
               10: _migrate_v10, 11: _migrate_v11, 12: _migrate_v12,
               13: _migrate_v13, 14: _migrate_v14, 15: _migrate_v15,
               16: _migrate_v16, 17: _migrate_v17, 18: _migrate_v18,
               19: _migrate_v19, 20: _migrate_v20,
-              21: _migrate_v21, 22: _migrate_v22, 23: _migrate_v23, 24: _migrate_v24, 25: _migrate_v25, 26: _migrate_v26, 27: _migrate_v27, 28: _migrate_v28, 29: _migrate_v29, 30: _migrate_v30, 31: _migrate_v31, 32: _migrate_v32, 33: _migrate_v33, 34: _migrate_v34, 35: _migrate_v35, 36: _migrate_v36, 37: _migrate_v37}
+              21: _migrate_v21, 22: _migrate_v22, 23: _migrate_v23, 24: _migrate_v24, 25: _migrate_v25, 26: _migrate_v26, 27: _migrate_v27, 28: _migrate_v28, 29: _migrate_v29, 30: _migrate_v30, 31: _migrate_v31, 32: _migrate_v32, 33: _migrate_v33, 34: _migrate_v34, 35: _migrate_v35, 36: _migrate_v36, 37: _migrate_v37, 38: _migrate_v38}
 
 
 class SchemaDrift(RuntimeError):

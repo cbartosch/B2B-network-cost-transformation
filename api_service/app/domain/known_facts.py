@@ -102,6 +102,39 @@ def value_implausible_for_class(fact_class: str, value, bounds=None) -> str | No
         f"is this large, raise known_fact_policy.max_plausible_{driver}.")
 
 
+# The longest a unit may be before it is treated as a unit plus a
+# qualification. A unit is a measure - "sites", "EUR/year", "employees" - and
+# fits easily; past this it is prose.
+UNIT_MAX = 40
+
+
+def split_unit(unit) -> tuple:
+    """(unit, qualification) from whatever the agent supplied.
+
+    The public sweep wrote "employees (total UK entity headcount band, Boots
+    Management Services Ltd)" into a 32-character column, so the insert failed
+    and none of the twelve accepted rows was written. Widening the column stops
+    the error; it does not stop a scope qualification living in a field meant
+    for a measure, where nothing can read it and grouping by unit breaks.
+
+    Split on the first bracket or comma, which is where a model naturally puts
+    the qualification, and keep the head as the unit. Nothing is discarded -
+    the tail is returned for the note, because "which legal entity this
+    headcount covers" is exactly the kind of detail that decides whether the
+    figure is usable.
+    """
+    text = str(unit or "").strip()
+    if not text or len(text) <= UNIT_MAX:
+        return (text or None), None
+    for separator in ("(", ",", " - ", ";"):
+        head, _, tail = text.partition(separator)
+        if head.strip() and len(head.strip()) <= UNIT_MAX and tail.strip():
+            return head.strip(), (separator + tail).strip("( ").rstrip(")")
+    # No natural break - keep the head and carry the whole thing in the note,
+    # so the record still says what the agent meant.
+    return text[:UNIT_MAX].strip(), text
+
+
 def unit_conflicts_with_class(fact_class: str, unit) -> str | None:
     """The reason this unit cannot be what this class counts, or None.
 
@@ -160,7 +193,8 @@ def register(session, *, case_id: str, fact_class: str, subject: str,
              value_base=None, value_low=None, value_high=None, unit=None,
              plausibility_bounds: dict | None = None,
              currency=None, asserted_by: str, assertion_date: date, basis: str,
-             verifiability: str, self_reported_confidence=None) -> dict:
+             verifiability: str, self_reported_confidence=None,
+             supplied_note=None) -> dict:
     if not asserted_by or not asserted_by.strip():
         raise ValueError("asserted_by is mandatory; an unattributed known fact is rejected")
     if basis not in BASES:
@@ -181,6 +215,15 @@ def register(session, *, case_id: str, fact_class: str, subject: str,
             "about a named subject, and there is nothing to look for without "
             "one. Name the entity the claim is about, for example the legal "
             "entity or the country the count applies to.")
+    # A unit that is really a unit plus a qualification: the measure stays in
+    # `unit`, the rest joins the note rather than being discarded or stored
+    # where nothing can read it.
+    unit, _qualification = split_unit(unit)
+    if _qualification:
+        supplied_note = (
+            f"{supplied_note + ' | ' if supplied_note else ''}"
+            f"unit as supplied: {_qualification}")
+
     conflict = (unit_conflicts_with_class(fact_class, unit)
                 or value_implausible_for_class(fact_class, value_base,
                                                plausibility_bounds)
@@ -206,7 +249,8 @@ def register(session, *, case_id: str, fact_class: str, subject: str,
     session.execute(insert(db.known_fact).values(
         known_fact_id=fid, case_id=case_id, fact_class=fact_class, subject=subject,
         value_low=value_low, value_base=value_base, value_high=value_high,
-        unit=unit, currency=currency, asserted_by=asserted_by.strip(),
+        unit=unit, currency=currency, supplied_note=supplied_note,
+        asserted_by=asserted_by.strip(),
         assertion_date=assertion_date, basis=basis, verifiability=verifiability,
         self_reported_confidence=self_reported_confidence,
         corroboration_state="PENDING",
