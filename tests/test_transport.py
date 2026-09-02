@@ -690,3 +690,61 @@ def test_the_advice_distinguishes_a_one_off_cut_from_a_misconfiguration():
     src = pathlib.Path(_transport.__file__).read_text()
     assert "If other calls in the same run succeeded" in src
     assert "re-run that domain, not to change the configuration" in src
+
+
+def test_a_transport_retry_reopens_the_run_it_is_retrying():
+    """The 4.114.0 retry was actively harmful.
+
+    execute() marks a run FAILED when the provider raises, and refuses a run
+    that is not QUEUED or RUNNING. So the retry called execute() again on a run
+    its own first attempt had just failed and got "run is FAILED; a completed
+    run cannot be re-executed" - turning a recoverable cut connection into an
+    unrecoverable error, and replacing the real cause with a state-machine
+    complaint.
+
+    Checked on the source because exercising it needs a live provider that
+    fails once and then succeeds. The retry existed for four releases with a
+    test that only checked which errors it classified as transient, never that
+    the retry could actually proceed."""
+    import inspect
+
+    from app.llm import gateway
+
+    src = inspect.getsource(gateway.structured_call)
+    loop = src[src.index("for transport_try in range"):]
+    assert "_reopen_for_retry" in loop, (
+        "a retry that does not reopen the run dies on the state machine "
+        "rather than on the network")
+    # and the reopen must come before the sleep, or the wait is spent to no end
+    assert loop.index("_reopen_for_retry") < loop.index("time.sleep")
+
+
+def test_reopening_keeps_the_record_of_what_was_retried():
+    """A retry that leaves no trace of what it retried is a retry nobody can
+    audit - and the first attempt's error is the only record of why the
+    connection was cut."""
+    import inspect
+
+    from app.llm import gateway
+
+    src = inspect.getsource(gateway._reopen_for_retry)
+    assert "attempt {attempt} cut" in src or "attempt " in src
+    assert 'status="RUNNING"' in src
+    assert "row[0] + ' | '" in src or "trail" in src, (
+        "the earlier error must be appended, not overwritten")
+
+
+def test_a_non_transient_failure_is_never_reopened():
+    """An auth failure does not improve by asking again, and reopening the run
+    would hide a FAILED state that is the correct outcome."""
+    import inspect
+
+    from app.llm import gateway
+
+    src = inspect.getsource(gateway.structured_call)
+    loop = src[src.index("for transport_try in range"):]
+    guard = loop.index("not _is_transient(exc)")
+    reopen = loop.index("_reopen_for_retry")
+    assert guard < reopen, (
+        "the transience check must gate the reopen, or every failure is "
+        "retried including the ones that cannot succeed")

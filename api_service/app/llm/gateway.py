@@ -375,6 +375,12 @@ def structured_call(session, *, agent_run_id: str, prompt_id: str,
             except errors.ProviderUnavailable as exc:
                 if not _is_transient(exc) or transport_try >= max_transport_retries:
                     raise
+                # execute() has already marked the run FAILED, and refuses a
+                # run that is not QUEUED or RUNNING - so without this the
+                # retry re-enters and dies on the state machine rather than on
+                # the network.
+                _reopen_for_retry(session, agent_run_id, transport_try + 1,
+                                  str(exc)[:300])
                 wait = transport_backoff_seconds * (transport_try + 1)
                 log.warning("%s: connection cut (%s), retrying in %ds "
                             "[%d/%d]", definition.prompt_id, exc, wait,
@@ -529,6 +535,33 @@ def _fail(session, agent_run_id: str, message: str) -> None:
                     .where(db.agent_run.c.agent_run_id == agent_run_id)
                     .values(status="FAILED", error=message[:2000],
                             ended_at=datetime.now(timezone.utc)))
+    session.commit()
+
+
+def _reopen_for_retry(session, agent_run_id: str, attempt: int,
+                      reason: str) -> None:
+    """Put a run back to RUNNING so a transport retry can re-enter execute().
+
+    execute() marks the run FAILED when the provider raises, and refuses a run
+    that is not QUEUED or RUNNING. So the transport retry added in 4.114.0
+    called execute() again on a run its own first attempt had just failed, and
+    got "run is FAILED; a completed run cannot be re-executed" - converting a
+    recoverable cut connection into an unrecoverable error and hiding the
+    original cause behind a state-machine complaint.
+
+    The failure is not erased. It is appended to the run's error trail, so the
+    record still shows that the first attempt was cut and what cut it - a retry
+    that leaves no trace of what it retried is a retry nobody can audit.
+    """
+    row = session.execute(
+        select(db.agent_run.c.error)
+        .where(db.agent_run.c.agent_run_id == agent_run_id)).first()
+    trail = f"{(row[0] + ' | ') if row and row[0] else ''}" \
+            f"attempt {attempt} cut: {reason}"
+    session.execute(update(db.agent_run)
+                    .where(db.agent_run.c.agent_run_id == agent_run_id)
+                    .values(status="RUNNING", error=trail[:2000],
+                            ended_at=None))
     session.commit()
 
 
