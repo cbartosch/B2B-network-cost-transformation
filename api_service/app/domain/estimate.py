@@ -73,11 +73,24 @@ class Component:
     unit_cost_origin: str        # BENCHMARK_PRIOR for every Stage 0 component
     value: Range = field(default_factory=Range.zero)
     source_ref: str | None = None    # known_fact_id where a fact supplied it
+    # What this component is actually made of, where that is known.
+    #
+    # A lever declares the cost layers it acts on, and layer membership was the
+    # only eligibility test: LEV-MPLS-001 declares ["L0"] and L0 is the whole
+    # access layer, so MPLS substitution was applied to broadband and mobile
+    # circuits identically. On 100 HFC stores that books 24,000 of savings from
+    # substituting MPLS in an estate holding no MPLS.
+    #
+    # The key already encoded the product. Parsing it back out would be a
+    # second source of truth for the same fact, so the component carries it.
+    product: str | None = None
+    role: str | None = None          # PRIMARY | BACKUP | PLATFORM
 
     def to_dict(self):
         return {"key": self.key, "layer": self.layer, "driver": self.driver,
                 "quantity": self.quantity, "quantity_origin": self.quantity_origin,
                 "unit_cost_origin": self.unit_cost_origin,
+                "product": self.product, "role": self.role,
                 "source_ref": self.source_ref, "value": self.value.to_dict()}
 
 
@@ -237,6 +250,7 @@ def build_components(*, sim_output: dict, users: int, ops_cost_per_site: dict,
                  + (f"_priced_at_{substituted}M" if substituted else "")),
             layer="L0", driver="circuits", quantity=qty,
             quantity_origin=origin, unit_cost_origin="BENCHMARK_PRIOR",
+            product=row["product"], role=row["role"],
             value=value,
             source_ref=None if row["role"] == "BACKUP" else footprint_ref)
         # A backup circuit is SIMULATED whatever the enumeration says, so it is
@@ -253,6 +267,7 @@ def build_components(*, sim_output: dict, users: int, ops_cost_per_site: dict,
         components.extend(_estate_components(Component(
             key="L2_overlay", layer="L2", driver="sites", quantity=sites,
             quantity_origin=site_origin, unit_cost_origin="BENCHMARK_PRIOR",
+            product="SD_WAN_OVERLAY", role="PLATFORM",
             source_ref=footprint_ref,
             value=Range(overlay_unit["low"], overlay_unit["base"],
                         overlay_unit["high"]).scale(D(sites) * MONTHS))))
@@ -262,7 +277,8 @@ def build_components(*, sim_output: dict, users: int, ops_cost_per_site: dict,
 
     if sse_unit:
         components.append(Component(
-            key="L4_sse", layer="L4", driver="users", quantity=int(users),
+            key="L4_sse", layer="L4", driver="users",
+            product="SSE_LICENCE", role="PLATFORM", quantity=int(users),
             quantity_origin=users_origin, unit_cost_origin="BENCHMARK_PRIOR",
             source_ref=users_ref,
             value=Range(sse_unit["low"], sse_unit["base"],
@@ -282,6 +298,7 @@ def build_components(*, sim_output: dict, users: int, ops_cost_per_site: dict,
         # operating cost supplies a rate, not a quantity, and the 0.6A shares are
         # quantity-weighted - so it is not bindable here and stays informational.
         key="OPS_operations", layer="OPS", driver="sites", quantity=sites,
+        product=None, role="PLATFORM",
         quantity_origin=site_origin, unit_cost_origin="BENCHMARK_PRIOR",
         source_ref=footprint_ref,
         value=Range(ops_cost_per_site["low"], ops_cost_per_site["base"],
@@ -402,16 +419,40 @@ def scenarios(components: list[Component], levers: list[dict]) -> dict:
     for code, label in SCENARIOS:
         remaining = {c.key: [c.value.low, c.value.base, c.value.high] for c in components}
         by_key = {c.key: c for c in components}
-        applied = []
+        applied, not_applied = [], []
 
         for lever in sorted([l for l in levers if l["scenario"] == code],
                             key=lambda x: x["lever_id"]):
             layers = set(lever.get("cost_layers") or [])
+            # What the lever can act on, beyond the layer it sits in.
+            #
+            # Layer membership was the whole eligibility test, and L0 is the
+            # entire access layer - so LEV-MPLS-001 applied MPLS substitution
+            # to broadband and mobile circuits and booked savings from
+            # replacing MPLS in estates that held none. On 100 HFC stores that
+            # is 24,000 of savings against zero MPLS circuits.
+            #
+            # The arithmetic was correct throughout. The result was
+            # semantically false, which is worse than an arithmetic error
+            # because nothing in the output looks wrong.
+            #
+            # None means unconstrained: repricing and billing cleanup act on
+            # any circuit whatever its technology.
+            eligible = lever.get("applies_to_products")
+            eligible = set(eligible) if eligible else None
             s_lo, s_ba, s_hi = (D(lever["saving_low"]), D(lever["saving_base"]),
                                 D(lever["saving_high"]))
             cut_total = D(0)
+            skipped = []
             for key, comp in by_key.items():
                 if comp.layer not in layers:
+                    continue
+                if eligible is not None and comp.product not in eligible:
+                    # Recorded, not silently dropped: "this lever found nothing
+                    # to act on" is a finding about the estate, and an analyst
+                    # comparing scenarios needs to know a lever was offered and
+                    # did not apply.
+                    skipped.append(comp.product or "unknown")
                     continue
                 lo, ba, hi = remaining[key]
                 # Conservative pairing: the small saving comes off the high cost.
@@ -422,7 +463,24 @@ def scenarios(components: list[Component], levers: list[dict]) -> dict:
                 applied.append({"lever_id": lever["lever_id"], "family": lever["family"],
                                 "description": lever["description"],
                                 "cost_layers": sorted(layers),
+                                "applies_to_products": (sorted(eligible)
+                                                        if eligible else None),
                                 "saving_base": as_str(cut_total)})
+            elif eligible is not None:
+                # Offered and inapplicable. A scenario that quietly contains
+                # fewer levers than it declares reads as a weaker opportunity
+                # rather than a different estate, and the difference matters:
+                # "no MPLS to substitute" is a fact about the client.
+                not_applied.append({
+                    "lever_id": lever["lever_id"], "family": lever["family"],
+                    "applies_to_products": sorted(eligible),
+                    "products_present": sorted(set(skipped)),
+                    "reason": (
+                        f"{lever['family']} acts on "
+                        f"{', '.join(sorted(eligible))}, and this estate's "
+                        f"{', '.join(sorted(set(skipped))) or 'components'} in "
+                        f"{'/'.join(sorted(layers))} contain none of them. No "
+                        f"saving is booked.")})
 
         target_components = [
             Component(key=c.key, layer=c.layer, driver=c.driver, quantity=c.quantity,
@@ -440,6 +498,10 @@ def scenarios(components: list[Component], levers: list[dict]) -> dict:
             "savings_pct_base": (f"{(saving.base / current.base):.3f}"
                                  if current.base else "0.000"),
             "levers": applied,
+            # Levers this scenario offers that found nothing to act on. A
+            # scenario quietly containing fewer levers than it declares reads
+            # as a weaker opportunity rather than a different estate.
+            "levers_not_applicable": not_applied,
             # Derived per scenario. Scenario C strips L2/L4, which are not
             # simulated, so its simulated share is higher than scenario A's.
             "simulated_share": str(simulated_share(target_components)),

@@ -841,6 +841,17 @@ lever = Table(
     Column("description", Text), Column("cost_layers", JSON),
     Column("saving_low", Numeric(4, 3)), Column("saving_base", Numeric(4, 3)),
     Column("saving_high", Numeric(4, 3)),
+    # The products this lever can act on, where that is a constraint.
+    #
+    # cost_layers alone was the eligibility test, and L0 is the whole access
+    # layer - so LEV-MPLS-001 applied MPLS substitution to broadband and mobile
+    # circuits, booking savings from replacing MPLS in estates holding none. An
+    # external audit demonstrated 24,000 of such savings on 100 HFC stores.
+    #
+    # Null means the lever is not product-constrained: repricing and billing
+    # cleanup act on any circuit, and requiring them to enumerate every product
+    # would be a list to maintain rather than a control.
+    Column("applies_to_products", JSON),
     Column("scenario", String(1)), Column("evidence_required", Text),
     # Stage at which the evidence supporting this lever first becomes admissible
     # under the 0.5A gate matrix. Drives realization confidence.

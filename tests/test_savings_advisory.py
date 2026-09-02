@@ -467,3 +467,116 @@ def test_a_rejected_shape_terminates_the_run_rather_than_leaving_it_queued(
     assert runs[0].status == "FAILED", (
         "a rejected response shape must terminate the run as FAILED, not "
         "leave it QUEUED indefinitely")
+
+
+# ------------------- C-10: a layer match is not proof that a lever applies
+def _lever(lever_id, family, layers, products, base="0.25"):
+    return {"lever_id": lever_id, "family": family, "description": "",
+            "cost_layers": layers, "saving_low": "0.15",
+            "saving_base": base, "saving_high": "0.35",
+            "applies_to_products": products, "scenario": "B"}
+
+
+def _components(*pairs):
+    from app.domain.estimate import Component
+    from app.domain.money import D, Range
+    return [Component(key=f"L0_{p.lower()}", layer=layer, driver="circuits",
+                      quantity=100, quantity_origin="ANALYST_ENTERED_SCOPE",
+                      unit_cost_origin="BENCHMARK_PRIOR", product=p,
+                      role="PRIMARY",
+                      value=Range(D("80000"), D("96000"), D("120000")))
+            for p, layer in pairs]
+
+
+def test_no_mpls_substitution_savings_in_an_estate_with_no_mpls():
+    """External audit finding C-10, demonstrated by controlled probe.
+
+    A lever's cost_layers was the whole eligibility test, and L0 is the entire
+    access layer - so LEV-MPLS-001 applied MPLS substitution to broadband and
+    mobile circuits. On 100 HFC stores that booked 24,000 of savings from
+    replacing MPLS in an estate holding none.
+
+    The arithmetic was correct throughout. The result was semantically false,
+    which is worse than an arithmetic error because nothing in the output looks
+    wrong."""
+    from app.domain import estimate
+
+    scenarios = estimate.scenarios(
+        components=_components(("BROADBAND_HFC", "L0"), ("MOBILE_5G", "L0")),
+        levers=[_lever("LEV-MPLS-001", "MPLS substitution", ["L0"], ["MPLS"])])
+    booked = [l for l in scenarios["B"]["levers"]
+              if l["lever_id"] == "LEV-MPLS-001"]
+    assert not booked, (
+        f"MPLS substitution booked {booked} against an estate with no MPLS")
+    assert scenarios["B"]["gross_run_rate_savings"]["base"] in ("0.00", "0")
+
+
+def test_the_same_lever_still_applies_where_mpls_is_present():
+    """A constraint that blocks everything is not a control, it is a bug."""
+    from app.domain import estimate
+
+    scenarios = estimate.scenarios(
+        components=_components(("MPLS", "L0")),
+        levers=[_lever("LEV-MPLS-001", "MPLS substitution", ["L0"], ["MPLS"])])
+    booked = [l for l in scenarios["B"]["levers"]
+              if l["lever_id"] == "LEV-MPLS-001"]
+    assert booked, "MPLS substitution must apply to an MPLS circuit"
+
+
+def test_an_inapplicable_lever_is_reported_not_silently_dropped():
+    """A scenario quietly containing fewer levers than it declares reads as a
+    weaker opportunity rather than a different estate - and "no MPLS to
+    substitute" is a fact about the client worth surfacing."""
+    from app.domain import estimate
+
+    scenarios = estimate.scenarios(
+        components=_components(("BROADBAND_HFC", "L0")),
+        levers=[_lever("LEV-MPLS-001", "MPLS substitution", ["L0"], ["MPLS"])])
+    skipped = scenarios["B"]["levers_not_applicable"]
+    assert len(skipped) == 1
+    assert skipped[0]["lever_id"] == "LEV-MPLS-001"
+    assert "BROADBAND_HFC" in skipped[0]["products_present"]
+    assert "contain none of them" in skipped[0]["reason"]
+
+
+def test_an_unconstrained_lever_still_acts_on_any_circuit():
+    """Repricing and billing cleanup act on any circuit whatever its
+    technology. Requiring them to enumerate every product would be a list to
+    maintain rather than a control."""
+    from app.domain import estimate
+
+    scenarios = estimate.scenarios(
+        components=_components(("BROADBAND_HFC", "L0")),
+        levers=[_lever("LEV-REPRICE-001", "Same-service repricing", ["L0"],
+                       None, base="0.12")])
+    assert scenarios["B"]["levers"], "an unconstrained lever must still apply"
+
+
+def test_right_sizing_does_not_apply_to_a_shared_best_effort_service():
+    """A 100 Mbps HFC line is not sold at 60, so there is no headroom to
+    reprice - the audit's point about eligibility beyond the layer."""
+    from app.domain import estimate
+
+    scenarios = estimate.scenarios(
+        components=_components(("DIA", "L0"), ("BROADBAND_PON", "L0")),
+        levers=[_lever("LEV-BANDWIDTH-001", "Right-sizing", ["L0"],
+                       ["DIA", "ETHERNET", "MPLS"], base="0.07")])
+    applied = scenarios["B"]["levers"]
+    assert applied, "right-sizing must apply to the DIA circuit"
+    # and the PON component must be untouched
+    pon = next(c for c in scenarios["B"]["target_components"]
+               if c["product"] == "BROADBAND_PON")
+    assert pon["value"]["base"] == "96000.00", (
+        "a shared best-effort circuit must not be right-sized")
+
+
+def test_every_seeded_lever_declares_its_eligibility_deliberately():
+    """None means unconstrained and is a decision; a missing key is an
+    oversight. The distinction has to be visible in the seed."""
+    from app.seed import LEVERS
+
+    for row in LEVERS:
+        assert len(row) == 10, f"{row[0]} has no applies_to_products slot"
+        products = row[7]
+        assert products is None or (isinstance(products, list) and products), (
+            f"{row[0]} declares an empty product list, which blocks everything")
