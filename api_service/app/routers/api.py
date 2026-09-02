@@ -539,7 +539,30 @@ def entity_candidates(case_id: str):
         rows = s.execute(select(db.entity_candidate).where(
             db.entity_candidate.c.case_id == case_id).order_by(
             db.entity_candidate.c.match_score.desc())).all()
-        return {"candidates": [dict(r._mapping) for r in rows]}
+        # The same discrimination note the resolve call returns. The page reads
+        # candidates from here rather than from the resolve response - it
+        # survives a page switch - so a note that only the resolve call carried
+        # was a note nobody saw.
+        candidates = [dict(r._mapping) for r in rows]
+        scores = sorted((float(c.get("match_score") or 0.0)
+                         for c in candidates), reverse=True)
+        spread = (scores[0] - scores[-1]) if len(scores) > 1 else 0.0
+        return {
+            "candidates": candidates,
+            "name_discriminates": bool(scores) and spread >= 0.2,
+            "score_spread": round(spread, 4),
+            "ranking_note": (
+                f"The supplied name scores {scores[0]:.2f} to "
+                f"{scores[-1]:.2f} across these - it does not tell them apart. "
+                f"That is the honest result for a short trading name: every "
+                f"one of them legitimately contains it. Choose on the "
+                f"differentiators - domicile, registration, whether it is a "
+                f"holding company - and not on the score."
+                if scores and spread < 0.2 else
+                f"The name separates these by {spread:.2f}, so the ordering "
+                f"carries information - but confirm on the differentiators, "
+                f"because a name is not an identifier."
+                if scores else "No candidates.")}
 
 
 class ConfirmIn(BaseModel):

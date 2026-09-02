@@ -295,8 +295,12 @@ if st.button("Generate candidates (LIVE agent run)", type="primary", disabled=no
             _bits.append(f"prompt {p['prompt_id']} v{p.get('prompt_version')}")
         st.success(". ".join(_bits) + ".")
 
-cands = api.get(f"/v1/outside-in/cases/{case_id}/entity-candidates").get("candidates", [])
+_cand = api.get(f"/v1/outside-in/cases/{case_id}/entity-candidates")
+cands = _cand.get("candidates", []) if "_error" not in _cand else []
 if cands:
+    if _cand.get("ranking_note"):
+        (st.info if _cand.get("name_discriminates") else st.warning)(
+            _cand["ranking_note"])
     st.markdown("**Candidates** - review the differentiators before confirming.")
     for c in cands:
         with st.expander(f"{c['legal_name']} ({c['domicile'] or '??'}) - "

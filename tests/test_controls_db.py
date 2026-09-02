@@ -1122,3 +1122,81 @@ def test_corroborate_non_object_response_terminates_its_run(session, monkeypatch
 
     assert all(r.status == "FAILED"
                for r in _runs(session, "KNOWN-FACT-CORROBORATE"))
+
+
+# --------------------------------- the match score measured name length
+NAME_CASES = [
+    # (supplied, candidate, must be) - the eight real Boots entities
+    ("Boots", "Boots UK Limited", 0.85),
+    ("Boots", "Boots International Limited", 0.85),
+    ("Boots", "The Boots Company PLC", 0.85),
+    ("Boots", "The Boots Group Services Limited", 0.7),
+    ("Boots", "Walgreens Boots Alliance, Inc.", 0.7),
+]
+
+
+@pytest.mark.parametrize("supplied,candidate,floor", NAME_CASES)
+def test_a_real_entity_is_not_penalised_for_its_legal_name(
+        supplied, candidate, floor):
+    """The score was Jaccard over raw tokens, which for a one-word query is
+    exactly 1 / word-count of the legal name.
+
+    "Boots" scored 0.333 against "Boots UK Limited" and 0.2 against "The Boots
+    Group Services Limited", so every genuine Boots entity looked like a weak
+    match and the ordering was shortest-name-first wearing the clothes of a
+    judgement."""
+    from app.domain.entity_resolution import _name_similarity
+    assert _name_similarity(supplied, candidate) >= floor
+
+
+def test_a_different_company_still_scores_nothing():
+    """Forgiving the length must not forgive the name."""
+    from app.domain.entity_resolution import _name_similarity
+    for other in ("Superdrug Stores plc", "Lloyds Pharmacy Limited",
+                  "Walgreen Co."):
+        assert _name_similarity("Boots", other) == 0.0, other
+
+
+def test_a_fuller_query_discriminates_sharply():
+    """The metric has to reward the analyst for supplying more."""
+    from app.domain.entity_resolution import _name_similarity
+    assert _name_similarity("Walgreens Boots Alliance",
+                            "Walgreens Boots Alliance, Inc.") == 1.0
+    assert _name_similarity("Walgreens Boots Alliance",
+                            "Boots UK Limited") < 0.5
+    assert _name_similarity("Boots UK", "Boots UK Limited") == 1.0
+
+
+def test_the_ranking_vocabulary_is_narrower_than_the_perimeter_check():
+    """The two questions differ, and sharing one list ranked the service
+    company above the operating one.
+
+    The perimeter asks "is this source about our company?" - "Group",
+    "International" and "UK" are noise there, because Boots Ltd and Boots plc
+    are the same brand. Ranking asks "which of these entities is it?" - and
+    those words are the only discriminator on offer."""
+    from app.domain.entity_resolution import _LEGAL_FORMS
+    from app.domain.research import _NOISE_TOKENS
+
+    for discriminating in ("group", "international", "holdings", "global",
+                           "company"):
+        assert discriminating not in _LEGAL_FORMS, discriminating
+        assert discriminating in _NOISE_TOKENS, (
+            f"{discriminating} should still be noise for the perimeter check")
+    for legal in ("ltd", "limited", "plc", "gmbh", "inc"):
+        assert legal in _LEGAL_FORMS, legal
+
+
+def test_a_flat_spread_is_reported_rather_than_ranked():
+    """For a one-word trading name no name metric can do better - "Boots" is
+    entirely present in eight real Boots companies. Manufacturing an ordering
+    out of that pretends to a resolution the name does not contain."""
+    from app.domain.entity_resolution import _name_similarity
+
+    scores = sorted((_name_similarity("Boots", c) for c in
+                     ("Boots UK Limited", "Boots International Limited",
+                      "The Boots Group Limited", "The Boots Company PLC")),
+                    reverse=True)
+    assert scores[0] - scores[-1] < 0.2, (
+        "these are genuinely indistinguishable by name, and the interface has "
+        "to say so rather than ordering them")

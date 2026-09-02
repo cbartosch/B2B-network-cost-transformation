@@ -95,8 +95,33 @@ def propose_candidates(session, *, case_id: str, name_hint: str,
         session.commit()
 
     gateway.succeed(session, run_id, {"candidates": len(rows)})
+
+    # Whether the name discriminates at all.
+    #
+    # For a one-word trading name every genuine entity of that group scores
+    # about the same, and no name metric can do better - "Boots" is entirely
+    # present in eight real Boots companies. Manufacturing an ordering out of
+    # that would be the arithmetic pretending to a resolution the name does not
+    # contain, so it is reported instead: the differentiators are what pick the
+    # operating company from its holding company.
+    scores = sorted((float(r["match_score"]) for r in rows), reverse=True)
+    spread = (scores[0] - scores[-1]) if len(scores) > 1 else 0.0
     return {"agent_run_id": run_id, "provenance": provenance,
-            "candidates": rows}
+            "candidates": rows,
+            "name_discriminates": bool(scores) and spread >= 0.2,
+            "score_spread": round(spread, 4),
+            "ranking_note": (
+                f"The supplied name scores {scores[0]:.2f} to {scores[-1]:.2f} "
+                f"across these - it does not tell them apart. That is the "
+                f"honest result for a short trading name: every one of them "
+                f"legitimately contains it. Choose on the differentiators - "
+                f"domicile, registration, whether it is a holding company - "
+                f"and not on the score."
+                if scores and spread < 0.2 else
+                f"The name separates these by {spread:.2f}, so the ordering "
+                f"carries information - but confirm on the differentiators, "
+                f"because a name is not an identifier."
+                if scores else "No candidates.")}
 
 
 def confirm(session, *, case_id: str, candidate_id: str, confirmed_by: str,
@@ -161,20 +186,74 @@ def is_confirmed(session, case_id: str) -> bool:
 
 
 def _name_similarity(supplied: str, candidate: str | None) -> float:
-    """Token-overlap score, deterministic and reproducible.
+    """How much of the supplied name the candidate accounts for.
 
-    A placeholder for the versioned match rule WP4 specifies, not a pretence
-    at one: it is here because removing model authority over match_score left
-    the field needing a value, and an arbitrary constant would rank candidates
-    by insertion order while looking like a judgement.
+    Deterministic and reproducible, and no longer a measure of name length.
+
+    This was Jaccard over raw tokens, which for a one-word query is exactly
+    1 / word-count of the legal name. "Boots" scored 0.333 against "Boots UK
+    Limited" and 0.2 against "The Boots Group Services Limited" - so every
+    genuine Boots entity looked like a weak match, and the ordering was
+    shortest-name-first wearing the clothes of a judgement.
+
+    Two changes. Legal-form suffixes and scope words are dropped first, because
+    "Limited", "PLC" and "Holdings" carry no brand identity and counting them
+    against a match punishes a company for having a full legal name - this
+    codebase already strips exactly those for the perimeter check.
+
+    And the measure is asymmetric, because the problem is: an analyst supplies
+    a short trading name and the candidate is a full legal name, so what
+    matters is whether what they gave is *accounted for*, not whether the two
+    strings are the same size. "Boots" is entirely present in "Boots UK
+    Limited" - on the information supplied that is a complete match.
+
+    Extra distinctive tokens in the candidate still cost something, so an exact
+    "Boots" outranks "Alliance Boots" and "Walgreens Boots Alliance". They cost
+    a little, not a lot: a longer legal name is the normal case, not evidence
+    against.
     """
     if not candidate:
         return 0.0
-    a = {t for t in re.split(r"\W+", (supplied or "").lower()) if t}
-    b = {t for t in re.split(r"\W+", candidate.lower()) if t}
-    if not a or not b:
+    supplied_tokens = _identity_tokens(supplied)
+    candidate_tokens = _identity_tokens(candidate)
+    if not supplied_tokens or not candidate_tokens:
+        # Nothing distinctive on one side - "The Group Limited" against
+        # "Holdings PLC". Neither is evidence about the other.
         return 0.0
-    return round(len(a & b) / len(a | b), 4)
+
+    covered = len(supplied_tokens & candidate_tokens) / len(supplied_tokens)
+    if not covered:
+        return 0.0
+    # Each unexplained distinctive token in the candidate costs a tenth,
+    # floored so a long name can never fall below a half of its coverage.
+    extra = len(candidate_tokens - supplied_tokens)
+    return round(covered * max(0.5, 1.0 - 0.1 * extra), 4)
+
+
+# Legal-form suffixes only. Deliberately narrower than the perimeter check's
+# vocabulary in research.py, and the difference is the point:
+#
+#   the perimeter asks   "is this source about our company?"     -> "Group",
+#     "International" and "UK" are noise, because Boots Ltd and Boots plc are
+#     the same brand and a source about either is about the client.
+#   ranking asks         "which of these entities is it?"        -> those very
+#     words are the only discriminator on offer. Boots UK Limited and Boots
+#     International Limited differ by exactly one of them.
+#
+# Sharing one list made "The Boots Group Services Limited" score 1.0 and
+# "Boots UK Limited" 0.9, ranking the service company above the operating one.
+# So this strips only what genuinely carries no identity in any context.
+_LEGAL_FORMS = {
+    "gmbh", "ag", "kg", "kgaa", "se", "inc", "incorporated", "corp",
+    "corporation", "ltd", "limited", "llc", "llp", "lp", "plc", "nv", "bv",
+    "sa", "sarl", "spa", "srl", "oy", "ab", "as", "aps", "the",
+}
+
+
+def _identity_tokens(text: str) -> set:
+    """Tokens that could distinguish one legal entity from another."""
+    tokens = {t for t in re.split(r"\W+", (text or "").lower()) if t}
+    return (tokens - _LEGAL_FORMS) or tokens
 
 
 def profile(session, *, case_id: str, name_hint: str,
