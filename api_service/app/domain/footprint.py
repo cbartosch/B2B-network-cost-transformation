@@ -31,6 +31,7 @@ evenly across seven countries would be inventing six numbers, and putting it
 under a guessed archetype would price it at a bandwidth nobody chose.
 """
 from decimal import Decimal
+from types import SimpleNamespace
 
 from sqlalchemy import select
 
@@ -347,6 +348,101 @@ def _is_placeholder(saved: list, case_row) -> bool:
     return actual == expected
 
 
+# Ordering used only to rank the choices offered, never to decide.
+def total_candidates(session, *, case_id: str) -> dict:
+    """Every registered site total, ranked, with what each one is.
+
+    The resolver used to pick one by rule - best corroboration standing, then
+    largest value - and report only the number. So "the register says 3,912"
+    was unanswerable, and two complementary facts about different countries
+    competed instead of summing: 1,840 UK stores beat 89 Ireland stores and
+    Ireland was silently dropped.
+
+    Every other decision in this workflow is proposed and disposed. Entity
+    resolution offers candidates with differentiators and a named person
+    confirms; the public sweep proposes and the analyst accepts; a promotion
+    needs a promoter. A number that sets the size of the entire modelled estate
+    should not be the one thing a rule decides quietly.
+
+    So this offers the choices and explains them. The sum is offered too,
+    because complementary facts are the common case for a multi-country estate
+    and no rule can tell them apart from rival estimates - only a person
+    reading the units can.
+    """
+    from .known_facts import unit_conflicts_with_class, value_implausible_for_class
+
+    rows = [r for r in session.execute(select(db.known_fact).where(
+        db.known_fact.c.case_id == case_id,
+        db.known_fact.c.fact_class == "Location footprint")).all()]
+
+    usable, rejected = [], []
+    for row in rows:
+        why = (unit_conflicts_with_class("Location footprint", row.unit)
+               or value_implausible_for_class("Location footprint",
+                                              row.value_base))
+        if why or row.value_base is None:
+            rejected.append({
+                "known_fact_id": row.known_fact_id,
+                "value_base": None if row.value_base is None
+                else str(row.value_base),
+                "unit": row.unit,
+                "reason": why or "carries no value, so there is no number"})
+            continue
+        usable.append(row)
+
+    usable.sort(key=lambda r: (_STANDING.get(r.corroboration_state, 2),
+                               float(r.value_base)), reverse=True)
+
+    choices = [{
+        "known_fact_id": r.known_fact_id,
+        "sites": int(float(r.value_base)),
+        "unit": r.unit,
+        "subject": r.subject,
+        "corroboration_state": r.corroboration_state,
+        "asserted_by": r.asserted_by,
+        "basis": r.basis,
+        # The qualification the sweep supplied - "total UK entity headcount
+        # band", "Republic of Ireland" - which is usually the whole reason one
+        # of these is the right one.
+        "supplied_note": getattr(r, "supplied_note", None),
+        "band": (None if r.value_low is None and r.value_high is None
+                 else {"low": None if r.value_low is None else str(r.value_low),
+                       "high": None if r.value_high is None else str(r.value_high)}),
+    } for r in usable]
+
+    total = sum(c["sites"] for c in choices)
+    if len(choices) > 1:
+        choices.append({
+            "known_fact_id": "SUM",
+            "sites": total,
+            "unit": "sites",
+            "subject": f"all {len(usable)} registered fact(s) added together",
+            "corroboration_state": None, "asserted_by": None, "basis": None,
+            "supplied_note": (
+                "Choose this where the facts describe different parts of the "
+                "estate rather than rival estimates of the same part - "
+                "\"1,840 UK stores\" and \"89 Ireland stores\" are both true "
+                "and the estate is 1,929. Choose a single fact where they are "
+                "competing counts of the same thing."),
+            "band": None,
+        })
+
+    return {
+        "choices": choices,
+        "rejected": rejected,
+        # The rule-based order is a suggestion for reading, not a decision.
+        "suggested": choices[0]["known_fact_id"] if choices else None,
+        "note": (
+            "Pick the one that describes the estate you are modelling. Nothing "
+            "is chosen until you choose it, and the choice is recorded on the "
+            "case so the simulation and the estimate use the same number."
+            if len(choices) > 1 else
+            "One registered total, so there is nothing to choose between."
+            if choices else
+            "No usable Location footprint fact on this case."),
+    }
+
+
 def _best_footprint_fact(session, case_row) -> tuple:
     """The registered Location footprint fact to trust, and why not if none.
 
@@ -405,6 +501,40 @@ def _best_footprint_fact(session, case_row) -> tuple:
         return None, (
             f"{len(rows)} Location footprint fact(s) exist but none carries a "
             f"value, so there is no number to use"), []
+
+    # The analyst's choice, where they made one. Honoured over the rule,
+    # because the rule cannot tell a rival count from a complementary one and
+    # a person reading the units can.
+    chosen = getattr(case_row, "footprint_total_choice", None)
+    if chosen == "SUM" and len(usable) > 1:
+        total = sum(float(r.value_base) for r in usable)
+        # A synthetic fact carrying the sum, so everything downstream reads
+        # one total as before. Attributed to the person who chose it: this is
+        # their judgement that the facts are complementary, not a new source.
+        summed = SimpleNamespace(
+            known_fact_id="SUM", case_id=case_row.case_id,
+            fact_class="Location footprint", subject=usable[0].subject,
+            value_base=total, value_low=None, value_high=None, unit="sites",
+            corroboration_state=min(
+                (r.corroboration_state for r in usable),
+                key=lambda st: _STANDING.get(st, 2)),
+            asserted_by=getattr(case_row, "footprint_total_chosen_by", None)
+            or "chosen on the simulation page",
+            basis="INDUSTRY_KNOWLEDGE", supplied_note=(
+                f"the sum of {len(usable)} registered fact(s), chosen as "
+                f"complementary parts of the estate rather than rival counts"))
+        return summed, "", usable
+    if chosen:
+        picked = next((r for r in usable if r.known_fact_id == chosen), None)
+        if picked is not None:
+            return picked, "", usable
+        # The chosen fact is gone - deleted or superseded. Falling back
+        # silently would model a different estate under the same decision, so
+        # the reason travels with the result.
+        return usable[0] if usable else None, (
+            f"the chosen site total ({chosen[:8]}) is no longer a usable "
+            f"registered fact, so it has been ignored. Choose again on the "
+            f"simulation page."), usable
 
     usable.sort(key=lambda r: (_STANDING.get(r.corroboration_state, 2),
                                float(r.value_base)), reverse=True)

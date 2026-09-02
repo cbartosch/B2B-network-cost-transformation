@@ -70,6 +70,56 @@ else:
     elif _fp.get("needs_split"):
         st.warning(_fp.get("split_note", ""))
     if _fp.get("register_total") is not None:
+        # The choice, where there is one to make. The resolver's rule cannot
+        # tell a rival count from a complementary one - only a person reading
+        # the units can - so it proposes and the analyst disposes, the way
+        # entity resolution and promotion already do.
+        _tc = api.get(
+            f"/v1/outside-in/cases/{case_id}/footprint:total-candidates")
+        if "_error" not in _tc and len(_tc.get("choices") or []) > 1:
+            st.markdown("**Which total describes the estate you are modelling?**")
+            st.caption(_tc.get("note", ""))
+
+            def _label(choice):
+                bits = [f"{choice['sites']:,} {choice['unit'] or 'sites'}"]
+                if choice.get("corroboration_state"):
+                    bits.append(str(choice["corroboration_state"]))
+                if choice.get("asserted_by"):
+                    bits.append(f"by {choice['asserted_by']}")
+                return " - ".join(bits)
+
+            _ids = [c["known_fact_id"] for c in _tc["choices"]]
+            _current = _tc.get("chosen") or _tc.get("suggested")
+            _pick_total = st.radio(
+                "Registered totals", _ids,
+                index=_ids.index(_current) if _current in _ids else 0,
+                format_func=lambda i: _label(
+                    next(c for c in _tc["choices"] if c["known_fact_id"] == i)),
+                key="sim_total_pick")
+            _chosen_obj = next(c for c in _tc["choices"]
+                               if c["known_fact_id"] == _pick_total)
+            if _chosen_obj.get("supplied_note"):
+                st.info(_chosen_obj["supplied_note"])
+            if _chosen_obj.get("band"):
+                st.caption(f"Source range: {_chosen_obj['band'].get('low')} to "
+                           f"{_chosen_obj['band'].get('high')}.")
+            _by = st.text_input("Choosing as (your name)", key="sim_total_by")
+            if _tc.get("chosen"):
+                st.caption(f"Currently modelling {_tc['chosen'][:8]}, chosen by "
+                           f"{_tc.get('chosen_by')}.")
+            if st.button("Use this total", disabled=not _by.strip()):
+                _r = api.put(
+                    f"/v1/outside-in/cases/{case_id}/footprint:total-choice",
+                    {"known_fact_id": _pick_total, "chosen_by": _by})
+                if "_error" in _r:
+                    st.error(_r["_error"])
+                else:
+                    api.flash(_r.get("note", "Total chosen."))
+                    st.rerun()
+        for _rj in (_tc.get("rejected") or []) if "_error" not in _tc else []:
+            st.caption(f"Not offered: {_rj.get('value_base')} "
+                       f"{_rj.get('unit') or ''} - {_rj['reason'][:120]}")
+
         # Which fact, and what else was in the running. "the register says
         # 3,912" is unanswerable without this: the resolver picks one fact from
         # several by standing then value, so a reader could not see which won.

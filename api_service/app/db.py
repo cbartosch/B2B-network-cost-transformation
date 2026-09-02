@@ -91,6 +91,16 @@ case = Table(
     Column("run_settings", JSON),
     Column("declared_users", Integer),
     Column("declared_ops_cost_per_site", Numeric(14, 2)),
+    # Which registered site total the analyst chose, when more than one exists.
+    # A known_fact_id, or the literal "SUM" where the facts describe different
+    # parts of the estate rather than rival counts of the same part.
+    #
+    # Recorded rather than re-derived: the resolver's rule - best standing,
+    # then largest value - silently dropped 89 Ireland stores in favour of
+    # 1,840 UK ones, and a number that sets the size of the whole modelled
+    # estate should not be decided quietly by a sort order.
+    Column("footprint_total_choice", String(36)),
+    Column("footprint_total_chosen_by", String(120)),
     Column("declared_spend_by_country", JSON),
     Column("archived", Boolean, default=False),
     Column("archived_by", String(120)),

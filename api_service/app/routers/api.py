@@ -1385,6 +1385,55 @@ class LocationIn(BaseModel):
     entered_by: str = Field(min_length=1, max_length=120)
 
 
+class TotalChoiceIn(BaseModel):
+    known_fact_id: str = Field(min_length=1, max_length=36)
+    chosen_by: str = Field(min_length=1, max_length=120)
+
+
+@router.get("/v1/outside-in/cases/{case_id}/footprint:total-candidates")
+def footprint_total_candidates(case_id: str):
+    """Every registered site total, with what each one is.
+
+    The resolver used to pick one by rule and report only the number, so two
+    complementary facts about different countries competed instead of summing.
+    Every other decision here is proposed and disposed; this one was not.
+    """
+    with S() as s:
+        case_row = _one_or_404(s, db.case, db.case.c.case_id, case_id, "case")
+        return {**footprint_resolver.total_candidates(s, case_id=case_id),
+                "chosen": case_row.footprint_total_choice,
+                "chosen_by": case_row.footprint_total_chosen_by}
+
+
+@router.put("/v1/outside-in/cases/{case_id}/footprint:total-choice")
+def choose_footprint_total(case_id: str, payload: TotalChoiceIn):
+    """Record which registered total describes the estate being modelled.
+
+    A named act, like confirming an entity or promoting a finding: it decides
+    the size of everything downstream, and "the sort order picked it" is not an
+    answer an analyst can give a client.
+    """
+    with S() as s:
+        _one_or_404(s, db.case, db.case.c.case_id, case_id, "case")
+        offered = {c["known_fact_id"] for c
+                   in footprint_resolver.total_candidates(
+                       s, case_id=case_id)["choices"]}
+        if payload.known_fact_id not in offered:
+            raise HTTPException(422, {
+                "error": "not one of the offered totals",
+                "detail": f"{payload.known_fact_id!r} is not a usable "
+                          f"registered Location footprint fact on this case. "
+                          f"Offered: {sorted(offered)}"})
+        s.execute(update(db.case).where(db.case.c.case_id == case_id).values(
+            footprint_total_choice=payload.known_fact_id,
+            footprint_total_chosen_by=payload.chosen_by))
+        s.commit()
+        return {"chosen": payload.known_fact_id,
+                "chosen_by": payload.chosen_by,
+                "note": ("The simulation and the estimate now use this total. "
+                         "Change it here if the scope of the case changes.")}
+
+
 @router.get("/v1/outside-in/cases/{case_id}/footprint:propose-split")
 def propose_footprint_split(case_id: str):
     """A starting split of an unallocated total, and what it rests on.

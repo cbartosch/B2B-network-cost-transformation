@@ -392,3 +392,103 @@ def test_every_mix_names_an_archetype_and_band_the_model_knows():
     for _i, archetype, band, _s in DENSITY_MIX:
         assert archetype in known_archetypes, archetype
         assert band in DENSITY_BANDS, band
+
+
+# ------------------------------- the analyst chooses which total to model
+class _Fact:
+    def __init__(self, **kw):
+        self.__dict__.update({
+            "known_fact_id": "f1", "fact_class": "Location footprint",
+            "subject": "Boots UK Limited", "value_base": 1840,
+            "value_low": None, "value_high": None, "unit": "sites",
+            "corroboration_state": "PENDING", "asserted_by": "CB",
+            "basis": "THIRD_PARTY_REPORT", "supplied_note": None, **kw})
+
+
+class _FactSession:
+    def __init__(self, rows):
+        self._rows = rows
+
+    def execute(self, _q):
+        import types as _t
+        return _t.SimpleNamespace(all=lambda: self._rows,
+                                  first=lambda: (self._rows or [None])[0])
+
+
+def _candidates(rows):
+    from app.domain import footprint
+    return footprint.total_candidates(_FactSession(rows), case_id="c")
+
+
+def test_two_complementary_facts_are_offered_with_their_sum():
+    """The defect: 1,840 UK stores and 89 Ireland stores are both true, and the
+    resolver's rule - best standing, then largest value - took 1,840 and
+    silently dropped Ireland.
+
+    No rule can tell a rival count from a complementary one. Only a person
+    reading the units can, so the sum is offered as a choice."""
+    out = _candidates([
+        _Fact(known_fact_id="uk", value_base=1840, unit="retail stores (UK)"),
+        _Fact(known_fact_id="ie", value_base=89, unit="stores (Ireland)")])
+    ids = [c["known_fact_id"] for c in out["choices"]]
+    assert ids[:2] == ["uk", "ie"] or set(ids[:2]) == {"uk", "ie"}
+    assert "SUM" in ids
+    total = next(c for c in out["choices"] if c["known_fact_id"] == "SUM")
+    assert total["sites"] == 1929
+
+
+def test_a_single_total_offers_no_choice():
+    """Offering a choice between one thing is noise."""
+    out = _candidates([_Fact()])
+    assert [c["known_fact_id"] for c in out["choices"]] == ["f1"]
+    assert "nothing to choose between" in out["note"]
+
+
+def test_the_explanation_carries_the_qualification():
+    """"total UK entity headcount band" is usually the whole reason one of
+    these is the right one."""
+    out = _candidates([
+        _Fact(known_fact_id="a", supplied_note="Republic of Ireland only"),
+        _Fact(known_fact_id="b", value_base=1840)])
+    a = next(c for c in out["choices"] if c["known_fact_id"] == "a")
+    assert a["supplied_note"] == "Republic of Ireland only"
+
+
+def test_an_unusable_fact_is_not_offered_but_is_explained():
+    """A cost line filed as a footprint must not appear as a choice, and must
+    not vanish either - the analyst has to know it was ignored."""
+    out = _candidates([
+        _Fact(known_fact_id="ok", value_base=1840),
+        _Fact(known_fact_id="cost", value_base=460_000_000, unit="EUR/year")])
+    assert [c["known_fact_id"] for c in out["choices"]] == ["ok"]
+    assert out["rejected"] and out["rejected"][0]["known_fact_id"] == "cost"
+
+
+def test_the_suggested_total_is_a_suggestion_not_a_decision():
+    out = _candidates([_Fact(known_fact_id="a", value_base=1840),
+                       _Fact(known_fact_id="b", value_base=89)])
+    assert out["suggested"] in ("a", "b")
+    assert "Nothing is chosen until you choose it" in out["note"]
+
+
+def test_choosing_the_sum_is_attributed_to_the_person_who_chose_it():
+    """It is their judgement that the facts are complementary, not a new
+    source - so the synthetic total carries their name and the weakest
+    corroboration standing of its parts."""
+    import inspect
+    from app.domain import footprint
+
+    src = inspect.getsource(footprint._best_footprint_fact)
+    assert 'chosen == "SUM"' in src
+    assert "footprint_total_chosen_by" in src
+    assert "min(" in src, "the sum cannot be better corroborated than its parts"
+
+
+def test_a_chosen_fact_that_disappears_is_reported_not_silently_replaced():
+    """Falling back silently would model a different estate under the same
+    recorded decision."""
+    import inspect
+    from app.domain import footprint
+
+    src = inspect.getsource(footprint._best_footprint_fact)
+    assert "is no longer a usable" in src

@@ -34,7 +34,7 @@ from . import db
 log = logging.getLogger("workbench.migrations")
 
 # Bump when the physical schema changes, and add a step below.
-SCHEMA_VERSION = 38
+SCHEMA_VERSION = 39
 
 VERSION_TABLE = "schema_version"
 VERSION_SCHEMA = "audit"
@@ -894,13 +894,26 @@ def _migrate_v38(conn) -> None:
              "supplied_note added=%s", widened, bool(added))
 
 
+def _migrate_v39(conn) -> None:
+    """4.35.0 -> 4.36.0: the analyst chooses which site total to model.
+
+    The resolver picked one registered Location footprint fact by rule - best
+    corroboration standing, then largest value - and reported only the number.
+    So two complementary facts competed instead of summing, and the analyst
+    could not see which had won or why.
+    """
+    added = sum(_add_column(conn, db.case, c) for c in
+                ("footprint_total_choice", "footprint_total_chosen_by"))
+    log.info("v39: %d column(s) added for the chosen site total", added)
+
+
 MIGRATIONS = {2: _migrate_v2, 3: _migrate_v3, 4: _migrate_v4, 5: _migrate_v5,
               6: _migrate_v6, 7: _migrate_v7, 8: _migrate_v8, 9: _migrate_v9,
               10: _migrate_v10, 11: _migrate_v11, 12: _migrate_v12,
               13: _migrate_v13, 14: _migrate_v14, 15: _migrate_v15,
               16: _migrate_v16, 17: _migrate_v17, 18: _migrate_v18,
               19: _migrate_v19, 20: _migrate_v20,
-              21: _migrate_v21, 22: _migrate_v22, 23: _migrate_v23, 24: _migrate_v24, 25: _migrate_v25, 26: _migrate_v26, 27: _migrate_v27, 28: _migrate_v28, 29: _migrate_v29, 30: _migrate_v30, 31: _migrate_v31, 32: _migrate_v32, 33: _migrate_v33, 34: _migrate_v34, 35: _migrate_v35, 36: _migrate_v36, 37: _migrate_v37, 38: _migrate_v38}
+              21: _migrate_v21, 22: _migrate_v22, 23: _migrate_v23, 24: _migrate_v24, 25: _migrate_v25, 26: _migrate_v26, 27: _migrate_v27, 28: _migrate_v28, 29: _migrate_v29, 30: _migrate_v30, 31: _migrate_v31, 32: _migrate_v32, 33: _migrate_v33, 34: _migrate_v34, 35: _migrate_v35, 36: _migrate_v36, 37: _migrate_v37, 38: _migrate_v38, 39: _migrate_v39}
 
 
 class SchemaDrift(RuntimeError):
