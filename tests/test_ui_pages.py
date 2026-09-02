@@ -894,3 +894,63 @@ def test_saving_the_footprint_refreshes_from_the_case():
     save = text.index('_save_col.button("Save footprint")')
     after = text[save:save + 1400]
     assert 'st.session_state["_fp_rows"] = None' in after
+
+
+def test_no_page_uses_a_name_before_the_line_that_binds_it():
+    """The class of defect py_compile passes and the unbound-name check misses,
+    because the name *is* bound - just later.
+
+    A "Save these inputs" button on page 6 referenced `method` and
+    `anchor_value`, both defined seventy lines below it, so the page raised
+    NameError on every render. Fourth occurrence in this build: the register
+    panel, the ARCHETYPES constant, the estate panel, and this.
+
+    Module level only - inside a function a later definition is legitimate.
+    """
+    import ast
+    import builtins
+
+    offenders = []
+    for page in PAGES:
+        tree = ast.parse(page.read_text())
+        first_bind, loads = {}, []
+        for statement in tree.body:
+            for node in ast.walk(statement):
+                if isinstance(node, ast.Name) and isinstance(node.ctx, ast.Store):
+                    first_bind.setdefault(node.id, node.lineno)
+                elif isinstance(node, ast.Import):
+                    for alias in node.names:
+                        first_bind.setdefault(
+                            (alias.asname or alias.name).split(".")[0],
+                            node.lineno)
+                elif isinstance(node, ast.ImportFrom):
+                    for alias in node.names:
+                        first_bind.setdefault(alias.asname or alias.name,
+                                              node.lineno)
+                elif isinstance(node, (ast.FunctionDef, ast.ClassDef)):
+                    first_bind.setdefault(node.name, node.lineno)
+            for node in ast.walk(statement):
+                if isinstance(node, ast.Name) and isinstance(node.ctx, ast.Load):
+                    loads.append((node.id, node.lineno))
+        for name, line in loads:
+            # Short and underscore-prefixed names are comprehension variables,
+            # which are scoped to the comprehension and legitimately reused.
+            if (name in first_bind and line < first_bind[name]
+                    and name not in dir(builtins)
+                    and not name.startswith("_") and len(name) > 2):
+                offenders.append(
+                    f"{page.name}: {name} used at line {line}, bound at "
+                    f"{first_bind[name]}")
+    assert not offenders, "\n".join(sorted(set(offenders)))
+
+
+def test_the_simulation_page_says_what_it_judged_serviceability_against():
+    """An empty table and a table that refuses everything produced the same
+    message - "cannot be served at all" - and only one of those is a finding.
+
+    That cost a round of inference, so the run reports how many governed rows
+    it had and the page says plainly when it had none."""
+    page = _page("Simulation")
+    text = page.read_text()
+    assert "table_basis" in text
+    assert "treat any 'cannot be served' above as an artefact" in text

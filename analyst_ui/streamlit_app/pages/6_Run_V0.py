@@ -72,25 +72,6 @@ ops = c2.number_input(
     float(case.get("declared_ops_cost_per_site") or 0.0),
     help="Zero until you have a figure, rather than an assumed 900.", key="v0_ops")
 
-if st.button("Save these inputs to the case"):
-    _r = api.put(f"/v1/outside-in/cases/{case_id}", {
-        "run_settings": {**(case.get("run_settings") or {}),
-                         "method": method,
-                         "anchor_value": float(anchor_value or 0.0)},
-        "declared_users": int(users),
-        "declared_ops_cost_per_site": float(ops),
-        "declared_spend_by_country": {
-            str(r["country"]).strip().upper(): float(r["estimated_annual_spend"])
-            for r in spend_df.to_dict("records")
-            if str(r.get("country") or "").strip()
-            and r.get("estimated_annual_spend") not in (None, "")
-            and r["estimated_annual_spend"] == r["estimated_annual_spend"]}})
-    if "_error" in _r:
-        st.error(_r["_error"])
-    else:
-        api.flash("Inputs saved to the case.")
-        st.rerun()
-
 if not users:
     st.warning("Users is zero, so the SSE licence line will be zero. That is "
                "correct until you have a figure - it is not a placeholder "
@@ -164,6 +145,36 @@ if method == "ANCHOR":
         a2.caption("Typed: the estimate will rest on an assertion and report "
                    "PARTIAL. Register the figure as a known fact and "
                    "corroborate it to lift that.")
+
+# Every input on this page, saved in one act - placed below the method and the
+# anchor because it references them.
+#
+# It sat above both and raised NameError: name 'method' is not defined, on
+# every render of the page. The fourth forward reference in this build, and the
+# only class of defect here that py_compile passes and the unbound-name check
+# misses, because the name *is* bound - just later.
+st.divider()
+if st.button("Save every input on this page to the case"):
+    _r = api.put(f"/v1/outside-in/cases/{case_id}", {
+        "run_settings": {**(case.get("run_settings") or {}),
+                         "method": method,
+                         "anchor_value": float(anchor_value or 0.0)},
+        "declared_users": int(users),
+        "declared_ops_cost_per_site": float(ops),
+        "declared_spend_by_country": {
+            str(r["country"]).strip().upper(): float(r["estimated_annual_spend"])
+            for r in spend_df.to_dict("records")
+            if str(r.get("country") or "").strip()
+            and r.get("estimated_annual_spend") not in (None, "")
+            and r["estimated_annual_spend"] == r["estimated_annual_spend"]}})
+    if "_error" in _r:
+        st.error(_r["_error"])
+    else:
+        api.flash("Inputs saved to the case. They will be here next time "
+                  "without re-entering them.")
+        st.rerun()
+
+
 
 if st.button("Run V0 estimate", type="primary"):
     payload = {"method": method, "users": int(users),

@@ -201,7 +201,16 @@ def one_pass(seed: int, footprint: list[dict], archetypes: dict,
             # What the estate's density said about it: which clusters take a
             # different circuit from the one their type asks for, and which can
             # be served by nothing.
-            "serviceability": serviceability.summarise(service_outcomes),
+            "serviceability": {
+                **serviceability.summarise(service_outcomes),
+                # How many rows the run actually had to judge against. An empty
+                # table and a table that refuses everything produced the same
+                # message - "cannot be served at all" - and only one of those is
+                # a finding. Reported so the next person does not have to infer
+                # which, the way I did.
+                "table_rows": len(service_table or {}),
+                "table_basis": ("GOVERNED" if service_table else "ABSENT"),
+            },
             "unserviceable": unserviceable,
             "site_sample": site_rows[:SAMPLE_NODES],
             # The whole estate, for the one pass that keeps it. Carrying this

@@ -637,6 +637,16 @@ if sim:
         st.markdown("**What can actually be delivered**")
         (st.success if not _c.get("SUBSTITUTED") and not _unserv
          else st.warning)(_svc.get("note", ""))
+        if _svc.get("table_basis") == "ABSENT":
+            st.error(
+                "**This run had no serviceability data to judge against.** "
+                "reference.serviceability is empty or was not pinned to the "
+                "run, so nothing could be confirmed deliverable. Re-seed with "
+                "`python -m app.seed --force` and run again - and treat any "
+                "'cannot be served' above as an artefact, not a finding.")
+        else:
+            st.caption(f"Judged against {_svc.get('table_rows', 0)} governed "
+                       f"serviceability row(s).")
         if _svc.get("substitutions"):
             st.dataframe(pd.DataFrame(_svc["substitutions"]),
                          use_container_width=True, hide_index=True)
