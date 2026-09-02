@@ -432,15 +432,34 @@ def total_candidates(session, *, case_id: str) -> dict:
                        "high": None if r.value_high is None else str(r.value_high)}),
     } for r in usable]
 
-    total = sum(c["sites"] for c in choices)
+    # Exact duplicates: the same claim registered twice. Flagged rather than
+    # merged - two people asserting the same number independently is a
+    # corroboration signal, and silently collapsing them would lose it - but a
+    # sum that counts one estate twice is arithmetic nobody wants.
+    seen, duplicates = {}, []
+    for choice in choices:
+        key = (choice["sites"], (choice["unit"] or "").strip().lower())
+        if key in seen:
+            choice["duplicate_of"] = seen[key]
+            duplicates.append(choice["known_fact_id"])
+        else:
+            seen[key] = choice["known_fact_id"]
+
+    total = sum(c["sites"] for c in choices if not c.get("duplicate_of"))
     if len(choices) > 1:
         choices.append({
             "known_fact_id": "SUM",
             "sites": total,
             "unit": "sites",
-            "subject": f"all {len(usable)} registered fact(s) added together",
+            "subject": (
+                f"all {len([c for c in choices if not c.get('duplicate_of')])} "
+                f"distinct fact(s) added together"),
             "corroboration_state": None, "asserted_by": None, "basis": None,
             "supplied_note": (
+                f"Only correct if these describe different parts of one estate. "
+                f"On this case that would mean {total:,} sites in total - "
+                f"check that against what you know before choosing it, because "
+                f"competing estimates of the same estate add up to nonsense.\n\n"
                 "Choose this where the facts describe different parts of the "
                 "estate rather than rival estimates of the same part - "
                 "\"1,840 UK stores\" and \"89 Ireland stores\" are both true "
@@ -465,6 +484,7 @@ def total_candidates(session, *, case_id: str) -> dict:
     return {
         "choices": choices,
         "rejected": rejected,
+        "duplicates": duplicates,
         "on_other_cases": elsewhere,
         # The rule-based order is a suggestion for reading, not a decision.
         "suggested": choices[0]["known_fact_id"] if choices else None,
@@ -513,9 +533,21 @@ def _best_footprint_fact(session, case_row) -> tuple:
     # unit says "sites" - which the entry form used to default to for every
     # class, so a disclosed spend arrived unit-consistent and value-absurd.
     def _rejected(row):
+        """The reason this row cannot be a site count, or None.
+
+        This read `..., "", []` for two releases. The 4.148 script that padded
+        every return in _best_footprint_fact to a 3-tuple walked into this
+        nested function too, and a non-empty tuple is always truthy - so every
+        registered Location footprint fact was rejected, the register was
+        skipped on every case, and the reason printed to the analyst was the
+        tuple itself: "100.0000 sites: (None, '', [])".
+
+        My own arity test excluded nested functions, which is exactly why it
+        passed while this was broken.
+        """
         return (unit_conflicts_with_class("Location footprint", row.unit)
                 or value_implausible_for_class("Location footprint",
-                                               row.value_base)), "", []
+                                               row.value_base))
 
     mismatched = [r for r in rows if _rejected(r)]
     rows = [r for r in rows if r not in mismatched]
@@ -571,6 +603,22 @@ def _best_footprint_fact(session, case_row) -> tuple:
             f"the chosen site total ({chosen[:8]}) is no longer a usable "
             f"registered fact, so it has been ignored. Choose again on the "
             f"simulation page."), usable
+
+    if len(usable) > 1:
+        # Several registered totals and nobody has chosen. Do not guess.
+        #
+        # The rule was standing, then largest value - which on a Boots UK case
+        # picks 12,028 (the Walgreens Boots Alliance group figure) over 1,840
+        # (GB stores). Silently modelling the largest number available is worse
+        # than modelling nothing: it produces an estimate that looks finished
+        # and is about a different company.
+        return None, (
+            f"{len(usable)} registered Location footprint fact(s) exist and "
+            f"none has been chosen, so there is no total to use. They range "
+            f"from {min(int(float(r.value_base)) for r in usable):,} to "
+            f"{max(int(float(r.value_base)) for r in usable):,} sites and "
+            f"describe different scopes - choose one above rather than letting "
+            f"a sort order decide."), usable
 
     usable.sort(key=lambda r: (_STANDING.get(r.corroboration_state, 2),
                                float(r.value_base)), reverse=True)

@@ -665,3 +665,49 @@ def test_the_float_round_trip_really_does_break_a_boundary():
 
     assert Decimal(float(Decimal("0.55"))) != Decimal("0.55")
     assert Decimal(float(Decimal("0.55"))) > Decimal("0.55")
+
+
+def test_a_nested_function_is_not_swept_up_by_an_edit_to_its_parent():
+    """The defect that broke the register for two releases.
+
+    A script padding every return in `_best_footprint_fact` to a 3-tuple walked
+    into its nested `_rejected` helper and appended `, "", []` there too. A
+    non-empty tuple is always truthy, so `if _rejected(r)` rejected every
+    registered Location footprint fact - the register was skipped on every
+    case, and the reason shown to the analyst was the tuple itself:
+    "3912.0000 sites: (None, '', [])".
+
+    My own arity test excluded nested functions, which is exactly why it passed
+    while this was broken. So this checks the opposite thing: a nested helper
+    used as a predicate must not return a container.
+    """
+    import ast
+
+    offenders = []
+    for path in sorted(APP.rglob("*.py")):
+        tree = ast.parse(path.read_text())
+        for outer in ast.walk(tree):
+            if not isinstance(outer, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                continue
+            for inner in outer.body:
+                if not isinstance(inner, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                    continue
+                used_as_test = any(
+                    isinstance(call, ast.Call)
+                    and getattr(call.func, "id", "") == inner.name
+                    for node in ast.walk(outer)
+                    for test in ([node.test] if isinstance(node, (ast.If, ast.While))
+                                 else (node.ifs if isinstance(node, ast.comprehension)
+                                       else []))
+                    for call in ast.walk(test))
+                if not used_as_test:
+                    continue
+                for node in ast.walk(inner):
+                    if (isinstance(node, ast.Return) and node.value is not None
+                            and isinstance(node.value,
+                                           (ast.Tuple, ast.List, ast.Dict))):
+                        offenders.append(
+                            f"{path.name}::{outer.name}::{inner.name} L"
+                            f"{node.lineno} returns a container and is used as "
+                            f"a condition, so it is always truthy")
+    assert not offenders, "\n".join(offenders)
