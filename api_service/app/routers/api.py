@@ -578,7 +578,14 @@ class KnownFactIn(BaseModel):
 def add_known_fact(case_id: str, payload: KnownFactIn):
     with S() as s:
         try:
-            return known_facts.register(s, case_id=case_id, **payload.model_dump())
+            # The governed plausibility bounds, so a client with a genuinely
+            # enormous estate can raise them rather than have a constant refuse
+            # their real figure.
+            _, _, fact_policy = _policies(s)
+            return known_facts.register(
+                s, case_id=case_id,
+                plausibility_bounds=fact_policy.plausibility_bounds,
+                **payload.model_dump())
         except ValueError as e:
             raise HTTPException(422, str(e))
 

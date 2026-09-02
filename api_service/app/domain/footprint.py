@@ -283,19 +283,32 @@ def _best_footprint_fact(session, case_row) -> tuple:
     # that check exists already carry whatever was typed - and a disclosed cost
     # line read as a site count is the failure this whole chain is worst at
     # noticing, because every stage after it behaves correctly.
-    from .known_facts import unit_conflicts_with_class
+    from .known_facts import (unit_conflicts_with_class,
+                              value_implausible_for_class)
 
-    mismatched = [r for r in rows
-                  if unit_conflicts_with_class("Location footprint", r.unit)]
+    # Both checks, because they catch different mistakes. The unit check finds
+    # a cost line whose unit gives it away; the magnitude check finds one whose
+    # unit says "sites" - which the entry form used to default to for every
+    # class, so a disclosed spend arrived unit-consistent and value-absurd.
+    def _rejected(row):
+        return (unit_conflicts_with_class("Location footprint", row.unit)
+                or value_implausible_for_class("Location footprint",
+                                               row.value_base))
+
+    mismatched = [r for r in rows if _rejected(r)]
     rows = [r for r in rows if r not in mismatched]
     if mismatched and not rows:
+        # Reported with the actual reason per fact rather than a generic one:
+        # "the unit is wrong" and "the number is impossible" need different
+        # corrections, and an analyst told only that something was ignored has
+        # to guess which.
+        detail = "; ".join(
+            f"{r.value_base} {r.unit or 'no unit'}: {_rejected(r)}"
+            for r in mismatched[:3])
         return None, (
-            f"{len(mismatched)} fact(s) are filed as 'Location footprint' with "
-            f"a unit that is not a count of sites "
-            f"({', '.join(sorted({str(r.unit) for r in mismatched}))}). They "
-            f"are ignored rather than read as site counts. Correct the class or "
-            f"the unit on page 2 - a cost line belongs under 'Public cost "
-            f"evidence'.")
+            f"{len(mismatched)} fact(s) filed as 'Location footprint' cannot "
+            f"be a count of sites and are ignored rather than read as one. "
+            f"{detail} Correct the class or the value on page 2.")
 
     usable = [r for r in rows if r.value_base is not None]
     if not usable:

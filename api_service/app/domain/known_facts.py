@@ -60,6 +60,48 @@ INCOMPATIBLE_UNITS = {
 }
 
 
+# Fallback bounds, used when the governed row is unavailable. Present so a
+# missing policy row degrades to "refuse the absurd" rather than to "accept
+# anything" - the wrong direction to fail in for a check whose whole job is
+# catching a figure that reached the estimate unchallenged.
+FALLBACK_PLAUSIBLE = {"sites": 1_000_000, "users": 10_000_000}
+
+
+def value_implausible_for_class(fact_class: str, value, bounds=None) -> str | None:
+    """The reason this value cannot be a count of what the class counts, or None.
+
+    The unit check catches a cost line whose unit gives it away. It does not
+    catch one whose unit says "sites" - and the entry form defaulted every
+    class to "sites", so a disclosed spend of 460,000,000 arrived
+    unit-consistent and value-absurd, and every stage after it behaved
+    correctly on 460 million branches.
+
+    The bound sits far above any real estate rather than near one: the largest
+    retail and postal networks in the world are in the low hundreds of
+    thousands of outlets. So this refuses nothing genuine, and catches every
+    money figure - an annual spend is a million or more by construction.
+    """
+    driver = BINDABLE.get(fact_class)
+    if not driver or value is None:
+        return None
+    limit = (bounds or {}).get(driver) or FALLBACK_PLAUSIBLE.get(driver)
+    if not limit:
+        return None
+    try:
+        amount = float(value)
+    except (TypeError, ValueError):
+        return None
+    if amount <= limit:
+        return None
+    return (
+        f"{amount:,.0f} is too many {driver} to be a count of {driver}. The "
+        f"largest estates in the world are far below {limit:,}, so a figure "
+        f"this size is almost always a money amount filed under the wrong "
+        f"class - a disclosed cost line belongs under 'Public cost evidence', "
+        f"where it is also what the ANCHOR method wants. If the count really "
+        f"is this large, raise known_fact_policy.max_plausible_{driver}.")
+
+
 def unit_conflicts_with_class(fact_class: str, unit) -> str | None:
     """The reason this unit cannot be what this class counts, or None.
 
@@ -116,6 +158,7 @@ DEFAULT_RANGE_WIDTH = 0.25          # a point value is widened, and the widening
 
 def register(session, *, case_id: str, fact_class: str, subject: str,
              value_base=None, value_low=None, value_high=None, unit=None,
+             plausibility_bounds: dict | None = None,
              currency=None, asserted_by: str, assertion_date: date, basis: str,
              verifiability: str, self_reported_confidence=None) -> dict:
     if not asserted_by or not asserted_by.strip():
@@ -138,7 +181,11 @@ def register(session, *, case_id: str, fact_class: str, subject: str,
             "about a named subject, and there is nothing to look for without "
             "one. Name the entity the claim is about, for example the legal "
             "entity or the country the count applies to.")
-    conflict = unit_conflicts_with_class(fact_class, unit)
+    conflict = (unit_conflicts_with_class(fact_class, unit)
+                or value_implausible_for_class(fact_class, value_base,
+                                               plausibility_bounds)
+                or value_implausible_for_class(fact_class, value_high,
+                                               plausibility_bounds))
     if conflict:
         raise ValueError(conflict)
     if value_base is None and value_low is None and value_high is None:

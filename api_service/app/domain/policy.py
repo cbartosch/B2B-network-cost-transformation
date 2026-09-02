@@ -174,10 +174,26 @@ class ConfidencePolicy:
 class KnownFactPolicy:
     set_name: str
     agreement_tolerance: Decimal
+    # The largest a bindable quantity can plausibly be. Governed rather than
+    # hardcoded because "how many sites can a company have" is a judgement, and
+    # a client with a genuinely enormous agent network should be able to raise
+    # it deliberately rather than have a constant refuse their real figure.
+    max_plausible_sites: int = 1_000_000
+    max_plausible_users: int = 10_000_000
+
+    @property
+    def plausibility_bounds(self) -> dict:
+        """Keyed by driver, the way BINDABLE names them."""
+        return {"sites": self.max_plausible_sites,
+                "users": self.max_plausible_users}
 
     @classmethod
     def from_rows(cls, rows: dict, set_name: str = "known_fact_policy"):
         policy = cls(set_name=set_name,
+                     max_plausible_sites=int(_require(
+                         rows, "max_plausible_sites", set_name)),
+                     max_plausible_users=int(_require(
+                         rows, "max_plausible_users", set_name)),
                      agreement_tolerance=_require(rows, "agreement_tolerance",
                                                   set_name))
         policy.validate()

@@ -90,6 +90,21 @@ THRESHOLDS = [
     # --- 0.1B known-fact binding
     # How close a nominated fact must be to the figure the run uses before it
     # can be credited as its source.
+    # The largest a bindable quantity can plausibly be.
+    #
+    # The unit check catches a cost line whose unit gives it away - "EUR/year"
+    # under Location footprint. It does not catch one whose unit says "sites",
+    # and the entry form defaulted every class to "sites", so a disclosed spend
+    # of 460,000,000 arrived unit-consistent and value-absurd. Every stage
+    # after it then behaved correctly on 460 million branches.
+    #
+    # Set far above any real estate rather than near it: the largest retail and
+    # postal networks in the world are in the low hundreds of thousands of
+    # outlets, so a million refuses nothing genuine while catching every money
+    # figure, which for an annual spend is a million or more by construction.
+    ("known_fact_policy", "max_plausible_sites", "1000000"),
+    # The largest employers on earth are a few million people.
+    ("known_fact_policy", "max_plausible_users", "10000000"),
     ("known_fact_policy", "agreement_tolerance", "0.10"),
 
     # --- researched price vs the benchmark it would displace.

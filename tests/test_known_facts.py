@@ -82,3 +82,78 @@ def test_the_resolver_defends_against_a_row_written_before_the_check():
     src = inspect.getsource(footprint._best_footprint_fact)
     assert "unit_conflicts_with_class" in src
     assert "ignored rather than read as site counts" in src
+
+
+# ------------------------------- a value too large to be a count of anything
+@pytest.mark.parametrize("value,refused", [
+    (460_000_000, True),      # the live case: a EUR spend filed as sites
+    (1_000_001, True),
+    (1_000_000, False),       # exactly the bound
+    (155_000, False),         # India Post, the real-world extreme
+    (4_300, False),           # Aldi Sued in Germany
+    (2_000, False),
+    (None, False),
+])
+def test_a_site_count_larger_than_any_estate_is_refused(value, refused):
+    """The unit check was not enough. It catches a cost line whose unit gives
+    it away - "EUR/year" under Location footprint - and not one whose unit says
+    "sites", which the entry form defaulted to for every class. So a disclosed
+    spend of 460,000,000 arrived unit-consistent and value-absurd, and every
+    stage after it behaved correctly on 460 million branches.
+
+    The bound sits far above any real estate rather than near one, so it
+    refuses nothing genuine: the largest retail and postal networks in the
+    world are in the low hundreds of thousands of outlets."""
+    reason = known_facts.value_implausible_for_class("Location footprint", value)
+    assert (reason is not None) is refused, reason
+
+
+def test_the_refusal_names_the_class_the_figure_probably_belongs_to():
+    """An analyst told only that a number was refused has to guess what to do.
+    A figure this size is almost always a cost line, and that class is also
+    what the ANCHOR method wants - so the remedy is worth naming."""
+    reason = known_facts.value_implausible_for_class(
+        "Location footprint", 460_000_000)
+    assert "Public cost evidence" in reason
+    assert "max_plausible_sites" in reason, (
+        "a genuinely enormous estate must be able to raise the bound rather "
+        "than be refused by a constant")
+
+
+def test_a_class_that_binds_nothing_has_no_plausible_bound():
+    """460,000,000 EUR of annual spend is an ordinary figure. The check must
+    reach only the classes that supply a count."""
+    assert known_facts.value_implausible_for_class(
+        "Public cost evidence", 460_000_000) is None
+
+
+def test_the_bounds_are_governed_not_hardcoded():
+    from app.domain.policy import KnownFactPolicy
+    from decimal import Decimal
+    policy = KnownFactPolicy(set_name="t", agreement_tolerance=Decimal("0.05"),
+                             max_plausible_sites=50, max_plausible_users=100)
+    assert policy.plausibility_bounds == {"sites": 50, "users": 100}
+    assert known_facts.value_implausible_for_class(
+        "Location footprint", 60, policy.plausibility_bounds)
+    assert known_facts.value_implausible_for_class(
+        "Location footprint", 40, policy.plausibility_bounds) is None
+
+
+def test_a_missing_policy_row_still_refuses_the_absurd():
+    """Degrading to "accept anything" is the wrong direction to fail in for a
+    check whose whole job is catching a figure that reached the estimate
+    unchallenged."""
+    assert known_facts.value_implausible_for_class(
+        "Location footprint", 460_000_000, bounds={})
+
+
+def test_the_resolver_applies_both_checks_to_stored_rows():
+    """The row is already in the database, so the producer-side refusal does
+    nothing for it - and this is the message the analyst is actually looking
+    at."""
+    import inspect
+    from app.domain import footprint
+    src = inspect.getsource(footprint._best_footprint_fact)
+    assert "unit_conflicts_with_class" in src
+    assert "value_implausible_for_class" in src
+    assert "cannot be a count of sites" in src
