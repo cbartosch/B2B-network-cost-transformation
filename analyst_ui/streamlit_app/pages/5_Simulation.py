@@ -134,6 +134,24 @@ elif "_error" not in _tc and _tc.get("rejected"):
 _fp = api.get(f"/v1/outside-in/cases/{case_id}/footprint")
 _case_settings = api.get(f"/v1/outside-in/cases/{case_id}")
 
+# A registered total that exists and is not being used is a contradiction, and
+# it was visible only by expanding "Why not the other source(s)?" - so the
+# choice panel could offer three totals while the footprint below showed a
+# placeholder, with nothing connecting the two.
+_offered = (_tc.get("choices") or []) if "_error" not in _tc else []
+if _offered and not str(_fp.get("origin") or "").startswith("KNOWN_FACT"):
+    _why = next((c.get("reason") or "" for c in (_fp.get("considered") or [])
+                 if str(c.get("source") or "").startswith("KNOWN_FACT")
+                 and not c.get("used")), "")
+    st.error(
+        f"**{len(_offered)} registered total(s) are offered above and none is "
+        f"being used.** The footprint below comes from "
+        f"`{_fp.get('origin')}` instead."
+        + (f"\n\nThe register was skipped because: {_why}" if _why else
+           " Expand \"Why not the other source(s)?\" below for the reason.")
+        + "\n\nChoosing a total above does not by itself make the register the "
+          "source - whatever caused it to be skipped has to be fixed too.")
+
 st.markdown("**Known sites by type**")
 if "_error" in _fp:
     st.error(f"**Could not resolve the footprint.** {_fp['_error']}")
