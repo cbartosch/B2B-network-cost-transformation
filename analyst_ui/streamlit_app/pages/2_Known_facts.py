@@ -61,11 +61,9 @@ if _pf and "_error" in _pf:
 elif _pf:
     _props = _pf.get("proposals") or []
     if not _props:
-        st.info("No public figures found for the swept fact classes. Your own "
-                "knowledge is the only route for these - register them below.")
-        if _pf.get("not_found"):
-            st.caption("Nothing public found for: "
-                       + ", ".join(_pf["not_found"]))
+        st.info("No usable public figure came back for the classes the sweep "
+                "spoke about. Your own knowledge is the route for those - "
+                "register them below.")
     else:
         st.write(f"{len(_props)} proposal(s) for **{_pf.get('subject')}**. "
                  f"Edit any cell before accepting: a searched figure is a "
@@ -161,10 +159,27 @@ elif _pf:
                 st.session_state.pop("_prefill", None)
                 st.rerun()
 
+    # One render, and the two cases kept apart.
+    #
+    # "Searched and found nothing usable" and "never mentioned this class" are
+    # different findings, and they were reported identically - the headline
+    # said no public figures were found for all five classes when the sweep had
+    # spoken about two. For a company like Boots, whose store count is on its
+    # own website, the first is implausible and the second is a sweep that
+    # under-delivered.
     if _pf.get("not_found"):
-        st.caption("Nothing public found for: " + ", ".join(_pf["not_found"])
-                   + ". That is a finding too - these need your knowledge or "
-                     "the client's.")
+        st.caption(
+            "**Searched, nothing usable:** "
+            + ", ".join(str(n) for n in _pf["not_found"])
+            + ". That is a finding - these need your knowledge or the "
+              "client's.")
+    if _pf.get("unaccounted"):
+        st.warning(
+            f"**The sweep said nothing at all about "
+            f"{', '.join(_pf['unaccounted'])}.** That is not the same as "
+            f"nothing existing - it did not report on them either way. Run it "
+            f"again; if a class keeps coming back silent, the brief for it "
+            f"needs attention rather than your memory.")
 
 
 # --- registering a fact by hand ------------------------------------------

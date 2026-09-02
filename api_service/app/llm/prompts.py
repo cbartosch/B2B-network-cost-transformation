@@ -316,7 +316,7 @@ _DEFS = [
 
     PromptDefinition(
         prompt_id="known_fact.prefill_public",
-        prompt_version="1.2.0", agent_id="LLM-01",
+        prompt_version="1.3.0", agent_id="LLM-01",
         task=("Find what public sources already state about the named entity "
               "for each requested fact class, so an analyst starts from what "
               "is known rather than from an empty form.\n"
@@ -331,6 +331,12 @@ _DEFS = [
               "on subject, so a proposal filed under a trading name and a "
               "fact registered under the legal name become two facts about "
               "the same thing that never meet.\n"
+              "Answer for every fact class you are given. For each one: "
+              "propose a figure with its source, or name the class in "
+              "not_found with what you searched for. Saying nothing about a "
+              "class is read downstream as 'nothing public exists', which is a "
+              "stronger claim than 'I did not find it' and is usually false - "
+              "a retail chain's store count is normally on its own website.\n"
               "Every proposal must be a NUMBER with a unit - a count of "
               "sites, a headcount, an amount of money, a percentage. This "
               "register holds quantities and has nowhere to put anything "

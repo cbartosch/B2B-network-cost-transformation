@@ -725,7 +725,8 @@ def prefill_from_public(session, *, case_id: str, fact_classes=None,
     try:
         result, provenance = gateway.structured_call(
             session, agent_run_id=run_id,
-            prompt_id="known_fact.prefill_public", prompt=prompt,
+            prompt_id="known_fact.prefill_public",
+            gate_context={"fact_classes": list(wanted)}, prompt=prompt,
             provider=provider,
             tools=[{"type": "web_search_20250305", "name": "web_search",
                     "max_uses": 8}])

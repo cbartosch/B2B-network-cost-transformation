@@ -581,3 +581,56 @@ def test_splitting_the_contract_moved_every_affected_prompt_hash():
     for definition in prompts.PROMPTS.values():
         assert definition.prompt_hash, definition.prompt_id
     assert prompts.validate_registry() == []
+
+
+def test_the_sweep_must_account_for_every_class_it_was_asked_about():
+    """Boots has around 1,800 UK stores stated on its own website. The sweep
+    returned an empty facts list with two of five classes in not_found, so
+    three were silently omitted - and the interface reported "no public figures
+    found" for all five.
+
+    A class the model did not mention is not a class where nothing exists.
+    Those are different findings and they were indistinguishable."""
+    from app.llm import quality, schemas
+
+    reply = schemas.PublicFactSweep.model_validate({
+        "subject": "Boots",
+        "facts": [],
+        "not_found": [{"fact_class": "Remote-user population",
+                       "searched_for": "remote headcount",
+                       "reason": "no public source isolates this"}],
+    })
+    verdict = quality.evaluate(
+        "known_fact.prefill_public", reply,
+        {"fact_classes": ["Location footprint", "Remote-user population",
+                          "Public cost evidence"]})
+    assert not verdict.accepted
+    assert quality.Rejection.INCOMPLETE_COVERAGE in verdict.reasons
+    assert "Location footprint" in " ".join(verdict.detail)
+
+
+def test_a_sweep_that_accounts_for_everything_is_accepted():
+    from app.llm import quality, schemas
+
+    reply = schemas.PublicFactSweep.model_validate({
+        "subject": "Boots",
+        "facts": [{"fact_class": "Location footprint", "subject": "Boots",
+                   "value_base": "1800", "unit": "sites",
+                   "sources": [{"url": "https://boots-uk.example/about",
+                                "publisher": "Boots UK"}]}],
+        "not_found": [{"fact_class": "Remote-user population",
+                       "searched_for": "remote headcount",
+                       "reason": "no public source isolates this"}],
+    })
+    assert quality.evaluate(
+        "known_fact.prefill_public", reply,
+        {"fact_classes": ["Location footprint",
+                          "Remote-user population"]}).accepted
+
+
+def test_the_prompt_states_the_coverage_requirement():
+    """The gate refuses on it, so the instruction has to say it - a rejection
+    for a rule the prompt never stated is a retry that cannot succeed."""
+    task = prompts.get("known_fact.prefill_public").task
+    assert "Answer for every fact class" in task
+    assert "stronger claim" in task

@@ -44,6 +44,10 @@ class Rejection(str, Enum):
     # A figure the estimate does not contain. Distinct from a contradiction:
     # the answer is internally coherent and states a number nobody computed.
     FIGURE_NOT_IN_PACKET = "FIGURE_NOT_IN_PACKET"
+    # Asked about five things and answered about two. Distinct from an empty
+    # result: the reply is well-formed and simply silent on part of the task,
+    # which reads downstream as "nothing exists" rather than "not attempted".
+    INCOMPLETE_COVERAGE = "INCOMPLETE_COVERAGE"
     # The reply did not match the registered output model. Distinct from
     # CONTRADICTS_ITSELF, which is a judgement about what the model said: this
     # one says the reply never became a result at all, and reporting it as a
@@ -69,6 +73,12 @@ TERMINAL = frozenset({
 # What each code should tell the model on the next attempt. Written as an
 # instruction rather than a diagnosis, because the retry has to act on it.
 GUIDANCE = {
+    Rejection.INCOMPLETE_COVERAGE: (
+        "You did not mention every fact class you were asked about. For each "
+        "one, either propose a figure with its source, or add it to not_found "
+        "saying what you searched for and why nothing was usable. Silence on "
+        "a class is read as 'nothing exists', which is a different and "
+        "stronger claim than 'I did not find it'."),
     # A retry that repeats the prompt unchanged is resampling rather than
     # correction, so every retryable reason has to be able to say what to fix.
     # Both of these were added as reasons and never given guidance - so a
@@ -271,6 +281,26 @@ def public_fact_prefill(result, context) -> Verdict:
     precisely the confidence inflation the register exists to prevent.
     """
     reasons, detail = [], []
+
+    # Every class the sweep was asked about must be accounted for: proposed, or
+    # named in not_found. Boots has around 1,800 UK stores stated on its own
+    # site, and the sweep returned an empty facts list with two of five classes
+    # in not_found - so three were silently omitted and the interface reported
+    # "no public figures found" for all five.
+    #
+    # A class the model did not mention is not a class where nothing exists.
+    # Those are different findings and they were indistinguishable.
+    requested = {c for c in ((context or {}).get("fact_classes") or [])}
+    if requested:
+        accounted = ({f.fact_class for f in result.facts}
+                     | {n.fact_class for n in (result.not_found or [])})
+        missing = sorted(requested - accounted)
+        if missing:
+            reasons.append(Rejection.INCOMPLETE_COVERAGE)
+            detail.append(
+                f"said nothing at all about {missing} - propose a figure or "
+                f"name the class in not_found with what was searched")
+
     for fact in result.facts:
         if not fact.sources:
             reasons.append(Rejection.CLAIMED_FINDING_WITHOUT_SOURCE)
