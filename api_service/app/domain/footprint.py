@@ -449,9 +449,23 @@ def total_candidates(session, *, case_id: str) -> dict:
             "band": None,
         })
 
+    # Footprint facts on other cases. "I had registered sites, where did they
+    # go" has three possible answers - filtered out, never written, or on a
+    # different case - and only the third is invisible from this page. The
+    # register is case-scoped, and a case created for a second client while the
+    # first was selected is the easiest mistake in the whole workflow to make.
+    elsewhere = [
+        {"case_id": r.case_id, "value_base": str(r.value_base),
+         "unit": r.unit, "subject": r.subject, "asserted_by": r.asserted_by}
+        for r in session.execute(select(db.known_fact).where(
+            db.known_fact.c.fact_class == "Location footprint",
+            db.known_fact.c.case_id != case_id,
+            db.known_fact.c.value_base.isnot(None))).all()]
+
     return {
         "choices": choices,
         "rejected": rejected,
+        "on_other_cases": elsewhere,
         # The rule-based order is a suggestion for reading, not a decision.
         "suggested": choices[0]["known_fact_id"] if choices else None,
         "note": (

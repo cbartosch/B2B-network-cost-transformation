@@ -44,10 +44,27 @@ if "_error" in _tc:
     # migration that has not run, which the analyst can act on.
     st.error(f"Could not read the registered totals: {_tc['_error']}")
 elif not (_tc.get("choices") or []):
-    st.caption(
-        "No registered site total on this case yet. Register one on page 2, "
-        "or accept a Location footprint proposal from the public sweep - the "
+    st.warning(
+        "**No registered site total on this case.** Register one on page 2, or "
+        "accept a Location footprint proposal from the public sweep - the "
         "footprint below is then reconciled against it.")
+    for _rj in _tc.get("rejected") or []:
+        st.caption(
+            f"One fact was found and not used: {_rj.get('value_base')} "
+            f"{_rj.get('unit') or ''} - {_rj['reason'][:160]}")
+    # The third possibility, and the only one invisible from this page.
+    _other = _tc.get("on_other_cases") or []
+    if _other:
+        st.error(
+            f"**{len(_other)} Location footprint fact(s) exist on other "
+            f"case(s).** The register is per case, so a fact registered while "
+            f"a different case was selected on the home page is not lost - it "
+            f"is on that case. Check the case selector.")
+        st.dataframe(pd.DataFrame([
+            {"case": str(o["case_id"])[:8], "sites": o["value_base"],
+             "unit": o["unit"], "subject": o["subject"],
+             "asserted by": o["asserted_by"]} for o in _other]),
+            use_container_width=True, hide_index=True)
 elif len(_tc["choices"]) == 1:
     _only = _tc["choices"][0]
     st.caption(
