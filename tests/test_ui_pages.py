@@ -1073,3 +1073,34 @@ def test_the_client_sanitises_every_json_payload():
               / "streamlit_app" / "api_client.py").read_text()
     request = client[client.index("def _req"):]
     assert 'kw["json"] = _json_safe(kw["json"])' in request
+
+
+def test_the_total_choice_is_offered_regardless_of_resolver_branch():
+    """The panel that lets the analyst choose which registered total to model
+    was nested inside `if _fp.get("register_total") is not None:` - a key only
+    one of six resolver branches sets.
+
+    So on a case with a saved footprint the panel silently did not render, and
+    the analyst could not choose the total that would have fixed the very
+    disagreement the page was reporting. Whether there is a choice to make is
+    answered by the candidates call, not by which path the resolver took."""
+    import ast
+
+    source = _page("Simulation").read_text()
+    tree = ast.parse(source)
+
+    call_line = next(
+        node.lineno for node in ast.walk(tree)
+        if isinstance(node, ast.Call)
+        and "total-candidates" in ast.unparse(node))
+
+    # the call must sit at module level, not inside a branch on the resolver
+    for statement in tree.body:
+        if not (statement.lineno <= call_line <= (statement.end_lineno or 0)):
+            continue
+        rendered = ast.unparse(statement)
+        assert "_fp" not in rendered.split("total-candidates")[0][-400:], (
+            "the choice panel is nested inside a test on the resolver's "
+            "output, so it renders on some branches and not others")
+        return
+    raise AssertionError("the total-candidates call is gone")
