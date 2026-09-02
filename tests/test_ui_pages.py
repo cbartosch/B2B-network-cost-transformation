@@ -1010,3 +1010,66 @@ def test_the_label_says_what_estate_is_being_priced():
     text = _page("Run_V0").read_text()
     assert "def _sim_label" in text
     assert "site(s) in" in text and "clustered" in text
+
+
+def test_a_blank_editor_cell_does_not_break_a_payload():
+    """The reported failure: accepting twelve public-fact proposals raised
+    "Out of range float values are not JSON compliant: nan" on the first row.
+
+    A data_editor represents an empty numeric cell as NaN, and httpx encodes
+    with allow_nan=False. Every proposal leaves value_low and value_high blank,
+    so every accept failed.
+
+    Guarded in the client rather than per page: page 6 already had the NaN
+    self-inequality trick inline on its spend table, unnamed and un-reusable,
+    so the knowledge existed in the build and did not reach the next table that
+    needed it. The client is the one point where anything becomes JSON."""
+    import json
+    from pathlib import Path
+
+    client = (Path(__file__).resolve().parents[1] / "analyst_ui"
+              / "streamlit_app" / "api_client.py").read_text()
+    namespace = {}
+    exec(client[client.index("def _json_safe"):client.index("def _req")],
+         namespace)
+    safe = namespace["_json_safe"]
+
+    payload = {"proposals": [{"value_base": 1840.0,
+                              "value_low": float("nan"),
+                              "value_high": float("nan")}],
+               "accepted_by": "CB"}
+    # the exact encoder httpx uses, which is what raised
+    with pytest.raises(ValueError, match="not JSON compliant"):
+        json.dumps(payload, allow_nan=False)
+    json.dumps(safe(payload), allow_nan=False)          # must not raise
+
+
+def test_sanitising_a_payload_keeps_a_legitimate_zero():
+    """A site count of zero and a blank cell are different answers, and
+    collapsing them would silently drop a deliberate figure."""
+    from pathlib import Path
+
+    client = (Path(__file__).resolve().parents[1] / "analyst_ui"
+              / "streamlit_app" / "api_client.py").read_text()
+    namespace = {}
+    exec(client[client.index("def _json_safe"):client.index("def _req")],
+         namespace)
+    safe = namespace["_json_safe"]
+
+    assert safe({"v": 0.0})["v"] == 0.0
+    assert safe({"v": 0})["v"] == 0
+    assert safe({"v": False})["v"] is False
+    assert safe({"v": float("nan")})["v"] is None
+    assert safe({"v": float("inf")})["v"] is None
+    # and recursively, since a payload is nested
+    assert safe({"a": [{"b": float("nan")}]})["a"][0]["b"] is None
+
+
+def test_the_client_sanitises_every_json_payload():
+    """One place, at the boundary - not a guard each page has to remember."""
+    from pathlib import Path
+
+    client = (Path(__file__).resolve().parents[1] / "analyst_ui"
+              / "streamlit_app" / "api_client.py").read_text()
+    request = client[client.index("def _req"):]
+    assert 'kw["json"] = _json_safe(kw["json"])' in request

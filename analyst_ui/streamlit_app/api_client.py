@@ -41,8 +41,40 @@ def auth_headers() -> dict:
     return {AUTH_HEADER: API_TOKEN} if API_TOKEN else {}
 
 
+def _json_safe(value):
+    """A payload with pandas' blanks turned into nulls, recursively.
+
+    A data_editor represents an empty numeric cell as NaN, and json.dumps
+    refuses it: "Out of range float values are not JSON compliant: nan". Every
+    editable table in this interface can produce one, and accepting twelve
+    public-fact proposals - each with value_low and value_high left blank -
+    failed on the first row.
+
+    Done here rather than per page. Page 6 already guarded its spend table
+    inline with the NaN self-inequality trick, unnamed and un-reusable, so the
+    knowledge existed in the build and did not reach the next table that needed
+    it. This is the one point where anything becomes JSON, so it is the one
+    place the rule belongs.
+
+    Infinity too: also valid float, also not valid JSON, and a division in a
+    computed column is all it takes.
+    """
+    if isinstance(value, dict):
+        return {k: _json_safe(v) for k, v in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [_json_safe(v) for v in value]
+    if isinstance(value, float):
+        # NaN is the only value not equal to itself; inf compares fine and is
+        # equally unserialisable.
+        if value != value or value in (float("inf"), float("-inf")):
+            return None
+    return value
+
+
 def _req(method: str, path: str, **kw):
     headers = {**auth_headers(), **kw.pop("headers", {})}
+    if "json" in kw:
+        kw["json"] = _json_safe(kw["json"])
     # Per-call override. Most routes answer in well under TIMEOUT; a single
     # domain of research is a LIVE provider call plus up to a dozen source
     # fetches and legitimately runs longer. Raising the global default instead

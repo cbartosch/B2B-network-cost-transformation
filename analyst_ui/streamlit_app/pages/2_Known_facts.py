@@ -133,9 +133,27 @@ elif _pf:
                     st.caption("   no sources recorded on this proposal")
 
         who = st.text_input("Accepting as (your name)", key="pf_who")
+
+        def _json_safe(value):
+            """An empty numeric cell out of a data_editor, as null.
+
+            pandas represents a blank number as NaN, and json.dumps refuses it:
+            "Out of range float values are not JSON compliant: nan". Every
+            proposal here leaves value_low and value_high empty, so accepting
+            any of them failed on the first one.
+
+            Page 6 already had this guarded with the NaN self-inequality trick
+            on its spend table, inline and unnamed - so the knowledge existed
+            in the build and did not reach the second table that needed it.
+            """
+            if value is None or value != value:
+                return None
+            return value
+
         _picked = [
-            {**_props[i], "value_base": r["value_base"],
-             "value_low": r["value_low"], "value_high": r["value_high"],
+            {**_props[i], "value_base": _json_safe(r["value_base"]),
+             "value_low": _json_safe(r["value_low"]),
+             "value_high": _json_safe(r["value_high"]),
              "unit": r["unit"] or None, "currency": r["currency"] or None,
              "as_of": r["as_of"] or None, "subject": r["subject"],
              # Recorded because an edited figure is no longer what the source
