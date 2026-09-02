@@ -441,7 +441,8 @@ elif facts:
                 if st.button("Remove this malformed fact",
                              key=f"rm_{f['known_fact_id']}"):
                     rr = api.post(
-                        f"/v1/outside-in/known-facts/{f['known_fact_id']}:void",
+                        f"/v1/outside-in/cases/{case_id}/known-facts/"
+                        f"{f['known_fact_id']}:void",
                         {"voided_by": "analyst"})
                     if "_error" in rr:
                         st.error(rr["_error"])
@@ -473,14 +474,16 @@ elif facts:
             if not f["rights_cleared"]:
                 who = cols[0].text_input("Rights cleared by", key=f"rc_{f['known_fact_id']}")
                 if cols[0].button("Clear rights", key=f"rb_{f['known_fact_id']}", disabled=not who):
-                    api.post(f"/v1/outside-in/known-facts/{f['known_fact_id']}:clear-rights",
+                    api.post(f"/v1/outside-in/cases/{case_id}/known-facts/"
+                              f"{f['known_fact_id']}:clear-rights",
                              {"cleared_by": who})
                     st.rerun()
             if f["verifiability"] == "PUBLICLY_VERIFIABLE" and state == "PENDING":
                 if cols[1].button("Corroborate (LIVE)", key=f"co_{f['known_fact_id']}"):
                     with st.spinner("Calling provider..."):
                         r = api.post(
-                            f"/v1/outside-in/known-facts/{f['known_fact_id']}:corroborate",
+                            f"/v1/outside-in/cases/{case_id}/known-facts/"
+                            f"{f['known_fact_id']}:corroborate",
                             {"provider": "anthropic", "mode": "LIVE"})
                     if "_error" in r:
                         st.error(f"Run failed closed: {r['_error']}")

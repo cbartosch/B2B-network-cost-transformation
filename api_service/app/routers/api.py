@@ -38,16 +38,34 @@ def _thresholds(s, set_name):
     return {r.key: str(r.value) for r in rows}
 
 
-def _one_or_404(session, table, column, value, what: str):
+def _one_or_404(session, table, column, value, what: str, *,
+                owned_by_case: str | None = None):
     """Resolve a caller-supplied identifier, or 404.
 
     SQLAlchemy's .one() raises NoResultFound on a miss, which FastAPI renders as
     a 500 - telling a caller the server is broken when their identifier is
     simply wrong. Nine call sites did this; one helper removes the class.
+
+    `owned_by_case` is the composite ownership predicate. Audit finding C-04:
+    the estimate route resolved a simulation by simulation_run_id alone, so a
+    caller could pass case A in the path and case B's simulation id and build
+    A's estimate from B's estate - cross-case contamination, false provenance,
+    and disclosure of another case's topology in the response.
+
+    A helper that takes one column made the unscoped lookup the easy path and
+    the scoped one a thing to remember. Passing the case here makes ownership
+    part of resolving rather than a separate check somebody has to add.
+
+    404, not 403: whether a resource exists on another case is not something a
+    caller with no access to that case should be able to learn.
     """
-    row = session.execute(select(table).where(column == value)).first()
+    query = select(table).where(column == value)
+    if owned_by_case is not None:
+        query = query.where(table.c.case_id == owned_by_case)
+    row = session.execute(query).first()
     if row is None:
-        raise HTTPException(404, f"{what} {value!r} not found")
+        raise HTTPException(404, f"{what} {value!r} not found"
+                            + (" on this case" if owned_by_case else ""))
     return row
 
 
@@ -633,8 +651,8 @@ def list_known_facts(case_id: str):
                 "evidence_origin": known_facts.EVIDENCE_ORIGIN}
 
 
-@router.get("/v1/outside-in/known-facts/{fact_id}/provenance")
-def known_fact_provenance(fact_id: str):
+@router.get("/v1/outside-in/cases/{case_id}/known-facts/{fact_id}/provenance")
+def known_fact_provenance(case_id: str, fact_id: str):
     """Walk a corroborated fact back to the provider call behind it.
 
     fact -> corroborating agent run -> provider record -> the response and
@@ -643,6 +661,12 @@ def known_fact_provenance(fact_id: str):
     written and shown nowhere.
     """
     with S() as s:
+        # Ownership before anything else. Accepting case_id and
+        # not using it is the same defect as C-04 with a longer
+        # URL: the fact is resolved by its own id and could
+        # belong to any case.
+        _one_or_404(s, db.known_fact, db.known_fact.c.known_fact_id,
+                    fact_id, "known fact", owned_by_case=case_id)
         try:
             return known_facts.provenance_chain(s, fact_id)
         except ValueError as exc:
@@ -674,9 +698,15 @@ def quantity_sources(case_id: str):
         return out
 
 
-@router.post("/v1/outside-in/known-facts/{fact_id}:clear-rights")
-def clear_rights(fact_id: str, payload: KnownFactClearRightsIn):
+@router.post("/v1/outside-in/cases/{case_id}/known-facts/{fact_id}:clear-rights")
+def clear_rights(case_id: str, fact_id: str, payload: KnownFactClearRightsIn):
     with S() as s:
+        # Ownership before anything else. Accepting case_id and
+        # not using it is the same defect as C-04 with a longer
+        # URL: the fact is resolved by its own id and could
+        # belong to any case.
+        _one_or_404(s, db.known_fact, db.known_fact.c.known_fact_id,
+                    fact_id, "known fact", owned_by_case=case_id)
         return known_facts.clear_rights(s, fact_id, payload.cleared_by)
 
 
@@ -761,8 +791,8 @@ def accept_public_facts(case_id: str, payload: AcceptProposalIn):
                 "accepted_by": payload.accepted_by}
 
 
-@router.post("/v1/outside-in/known-facts/{fact_id}:void")
-def void_known_fact(fact_id: str, payload: VoidFactIn):
+@router.post("/v1/outside-in/cases/{case_id}/known-facts/{fact_id}:void")
+def void_known_fact(case_id: str, fact_id: str, payload: VoidFactIn):
     """Remove a fact that carries no subject or no value.
 
     Deliberately narrow. This system retains records rather than deleting
@@ -777,7 +807,7 @@ def void_known_fact(fact_id: str, payload: VoidFactIn):
     """
     with S() as s:
         row = _one_or_404(s, db.known_fact, db.known_fact.c.known_fact_id,
-                          fact_id, "known fact")
+                          fact_id, "known fact", owned_by_case=case_id)
         if (row.subject or "").strip() and row.value_base is not None:
             raise HTTPException(409, {
                 "error": "this fact is well-formed and cannot be voided",
@@ -800,9 +830,15 @@ def void_known_fact(fact_id: str, payload: VoidFactIn):
                         "with a subject and a value"}
 
 
-@router.post("/v1/outside-in/known-facts/{fact_id}:corroborate")
-def corroborate(fact_id: str, payload: CorroborateIn):
+@router.post("/v1/outside-in/cases/{case_id}/known-facts/{fact_id}:corroborate")
+def corroborate(case_id: str, fact_id: str, payload: CorroborateIn):
     with S() as s:
+        # Ownership before anything else. Accepting case_id and
+        # not using it is the same defect as C-04 with a longer
+        # URL: the fact is resolved by its own id and could
+        # belong to any case.
+        _one_or_404(s, db.known_fact, db.known_fact.c.known_fact_id,
+                    fact_id, "known fact", owned_by_case=case_id)
         try:
             # The tolerance that decides whether an assertion becomes public
             # evidence is governed, not a module default.
@@ -2060,9 +2096,14 @@ def run_estimate(case_id: str, payload: EstimateIn):
                           "has to be one. Run a simulation on page 5, or use "
                           "method=ANCHOR where a site-level inventory is not "
                           "available."})
+        # Scoped to the case in the path. C-04: this resolved by
+        # simulation_run_id alone, so case A's path plus case B's simulation id
+        # built A's estimate from B's estate - and the response carried B's
+        # topology and site counts back to a caller who asked about A.
         sim = _one_or_404(s, db.simulation_run,
                           db.simulation_run.c.simulation_run_id,
-                          payload.simulation_run_id, "simulation run")
+                          payload.simulation_run_id, "simulation run",
+                          owned_by_case=case_id)
         # A simulation from before the bandwidth dimension has product rows
         # with no bandwidth, and match_prior cannot price a circuit whose
         # requirement is unknown - so every circuit falls out as unpriced and

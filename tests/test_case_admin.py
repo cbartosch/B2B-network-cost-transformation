@@ -116,3 +116,70 @@ def test_every_table_carrying_a_case_id_is_in_the_delete_list():
                 if "case_id" in t.columns and t.name != "engagement_case"}
     missing = sorted(carrying - set(case_admin.DEPENDENTS))
     assert not missing, f"tables that would be orphaned by a delete: {missing}"
+
+
+# ------------------------------- C-04: cross-case resource contamination
+def _succeeded_simulation(session, case_id: str) -> str:
+    sim_id = str(uuid.uuid4())
+    session.execute(insert(db.simulation_run).values(
+        simulation_run_id=sim_id, case_id=case_id, seed=42, ensemble_size=1,
+        status="SUCCEEDED", model_version="sim-1.5.0",
+        params={"footprint": [{"country": "DE", "archetype": "STORE",
+                               "sites": 10}]},
+        output={"sites": 10, "products": [], "scope": []}))
+    session.commit()
+    return sim_id
+
+
+def _fact(session, case_id: str) -> str:
+    fact_id = str(uuid.uuid4())
+    session.execute(insert(db.known_fact).values(
+        known_fact_id=fact_id, case_id=case_id,
+        fact_class="Location footprint", subject="Acme", value_base=340,
+        unit="sites", asserted_by="tester", basis="CLIENT_CONVERSATION",
+        verifiability="PUBLICLY_VERIFIABLE", corroboration_state="PENDING"))
+    session.commit()
+    return fact_id
+
+
+def test_an_estimate_cannot_consume_another_cases_simulation(session, client):
+    """Audit finding C-04, demonstrated: case A's path with case B's
+    simulation id built A's estimate from B's estate, returned B's topology and
+    site counts, and attributed them to A.
+
+    404 rather than 403: whether a simulation exists on another case is not
+    something a caller without access to that case should be able to learn."""
+    case_a = _case(session, subject_entity_legal_name="Alpha Ltd")
+    case_b = _case(session, subject_entity_legal_name="Beta GmbH")
+    sim_b = _succeeded_simulation(session, case_b)
+
+    r = client.post(f"/v1/outside-in/cases/{case_a}/estimates:run",
+                    json={"method": "BUILD_UP",
+                          "simulation_run_id": sim_b,
+                          "users": 100, "ops_cost_per_site_base": 900})
+    assert r.status_code == 404, (
+        f"case {case_a[:8]} accepted case {case_b[:8]}'s simulation: "
+        f"{r.status_code} {r.text[:200]}")
+    assert "on this case" in r.text
+
+
+@pytest.mark.parametrize("route,method,payload", [
+    ("known-facts/{fact}:corroborate", "post", {"corroborated_by": "CB"}),
+    ("known-facts/{fact}:clear-rights", "post", {"cleared_by": "CB"}),
+    ("known-facts/{fact}:void", "post", {"voided_by": "CB"}),
+    ("known-facts/{fact}/provenance", "get", None),
+])
+def test_a_fact_cannot_be_acted_on_from_another_case(session, client, route,
+                                                     method, payload):
+    """The same defect in a weaker form: these four routes took no case at all,
+    so any fact on any case could be corroborated, rights-cleared, voided or
+    have its provenance read by id alone."""
+    case_a = _case(session, subject_entity_legal_name="Alpha Ltd")
+    case_b = _case(session, subject_entity_legal_name="Beta GmbH")
+    fact_b = _fact(session, case_b)
+
+    path = f"/v1/outside-in/cases/{case_a}/" + route.format(fact=fact_b)
+    r = (client.get(path) if method == "get"
+         else client.post(path, json=payload))
+    assert r.status_code == 404, (
+        f"{route} let case {case_a[:8]} act on case {case_b[:8]}'s fact")

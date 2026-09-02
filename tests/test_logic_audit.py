@@ -711,3 +711,67 @@ def test_a_nested_function_is_not_swept_up_by_an_edit_to_its_parent():
                             f"{node.lineno} returns a container and is used as "
                             f"a condition, so it is always truthy")
     assert not offenders, "\n".join(offenders)
+
+
+def test_every_case_owned_lookup_is_scoped_to_the_case():
+    """Audit finding C-04. The estimate route resolved a simulation by
+    simulation_run_id alone, so case A's path plus case B's simulation id built
+    A's estimate from B's estate - cross-case contamination, false provenance,
+    and B's topology and site counts returned to a caller who asked about A.
+
+    Three known-fact routes had the same defect in a weaker form: they took no
+    case at all, so any fact on any case could be corroborated, rights-cleared
+    or voided by id.
+
+    A helper taking one column made the unscoped lookup the easy path. The
+    check is on the call sites because that is where the omission happens.
+    """
+    import ast
+    import re
+
+    api = (APP / "routers" / "api.py").read_text()
+    owned = set()
+    for node in ast.parse((APP / "db.py").read_text()).body:
+        if isinstance(node, ast.Assign) and isinstance(node.targets[0], ast.Name):
+            columns = {c.args[0].value for c in ast.walk(node)
+                       if isinstance(c, ast.Call)
+                       and getattr(c.func, "id", "") == "Column"
+                       and c.args and isinstance(c.args[0], ast.Constant)}
+            if "case_id" in columns:
+                owned.add(node.targets[0].id)
+    assert owned, "no case-owned tables found - the sweep is blind"
+
+    offenders = []
+    for fn in [n for n in ast.parse(api).body
+               if isinstance(n, ast.FunctionDef)]:
+        body = ast.unparse(fn)
+        takes_case = "case_id" in [a.arg for a in fn.args.args]
+        for match in re.finditer(
+                r"_one_or_404\([^,]+,\s*db\.(\w+),\s*db\.\1\.c\.\w+,\s*"
+                r"[^,]+,\s*'[^']*'(.*?)\)", body, re.S):
+            table, tail = match.group(1), match.group(2)
+            if table not in owned or table == "case":
+                continue
+            if not takes_case:
+                offenders.append(
+                    f"{fn.name} resolves {table} with no case in its path")
+            elif "owned_by_case" not in tail:
+                offenders.append(
+                    f"{fn.name} resolves {table} without owned_by_case")
+    assert not offenders, "\n".join(offenders)
+
+
+def test_the_lookup_helper_can_express_ownership():
+    """A helper that takes one column makes the unscoped lookup the easy path
+    and the scoped one a thing to remember."""
+    import inspect
+
+    from app.routers import api
+
+    signature = inspect.signature(api._one_or_404)
+    assert "owned_by_case" in signature.parameters
+    source = inspect.getsource(api._one_or_404)
+    assert "table.c.case_id == owned_by_case" in source
+    # 404 rather than 403: whether a resource exists on another case is not
+    # something a caller without access to that case should learn.
+    assert "404" in source and "403" not in source
