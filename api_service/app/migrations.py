@@ -34,7 +34,7 @@ from . import db
 log = logging.getLogger("workbench.migrations")
 
 # Bump when the physical schema changes, and add a step below.
-SCHEMA_VERSION = 35
+SCHEMA_VERSION = 36
 
 VERSION_TABLE = "schema_version"
 VERSION_SCHEMA = "audit"
@@ -838,13 +838,25 @@ def _migrate_v35(conn) -> None:
     log.info("v35: %d coordinate column(s) added to location", added)
 
 
+def _migrate_v36(conn) -> None:
+    """4.32.0 -> 4.33.0: reference.serviceability, and density on the estate.
+
+    The archetype said what a site needs and nothing said what could be
+    delivered there, so a 4,000-store estate was priced as though every store
+    could take the same product. Domain 18 researched exactly this and its
+    result reached nothing.
+    """
+    log.info("v36: serviceability introduced; what a site needs and what can "
+             "be delivered there are now different questions")
+
+
 MIGRATIONS = {2: _migrate_v2, 3: _migrate_v3, 4: _migrate_v4, 5: _migrate_v5,
               6: _migrate_v6, 7: _migrate_v7, 8: _migrate_v8, 9: _migrate_v9,
               10: _migrate_v10, 11: _migrate_v11, 12: _migrate_v12,
               13: _migrate_v13, 14: _migrate_v14, 15: _migrate_v15,
               16: _migrate_v16, 17: _migrate_v17, 18: _migrate_v18,
               19: _migrate_v19, 20: _migrate_v20,
-              21: _migrate_v21, 22: _migrate_v22, 23: _migrate_v23, 24: _migrate_v24, 25: _migrate_v25, 26: _migrate_v26, 27: _migrate_v27, 28: _migrate_v28, 29: _migrate_v29, 30: _migrate_v30, 31: _migrate_v31, 32: _migrate_v32, 33: _migrate_v33, 34: _migrate_v34, 35: _migrate_v35}
+              21: _migrate_v21, 22: _migrate_v22, 23: _migrate_v23, 24: _migrate_v24, 25: _migrate_v25, 26: _migrate_v26, 27: _migrate_v27, 28: _migrate_v28, 29: _migrate_v29, 30: _migrate_v30, 31: _migrate_v31, 32: _migrate_v32, 33: _migrate_v33, 34: _migrate_v34, 35: _migrate_v35, 36: _migrate_v36}
 
 
 class SchemaDrift(RuntimeError):

@@ -13,6 +13,7 @@ DOMAIN_AGENT_MAP_SEED = {
     21: 'LLM-08', 22: 'LLM-08',
 }
 from .db import (SessionLocal, archetype_bandwidth, archetype_prior,
+                 serviceability,
                  country_region, topology_template, lever, platform_unit_cost,
                  research_brief,
                  threshold, unit_cost_prior)
@@ -172,6 +173,17 @@ THRESHOLDS = [
     # about an estate nobody made, and it prices every one of them at a tier
     # nobody chose.
     ("footprint_policy", "max_sites_per_archetype_row", "100"),
+    # The same rule for a row that says where its sites are. 100 was set when a
+    # row meant (country, archetype) and every site in it was claimed identical
+    # on no evidence. A row that also names a density band is a real cluster -
+    # same country, same type, same deliverable access - so the claim is much
+    # weaker and the limit can be looser.
+    #
+    # A 4,000-store chain split across four bands is ~1,000 per row, which the
+    # old limit would have refused and which is a reasonable statement about a
+    # discounter's urban estate. Still bounded: 4,000 stores in one row is not
+    # a cluster, it is a tally.
+    ("footprint_policy", "max_sites_per_cluster_row", "2000"),
 
     # --- quality gate.
     # How many times a registered call may be re-issued after the gate rejects
@@ -335,6 +347,60 @@ PRIORS = [
     ("AE", "MOBILE_5G", "L0", 50, 55, 95, 160),
 ]
 
+# Density bands, weakest coverage last. Derivable from a postcode without a
+# survey, which is why the model clusters on them: serviceability itself needs
+# a regulator lookup per area, and this predicts it well enough to price with.
+DENSITY_BANDS = ("DENSE_URBAN", "URBAN", "SUBURBAN", "RURAL")
+
+# What can be delivered in each band. (country, density, product, available,
+# max_mbps)
+#
+# The pattern that matters for a retail estate: DIA and Ethernet thin out with
+# density while broadband and mobile persist, so a rural store is not a cheaper
+# version of an urban one - it is a different circuit, and sometimes an
+# unserviceable one.
+#
+# Indicative and governed. A steward retunes these per engagement, and a
+# researched fact about a specific area replaces them.
+SERVICEABILITY = [
+    (c, band, product, available, mbps)
+    for c in ("DE", "GB", "FR", "NL", "US")
+    for band, product, available, mbps in (
+        ("DENSE_URBAN", "DIA", True, 10000),
+        ("DENSE_URBAN", "ETHERNET", True, 10000),
+        ("DENSE_URBAN", "BROADBAND_HFC", True, 1000),
+        ("DENSE_URBAN", "BROADBAND_PON", True, 1000),
+        ("DENSE_URBAN", "MPLS", True, 1000),
+        ("DENSE_URBAN", "MOBILE_5G", True, 300),
+
+        ("URBAN", "DIA", True, 1000),
+        ("URBAN", "ETHERNET", True, 1000),
+        ("URBAN", "BROADBAND_HFC", True, 1000),
+        ("URBAN", "BROADBAND_PON", True, 1000),
+        ("URBAN", "MPLS", True, 1000),
+        ("URBAN", "MOBILE_5G", True, 300),
+
+        # Dedicated access thins out first, and at a lower tier.
+        ("SUBURBAN", "DIA", True, 500),
+        ("SUBURBAN", "ETHERNET", True, 500),
+        ("SUBURBAN", "BROADBAND_HFC", True, 500),
+        ("SUBURBAN", "BROADBAND_PON", True, 300),
+        ("SUBURBAN", "MPLS", True, 200),
+        ("SUBURBAN", "MOBILE_5G", True, 200),
+
+        # Rural is where a retail estate's assumptions break. Dedicated fibre
+        # is often a build rather than a service, so it is marked unavailable
+        # rather than expensive: an estimate that prices a circuit nobody can
+        # deliver is worse than one that reports it cannot be delivered.
+        ("RURAL", "DIA", False, None),
+        ("RURAL", "ETHERNET", False, None),
+        ("RURAL", "BROADBAND_HFC", True, 200),
+        ("RURAL", "BROADBAND_PON", True, 100),
+        ("RURAL", "MPLS", False, None),
+        ("RURAL", "MOBILE_5G", True, 100),
+    )
+]
+
 # Which region each country clusters into. Only the countries this build seeds
 # prices for, plus the ones the illustrative footprint uses - a mapping is
 # useless without prices behind the products it implies, and an unmapped
@@ -466,6 +532,12 @@ def _rows():
         (threshold, lambda: [
             {"set_name": a, "key": b, "value": c, "version": 1,
              "approved_by": "seed", "note": "MVP default"} for a, b, c in THRESHOLDS]),
+        (serviceability, lambda: [
+            {"id": f"{c}-{b}-{p}", "country": c, "density_band": b,
+             "product": p, "available": a, "max_bandwidth_mbps": m,
+             "approved_by": "seed",
+             "note": "seed default; retune per engagement"}
+            for c, b, p, a, m in SERVICEABILITY]),
         (country_region, lambda: [
             {"country": c, "region": r, "note": "seed default"}
             for c, r in COUNTRY_REGION]),

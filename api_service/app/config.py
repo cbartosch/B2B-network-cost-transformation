@@ -87,5 +87,9 @@ LLM_SEARCH_TIMEOUT_SECONDS = float(
 # now belongs to a row that says whether the site is one somebody named or one
 # the pass generated to make the count up - so the output carries an estate,
 # and the same seed and footprint produce a different hash than 1.3.0 did.
-SIMULATION_MODEL_VERSION = "sim-1.4.0"
+# 1.5.0: a footprint row may name a density band, and what the site type asks
+# for is resolved against what can be delivered there. A rural store takes a
+# different circuit from an urban one of the same format, so the same seed and
+# footprint produce a different hash than 1.4.0 did wherever a band is set.
+SIMULATION_MODEL_VERSION = "sim-1.5.0"
 CALCULATION_VERSION = "calc-1.0.0"

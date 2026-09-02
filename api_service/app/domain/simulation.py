@@ -13,6 +13,8 @@ import json
 import random
 from statistics import median
 
+from . import serviceability
+
 DIVERSITY_STATE = "SIMULATED"          # 0.3B may never emit any other value
 
 
@@ -34,7 +36,8 @@ MAX_ESTATE_ROWS = 5000
 
 def one_pass(seed: int, footprint: list[dict], archetypes: dict,
              backbone: dict | None = None,
-             known_locations: list[dict] | None = None) -> dict:
+             known_locations: list[dict] | None = None,
+             service_table: dict | None = None) -> dict:
     """One synthetic estate, as a list of sites.
 
     The estate is materialised site by site rather than counted: every circuit
@@ -68,6 +71,9 @@ def one_pass(seed: int, footprint: list[dict], archetypes: dict,
     # The estate itself. Bounded for storage further down, but built whole so
     # the aggregates are computed from it rather than beside it.
     site_rows: list[dict] = []
+    # Sites nothing can serve, and what each cluster actually got.
+    unserviceable: list[dict] = []
+    service_outcomes: list[dict] = []
     by_kind: dict[tuple, list] = {}
     for loc in known_locations or []:
         key = (str(loc.get("country") or "").upper(),
@@ -91,6 +97,25 @@ def one_pass(seed: int, footprint: list[dict], archetypes: dict,
         kind = (entry["country"], entry["archetype"])
         named_here = list(by_kind.get(kind, ()))
 
+        # What this cluster can actually be given, against what its type asks
+        # for. A density band is optional: without one the row is unclustered
+        # and priced exactly as before, because silence is not a constraint.
+        density = (entry.get("density") or "").upper() or None
+        served = serviceability.resolve(
+            table=service_table or {}, country=entry["country"],
+            density=density, product=primary_product, wanted_mbps=bw_base)
+        if served["outcome"] == serviceability.UNSERVICEABLE:
+            # Reported, not priced. An estimate that prices a circuit nobody
+            # can deliver reads as a number; this reads as a question.
+            unserviceable.append({
+                "country": entry["country"], "archetype": entry["archetype"],
+                "density": density, "sites": int(entry["sites"]),
+                "asked_for": served["asked_for"], "reason": served["note"]})
+            continue
+        primary_product = served["product"]
+        bw_base = int(served["bandwidth_mbps"])
+        service_outcomes.extend([served] * int(entry["sites"]))
+
         for i in range(int(entry["sites"])):
             node_id = f"{entry['country']}-{entry['archetype']}-{i:04d}"
             # The named ones first, then generated rows to make the count up.
@@ -112,7 +137,10 @@ def one_pass(seed: int, footprint: list[dict], archetypes: dict,
                 "location_id": (known or {}).get("location_id"),
                 "users": users_base,
                 "bandwidth_mbps": bw_base,
+                "density": density,
                 "primary_product": primary_product,
+                "service_outcome": served["outcome"],
+                "asked_for": served["asked_for"],
                 "backup_product": None,
             })
             # Only a bounded display sample is materialised. An earlier revision
@@ -159,9 +187,10 @@ def one_pass(seed: int, footprint: list[dict], archetypes: dict,
     # thing the estimate is built on, so it has to be the thing that is
     # counted.
     sites = len(site_rows)
-    assert sites == sum(int(e["sites"]) for e in footprint), (
-        "the materialised estate must have exactly as many sites as the "
-        "footprint says")
+    dropped = sum(int(r["sites"]) for r in unserviceable)
+    assert sites + dropped == sum(int(e["sites"]) for e in footprint), (
+        "every site in the footprint must be either in the estate or reported "
+        "as unserviceable - a site that is neither has been lost silently")
     circuits = primary + backup
     named = sum(1 for r in site_rows if r["known"])
     return {"sites": sites, "circuits": circuits,
@@ -169,6 +198,11 @@ def one_pass(seed: int, footprint: list[dict], archetypes: dict,
             # ensemble runs many, so only the sample is carried here - the
             # median pass keeps the whole list, which is the one a reader
             # examines and the one the estimate is built from.
+            # What the estate's density said about it: which clusters take a
+            # different circuit from the one their type asks for, and which can
+            # be served by nothing.
+            "serviceability": serviceability.summarise(service_outcomes),
+            "unserviceable": unserviceable,
             "site_sample": site_rows[:SAMPLE_NODES],
             # The whole estate, for the one pass that keeps it. Carrying this
             # on every pass would be O(ensemble x sites); carrying it on none
@@ -210,7 +244,8 @@ def summarise_pass(result: dict, index: int) -> dict:
 def aggregate(summaries: list[dict], *, seed: int, ensemble_size: int,
               footprint: list[dict], archetypes: dict, model_version: str,
               backbone: dict | None = None,
-              known_locations: list[dict] | None = None) -> dict:
+              known_locations: list[dict] | None = None,
+              service_table: dict | None = None) -> dict:
     """Build the ensemble payload from per-pass summaries.
 
     Deliberately a pure function of the summaries, so a run assembled from a
@@ -232,7 +267,8 @@ def aggregate(summaries: list[dict], *, seed: int, ensemble_size: int,
     # Re-run the one pass the sample comes from. Same seed, same output.
     median_pass = one_pass(seed + median_summary["index"], footprint,
                            archetypes, backbone=backbone,
-                           known_locations=known_locations)
+                           known_locations=known_locations,
+                           service_table=service_table)
 
     def pct(values, q):
         if not values:
@@ -248,6 +284,8 @@ def aggregate(summaries: list[dict], *, seed: int, ensemble_size: int,
         # The estate the estimate is built on, whole. Every circuit priced
         # downstream belongs to a row here, and every row says whether it is a
         # site somebody named or one this pass generated to make the count up.
+        "serviceability": median_pass["serviceability"],
+        "unserviceable": median_pass["unserviceable"],
         "estate": median_pass["estate_full"][:MAX_ESTATE_ROWS],
         "estate_truncated": max(
             0, len(median_pass["estate_full"]) - MAX_ESTATE_ROWS),
@@ -277,17 +315,20 @@ def aggregate(summaries: list[dict], *, seed: int, ensemble_size: int,
 def run_ensemble(*, seed: int, ensemble_size: int, footprint: list[dict],
                  archetypes: dict, model_version: str,
                  backbone: dict | None = None,
-              known_locations: list[dict] | None = None) -> dict:
+              known_locations: list[dict] | None = None,
+              service_table: dict | None = None) -> dict:
     """Convenience wrapper: run every pass, then aggregate. The job runner drives
     the two halves separately so it can checkpoint, cancel and resume."""
     summaries = [summarise_pass(
         one_pass(seed + i, footprint, archetypes, backbone=backbone,
-                 known_locations=known_locations), i)
+                 known_locations=known_locations,
+                 service_table=service_table), i)
                  for i in range(ensemble_size)]
     return aggregate(summaries, seed=seed, ensemble_size=ensemble_size,
                      footprint=footprint, archetypes=archetypes,
                      model_version=model_version, backbone=backbone,
-                     known_locations=known_locations)
+                     known_locations=known_locations,
+                     service_table=service_table)
 
 
 def output_hash(payload: dict) -> str:

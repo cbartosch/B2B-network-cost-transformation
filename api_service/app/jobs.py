@@ -112,6 +112,16 @@ def run_job(run_id: str, session=None) -> dict:
         # database: a location added mid-run must not change the estate a
         # resumed pass rebuilds.
         known_locations = (row.params or {}).get("known_locations") or []
+        # Rebuilt from the run's own parameters, not the database: a steward
+        # retuning serviceability mid-run must not change an estate already
+        # half generated.
+        import types as _types
+        service_table = {
+            (r["country"], r["density_band"], r["product"]):
+                _types.SimpleNamespace(
+                    available=r.get("available", True),
+                    max_bandwidth_mbps=r.get("max_bandwidth_mbps"))
+            for r in ((row.params or {}).get("serviceability") or [])}
         total = row.progress_total or row.ensemble_size
 
         # Resume from the checkpoint. Replaying an earlier index would be safe
@@ -136,7 +146,8 @@ def run_job(run_id: str, session=None) -> dict:
             summaries.append(simulation.summarise_pass(
                 simulation.one_pass(row.seed + i, footprint, archetypes,
                                     backbone=backbone,
-                                    known_locations=known_locations), i))
+                                    known_locations=known_locations,
+                                    service_table=service_table), i))
 
             if len(summaries) % config.SIM_CHECKPOINT_EVERY == 0:
                 _set(s, run_id, partial={"summaries": summaries},
@@ -145,7 +156,8 @@ def run_job(run_id: str, session=None) -> dict:
         output = simulation.aggregate(
             summaries, seed=row.seed, ensemble_size=total, footprint=footprint,
             archetypes=archetypes, model_version=row.model_version,
-            backbone=backbone, known_locations=known_locations)
+            backbone=backbone, known_locations=known_locations,
+            service_table=service_table)
         # cancel_requested is cleared here, not left standing. A cancel that
         # arrives after the last pass is too late to act on - completing is
         # correct - but a row that reads SUCCEEDED *and* cancel_requested is a

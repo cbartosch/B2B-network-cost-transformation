@@ -12,6 +12,7 @@ from .. import config, db, jobs, migrations
 from ..domain import (anchor_estimate, archetype as archetype_resolver,
                       benchmark_ingest, case_admin, estimate_qa,
                       locations as location_svc,
+                      serviceability as service_svc,
                       topology as topology_planner,
                       refinement,
                       case_export,
@@ -836,6 +837,11 @@ class FootprintRow(BaseModel):
     country: str = Field(min_length=2, max_length=2)
     archetype: str = Field(min_length=1, max_length=48)
     sites: int = Field(ge=0, le=config.MAX_SIM_SITES)
+    # Optional. Without it the row is unclustered and prices exactly as it did
+    # before serviceability existed - silence is not a constraint. With it, the
+    # row states where its sites are, and what can be delivered there is
+    # resolved against what the site type asks for.
+    density: str | None = None
 
 
 class SimIn(BaseModel):
@@ -937,6 +943,12 @@ def run_simulation(case_id: str, payload: SimIn):
                 db.location.c.suspected_duplicate_of.is_(None))
             .order_by(db.location.c.country, db.location.c.city)).all()]
 
+        # What can be delivered in each density band of each in-scope country.
+        # Only those countries: a table for markets the case does not touch is
+        # weight the run carries and never reads.
+        service_table = service_svc.load(
+            s, countries=list(case_row.in_scope_countries or []))
+
         backbone = topology_planner.plan(
             [r.model_dump() for r in payload.footprint],
             regions=_regions, template=_template)
@@ -975,12 +987,21 @@ def run_simulation(case_id: str, payload: SimIn):
         except policy.PolicyIncomplete as exc:
             raise HTTPException(409, {"error": "governed policy unusable",
                                       "detail": str(exc)})
-        coarse = [r for r in footprint
-                  if int(r["sites"]) > fp_policy.max_sites_per_archetype_row]
+        # The limit follows how much the row says about its sites. A row with
+        # a density band is a cluster - same country, same type, same
+        # deliverable access - and claims far less than a row that asserts a
+        # whole country's estate is alike.
+        def _limit(row):
+            return (fp_policy.max_sites_per_cluster_row if row.get("density")
+                    else fp_policy.max_sites_per_archetype_row)
+
+        coarse = [r for r in footprint if int(r["sites"]) > _limit(r)]
         if coarse:
             raise HTTPException(422, {
                 "error": "a single archetype row carries too many sites",
-                "limit": fp_policy.max_sites_per_archetype_row,
+                "limit": {r["country"] + "/" + r["archetype"]
+                          + ("/" + r["density"] if r.get("density") else ""):
+                          _limit(r) for r in coarse},
                 "rows": [{"country": r["country"], "archetype": r["archetype"],
                           "sites": r["sites"]} for r in coarse],
                 "detail": (
@@ -1430,11 +1451,15 @@ def resolve_footprint(case_id: str):
         # value got an interface that disagreed with the API about what would
         # be accepted.
         try:
-            resolved["max_sites_per_archetype_row"] = policy.FootprintPolicy \
-                .from_rows(_thresholds(s, "footprint_policy")) \
-                .max_sites_per_archetype_row
+            _fp_policy = policy.FootprintPolicy.from_rows(
+                _thresholds(s, "footprint_policy"))
+            resolved["max_sites_per_archetype_row"] = \
+                _fp_policy.max_sites_per_archetype_row
+            resolved["max_sites_per_cluster_row"] = \
+                _fp_policy.max_sites_per_cluster_row
         except policy.PolicyIncomplete:
             resolved["max_sites_per_archetype_row"] = None
+            resolved["max_sites_per_cluster_row"] = None
         return resolved
 
 

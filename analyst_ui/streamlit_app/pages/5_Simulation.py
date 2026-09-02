@@ -277,10 +277,12 @@ else:
 
 st.caption("Whatever is in the table below is what runs. Edit it, then Save or "
            "Run - both persist it to the case.")
+DENSITY_BANDS = ["", "DENSE_URBAN", "URBAN", "SUBURBAN", "RURAL"]
 default = pd.DataFrame(
     [{"country": r.get("country"), "archetype": r.get("archetype"),
-      "sites": r.get("sites")} for r in _resolved]
-    or [{"country": "", "archetype": "", "sites": 0}])
+      "density": r.get("density") or "", "sites": r.get("sites")}
+     for r in _resolved]
+    or [{"country": "", "archetype": "", "density": "", "sites": 0}])
 
 fp = st.data_editor(default, num_rows="dynamic", use_container_width=True, key="sim_fp")
 
@@ -345,7 +347,17 @@ def _clean_footprint(frame):
         if sites < 0:
             problems.append(f"row {i}: sites cannot be negative")
             continue
-        rows.append({"country": country, "archetype": archetype, "sites": sites})
+        # Density is optional and validated when present: a misspelled band
+        # would silently make the row unclustered, which prices as though
+        # nothing was known about where the sites are.
+        density = _text(raw.get("density"))
+        if density and density not in DENSITY_BANDS:
+            problems.append(
+                f"row {i}: density {density!r} is not one of "
+                f"{', '.join(b for b in DENSITY_BANDS if b)}")
+            continue
+        rows.append({"country": country, "archetype": archetype,
+                     "sites": sites, "density": density or None})
     return rows, problems
 
 
@@ -355,8 +367,13 @@ _edited, _edit_problems = _clean_footprint(fp)
 # Read from the resolver rather than restated here. A literal copy of a
 # governed threshold means a steward who retunes it gets an interface that
 # disagrees with the API about what will be accepted.
+# The limit follows how much the row says. A row with a density band is a real
+# cluster - same country, same type, same deliverable access - and claims far
+# less than one asserting a whole country's estate is alike.
 _ROW_LIMIT = (_fp or {}).get("max_sites_per_archetype_row") or 100
-_coarse = [r for r in _edited if r["sites"] > _ROW_LIMIT]
+_CLUSTER_LIMIT = (_fp or {}).get("max_sites_per_cluster_row") or 2000
+_coarse = [r for r in _edited
+           if r["sites"] > (_CLUSTER_LIMIT if r.get("density") else _ROW_LIMIT)]
 if _coarse:
     st.error(
         "**These rows carry too many sites to be one row:** "
@@ -526,6 +543,25 @@ if sim:
             [{"site type": a, "bandwidth (Mbps)": b}
              for a, b in (_basis.get("by_archetype") or {}).items()]),
             use_container_width=True, hide_index=True)
+
+    # What the density bands said about the estate. A uniform estate is an
+    # assumption, and this is the first thing that tests it.
+    _svc = o.get("serviceability") or {}
+    _unserv = o.get("unserviceable") or []
+    if _svc.get("counts"):
+        _c = _svc["counts"]
+        st.markdown("**What can actually be delivered**")
+        (st.success if not _c.get("SUBSTITUTED") and not _unserv
+         else st.warning)(_svc.get("note", ""))
+        if _svc.get("substitutions"):
+            st.dataframe(pd.DataFrame(_svc["substitutions"]),
+                         use_container_width=True, hide_index=True)
+        for _u in _unserv:
+            st.error(
+                f"**{_u['sites']:,} site(s) in {_u['density']} {_u['country']} "
+                f"cannot be served at all.** {_u['reason']} They are not in the "
+                f"estate and not priced - decide whether the density band is "
+                f"wrong, or whether these sites need a different site type.")
 
     # The estate the estimate is built on, site by site. Every circuit priced
     # downstream belongs to a row here, and every row says whether the site is

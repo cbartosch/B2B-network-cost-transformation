@@ -551,6 +551,37 @@ research_brief = Table(
 # belong together is a design decision that varies by client - a European
 # bank's regions are not a logistics group's - and a hardcoded list would be a
 # modelling assumption nobody could see or change.
+# What can actually be delivered where.
+#
+# The archetype says what a site needs - a branch wants DIA at 100 Mbps. It
+# does not say whether anyone can deliver that at the site's address, and for a
+# large retail estate that is the single biggest cost differentiator: a
+# discounter in Munich has fibre or DOCSIS, the same format in the Eifel may
+# have only DSL or need fixed wireless. Same archetype, same country, same
+# format, materially different circuit.
+#
+# Domain 18 researches this and nothing consumed the result, so a 4,000-store
+# estate was priced as though every store could take the same product.
+#
+# Keyed by density band because that is derivable without a survey. It is a
+# proxy for serviceability rather than the thing itself, and a researched fact
+# about a specific area replaces it - the same layering as the archetype
+# resolver.
+serviceability = Table(
+    "serviceability", metadata,
+    Column("id", String(80), primary_key=True),   # {country}-{density}-{product}
+    Column("country", String(2), index=True),
+    Column("density_band", String(16), index=True),
+    Column("product", String(32)),
+    Column("available", Boolean, default=True),
+    # The most a site in this band can actually take, which is often below
+    # what the archetype asks for.
+    Column("max_bandwidth_mbps", Integer),
+    Column("note", Text),
+    Column("approved_by", String(120)),
+    schema="reference",
+)
+
 country_region = Table(
     "country_region", metadata,
     Column("country", String(2), primary_key=True),

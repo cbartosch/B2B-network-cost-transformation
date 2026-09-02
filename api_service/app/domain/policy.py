@@ -549,16 +549,28 @@ class FootprintPolicy:
     falsehood is priced."""
     set_name: str
     max_sites_per_archetype_row: int
+    # A row that names a density band is a real cluster rather than an
+    # assertion that a whole country's sites are alike, so it earns a looser
+    # bound.
+    max_sites_per_cluster_row: int = 2000
 
     @classmethod
     def from_rows(cls, rows: dict, set_name: str = "footprint_policy"):
         policy = cls(set_name=set_name,
                      max_sites_per_archetype_row=int(_require(
-                         rows, "max_sites_per_archetype_row", set_name)))
+                         rows, "max_sites_per_archetype_row", set_name)),
+                     max_sites_per_cluster_row=int(_require(
+                         rows, "max_sites_per_cluster_row", set_name)))
         policy.validate()
         return policy
 
     def validate(self) -> None:
+        if self.max_sites_per_cluster_row < self.max_sites_per_archetype_row:
+            raise PolicyInvalid(
+                "max_sites_per_cluster_row must be at least "
+                "max_sites_per_archetype_row: a row that says more about its "
+                "sites cannot be held to a tighter bound than one that says "
+                "less")
         if self.max_sites_per_archetype_row < 1:
             raise PolicyInvalid("max_sites_per_archetype_row must be at least 1")
 
