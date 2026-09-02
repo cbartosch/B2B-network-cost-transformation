@@ -136,3 +136,45 @@ def test_every_deliverable_product_is_one_the_model_prices():
     priced = {p for _c, p, _l, _bw, *_ in PRIORS}
     named = {p for _c, _b, p, a, _m in SERVICEABILITY if a}
     assert named <= priced, f"deliverable but unpriced: {sorted(named - priced)}"
+
+
+# --------------------------- absence of data is not evidence of absence
+def test_an_empty_table_prices_as_asked_rather_than_refusing_everything():
+    """The live failure: "10 site(s) in URBAN DE cannot be served at all",
+    which is impossible - every product is deliverable there in the seed.
+
+    The table arrived empty, every lookup missed, and the fallback loop found
+    nothing available. Absence of data was read as evidence of absence, which
+    is the error this module exists to avoid making in the other direction."""
+    out = serviceability.resolve(table={}, country="DE", density="URBAN",
+                                 product="DIA", wanted_mbps=100)
+    assert out["outcome"] == serviceability.DELIVERED
+    assert out["product"] == "DIA" and out["bandwidth_mbps"] == 100
+    assert "nothing is known" in out["note"]
+
+
+def test_a_band_missing_from_a_populated_table_is_also_nothing_known():
+    """A table with rows for RURAL says nothing about URBAN."""
+    table = {("DE", "RURAL", "DIA"): types.SimpleNamespace(
+        available=True, max_bandwidth_mbps=100)}
+    out = serviceability.resolve(table=table, country="DE", density="URBAN",
+                                 product="DIA", wanted_mbps=100)
+    assert out["outcome"] == serviceability.DELIVERED
+
+
+def test_only_a_recorded_band_with_nothing_available_is_unserviceable():
+    """The distinction that makes the constraint meaningful: a band somebody
+    surveyed and found nothing in, versus a band nobody has looked at."""
+    table = {("DE", "URBAN", p): types.SimpleNamespace(
+        available=False, max_bandwidth_mbps=None)
+        for p in serviceability.FALLBACK_ORDER}
+    out = serviceability.resolve(table=table, country="DE", density="URBAN",
+                                 product="DIA", wanted_mbps=100)
+    assert out["outcome"] == serviceability.UNSERVICEABLE
+
+
+def test_the_seeded_table_serves_an_urban_german_store(table):
+    """A regression guard on the exact case that failed."""
+    out = serviceability.resolve(table=table, country="DE", density="URBAN",
+                                 product="BROADBAND_HFC", wanted_mbps=200)
+    assert out["outcome"] == serviceability.DELIVERED

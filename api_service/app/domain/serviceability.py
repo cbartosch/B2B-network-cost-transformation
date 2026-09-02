@@ -69,6 +69,23 @@ def resolve(*, table: dict, country: str, density: str | None,
                         "about what can be delivered - priced as asked."}
 
     key = (country.upper(), density.upper())
+
+    # Nothing known about this country and band at all. Same rule as a missing
+    # density band: silence is not a constraint.
+    #
+    # This reported "10 sites in URBAN DE cannot be served at all" - impossible,
+    # since every product is deliverable there in the seed - because an empty
+    # table made every lookup miss and the fallback loop then found nothing
+    # available. Absence of data was being read as evidence of absence, which is
+    # the error this module exists to avoid making in the other direction.
+    if not any(k[0] == key[0] and k[1] == key[1] for k in table):
+        return {"product": product, "bandwidth_mbps": wanted_mbps,
+                "outcome": DELIVERED, "asked_for": product,
+                "note": (f"no serviceability recorded for {density} "
+                         f"{country}, so nothing is known about what can be "
+                         f"delivered - priced as asked. Seed or retune "
+                         f"reference.serviceability to constrain it.")}
+
     asked = table.get((*key, product))
 
     if asked is not None and asked.available:

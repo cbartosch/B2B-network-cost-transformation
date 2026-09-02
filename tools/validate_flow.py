@@ -256,8 +256,29 @@ def unbound_names() -> list[str]:
     return problems
 
 
+def pinned_run_params() -> list[str]:
+    """Everything the job runner reads from a run's params must be pinned.
+
+    The runner rebuilds a resumed pass from `params`, so a key it reads and the
+    endpoint never writes is silently absent - and absent is not the same as
+    empty for anything with a fallback. Pinning serviceability was written once
+    and the replacement did not match, so the runner rebuilt an empty table and
+    every site in the estate came back unserviceable: "10 sites in URBAN DE
+    cannot be served at all", which is impossible.
+    """
+    api = _read("routers", "api.py")
+    jobs = _read("jobs.py")
+    start = api.index('params={"footprint"')
+    block = api[start:api.index("status=jobs.QUEUED", start)]
+    pinned = set(re.findall(r'"(\w+)":', block))
+    read = set(re.findall(r'row\.params or \{\}\)\.get\("(\w+)"\)', jobs))
+    return [f"the runner reads params[{k!r}] and the endpoint never pins it"
+            for k in sorted(read - pinned)]
+
+
 CHECKS = [
     ("every name a module uses is bound", unbound_names),
+    ("every run param the runner reads is pinned", pinned_run_params),
     ("tables written and read", table_flow),
     ("classifier targets reach a bucket, a branch and the interface",
      classifier_targets),

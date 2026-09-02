@@ -1035,7 +1035,21 @@ def run_simulation(case_id: str, payload: SimIn):
             # sites decide which rows are known, and a run that resumed
             # without them would generate different rows for the same seed.
             params={"footprint": footprint, "backbone": backbone,
-                    "known_locations": known_locations},
+                    "known_locations": known_locations,
+                    # Pinned as plain rows. The runner rebuilds the table from
+                    # these, so a steward retuning serviceability mid-run does
+                    # not change an estate already half generated.
+                    #
+                    # This was written once and the replacement did not match,
+                    # so the key was absent, the runner rebuilt an empty table,
+                    # and every site in the estate came back unserviceable -
+                    # "10 sites in URBAN DE cannot be served at all", which is
+                    # impossible.
+                    "serviceability": [
+                        {"country": k[0], "density_band": k[1], "product": k[2],
+                         "available": bool(v.available),
+                         "max_bandwidth_mbps": v.max_bandwidth_mbps}
+                        for k, v in service_table.items()]},
             pinned_priors={"archetype_prior": arch,
                            "bandwidth_basis": bandwidth_basis,
                            "topology_basis": topology_basis,
