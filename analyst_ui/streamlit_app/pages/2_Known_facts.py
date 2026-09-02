@@ -112,7 +112,12 @@ elif _pf:
                     "already registered",
                     help="Shown so you can see whether public sources agree "
                          "with what is already there."),
-            }, key="pf_editor")
+            },
+            # The key follows the data, or a second sweep renders the first
+            # one's proposals: a keyed data_editor ignores its `data` argument
+            # on every run after the first.
+            key="pf_editor_" + hashlib.sha256(
+                _df.to_json(orient="records").encode()).hexdigest()[:12])
 
         with st.expander("Sources behind these proposals"):
             for prop in _props:
