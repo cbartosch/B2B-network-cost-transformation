@@ -406,6 +406,27 @@ def structured_call(session, *, agent_run_id: str, prompt_id: str,
                     [f"failed the registered schema "
                      f"{definition.output_schema_version}: {str(exc)[:300]}"])
 
+        # A reply cut off at the token limit is incomplete, not empty - and
+        # the two are indistinguishable downstream. The sweep failed three
+        # times reporting "said nothing at all" for a task that simply did not
+        # fit its budget, and seven of ten call sites could not have told the
+        # difference either.
+        #
+        # Handled here rather than at each call site: research and the
+        # benchmark ingest each grew their own check, and the five that did not
+        # were the ones that needed it. Truncation is never a valid result for
+        # a schema-enforced call, so the gateway is the place to say so.
+        if call.get("stop_reason") == "max_tokens":
+            _fail(session, agent_run_id,
+                  f"{definition.prompt_id} reply truncated at "
+                  f"{max_tokens} tokens")
+            raise errors.StructuredOutputInvalid(
+                f"{definition.prompt_id} was cut off at {max_tokens} tokens, "
+                f"so its reply is incomplete rather than empty. Raise the "
+                f"budget for this call, or ask it for less at a time - "
+                f"retrying an identical request will be cut off in the same "
+                f"place.")
+
         # A reply that validated against the schema is worth keeping even when
         # a gate refused it: schema-valid means readable, and the gates judge
         # sufficiency rather than legibility.

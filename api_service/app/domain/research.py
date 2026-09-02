@@ -1062,15 +1062,11 @@ def _research_one_domain(session, *, case_row, domain_no: int, domain_name: str,
                 max_attempts=quality_attempts)
             call = provenance
             parsed = extracted.model_dump()
-            if call.get("stop_reason") == "max_tokens":
-                # Cut off mid-answer. Parsing it would raise
-                # StructuredOutputInvalid and blame the model for bad JSON,
-                # when the JSON was fine and we stopped listening.
-                raise errors.StructuredOutputInvalid(
-                    f"the reply was truncated at the output-token limit "
-                    f"({research_policy.max_output_tokens_per_call}), so the "
-                    f"JSON is incomplete. Raise "
-                    f"research_budget_profile.max_output_tokens_per_call.")
+            # Truncation is caught in structured_call now: it raises
+            # before returning, so this could never fire. Research and
+            # the benchmark ingest each grew their own check and the
+            # other seven call sites had none - which is why the sweep
+            # reported an empty answer for a reply that was cut off.
             observed_urls = _extract_observed_urls(
                 provenance.get("content_blocks"))
         except (errors.ProviderUnavailable, errors.LivenessProofFailed,

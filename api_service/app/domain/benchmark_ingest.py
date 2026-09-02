@@ -85,11 +85,11 @@ def extract(session, *, text: str, source_document: str,
             prompt=_prompt(text, {"source": source_document, "org": source_org,
                                   "as_of": as_of}),
             provider=provider, max_tokens=max_tokens)
-        if call.get("stop_reason") == "max_tokens":
-            raise errors.StructuredOutputInvalid(
-                f"the reply was truncated at {max_tokens} output tokens, so "
-                f"the observation list is incomplete. Split the source or "
-                f"raise max_tokens.")
+        # Truncation is caught in structured_call now: it raises
+        # before returning, so this could never fire. Research and
+        # the benchmark ingest each grew their own check and the
+        # other seven call sites had none - which is why the sweep
+        # reported an empty answer for a reply that was cut off.
         parsed = result.model_dump()
     except (errors.ProviderUnavailable, errors.LivenessProofFailed,
             errors.StructuredOutputInvalid, errors.ModeNotPermitted) as exc:

@@ -226,3 +226,55 @@ def test_an_out_of_perimeter_finding_is_retained_not_discarded():
     assert "add it" in block and "alias" in block, (
         "the remedy has to be named where the finding is lost")
     assert 'reason="OUT_OF_PERIMETER"' in block
+
+
+def test_truncation_is_never_reported_as_an_empty_answer():
+    """A reply cut off at the token limit is incomplete, not empty, and the two
+    are indistinguishable downstream.
+
+    The public-fact sweep answers for five classes with figures, units and
+    sources - the largest reply in the build - and was taking
+    structured_call's 4,000-token default while research allows itself 8,000
+    for a single domain. So it was truncated, arrived as an empty object, and
+    the coverage gate reported "said nothing at all" three times for a task
+    that simply did not fit.
+
+    Handled in the gateway rather than per call site: research and the
+    benchmark ingest had each grown their own check, and the seven that had
+    none were the ones that needed it.
+    """
+    import inspect
+
+    from app.llm import gateway
+
+    src = inspect.getsource(gateway.structured_call)
+    assert 'stop_reason") == "max_tokens"' in src
+    truncation = src.index('stop_reason") == "max_tokens"')
+    assert "StructuredOutputInvalid" in src[truncation:truncation + 900]
+    # and before the reply is kept as a salvageable best attempt
+    assert truncation < src.index("best_payload, best_result")
+
+
+def test_no_call_site_keeps_its_own_truncation_check():
+    """One rule in one place. Three copies of a rule is three chances for one
+    of them to drift, and the copies were the ones that existed."""
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1]
+    app = next(c for c in (root / "api_service" / "app", root / "app")
+               if (c / "llm").exists())
+    offenders = [p.name for p in (app / "domain").glob("*.py")
+                 if 'stop_reason") ==' in p.read_text()]
+    assert not offenders, offenders
+
+
+def test_the_sweep_has_a_budget_matching_its_task():
+    """Five classes with sources is the biggest reply here, and it was taking
+    the smallest default."""
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1]
+    app = next(c for c in (root / "api_service" / "app", root / "app")
+               if (c / "domain").exists())
+    src = (app / "domain" / "known_facts.py").read_text()
+    assert "max_tokens=8000" in src

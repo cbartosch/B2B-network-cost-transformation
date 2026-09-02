@@ -728,6 +728,17 @@ def prefill_from_public(session, *, case_id: str, fact_classes=None,
             prompt_id="known_fact.prefill_public",
             gate_context={"fact_classes": list(wanted)}, prompt=prompt,
             provider=provider,
+            # The sweep answers for five classes, each with a figure, a unit
+            # and its sources - a bigger reply than any other call here, and
+            # it was taking structured_call's 4,000-token default while
+            # research allows itself 8,000 for one domain.
+            #
+            # A reply cut off mid-answer arrives as an empty object, which is
+            # indistinguishable from a model that found nothing - so the gate
+            # reported "nothing found, nothing listed as not found, and no
+            # abstention" three times for a task that was simply too big for
+            # the budget.
+            max_tokens=8000,
             tools=[{"type": "web_search_20250305", "name": "web_search",
                     "max_uses": 8}])
     except errors.StructuredOutputInvalid as exc:
