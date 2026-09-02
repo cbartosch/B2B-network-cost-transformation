@@ -13,6 +13,7 @@ DOMAIN_AGENT_MAP_SEED = {
     21: 'LLM-08', 22: 'LLM-08',
 }
 from .db import (SessionLocal, archetype_bandwidth, archetype_prior,
+                 density_mix,
                  serviceability,
                  country_region, topology_template, lever, platform_unit_cost,
                  research_brief,
@@ -347,6 +348,65 @@ PRIORS = [
     ("AE", "MOBILE_5G", "L0", 50, 55, 95, 160),
 ]
 
+# How an estate of a given kind typically distributes. Shares of the whole
+# estate, so each industry's rows sum to 1.
+#
+# These are starting positions, not findings. A discount grocer is overwhelm-
+# ingly stores with a handful of regional distribution centres; a bank is
+# branches with more office weight; a distributor sits between the two with far
+# more warehouse. Getting the shape roughly right beats an empty table, and
+# getting it exactly right is what the named locations and domain 2 are for.
+DENSITY_MIX = [
+    # --- retail: many small customer-facing sites, few of anything else
+    ("RETAIL", "STORE", "DENSE_URBAN", "0.1000"),
+    ("RETAIL", "STORE", "URBAN", "0.4000"),
+    ("RETAIL", "STORE", "SUBURBAN", "0.3200"),
+    ("RETAIL", "STORE", "RURAL", "0.1400"),
+    ("RETAIL", "WAREHOUSE", "SUBURBAN", "0.0250"),
+    ("RETAIL", "LARGE_OFFICE", "URBAN", "0.0100"),
+    ("RETAIL", "DC", "URBAN", "0.0050"),
+
+    # --- distribution and wholesale: trade counters plus real warehousing
+    ("DISTRIBUTION", "STORE", "URBAN", "0.3000"),
+    ("DISTRIBUTION", "STORE", "SUBURBAN", "0.3000"),
+    ("DISTRIBUTION", "STORE", "RURAL", "0.1200"),
+    ("DISTRIBUTION", "WAREHOUSE", "SUBURBAN", "0.1800"),
+    ("DISTRIBUTION", "WAREHOUSE", "RURAL", "0.0600"),
+    ("DISTRIBUTION", "LARGE_OFFICE", "URBAN", "0.0300"),
+    ("DISTRIBUTION", "DC", "URBAN", "0.0100"),
+
+    # --- banking: branches concentrate where people are, with office weight
+    ("FINANCIAL_SERVICES", "STORE", "DENSE_URBAN", "0.2000"),
+    ("FINANCIAL_SERVICES", "STORE", "URBAN", "0.4500"),
+    ("FINANCIAL_SERVICES", "STORE", "SUBURBAN", "0.2300"),
+    ("FINANCIAL_SERVICES", "STORE", "RURAL", "0.0500"),
+    ("FINANCIAL_SERVICES", "LARGE_OFFICE", "DENSE_URBAN", "0.0400"),
+    ("FINANCIAL_SERVICES", "DC", "URBAN", "0.0300"),
+
+    # --- logistics: depots dominate and sit where land is cheap
+    ("LOGISTICS", "WAREHOUSE", "SUBURBAN", "0.4500"),
+    ("LOGISTICS", "WAREHOUSE", "RURAL", "0.2500"),
+    ("LOGISTICS", "STORE", "URBAN", "0.2000"),
+    ("LOGISTICS", "LARGE_OFFICE", "URBAN", "0.0700"),
+    ("LOGISTICS", "DC", "URBAN", "0.0300"),
+
+    # --- manufacturing: plants, not outlets
+    ("MANUFACTURING", "WAREHOUSE", "SUBURBAN", "0.4000"),
+    ("MANUFACTURING", "WAREHOUSE", "RURAL", "0.3000"),
+    ("MANUFACTURING", "LARGE_OFFICE", "URBAN", "0.2000"),
+    ("MANUFACTURING", "STORE", "URBAN", "0.0700"),
+    ("MANUFACTURING", "DC", "URBAN", "0.0300"),
+
+    # --- the fallback for a sector with no row of its own. Deliberately
+    # office-and-branch shaped rather than retail-shaped: an unknown industry
+    # is more likely a general enterprise than a grocer.
+    ("DEFAULT", "BRANCH", "URBAN", "0.4000"),
+    ("DEFAULT", "BRANCH", "SUBURBAN", "0.2500"),
+    ("DEFAULT", "LARGE_OFFICE", "URBAN", "0.1500"),
+    ("DEFAULT", "WAREHOUSE", "SUBURBAN", "0.1500"),
+    ("DEFAULT", "DC", "URBAN", "0.0500"),
+]
+
 # Density bands, weakest coverage last. Derivable from a postcode without a
 # survey, which is why the model clusters on them: serviceability itself needs
 # a regulator lookup per area, and this predicts it well enough to price with.
@@ -532,6 +592,11 @@ def _rows():
         (threshold, lambda: [
             {"set_name": a, "key": b, "value": c, "version": 1,
              "approved_by": "seed", "note": "MVP default"} for a, b, c in THRESHOLDS]),
+        (density_mix, lambda: [
+            {"id": f"{i}-{a}-{b}", "industry": i, "archetype": a,
+             "density_band": b, "share": share, "approved_by": "seed",
+             "note": "seed starting position; retune per engagement"}
+            for i, a, b, share in DENSITY_MIX]),
         (serviceability, lambda: [
             {"id": f"{c}-{b}-{p}", "country": c, "density_band": b,
              "product": p, "available": a, "max_bandwidth_mbps": m,

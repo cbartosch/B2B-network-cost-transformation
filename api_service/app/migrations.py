@@ -34,7 +34,7 @@ from . import db
 log = logging.getLogger("workbench.migrations")
 
 # Bump when the physical schema changes, and add a step below.
-SCHEMA_VERSION = 36
+SCHEMA_VERSION = 37
 
 VERSION_TABLE = "schema_version"
 VERSION_SCHEMA = "audit"
@@ -850,13 +850,24 @@ def _migrate_v36(conn) -> None:
              "be delivered there are now different questions")
 
 
+def _migrate_v37(conn) -> None:
+    """4.33.0 -> 4.34.0: reference.density_mix.
+
+    A registered total arrived with an empty footprint table and a message
+    saying nothing would be guessed. Right about silent invention, wrong about
+    the remedy: the analyst had to invent the split anyway with no help.
+    """
+    log.info("v37: density_mix introduced; a total can now propose a split "
+             "that says what it is")
+
+
 MIGRATIONS = {2: _migrate_v2, 3: _migrate_v3, 4: _migrate_v4, 5: _migrate_v5,
               6: _migrate_v6, 7: _migrate_v7, 8: _migrate_v8, 9: _migrate_v9,
               10: _migrate_v10, 11: _migrate_v11, 12: _migrate_v12,
               13: _migrate_v13, 14: _migrate_v14, 15: _migrate_v15,
               16: _migrate_v16, 17: _migrate_v17, 18: _migrate_v18,
               19: _migrate_v19, 20: _migrate_v20,
-              21: _migrate_v21, 22: _migrate_v22, 23: _migrate_v23, 24: _migrate_v24, 25: _migrate_v25, 26: _migrate_v26, 27: _migrate_v27, 28: _migrate_v28, 29: _migrate_v29, 30: _migrate_v30, 31: _migrate_v31, 32: _migrate_v32, 33: _migrate_v33, 34: _migrate_v34, 35: _migrate_v35, 36: _migrate_v36}
+              21: _migrate_v21, 22: _migrate_v22, 23: _migrate_v23, 24: _migrate_v24, 25: _migrate_v25, 26: _migrate_v26, 27: _migrate_v27, 28: _migrate_v28, 29: _migrate_v29, 30: _migrate_v30, 31: _migrate_v31, 32: _migrate_v32, 33: _migrate_v33, 34: _migrate_v34, 35: _migrate_v35, 36: _migrate_v36, 37: _migrate_v37}
 
 
 class SchemaDrift(RuntimeError):

@@ -287,3 +287,108 @@ def test_a_placeholder_save_says_so_in_the_trace(session):
     reason = next(c["reason"] for c in out["considered"]
                   if c["source"] == "ANALYST_SAVED")
     assert "placeholder" in reason
+
+
+# --------------------------- a total proposes a split rather than blocking
+def _mix_rows():
+    from app.seed import DENSITY_MIX
+    import types as _t
+    return [_t.SimpleNamespace(industry=i, archetype=a, density_band=b,
+                               share=s)
+            for i, a, b, s in DENSITY_MIX]
+
+
+class _MixSession:
+    def __init__(self, rows):
+        self._rows = rows
+
+    def execute(self, _q):
+        import types as _t
+        return _t.SimpleNamespace(all=lambda: self._rows)
+
+
+def _propose(total, industry, rows=None):
+    from app.domain import footprint
+    wanted = industry or "DEFAULT"
+    pool = [r for r in (rows or _mix_rows())
+            if r.industry in (wanted, "DEFAULT")]
+    return footprint.propose_split(_MixSession(pool), total=total,
+                                   country="DE", industry=industry)
+
+
+def test_a_registered_total_proposes_a_split_instead_of_an_empty_table():
+    """2,023 sites arrived with an empty table and a message saying nothing
+    would be guessed. Right about silent invention, wrong about the remedy: the
+    analyst had to invent the split anyway, with no help, and the page was
+    blocked until they did."""
+    out = _propose(2023, "RETAIL")
+    assert out["rows"], "a total with a governed mix must propose something"
+    assert len(out["rows"]) >= 4, "a real estate is several clusters"
+    assert out["basis"] == "INDUSTRY_DEFAULT"
+
+
+def test_the_proposed_rows_sum_to_the_total():
+    """A split that does not add up is worse than no split - it reads as
+    arithmetic. Rounding each share independently loses sites."""
+    for total in (1, 7, 100, 2023, 4000, 12345):
+        rows = _propose(total, "RETAIL")["rows"]
+        assert sum(r["sites"] for r in rows) == total, total
+
+
+def test_the_proposal_says_it_is_a_default_and_not_a_finding():
+    """The whole difference between this and silently inventing a mix."""
+    note = _propose(2023, "RETAIL")["note"]
+    assert "governed default, not a finding" in note
+    assert "Nothing is saved until you save or run" in note
+
+
+def test_an_unknown_sector_falls_back_and_says_which():
+    out = _propose(2023, "SHIPBUILDING")
+    assert out["basis"] == "GENERIC_DEFAULT"
+    assert sum(r["sites"] for r in out["rows"]) == 2023
+
+
+def test_a_retail_estate_is_mostly_stores_and_a_logistics_one_is_not():
+    """If every sector proposed the same shape the mix would buy nothing."""
+    def share_of(industry, archetype):
+        rows = _propose(1000, industry)["rows"]
+        return sum(r["sites"] for r in rows if r["archetype"] == archetype)
+
+    assert share_of("RETAIL", "STORE") > 900
+    assert share_of("LOGISTICS", "WAREHOUSE") > 600
+    assert share_of("LOGISTICS", "STORE") < 300
+
+
+def test_every_proposed_row_carries_a_density_band():
+    """The point of proposing at all: an estate split only by site type is
+    still priced as though every store could take the same circuit."""
+    for row in _propose(2023, "RETAIL")["rows"]:
+        assert row["density"], row
+
+
+def test_nothing_is_proposed_for_a_zero_total():
+    assert _propose(0, "RETAIL")["rows"] == []
+
+
+def test_every_seeded_mix_sums_to_one():
+    """A mix summing to less silently drops sites; summing to more invents
+    them, and largest remainder would hide both."""
+    from collections import defaultdict
+    from decimal import Decimal
+
+    from app.seed import DENSITY_MIX
+    totals = defaultdict(Decimal)
+    for industry, _a, _b, share in DENSITY_MIX:
+        totals[industry] += Decimal(share)
+    for industry, total in totals.items():
+        assert total == Decimal("1.0000"), f"{industry} sums to {total}"
+
+
+def test_every_mix_names_an_archetype_and_band_the_model_knows():
+    """A row naming a band serviceability has never heard of would price as
+    unclustered, silently undoing the split."""
+    from app.seed import ARCHETYPES, DENSITY_BANDS, DENSITY_MIX
+    known_archetypes = {a for a, *_ in ARCHETYPES}
+    for _i, archetype, band, _s in DENSITY_MIX:
+        assert archetype in known_archetypes, archetype
+        assert band in DENSITY_BANDS, band

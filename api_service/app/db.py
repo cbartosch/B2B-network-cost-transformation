@@ -567,6 +567,32 @@ research_brief = Table(
 # proxy for serviceability rather than the thing itself, and a researched fact
 # about a specific area replaces it - the same layering as the archetype
 # resolver.
+# How an estate of a given kind typically distributes across site types and
+# density bands.
+#
+# A registered total of 2,023 sites arrived with an empty table and a message
+# saying nothing would be guessed. That is right about silent invention and
+# wrong about what to do instead: the analyst has to invent the split anyway,
+# with no help, and an empty table blocks the page.
+#
+# So this proposes one and says exactly what it is. Governed, labelled
+# INDUSTRY_DEFAULT wherever it lands, and never applied without the analyst
+# saving or running - which is the same accept-or-edit act the public
+# known-fact sweep uses.
+density_mix = Table(
+    "density_mix", metadata,
+    Column("id", String(96), primary_key=True),   # {industry}-{archetype}-{band}
+    Column("industry", String(48), index=True),   # or DEFAULT
+    Column("archetype", String(48)),
+    Column("density_band", String(16)),
+    # Share of the whole estate, not of the archetype: the mix answers "of
+    # 2,023 sites, how many are rural stores", which is one question.
+    Column("share", Numeric(6, 4)),
+    Column("note", Text),
+    Column("approved_by", String(120)),
+    schema="reference",
+)
+
 serviceability = Table(
     "serviceability", metadata,
     Column("id", String(80), primary_key=True),   # {country}-{density}-{product}

@@ -1348,6 +1348,31 @@ class LocationIn(BaseModel):
     entered_by: str = Field(min_length=1, max_length=120)
 
 
+@router.get("/v1/outside-in/cases/{case_id}/footprint:propose-split")
+def propose_footprint_split(case_id: str):
+    """A starting split of an unallocated total, and what it rests on.
+
+    Proposed, never applied: the rows go into the editor and become real when
+    the analyst saves or runs. An empty table with a message saying nothing
+    would be guessed was right about silent invention and wrong about the
+    remedy - the split had to be invented anyway, with no help.
+    """
+    with S() as s:
+        case_row = _one_or_404(s, db.case, db.case.c.case_id, case_id, "case")
+        resolved = footprint_resolver.resolve(s, case_id)
+        total = resolved.get("unallocated_sites") or 0
+        if not total:
+            return {"rows": [], "basis": None,
+                    "note": "nothing unallocated on this case."}
+        country = (resolved.get("suggested_country")
+                   or case_row.country_of_domicile
+                   or (list(case_row.in_scope_countries or []) or ["DE"])[0])
+        return {**footprint_resolver.propose_split(
+                    s, total=int(total), country=country,
+                    industry=case_row.industry),
+                "total": int(total)}
+
+
 @router.get("/v1/outside-in/cases/{case_id}/locations")
 def list_locations(case_id: str):
     """The named sites, and what share of the estate they cover.

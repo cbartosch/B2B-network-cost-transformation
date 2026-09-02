@@ -123,6 +123,24 @@ if _unallocated:
         f"country and site type below and the remainder is tracked as you go. "
         f"Nothing is guessed for you - a plausible mix is still a mix nobody "
         f"decided, and it would be priced as though someone had.")
+    # A proposed split, rather than an empty table and an instruction to
+    # invent one. It states its basis and is not applied until the analyst
+    # saves or runs.
+    if st.button("Propose a split for this total"):
+        st.session_state["_split"] = api.get(
+            f"/v1/outside-in/cases/{case_id}/footprint:propose-split")
+    _sp = st.session_state.get("_split")
+    if _sp and "_error" in _sp:
+        st.error(_sp["_error"])
+    elif _sp and _sp.get("rows"):
+        st.info(_sp.get("note", ""))
+        st.dataframe(pd.DataFrame(_sp["rows"]), use_container_width=True,
+                     hide_index=True)
+        if st.button("Put this in the table below", type="primary"):
+            st.session_state["_split_apply"] = _sp["rows"]
+            st.session_state.pop("_split", None)
+            st.rerun()
+
     _sugg = (_fp or {}).get("suggested_country")
     if _sugg:
         st.caption(f"Suggested country for the first rows: {_sugg}. Site types: "
@@ -278,6 +296,14 @@ else:
 st.caption("Whatever is in the table below is what runs. Edit it, then Save or "
            "Run - both persist it to the case.")
 DENSITY_BANDS = ["", "DENSE_URBAN", "URBAN", "SUBURBAN", "RURAL"]
+# A proposal the analyst accepted into the editor. Held in session rather than
+# saved, so it is still theirs to change and still requires Save or Run - the
+# same accept-or-edit act the public known-fact sweep uses.
+_applied = st.session_state.pop("_split_apply", None)
+if _applied:
+    _resolved = _applied
+    st.success(f"{len(_applied)} proposed row(s) put in the table. Correct "
+               f"them, then Save or Run - nothing is stored until you do.")
 default = pd.DataFrame(
     [{"country": r.get("country"), "archetype": r.get("archetype"),
       "density": r.get("density") or "", "sites": r.get("sites")}

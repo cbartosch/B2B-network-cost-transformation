@@ -65,7 +65,7 @@ def table_flow() -> list[str]:
                 "research_brief", "unit_cost_prior",
                 # Governed reference data: filled by the seed and retuned by a
                 # steward, never written by the application.
-                "serviceability"):
+                "serviceability", "density_mix"):
             problems.append(
                 f"{table}: read and never written outside the seed - the stage "
                 f"that should fill it does not")

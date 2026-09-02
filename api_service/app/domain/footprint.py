@@ -236,6 +236,61 @@ def resolve(session, case_id: str) -> dict:
     }
 
 
+def propose_split(session, *, total: int, country: str, industry: str | None,
+                  countries: list | None = None) -> dict:
+    """A starting split of one total across site types and density bands.
+
+    A registered total arrived with an empty table and a message saying nothing
+    would be guessed. That is right about silent invention and wrong about the
+    remedy: the analyst has to invent the split anyway, with no help, and an
+    empty table blocks the page.
+
+    So this proposes one and says exactly what it is - a governed mix for the
+    sector, not a finding about this client. It is never applied on its own:
+    the rows land in the editor and become real only when the analyst saves or
+    runs, which is the same accept-or-edit act the public known-fact sweep
+    uses.
+
+    Largest remainder, so the parts sum to the total. Rounding each share
+    independently loses sites, and a split that does not add up is worse than
+    no split - it reads as arithmetic.
+    """
+    sector = (industry or "DEFAULT").strip().upper() or "DEFAULT"
+    rows = session.execute(select(db.density_mix).where(
+        db.density_mix.c.industry.in_([sector, "DEFAULT"]))).all()
+    chosen = [r for r in rows if r.industry == sector] or \
+             [r for r in rows if r.industry == "DEFAULT"]
+    if not chosen or total <= 0:
+        return {"rows": [], "basis": None,
+                "note": "no governed mix for this sector, so nothing is "
+                        "proposed - split it by hand below."}
+
+    matched = bool([r for r in rows if r.industry == sector])
+    chosen.sort(key=lambda r: (r.archetype, r.density_band))
+    raw = [Decimal(total) * Decimal(str(r.share)) for r in chosen]
+    counts = [int(x) for x in raw]
+    for index in sorted(range(len(raw)), key=lambda i: raw[i] - counts[i],
+                        reverse=True)[:total - sum(counts)]:
+        counts[index] += 1
+
+    proposed = [
+        {"country": country.upper(), "archetype": r.archetype,
+         "density": r.density_band, "sites": n}
+        for r, n in zip(chosen, counts) if n > 0]
+    return {
+        "rows": proposed,
+        "basis": "INDUSTRY_DEFAULT" if matched else "GENERIC_DEFAULT",
+        "industry": sector if matched else "DEFAULT",
+        "note": (
+            f"A typical shape for {sector if matched else 'an unspecified'} "
+            f"sector, applied to {total:,} sites and put in the table for you "
+            f"to correct. It is a governed default, not a finding about this "
+            f"client - so edit it before running, and name locations or "
+            f"research domain 2 to replace it with evidence. Nothing is saved "
+            f"until you save or run."),
+    }
+
+
 def _is_placeholder(saved: list, case_row) -> bool:
     """Is this saved footprint just the runnable default?
 
