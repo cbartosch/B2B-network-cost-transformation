@@ -596,9 +596,10 @@ def test_the_sweep_must_account_for_every_class_it_was_asked_about():
     reply = schemas.PublicFactSweep.model_validate({
         "subject": "Boots",
         "facts": [],
-        "not_found": [{"fact_class": "Remote-user population",
-                       "searched_for": "remote headcount",
-                       "reason": "no public source isolates this"}],
+        # not_found is list[str]: the class names. The first version of this
+        # test passed dicts, matching the shape of `facts` rather than the
+        # declared one - so it asserted the same wrong thing the gate did.
+        "not_found": ["Remote-user population"],
     })
     verdict = quality.evaluate(
         "known_fact.prefill_public", reply,
@@ -618,9 +619,7 @@ def test_a_sweep_that_accounts_for_everything_is_accepted():
                    "value_base": "1800", "unit": "sites",
                    "sources": [{"url": "https://boots-uk.example/about",
                                 "publisher": "Boots UK"}]}],
-        "not_found": [{"fact_class": "Remote-user population",
-                       "searched_for": "remote headcount",
-                       "reason": "no public source isolates this"}],
+        "not_found": ["Remote-user population"],
     })
     assert quality.evaluate(
         "known_fact.prefill_public", reply,

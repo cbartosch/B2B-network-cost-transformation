@@ -292,8 +292,14 @@ def public_fact_prefill(result, context) -> Verdict:
     # Those are different findings and they were indistinguishable.
     requested = {c for c in ((context or {}).get("fact_classes") or [])}
     if requested:
+        # not_found is list[str] - the class names themselves. This read
+        # n.fact_class off each entry, which is the shape the *facts* list has,
+        # and every sweep raised AttributeError: 'str' object has no attribute
+        # 'fact_class'. Written against an assumed shape rather than the
+        # declared one, and the test I wrote alongside it made the same
+        # assumption, so it would have failed on its first run too.
         accounted = ({f.fact_class for f in result.facts}
-                     | {n.fact_class for n in (result.not_found or [])})
+                     | {str(n) for n in (result.not_found or [])})
         missing = sorted(requested - accounted)
         if missing:
             reasons.append(Rejection.INCOMPLETE_COVERAGE)

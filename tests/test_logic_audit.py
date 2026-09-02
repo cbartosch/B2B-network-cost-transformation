@@ -544,3 +544,42 @@ def test_no_module_references_a_name_it_never_binds(module):
 
     missing = sorted(used - bound - set(dir(builtins)))
     assert not missing, f"{module} uses {missing} and never binds them"
+
+
+def test_no_code_reads_an_attribute_off_a_string_list_field():
+    """`not_found` is declared list[str] and the coverage gate read
+    `n.fact_class` off each entry - the shape the `facts` list has. Every sweep
+    raised AttributeError: 'str' object has no attribute 'fact_class'.
+
+    Written against an assumed shape rather than the declared one, and the test
+    I wrote alongside it made the same assumption, so it asserted the same
+    wrong thing. Checked here against the schema itself, which is the only
+    source that cannot be assumed."""
+    import ast
+    import re
+
+    schemas = ast.parse((APP / "llm" / "schemas.py").read_text())
+    plain = set()
+    for cls in schemas.body:
+        if not isinstance(cls, ast.ClassDef):
+            continue
+        for node in cls.body:
+            if (isinstance(node, ast.AnnAssign)
+                    and isinstance(node.target, ast.Name)
+                    and ast.unparse(node.annotation).startswith("list[str]")):
+                plain.add(node.target.id)
+    assert plain, "no list[str] fields found - the sweep is not seeing them"
+
+    offenders = []
+    for path in sorted(APP.rglob("*.py")):
+        if path.name == "schemas.py":
+            continue
+        src = path.read_text()
+        for field in plain:
+            for match in re.finditer(
+                    rf"for (\w+) in \(?[\w.]*\.?{field}\b[^\n]*\n?[^\n]*?\1\."
+                    rf"(\w+)", src):
+                offenders.append(
+                    f"{path.name}: iterates {field} (list[str]) and reads "
+                    f".{match.group(2)}")
+    assert not offenders, "\n".join(sorted(set(offenders)))
