@@ -144,9 +144,10 @@ else:
                     "and the total is 1,929, not 1,840. If these are different "
                     "countries rather than rival estimates, register one "
                     "combined fact or allocate them by hand below.")
-    st.caption(f"Registered total: {_fp['register_total']:,} sites. This "
-                   f"page never changes it - the register is altered only on "
-                   f"page 2.")
+        st.caption(
+            f"Registered total: {_fp['register_total']:,} sites. This "
+            f"page never changes it - the register is altered only on "
+            f"page 2.")
 
     # Why the stronger sources were not used. Five rounds went on "the
     # footprint is wrong" because the answer was not observable from the page.

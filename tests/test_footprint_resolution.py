@@ -492,3 +492,45 @@ def test_a_chosen_fact_that_disappears_is_reported_not_silently_replaced():
 
     src = inspect.getsource(footprint._best_footprint_fact)
     assert "is no longer a usable" in src
+
+
+def test_every_resolver_branch_returns_the_same_keys():
+    """Six branches emitted between 6 and 15 keys, so every read on the page
+    was a guess about which one had run - and `_fp["register_total"]` raised
+    KeyError the moment a saved footprint with no register entry came back.
+
+    Guarding each read is the same guess written out. One shape removes the
+    question, and a branch with nothing to say about a key says None rather
+    than omitting it."""
+    import ast
+    import inspect
+
+    from app.domain import footprint
+
+    contract = set(footprint.RESOLVED_SHAPE)
+    assert "register_total" in contract and "origin" in contract
+
+    tree = ast.parse(inspect.cleandoc(inspect.getsource(footprint.resolve)))
+    branches = 0
+    for node in ast.walk(tree):
+        if not (isinstance(node, ast.Return) and node.value is not None):
+            continue
+        rendered = ast.unparse(node.value)
+        if not rendered.startswith("{") and "_shaped(" not in rendered:
+            continue
+        branches += 1
+        assert "_shaped(" in rendered, (
+            f"a branch returns a bare dict, so its keys depend on which "
+            f"path ran: {rendered[:90]}")
+    assert branches >= 5, f"only {branches} branches seen - the sweep is blind"
+
+
+def test_shaping_fills_a_missing_key_rather_than_dropping_it():
+    from app.domain import footprint
+
+    shaped = footprint._shaped({"origin": "ANALYST_SAVED", "footprint": []})
+    assert shaped["register_total"] is None
+    assert shaped["diverges"] is False
+    assert shaped["other_footprint_facts"] == []
+    # and a branch's own value always wins over the default
+    assert footprint._shaped({"register_total": 1929})["register_total"] == 1929

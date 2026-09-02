@@ -47,6 +47,28 @@ _STANDING = {"CORROBORATED": 3, "PENDING": 2, None: 2, "": 2,
 DEFAULT_ARCHETYPE = "BRANCH"
 
 
+# Every key any branch of resolve() can emit, with the value that means
+# "this branch has nothing to say about it".
+#
+# Six branches emitted between 6 and 15 keys, so every read on the page was a
+# guess about which one had run - and `_fp["register_total"]` raised KeyError
+# the moment a saved footprint with no register entry behind it came back.
+# Guarding each read is the same guess written out; a stable shape removes the
+# question.
+RESOLVED_SHAPE = {
+    "origin": None, "footprint": [], "detail": "", "provenance": [],
+    "considered": [], "diverges": False, "needs_split": False,
+    "split_note": None, "register_total": None, "split_total": None,
+    "unallocated_sites": None, "suggested_country": None,
+    "known_fact_id": None, "total_from": None, "other_footprint_facts": [],
+}
+
+
+def _shaped(result: dict) -> dict:
+    """One shape for every branch, so a reader never has to know which ran."""
+    return {**RESOLVED_SHAPE, **result}
+
+
 def resolve(session, case_id: str) -> dict:
     """The best available footprint, its origin, and why the others were not used.
 
@@ -73,7 +95,7 @@ def resolve(session, case_id: str) -> dict:
     promoted = promotion.evidenced_footprint(session, case_id)
     if promoted:
         _use("PROMOTED_RESEARCH", f"{len(promoted)} promoted row(s)")
-        return {
+        return _shaped({
             "origin": "PROMOTED_RESEARCH",
             "footprint": [{"country": r["country"], "archetype": r["archetype"],
                            "sites": r["sites"]} for r in promoted],
@@ -81,7 +103,7 @@ def resolve(session, case_id: str) -> dict:
                       f"sources and as-of dates.",
             "needs_split": False, "provenance": promoted,
             "considered": considered,
-        }
+        })
     _skip("PROMOTED_RESEARCH", "nothing has been promoted from research on "
                                "this case")
 
@@ -129,7 +151,7 @@ def resolve(session, case_id: str) -> dict:
                  f"{len(saved)} row(s) used as the breakdown of that total"
                  + (f", but they sum to {saved_total:,} rather than "
                     f"{total:,}" if diverges else ""))
-            return {
+            return _shaped({
                 "origin": "KNOWN_FACT_SPLIT",
                 "footprint": saved,
                 "detail": detail + (
@@ -163,7 +185,7 @@ def resolve(session, case_id: str) -> dict:
                     f"is wrong." if diverges else ""),
                 "known_fact_id": fact.known_fact_id,
                 "provenance": [], "considered": considered,
-            }
+            })
 
         _skip("ANALYST_SAVED", "no breakdown is saved, so the registered "
                                "total is unallocated")
@@ -182,7 +204,7 @@ def resolve(session, case_id: str) -> dict:
             # So the total is reported as unallocated and the footprint comes
             # back empty. Inventing a split would be worse: a plausible mix is
             # still a mix nobody decided.
-            return {
+            return _shaped({
                 "origin": "KNOWN_FACT_UNALLOCATED",
                 "footprint": [],
                 "detail": detail,
@@ -218,7 +240,7 @@ def resolve(session, case_id: str) -> dict:
                 "suggested_country": country,
                 "known_fact_id": fact.known_fact_id,
                 "provenance": [], "considered": considered,
-            }
+            })
         _skip("KNOWN_FACT",
               "a usable Location footprint fact exists but the case has "
               "neither a country of domicile nor any in-scope country, so "
@@ -230,14 +252,14 @@ def resolve(session, case_id: str) -> dict:
     if saved:
         _use("ANALYST_SAVED", f"{len(saved)} saved row(s), no registered "
                               f"Location footprint fact to reconcile against")
-        return {
+        return _shaped({
             "origin": "ANALYST_SAVED",
             "footprint": saved,
             "detail": f"{len(saved)} row(s) saved on this case. "
                       f"Analyst-entered, discounted accordingly.",
             "needs_split": False, "diverges": False,
             "provenance": [], "considered": considered,
-        }
+        })
     if not case_row.analyst_footprint:
         _skip("ANALYST_SAVED", "no footprint is saved on this case")
 
@@ -245,7 +267,7 @@ def resolve(session, case_id: str) -> dict:
     countries = list(case_row.in_scope_countries or [])
     if countries:
         _use("SCOPE_PLACEHOLDER", f"{len(countries)} in-scope country(ies)")
-        return {
+        return _shaped({
             "origin": "SCOPE_PLACEHOLDER",
             "footprint": [{"country": c, "archetype": DEFAULT_ARCHETYPE,
                            "sites": 1} for c in countries],
@@ -253,11 +275,11 @@ def resolve(session, case_id: str) -> dict:
                       "runnable. Not an estimate of anything.",
             "needs_split": False, "provenance": [],
             "considered": considered,
-        }
+        })
     _skip("SCOPE_PLACEHOLDER", "the case declares no in-scope countries")
 
     _use("ILLUSTRATIVE", "nothing else was available")
-    return {
+    return _shaped({
         "origin": "ILLUSTRATIVE",
         "footprint": [
             {"country": "GB", "archetype": "BRANCH", "sites": 120},
@@ -269,7 +291,7 @@ def resolve(session, case_id: str) -> dict:
                   "illustrative values. Set the scope on page 1.",
         "needs_split": False, "provenance": [],
         "considered": considered,
-    }
+    })
 
 
 def propose_split(session, *, total: int, country: str, industry: str | None,
