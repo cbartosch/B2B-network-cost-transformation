@@ -682,6 +682,15 @@ unit_cost_prior = Table(
     Column("bandwidth_mbps", Integer),
     Column("low", Numeric(14, 2)), Column("base", Numeric(14, 2)), Column("high", Numeric(14, 2)),
     Column("currency", String(3)), Column("price_year", Integer), Column("approved", Boolean, default=True),
+    # Where the price came from. Every seeded prior landed approved=True with
+    # nothing marking it as indicative, so once a steward approved a real
+    # benchmark into the same table nothing could tell an illustrative figure
+    # from an evidenced one - and coverage counted both as priced.
+    #
+    # SEED       an indicative starting position, not a market rate
+    # PROMOTED   from a researched finding, approved=False until a steward acts
+    # BENCHMARK  derived from cleared observations in the vault
+    Column("price_basis", String(16), default="SEED"),
     # Provenance for a researched price. A governed value that appeared from
     # nowhere is worse than no value: these say which agent run produced it
     # and under whose name it was promoted, so a steward approving it can see
@@ -814,16 +823,6 @@ platform_unit_cost = Table(
     Column("high", Numeric(14, 2)),
     Column("currency", String(3)), Column("price_year", Integer),
     Column("approved", Boolean, default=True),
-    # Where the price came from. Every seeded prior landed approved=True with
-    # nothing marking it as a starting position, so once a steward approved a
-    # real benchmark into the same table the estimate could not tell an
-    # illustrative figure from an evidenced one - and coverage counted both as
-    # priced.
-    #
-    # SEED       an indicative starting position, not a market rate
-    # PROMOTED   from a researched finding, approved=False until a steward acts
-    # BENCHMARK  derived from cleared observations in the vault
-    Column("price_basis", String(16), default="SEED"),
     schema="reference",
 )
 

@@ -276,8 +276,49 @@ def pinned_run_params() -> list[str]:
             for k in sorted(read - pinned)]
 
 
+def seeded_keys_are_columns() -> list:
+    """Every key the seed writes must be a column of the table it writes to.
+
+    `price_basis` was added to db.py by a blind single-occurrence replace that
+    hit `Column("approved", ...)` in platform_unit_cost instead of
+    unit_cost_prior, while the seed wrote the key to both. The API then refused
+    to start - correctly - and the compose output said only "exited (3)".
+
+    A seed key that is not a column is an insert that cannot succeed, and it
+    fails at startup on a fresh database rather than in review.
+    """
+    columns = {}
+    for node in ast.parse(_read("db.py")).body:
+        if isinstance(node, ast.Assign) and isinstance(node.targets[0], ast.Name):
+            cols = {a.args[0].value for a in ast.walk(node)
+                    if isinstance(a, ast.Call)
+                    and getattr(a.func, "id", "") == "Column"
+                    and a.args and isinstance(a.args[0], ast.Constant)}
+            if cols:
+                columns[node.targets[0].id] = cols
+
+    seed = _read("seed.py")
+    problems = []
+    # Each (table, lambda: [ {..} for .. ]) block, bounded by its own `for`
+    # clause so two adjacent blocks cannot be read as one.
+    for match in re.finditer(
+            r"\((\w+), lambda: \[\s*(\{[^\[\]]*?\})\s*\n\s*for ",
+            seed, re.S):
+        table, literal = match.group(1), match.group(2)
+        keys = set(re.findall(r'"(\w+)":', literal))
+        known = columns.get(table)
+        if known is None:
+            continue                      # not a Table object; a policy tuple
+        unknown = sorted(keys - known)
+        if unknown:
+            problems.append(
+                f"seed writes {unknown} to {table}, which has no such column")
+    return problems
+
+
 CHECKS = [
     ("every name a module uses is bound", unbound_names),
+    ("every seeded key is a column", seeded_keys_are_columns),
     ("every run param the runner reads is pinned", pinned_run_params),
     ("tables written and read", table_flow),
     ("classifier targets reach a bucket, a branch and the interface",

@@ -646,8 +646,8 @@ def _rows():
             for c, p, l, bw, lo, ba, hi in PRIORS]),
         (platform_unit_cost, lambda: [
             {"product": p, "cost_layer": l, "unit": u, "low": lo, "base": ba,
-             "high": hi, "currency": "USD", "price_year": 2026, "approved": True,
-             "price_basis": "SEED"}
+             "high": hi, "currency": "USD", "price_year": 2026,
+             "approved": True}
             for p, l, u, lo, ba, hi in PLATFORM]),
         (archetype_prior, lambda: [
             {"archetype": a, "users_base": u, "bandwidth_mbps_base": b,
