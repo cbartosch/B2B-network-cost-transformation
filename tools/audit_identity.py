@@ -41,6 +41,26 @@ def main() -> int:
     print(f"  simulation model       "
           f"{_find(r'SIMULATION_MODEL_VERSION = .([^\'\"]+)', config, 'sim')}")
 
+    # Release provenance. VERSION is hand-maintained and was read by nothing
+    # but its own checker, so it sat at 4.31.0 while the commits reached
+    # 4.153.0 - 122 releases of drift. Worse, README tells a reader to run
+    # tests/check_build_config.py to confirm which build they have before
+    # reporting a failure, and that script reads this file: the one tool for
+    # identifying a build was reporting a stale number.
+    version_file = ROOT / "VERSION"
+    declared = "<no VERSION file>"
+    if version_file.exists():
+        for line in version_file.read_text().splitlines():
+            if line.startswith("build:"):
+                declared = line.split(":", 1)[1].strip()
+    committed = re.search(r"->\s*([\d.]+)\)", _git("log -1 --pretty=%s"))
+    committed = committed.group(1) if committed else "<not in commit subject>"
+    agree = declared == committed
+    print(f"  VERSION file           {declared}")
+    print(f"  latest commit declares {committed}")
+    print(f"  provenance             "
+          f"{'consistent' if agree else 'DRIFTED - the build cannot be identified'}")
+
     print("\nSURFACE")
     verbs = re.findall(r'@router\.(get|post|put|delete)\("', api)
     print(f"  routes                 {len(verbs)} {dict(Counter(verbs))}")
@@ -65,6 +85,17 @@ def main() -> int:
     print(f"  TLS pinning            "
           f"{'enforced' if 'PIN_ENFORCE' in (APP / 'llm' / 'providers' / '_transport.py').read_text() else 'absent'}")
 
+    print("\nREPRODUCIBILITY")
+    for req in sorted(ROOT.rglob("requirements*.txt")):
+        lines = [l for l in req.read_text().splitlines()
+                 if l.strip() and not l.startswith("#")]
+        pinned = [l for l in lines if "==" in l]
+        print(f"  {req.relative_to(ROOT).as_posix():34} "
+              f"{len(pinned)}/{len(lines)} direct deps pinned")
+    locks = list(ROOT.rglob("*.lock")) + list(ROOT.rglob("requirements*.txt.lock"))
+    print(f"  transitive pinning     "
+          f"{'lock file present' if locks else 'NONE - transitive versions float between builds'}")
+
     print("\nEVIDENCE NOT EXECUTABLE HERE")
     tests = subprocess.run("grep -rh '^def test_' tests/*.py | wc -l",
                            shell=True, capture_output=True, text=True,
@@ -72,7 +103,7 @@ def main() -> int:
     print(f"  test functions         {tests}, 0 executed in this environment")
     print(f"  live provider calls    0")
     print(f"  database instance      none reachable from the audit sandbox")
-    return 0
+    return 0 if agree else 1
 
 
 if __name__ == "__main__":

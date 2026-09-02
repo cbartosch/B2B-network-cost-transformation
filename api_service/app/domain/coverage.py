@@ -184,6 +184,16 @@ def assess(*, scope: list[dict], layers_in_scope: list, layers_priced: set,
         "spend_basis": "DERIVED_FROM_SIMULATED_SCOPE_AND_PRIORS",
         "unpriced_countries": unpriced_countries,
         "unpriced_pairs": [f"{c}/{p}" for c, p in unpriced_pairs],
+        # What share of the priced value rests on an indicative seeded price
+        # rather than an approved benchmark. Both were approved=True and
+        # indistinguishable, so coverage reported 100% priced on a portfolio
+        # entirely made of placeholders - which is a measurement of the seed,
+        # not of the client.
+        "seeded_price_share": str(
+            (D(sum(int(r["count"]) for r in scope
+                   if r.get("priced") and r.get("price_basis", "SEED") == "SEED"))
+             / D(priced_circuits)).quantize(D("0.001")))
+        if priced_circuits else "0",
         "unsizable_pairs": [f"{c}/{p}" for c, p in unsizable],
         "unsizable_circuits": sum(int(r["count"]) for r in scope
                                   if r["rate_basis"] == "UNSIZED"),
