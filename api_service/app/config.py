@@ -83,5 +83,9 @@ LLM_SEARCH_TIMEOUT_SECONDS = float(
 # on. Data centres now cluster into regional hubs and hubs into a global core,
 # which adds circuits and changes the output hash for the same seed and
 # footprint.
-SIMULATION_MODEL_VERSION = "sim-1.3.0"
+# 1.4.0: the estate is materialised site by site and returned. Every circuit
+# now belongs to a row that says whether the site is one somebody named or one
+# the pass generated to make the count up - so the output carries an estate,
+# and the same seed and footprint produce a different hash than 1.3.0 did.
+SIMULATION_MODEL_VERSION = "sim-1.4.0"
 CALCULATION_VERSION = "calc-1.0.0"

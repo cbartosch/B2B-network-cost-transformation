@@ -248,6 +248,12 @@ else:
         _l4, _l5 = st.columns(2)
         _lname = _l4.text_input("Name", key="sim_loc_n")
         _lsrc = _l5.text_input("Source URL or publisher", key="sim_loc_s")
+        _la1, _la2, _la3 = st.columns(3)
+        _laddr = _la1.text_input("Address", key="sim_loc_addr")
+        _llat = _la2.text_input("Latitude", key="sim_loc_lat",
+                                placeholder="48.137")
+        _llon = _la3.text_input("Longitude", key="sim_loc_lon",
+                                placeholder="11.575")
         _l6, _l7 = st.columns(2)
         _lasof = _l6.text_input("As of", key="sim_loc_asof",
                                 placeholder="2025 or 2025-06-30")
@@ -257,6 +263,8 @@ else:
             _r = api.post(f"/v1/outside-in/cases/{case_id}/locations", {
                 "country": _lc.upper(), "archetype": _lart,
                 "city": _lcity or None, "name": _lname or None,
+                "address": _laddr or None,
+                "latitude": _llat or None, "longitude": _llon or None,
                 "source_url": _lsrc if (_lsrc or "").startswith("http") else None,
                 "publisher": None if (_lsrc or "").startswith("http") else (_lsrc or None),
                 "as_of": _lasof or None, "entered_by": _lby})
@@ -518,6 +526,44 @@ if sim:
             [{"site type": a, "bandwidth (Mbps)": b}
              for a, b in (_basis.get("by_archetype") or {}).items()]),
             use_container_width=True, hide_index=True)
+
+    # The estate the estimate is built on, site by site. Every circuit priced
+    # downstream belongs to a row here, and every row says whether the site is
+    # one somebody named or one the pass generated to make the count up.
+    _estate = o.get("estate") or []
+    if _estate:
+        _named = o.get("sites_named", 0)
+        _gen = o.get("sites_generated", 0)
+        st.markdown("**The estate, site by site**")
+        (st.success if _named and not _gen else st.info)(
+            f"{_named + _gen:,} site(s): **{_named:,} named**, "
+            f"{_gen:,} generated to make the count up. A generated row carries "
+            f"no name, address or position - there is nowhere on it to put "
+            f"one, so it cannot be read as a site anybody knows.")
+        if o.get("estate_truncated"):
+            st.caption(f"Showing the first {len(_estate):,}; "
+                       f"{o['estate_truncated']:,} more were not stored. "
+                       f"A JSON column is not a site register.")
+        _only_named = st.checkbox("Named sites only", key="sim_estate_named")
+        _show = [r for r in _estate if r.get("known")] if _only_named else _estate
+        st.dataframe(pd.DataFrame([{
+            "site": r.get("site_id"), "known": r.get("known"),
+            "country": r.get("country"), "type": r.get("archetype"),
+            "name": r.get("name") or "", "city": r.get("city") or "",
+            "address": r.get("address") or "",
+            "lat": r.get("latitude"), "lon": r.get("longitude"),
+            "users": r.get("users"), "Mbps": r.get("bandwidth_mbps"),
+            "primary": r.get("primary_product"),
+            "backup": r.get("backup_product") or "",
+            "grade": r.get("reliability_grade") or "",
+        } for r in _show[:1000]]), use_container_width=True, hide_index=True)
+        import json as _json
+        st.download_button(
+            "Download the estate as JSON",
+            data=_json.dumps(_estate, indent=2, default=str),
+            file_name=f"estate_{case_id[:8]}.json", mime="application/json",
+            help="The list every priced circuit belongs to. A generated row is "
+                 "marked known=false and carries no identity.")
 
     st.markdown("**Sample simulated edges** - note the diversity state and the "
                 "bandwidth each circuit is priced at.")

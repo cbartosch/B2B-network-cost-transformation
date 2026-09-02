@@ -252,3 +252,105 @@ def test_every_site_driven_component_is_split():
                                           "_base = ")):
             unsplit.append(key)
     assert not unsplit, f"site-driven and not split: {unsplit}"
+
+
+# ---------------------------------- the simulation materialises the estate
+def _estate(footprint, known=None, seed=42):
+    from app.domain import simulation
+    arch = {"STORE": {"dual_access_probability": 0.3,
+                      "primary_product": "BROADBAND_HFC",
+                      "backup_product": "MOBILE_5G", "users_base": 8,
+                      "bandwidth_mbps_base": 50},
+            "DC": {"dual_access_probability": 1.0,
+                   "primary_product": "ETHERNET", "backup_product": "ETHERNET",
+                   "users_base": 5, "bandwidth_mbps_base": 10000}}
+    return simulation.one_pass(seed, footprint, arch, known_locations=known)
+
+
+def test_the_estate_has_exactly_as_many_sites_as_the_footprint_says():
+    """The estate is what the estimate is costed from, so a count that differs
+    from the footprint is a different estate priced under the same label."""
+    out = _estate([{"country": "DE", "archetype": "STORE", "sites": 10},
+                   {"country": "US", "archetype": "DC", "sites": 2}])
+    assert out["sites"] == 12
+    assert len(out["estate_full"]) == 12
+
+
+def test_a_named_location_becomes_a_named_site():
+    """"as much as known" means the known part is carried onto the row, not
+    summarised beside it: type, address and position all reach the site the
+    circuit is costed for."""
+    out = _estate([{"country": "DE", "archetype": "STORE", "sites": 5}],
+                  known=[{"location_id": "L1", "country": "DE",
+                          "archetype": "STORE", "name": "Aldi Muenchen Ost",
+                          "city": "Muenchen", "address": "Bahnhofstr 1",
+                          "latitude": 48.14, "longitude": 11.58,
+                          "reliability_grade": "VERY_RELIABLE"}])
+    first = out["estate_full"][0]
+    assert first["known"] is True
+    assert first["name"] == "Aldi Muenchen Ost"
+    assert first["latitude"] == 48.14
+    assert first["location_id"] == "L1"
+    assert out["sites_named"] == 1 and out["sites_generated"] == 4
+
+
+def test_a_generated_site_carries_no_identity():
+    """Structural, not a label. There is nowhere on a generated row to put a
+    name, an address or a position - so nothing can drift into looking like a
+    site somebody knows, which is the failure this design is most exposed to."""
+    out = _estate([{"country": "DE", "archetype": "STORE", "sites": 5}],
+                  known=[{"location_id": "L1", "country": "DE",
+                          "archetype": "STORE", "name": "Named"}])
+    generated = [r for r in out["estate_full"] if not r["known"]]
+    assert len(generated) == 4
+    for row in generated:
+        assert row["name"] is None and row["address"] is None
+        assert row["latitude"] is None and row["longitude"] is None
+        assert row["location_id"] is None
+
+
+def test_named_sites_come_first():
+    """A reader looking at the top of the list sees what is known, rather than
+    hunting for it among generated rows."""
+    out = _estate([{"country": "DE", "archetype": "STORE", "sites": 6}],
+                  known=[{"location_id": f"L{i}", "country": "DE",
+                          "archetype": "STORE", "name": f"Site {i}"}
+                         for i in range(3)])
+    flags = [r["known"] for r in out["estate_full"]]
+    assert flags == [True, True, True, False, False, False]
+
+
+def test_every_primary_circuit_belongs_to_a_site():
+    out = _estate([{"country": "DE", "archetype": "STORE", "sites": 10}])
+    assert out["circuits_primary"] == out["sites"]
+    assert out["circuits"] == out["circuits_primary"] + out["circuits_backup"]
+
+
+def test_the_estate_is_deterministic_on_the_seed():
+    """It is the basis of a published number, so the same seed and footprint
+    must produce the same estate - otherwise the output hash moves between
+    identical runs."""
+    import json
+    known = [{"location_id": "L1", "country": "DE", "archetype": "STORE",
+              "name": "Named"}]
+    footprint = [{"country": "DE", "archetype": "STORE", "sites": 8}]
+    first = _estate(footprint, known)["estate_full"]
+    second = _estate(footprint, known)["estate_full"]
+    assert json.dumps(first, sort_keys=True) == json.dumps(second, sort_keys=True)
+
+
+def test_a_location_for_a_kind_not_in_the_footprint_is_not_forced_in():
+    """A named DC with no DC row in the footprint must not invent one: the
+    footprint decides how many sites of each kind exist."""
+    out = _estate([{"country": "DE", "archetype": "STORE", "sites": 3}],
+                  known=[{"location_id": "L1", "country": "US",
+                          "archetype": "DC", "name": "Chicago DC"}])
+    assert out["sites"] == 3
+    assert out["sites_named"] == 0
+
+
+def test_the_stored_estate_is_bounded_and_says_what_it_dropped():
+    """A JSON column is not a site register. An estate of 40,000 outlets would
+    make every simulation row unreadable to protect a list nobody scrolls."""
+    from app.domain import simulation
+    assert simulation.MAX_ESTATE_ROWS >= 1000

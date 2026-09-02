@@ -921,6 +921,15 @@ def run_simulation(case_id: str, payload: SimIn):
             "version", "dc_to_region_product", "dc_to_region_mbps",
             "region_to_core_product", "region_to_core_mbps", "dc_dual",
             "core_dual")}
+        # The named sites, so the estate is built from them first and every
+        # circuit belongs to a row that says whether the site is one somebody
+        # named or one the pass generated to make the count up.
+        known_locations = [dict(r._mapping) for r in s.execute(
+            select(db.location).where(
+                db.location.c.case_id == case_id,
+                db.location.c.suspected_duplicate_of.is_(None))
+            .order_by(db.location.c.country, db.location.c.city)).all()]
+
         backbone = topology_planner.plan(
             [r.model_dump() for r in payload.footprint],
             regions=_regions, template=_template)
@@ -994,7 +1003,11 @@ def run_simulation(case_id: str, payload: SimIn):
             # rebuilds a resumed pass from params, and a core planned there and
             # read from somewhere else is a resumed run that quietly differs
             # from the one it resumed.
-            params={"footprint": footprint, "backbone": backbone},
+            # Pinned, so a resumed pass rebuilds the same estate: the named
+            # sites decide which rows are known, and a run that resumed
+            # without them would generate different rows for the same seed.
+            params={"footprint": footprint, "backbone": backbone,
+                    "known_locations": known_locations},
             pinned_priors={"archetype_prior": arch,
                            "bandwidth_basis": bandwidth_basis,
                            "topology_basis": topology_basis,
@@ -1299,6 +1312,8 @@ class LocationIn(BaseModel):
     city: str | None = None
     name: str | None = None
     address: str | None = None
+    latitude: Decimal | None = None
+    longitude: Decimal | None = None
     source_url: str | None = None
     publisher: str | None = None
     as_of: str | None = None
@@ -1349,6 +1364,7 @@ def add_location(case_id: str, payload: LocationIn):
             country=payload.country.upper(),
             archetype=payload.archetype.upper(), city=payload.city,
             name=payload.name, address=payload.address,
+            latitude=payload.latitude, longitude=payload.longitude,
             source_url=payload.source_url, publisher=payload.publisher,
             as_of=payload.as_of, entered_by=payload.entered_by))
         s.commit()

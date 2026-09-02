@@ -665,6 +665,9 @@ location = Table(
     Column("city", Text), Column("name", Text),
     Column("archetype", String(48)),
     Column("address", Text),
+    # Carried onto the simulated estate, so a costed site can be placed. A
+    # locator page usually gives these and the model had nowhere to put them.
+    Column("latitude", Numeric(9, 6)), Column("longitude", Numeric(9, 6)),
     # Where this one came from, per location rather than per list: a locator
     # page and a filing appendix are different strengths of evidence and a case
     # will hold both.

@@ -108,6 +108,10 @@ def run_job(run_id: str, session=None) -> dict:
         # Pinned on the run, so a resumed pass rebuilds the same core
         # rather than one planned from a footprint that may have moved.
         backbone = (row.params or {}).get("backbone") or {}
+        # The named sites, from the run's own parameters rather than the
+        # database: a location added mid-run must not change the estate a
+        # resumed pass rebuilds.
+        known_locations = (row.params or {}).get("known_locations") or []
         total = row.progress_total or row.ensemble_size
 
         # Resume from the checkpoint. Replaying an earlier index would be safe
@@ -131,7 +135,8 @@ def run_job(run_id: str, session=None) -> dict:
 
             summaries.append(simulation.summarise_pass(
                 simulation.one_pass(row.seed + i, footprint, archetypes,
-                                    backbone=backbone), i))
+                                    backbone=backbone,
+                                    known_locations=known_locations), i))
 
             if len(summaries) % config.SIM_CHECKPOINT_EVERY == 0:
                 _set(s, run_id, partial={"summaries": summaries},
@@ -139,7 +144,8 @@ def run_job(run_id: str, session=None) -> dict:
 
         output = simulation.aggregate(
             summaries, seed=row.seed, ensemble_size=total, footprint=footprint,
-            archetypes=archetypes, model_version=row.model_version)
+            archetypes=archetypes, model_version=row.model_version,
+            backbone=backbone, known_locations=known_locations)
         # cancel_requested is cleared here, not left standing. A cancel that
         # arrives after the last pass is too late to act on - completing is
         # correct - but a row that reads SUCCEEDED *and* cancel_requested is a

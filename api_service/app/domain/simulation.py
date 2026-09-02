@@ -25,10 +25,34 @@ def _rng(seed: int, salt: str) -> random.Random:
 
 SAMPLE_NODES, SAMPLE_EDGES = 200, 400
 
+# The largest estate carried whole on a run. Beyond this the list is truncated
+# for storage and the count of what was dropped is reported - a JSON column is
+# not a site register, and an estate of 40,000 outlets would make every
+# simulation row unreadable to protect a list nobody scrolls.
+MAX_ESTATE_ROWS = 5000
+
 
 def one_pass(seed: int, footprint: list[dict], archetypes: dict,
-             backbone: dict | None = None) -> dict:
-    """One synthetic estate. footprint = [{country, archetype, sites}, ...]"""
+             backbone: dict | None = None,
+             known_locations: list[dict] | None = None) -> dict:
+    """One synthetic estate, as a list of sites.
+
+    The estate is materialised site by site rather than counted: every circuit
+    now belongs to a row that says which site it is for, and every site says
+    whether it is one somebody named or one this pass generated to make the
+    count up. That is what a bottom-up model costs - sites, not tallies - and
+    it makes the enumerated share concrete at the row level instead of a ratio.
+
+    **A generated site is never dressed as a known one.** It carries no name,
+    no address and no coordinates, and `known` is False. The distinction is
+    structural, not a label: there is nowhere on a generated row to put an
+    address, so nothing can drift into looking like one.
+
+    `known_locations` are matched to (country, archetype) in the order given
+    and consume the count before any are generated, so the named ones are
+    always the first sites of their kind and a reader can see them at the top
+    of the list.
+    """
     rng = _rng(seed, "topology")
     nodes, edges = [], []
     primary = backup = 0
@@ -40,6 +64,15 @@ def one_pass(seed: int, footprint: list[dict], archetypes: dict,
     # estate and a 5-DC estate looked identical to the platform cost.
     implied_users = 0
     bandwidth_by_archetype: dict[str, dict] = {}
+
+    # The estate itself. Bounded for storage further down, but built whole so
+    # the aggregates are computed from it rather than beside it.
+    site_rows: list[dict] = []
+    by_kind: dict[tuple, list] = {}
+    for loc in known_locations or []:
+        key = (str(loc.get("country") or "").upper(),
+               str(loc.get("archetype") or "").upper())
+        by_kind.setdefault(key, []).append(loc)
 
     for entry in sorted(footprint, key=lambda e: (e["country"], e["archetype"])):
         prior = archetypes.get(entry["archetype"], {})
@@ -55,8 +88,33 @@ def one_pass(seed: int, footprint: list[dict], archetypes: dict,
         agg["sites"] += n_sites
         agg["mbps_total"] += bw_base * n_sites
 
+        kind = (entry["country"], entry["archetype"])
+        named_here = list(by_kind.get(kind, ()))
+
         for i in range(int(entry["sites"])):
             node_id = f"{entry['country']}-{entry['archetype']}-{i:04d}"
+            # The named ones first, then generated rows to make the count up.
+            # A generated row has no name, address or coordinates: there is
+            # nowhere to put one, so it cannot drift into reading as known.
+            known = named_here[i] if i < len(named_here) else None
+            site_rows.append({
+                "site_id": node_id, "country": entry["country"],
+                "archetype": entry["archetype"],
+                "known": known is not None,
+                "name": (known or {}).get("name"),
+                "city": (known or {}).get("city"),
+                "address": (known or {}).get("address"),
+                "latitude": (known or {}).get("latitude"),
+                "longitude": (known or {}).get("longitude"),
+                "source_url": (known or {}).get("source_url"),
+                "as_of": (known or {}).get("as_of"),
+                "reliability_grade": (known or {}).get("reliability_grade"),
+                "location_id": (known or {}).get("location_id"),
+                "users": users_base,
+                "bandwidth_mbps": bw_base,
+                "primary_product": primary_product,
+                "backup_product": None,
+            })
             # Only a bounded display sample is materialised. An earlier revision
             # held full node and edge lists per pass, so peak memory was
             # O(ensemble x sites) rather than O(sites).
@@ -91,12 +149,34 @@ def one_pass(seed: int, footprint: list[dict], archetypes: dict,
                                   "diversity_state": DIVERSITY_STATE})
                 backup += 1
                 dual_sites += 1
+                site_rows[-1]["backup_product"] = backup_product
                 products[(entry["country"], backup_product, "BACKUP", bw_base)] = \
                     products.get((entry["country"], backup_product, "BACKUP", bw_base), 0) + 1
 
-    sites = sum(int(e["sites"]) for e in footprint)
+    # Counted from the estate, not beside it. These used to be accumulated in
+    # parallel with the loop that generated the circuits, so a change to one
+    # could silently disagree with the other - and the site list is now the
+    # thing the estimate is built on, so it has to be the thing that is
+    # counted.
+    sites = len(site_rows)
+    assert sites == sum(int(e["sites"]) for e in footprint), (
+        "the materialised estate must have exactly as many sites as the "
+        "footprint says")
     circuits = primary + backup
+    named = sum(1 for r in site_rows if r["known"])
     return {"sites": sites, "circuits": circuits,
+            # The estate, bounded. A full list is O(sites) per pass and the
+            # ensemble runs many, so only the sample is carried here - the
+            # median pass keeps the whole list, which is the one a reader
+            # examines and the one the estimate is built from.
+            "site_sample": site_rows[:SAMPLE_NODES],
+            # The whole estate, for the one pass that keeps it. Carrying this
+            # on every pass would be O(ensemble x sites); carrying it on none
+            # would mean the list the estimate is built from is not the list a
+            # reader can examine.
+            "estate_full": site_rows,
+            "sites_named": named,
+            "sites_generated": sites - named,
             "circuits_primary": primary, "circuits_backup": backup,
             "dual_sites": dual_sites,
             # Derived from the footprint and the approved archetype priors, so
@@ -129,7 +209,8 @@ def summarise_pass(result: dict, index: int) -> dict:
 
 def aggregate(summaries: list[dict], *, seed: int, ensemble_size: int,
               footprint: list[dict], archetypes: dict, model_version: str,
-              backbone: dict | None = None) -> dict:
+              backbone: dict | None = None,
+              known_locations: list[dict] | None = None) -> dict:
     """Build the ensemble payload from per-pass summaries.
 
     Deliberately a pure function of the summaries, so a run assembled from a
@@ -150,7 +231,8 @@ def aggregate(summaries: list[dict], *, seed: int, ensemble_size: int,
                                                    p["index"]))[len(passes) // 2]
     # Re-run the one pass the sample comes from. Same seed, same output.
     median_pass = one_pass(seed + median_summary["index"], footprint,
-                           archetypes, backbone=backbone)
+                           archetypes, backbone=backbone,
+                           known_locations=known_locations)
 
     def pct(values, q):
         if not values:
@@ -163,6 +245,14 @@ def aggregate(summaries: list[dict], *, seed: int, ensemble_size: int,
         "seed": seed,
         "ensemble_size": ensemble_size,
         "sites": median_pass["sites"],
+        # The estate the estimate is built on, whole. Every circuit priced
+        # downstream belongs to a row here, and every row says whether it is a
+        # site somebody named or one this pass generated to make the count up.
+        "estate": median_pass["estate_full"][:MAX_ESTATE_ROWS],
+        "estate_truncated": max(
+            0, len(median_pass["estate_full"]) - MAX_ESTATE_ROWS),
+        "sites_named": median_pass["sites_named"],
+        "sites_generated": median_pass["sites_generated"],
         "circuits": {"low": pct(circuits, 0.10),
                      "base": int(median(circuits)),
                      "high": pct(circuits, 0.90)},
@@ -186,15 +276,18 @@ def aggregate(summaries: list[dict], *, seed: int, ensemble_size: int,
 
 def run_ensemble(*, seed: int, ensemble_size: int, footprint: list[dict],
                  archetypes: dict, model_version: str,
-                 backbone: dict | None = None) -> dict:
+                 backbone: dict | None = None,
+              known_locations: list[dict] | None = None) -> dict:
     """Convenience wrapper: run every pass, then aggregate. The job runner drives
     the two halves separately so it can checkpoint, cancel and resume."""
     summaries = [summarise_pass(
-        one_pass(seed + i, footprint, archetypes, backbone=backbone), i)
+        one_pass(seed + i, footprint, archetypes, backbone=backbone,
+                 known_locations=known_locations), i)
                  for i in range(ensemble_size)]
     return aggregate(summaries, seed=seed, ensemble_size=ensemble_size,
                      footprint=footprint, archetypes=archetypes,
-                     model_version=model_version, backbone=backbone)
+                     model_version=model_version, backbone=backbone,
+                     known_locations=known_locations)
 
 
 def output_hash(payload: dict) -> str:
