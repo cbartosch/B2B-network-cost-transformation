@@ -788,6 +788,20 @@ if sim:
         if _svc.get("substitutions"):
             st.dataframe(pd.DataFrame(_svc["substitutions"]),
                          use_container_width=True, hide_index=True)
+        # A resilience claim the estate cannot support. Distinct from a site
+        # the draw left single: this one was selected for a second path and
+        # none can be delivered there.
+        for _sn in (o.get("single_by_necessity") or [])[:6]:
+            st.warning(
+                f"**{_sn['archetype']} in {_sn['density']} {_sn['country']}: "
+                f"no second access path.** {_sn['reason']} Dual-access is not "
+                f"counted for these sites, so the resilience figure reflects "
+                f"what can be delivered rather than what the archetype asks "
+                f"for.")
+        if len(o.get("single_by_necessity") or []) > 6:
+            st.caption(f"and {len(o['single_by_necessity']) - 6} more cluster(s) "
+                       f"with no deliverable second path.")
+
         for _u in _unserv:
             st.error(
                 f"**{_u['sites']:,} site(s) in {_u['density']} {_u['country']} "

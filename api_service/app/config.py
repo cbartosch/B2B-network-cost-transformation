@@ -91,5 +91,9 @@ LLM_SEARCH_TIMEOUT_SECONDS = float(
 # for is resolved against what can be delivered there. A rural store takes a
 # different circuit from an urban one of the same format, so the same seed and
 # footprint produce a different hash than 1.4.0 did wherever a band is set.
-SIMULATION_MODEL_VERSION = "sim-1.5.0"
+# 1.6.0: the backup path is serviceability-resolved, and a backup landing on
+# the primary's own product is not counted as a second path. dual_sites can
+# therefore be lower than the archetype's dual-access draw implies - which is
+# the point: it now reflects what can be delivered.
+SIMULATION_MODEL_VERSION = "sim-1.6.0"
 CALCULATION_VERSION = "calc-1.0.0"

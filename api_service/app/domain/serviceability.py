@@ -123,6 +123,53 @@ def resolve(*, table: dict, country: str, density: str | None,
                      f"as a number, and this is a question.")}
 
 
+def resolve_backup(*, table: dict, country: str, density: str | None,
+                   product: str, wanted_mbps: int,
+                   primary_product: str | None) -> dict:
+    """What a site's second access path actually gets, if anything.
+
+    The backup went straight from the archetype prior into the circuit count,
+    the edge list and `dual_sites` without ever being resolved - so a rural
+    LARGE_OFFICE was counted dual-access on a DIA backup that the same
+    serviceability table says cannot be delivered there. That is a resilience
+    claim, not a cost error, and an audit is right to treat it as the more
+    serious of the two.
+
+    Two rules the primary does not need:
+
+    **A backup on the same product as the primary is not a second path.** Two
+    DIA circuits from the same carrier over the same duct fail together. The
+    simulation cannot know the duct, but it can know the product, and calling
+    two identical services diverse is the assumption that makes a resilience
+    number worthless. Where the substitution lands back on the primary's
+    product, the site is single-access.
+
+    **An unserviceable backup does not become a cheaper backup.** If nothing
+    else can be delivered, the site has one path - reported, not silently
+    priced as two.
+    """
+    served = resolve(table=table, country=country, density=density,
+                     product=product, wanted_mbps=wanted_mbps)
+    if served["outcome"] == UNSERVICEABLE:
+        return {**served, "resilient": False,
+                "note": (f"no second access path is deliverable in "
+                         f"{density} {country}, so this site has one path "
+                         f"however the archetype's dual-access draw fell.")}
+
+    if primary_product and served["product"] == primary_product:
+        # A substitution that lands on the primary's own product.
+        return {**served, "outcome": UNSERVICEABLE, "product": None,
+                "bandwidth_mbps": None, "resilient": False,
+                "note": (f"the only backup deliverable in {density} {country} "
+                         f"is {primary_product}, which is what the primary "
+                         f"already uses. Two of the same service is not a "
+                         f"second path - counting it as diversity is the "
+                         f"assumption that makes a resilience number "
+                         f"worthless.")}
+
+    return {**served, "resilient": True}
+
+
 def summarise(outcomes: list[dict]) -> dict:
     """What the estate's serviceability did to it, for a reader.
 

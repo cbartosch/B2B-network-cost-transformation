@@ -74,6 +74,11 @@ def one_pass(seed: int, footprint: list[dict], archetypes: dict,
     # Sites nothing can serve, and what each cluster actually got.
     unserviceable: list[dict] = []
     service_outcomes: list[dict] = []
+    # Sites the dual-access draw selected and serviceability could not give a
+    # second path. Reported rather than absorbed: a dual_sites count that
+    # silently shrinks reads as a weaker architecture rather than as a
+    # constraint on what can be delivered.
+    single_by_necessity: list[dict] = []
     by_kind: dict[tuple, list] = {}
     for loc in known_locations or []:
         key = (str(loc.get("country") or "").upper(),
@@ -170,16 +175,41 @@ def one_pass(seed: int, footprint: list[dict], archetypes: dict,
             # follows deterministically from the supplied footprint. That is why
             # only the backup layer is attributed to SIMULATED downstream.
             if rng.random() < p_dual:
-                if len(edges) < SAMPLE_EDGES:
-                    edges.append({"from": node_id, "to": f"POP2-{entry['country']}",
-                                  "product": backup_product, "role": "BACKUP",
-                                  "bandwidth_mbps": bw_base,
-                                  "diversity_state": DIVERSITY_STATE})
-                backup += 1
-                dual_sites += 1
-                site_rows[-1]["backup_product"] = backup_product
-                products[(entry["country"], backup_product, "BACKUP", bw_base)] = \
-                    products.get((entry["country"], backup_product, "BACKUP", bw_base), 0) + 1
+                # The backup is resolved too. It used to go straight from the
+                # archetype prior into the circuit count, the edge list and
+                # dual_sites - so a rural LARGE_OFFICE was counted dual-access
+                # on a DIA backup that the same table says cannot be delivered
+                # there. A resilience claim, not a cost error.
+                backup_served = serviceability.resolve_backup(
+                    table=service_table or {}, country=entry["country"],
+                    density=density, product=backup_product,
+                    wanted_mbps=bw_base, primary_product=primary_product)
+                if not backup_served["resilient"]:
+                    # The draw said this site should have a second path and
+                    # none can be delivered. Recorded: an estate whose
+                    # dual-access count silently shrinks reads as a weaker
+                    # architecture rather than a serviceability constraint.
+                    single_by_necessity.append({
+                        "country": entry["country"],
+                        "archetype": entry["archetype"], "density": density,
+                        "asked_for": backup_product,
+                        "reason": backup_served["note"]})
+                else:
+                    b_product = backup_served["product"]
+                    b_mbps = int(backup_served["bandwidth_mbps"])
+                    if len(edges) < SAMPLE_EDGES:
+                        edges.append({"from": node_id,
+                                      "to": f"POP2-{entry['country']}",
+                                      "product": b_product, "role": "BACKUP",
+                                      "bandwidth_mbps": b_mbps,
+                                      "diversity_state": DIVERSITY_STATE})
+                    backup += 1
+                    dual_sites += 1
+                    site_rows[-1]["backup_product"] = b_product
+                    site_rows[-1]["backup_outcome"] = backup_served["outcome"]
+                    products[(entry["country"], b_product, "BACKUP", b_mbps)] = \
+                        products.get((entry["country"], b_product, "BACKUP",
+                                      b_mbps), 0) + 1
 
     # Counted from the estate, not beside it. These used to be accumulated in
     # parallel with the loop that generated the circuits, so a change to one
@@ -212,6 +242,10 @@ def one_pass(seed: int, footprint: list[dict], archetypes: dict,
                 "table_basis": ("GOVERNED" if service_table else "ABSENT"),
             },
             "unserviceable": unserviceable,
+            # The dual-access draw asked for a second path here and none could
+            # be delivered. Distinct from a site the draw left single: this one
+            # is a serviceability finding about the location.
+            "single_by_necessity": single_by_necessity,
             "site_sample": site_rows[:SAMPLE_NODES],
             # The whole estate, for the one pass that keeps it. Carrying this
             # on every pass would be O(ensemble x sites); carrying it on none
@@ -295,6 +329,7 @@ def aggregate(summaries: list[dict], *, seed: int, ensemble_size: int,
         # site somebody named or one this pass generated to make the count up.
         "serviceability": median_pass["serviceability"],
         "unserviceable": median_pass["unserviceable"],
+        "single_by_necessity": median_pass["single_by_necessity"],
         "estate": median_pass["estate_full"][:MAX_ESTATE_ROWS],
         "estate_truncated": max(
             0, len(median_pass["estate_full"]) - MAX_ESTATE_ROWS),

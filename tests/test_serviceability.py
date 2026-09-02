@@ -178,3 +178,75 @@ def test_the_seeded_table_serves_an_urban_german_store(table):
     out = serviceability.resolve(table=table, country="DE", density="URBAN",
                                  product="BROADBAND_HFC", wanted_mbps=200)
     assert out["outcome"] == serviceability.DELIVERED
+
+
+# ------------------- the backup path, which was never serviceability-checked
+def _backup(table, density, product, primary, mbps=100, country="DE"):
+    return serviceability.resolve_backup(
+        table=table, country=country, density=density, product=product,
+        wanted_mbps=mbps, primary_product=primary)
+
+
+def test_a_backup_that_cannot_be_delivered_is_not_counted_as_resilience(table):
+    """Audit finding. The backup went straight from the archetype prior into
+    the circuit count, the edge list and dual_sites without being resolved - so
+    a rural LARGE_OFFICE was counted dual-access on a DIA backup that the same
+    table says cannot be delivered there.
+
+    That is a resilience claim, not a cost error, and the more serious of the
+    two: a cost is a number someone will challenge, and a resilience count is
+    one they will rely on."""
+    empty = {("DE", "RURAL", p): types.SimpleNamespace(
+        available=False, max_bandwidth_mbps=None)
+        for p in serviceability.FALLBACK_ORDER}
+    out = _backup(empty, "RURAL", "BROADBAND_PON", "DIA")
+    assert out["resilient"] is False
+    assert out["outcome"] == serviceability.UNSERVICEABLE
+    assert "one path" in out["note"]
+
+
+def test_two_circuits_of_the_same_product_are_not_a_second_path(table):
+    """Two DIA circuits from the same carrier over the same duct fail
+    together. The simulation cannot know the duct; it can know the product, and
+    calling two identical services diverse is the assumption that makes a
+    resilience number worthless."""
+    out = _backup(table, "URBAN", "ETHERNET", "ETHERNET", mbps=1000)
+    assert out["resilient"] is False
+    assert out["product"] is None
+    assert "not a second path" in out["note"]
+
+
+def test_a_substitution_onto_a_genuinely_different_product_is_resilient(table):
+    """The rule must not block a real second path. A rural DC asking for an
+    ETHERNET backup gets broadband, which is a different failure domain."""
+    out = _backup(table, "RURAL", "ETHERNET", "ETHERNET", mbps=10_000)
+    assert out["resilient"] is True
+    assert out["product"] != "ETHERNET"
+
+
+def test_an_ordinary_urban_backup_is_unaffected(table):
+    """A constraint that blocks the common case is a bug, not a control."""
+    out = _backup(table, "URBAN", "BROADBAND_PON", "DIA")
+    assert out["resilient"] is True
+    assert out["product"] == "BROADBAND_PON"
+
+
+def test_a_row_with_no_density_still_gets_its_backup(table):
+    """Silence is not a constraint, on the backup path as on the primary."""
+    out = _backup(table, None, "BROADBAND_PON", "DIA")
+    assert out["resilient"] is True
+
+
+def test_the_simulation_reports_sites_with_no_deliverable_second_path():
+    """A dual_sites count that silently shrinks reads as a weaker architecture
+    rather than as a constraint on what can be delivered there."""
+    import inspect
+
+    from app.domain import simulation
+
+    src = inspect.getsource(simulation.one_pass)
+    assert "resolve_backup" in src, "the backup must be resolved"
+    assert "single_by_necessity" in src
+    # and the count must not be incremented when there is no second path
+    guarded = src.index("resolve_backup")
+    assert src.index("dual_sites += 1") > guarded
