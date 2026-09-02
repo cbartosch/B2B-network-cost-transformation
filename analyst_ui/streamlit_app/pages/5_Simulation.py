@@ -70,7 +70,31 @@ else:
     elif _fp.get("needs_split"):
         st.warning(_fp.get("split_note", ""))
     if _fp.get("register_total") is not None:
-        st.caption(f"Registered total: {_fp['register_total']:,} sites. This "
+        # Which fact, and what else was in the running. "the register says
+        # 3,912" is unanswerable without this: the resolver picks one fact from
+        # several by standing then value, so a reader could not see which won.
+        _tf = _fp.get("total_from") or {}
+        if _tf:
+            st.caption(
+                f"That total comes from one fact: **{_tf.get('value_base')} "
+                f"{_tf.get('unit') or 'sites'}** for {_tf.get('subject')}, "
+                f"asserted by {_tf.get('asserted_by')} "
+                f"({_tf.get('corroboration_state')}).")
+        _others = _fp.get("other_footprint_facts") or []
+        if _others:
+            with st.expander(
+                    f"{len(_others)} other Location footprint fact(s) not used"):
+                st.dataframe(pd.DataFrame(_others),
+                             use_container_width=True, hide_index=True)
+                st.caption(
+                    "The resolver takes one fact - best corroboration "
+                    "standing, then largest value. That is right for competing "
+                    "claims about the same thing and wrong for complementary "
+                    "ones: 1,840 UK stores and 89 Ireland stores are both true "
+                    "and the total is 1,929, not 1,840. If these are different "
+                    "countries rather than rival estimates, register one "
+                    "combined fact or allocate them by hand below.")
+    st.caption(f"Registered total: {_fp['register_total']:,} sites. This "
                    f"page never changes it - the register is altered only on "
                    f"page 2.")
 

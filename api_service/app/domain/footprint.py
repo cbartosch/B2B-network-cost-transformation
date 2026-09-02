@@ -110,7 +110,8 @@ def resolve(session, case_id: str) -> dict:
               f"nothing anybody decided")
         saved = []
 
-    fact, why_not = _best_footprint_fact(session, case_row)
+    fact, why_not, _all_footprint_facts = _best_footprint_fact(
+        session, case_row)
 
     if fact is not None:
         total = int(float(fact.value_base))
@@ -135,6 +136,22 @@ def resolve(session, case_id: str) -> dict:
                     f"countries and site types."),
                 "needs_split": False,
                 "register_total": total,
+                # Which fact supplied it, and what else was in the running.
+                # "the register says 3,912" is unanswerable without this: the
+                # resolver picks one fact from several by standing then value,
+                # so a reader cannot see which won - or that facts about
+                # different countries competed instead of summing.
+                "total_from": {
+                    "known_fact_id": fact.known_fact_id,
+                    "subject": fact.subject, "unit": fact.unit,
+                    "value_base": str(fact.value_base),
+                    "corroboration_state": fact.corroboration_state,
+                    "asserted_by": fact.asserted_by},
+                "other_footprint_facts": [
+                    {"value_base": str(r.value_base), "unit": r.unit,
+                     "subject": r.subject,
+                     "corroboration_state": r.corroboration_state}
+                    for r in _all_footprint_facts if r is not fact],
                 "split_total": saved_total,
                 "diverges": diverges,
                 "split_note": (
@@ -171,6 +188,22 @@ def resolve(session, case_id: str) -> dict:
                 "needs_split": True,
                 "unallocated_sites": total,
                 "register_total": total, "split_total": 0,
+                # Which fact supplied it, and what else was in the running.
+                # "the register says 3,912" is unanswerable without this: the
+                # resolver picks one fact from several by standing then value,
+                # so a reader cannot see which won - or that facts about
+                # different countries competed instead of summing.
+                "total_from": {
+                    "known_fact_id": fact.known_fact_id,
+                    "subject": fact.subject, "unit": fact.unit,
+                    "value_base": str(fact.value_base),
+                    "corroboration_state": fact.corroboration_state,
+                    "asserted_by": fact.asserted_by},
+                "other_footprint_facts": [
+                    {"value_base": str(r.value_base), "unit": r.unit,
+                     "subject": r.subject,
+                     "corroboration_state": r.corroboration_state}
+                    for r in _all_footprint_facts if r is not fact],
                 "diverges": False,
                 "split_note": (
                     f"{total:,} sites are registered and none are allocated. A "
@@ -333,7 +366,7 @@ def _best_footprint_fact(session, case_row) -> tuple:
         return None, (
             "no known fact of class 'Location footprint' on this case"
             + (f"; the register holds {classes}" if classes
-               else "; the register is empty"))
+               else "; the register is empty")), []
 
     # Defence at the consumer as well as the producer. register() now refuses
     # a unit that plainly belongs to another dimension, but rows written before
@@ -350,7 +383,7 @@ def _best_footprint_fact(session, case_row) -> tuple:
     def _rejected(row):
         return (unit_conflicts_with_class("Location footprint", row.unit)
                 or value_implausible_for_class("Location footprint",
-                                               row.value_base))
+                                               row.value_base)), "", []
 
     mismatched = [r for r in rows if _rejected(r)]
     rows = [r for r in rows if r not in mismatched]
@@ -365,14 +398,18 @@ def _best_footprint_fact(session, case_row) -> tuple:
         return None, (
             f"{len(mismatched)} fact(s) filed as 'Location footprint' cannot "
             f"be a count of sites and are ignored rather than read as one. "
-            f"{detail} Correct the class or the value on page 2.")
+            f"{detail} Correct the class or the value on page 2."), []
 
     usable = [r for r in rows if r.value_base is not None]
     if not usable:
         return None, (
             f"{len(rows)} Location footprint fact(s) exist but none carries a "
-            f"value, so there is no number to use")
+            f"value, so there is no number to use"), []
 
     usable.sort(key=lambda r: (_STANDING.get(r.corroboration_state, 2),
                                float(r.value_base)), reverse=True)
-    return usable[0], ""
+    # The runners-up too. Picking one fact and discarding the record of the
+    # others makes a total unexplainable, and these may not even be competing
+    # claims - "1,840 UK stores" and "89 Ireland stores" are complementary and
+    # this takes the larger.
+    return usable[0], "", usable

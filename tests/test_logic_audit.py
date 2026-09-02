@@ -594,3 +594,42 @@ def test_no_code_reads_an_attribute_off_a_string_list_field():
                             f"{path.name}: iterates {source} (list[str]) and "
                             f"reads .{inner.attr}")
     assert not offenders, "\n".join(sorted(set(offenders)))
+
+
+def test_every_return_from_one_function_has_the_same_arity():
+    """Adding the runners-up to _best_footprint_fact's return left four of its
+    five return paths at the old arity - each one an unpacking error on a real
+    branch, and py_compile passes all of them.
+
+    The three that fire on a missing or unusable fact are exactly the branches
+    an analyst hits first on a new case.
+    """
+    import ast
+    from collections import defaultdict
+
+    offenders = []
+    for path in sorted(APP.rglob("*.py")):
+        for fn in ast.walk(ast.parse(path.read_text())):
+            if not isinstance(fn, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                continue
+            arities = defaultdict(list)
+            for node in ast.walk(fn):
+                if not (isinstance(node, ast.Return) and node.value is not None):
+                    continue
+                # a return inside a nested def belongs to that def
+                inner = [n for n in ast.walk(fn)
+                         if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))
+                         and n is not fn
+                         and n.lineno <= node.lineno <= (n.end_lineno or 0)]
+                if inner:
+                    continue
+                value = node.value
+                arity = (len(value.elts) if isinstance(value, ast.Tuple) else 1)
+                arities[arity].append(node.lineno)
+            # A function returning both a tuple and a bare value is the defect;
+            # returning None early is normal and excluded above.
+            if len(arities) > 1:
+                offenders.append(
+                    f"{path.name}::{fn.name} returns arities "
+                    f"{ {k: v for k, v in sorted(arities.items())} }")
+    assert not offenders, "\n".join(offenders)
