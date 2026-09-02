@@ -299,34 +299,52 @@ st.caption("Whatever is in the table below is what runs. Edit it, then Save or "
            "Run - both persist it to the case.")
 ARCHETYPES = ("BRANCH", "LARGE_OFFICE", "WAREHOUSE", "DC", "STORE")
 DENSITY_BANDS = ["", "DENSE_URBAN", "URBAN", "SUBURBAN", "RURAL"]
-# A proposal the analyst accepted into the editor. Held in session rather than
-# saved, so it is still theirs to change and still requires Save or Run - the
-# same accept-or-edit act the public known-fact sweep uses.
+# ------------------------------------------------- the working footprint
+# What the analyst has in front of them, held in session until they save it,
+# replace it, or the case changes. Nothing here reverts on its own.
+#
+# This was read fresh from the resolver every run, with an accepted proposal
+# popped from session on the render that showed it - so by the time the analyst
+# pressed Run the proposal was gone, the resolver's empty result came back, and
+# the editor re-initialised to nothing. Run then reported "no usable rows" and
+# Save wrote that emptiness over the case.
+_fp_case = case_id
+if st.session_state.get("_fp_case") != _fp_case:
+    # A different case: start from what that case resolves to, not from what
+    # the last one had in the table.
+    st.session_state["_fp_case"] = _fp_case
+    st.session_state["_fp_rows"] = None
+    st.session_state["_fp_gen"] = 0
+
 _applied = st.session_state.pop("_split_apply", None)
 if _applied:
-    _resolved = _applied
+    st.session_state["_fp_rows"] = _applied
+    st.session_state["_fp_gen"] = st.session_state.get("_fp_gen", 0) + 1
+
+if st.session_state.get("_fp_rows") is None:
+    # First visit to this case, or just after a save: take what the case
+    # resolves to.
+    st.session_state["_fp_rows"] = list(_resolved)
+
+_working = st.session_state["_fp_rows"]
+if _applied:
     st.success(f"{len(_applied)} proposed row(s) put in the table. Correct "
                f"them, then Save or Run - nothing is stored until you do.")
+
 default = pd.DataFrame(
     [{"country": r.get("country"), "archetype": r.get("archetype"),
       "density": r.get("density") or "", "sites": r.get("sites")}
-     for r in _resolved]
+     for r in _working]
     or [{"country": "", "archetype": "", "density": "", "sites": 0}])
 
-# The key changes with the data, which is the only way a keyed data_editor can
-# also be refreshed programmatically.
+# The key changes only when the data is deliberately replaced - a proposal, a
+# promotion, a different case - and never because a cell was edited.
 #
-# A bare key="sim_fp" made Streamlit cache the frame and ignore the `data`
-# argument on every later run. So a proposed split never appeared, the cleaner
-# read the stale empty frame and reported "no usable rows", and Save then
-# persisted that emptiness over whatever the analyst had - one bug that looked
-# like three.
-#
-# Hashing the content keeps the key stable while the analyst edits cells, so
-# their edits survive a rerun, and changes the moment the source rows do, so a
-# proposal or a promotion re-initialises the table.
-_fp_key = "sim_fp_" + hashlib.sha256(
-    default.to_json(orient="records").encode()).hexdigest()[:12]
+# Hashing the content was the wrong fix: it made the key follow `default`, and
+# `default` reverted every run, so the editor discarded the edits it was meant
+# to protect. A generation counter separates "the analyst changed a cell", which
+# must persist, from "the source rows changed", which must refresh.
+_fp_key = f"sim_fp_{case_id[:8]}_{st.session_state.get('_fp_gen', 0)}"
 fp = st.data_editor(
     default, num_rows="dynamic", use_container_width=True, key=_fp_key,
     column_config={
@@ -339,6 +357,14 @@ fp = st.data_editor(
         "archetype": st.column_config.SelectboxColumn(
             "archetype", options=[""] + list(ARCHETYPES)),
     })
+
+# Written back, so what is on screen survives the next rerun whatever caused
+# it. A button press is a rerun, and the table has to still be there when the
+# handler reads it.
+st.session_state["_fp_rows"] = [
+    {"country": r.get("country"), "archetype": r.get("archetype"),
+     "density": r.get("density") or None, "sites": r.get("sites")}
+    for r in fp.to_dict("records")]
 
 c1, c2 = st.columns(2)
 # Read from the case, not defaulted. A pinned seed is the whole basis of the
@@ -473,6 +499,12 @@ if _save_col.button("Save footprint"):
         if "_error" in _r:
             st.error(_r["_error"])
         else:
+            # Cleared so the next run re-reads what was actually stored. Left
+            # in place, the working copy would go stale in the other direction
+            # and the table would show what was typed rather than what the case
+            # now holds.
+            st.session_state["_fp_rows"] = None
+            st.session_state["_fp_gen"] = st.session_state.get("_fp_gen", 0) + 1
             api.flash(f"Saved {len(_rows_to_save)} row(s) to the case. "
                       f"They will be here next time without running anything.")
             st.rerun()

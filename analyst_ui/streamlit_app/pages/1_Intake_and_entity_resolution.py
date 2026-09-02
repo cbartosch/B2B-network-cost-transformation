@@ -265,8 +265,8 @@ st.caption("The system proposes; you dispose. Auto-selection is prohibited even 
            "only one candidate is returned.")
 
 col1, col2 = st.columns([3, 1])
-hint = col1.text_input("Name as supplied", name or "")
-provider = col2.selectbox("Provider", ["anthropic", "openai"])
+hint = col1.text_input("Name as supplied", name or "", key="er_hint")
+provider = col2.selectbox("Provider", ["anthropic", "openai"], key="er_provider")
 
 if st.button("Generate candidates (LIVE agent run)", type="primary", disabled=not hint):
     with st.spinner("Calling provider..."):

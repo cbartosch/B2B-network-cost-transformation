@@ -51,11 +51,11 @@ spend_df = st.data_editor(
     num_rows="dynamic", use_container_width=True,
     column_config={"estimated_annual_spend": st.column_config.NumberColumn(
         "estimated_annual_spend", help="Annual spend as the client stated it. "
-                                       "Leave blank where they have not.")}, # The key follows the data, or a case whose saved spend differs would
-        # render the previous case's table: a keyed data_editor ignores its
-        # `data` argument on every run after the first.
-        key="v0_spend_" + hashlib.sha256(
-            str(sorted(_saved_spend.items())).encode()).hexdigest()[:12])
+                                       "Leave blank where they have not.")},
+    # Keyed on the case, not on the content. The case is what makes this a
+    # different table; hashing the figures would discard an edit the moment it
+    # changed them, which is the opposite of what a key is for.
+    key=f"v0_spend_{case_id[:8]}")
 
 c1, c2 = st.columns(2)
 # Persisted on the case rather than defaulted every visit. 5,000 users and 900

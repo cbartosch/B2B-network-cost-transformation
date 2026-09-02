@@ -832,8 +832,15 @@ def test_a_keyed_data_editor_keys_on_its_own_data(page):
         if key is None:
             continue                      # unkeyed re-reads its data each run
         rendered = ast.unparse(key.value)
-        if "sha256" in rendered:
-            continue
+        # A content hash is the wrong key, not the right one. It makes the key
+        # follow the frame, so the first edited cell changes the hash and the
+        # editor re-initialises from the unedited data - discarding exactly what
+        # a key exists to protect. The key must change when the data is
+        # deliberately replaced and not when a cell is edited: a generation
+        # counter, or the case id.
+        assert "sha256" not in rendered, (
+            f"{page.name}:{node.lineno} keys a data_editor on a content hash, "
+            f"so an edit discards itself")
         # The key may be a variable holding the hash. Follow it rather than
         # reading its name: asserting on the expression alone flagged two
         # correct editors, and a check that cries wolf is a check that gets
@@ -846,6 +853,44 @@ def test_a_keyed_data_editor_keys_on_its_own_data(page):
                          for t in n.targets)), None)
             if assignment and "sha256" in ast.unparse(assignment.value):
                 continue
-        raise AssertionError(
-            f"{page.name}:{node.lineno} keys a data_editor on a constant, so "
-            f"it will ignore its data after the first run")
+        # A literal key is also wrong: the editor then ignores its `data`
+        # argument for the life of the session, so a proposal or a case switch
+        # never reaches the table. The key has to vary with something.
+        if isinstance(key.value, ast.Constant):
+            raise AssertionError(
+                f"{page.name}:{node.lineno} keys a data_editor on a literal, "
+                f"so it will ignore its data after the first run")
+
+
+def test_the_footprint_table_survives_the_rerun_a_button_causes():
+    """The failure reported three times.
+
+    The table was read fresh from the resolver every run, and an accepted
+    proposal was popped from session on the render that displayed it. So by the
+    time the analyst pressed Run the proposal was gone, the resolver's empty
+    result came back, the editor re-initialised to nothing, Run reported "no
+    usable rows", and Save wrote that emptiness over the case.
+
+    A button press is a rerun. Whatever is on screen has to still be there when
+    the handler reads it."""
+    page = _page("Simulation")
+    text = page.read_text()
+    assert 'st.session_state["_fp_rows"]' in text, (
+        "the working footprint must live in session, not be re-read each run")
+    # written back after the editor, or an edit is lost on the next rerun
+    editor = text.index("fp = st.data_editor")
+    writeback = text.index('st.session_state["_fp_rows"] = [')
+    assert writeback > editor, (
+        "the edited frame must be written back after the editor renders")
+    assert '_fp_gen' in text, (
+        "the key needs a generation counter so a deliberate replacement "
+        "refreshes the table and an edit does not")
+
+
+def test_saving_the_footprint_refreshes_from_the_case():
+    """Left in place, the working copy goes stale the other way and the table
+    shows what was typed rather than what the case now holds."""
+    text = _page("Simulation").read_text()
+    save = text.index('_save_col.button("Save footprint")')
+    after = text[save:save + 1400]
+    assert 'st.session_state["_fp_rows"] = None' in after

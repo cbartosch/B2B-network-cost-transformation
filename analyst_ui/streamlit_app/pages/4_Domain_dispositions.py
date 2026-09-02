@@ -327,7 +327,7 @@ with st.expander("Show the prompt used for a domain"):
             pick = st.selectbox(
                 "Domain", _choices,
                 format_func=lambda d: f"{d['domain_no']}. {d['domain_name']} "
-                                      f"({d['agent_id']})")
+                                      f"({d['agent_id']})", key="dd_prompt_pick")
             p = api.get(f"/v1/outside-in/cases/{case_id}/domain-research:prompt",
                         domain_no=pick["domain_no"])
             if "_error" in p:

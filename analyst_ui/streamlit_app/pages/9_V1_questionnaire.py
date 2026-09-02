@@ -33,7 +33,7 @@ st.caption(f"{q['answered']} of {q['total']} answered.")
 pc1, pc2 = st.columns(2)
 pmode = pc1.selectbox("Prefill mode", ["LIVE", "DETERMINISTIC_ONLY"],
                       help="A prefill is a suggestion for the client to correct. It is "
-                           "never counted as an answer.")
+                           "never counted as an answer.", key="q_prefill_mode")
 if pc2.button("Run LLM-02 prefill"):
     r = api.post(f"/v1/outside-in/cases/{case_id}/questionnaire:prefill",
                  {"mode": pmode})
@@ -49,9 +49,9 @@ st.dataframe(pd.DataFrame([
 
 st.subheader("Record an answer")
 a1, a2, a3 = st.columns(3)
-key = a1.selectbox("Question", [i["question_key"] for i in items])
-val = a2.text_input("Client's answer")
-who = a3.text_input("Answered by (named person at the client)")
+key = a1.selectbox("Question", [i["question_key"] for i in items], key="q_answer_key")
+val = a2.text_input("Client's answer", key="q_answer_val")
+who = a3.text_input("Answered by (named person at the client)", key="q_answer_by")
 if st.button("Save answer"):
     r = api.post(f"/v1/outside-in/cases/{case_id}/questionnaire:answer",
                  {"question_key": key, "answer_value": val, "answered_by": who})

@@ -49,6 +49,8 @@ st.caption("A quick sweep of public sources for the facts this register "
 
 if st.button("Look up public facts"):
     with st.spinner("Searching public sources..."):
+        # A new sweep is a deliberate replacement, so the editor refreshes.
+        st.session_state["_pf_gen"] = st.session_state.get("_pf_gen", 0) + 1
         st.session_state["_prefill"] = api.post(
             f"/v1/outside-in/cases/{case_id}/known-facts:prefill-public", {},
             timeout=600.0)
@@ -113,11 +115,12 @@ elif _pf:
                     help="Shown so you can see whether public sources agree "
                          "with what is already there."),
             },
-            # The key follows the data, or a second sweep renders the first
-            # one's proposals: a keyed data_editor ignores its `data` argument
-            # on every run after the first.
-            key="pf_editor_" + hashlib.sha256(
-                _df.to_json(orient="records").encode()).hexdigest()[:12])
+            # A generation counter, not a content hash. The key must change
+            # when a new sweep replaces the proposals and stay put while the
+            # analyst edits them - hashing the content does the opposite,
+            # because the first edited cell changes the hash and the editor
+            # re-initialises from the unedited frame.
+            key=f"pf_editor_{st.session_state.get('_pf_gen', 0)}")
 
         with st.expander("Sources behind these proposals"):
             for prop in _props:

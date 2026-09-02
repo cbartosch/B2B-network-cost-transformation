@@ -77,7 +77,7 @@ else:
     st.dataframe(df, use_container_width=True, hide_index=True)
 
     pick = st.selectbox("Inspect provenance for run",
-                        [r["agent_run_id"] for r in runs])
+                        [r["agent_run_id"] for r in runs], key="ei_run_pick")
     _prov = api.get(f"/v1/agent-runs/{pick}/provenance")
     if "_error" in _prov:
         st.error(f"Could not read provenance: {_prov['_error']}")
