@@ -169,9 +169,15 @@ def bias_probes(*, priors: list, archetypes: dict, model_source: str) -> list:
     # module and found it in the prose describing its own absence, so the probe
     # reported NOT_CONFIRMED about a gap it had just documented.
     def _costs_include(*needles):
-        build_up = model_source[model_source.index("def build_components"):] \
-            if "def build_components" in model_source else model_source
-        return any(n in build_up for n in needles)
+        """Searches the whole cost module, not just the build-up.
+
+        Bounded to build_components, this reported transition cost absent
+        after it was added - because a one-time cost is not a component of the
+        recurring baseline and correctly lives in the scenario, where the
+        saving it offsets is. A probe scoped to the wrong half of the module
+        answers a narrower question than the one it prints.
+        """
+        return any(n in model_source for n in needles)
 
     _probe("Does the model omit taxes and one-time charges?",
            "CONFIRMED" if not _costs_include(
@@ -182,12 +188,13 @@ def bias_probes(*, priors: list, archetypes: dict, model_source: str) -> list:
            "annualised")
 
     _probe("Does the model understate transition cost?",
-           "CONFIRMED" if not _costs_include(
-               "dual_running", "transition_cost", "migration_cost")
-           else "NOT_CONFIRMED",
-           "no transition, migration or dual-running cost exists, so net "
-           "savings and payback cannot be computed at all - understatement is "
-           "total rather than partial")
+           "PARTIALLY_MITIGATED" if _costs_include(
+               "transition.net(", "dual_running") else "CONFIRMED",
+           "one-time cost, dual running and payback exist since 4.165 and are "
+           "evidence grade E - expert assumptions with no quoted transaction "
+           "behind them. Six cost categories remain unmodelled and are named "
+           "in the output: CPE, licence ramp, internal programme cost, "
+           "early-termination liability, construction, temporary capacity")
 
     _probe("Does the model treat wireless backup as equivalent capacity?",
            "CONFIRMED",

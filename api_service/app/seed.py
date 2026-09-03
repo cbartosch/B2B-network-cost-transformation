@@ -185,6 +185,28 @@ THRESHOLDS = [
     # that is a reasonable simplification; at several hundred it is a claim
     # about an estate nobody made, and it prices every one of them at a tier
     # nobody chose.
+    # Transition cost, per site, one-time.
+    #
+    # Audit finding P3: the model had no one-time, transition or dual-running
+    # cost at all, so net savings and payback could not be computed - the
+    # understatement was total rather than partial, and every scenario reported
+    # a gross figure as though it were the answer.
+    #
+    # These are evidence grade E, like the rate card: expert assumptions with
+    # no transaction behind them. They make the model more conservative, not
+    # less, which is the right direction for an unevidenced addition - but a
+    # payback computed from them is a modelled payback and the output says so.
+    ("transition_policy", "one_time_cost_per_site_low", "400"),
+    ("transition_policy", "one_time_cost_per_site_base", "900"),
+    ("transition_policy", "one_time_cost_per_site_high", "1800"),
+    # Both circuits billed while a site is cut over. Three months is a
+    # commonplace for a co-ordinated programme and optimistic for a large one.
+    ("transition_policy", "dual_running_months", "3"),
+    # Sites migrated per month once the programme is running. 4,000 sites at
+    # 120 a month is nearly three years, which is why a payback computed
+    # without it is meaningless.
+    ("transition_policy", "sites_migrated_per_month", "120"),
+    ("transition_policy", "evidence_grade", "E"),
     ("footprint_policy", "max_sites_per_archetype_row", "100"),
     # The same rule for a row that says where its sites are. 100 was set when a
     # row meant (country, archetype) and every site in it was claimed identical

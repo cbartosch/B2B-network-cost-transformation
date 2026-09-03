@@ -18,7 +18,7 @@ That is the double-counting control in 0.2D.
 from dataclasses import dataclass, field
 from decimal import Decimal
 
-from . import locations
+from . import locations, transition
 from .money import D, Range, as_str
 
 SIMULATED = "SIMULATED"
@@ -409,7 +409,13 @@ SCENARIOS = [("A", "Reprice current state"), ("B", "Optimized SD-WAN"),
              ("C", "SASE northstar"), ("D", "Carrier-managed NaaS")]
 
 
-def scenarios(components: list[Component], levers: list[dict]) -> dict:
+def scenarios(components: list[Component], levers: list[dict],
+              # P3: what it costs to get to the target estate. Optional and
+              # keyword-only, so every existing caller gets the gross figure it
+              # always got - a missing payback is honest, a payback computed
+              # from no assumptions is not.
+              *, transition_policy=None, sites: int = 0,
+              monthly_run_rate=None) -> dict:
     """Apply each lever only to the cost layers it names, compounding on each
     component's remaining value. Layer composition is preserved into the target,
     which is what makes the target-side simulated share meaningful."""
@@ -498,6 +504,14 @@ def scenarios(components: list[Component], levers: list[dict]) -> dict:
             "savings_pct_base": (f"{(saving.base / current.base):.3f}"
                                  if current.base else "0.000"),
             "levers": applied,
+            # Net of what it costs to get there. Absent when no transition
+            # policy is supplied: a missing payback is honest, and one computed
+            # from no assumptions is not.
+            **({"transition": transition.net(
+                    gross_annual=saving, sites=sites,
+                    monthly_run_rate=monthly_run_rate or D(0),
+                    policy=transition_policy)}
+               if transition_policy is not None and sites else {}),
             # Levers this scenario offers that found nothing to act on. A
             # scenario quietly containing fewer levers than it declares reads
             # as a weaker opportunity rather than a different estate.

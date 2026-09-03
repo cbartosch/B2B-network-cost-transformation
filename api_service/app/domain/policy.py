@@ -549,6 +549,50 @@ class TriangulationPolicy:
 
 
 @dataclass(frozen=True)
+@dataclass
+class TransitionPolicy:
+    """What it costs to get to the target estate. P3: none of this existed, so
+    every scenario reported a gross saving as though it were the answer."""
+    set_name: str
+    one_time_cost_per_site_low: Decimal
+    one_time_cost_per_site_base: Decimal
+    one_time_cost_per_site_high: Decimal
+    dual_running_months: int
+    sites_migrated_per_month: int
+    evidence_grade: str = "E"
+
+    @classmethod
+    def from_rows(cls, rows: dict, set_name: str = "transition_policy"):
+        r = lambda k: _require(rows, k, set_name)            # noqa: E731
+        policy = cls(
+            set_name=set_name,
+            one_time_cost_per_site_low=r("one_time_cost_per_site_low"),
+            one_time_cost_per_site_base=r("one_time_cost_per_site_base"),
+            one_time_cost_per_site_high=r("one_time_cost_per_site_high"),
+            dual_running_months=int(r("dual_running_months")),
+            sites_migrated_per_month=int(r("sites_migrated_per_month")),
+            evidence_grade=str(rows.get("evidence_grade", "E")))
+        policy.validate()
+        return policy
+
+    def validate(self):
+        lo, ba, hi = (Decimal(self.one_time_cost_per_site_low),
+                      Decimal(self.one_time_cost_per_site_base),
+                      Decimal(self.one_time_cost_per_site_high))
+        if not lo <= ba <= hi:
+            raise PolicyInvalid(
+                f"{self.set_name}: one-time cost band {lo}/{ba}/{hi} is not "
+                f"ordered")
+        if self.sites_migrated_per_month < 1:
+            raise PolicyInvalid(
+                f"{self.set_name}: a migration rate below one site a month "
+                f"never completes, and a payback computed against it is "
+                f"arithmetic on an impossible schedule")
+        if self.dual_running_months < 0:
+            raise PolicyInvalid(
+                f"{self.set_name}: dual running cannot be negative")
+
+
 class FootprintPolicy:
     """How coarse a footprint row may be.
 

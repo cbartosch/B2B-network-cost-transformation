@@ -55,6 +55,33 @@ for rec in recs:
              f"- {rec['label']}")
     with st.expander(header):
         st.write(f"**Basis:** {rec['basis']}")
+        # A gross run-rate saving was the whole story until 4.165: no one-time
+        # cost, no dual running, no payback. A reader comparing scenarios was
+        # comparing prizes without their price.
+        _t = rec.get("transition")
+        if _t:
+            st.markdown("**What it costs to get there**")
+            _c1, _c2, _c3 = st.columns(3)
+            _c1.metric("One-time", _t["one_time_cost"]["base"])
+            _c2.metric("Dual running", _t["dual_running_cost"]["base"])
+            _c3.metric("First-year net", _t["first_year_net"])
+            _pb = _t["payback_months"]
+            st.caption(
+                f"Payback {_pb['base']} month(s) at base, "
+                f"{_pb['optimistic']} optimistic, {_pb['pessimistic']} "
+                f"pessimistic - against a programme of "
+                f"{_t['programme_months']} month(s). "
+                + _t["note"])
+            st.warning(_t["payback_basis"])
+            with st.expander(f"{len(_t['not_modelled'])} cost categories this "
+                             f"model has no basis for"):
+                for _n in _t["not_modelled"]:
+                    st.caption(f"   {_n}")
+        else:
+            st.caption(
+                "No transition cost is modelled for this recommendation, so "
+                "the saving above is gross and there is no payback. Re-run V0 "
+                "with a site count for the net view.")
         if rec["material_levers"]:
             st.warning(f"Material lever(s) (\u2265 governed share of current TCO): "
                       f"{', '.join(rec['material_levers'])}")
