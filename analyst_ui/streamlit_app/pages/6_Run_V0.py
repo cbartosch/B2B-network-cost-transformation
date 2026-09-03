@@ -7,6 +7,11 @@ import api_client as api
 st.title("6. Run V0")
 st.caption("Specification 0.3C - the coverage gate decides COMPLETE, PARTIAL or refused.")
 
+# Renders whatever the previous run stored. This page called api.flash()
+# and never rendered it, so every confirmation it wrote was discarded -
+# the analyst saw a rerun with no acknowledgement that anything happened.
+api.show_flash()
+
 case_id = st.session_state.get("case_id")
 # Session state outlives a case switch, so anything cached here must be scoped
 # to the case it came from or it will be rendered under the wrong one.

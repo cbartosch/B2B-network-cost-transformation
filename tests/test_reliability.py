@@ -256,14 +256,30 @@ def test_provenance_stated_on_candidates_reaches_the_grade():
     graded = _grade(
         verified_sources=[],
         claimed_sources=2,
+        # claim_verified is what 4.122.0 added: a source whose claimed excerpt
+        # was not found in the page it was fetched from cannot carry a top
+        # grade. This fixture predates the control and asserted the grade the
+        # code gave before it existed - the third fixture in this file to need
+        # the same field.
         band={"spread_share": 0.04, "newest_year": 2025, "candidates": [
             {"source_url": "https://x/ar", "source_class": "PRIMARY_FILING",
-             "how_read": "FULL_PAGE", "figure_basis": "STATED"},
+             "how_read": "FULL_PAGE", "figure_basis": "STATED",
+             "claim_verified": True, "claim_checked": "EXACT"},
             {"source_url": "https://y", "source_class": "REGULATOR",
-             "how_read": "FULL_PAGE", "figure_basis": "STATED"}]})
+             "how_read": "FULL_PAGE", "figure_basis": "STATED",
+             "claim_verified": True, "claim_checked": "EXACT"}]})
     assert graded["verified_sources"] == 2, (
         "candidate provenance must count toward the grade")
-    assert graded["grade"] == R.VERY_RELIABLE
+    # RELIABLE, not VERY_RELIABLE. This test predates the 4.122 claim check
+    # and asserted the grade the code gave before it existed.
+    #
+    # Provenance carried on a candidate is the agent's word: nothing has
+    # fetched the page to see whether the claimed excerpt is in it. That is
+    # worth counting - the alternative is discarding it, which was the defect
+    # this test was written to catch - and it is not worth a top grade.
+    assert graded["grade"] == R.RELIABLE
+    assert any("the agent's word" in s for s in graded["shortfalls"]), (
+        "and the grade must say why it stopped short")
 
 
 # ------------------------------------ the grade rests on checkable provenance

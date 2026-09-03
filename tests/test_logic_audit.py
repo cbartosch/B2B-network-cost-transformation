@@ -50,7 +50,12 @@ def test_every_footprint_origin_the_resolver_emits_is_labelled():
     """And no origin is labelled that the resolver cannot emit - a dead label
     is a branch nobody can reach and nobody can tell is unreachable."""
     resolver = (APP / "domain" / "footprint.py").read_text()
-    page = next(p for p in UI.rglob("*.py") if p.name.startswith("4_")).read_text()
+    # Found the page by its number prefix. Reordering the workflow in 4.116
+    # made 4_ the dispositions page and 5_ the simulation, so this has been
+    # reading the wrong file ever since - the same defect that broke twenty
+    # tests in the 146-failure list.
+    page = next(p for p in UI.rglob("*.py")
+                if "Simulation" in p.name).read_text()
 
     emitted = set(re.findall(r'"origin": "([A-Z_]+)"', resolver))
     labelled = set(re.findall(r'"([A-Z_]+)": \("', page))

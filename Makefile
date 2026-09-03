@@ -1,4 +1,7 @@
-.PHONY: validate-cases audit-contract audit-identity check-duplication validate-flow verify-domains backup restore deck benchmarks reach tls-doctor tls-doctor-in-container check up down logs test seed reset psql doctor migrate pins attest
+.PHONY: test-offline validate-cases audit-contract audit-identity check-duplication validate-flow verify-domains backup restore deck benchmarks reach tls-doctor tls-doctor-in-container check up down logs test seed reset psql doctor migrate pins attest
+
+test-offline: ## run the suite without pytest, for a locked-down environment
+	python tools/run_tests_offline.py
 
 validate-cases: ## compare estimator output against cases with known actuals
 	python tools/validate_cases.py

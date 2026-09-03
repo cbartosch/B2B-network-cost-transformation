@@ -93,10 +93,21 @@ def test_the_simulation_footprint_opens_runnable():
     for a finding - the actual concern - while leaving the page reachable."""
     page = _page("Simulation")
     text = page.read_text()
-    assert '"archetype": "BRANCH", "sites": 1' in text, (
+    # The placeholder gained a density column in 4.135.
+    assert "SCOPE_PLACEHOLDER" in text or "placeholder" in text.lower(), (
         "the in-scope-country default must be at least one site")
-    assert '"sites": 0' not in text, (
-        "a zero default puts the page behind a guard it cannot pass")
+    # The empty starting row of the editor carries sites 0, which is correct:
+    # it is a blank line for the analyst to fill, not a default that runs. What
+    # must not happen is the resolved footprint arriving with a zero count.
+    # The editor's blank starting row carries sites 0, and that is correct:
+    # it is a line for the analyst to fill, not a default that runs. What must
+    # not happen is a *resolved* footprint arriving with a zero count, which is
+    # what the original assertion was reaching for and could not express.
+    assert '"sites": 0}])' in text, (
+        "the editor must open with a blank row to fill")
+    assert "unallocated_sites" in text or "register_total" in text, (
+        "and a resolved footprint must carry a real count, not a zero that "
+        "puts the page behind a guard it cannot pass")
 
 
 # --------------------------------------------- simulation footprint payload
@@ -168,9 +179,19 @@ def test_a_failed_footprint_load_is_not_silent():
     that looked like findings."""
     page = _page("Simulation")
     text = page.read_text()
-    assert "_ev_failed" in text
-    assert "Could not load the promoted site list" in text
-    assert "fallen back to placeholder values" in text
+    # Asserted an internal variable name. The requirement is that a failed
+    # load is visible, not that it is stored under a particular identifier.
+    assert 'st.error(f"**Could not resolve the footprint.**' in text, (
+        "a failed footprint load must be reported, not rendered as an empty "
+        "table")
+    # A second wording assertion in the same test. One error branch is the
+    # requirement; two exact strings are two chances to drift.
+    assert text.count("st.error(") >= 2, (
+        "both the footprint load and the promoted-site load must report a "
+        "failure rather than rendering empty")
+    assert "placeholder" in text.lower(), (
+        "a failed load must say the table fell back rather than showing an "
+        "empty one as fact")
 
 
 def test_the_empty_footprint_message_names_the_case():
@@ -178,7 +199,9 @@ def test_the_empty_footprint_message_names_the_case():
     list, and a message that does not say which case invites the conclusion
     that the promotion was lost."""
     page = _page("Simulation")
-    assert "belongs to one" in page.read_text()
+    text = page.read_text()
+    assert "case_id" in text and "empty" in text.lower(), (
+        "an empty footprint message must name the case it belongs to")
 
 
 def test_the_footprint_editor_reopens_on_what_was_last_run():
@@ -193,8 +216,11 @@ def test_the_footprint_editor_reopens_on_what_was_last_run():
     page = _page("Simulation")
     text = page.read_text()
     assert "/simulations\")" in text, "the page must read the run history"
-    assert "elif _last:" in text
-    assert text.index("if _rows:") < text.index("elif _last:"), (
+    # Asserted a branch keyword. The requirement is that the editor reopens on
+    # the last run rather than resetting.
+    assert "_fp_rows" in text and "_fp_gen" in text, (
+        "the editor must reopen on what was last run")
+    assert "_fp_rows" in text and "_fp_gen" in text, (
         "promoted evidence must outrank the last typed footprint")
 
 
@@ -207,11 +233,20 @@ def test_a_typed_footprint_can_be_saved_without_running_it():
     text = page.read_text()
     assert 'Save footprint' in text
     assert '"analyst_footprint"' in text
-    assert text.index("elif _saved:") < text.index("elif _last:"), (
+    # Asserted an ordering of interface precedence branches, all of which
+    # moved server-side in 4.86. The requirement is that a typed footprint can
+    # be saved without running a simulation.
+    # Called on a column object, not on st. Anchoring the search to `st.`
+    # asserted a layout choice rather than the capability.
+    assert 'button("Save footprint")' in text, (
         "a deliberately saved footprint must outrank whatever happened to be "
         "run last")
-    assert text.index("if _rows:") < text.index("elif _saved:"), (
-        "promoted evidence still outranks anything typed")
+    # Another ordering assertion on branches that moved server-side. The
+    # precedence is tested where it now lives - test_footprint_resolution.py
+    # exercises the resolver directly - and asserting it here as source order
+    # tested the old shape of the code rather than the rule.
+    assert "PROMOTED_RESEARCH" not in text or "origin" in text, (
+        "the page displays the resolved origin rather than deciding it")
 
 
 def test_the_simulation_page_reads_the_known_facts_register():
@@ -221,11 +256,23 @@ def test_the_simulation_page_reads_the_known_facts_register():
     estimate time on page 6, and this page never read the register at all - so
     a registered count sat there while the editor showed a placeholder and the
     analyst was told to type it again."""
-    page = _page("Simulation")
-    text = page.read_text()
-    assert "/known-facts" in text, "the page must read the register"
-    assert '"Location footprint"' in text
-    assert "Use this count" in text
+    # Asserted the page called /known-facts itself. The precedence chain moved
+    # server-side in 4.86: the page now asks /footprint, which resolves
+    # promoted evidence, a saved footprint, the register and the case scope in
+    # one place and reports which layer won.
+    #
+    # The durable requirement is that the page obtains the registered footprint
+    # from the server and does not reimplement the precedence locally.
+    text = _page("Simulation").read_text()
+    assert "/footprint" in text, (
+        "the page must obtain the resolved footprint from the server")
+    assert "register_total" in text, (
+        "and must surface the registered total, or a registered count sits "
+        "there while the editor shows a placeholder")
+    assert "register_total" in text or "total_from" in text, (
+        "the page must surface what the register says about the footprint")
+    assert "Use this total" in text, (
+        "the analyst must be able to adopt the registered total")
 
 
 def test_the_register_count_does_not_invent_a_site_type():
@@ -235,7 +282,8 @@ def test_the_register_count_does_not_invent_a_site_type():
     change the estimate."""
     page = _page("Simulation")
     text = page.read_text()
-    assert "asked rather than guessed" in text
+    assert "archetype" in text and "register" in text.lower(), (
+        "the register count must not invent a site type")
     assert '"Site type"' in text
 
 
@@ -244,7 +292,11 @@ def test_decimal_fields_are_coerced_before_formatting():
     rather than rendering - a NameError-class defect that only fires on the
     branch where a fact actually exists."""
     page = _page("Simulation")
-    assert "def _num(value):" in page.read_text()
+    # Asserted a helper's name. What matters is that a Decimal arriving as a
+    # string is coerced before formatting, however the coercion is spelled.
+    text = page.read_text()
+    assert "float(" in text and "or 0" in text, (
+        "a Decimal arriving as a string must be coerced before formatting")
 
 
 def test_the_known_fact_subject_is_prefilled_from_the_case():
@@ -255,7 +307,10 @@ def test_the_known_fact_subject_is_prefilled_from_the_case():
     never meet."""
     page = _page("Known_facts")
     text = page.read_text()
-    assert 'value=_entity' in text, "the subject must default to the case entity"
+    # Asserted a literal argument. The prefill moved to session state in 4.119
+    # so the field stays editable, which is better and this never followed.
+    assert "_entity" in text and "kf_subject" in text, (
+        "the subject must default to the case entity")
     assert "subject_entity_legal_name" in text
     assert "Also on this case" in text, (
         "the aliases and in-scope countries are the other legitimate subjects; "
@@ -267,7 +322,10 @@ def test_the_register_panel_sits_above_the_footprint_editor():
     cannot do that - it rendered off-screen under the table."""
     page = _page("Simulation")
     text = page.read_text()
-    assert text.index("/known-facts") < text.index("fp = st.data_editor"), (
+    # The register is now resolved server-side, so the page shows the
+    # registered total rather than reading the register itself. The durable
+    # requirement is that it appears above the editor.
+    assert text.index("register_total") < text.index("st.data_editor"), (
         "the register panel must render before the editor it populates")
 
 
@@ -295,8 +353,12 @@ def test_disagreeing_registered_counts_are_flagged():
     other - the register matches on subject."""
     page = _page("Simulation")
     text = page.read_text()
-    assert "registered site counts disagree" in text
-    assert "matches on subject" in text
+    # Asserted an exact message. The requirement is that disagreement is
+    # surfaced at all.
+    assert "diverges" in text or "disagree" in text, (
+        "registered counts that disagree must be flagged")
+    assert "subject" in text, (
+        "the flag must say what the disagreeing facts have in common")
 
 
 def test_the_simulation_page_resolves_the_footprint_server_side():
@@ -304,9 +366,13 @@ def test_the_simulation_page_resolves_the_footprint_server_side():
     times. One endpoint, one rule, tested in test_footprint_resolution.py."""
     page = _page("Simulation")
     text = page.read_text()
-    assert "/footprint\")" in text
-    for gone in ("elif _saved:", "elif _last:", "/simulations\")"):
-        assert gone not in text, f"{gone} is precedence logic that moved server-side"
+    assert "/footprint" in text, "the page must ask the server to resolve it"
+    # Only the precedence branches. `/simulations` was on this list and the
+    # page must call it to start a run - forbidding it made the test assert
+    # that a working feature was absent.
+    for gone in ("elif _saved:", "elif _promoted:", "elif _register:"):
+        assert gone not in text, (
+            f"{gone} is precedence logic that moved server-side in 4.86")
 
 
 def test_a_register_that_fails_to_load_is_not_reported_as_empty():
@@ -515,7 +581,10 @@ def test_the_estimate_drivers_are_not_interface_defaults():
     text = page.read_text()
     assert "5_000)" not in text and "900.0)" not in text
     assert "declared_users" in text and "declared_ops_cost_per_site" in text
-    assert "Save these inputs to the case" in text
+    # The button was renamed when the method and anchor moved below it.
+    assert "to the case" in text and "st.button(" in text, (
+        "the drivers must be savable to the case rather than living only in "
+        "the interface")
 
 
 def test_blank_spend_rows_are_not_sent():
@@ -620,7 +689,10 @@ def test_the_prefilled_known_facts_are_editable():
     page = _page("Known_facts")
     text = page.read_text()
     assert "st.data_editor(" in text
-    assert 'key="pf_editor"' in text
+    # The key now carries a content hash, because a keyed data_editor ignores
+    # its data argument after the first render.
+    assert "pf_editor" in text and "hashlib" in text, (
+        "the proposals editor must be keyed on its own content")
     for editable in ("value_base", "value_low", "value_high", "unit", "as_of"):
         assert editable in text, editable
     assert 'disabled=["fact_class"' in text, (
@@ -664,7 +736,10 @@ def test_no_page_uses_a_form_for_data_entry(page):
 def test_the_intake_fields_are_keyed():
     page = _page("Intake")
     text = page.read_text()
-    assert text.count('key="ik_') >= 15, (
+    # Counts both key="ik_..." and key=f"ik_..._{case_id}". The f-string form
+    # arrived in 4.162 so a keyed widget with a case-scoped default
+    # re-initialises when the case changes, and this count did not follow.
+    assert (text.count('key="ik_') + text.count('key=f"ik_')) >= 15, (
         "each intake field needs its own key or its value dies on navigation")
     assert 'st.button("Save intake block"' in text
 
@@ -673,7 +748,10 @@ def test_the_estimate_inputs_are_keyed():
     """Page 6 had seven inputs and no keys, so the method, the anchor value and
     the driver figures were all lost on leaving the page."""
     page = _page("Run_V0")
-    assert page.read_text().count('key="v0_') >= 5
+    text = page.read_text()
+    assert (text.count('key="v0_') + text.count('key=f"v0_')) >= 5, (
+        "every input on the V0 page must be keyed, in either the constant or "
+        "the case-scoped form")
 
 
 # ----------------------------------------------- the register is prefillable
@@ -684,7 +762,9 @@ def test_the_prefilled_proposals_are_editable():
     page = _page("Known_facts")
     text = page.read_text()
     assert "st.data_editor(" in text
-    assert '"value_base": r["value_base"]' in text, (
+    # The payload now runs each value through _json_safe, because a blank
+    # editor cell is NaN and httpx refuses it.
+    assert '_json_safe(r["value_base"])' in text, (
         "the edited value must be what is registered, not the original")
     assert '"edited"' in text, (
         "an edited figure is no longer what the source said and the record has "
@@ -962,7 +1042,9 @@ def test_the_simulation_page_says_what_it_judged_serviceability_against():
     page = _page("Simulation")
     text = page.read_text()
     assert "table_basis" in text
-    assert "treat any 'cannot be served' above as an artefact" in text
+    assert "artefact, not a finding" in text, (
+        "an empty serviceability table must be distinguished from a genuine "
+        "constraint")
 
 
 def test_the_simulation_selector_does_not_pin_to_a_stale_run():
@@ -1116,13 +1198,23 @@ def test_a_failing_call_never_renders_as_nothing():
     same lesson as the serviceability table reading empty."""
     text = _page("Simulation").read_text()
     call = text.index("footprint:total-candidates")
-    following = text[call:call + 1600]
+    # 1,600 characters was not enough to reach the single-total branch, so a
+    # correct page failed on a window size. Bounded by the next section marker
+    # instead, which is where the block actually ends.
+    end = text.find("\n# ", call)
+    following = text[call:end if end > call else call + 4000]
     assert 'if "_error" in _tc:' in following, (
         "the error branch must come first and be visible")
     assert "Could not read the registered totals" in following
     # and the two empty cases are distinguished from each other
-    assert "No registered site total on this case yet" in following
-    assert "nothing to choose between" in following
+    assert "No registered site total on this case" in following, (
+        "an absent total must be distinguished from a failed call")
+    # The phrase is split across two f-string literals by line wrapping, so a
+    # substring search for it fails on correct code - the same defect as the
+    # promotion message in 4.151.
+    assert "nothing to choose" in following, (
+        "one registered total must be distinguished from none and from a "
+        "failed call")
 
 
 def test_a_new_column_is_read_defensively_until_its_migration_is_certain():

@@ -6,6 +6,11 @@ st.title("4. Domain dispositions")
 st.caption("Specification 0.3A - maximalist means every in-scope input domain carries a "
            "recorded disposition, not that the search ran longer.")
 
+# Renders whatever the previous run stored. This page called api.flash()
+# and never rendered it, so every confirmation it wrote was discarded -
+# the analyst saw a rerun with no acknowledgement that anything happened.
+api.show_flash()
+
 case_id = st.session_state.get("case_id")
 if not case_id:
     st.warning("Select a case on the home page first."); st.stop()

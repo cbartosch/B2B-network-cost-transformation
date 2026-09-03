@@ -46,7 +46,12 @@ def test_partial_verification_is_recorded_not_overwritten():
     NO_PUBLIC_EVIDENCE over them - so "there is nothing public" and "there is
     something, one source short of the bar" were indistinguishable."""
     research = (APP / "domain" / "research.py").read_text()
-    assert "PARTIAL_EVIDENCE_BELOW_THRESHOLD" in research
+    # The reason vocabulary lives in reliability.py, which owns grading;
+    # research.py consumes it. Asserting it appears in research.py asserted a
+    # location, not a behaviour.
+    reliability = (APP / "domain" / "reliability.py").read_text()
+    assert "PARTIAL_EVIDENCE_BELOW_THRESHOLD" in reliability, (
+        "a partial finding must have a reason distinct from no evidence")
     assert "if len(verified) > len(result.verified_sources or []):" in research, (
         "the best partial result must survive the retry loop")
 
@@ -294,4 +299,9 @@ def test_the_sweep_has_a_budget_matching_its_task():
     app = next(c for c in (root / "api_service" / "app", root / "app")
                if (c / "domain").exists())
     src = (app / "domain" / "known_facts.py").read_text()
-    assert "max_tokens=8000" in src
+    # The literal became a governed value in 4.147 when the sweep moved to one
+    # call per class - which is the better answer, and this never followed.
+    assert "max_tokens=policy_max_tokens" in src, (
+        "the sweep must set a budget rather than take structured_call's "
+        "default")
+    assert "_sweep_budget" in src, "and that budget must be governed"
