@@ -349,6 +349,19 @@ def aggregate(summaries: list[dict], *, seed: int, ensemble_size: int,
                               "base": int(median(dual)),
                               "high": pct(dual, 0.90)},
         "circuits_per_site_base": median_pass["circuits_per_site"],
+        # Deterministic from the footprint and the archetype priors, so the
+        # median pass carries them exactly - there is nothing stochastic to
+        # take a percentile over. Every pass computes the same value.
+        #
+        # Audit finding C-05: one_pass computed these and aggregate dropped
+        # them, so the stored output never held them. The estimate reads
+        # implied_users as its fallback headcount when the analyst supplies
+        # none, and it was always absent - so the derived branch was
+        # unreachable and the route refused every time, telling an analyst
+        # there was nothing to derive from while the simulation had derived it.
+        "implied_users": median_pass["implied_users"],
+        "bandwidth_profile": median_pass["bandwidth_profile"],
+        "bandwidth_mbps_total": median_pass["bandwidth_mbps_total"],
         "diversity_state": DIVERSITY_STATE,
         "backbone": backbone or {},
         "sample_topology": {"nodes": median_pass["nodes"], "edges": median_pass["edges"]},

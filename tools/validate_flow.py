@@ -316,8 +316,37 @@ def seeded_keys_are_columns() -> list:
     return problems
 
 
+def ensemble_carries_what_it_computes() -> list:
+    """A value computed on every pass and dropped by the aggregate.
+
+    C-05: implied_users, bandwidth_profile and bandwidth_mbps_total were
+    computed per pass and never returned, so the estimate's derived-headcount
+    branch was unreachable and every request without a typed headcount was
+    refused - which reads as a missing input rather than a lost one.
+    """
+    tree = ast.parse(_read("domain", "simulation.py"))
+
+    def returned(name):
+        fn = next(n for n in ast.walk(tree)
+                  if isinstance(n, ast.FunctionDef) and n.name == name)
+        keys = set()
+        for node in ast.walk(fn):
+            if isinstance(node, ast.Return) and isinstance(node.value, ast.Dict):
+                keys |= {k.value for k in node.value.keys
+                         if isinstance(k, ast.Constant)}
+        return keys
+
+    # Carried under another name on purpose: a per-pass count becomes a
+    # percentile band, and the samples become one topology.
+    renamed = {"dual_sites", "circuits_per_site", "nodes", "edges",
+               "site_sample", "estate_full"}
+    lost = sorted(returned("one_pass") - returned("aggregate") - renamed)
+    return [f"one_pass computes {k!r} and aggregate drops it" for k in lost]
+
+
 CHECKS = [
     ("every name a module uses is bound", unbound_names),
+    ("the ensemble carries what it computes", ensemble_carries_what_it_computes),
     ("every seeded key is a column", seeded_keys_are_columns),
     ("every run param the runner reads is pinned", pinned_run_params),
     ("tables written and read", table_flow),
