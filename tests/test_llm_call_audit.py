@@ -10,6 +10,7 @@ to be evidence - and must, where it does - but it is recorded, visible, and
 distinguishable from having found nothing.
 """
 import inspect
+import re
 from pathlib import Path
 
 import pytest
@@ -102,10 +103,26 @@ def test_every_llm_module_fails_closed_on_a_provider_error(module):
     """Distinct from the discard question: a provider that is unreachable must
     not produce a result at all. Salvage applies to a reply that arrived and
     was judged insufficient, never to one that never arrived."""
+    # Asserted "ProviderUnavailable" appeared in the module's own source,
+    # which is a proxy and a poor one: entity_resolution does not name the
+    # class and fails closed anyway, because execute() marks the run FAILED
+    # and re-raises, and the route answers 503 "LIVE run failed closed".
+    #
+    # The behaviour to test is that no module swallows a provider error into a
+    # result. A module that catches it and returns anything is failing open;
+    # one that lets it propagate is not.
     src = (APP / "domain" / f"{module}.py").read_text()
-    assert "ProviderUnavailable" in src, (
-        f"{module} does not distinguish an unreachable provider from a poor "
-        f"answer")
+    swallowed = re.findall(
+        r"except\s*\(?[^)\n]*ProviderUnavailable[^)\n]*\)?[^:]*:"
+        r"(?:(?!\braise\b)[\s\S]){0,600}?\breturn\b", src)
+    assert not swallowed, (
+        f"{module} catches ProviderUnavailable and returns a result rather "
+        f"than letting it propagate - a provider outage would produce output")
+
+    # And the gateway must be the thing that fails the run, exactly once.
+    gateway = (APP / "llm" / "gateway.py").read_text()
+    assert "except (errors.ProviderUnavailable" in gateway
+    assert "_fail(session, agent_run_id, str(exc))" in gateway
 
 
 def test_every_agent_routed_domain_survives_the_pipeline():

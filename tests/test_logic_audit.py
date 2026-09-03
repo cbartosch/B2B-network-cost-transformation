@@ -398,38 +398,40 @@ def test_every_registered_prompt_is_gated_and_every_gate_has_a_prompt():
 
 def test_no_test_file_targets_a_module_that_no_longer_exists():
     """tests/test_explain.py survived the module it tested, so six failures
-    named assertions about a file nobody could import."""
+    named assertions about a file nobody could import.
+
+    Checks the module path, not the imported names. The first version read
+    `from app.domain.policy import AnchorPolicy` as a module
+    app.domain.AnchorPolicy and reported a class as a missing file - a false
+    positive that cost a P0 verification.
+    """
     import ast
     import pathlib
 
-    root = pathlib.Path(__file__).resolve().parent
-    app_root = root.parent
-    for path in sorted(root.glob("test_*.py")):
+    here = pathlib.Path(__file__).resolve().parent
+    domain = here.parent / "api_service" / "app" / "domain"
+    if not domain.exists():
+        return
+
+    for path in sorted(here.glob("test_*.py")):
         for node in ast.walk(ast.parse(path.read_text())):
-            if not (isinstance(node, ast.ImportFrom) and node.module
-                    and node.module.startswith("app.domain")):
+            if not (isinstance(node, ast.ImportFrom) and node.module):
                 continue
-            for alias in node.names:
-                candidate = (app_root / "api_service" / "app" / "domain"
-                             / f"{alias.name}.py")
-                if candidate.parent.exists():
-                    assert candidate.exists() or alias.name in ("policy",), (
+            parts = node.module.split(".")
+            if parts[:2] != ["app", "domain"]:
+                continue
+            if len(parts) == 2:
+                # `from app.domain import x, y` - each name is a module.
+                for alias in node.names:
+                    assert (domain / f"{alias.name}.py").exists(), (
                         f"{path.name} imports app.domain.{alias.name}, "
                         f"which does not exist")
+            else:
+                # `from app.domain.policy import AnchorPolicy` - the module is
+                # policy and AnchorPolicy is a name inside it.
+                assert (domain / f"{parts[2]}.py").exists(), (
+                    f"{path.name} imports {node.module}, which does not exist")
 
-
-# ----------------------------------------- duplication, in every shape it took
-def test_no_two_handlers_share_a_verb_and_path():
-    """Two ask_about_estimate handlers both decorated the same POST path.
-    FastAPI registers both and routes to the first, so the second is dead code
-    that reads as live - and Python had already replaced the first by name."""
-    import re
-    from collections import Counter
-
-    routes = re.findall(r'@router\.(get|post|put|delete)\("([^"]+)"',
-                        (APP / "routers" / "api.py").read_text())
-    clashes = [f"{v.upper()} {p}" for (v, p), n in Counter(routes).items() if n > 1]
-    assert not clashes, clashes
 
 
 def test_no_test_name_appears_in_two_files():

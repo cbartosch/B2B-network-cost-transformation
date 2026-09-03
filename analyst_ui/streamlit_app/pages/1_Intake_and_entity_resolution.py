@@ -91,7 +91,7 @@ industry = st.selectbox(
     index=_INDUSTRIES.index(_cur_ind) if _cur_ind in _INDUSTRIES else 0,
     help="Sets the bandwidth tier per site type. A retail bank branch and "
          "a parts depot of the same size do not need the same circuit; "
-         "leave blank to use the generic tiers.", disabled=is_locked, key="ik_industry")
+         "leave blank to use the generic tiers.", disabled=is_locked, key=f"ik_industry_{case_id[:8]}")
 
 c4, c5, c6 = st.columns(3)
 _perimeter_options = ["SINGLE_ENTITY", "GROUP_CONSOLIDATED", "NAMED_SUBSIDIARIES",
@@ -101,7 +101,7 @@ perimeter = c4.selectbox(
     "Group perimeter *", _perimeter_options,
     index=(_perimeter_options.index(_current_perimeter)
           if _current_perimeter in _perimeter_options else 0),
-    disabled=is_locked, key="ik_perimeter")
+    disabled=is_locked, key=f"ik_perimeter_{case_id[:8]}")
 
 countries_text, region_choice = None, None
 if scope_mode == "COUNTRIES":
@@ -113,7 +113,7 @@ elif scope_mode == "REGION":
         else (region_options[0] if region_options else None)
     region_choice = c5.selectbox(
         "Region *", region_options,
-        index=region_options.index(_default_region) if _default_region in region_options else 0, key="ik_region_choice")
+        index=region_options.index(_default_region) if _default_region in region_options else 0, key=f"ik_region_choice_{case_id[:8]}")
 else:
     c5.caption("Resolves to every country with an approved pricing "
                "benchmark, evaluated when you save.")
@@ -224,7 +224,7 @@ elif _prof:
                        "these. Without them a source using the brand is "
                        "discarded as being about a different company.")
             keep = st.multiselect("Aliases to record", _proposed,
-                                  default=_proposed, key="alias_pick")
+                                  default=_proposed, key=f"alias_pick_{case_id[:8]}")
             if st.button("Add these aliases to the case", disabled=not keep):
                 merged = sorted(set((case.get("entity_aliases") or []) + keep))
                 r = api.put(f"/v1/outside-in/cases/{case_id}",

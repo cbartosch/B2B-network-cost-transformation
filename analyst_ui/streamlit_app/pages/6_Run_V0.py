@@ -171,7 +171,7 @@ method = st.radio("Method", _methods, horizontal=True,
                   index=_methods.index(_rs.get("method"))
                   if _rs.get("method") in _methods else 0,
                   help="BUILD_UP needs a completed simulation. ANCHOR needs a "
-                       "disclosed annual spend figure.", key="v0_method")
+                       "disclosed annual spend figure.", key=f"v0_method_{case_id[:8]}")
 
 anchor_value, anchor_fact = None, None
 if method == "ANCHOR":
@@ -182,7 +182,7 @@ if method == "ANCHOR":
         help="The cost line the addressable pool is a share of - a "
              "telecommunication costs or IT services figure from the annual "
              "report. It is an upper bound: it carries voice, mobile and "
-             "non-WAN services the transformation cannot touch.", key="v0_anchor_value")
+             "non-WAN services the transformation cannot touch.", key=f"v0_anchor_value_{case_id[:8]}")
     anchor_fact = _picker("Anchor source", "anchor_spend", a2)
     if not anchor_fact:
         a2.caption("Typed: the estimate will rest on an assertion and report "

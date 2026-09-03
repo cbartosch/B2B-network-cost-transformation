@@ -149,7 +149,12 @@ st.caption(
     "what would be written without writing it.")
 
 _d1, _d2, _d3 = st.columns(3)
-_cur = _d1.text_input("Currency", value="USD", key="bm_cur", max_chars=3)
+# Seeded through session state rather than value=, so the widget has one
+# source of truth. A constant default is harmless in itself; leaving the
+# conflict in place means a checker cannot tell a safe instance from the four
+# unsafe ones above.
+st.session_state.setdefault("bm_cur", "USD")
+_cur = _d1.text_input("Currency", key="bm_cur", max_chars=3)
 _year = _d2.number_input("Price year", 2020, 2035, 2026, key="bm_year")
 _minobs = _d3.number_input(
     "Minimum observations", 1, 20, 3, key="bm_minobs",
@@ -206,19 +211,25 @@ else:
         key="bm_brief_pick")
     _b = next((b for b in _bl if b["domain_no"] == _sel), None)
     if _b:
+        # The key carries the domain. A keyed widget takes value= only on its
+        # first render - afterwards session_state wins and value= is ignored -
+        # so selecting domain 2, switching to domain 9 and pressing Publish
+        # wrote domain 2's text as domain 9's brief. Same mechanism as the
+        # keyed data_editor in 4.136.2, one widget type over.
+        _k = f"_{_sel}"
         _asks = st.text_area("Asks", value=_b.get("asks") or "",
-                             key="bm_asks", height=90)
+                             key=f"bm_asks{_k}", height=90)
         _wants = st.text_area("Wants", value=_b.get("wants") or "",
-                              key="bm_wants", height=90)
+                              key=f"bm_wants{_k}", height=90)
         _search = st.text_area(
             "Search patterns, one per line",
-            value="\n".join(_b.get("search") or []), key="bm_search",
+            value="\n".join(_b.get("search") or []), key=f"bm_search{_k}",
             height=90,
             help="{entity} is substituted, and multiplied across the case's "
                  "aliases - which is what makes a trading name findable.")
         _sources = st.text_area(
             "Preferred sources, one per line",
-            value="\n".join(_b.get("sources") or []), key="bm_sources",
+            value="\n".join(_b.get("sources") or []), key=f"bm_sources{_k}",
             height=70)
         _e1, _e2 = st.columns(2)
         _ver = _e1.text_input("New brief version *", key="bm_ver",

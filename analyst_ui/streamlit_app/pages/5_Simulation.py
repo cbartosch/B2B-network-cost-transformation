@@ -94,7 +94,7 @@ elif len(_tc.get("choices") or []) > 1:
         index=_ids.index(_current) if _current in _ids else 0,
         format_func=lambda i: _total_label(
             next(c for c in _tc["choices"] if c["known_fact_id"] == i)),
-        key="sim_total_pick")
+        key=f"sim_total_pick_{case_id[:8]}")
     _chosen_obj = next(c for c in _tc["choices"]
                        if c["known_fact_id"] == _pick_total)
     if _chosen_obj.get("supplied_note"):
