@@ -1145,3 +1145,71 @@ def test_every_prior_key_carries_a_bandwidth():
                     offenders.append(f"{path.name}:{key.lineno} ({country}, {product})")
     assert not offenders, (
         "prior keys missing a bandwidth: " + ", ".join(offenders))
+
+
+# ------------- A-02: what the rates behind the baseline are worth as evidence
+def test_a_baseline_priced_from_assumptions_is_capped():
+    """Audit finding A-02. All 58 seeded priors carried a price and nothing
+    about its standing, and priced_spend_pct counts a circuit as priced
+    whatever stands behind the number - so an estate priced entirely from
+    seeded assumptions scored the same baseline confidence as one priced from
+    cleared benchmarks.
+
+    A ceiling rather than a weight: the estate may be perfectly enumerated and
+    completely priced and still be priced from assumptions. That is a limit on
+    what the number means, not a reduction in how much was seen."""
+    policy = POLICY
+    capped = confidence.compute(
+        policy=policy, current_baseline="0.55", target_cost="0.60",
+        realization="0.30", simulated_share="0.10", asserted_share="0.00",
+        v0_status="COMPLETE", unsourced_price_share="1.000")
+    assert (D(capped["components"]["current_baseline"])
+            <= policy.unsourced_price_ceiling)
+    assert any("unsourced_price_ceiling" in c
+               for c in capped["ceilings_applied"])
+
+
+def test_the_ceiling_releases_when_the_rates_improve():
+    """A ceiling that never lifts is a constant, not a control. Replacing
+    seeded rates with cleared benchmarks has to be worth something."""
+    policy = POLICY
+    improved = confidence.compute(
+        policy=policy, current_baseline="0.55", target_cost="0.60",
+        realization="0.30", simulated_share="0.10", asserted_share="0.00",
+        v0_status="COMPLETE", unsourced_price_share="0.200")
+    assert not any("unsourced_price_ceiling" in c
+                   for c in improved["ceilings_applied"])
+
+
+def test_an_estimate_that_cannot_report_the_share_is_unaffected():
+    """A missing figure must not silently become a ceiling: absent evidence
+    about the evidence is not evidence of poor evidence."""
+    policy = POLICY
+    unknown = confidence.compute(
+        policy=policy, current_baseline="0.55", target_cost="0.60",
+        realization="0.30", simulated_share="0.10", asserted_share="0.00",
+        v0_status="COMPLETE", unsourced_price_share=None)
+    assert not any("unsourced" in c for c in unknown["ceilings_applied"])
+
+
+def test_every_seeded_prior_declares_its_evidence_grade_and_basis():
+    """A rate without a term, an SLA and a tax basis is not comparable to a
+    quote, and an audit cannot normalise what was never declared.
+
+    Graded E - expert assumption - not F. F implies a claim to a source that
+    cannot be produced; these claim none. Calling them F would overstate the
+    failure as much as leaving them ungraded understated it."""
+    from app.seed import _rows
+
+    for table, build in _rows():
+        if getattr(table, "name", "") != "unit_cost_prior":
+            continue
+        for row in build():
+            assert row["evidence_grade"] == "E", row["id"]
+            assert row["source"], row["id"]
+            for field in ("term_months", "sla", "taxes_included",
+                          "equipment_included", "managed_services_included",
+                          "expires"):
+                assert field in row, f"{row['id']} does not declare {field}"
+        return
+    raise AssertionError("unit_cost_prior is not seeded")

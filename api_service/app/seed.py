@@ -45,6 +45,18 @@ THRESHOLDS = [
     # --- stage ceilings: V0 has no contract, telemetry, serviceability or bid
     # evidence, so its realization confidence is bounded whatever the analysis
     ("confidence_policy", "stage_ceiling_V0_current_baseline", "0.55"),
+    # A baseline built on unsourced rates cannot claim the confidence of one
+    # built on quotes. Audit finding A-02: priced_spend_pct counted a circuit
+    # as priced whatever stood behind the number, so an estate priced entirely
+    # from seeded assumptions scored the same as one priced from cleared
+    # benchmarks.
+    #
+    # Applied when the value-weighted share of grade E or F rates exceeds the
+    # trigger. 0.40 is the ceiling, below the 0.55 stage ceiling, so it binds:
+    # an estimate resting mostly on assumptions is capped by what its rates are
+    # worth rather than by the stage it is at.
+    ("confidence_policy", "unsourced_price_share_trigger", "0.50"),
+    ("confidence_policy", "unsourced_price_ceiling", "0.40"),
     ("confidence_policy", "stage_ceiling_V0_target_cost", "0.75"),
     ("confidence_policy", "stage_ceiling_V0_realization", "0.35"),
 
@@ -658,7 +670,21 @@ def _rows():
              "scope_kind": "REGION" if c in REGION_CODES else "COUNTRY",
              "bandwidth_mbps": bw, "low": lo, "base": ba, "high": hi,
              "currency": "USD", "price_year": 2026, "approved": True,
-             "price_basis": "SEED"}
+             "price_basis": "SEED",
+             # Graded E - expert assumption - not F. F implies a claim to a
+             # source that cannot be produced; these claim none. The commercial
+             # basis is stated because a rate without it is not comparable to a
+             # quote: a 36-month price with equipment included is a different
+             # number from a 12-month price without, and an audit cannot
+             # normalise what was never declared.
+             "evidence_grade": "E",
+             "source": "indicative starting position set at seed time; "
+                       "no transaction, quote or published benchmark behind it",
+             "source_date": "2026-01-01", "sample_size": None,
+             "term_months": 36, "sla": "STANDARD_BUSINESS",
+             "taxes_included": False, "equipment_included": False,
+             "managed_services_included": False,
+             "expires": "2026-12-31"}
             for c, p, l, bw, lo, ba, hi in PRIORS]),
         (platform_unit_cost, lambda: [
             {"product": p, "cost_layer": l, "unit": u, "low": lo, "base": ba,

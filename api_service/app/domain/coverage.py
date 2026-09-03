@@ -86,6 +86,12 @@ def derive_scope(*, sim_output: dict, priors: dict,
             # measures the seed rather than the client.
             "price_basis": (getattr(prior, "price_basis", None) or "SEED")
                            if prior is not None else None,
+            # What the rate is worth as evidence. priced_spend_pct counts a
+            # circuit as priced whatever stands behind the number, so a seeded
+            # guess and a cleared benchmark contributed identically to baseline
+            # confidence - which is the mechanism audit finding A-02 describes.
+            "evidence_grade": (getattr(prior, "evidence_grade", None) or "E")
+                              if prior is not None else None,
             "annual_value": as_str(D(rate) * D(row["count"]) * MONTHS) if rate else "0.00",
         })
     return scope
@@ -196,6 +202,24 @@ def assess(*, scope: list[dict], layers_in_scope: list, layers_priced: set,
         # indistinguishable, so coverage reported 100% priced on a portfolio
         # entirely made of placeholders - which is a measurement of the seed,
         # not of the client.
+        # The value-weighted evidence grade of the rates the estimate used.
+        # Reported as the share of priced value at each grade rather than an
+        # average letter: an average of A and F is not C, and a single letter
+        # would hide that half the estate rests on assumptions.
+        "evidence_grade_mix": {
+            grade: str((D(sum(D(r["annual_value"]) for r in scope
+                              if r["priced"] and r.get("evidence_grade") == grade))
+                        / priced_value).quantize(D("0.001")))
+            for grade in sorted({r.get("evidence_grade") for r in scope
+                                 if r["priced"] and r.get("evidence_grade")})
+        } if priced_value else {},
+        # The share resting on an expert assumption or worse - the number an
+        # auditor asks for first.
+        "unsourced_price_share": str(
+            (D(sum(D(r["annual_value"]) for r in scope
+                   if r["priced"] and r.get("evidence_grade") in ("E", "F")))
+             / priced_value).quantize(D("0.001")))
+        if priced_value else "0",
         "seeded_price_share": str(
             (D(sum(int(r["count"]) for r in scope
                    if r["priced"] and r.get("price_basis") == "SEED"))

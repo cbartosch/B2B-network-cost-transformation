@@ -68,6 +68,7 @@ def derive_components(*, policy: ConfidencePolicy, stage: str = "V0",
                     + bd["completeness"] * D(domain_completeness))
     baseline = _clamp(baseline_raw) * ceil["current_baseline"]
 
+
     # --- target-cost: quality of the priors the target is built from
     td = policy.target_drivers
     target_raw = (td["prior_coverage"] * D(prior_coverage)
@@ -153,6 +154,10 @@ def _one_band_lower(score, policy: ConfidencePolicy) -> Decimal:
 
 def compute(*, policy: ConfidencePolicy, current_baseline, target_cost, realization,
             simulated_share, asserted_share, v0_status,
+            # A-02: the share of priced value resting on grade E or F rates.
+            # Optional so an estimate that cannot report it behaves as before,
+            # rather than a missing figure silently becoming a ceiling.
+            unsourced_price_share=None,
             drivers: dict | None = None) -> dict:
     """Every input to a ceiling is required.
 
@@ -166,6 +171,24 @@ def compute(*, policy: ConfidencePolicy, current_baseline, target_cost, realizat
 
     cb, tc, rz = D(current_baseline), D(target_cost), D(realization)
     applied = []
+
+    # A-02: a baseline built on unsourced rates cannot claim the confidence of
+    # one built on quotes. priced_spend_pct counts a circuit as priced whatever
+    # stands behind the number, so without this a seeded guess and a cleared
+    # benchmark score identically.
+    #
+    # A ceiling rather than a weight: the estate may be perfectly enumerated
+    # and completely priced and still be priced from assumptions. That is a
+    # limit on what the number means, not a reduction in how much was seen.
+    if unsourced_price_share is not None:
+        unsourced = D(str(unsourced_price_share))
+        if (unsourced > policy.unsourced_price_share_trigger
+                and cb > policy.unsourced_price_ceiling):
+            cb = policy.unsourced_price_ceiling
+            applied.append(
+                f"unsourced_price_ceiling={policy.unsourced_price_ceiling} "
+                f"({unsourced:.0%} of priced value rests on expert "
+                f"assumptions rather than evidence)")
 
     if D(asserted_share) > asserted_trigger and cb > asserted_ceiling:
         cb = asserted_ceiling

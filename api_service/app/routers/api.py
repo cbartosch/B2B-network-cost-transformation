@@ -1957,6 +1957,8 @@ def _run_anchor_estimate(s, *, case_id, case_row, payload,
         target_cost=derived["target_cost"], realization=derived["realization"],
         simulated_share=D(0),
         asserted_share=estimate.asserted_share(components),
+        # A-02: what the rates behind the baseline are worth as evidence.
+        unsourced_price_share=cov.get("unsourced_price_share"),
         v0_status=cov["status"], drivers=derived["drivers"])
 
     snap_id = str(uuid.uuid4())

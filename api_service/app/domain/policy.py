@@ -53,6 +53,10 @@ def _in_unit_interval(name: str, value: Decimal) -> None:
 @dataclass(frozen=True)
 class ConfidencePolicy:
     set_name: str
+    # A-02: the ceiling that applies when most of the priced value rests on
+    # expert assumptions rather than evidence.
+    unsourced_price_share_trigger: Decimal = Decimal("0.50")
+    unsourced_price_ceiling: Decimal = Decimal("0.40")
     weights: dict                      # component -> weight, must sum to 1
     component_cap_headroom: Decimal
     band_floors: dict                  # band label -> floor
@@ -98,6 +102,8 @@ class ConfidencePolicy:
             set_name=set_name,
             weights={c: r(f"weight_{c}") for c in cls.COMPONENTS},
             component_cap_headroom=r("component_cap_headroom"),
+            unsourced_price_share_trigger=r("unsourced_price_share_trigger"),
+            unsourced_price_ceiling=r("unsourced_price_ceiling"),
             band_floors={"A": r("band_a_floor"), "B": r("band_b_floor"),
                          "C": r("band_c_floor")},
             stage_ceilings={s: {c: r(f"stage_ceiling_{s}_{c}") for c in cls.COMPONENTS}

@@ -34,7 +34,7 @@ from . import db
 log = logging.getLogger("workbench.migrations")
 
 # Bump when the physical schema changes, and add a step below.
-SCHEMA_VERSION = 41
+SCHEMA_VERSION = 42
 
 VERSION_TABLE = "schema_version"
 VERSION_SCHEMA = "audit"
@@ -941,13 +941,31 @@ def _migrate_v41(conn) -> None:
              "proof that a lever applies", bool(added))
 
 
+def _migrate_v42(conn) -> None:
+    """4.38.0 -> 4.39.0: what a unit-cost prior is worth as evidence.
+
+    Audit finding A-02. Every seeded prior carried a price and nothing about
+    its standing - no grade, no source, no term, no SLA, no tax or equipment
+    basis - and priced_spend_pct treated a seeded guess and a cleared benchmark
+    identically.
+
+    Existing rows default to grade E, which is what they are: expert
+    assumptions with no source claimed.
+    """
+    added = sum(_add_column(conn, db.unit_cost_prior, c) for c in (
+        "evidence_grade", "source", "source_date", "sample_size",
+        "term_months", "sla", "taxes_included", "equipment_included",
+        "managed_services_included", "expires"))
+    log.info("v42: %d evidence column(s) added to unit_cost_prior", added)
+
+
 MIGRATIONS = {2: _migrate_v2, 3: _migrate_v3, 4: _migrate_v4, 5: _migrate_v5,
               6: _migrate_v6, 7: _migrate_v7, 8: _migrate_v8, 9: _migrate_v9,
               10: _migrate_v10, 11: _migrate_v11, 12: _migrate_v12,
               13: _migrate_v13, 14: _migrate_v14, 15: _migrate_v15,
               16: _migrate_v16, 17: _migrate_v17, 18: _migrate_v18,
               19: _migrate_v19, 20: _migrate_v20,
-              21: _migrate_v21, 22: _migrate_v22, 23: _migrate_v23, 24: _migrate_v24, 25: _migrate_v25, 26: _migrate_v26, 27: _migrate_v27, 28: _migrate_v28, 29: _migrate_v29, 30: _migrate_v30, 31: _migrate_v31, 32: _migrate_v32, 33: _migrate_v33, 34: _migrate_v34, 35: _migrate_v35, 36: _migrate_v36, 37: _migrate_v37, 38: _migrate_v38, 39: _migrate_v39, 40: _migrate_v40, 41: _migrate_v41}
+              21: _migrate_v21, 22: _migrate_v22, 23: _migrate_v23, 24: _migrate_v24, 25: _migrate_v25, 26: _migrate_v26, 27: _migrate_v27, 28: _migrate_v28, 29: _migrate_v29, 30: _migrate_v30, 31: _migrate_v31, 32: _migrate_v32, 33: _migrate_v33, 34: _migrate_v34, 35: _migrate_v35, 36: _migrate_v36, 37: _migrate_v37, 38: _migrate_v38, 39: _migrate_v39, 40: _migrate_v40, 41: _migrate_v41, 42: _migrate_v42}
 
 
 class SchemaDrift(RuntimeError):

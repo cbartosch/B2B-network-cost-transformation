@@ -691,6 +691,34 @@ unit_cost_prior = Table(
     # PROMOTED   from a researched finding, approved=False until a steward acts
     # BENCHMARK  derived from cleared observations in the vault
     Column("price_basis", String(16), default="SEED"),
+    # What the rate is worth as evidence, on the audit scale:
+    #
+    #   A  recent directly comparable transaction or quote
+    #   B  recent comparable transaction, limited adjustment
+    #   C  credible market benchmark requiring adjustment
+    #   D  broad regional benchmark
+    #   E  expert assumption
+    #   F  unsupported, or a source that cannot be produced
+    #
+    # Audit finding A-02: all 58 seeded priors carried no grade, no source and
+    # no commercial basis, and priced_spend_pct counted a circuit as priced
+    # whatever the rate was worth - so a seeded guess and a cleared benchmark
+    # contributed identically to baseline confidence.
+    #
+    # The seeded rates are graded E, not F. F implies a claim to a source that
+    # cannot be produced; these make no claim to one. Calling them F would
+    # overstate the failure as much as leaving them ungraded understated it.
+    Column("evidence_grade", String(1), default="E"),
+    Column("source", Text), Column("source_date", String(32)),
+    Column("sample_size", Integer),
+    # The commercial basis. A rate without these is not comparable to a quote:
+    # a 36-month price with equipment included is a different number from a
+    # 12-month price without, and the audit is right that monotonicity says
+    # nothing about either.
+    Column("term_months", Integer), Column("sla", String(32)),
+    Column("taxes_included", Boolean), Column("equipment_included", Boolean),
+    Column("managed_services_included", Boolean),
+    Column("expires", String(32)),
     # Provenance for a researched price. A governed value that appeared from
     # nowhere is worse than no value: these say which agent run produced it
     # and under whose name it was promoted, so a steward approving it can see
