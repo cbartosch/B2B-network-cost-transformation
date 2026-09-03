@@ -95,5 +95,9 @@ LLM_SEARCH_TIMEOUT_SECONDS = float(
 # the primary's own product is not counted as a second path. dual_sites can
 # therefore be lower than the archetype's dual-access draw implies - which is
 # the point: it now reflects what can be delivered.
-SIMULATION_MODEL_VERSION = "sim-1.6.0"
+# 1.7.0: the backbone plan becomes priced circuits. topology.plan() produced
+# inter-site transport that one_pass accepted and never read, so it was
+# modelled, displayed and excluded from every cost. `circuits` now includes it
+# and `circuits_backbone` reports it separately.
+SIMULATION_MODEL_VERSION = "sim-1.7.0"
 CALCULATION_VERSION = "calc-1.0.0"

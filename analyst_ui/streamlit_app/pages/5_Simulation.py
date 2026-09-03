@@ -768,6 +768,17 @@ if sim:
 
     # What the density bands said about the estate. A uniform estate is an
     # assumption, and this is the first thing that tests it.
+    # Inter-site transport, priced. It was modelled and drawn here and left
+    # out of every cost, so the circuit total meant access-only in the estimate
+    # and everything in this view.
+    if o.get("circuits_backbone"):
+        st.info(
+            f"**{o['circuits_backbone']} backbone circuit(s)** are included in "
+            f"the {o.get('circuits', {}).get('base', '?') if isinstance(o.get('circuits'), dict) else o.get('circuits')} "
+            f"total: data centres to regional hubs and hubs to the global "
+            f"core, priced against the regional priors rather than any one "
+            f"country's.")
+
     _svc = o.get("serviceability") or {}
     _unserv = o.get("unserviceable") or []
     if _svc.get("counts"):

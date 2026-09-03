@@ -79,6 +79,9 @@ def one_pass(seed: int, footprint: list[dict], archetypes: dict,
     # silently shrinks reads as a weaker architecture rather than as a
     # constraint on what can be delivered.
     single_by_necessity: list[dict] = []
+    # Inter-site transport, counted separately from access so a reader can see
+    # which part of the estate a circuit total refers to.
+    backbone_circuits = 0
     by_kind: dict[tuple, list] = {}
     for loc in known_locations or []:
         key = (str(loc.get("country") or "").upper(),
@@ -211,6 +214,33 @@ def one_pass(seed: int, footprint: list[dict], archetypes: dict,
                         products.get((entry["country"], b_product, "BACKUP",
                                       b_mbps), 0) + 1
 
+    # The backbone becomes priceable circuits.
+    #
+    # Audit finding C-06. topology.plan() produced the inter-site transport -
+    # data centres to regional hubs, hubs to a global core - and one_pass
+    # accepted the parameter and never read it. So the backbone was modelled,
+    # displayed on the simulation page, and excluded from every cost: on a
+    # two-DC EMEA estate that is 504,000 a year absent from the baseline.
+    #
+    # Keyed by region rather than country, matching the scope_kind=REGION
+    # priors seeded for EMEA, AMER and APAC. A backbone link belongs to no
+    # single country, and pricing it against one would put a global circuit on
+    # whichever market happened to sort first.
+    for link in (backbone or {}).get("links") or []:
+        count = int(link.get("count") or 0)
+        if count <= 0:
+            continue
+        circuits_here = count * (2 if link.get("dual") else 1)
+        mbps = int(link.get("bandwidth_mbps") or 0)
+        # role="BACKBONE", not the tier. The products key is
+        # (scope, product, role, bandwidth) and role is PRIMARY or BACKUP
+        # everywhere else - putting DC_TO_REGION in that slot would hand the
+        # estimate a role it has never seen, and the tier is carried on the
+        # link record where a reader can find it.
+        key = (str(link["region"]), str(link["product"]), "BACKBONE", mbps)
+        products[key] = products.get(key, 0) + circuits_here
+        backbone_circuits += circuits_here
+
     # Counted from the estate, not beside it. These used to be accumulated in
     # parallel with the loop that generated the circuits, so a change to one
     # could silently disagree with the other - and the site list is now the
@@ -221,7 +251,10 @@ def one_pass(seed: int, footprint: list[dict], archetypes: dict,
     assert sites + dropped == sum(int(e["sites"]) for e in footprint), (
         "every site in the footprint must be either in the estate or reported "
         "as unserviceable - a site that is neither has been lost silently")
-    circuits = primary + backup
+    # Access plus backbone. These were separate concepts and only one was
+    # priced, so "circuits" meant access-only in the cost and everything in the
+    # topology view.
+    circuits = primary + backup + backbone_circuits
     named = sum(1 for r in site_rows if r["known"])
     return {"sites": sites, "circuits": circuits,
             # The estate, bounded. A full list is O(sites) per pass and the
@@ -246,6 +279,7 @@ def one_pass(seed: int, footprint: list[dict], archetypes: dict,
             # be delivered. Distinct from a site the draw left single: this one
             # is a serviceability finding about the location.
             "single_by_necessity": single_by_necessity,
+            "circuits_backbone": backbone_circuits,
             "site_sample": site_rows[:SAMPLE_NODES],
             # The whole estate, for the one pass that keeps it. Carrying this
             # on every pass would be O(ensemble x sites); carrying it on none
@@ -348,6 +382,10 @@ def aggregate(summaries: list[dict], *, seed: int, ensemble_size: int,
         "dual_access_sites": {"low": pct(dual, 0.10),
                               "base": int(median(dual)),
                               "high": pct(dual, 0.90)},
+        # Deterministic from the backbone plan, so the median pass carries it
+        # exactly. Reported separately from access because a reader comparing
+        # circuit counts needs to know which part of the estate they refer to.
+        "circuits_backbone": median_pass["circuits_backbone"],
         "circuits_per_site_base": median_pass["circuits_per_site"],
         # Deterministic from the footprint and the archetype priors, so the
         # median pass carries them exactly - there is nothing stochastic to
