@@ -184,3 +184,57 @@ def test_no_corporate_certificate_is_committed():
         pytest.skip("certs/ not present")
     leaked = [p.name for p in certs.iterdir() if p.suffix in (".crt", ".pem")]
     assert not leaked, f"certificates committed: {leaked}"
+
+
+# ----------------------------------------------- A-09: reproducible builds
+def test_the_base_image_is_pinned_to_a_patch_level():
+    """`python:3.12-slim` is a moving tag: 3.12.1 and 3.12.9 are both it, so
+    two builds months apart get different interpreters and neither can say so.
+
+    An external auditor's dependency skew came from running under 3.13 against
+    a repo that believed it was 3.12, and the tag could not have told them
+    otherwise. 113 pytest failures arrived with no way to separate defects from
+    the environment."""
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1]
+    for dockerfile in sorted(root.rglob("Dockerfile")):
+        for line in dockerfile.read_text().splitlines():
+            if not line.startswith("FROM "):
+                continue
+            image = line.split()[1]
+            if "@sha256:" in image:
+                continue
+            tag = image.split(":")[-1] if ":" in image else "latest"
+            assert tag.count(".") >= 2, (
+                f"{dockerfile.name} uses {image}, a moving tag - pin the patch "
+                f"level or a digest")
+
+
+def test_the_lock_check_refuses_a_lock_that_is_a_copy():
+    """A lock records the transitive closure. fastapi alone pulls starlette,
+    anyio, sniffio, idna and more - so a lock with no more entries than
+    requirements.txt is a copy, and a copy proves nothing.
+
+    Checked because the cheapest way to make `check-lock` pass is to copy the
+    file, and a gate that can be satisfied without doing the work is not a
+    gate."""
+    import subprocess
+    import sys
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1]
+    tool = root / "tools" / "check_lockfile.py"
+    lock = root / "api_service" / "requirements.lock"
+    existing = lock.read_text() if lock.exists() else None
+    try:
+        lock.write_text((root / "api_service" / "requirements.txt").read_text())
+        result = subprocess.run([sys.executable, str(tool)],
+                                capture_output=True, text=True)
+        assert result.returncode == 1
+        assert "looks like a copy" in result.stdout
+    finally:
+        if existing is None:
+            lock.unlink(missing_ok=True)
+        else:
+            lock.write_text(existing)

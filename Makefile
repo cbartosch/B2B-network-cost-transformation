@@ -1,4 +1,13 @@
-.PHONY: test-offline validate-cases audit-contract audit-identity check-duplication validate-flow verify-domains backup restore deck benchmarks reach tls-doctor tls-doctor-in-container check up down logs test seed reset psql doctor migrate pins attest
+.PHONY: lock check-lock test-offline validate-cases audit-contract audit-identity check-duplication validate-flow verify-domains backup restore deck benchmarks reach tls-doctor tls-doctor-in-container check up down logs test seed reset psql doctor migrate pins attest
+
+lock: ## record the transitive versions that actually install
+	@echo "Requires built containers. Produces the files check-lock verifies."
+	docker compose run --rm --no-deps api pip freeze > api_service/requirements.lock
+	docker compose run --rm --no-deps ui  pip freeze > analyst_ui/requirements.lock
+	@python tools/check_lockfile.py
+
+check-lock: ## are the builds reproducible?
+	python tools/check_lockfile.py
 
 test-offline: ## run the suite without pytest, for a locked-down environment
 	python tools/run_tests_offline.py

@@ -1,4 +1,12 @@
-FROM python:3.12-slim
+# Patch level pinned, not just the minor. `python:3.12-slim` is a moving tag:
+# 3.12.1 and 3.12.9 are both it, so two builds months apart get different
+# interpreters and neither can say so. An external auditor's dependency skew
+# came from running under 3.13 against a repo that believed it was 3.12, and
+# the tag could not have told them otherwise.
+#
+# A digest would remove the last of the drift. This is the step that costs
+# nothing and removes most of it.
+FROM python:3.12.8-slim
 WORKDIR /app
 ENV PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1
 # Corporate proxy, if this network needs one. Passed as build args rather than

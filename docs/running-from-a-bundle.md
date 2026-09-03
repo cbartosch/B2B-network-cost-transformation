@@ -119,6 +119,30 @@ written again.
 
 ---
 
+## 3a. Lock the dependencies, once
+
+The direct dependencies are pinned. The **transitive** ones are not, so two
+builds months apart can install different `starlette`, `anyio` or `numpy` — and
+an external auditor's 113 test failures came from exactly that, with no way to
+separate defects from the environment.
+
+Run this once, after the first successful build:
+
+```powershell
+docker compose run --rm --no-deps api pip freeze > api_service\requirements.lock
+docker compose run --rm --no-deps ui  pip freeze > analyst_ui\requirements.lock
+python tools\check_lockfile.py
+```
+
+`make lock` does the same on macOS and Linux. **This cannot be generated
+without a working container** — a lock is a record of what a resolver actually
+installed, and inventing transitive versions produces a file that looks
+authoritative and is fiction.
+
+`python tools\check_lockfile.py` fails until both exist, and also fails if a
+lock has no more packages than its requirements file, since that is a copy
+rather than a freeze.
+
 ## 4. Start the stack
 
 ```powershell
