@@ -1,4 +1,7 @@
-.PHONY: audit-contract audit-identity check-duplication validate-flow verify-domains backup restore deck benchmarks reach tls-doctor tls-doctor-in-container check up down logs test seed reset psql doctor migrate pins attest
+.PHONY: validate-cases audit-contract audit-identity check-duplication validate-flow verify-domains backup restore deck benchmarks reach tls-doctor tls-doctor-in-container check up down logs test seed reset psql doctor migrate pins attest
+
+validate-cases: ## compare estimator output against cases with known actuals
+	python tools/validate_cases.py
 
 audit-contract: ## every input field's unit, period and currency
 	python tools/audit_data_contract.py

@@ -775,3 +775,65 @@ def test_the_lookup_helper_can_express_ownership():
     # 404 rather than 403: whether a resource exists on another case is not
     # something a caller without access to that case should learn.
     assert "404" in source and "403" not in source
+
+
+def test_the_validation_harness_refuses_to_score_synthetic_cases():
+    """Audit finding A-01. An error statistic computed over cases somebody
+    invented measures the inventor, and reporting it beside a real case as
+    though they were the same number is the failure the evidence tier exists
+    to prevent."""
+    from app.domain import validation
+
+    comparisons = [
+        validation.compare({"case_id": "real",
+                            "evidence_tier": validation.TIER_ACTUAL,
+                            "actual": {"current_annual_cost": "1000"},
+                            "estimated": {"current_annual_cost": "1200"}}),
+        validation.compare({"case_id": "made-up",
+                            "evidence_tier": validation.TIER_SYNTHETIC,
+                            "actual": {"current_annual_cost": "1000"},
+                            "estimated": {"current_annual_cost": "1000"}}),
+    ]
+    stats = validation.statistics(comparisons)
+    assert stats["cases_included"] == 1
+    assert stats["cases_excluded_as_synthetic"] == 1
+    # the perfect synthetic case must not flatter the statistic
+    assert stats["per_measure"]["current_annual_cost"]["n"] == 1
+
+
+def test_an_empty_corpus_says_it_is_not_validated():
+    """A harness with no cases validates nothing, and must not report silence
+    as a pass."""
+    from app.domain import validation
+
+    note = validation.statistics([])["note"]
+    assert "has not been empirically validated" in note
+
+
+def test_the_statistics_report_direction_not_just_magnitude():
+    """A model 30% high on half its cases and 30% low on the other half has a
+    mean signed error near zero and is useless. Bias is the finding."""
+    from app.domain import validation
+
+    comparisons = [
+        validation.compare({"case_id": str(i),
+                            "evidence_tier": validation.TIER_ACTUAL,
+                            "actual": {"current_annual_cost": "1000"},
+                            "estimated": {"current_annual_cost": est}})
+        for i, est in enumerate(("1300", "1300", "1300"))]
+    m = validation.statistics(comparisons)["per_measure"]["current_annual_cost"]
+    assert m["overestimated"] == 3 and m["underestimated"] == 0
+    assert m["mean_signed_error"].startswith("300")
+
+
+def test_a_missing_actual_is_not_scored_as_zero_error():
+    """Absent evidence is not agreement."""
+    from app.domain import validation
+
+    out = validation.compare({"case_id": "partial",
+                              "evidence_tier": validation.TIER_ACTUAL,
+                              "actual": {"site_count": "340"},
+                              "estimated": {"site_count": "340",
+                                            "current_annual_cost": "9000"}})
+    cost = next(r for r in out["rows"] if r["measure"] == "current_annual_cost")
+    assert cost["status"] == "NOT_COMPARABLE"
