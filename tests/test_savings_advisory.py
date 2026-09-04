@@ -580,3 +580,90 @@ def test_every_seeded_lever_declares_its_eligibility_deliberately():
         products = row[7]
         assert products is None or (isinstance(products, list) and products), (
             f"{row[0]} declares an empty product list, which blocks everything")
+
+
+# ------------- the prerequisite: lever eligibility on the live vocabulary
+def test_every_lever_constraint_names_a_value_the_vocabulary_declares():
+    """The defect this test exists for.
+
+    `applies_to_products` was keyed on the vocabulary 4.166 replaced.
+    LEV-MPLS-001 named "MPLS", which is no longer a service class - it is
+    IPVPN. The moment the pipeline supplied a service class, that lever would
+    have matched nothing and booked zero MPLS savings for entirely the wrong
+    reason, which looks exactly like the correct behaviour.
+
+    Whichever landed first - the pipeline switch or the re-key - would have
+    silently broken the other. This is the guard that makes the next change to
+    either one fail loudly instead."""
+    from app.domain import access
+    from app.seed import LEVERS
+
+    for row in LEVERS:
+        lever_id, service_classes = row[0], row[7]
+        access_technologies, platform = row[8], row[9]
+        for value in service_classes or ():
+            assert value in access.SERVICE_CLASSES, (
+                f"{lever_id} is eligible on service class {value!r}, which is "
+                f"not in {list(access.SERVICE_CLASSES)}")
+        for value in access_technologies or ():
+            assert value in access.ACCESS_TECHNOLOGIES, (
+                f"{lever_id} names access technology {value!r}, which the "
+                f"vocabulary does not declare")
+        # Platform products are the L2/L4 vocabulary and deliberately not
+        # service classes - SSE_LICENCE never was one.
+        for value in platform or ():
+            assert value not in access.SERVICE_CLASSES, (
+                f"{lever_id} lists {value!r} as a platform product and it is "
+                f"also a service class - the two dimensions have collapsed")
+
+
+def test_the_dead_product_field_is_not_read_by_the_eligibility_test():
+    """Retained for readability, deliberately not consulted: its values cannot
+    match the new vocabulary, so falling back to it would silently disable a
+    lever rather than fail."""
+    import inspect
+
+    from app.domain import estimate
+
+    source = inspect.getsource(estimate.scenarios)
+    assert "applies_to_service_classes" in source
+    assert 'lever.get("applies_to_products")' not in source
+
+
+def test_a_platform_lever_is_not_eligible_on_an_access_circuit():
+    """`applies_to_products` held one list for two unrelated things: the L0
+    levers named MPLS and DIA, the L2/L4 levers named SD_WAN_OVERLAY and
+    SSE_LICENCE. The same conflation as `product`, one level up."""
+    from app.domain import access
+    from app.seed import LEVERS
+
+    sase = next(r for r in LEVERS if r[0] == "LEV-SASE-001")
+    assert sase[7] is None, "a platform lever constrains no service class"
+    assert sase[9] == ["SD_WAN_OVERLAY", "SSE_LICENCE"]
+    assert not set(sase[9]) & set(access.SERVICE_CLASSES)
+
+
+def test_right_sizing_excludes_best_effort():
+    """Right-sizing needs a committed rate to reduce. The old list named the
+    committed classes one by one - DIA, ETHERNET, MPLS - which is what "not
+    BEST_EFFORT" says directly: a 100/20 broadband line is not sold at 60/12."""
+    from app.domain import access
+    from app.seed import LEVERS
+
+    rightsizing = next(r for r in LEVERS if r[0] == "LEV-BANDWIDTH-001")
+    assert access.BEST_EFFORT not in rightsizing[7]
+    assert set(rightsizing[7]) == {access.DIA, access.IPVPN, access.ETHERNET}
+
+
+def test_a_target_component_keeps_its_dimensions():
+    """Audit finding A-04, closed here. target_components was rebuilt without
+    the fields, so every target row reported a null product - and a lever's
+    own eligibility could not be checked against the estate it had acted on."""
+    import inspect
+
+    from app.domain import estimate
+
+    source = inspect.getsource(estimate.scenarios)
+    for field in ("product=c.product", "service_class=c.service_class",
+                  "access_technology=c.access_technology"):
+        assert field in source, field

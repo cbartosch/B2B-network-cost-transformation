@@ -23,6 +23,7 @@ Design notes:
     table having just been created under the new name
   * an unrecognised state is refused, loudly, rather than guessed at
 """
+import json
 import logging
 import uuid
 from datetime import datetime, timezone
@@ -34,7 +35,7 @@ from . import db
 log = logging.getLogger("workbench.migrations")
 
 # Bump when the physical schema changes, and add a step below.
-SCHEMA_VERSION = 45
+SCHEMA_VERSION = 46
 
 VERSION_TABLE = "schema_version"
 VERSION_SCHEMA = "audit"
@@ -1042,13 +1043,49 @@ def _migrate_v45(conn) -> None:
              added)
 
 
+def _migrate_v46(conn) -> None:
+    """Lever eligibility on the dimensions it acts on.
+
+    `applies_to_products` was keyed on the vocabulary that 4.166 replaced.
+    LEV-MPLS-001 named "MPLS"; there is no such service class any more.
+    Whichever landed first - the pipeline switch or this - would have silently
+    broken the other, so this goes before the switch rather than with it.
+
+    Derived from the stored list in SQL, so a lever a steward has tuned keeps
+    its saving band.
+    """
+    added = sum(_add_column(conn, db.lever, c) for c in (
+        "applies_to_service_classes", "applies_to_access_technologies",
+        "applies_to_platform_products"))
+    # Access-circuit levers: the old product names map to service classes.
+    # Platform levers: the old names were never products of the access layer
+    # and move to their own dimension.
+    SERVICE = {"LEV-MPLS-001": ["IPVPN"],
+               "LEV-BANDWIDTH-001": ["DIA", "IPVPN", "ETHERNET"]}
+    PLATFORM = {"LEV-SASE-001": ["SD_WAN_OVERLAY", "SSE_LICENCE"],
+                "LEV-SECRETIRE-001": ["SSE_LICENCE"]}
+    moved = 0
+    for lever_id, classes in SERVICE.items():
+        moved += conn.execute(text(
+            "UPDATE reference.lever SET applies_to_service_classes = :v "
+            "WHERE lever_id = :i AND applies_to_service_classes IS NULL"),
+            {"v": json.dumps(classes), "i": lever_id}).rowcount or 0
+    for lever_id, products in PLATFORM.items():
+        moved += conn.execute(text(
+            "UPDATE reference.lever SET applies_to_platform_products = :v "
+            "WHERE lever_id = :i AND applies_to_platform_products IS NULL"),
+            {"v": json.dumps(products), "i": lever_id}).rowcount or 0
+    log.info("v46: %d column(s) added, %d lever(s) re-keyed off the dead "
+             "product vocabulary", added, moved)
+
+
 MIGRATIONS = {2: _migrate_v2, 3: _migrate_v3, 4: _migrate_v4, 5: _migrate_v5,
               6: _migrate_v6, 7: _migrate_v7, 8: _migrate_v8, 9: _migrate_v9,
               10: _migrate_v10, 11: _migrate_v11, 12: _migrate_v12,
               13: _migrate_v13, 14: _migrate_v14, 15: _migrate_v15,
               16: _migrate_v16, 17: _migrate_v17, 18: _migrate_v18,
               19: _migrate_v19, 20: _migrate_v20,
-              21: _migrate_v21, 22: _migrate_v22, 23: _migrate_v23, 24: _migrate_v24, 25: _migrate_v25, 26: _migrate_v26, 27: _migrate_v27, 28: _migrate_v28, 29: _migrate_v29, 30: _migrate_v30, 31: _migrate_v31, 32: _migrate_v32, 33: _migrate_v33, 34: _migrate_v34, 35: _migrate_v35, 36: _migrate_v36, 37: _migrate_v37, 38: _migrate_v38, 39: _migrate_v39, 40: _migrate_v40, 41: _migrate_v41, 42: _migrate_v42, 43: _migrate_v43, 44: _migrate_v44, 45: _migrate_v45}
+              21: _migrate_v21, 22: _migrate_v22, 23: _migrate_v23, 24: _migrate_v24, 25: _migrate_v25, 26: _migrate_v26, 27: _migrate_v27, 28: _migrate_v28, 29: _migrate_v29, 30: _migrate_v30, 31: _migrate_v31, 32: _migrate_v32, 33: _migrate_v33, 34: _migrate_v34, 35: _migrate_v35, 36: _migrate_v36, 37: _migrate_v37, 38: _migrate_v38, 39: _migrate_v39, 40: _migrate_v40, 41: _migrate_v41, 42: _migrate_v42, 43: _migrate_v43, 44: _migrate_v44, 45: _migrate_v45, 46: _migrate_v46}
 
 
 class SchemaDrift(RuntimeError):

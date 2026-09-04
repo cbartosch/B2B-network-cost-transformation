@@ -85,12 +85,20 @@ class Component:
     # second source of truth for the same fact, so the component carries it.
     product: str | None = None
     role: str | None = None          # PRIMARY | BACKUP | PLATFORM
+    # The two dimensions, so a lever can be eligible on what a circuit buys
+    # rather than on a single conflated field. Nullable: a platform component
+    # has a product and no service class, and an unmigrated simulation output
+    # has neither.
+    service_class: str | None = None
+    access_technology: str | None = None
 
     def to_dict(self):
         return {"key": self.key, "layer": self.layer, "driver": self.driver,
                 "quantity": self.quantity, "quantity_origin": self.quantity_origin,
                 "unit_cost_origin": self.unit_cost_origin,
                 "product": self.product, "role": self.role,
+                "service_class": self.service_class,
+                "access_technology": self.access_technology,
                 "source_ref": self.source_ref, "value": self.value.to_dict()}
 
 
@@ -352,6 +360,9 @@ def build_components(*, sim_output: dict, users: int, ops_cost_per_site: dict,
             layer="L0", driver="circuits", quantity=qty,
             quantity_origin=origin, unit_cost_origin="BENCHMARK_PRIOR",
             product=row["product"], role=row["role"],
+            # Carried from the simulation, which has emitted them since 4.169.
+            service_class=row.get("service_class"),
+            access_technology=row.get("access_technology"),
             value=value,
             source_ref=None if row["role"] == "BACKUP" else footprint_ref)
         # A backup circuit is SIMULATED whatever the enumeration says, so it is
@@ -545,8 +556,18 @@ def scenarios(components: list[Component], levers: list[dict],
             #
             # None means unconstrained: repricing and billing cleanup act on
             # any circuit whatever its technology.
-            eligible = lever.get("applies_to_products")
-            eligible = set(eligible) if eligible else None
+            # Eligibility per dimension. `applies_to_products` held one list
+            # for two unrelated things and was keyed on the vocabulary 4.166
+            # replaced - LEV-MPLS-001 named "MPLS", which is no longer a
+            # service class. It is deliberately not read: falling back to it
+            # would silently disable a lever rather than fail loudly.
+            constraints = {
+                "service_class": lever.get("applies_to_service_classes"),
+                "access_technology": lever.get("applies_to_access_technologies"),
+                "product": lever.get("applies_to_platform_products"),
+            }
+            constraints = {field: set(values)
+                           for field, values in constraints.items() if values}
             s_lo, s_ba, s_hi = (D(lever["saving_low"]), D(lever["saving_base"]),
                                 D(lever["saving_high"]))
             cut_total = D(0)
@@ -554,12 +575,18 @@ def scenarios(components: list[Component], levers: list[dict],
             for key, comp in by_key.items():
                 if comp.layer not in layers:
                     continue
-                if eligible is not None and comp.product not in eligible:
+                # Every declared constraint must be satisfied. An
+                # undeclared dimension is unconstrained, not empty - a lever
+                # that names no service class acts on any circuit.
+                unmet = [field for field, allowed in constraints.items()
+                         if getattr(comp, field, None) not in allowed]
+                if unmet:
                     # Recorded, not silently dropped: "this lever found nothing
                     # to act on" is a finding about the estate, and an analyst
                     # comparing scenarios needs to know a lever was offered and
                     # did not apply.
-                    skipped.append(comp.product or "unknown")
+                    skipped.append(" / ".join(
+                        f"{f}={getattr(comp, f, None)}" for f in unmet))
                     continue
                 lo, ba, hi = remaining[key]
                 # Conservative pairing: the small saving comes off the high cost.
@@ -570,21 +597,24 @@ def scenarios(components: list[Component], levers: list[dict],
                 applied.append({"lever_id": lever["lever_id"], "family": lever["family"],
                                 "description": lever["description"],
                                 "cost_layers": sorted(layers),
-                                "applies_to_products": (sorted(eligible)
-                                                        if eligible else None),
+                                "eligibility": {
+                                    field: sorted(allowed)
+                                    for field, allowed in constraints.items()},
                                 "saving_base": as_str(cut_total)})
-            elif eligible is not None:
+            elif constraints:
                 # Offered and inapplicable. A scenario that quietly contains
                 # fewer levers than it declares reads as a weaker opportunity
                 # rather than a different estate, and the difference matters:
                 # "no MPLS to substitute" is a fact about the client.
                 not_applied.append({
                     "lever_id": lever["lever_id"], "family": lever["family"],
-                    "applies_to_products": sorted(eligible),
+                    "eligibility": {field: sorted(allowed)
+                                    for field, allowed in constraints.items()},
                     "products_present": sorted(set(skipped)),
                     "reason": (
                         f"{lever['family']} acts on "
-                        f"{', '.join(sorted(eligible))}, and this estate's "
+                        f"{'; '.join(f'{f} in {sorted(a)}' for f, a in constraints.items())}"
+                        f", and this estate's "
                         f"{', '.join(sorted(set(skipped))) or 'components'} in "
                         f"{'/'.join(sorted(layers))} contain none of them. No "
                         f"saving is booked.")})
@@ -593,6 +623,9 @@ def scenarios(components: list[Component], levers: list[dict],
             Component(key=c.key, layer=c.layer, driver=c.driver, quantity=c.quantity,
                       quantity_origin=c.quantity_origin,
                       unit_cost_origin=c.unit_cost_origin,
+                      product=c.product, role=c.role,
+                      service_class=c.service_class,
+                      access_technology=c.access_technology,
                       value=Range(*remaining[c.key]), source_ref=c.source_ref)
             for c in components]
 

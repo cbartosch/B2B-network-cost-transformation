@@ -618,27 +618,43 @@ PLATFORM = [
 # billing cleanup: they act on any circuit regardless of technology, and making
 # them enumerate every product would be a list to maintain rather than a
 # control.
+# (id, family, description, cost_layers, low, base, high,
+#  service_classes, access_technologies, platform_products, scenario, stage)
+#
+# Eligibility on the dimension each lever actually acts on. `applies_to_products`
+# held one list for two unrelated things - the L0 levers named MPLS and DIA,
+# the L2/L4 levers named SD_WAN_OVERLAY and SSE_LICENCE - and was keyed on the
+# vocabulary 4.166 replaced. "MPLS" is no longer a service class.
+#
+# None on a dimension means unconstrained there. A component is eligible when
+# it satisfies every constraint that is declared.
 LEVERS = [
     ("LEV-REPRICE-001", "Same-service repricing", "Re-rate current products to benchmark",
-     ["L0"], "0.06", "0.12", "0.18", None, "A", "V2"),
+     ["L0"], "0.06", "0.12", "0.18", None, None, None, "A", "V2"),
     ("LEV-CLEANUP-001", "Billing cleanup", "Cease unused and duplicate services",
-     ["L0"], "0.01", "0.03", "0.06", None, "A", "V2"),
-    # Only a circuit that IS MPLS can be substituted for something else.
-    ("LEV-MPLS-001", "MPLS substitution", "Substitute MPLS with DIA plus overlay where eligible",
-     ["L0"], "0.15", "0.25", "0.35", ["MPLS"], "B", "V3"),
-    # Right-sizing needs headroom, which a shared best-effort service does not
-    # have in a form anyone can reprice: a 100 Mbps HFC line is not sold at 60.
-    ("LEV-BANDWIDTH-001", "Right-sizing", "Right-size access bandwidth against utilisation prior",
-     ["L0"], "0.03", "0.07", "0.12", ["DIA", "ETHERNET", "MPLS"], "B", "V3"),
+     ["L0"], "0.01", "0.03", "0.06", None, None, None, "A", "V2"),
+    # Only a committed VPN service can be substituted for internet plus overlay.
+    # Was ["MPLS"], which no longer exists.
+    ("LEV-MPLS-001", "MPLS substitution", "Substitute IPVPN with DIA plus overlay where eligible",
+     ["L0"], "0.15", "0.25", "0.35", ["MPLS"], None, None, "B", "V3"),
+    # Right-sizing needs a committed rate to reduce. Was
+    # ["DIA","ETHERNET","MPLS"] - the committed classes listed one by one,
+    # which is what "not BEST_EFFORT" says directly: a 100/20 broadband line
+    # is not sold at 60/12.
+    ("LEV-BANDWIDTH-001", "Right-sizing", "Right-size committed bandwidth against utilisation prior",
+     ["L0"], "0.03", "0.07", "0.12", ["DIA", "IPVPN", "ETHERNET"], None, None,
+     "B", "V3"),
+    # Platform components, not access circuits. These never were service
+    # classes and could not be expressed on that dimension at all.
     ("LEV-SASE-001", "Platform consolidation", "Converge SD-WAN, SSE and remote access",
-     ["L2", "L4"], "0.12", "0.22", "0.32",
+     ["L2", "L4"], "0.12", "0.22", "0.32", None, None,
      ["SD_WAN_OVERLAY", "SSE_LICENCE"], "C", "V3"),
     ("LEV-SECRETIRE-001", "Security appliance retirement", "Retire on-site firewall estate",
-     ["L4"], "0.05", "0.10", "0.16", ["SSE_LICENCE"], "C", "V3"),
+     ["L4"], "0.05", "0.10", "0.16", None, None, ["SSE_LICENCE"], "C", "V3"),
     ("LEV-NAAS-001", "Supplier consolidation", "Single global prime with managed edge",
-     ["L0", "OPS"], "0.08", "0.16", "0.24", None, "D", "V4"),
+     ["L0", "OPS"], "0.08", "0.16", "0.24", None, None, None, "D", "V4"),
     ("LEV-OPS-001", "Operating-model optimisation", "Consolidate NOC and vendor management",
-     ["OPS"], "0.10", "0.18", "0.28", None, "D", "V3"),
+     ["OPS"], "0.10", "0.18", "0.28", None, None, None, "D", "V3"),
 ]
 
 
@@ -729,10 +745,12 @@ def _rows():
         (lever, lambda: [
             {"lever_id": i, "family": f, "description": d, "cost_layers": cl,
              "saving_low": lo, "saving_base": ba, "saving_high": hi,
-             "applies_to_products": ap, "scenario": sc,
+             "applies_to_service_classes": svc,
+             "applies_to_access_technologies": tech,
+             "applies_to_platform_products": plat, "scenario": sc,
              "evidence_required": "see reference.savings_lever_rule",
              "earliest_supported_stage": st}
-            for i, f, d, cl, lo, ba, hi, ap, sc, st in LEVERS]),
+            for i, f, d, cl, lo, ba, hi, svc, tech, plat, sc, st in LEVERS]),
     ]
 
 

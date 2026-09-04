@@ -930,7 +930,27 @@ lever = Table(
     # Null means the lever is not product-constrained: repricing and billing
     # cleanup act on any circuit, and requiring them to enumerate every product
     # would be a list to maintain rather than a control.
-    Column("applies_to_products", JSON),
+    # Eligibility, on the dimensions a lever actually acts on.
+    #
+    # `applies_to_products` held one list for two unrelated things: the L0
+    # levers act on access circuits and named MPLS and DIA, the L2/L4 levers
+    # act on platform components and named SD_WAN_OVERLAY and SSE_LICENCE. The
+    # same conflation as `product`, one level up.
+    #
+    # And it was keyed on a dead vocabulary. LEV-MPLS-001 named "MPLS", which
+    # is no longer a service class - it is IPVPN. The moment the pipeline
+    # supplies a service class that lever matches nothing and books zero MPLS
+    # savings for entirely the wrong reason, which looks exactly like the
+    # correct behaviour.
+    #
+    # Null on any of these means unconstrained on that dimension. A component
+    # is eligible when it satisfies every constraint that is declared.
+    Column("applies_to_service_classes", JSON),
+    Column("applies_to_access_technologies", JSON),
+    Column("applies_to_platform_products", JSON),
+    Column("applies_to_products", JSON),    # Retained so a lever row written before 4.170 is still readable. Not
+    # read by the eligibility test: its values cannot match the new
+    # vocabulary, so falling back to it would silently disable a lever.
     Column("scenario", String(1)), Column("evidence_required", Text),
     # Stage at which the evidence supporting this lever first becomes admissible
     # under the 0.5A gate matrix. Drives realization confidence.
