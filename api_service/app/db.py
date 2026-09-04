@@ -682,6 +682,29 @@ unit_cost_prior = Table(
     Column("bandwidth_mbps", Integer),
     Column("low", Numeric(14, 2)), Column("base", Numeric(14, 2)), Column("high", Numeric(14, 2)),
     Column("currency", String(3)), Column("price_year", Integer), Column("approved", Boolean, default=True),
+    # The speed pair, with its basis declared. `bandwidth_mbps` above stays as
+    # the derived figure the tariff keys off, so the thirty-three modules that
+    # read it keep working - the pair is authoritative and the single figure is
+    # a projection of it.
+    #
+    # A single field conflated two facts: 100/30 MPLS is a 100 Mbps bearer with
+    # 30 committed, and 80/20 FTTP is 80 down with 20 up. Pricing the first on
+    # its bearer looks up a tier the client never bought - 3.3x too high on the
+    # 307 MPLS circuits in the reference estate.
+    Column("access_family", String(16)),        # DIA, MPLS, FTTP, VDSL, ...
+    Column("speed_basis", String(16)),          # DOWN_UP | PORT_SERVICE | ...
+    Column("speed_primary_mbps", Numeric(10, 2)),
+    Column("speed_secondary_mbps", Numeric(10, 2)),
+    # Usable capacity is not described by speed alone for a metered service.
+    Column("monthly_data_cap_gb", Integer),
+    # Geographic specificity, finer than a country. Openreach publishes by
+    # regulated area and by distance from the serving exchange, and the
+    # reference estate's MPLS spans 7x within one country - so country was
+    # never a fine enough scope to price on.
+    Column("geography_area", String(24)),       # National | Area 2 | Area 3 | HNR
+    Column("premises_type", String(16)),        # Residential | Business | All
+    Column("distance_from", Numeric(8, 2)), Column("distance_to", Numeric(8, 2)),
+    Column("distance_unit", String(8)),
     # Where the price came from. Every seeded prior landed approved=True with
     # nothing marking it as indicative, so once a steward approved a real
     # benchmark into the same table nothing could tell an illustrative figure

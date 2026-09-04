@@ -350,3 +350,24 @@ def test_build_up_still_refuses_a_missing_ops_cost(session, client):
                     json={"method": "BUILD_UP", "users": 500})
     assert r.status_code == 422
     assert r.json()["detail"]["error"] == "no ops cost per site"
+
+
+def test_a_prior_is_resolved_by_scope_specificity():
+    """Openreach publishes by regulated area and by distance from the serving
+    exchange. A less specific scope is consulted only when the more specific
+    one has nothing at all - not when it has a worse price, because a national
+    average is not a better answer than a local tariff."""
+    from app.domain.estimate import match_prior
+
+    priors = {("GB", "MPLS", 100): {"base": "980"},
+              ("Area 2", "MPLS", 100): {"base": "760"},
+              ("CASE-x", "MPLS", 100): {"base": "308"}}
+
+    assert match_prior(priors, "GB", "MPLS", 100)[0]["base"] == "980"
+    assert match_prior(priors, "GB", "MPLS", 100,
+                       scopes=["Area 2", "GB"])[0]["base"] == "760"
+    assert match_prior(priors, "GB", "MPLS", 100,
+                       scopes=["CASE-x", "Area 2", "GB"])[0]["base"] == "308"
+    # a scope with no price falls through rather than failing
+    assert match_prior(priors, "GB", "MPLS", 100,
+                       scopes=["Area 9", "GB"])[0]["base"] == "980"

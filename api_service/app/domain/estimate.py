@@ -95,8 +95,19 @@ class Component:
 
 
 
-def match_prior(priors: dict, country: str, product: str, mbps) -> tuple:
+def match_prior(priors: dict, country: str, product: str, mbps,
+                # Scope values to try, most specific first. Optional: without
+                # it the behaviour is exactly as before with `country` as the
+                # only scope, so every existing caller is unaffected.
+                scopes: list | None = None) -> tuple:
     """Find the price for this circuit, at the bandwidth it needs.
+
+    Scope is resolved by specificity, not by equality. Openreach publishes by
+    regulated area and by distance from the serving exchange, and the reference
+    estate's MPLS spans seven times within one country - so a national tariff
+    is a fallback, not the answer. The ladder is CASE, DISTANCE_BAND, AREA,
+    METRO, COUNTRY, REGION, and the first hit wins: a rate for this client
+    outranks a rate for this area, which outranks a rate for the country.
 
     `priors` is keyed (country, product, bandwidth_mbps). An exact tier is
     used as-is. Failing that, the cheapest tier *at or above* the requirement
@@ -110,9 +121,20 @@ def match_prior(priors: dict, country: str, product: str, mbps) -> tuple:
     of this module applies to unpriced scope: report it, never default it
     silently.
     """
-    exact = priors.get((country, product, mbps))
-    if exact:
-        return exact, None
+    # Most specific scope first. A less specific scope is only consulted when
+    # the more specific one has nothing at all - not when it has a worse price,
+    # because a national average is not a better answer than a local tariff.
+    for scope in (scopes or [country]):
+        exact = priors.get((scope, product, mbps))
+        if exact:
+            return exact, None
+        above = sorted(
+            ((bw, pr) for (c, p, bw), pr in priors.items()
+             if c == scope and p == product and bw is not None
+             and mbps is not None and bw >= mbps),
+            key=lambda t: D(t[1]["base"]))
+        if above:
+            return above[0][1], above[0][0]
     above = sorted(
         ((bw, pr) for (c, p, bw), pr in priors.items()
          if c == country and p == product and bw is not None and mbps is not None
