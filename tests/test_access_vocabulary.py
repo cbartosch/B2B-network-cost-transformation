@@ -453,3 +453,79 @@ def test_the_service_class_choice_is_pinned_to_the_run():
     assert 'get("service_class_by_archetype")' in jobs, "the runner must read it"
     assert "service_class_by_archetype=service_class_by_archetype" in jobs, (
         "and must pass it to the simulation, or it is read and never used")
+
+
+# ------------------------- the analyst assigns the service class per site type
+def _pass(choice=None):
+    from app.domain import simulation
+    return simulation.one_pass(
+        42, [{"country": "GB", "archetype": "STORE", "sites": 100}],
+        {"STORE": {"dual_access_probability": 0.0,
+                   "primary_product": "BROADBAND_HFC",
+                   "backup_product": "MOBILE_5G", "users_base": 12,
+                   "bandwidth_mbps_base": 50}},
+        service_class_by_archetype=choice)
+
+
+def test_the_analyst_choice_changes_what_a_site_type_buys():
+    """A store on a best-effort broadband service and a store on a committed
+    IPVPN are different estates at the same site count, and the seeded prior is
+    a starting position rather than a decision."""
+    default = {r.get("service_class") for r in _pass()["products"]
+               if r["role"] == "PRIMARY"}
+    chosen = {r.get("service_class") for r in _pass({"STORE": "IPVPN"})["products"]
+              if r["role"] == "PRIMARY"}
+    assert default == {access.BEST_EFFORT}
+    assert chosen == {access.IPVPN}
+
+
+def test_choosing_a_service_class_does_not_choose_an_access_technology():
+    """The whole reason the two are separate fields. `primary_product` held
+    both, so choosing BROADBAND_HFC for a store asserted a delivery technology
+    as well as a service level - and a store served by PON instead came out as
+    a substitution rather than as the same decision met a different way."""
+    products = {r["product"] for r in _pass({"STORE": "IPVPN"})["products"]
+                if r["role"] == "PRIMARY"}
+    assert products == {"BROADBAND_HFC"}, (
+        "the access technology must stay whatever serviceability delivers")
+
+
+def test_an_unassigned_site_type_keeps_its_seeded_default():
+    """Assigning one type must not blank the others."""
+    out = _pass({"WAREHOUSE": "DIA"})          # STORE unassigned
+    assert {r.get("service_class") for r in out["products"]
+            if r["role"] == "PRIMARY"} == {access.BEST_EFFORT}
+
+
+def test_the_assignment_is_reachable_from_the_interface():
+    """Both endpoints existed and were complete for a release while no screen
+    called them - so an analyst had no way to assign anything, and the
+    reachability check did not cover a PUT under a case."""
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1]
+    page = next(p for p in (root / "analyst_ui").rglob("*.py")
+                if "Simulation" in p.name).read_text()
+    assert "/service-classes" in page
+    assert "Assign these service classes" in page
+
+
+def test_the_assignment_is_pinned_to_the_run():
+    """A resumed or re-read run must price on the classes it was run with, not
+    on whatever the case says now - the same rule serviceability needed in
+    4.137."""
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1]
+    app = next(c for c in (root / "api_service" / "app", root / "app")
+               if (c / "routers").exists())
+    api = (app / "routers" / "api.py").read_text()
+    # Bounded by the params dict itself rather than by a character count. My
+    # first version used [:600] and the pin sits 1,601 characters in, so a
+    # correct pin failed on a window size - the same defect as the 1,600-char
+    # window in test_ui_pages.
+    start = api.index('params={"footprint"')
+    end = api.index("\n        )", start)
+    assert "service_class_by_archetype" in api[start:end], (
+        "the chosen classes must be pinned to the run, or a resumed pass "
+        "prices on whatever the case says now")

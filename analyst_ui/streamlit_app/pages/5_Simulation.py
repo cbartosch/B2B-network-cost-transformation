@@ -26,6 +26,55 @@ api.show_flash()
 st.info("Simulated structure can never set EVIDENCED, never supports a resilience-dependent "
         "lever, and is permanently barred from benchmark promotion (5.6).")
 
+st.subheader("Service class by site type")
+st.caption(
+    "What each site type buys, as distinct from how it arrives. A store on a "
+    "best-effort broadband service and a store on a committed IPVPN are "
+    "different estates at the same site count, and the seeded prior is a "
+    "starting position rather than a decision.")
+
+_sc = api.get(f"/v1/outside-in/cases/{case_id}/service-classes")
+if "_error" in _sc:
+    st.error(f"Could not read the service classes: {_sc['_error']}")
+elif not _sc.get("by_archetype"):
+    st.caption("No archetype priors are seeded, so there is nothing to assign.")
+else:
+    _sc_rows = pd.DataFrame([
+        {"site type": r["archetype"],
+         "service class": r["chosen"] or r["default"] or "",
+         "seeded default": r["default"] or r["default_from_product"] or "-",
+         "chosen": r["chosen"] is not None}
+        for r in _sc["by_archetype"]])
+    # Keyed on the case, so switching case re-initialises instead of showing
+    # the previous case's assignment.
+    _sc_edit = st.data_editor(
+        _sc_rows, hide_index=True, use_container_width=True,
+        disabled=["site type", "seeded default", "chosen"],
+        column_config={
+            "service class": st.column_config.SelectboxColumn(
+                options=[""] + list(_sc.get("service_classes") or []),
+                help="Blank leaves the seeded default in place."),
+        },
+        key=f"sim_service_class_{case_id[:8]}")
+    _sc_who = st.text_input("Choosing as (your name)",
+                            key=f"sim_sc_who_{case_id[:8]}")
+    if st.button("Assign these service classes",
+                 disabled=not _sc_who.strip()):
+        _picked = {r["site type"]: r["service class"]
+                   for _, r in _sc_edit.iterrows() if r["service class"]}
+        _r = api.put(f"/v1/outside-in/cases/{case_id}/service-classes",
+                     {"by_archetype": _picked, "chosen_by": _sc_who})
+        if "_error" in _r:
+            st.error(_r["_error"])
+        else:
+            api.flash(_r.get("note", "Assigned."))
+            st.rerun()
+    st.caption(
+        "Unassigned site types keep their seeded default. The access "
+        "technology is not chosen here - it is whatever serviceability says "
+        "can be delivered at each site, which is the whole reason the two are "
+        "separate fields.")
+
 st.subheader("Footprint")
 
 # The choice sits outside the resolver's branches on purpose.

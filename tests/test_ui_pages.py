@@ -325,7 +325,11 @@ def test_the_register_panel_sits_above_the_footprint_editor():
     # The register is now resolved server-side, so the page shows the
     # registered total rather than reading the register itself. The durable
     # requirement is that it appears above the editor.
-    assert text.index("register_total") < text.index("st.data_editor"), (
+    # Anchored on the *footprint* editor, not the first data_editor on the
+    # page. A service-class editor was added above the register panel in 4.169,
+    # so "the first editor" stopped meaning "the footprint editor" - and the
+    # test asserted a position rather than a relationship.
+    assert text.index("register_total") < text.index("fp = st.data_editor"), (
         "the register panel must render before the editor it populates")
 
 
