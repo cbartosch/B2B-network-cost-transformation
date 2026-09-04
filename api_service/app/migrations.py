@@ -34,7 +34,7 @@ from . import db
 log = logging.getLogger("workbench.migrations")
 
 # Bump when the physical schema changes, and add a step below.
-SCHEMA_VERSION = 43
+SCHEMA_VERSION = 44
 
 VERSION_TABLE = "schema_version"
 VERSION_SCHEMA = "audit"
@@ -979,13 +979,48 @@ def _migrate_v43(conn) -> None:
              "bandwidth_mbps is its projection", added)
 
 
+def _migrate_v44(conn) -> None:
+    """Service class and access technology on the rate card.
+
+    `product` held one value for two orthogonal facts. A client's own invoice
+    data settles it: the same service rides four access technologies, 1,357
+    circuits over VDSL and 52 over PON and VDSL together.
+
+    Additive, not a flag day. Existing rows keep `product` and gain the two
+    dimensions derived from it, so a snapshot written before this migration
+    stays reproducible and match_prior can key on either.
+    """
+    added = sum(_add_column(conn, db.unit_cost_prior, c)
+                for c in ("service_class", "access_technology"))
+    # Derive the two dimensions from the value already stored. Done in SQL
+    # rather than by re-seeding, so a steward-approved prior keeps its
+    # approval and its evidence grade.
+    LEGACY = {
+        "DIA": ("DIA", None), "MPLS": ("IPVPN", None),
+        "ETHERNET": ("ETHERNET", "ETHERNET_FIBRE"),
+        "BROADBAND_PON": ("BEST_EFFORT", "PON"),
+        "BROADBAND_HFC": ("BEST_EFFORT", "HFC"),
+        "MOBILE_5G": ("BEST_EFFORT", "MOBILE_5G"),
+    }
+    migrated = 0
+    for product, (service_class, technology) in LEGACY.items():
+        result = conn.execute(text(
+            "UPDATE reference.unit_cost_prior "
+            "SET service_class = :sc, access_technology = :at "
+            "WHERE product = :p AND service_class IS NULL"),
+            {"sc": service_class, "at": technology, "p": product})
+        migrated += result.rowcount or 0
+    log.info("v44: %d column(s) added, %d prior(s) given a service class",
+             added, migrated)
+
+
 MIGRATIONS = {2: _migrate_v2, 3: _migrate_v3, 4: _migrate_v4, 5: _migrate_v5,
               6: _migrate_v6, 7: _migrate_v7, 8: _migrate_v8, 9: _migrate_v9,
               10: _migrate_v10, 11: _migrate_v11, 12: _migrate_v12,
               13: _migrate_v13, 14: _migrate_v14, 15: _migrate_v15,
               16: _migrate_v16, 17: _migrate_v17, 18: _migrate_v18,
               19: _migrate_v19, 20: _migrate_v20,
-              21: _migrate_v21, 22: _migrate_v22, 23: _migrate_v23, 24: _migrate_v24, 25: _migrate_v25, 26: _migrate_v26, 27: _migrate_v27, 28: _migrate_v28, 29: _migrate_v29, 30: _migrate_v30, 31: _migrate_v31, 32: _migrate_v32, 33: _migrate_v33, 34: _migrate_v34, 35: _migrate_v35, 36: _migrate_v36, 37: _migrate_v37, 38: _migrate_v38, 39: _migrate_v39, 40: _migrate_v40, 41: _migrate_v41, 42: _migrate_v42, 43: _migrate_v43}
+              21: _migrate_v21, 22: _migrate_v22, 23: _migrate_v23, 24: _migrate_v24, 25: _migrate_v25, 26: _migrate_v26, 27: _migrate_v27, 28: _migrate_v28, 29: _migrate_v29, 30: _migrate_v30, 31: _migrate_v31, 32: _migrate_v32, 33: _migrate_v33, 34: _migrate_v34, 35: _migrate_v35, 36: _migrate_v36, 37: _migrate_v37, 38: _migrate_v38, 39: _migrate_v39, 40: _migrate_v40, 41: _migrate_v41, 42: _migrate_v42, 43: _migrate_v43, 44: _migrate_v44}
 
 
 class SchemaDrift(RuntimeError):

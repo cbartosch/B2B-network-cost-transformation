@@ -713,6 +713,19 @@ unit_cost_prior = Table(
     # SEED       an indicative starting position, not a market rate
     # PROMOTED   from a researched finding, approved=False until a steward acts
     # BENCHMARK  derived from cleared observations in the vault
+    # What is bought, and how it is delivered. `product` held one value for
+    # both, so BROADBAND_PON and BROADBAND_HFC were separate "products" while
+    # an IPVPN over VDSL and an IPVPN over fibre - genuinely different prices -
+    # could not be told apart at all.
+    #
+    # `bandwidth_mbps` is already the priced dimension: a rate card is keyed on
+    # what is bought, and the bearer matters for deliverability rather than for
+    # the price. So this is two columns, not four.
+    #
+    # access_technology is null where a rate is technology-agnostic - a DIA
+    # tariff quoted per Mbps regardless of how the fibre arrives.
+    Column("service_class", String(16)),
+    Column("access_technology", String(20)),
     Column("price_basis", String(16), default="SEED"),
     # What the rate is worth as evidence, on the audit scale:
     #

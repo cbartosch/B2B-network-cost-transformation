@@ -269,3 +269,79 @@ def test_the_scope_ladder_has_one_definition():
     assert "access.scope_rank" in source
     assert "DISTANCE_BAND" not in source, (
         "the ladder belongs in the vocabulary, not restated here")
+
+
+# ------------------------------- the rate card keyed on the two dimensions
+def _priors():
+    return {
+        "fibre": {"scope": "GB", "service_class": "IPVPN",
+                  "access_technology": "ETHERNET_FIBRE",
+                  "bandwidth_mbps": 30, "base": "420"},
+        "vdsl": {"scope": "GB", "service_class": "IPVPN",
+                 "access_technology": "VDSL",
+                 "bandwidth_mbps": 30, "base": "95"},
+        "agnostic": {"scope": "GB", "service_class": "IPVPN",
+                     "access_technology": None,
+                     "bandwidth_mbps": 30, "base": "300"},
+        "legacy": {"scope": "GB", "product": "MPLS",
+                   "bandwidth_mbps": 30, "base": "999"},
+    }
+
+
+def test_the_same_service_over_different_access_resolves_to_different_rates():
+    """`product` held one value for two orthogonal facts, so an IPVPN over VDSL
+    and an IPVPN over fibre - genuinely different prices - could not be told
+    apart at all."""
+    from app.domain.estimate import match_prior
+
+    pair = access.speed(100, 30, service_class=access.IPVPN)
+    fibre, _ = match_prior(_priors(), "GB", "MPLS", 100, speed=pair,
+                           service_class=access.IPVPN,
+                           access_technology="ETHERNET_FIBRE")
+    vdsl, _ = match_prior(_priors(), "GB", "MPLS", 100, speed=pair,
+                          service_class=access.IPVPN,
+                          access_technology="VDSL")
+    assert fibre["base"] == "420"
+    assert vdsl["base"] == "95"
+
+
+def test_an_unmatched_technology_falls_back_to_the_agnostic_rate():
+    """A DIA tariff quoted per Mbps does not care how the fibre arrives. The
+    fallback is by specificity - exact technology first, then agnostic, never
+    the reverse."""
+    from app.domain.estimate import match_prior
+
+    pair = access.speed(100, 30, service_class=access.IPVPN)
+    hit, _ = match_prior(_priors(), "GB", "MPLS", 100, speed=pair,
+                         service_class=access.IPVPN,
+                         access_technology="MOBILE_5G")
+    assert hit["base"] == "300"
+    assert hit["access_technology"] is None
+
+
+def test_a_rate_card_that_has_not_been_migrated_still_prices():
+    """Additive, not a flag day: a caller supplying no service class gets the
+    legacy key, so a snapshot written before this change stays reproducible."""
+    from app.domain.estimate import match_prior
+
+    legacy = {("GB", "MPLS", 30): {"base": "999"}}
+    hit, _ = match_prior(legacy, "GB", "MPLS", 30)
+    assert hit["base"] == "999"
+
+
+def test_the_dimensions_are_derived_from_one_mapping_not_restated():
+    """LEGACY_PRODUCT is the single mapping from the old field to the two
+    dimensions. The seed derives from it; duplicating it there would be a
+    second copy to drift, which is how ORIGIN_RANK ended up in two modules."""
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1]
+    app = next(c for c in (root / "api_service" / "app", root / "app")
+               if (c / "seed.py").exists())
+    seed = (app / "seed.py").read_text()
+    assert "access.LEGACY_PRODUCT[p][0]" in seed
+    assert "access.LEGACY_PRODUCT[p][1]" in seed
+    # and every mapped value is in the vocabulary
+    for service_class, technology in access.LEGACY_PRODUCT.values():
+        assert service_class in access.SERVICE_CLASSES
+        assert technology is None or technology in access.ACCESS_TECHNOLOGIES

@@ -2,6 +2,7 @@
 exist only as a code constant - they live here and are versioned in the database."""
 from sqlalchemy import delete, insert, select
 
+from .domain import access
 from .domain.research_briefs import (
     BRIEF_CATALOGUE_VERSION, RESEARCH_BRIEFS)
 # The agent map lives with the research module; the brief rows record which
@@ -690,6 +691,11 @@ def _rows():
              # and "infer the kind from the string" is the guess this column
              # was added to remove.
              "scope_kind": "REGION" if c in REGION_CODES else "COUNTRY",
+             # Derived, not restated: LEGACY_PRODUCT is the one mapping from
+             # the old single field to the two dimensions, and duplicating it
+             # here would be a second copy to drift.
+             "service_class": access.LEGACY_PRODUCT[p][0],
+             "access_technology": access.LEGACY_PRODUCT[p][1],
              "bandwidth_mbps": bw, "low": lo, "base": ba, "high": hi,
              "currency": "USD", "price_year": 2026, "approved": True,
              "price_basis": "SEED",

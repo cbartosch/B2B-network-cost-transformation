@@ -95,6 +95,34 @@ class Component:
 
 
 
+def _by_dimensions(priors: dict, scope, service_class, technology, mbps):
+    """A prior keyed on service class and access technology.
+
+    Exact bandwidth first, then the cheapest tier at or above the requirement -
+    the same rule the legacy key uses, and for the same reason: a 100 Mbps rate
+    cannot serve a 500 Mbps circuit, and substituting downward understates the
+    estimate in the direction that becomes a savings number nobody delivers.
+    """
+    def _matches(row, bandwidth):
+        return (row.get("scope") == scope
+                and row.get("service_class") == service_class
+                and row.get("access_technology") == technology
+                and bandwidth is not None)
+
+    rows = [(bw, pr) for (bw, pr) in (
+        (r.get("bandwidth_mbps"), r) for r in priors.values()
+        if isinstance(r, dict)) if _matches(pr, bw)]
+    exact = [pr for bw, pr in rows if bw == mbps]
+    if exact:
+        return exact[0], None
+    above = sorted(((bw, pr) for bw, pr in rows
+                    if mbps is not None and bw >= mbps),
+                   key=lambda t: D(t[1]["base"]))
+    if above:
+        return above[0][1], above[0][0]
+    return None, None
+
+
 def match_prior(priors: dict, country: str, product: str, mbps,
                 # The structured speed pair, where the caller has one. When
                 # supplied, the rate card is keyed on the figure that is
@@ -106,6 +134,20 @@ def match_prior(priors: dict, country: str, product: str, mbps,
                 # though it were capacity, which is a 3.3x overstatement on
                 # every one of the 319 such circuits in the reference estate.
                 speed: dict | None = None,
+                # The two dimensions, where the caller has them. When supplied,
+                # the rate card is keyed on (scope, service_class,
+                # access_technology, priced rate) rather than on the single
+                # `product` field - so an IPVPN over VDSL and an IPVPN over
+                # fibre resolve to different rates, which `product` could not
+                # express at all.
+                #
+                # A prior with no access_technology is technology-agnostic and
+                # matches any: a DIA tariff quoted per Mbps does not care how
+                # the fibre arrives. So the fallback is by specificity here
+                # too - an exact technology match first, then the agnostic
+                # rate, and never the reverse.
+                service_class: str | None = None,
+                access_technology: str | None = None,
                 # Scope values to try, most specific first. Optional: without
                 # it the behaviour is exactly as before with `country` as the
                 # only scope, so every existing caller is unaffected.
@@ -144,6 +186,23 @@ def match_prior(priors: dict, country: str, product: str, mbps,
         mbps = access.priced_rate(speed)
 
     ordered = sorted(scopes or [country], key=access.scope_rank)
+
+    if service_class is not None:
+        # Keyed on the two dimensions. Tried before the legacy key so a
+        # re-keyed prior wins, and falling through to `product` means a rate
+        # card that has not been migrated still prices.
+        for scope in ordered:
+            for technology in (access_technology, None):
+                prior, substituted = _by_dimensions(
+                    priors, scope, service_class, technology, mbps)
+                if prior is not None:
+                    # Unpacked and returned explicitly. Returning the tuple
+                    # whole made this the one arity-1 return among five, which
+                    # the 4.148 guard exists to catch - a function returning
+                    # both a tuple and a bare value is where an unpacking error
+                    # hides on the branch nobody tested.
+                    return prior, substituted
+
     for scope in ordered:
         exact = priors.get((scope, product, mbps))
         if exact:
