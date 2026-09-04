@@ -137,3 +137,42 @@ def test_wireless_is_listed_separately_from_wired():
     assert "MOBILE_5G" in access.WIRELESS
     assert "PON" in access.WIRED
     assert not set(access.WIRED) & set(access.WIRELESS)
+
+
+# ------------------------------------------- parsing the client's own text
+@pytest.mark.parametrize("description,service_class,expected", [
+    ("IPCUK MPLS Ethernet Access/Port = 100/30", access.IPVPN, (100, 30)),
+    ("ICR FTTP ( was originally ICR FTTC 80/20)", access.BEST_EFFORT, (80, 20)),
+    ("EAD 100 Mbps", access.ETHERNET, (100, None)),
+])
+def test_a_speed_pair_is_read_from_a_real_invoice_description(
+        description, service_class, expected):
+    """2,010 of 2,287 descriptions in one client's data carry an x/y pair."""
+    pair = access.parse(description, service_class=service_class)
+    assert pair is not None
+    assert (pair["primary_mbps"], pair["secondary_mbps"]) == expected
+
+
+def test_a_description_with_no_speed_is_refused_not_defaulted():
+    """`ICR ADSL ( was on WBA decisions)` carries no speed at all. Returning a
+    default would put a priced circuit in the estate on a bandwidth nobody
+    stated - and 277 of those descriptions exist."""
+    assert access.parse("ICR ADSL ( was on WBA decisions)",
+                        service_class=access.BEST_EFFORT) is None
+    assert access.parse("", service_class=access.DIA) is None
+
+
+def test_a_prior_written_before_the_split_is_still_readable():
+    """The six old values mapped onto the two dimensions they conflated, so a
+    stored prior does not become unreadable when the vocabulary changes."""
+    assert access.LEGACY_PRODUCT["BROADBAND_PON"] == (access.BEST_EFFORT, "PON")
+    assert access.LEGACY_PRODUCT["MPLS"] == (access.IPVPN, None)
+    for service_class, technology in access.LEGACY_PRODUCT.values():
+        assert service_class in access.SERVICE_CLASSES
+        assert technology is None or technology in access.ACCESS_TECHNOLOGIES
+
+
+def test_the_uk_areas_are_the_ones_the_tariff_publishes():
+    """Openreach's regulated zones are levels, not adjustments to a national
+    figure."""
+    assert "Area 2" in access.UK_AREAS and "Area 3" in access.UK_AREAS

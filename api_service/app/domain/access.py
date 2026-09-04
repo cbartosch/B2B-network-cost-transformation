@@ -22,6 +22,7 @@ one-to-one - so the convention is never guessed, and a pair whose basis
 contradicts its class is a validation error rather than a silent
 misinterpretation.
 """
+import re
 from decimal import Decimal
 
 # ------------------------------------------------------------ service classes
@@ -197,6 +198,55 @@ def validate(*, service_class: str, access_technology: str | None,
             f"in practice, and the committed figure is not guaranteed by the "
             f"access")
     return problems
+
+
+# ------------------------------------------------- parsing free text
+# Ported from domain/circuits.py, which implemented an earlier and superseded
+# taxonomy. That module was built in this same version, then the vocabulary was
+# corrected to four service classes - and rather than replacing it I wrote a
+# second module beside it. The cross-module duplication check caught it, which
+# is the third time this session the same feature has been built twice.
+_PAIR = re.compile(r"(\d+(?:\.\d+)?)\s*[/xX]\s*(\d+(?:\.\d+)?)")
+_SINGLE = re.compile(r"(\d+(?:\.\d+)?)\s*(?:mb|mbps|m\b)", re.I)
+
+# Openreach's regulated price zones. These are levels the tariff is actually
+# published at, not adjustments to a national figure.
+UK_AREAS = ("National", "Area 2", "Area 3", "HNR", "Other")
+
+# The six values the single field used to hold, mapped onto the two dimensions
+# they conflated. Kept so a stored prior written before 4.166 can be read.
+LEGACY_PRODUCT = {
+    "DIA": (DIA, None),
+    "MPLS": (IPVPN, None),
+    "ETHERNET": (ETHERNET, "ETHERNET_FIBRE"),
+    "BROADBAND_PON": (BEST_EFFORT, "PON"),
+    "BROADBAND_HFC": (BEST_EFFORT, "HFC"),
+    "MOBILE_5G": (BEST_EFFORT, "MOBILE_5G"),
+}
+
+
+def parse(text: str, *, service_class: str) -> dict | None:
+    """A speed pair from free text, or None.
+
+    Refuses rather than guesses. `ICR ADSL ( was on WBA decisions)` carries no
+    speed at all, and returning a default would put a priced circuit in the
+    estate on a bandwidth nobody stated. 2,010 of 2,287 descriptions in one
+    client's data carry an x/y pair; the rest carry nothing, and that is a
+    finding rather than a gap to fill.
+    """
+    if not text:
+        return None
+    found = _PAIR.search(str(text))
+    if found:
+        return speed(float(found.group(1)), float(found.group(2)),
+                     service_class=service_class)
+    single = _SINGLE.search(str(text))
+    if single:
+        # One figure and no pair. Recorded as a primary with no secondary,
+        # which is honest: "100 Mbps" does not say what was committed on it.
+        return speed(float(single.group(1)), None,
+                     service_class=service_class)
+    return None
 
 
 # ------------------------------------------------------- geographic scope
