@@ -636,7 +636,7 @@ LEVERS = [
     # Only a committed VPN service can be substituted for internet plus overlay.
     # Was ["MPLS"], which no longer exists.
     ("LEV-MPLS-001", "MPLS substitution", "Substitute IPVPN with DIA plus overlay where eligible",
-     ["L0"], "0.15", "0.25", "0.35", ["MPLS"], None, None, "B", "V3"),
+     ["L0"], "0.15", "0.25", "0.35", ["IPVPN"], None, None, "B", "V3"),
     # Right-sizing needs a committed rate to reduce. Was
     # ["DIA","ETHERNET","MPLS"] - the committed classes listed one by one,
     # which is what "not BEST_EFFORT" says directly: a 100/20 broadband line

@@ -529,3 +529,117 @@ def test_the_assignment_is_pinned_to_the_run():
     assert "service_class_by_archetype" in api[start:end], (
         "the chosen classes must be pinned to the run, or a resumed pass "
         "prices on whatever the case says now")
+
+
+def _seeded_levers():
+    """The LEVERS table, read from the seed's source.
+
+    Importing app.seed pulls in sqlalchemy, which is absent wherever there is
+    no database - so a guard that imports it does not run in the offline
+    runner. That is exactly where this one was.
+    """
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1]
+    app = next(c for c in (root / "api_service" / "app", root / "app")
+               if (c / "seed.py").exists())
+    source = (app / "seed.py").read_text()
+    start = source.index("LEVERS = [")
+    namespace = {}
+    exec(source[start:source.index("\n]\n", start) + 3], namespace)
+    return namespace["LEVERS"]
+
+
+# ------------- lever eligibility on the live vocabulary
+#
+# These lived in test_savings_advisory.py, which imports sqlalchemy at
+# module level and is therefore blocked in the offline runner - so the
+# guard written to catch exactly this drift did not run, and missed that
+# LEV-MPLS-001 still read ["MPLS"]. A guard in a file that cannot execute
+# is a comment.
+def test_every_lever_constraint_names_a_value_the_vocabulary_declares():
+    """The defect this test exists for.
+
+    `applies_to_products` was keyed on the vocabulary 4.166 replaced.
+    LEV-MPLS-001 named "MPLS", which is no longer a service class - it is
+    IPVPN. The moment the pipeline supplied a service class, that lever would
+    have matched nothing and booked zero MPLS savings for entirely the wrong
+    reason, which looks exactly like the correct behaviour.
+
+    Whichever landed first - the pipeline switch or the re-key - would have
+    silently broken the other. This is the guard that makes the next change to
+    either one fail loudly instead."""
+    from app.domain import access
+
+    # Read from source rather than imported: app.seed imports sqlalchemy at
+    # module level, so importing it blocks this guard in any environment
+    # without a database - which is where it was, silently, while
+    # LEV-MPLS-001 still read ["MPLS"].
+    for row in _seeded_levers():
+        lever_id, service_classes = row[0], row[7]
+        access_technologies, platform = row[8], row[9]
+        for value in service_classes or ():
+            assert value in access.SERVICE_CLASSES, (
+                f"{lever_id} is eligible on service class {value!r}, which is "
+                f"not in {list(access.SERVICE_CLASSES)}")
+        for value in access_technologies or ():
+            assert value in access.ACCESS_TECHNOLOGIES, (
+                f"{lever_id} names access technology {value!r}, which the "
+                f"vocabulary does not declare")
+        # Platform products are the L2/L4 vocabulary and deliberately not
+        # service classes - SSE_LICENCE never was one.
+        for value in platform or ():
+            assert value not in access.SERVICE_CLASSES, (
+                f"{lever_id} lists {value!r} as a platform product and it is "
+                f"also a service class - the two dimensions have collapsed")
+
+
+def test_the_dead_product_field_is_not_read_by_the_eligibility_test():
+    """Retained for readability, deliberately not consulted: its values cannot
+    match the new vocabulary, so falling back to it would silently disable a
+    lever rather than fail."""
+    import inspect
+
+    from app.domain import estimate
+
+    source = inspect.getsource(estimate.scenarios)
+    assert "applies_to_service_classes" in source
+    assert 'lever.get("applies_to_products")' not in source
+
+
+def test_a_platform_lever_is_not_eligible_on_an_access_circuit():
+    """`applies_to_products` held one list for two unrelated things: the L0
+    levers named MPLS and DIA, the L2/L4 levers named SD_WAN_OVERLAY and
+    SSE_LICENCE. The same conflation as `product`, one level up."""
+    from app.domain import access
+
+    sase = next(r for r in _seeded_levers() if r[0] == "LEV-SASE-001")
+    assert sase[7] is None, "a platform lever constrains no service class"
+    assert sase[9] == ["SD_WAN_OVERLAY", "SSE_LICENCE"]
+    assert not set(sase[9]) & set(access.SERVICE_CLASSES)
+
+
+def test_right_sizing_excludes_best_effort():
+    """Right-sizing needs a committed rate to reduce. The old list named the
+    committed classes one by one - DIA, ETHERNET, MPLS - which is what "not
+    BEST_EFFORT" says directly: a 100/20 broadband line is not sold at 60/12."""
+    from app.domain import access
+
+    rightsizing = next(r for r in _seeded_levers()
+                       if r[0] == "LEV-BANDWIDTH-001")
+    assert access.BEST_EFFORT not in rightsizing[7]
+    assert set(rightsizing[7]) == {access.DIA, access.IPVPN, access.ETHERNET}
+
+
+def test_a_target_component_keeps_its_dimensions():
+    """Audit finding A-04, closed here. target_components was rebuilt without
+    the fields, so every target row reported a null product - and a lever's
+    own eligibility could not be checked against the estate it had acted on."""
+    import inspect
+
+    from app.domain import estimate
+
+    source = inspect.getsource(estimate.scenarios)
+    for field in ("product=c.product", "service_class=c.service_class",
+                  "access_technology=c.access_technology"):
+        assert field in source, field
