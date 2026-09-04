@@ -41,6 +41,13 @@ SERVICE_CLASSES = (DIA, IPVPN, ETHERNET, BEST_EFFORT)
 # the resilience model was making until 4.157.
 WIRED = ("ADSL", "VDSL", "HFC", "PON", "ETHERNET_FIBRE", "DARK_FIBRE")
 WIRELESS = ("MOBILE_4G", "MOBILE_5G", "FWA", "MICROWAVE", "SATELLITE")
+
+# Access technologies where a data allowance decides whether the circuit is
+# usable. A 5G backup with a 50 GB cap is not a failover path for a store, and
+# a speed pair says nothing about it - which compounds the resilience
+# overstatement fixed in 4.157. `data_cap_gb` is nullable everywhere and
+# meaningful only here.
+METERED = ("MOBILE_4G", "MOBILE_5G", "SATELLITE")
 ACCESS_TECHNOLOGIES = WIRED + WIRELESS
 
 # ------------------------------------------------------------- speed bases
@@ -260,6 +267,17 @@ def parse(text: str, *, service_class: str) -> dict | None:
 SCOPE_LADDER = ("METRO", "DISTANCE_BAND", "AREA", "COUNTRY", "REGION", "GLOBAL")
 
 
+def scope_rank(scope: str) -> int:
+    """Position on the ladder. An unrecognised scope sorts last.
+
+    Last, not first: an unknown scope must never silently outrank a national
+    tariff that exists. Returning 0 for anything unfamiliar would make a typo
+    the most specific price in the system.
+    """
+    order = {name: i for i, name in enumerate(SCOPE_LADDER)}
+    return order.get(scope, len(SCOPE_LADDER))
+
+
 def more_specific(left: str, right: str) -> bool:
     """Is `left` a tighter scope than `right`?"""
     order = {name: i for i, name in enumerate(SCOPE_LADDER)}
@@ -279,3 +297,8 @@ def resolution_order(available: list) -> list:
     """
     order = {name: i for i, name in enumerate(SCOPE_LADDER)}
     return sorted((s for s in available if s in order), key=lambda s: order[s])
+
+
+def caps_matter(access_technology: str | None) -> bool:
+    """Does a data allowance decide whether this technology is usable?"""
+    return access_technology in METERED

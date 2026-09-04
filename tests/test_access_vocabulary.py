@@ -176,3 +176,21 @@ def test_the_uk_areas_are_the_ones_the_tariff_publishes():
     """Openreach's regulated zones are levels, not adjustments to a national
     figure."""
     assert "Area 2" in access.UK_AREAS and "Area 3" in access.UK_AREAS
+
+
+def test_a_metered_access_technology_is_marked_as_such():
+    """A 5G backup with a 50 GB allowance is not a failover path for a store,
+    and a speed pair says nothing about it - which compounds the resilience
+    overstatement fixed in 4.157."""
+    for technology in ("MOBILE_4G", "MOBILE_5G", "SATELLITE"):
+        assert access.caps_matter(technology), technology
+    for technology in ("PON", "ETHERNET_FIBRE", "VDSL"):
+        assert not access.caps_matter(technology), technology
+
+
+def test_an_unknown_scope_sorts_last_rather_than_first():
+    """An unrecognised scope must never silently outrank a national tariff that
+    exists. Returning 0 for anything unfamiliar would make a typo the most
+    specific price in the system."""
+    assert access.scope_rank("NONSENSE") > access.scope_rank("REGION")
+    assert access.scope_rank("METRO") == 0
