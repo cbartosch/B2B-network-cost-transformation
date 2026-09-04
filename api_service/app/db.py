@@ -99,6 +99,10 @@ case = Table(
     # then largest value - silently dropped 89 Ireland stores in favour of
     # 1,840 UK ones, and a number that sets the size of the whole modelled
     # estate should not be decided quietly by a sort order.
+    # Service class per archetype, chosen by the analyst for this case.
+    # {"STORE": "BEST_EFFORT", "DC": "ETHERNET"} - absent archetypes fall back
+    # to the seeded prior, so a case that never touches this behaves as before.
+    Column("service_class_by_archetype", JSON),
     Column("footprint_total_choice", String(36)),
     Column("footprint_total_chosen_by", String(120)),
     Column("declared_spend_by_country", JSON),
@@ -896,6 +900,17 @@ archetype_prior = Table(
     Column("users_base", Integer), Column("bandwidth_mbps_base", Integer),
     Column("dual_access_probability", Numeric(4, 3)),
     Column("primary_product", String(48)), Column("backup_product", String(48)),
+    # What is bought, as distinct from how it arrives. Service class is a
+    # commercial decision an analyst makes per site type - a store gets a
+    # best-effort service, a data centre gets Ethernet transport - and the
+    # access technology is whatever serviceability can actually deliver there.
+    #
+    # `primary_product` held both, so choosing "BROADBAND_HFC" for a store
+    # asserted a delivery technology as well as a service level, and a store
+    # served by PON instead came out as a substitution rather than as the same
+    # decision met a different way.
+    Column("primary_service_class", String(16)),
+    Column("backup_service_class", String(16)),
     schema="reference",
 )
 

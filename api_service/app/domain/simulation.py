@@ -13,7 +13,7 @@ import json
 import random
 from statistics import median
 
-from . import serviceability
+from . import access, serviceability
 
 DIVERSITY_STATE = "SIMULATED"          # 0.3B may never emit any other value
 
@@ -35,6 +35,7 @@ MAX_ESTATE_ROWS = 5000
 
 
 def one_pass(seed: int, footprint: list[dict], archetypes: dict,
+             service_class_by_archetype: dict | None = None,
              backbone: dict | None = None,
              known_locations: list[dict] | None = None,
              service_table: dict | None = None) -> dict:
@@ -93,6 +94,22 @@ def one_pass(seed: int, footprint: list[dict], archetypes: dict,
         p_dual = float(prior.get("dual_access_probability", 0.5))
         primary_product = prior.get("primary_product", "DIA")
         backup_product = prior.get("backup_product", "BROADBAND_PON")
+        # What is bought, as distinct from how it arrives. The analyst's choice
+        # for this case wins over the seeded prior, and the prior's own class
+        # is the fallback - derived from its product where an older row has not
+        # been migrated.
+        #
+        # `primary_product` held both facts, so choosing BROADBAND_HFC for a
+        # store asserted a delivery technology as well as a service level, and
+        # a store served by PON instead came out as a substitution rather than
+        # as the same decision met a different way.
+        primary_class = (
+            (service_class_by_archetype or {}).get(entry["archetype"])
+            or prior.get("primary_service_class")
+            or access.LEGACY_PRODUCT.get(primary_product, (None,))[0])
+        backup_class = (
+            prior.get("backup_service_class")
+            or access.LEGACY_PRODUCT.get(backup_product, (None,))[0])
         users_base = int(prior.get("users_base") or 0)
         bw_base = int(prior.get("bandwidth_mbps_base") or 0)
         n_sites = int(entry["sites"])
@@ -170,8 +187,9 @@ def one_pass(seed: int, footprint: list[dict], archetypes: dict,
             # Keyed with the bandwidth the archetype implies, so the circuit
             # can be priced at the tier it actually needs rather than at
             # whatever rate happened to exist for the product.
-            products[(entry["country"], primary_product, "PRIMARY", bw_base)] = \
-                products.get((entry["country"], primary_product, "PRIMARY", bw_base), 0) + 1
+            pkey = (entry["country"], primary_product, "PRIMARY", bw_base,
+                    primary_class)
+            products[pkey] = products.get(pkey, 0) + 1
 
             # The stochastic draw. Whether a site has a second access path is the
             # one thing this simulation actually decides - the primary count
@@ -210,9 +228,9 @@ def one_pass(seed: int, footprint: list[dict], archetypes: dict,
                     dual_sites += 1
                     site_rows[-1]["backup_product"] = b_product
                     site_rows[-1]["backup_outcome"] = backup_served["outcome"]
-                    products[(entry["country"], b_product, "BACKUP", b_mbps)] = \
-                        products.get((entry["country"], b_product, "BACKUP",
-                                      b_mbps), 0) + 1
+                    bkey = (entry["country"], b_product, "BACKUP", b_mbps,
+                            backup_class)
+                    products[bkey] = products.get(bkey, 0) + 1
 
     # The backbone becomes priceable circuits.
     #
@@ -237,7 +255,10 @@ def one_pass(seed: int, footprint: list[dict], archetypes: dict,
         # everywhere else - putting DC_TO_REGION in that slot would hand the
         # estimate a role it has never seen, and the tier is carried on the
         # link record where a reader can find it.
-        key = (str(link["region"]), str(link["product"]), "BACKBONE", mbps)
+        # A backbone link is Ethernet transport by definition: it carries the
+        # WAN between hubs rather than a site's internet access.
+        key = (str(link["region"]), str(link["product"]), "BACKBONE", mbps,
+               access.ETHERNET)
         products[key] = products.get(key, 0) + circuits_here
         backbone_circuits += circuits_here
 
@@ -298,9 +319,26 @@ def one_pass(seed: int, footprint: list[dict], archetypes: dict,
             "bandwidth_mbps_total": sum(a["mbps_total"]
                                         for a in bandwidth_by_archetype.values()),
             "circuits_per_site": round(circuits / sites, 4) if sites else 0.0,
+            # Both dimensions on every row. `product` stays so a snapshot
+            # written before 4.169 is still readable, and service_class is what
+            # the rate card now keys on.
+            # Both dimensions on every row. The service class travels in the
+            # key rather than being looked up here: it is chosen per archetype
+            # inside the loop, and a lookup at return time would have read a
+            # loop variable out of scope - which compiled and would have raised
+            # on the first run.
+            #
+            # `product` stays so a snapshot written before 4.169 is readable,
+            # and service_class is what the rate card keys on.
             "products": [{"country": c, "product": p, "role": r,
-                          "bandwidth_mbps": bw, "count": n}
-                         for (c, p, r, bw), n in sorted(products.items())],
+                          "bandwidth_mbps": bw, "count": n,
+                          "service_class": sc,
+                          # How it arrives, which serviceability resolved
+                          # rather than the analyst choosing.
+                          "access_technology": access.LEGACY_PRODUCT.get(
+                              p, (None, None))[1]}
+                         for (c, p, r, bw, sc), n in sorted(
+                             products.items(), key=lambda kv: str(kv[0]))],
             "nodes": nodes, "edges": edges,        # bounded display sample
             "node_count": sites, "edge_count": circuits}
 
@@ -407,7 +445,8 @@ def aggregate(summaries: list[dict], *, seed: int, ensemble_size: int,
     }
 
 
-def run_ensemble(*, seed: int, ensemble_size: int, footprint: list[dict],
+def run_ensemble(
+             service_class_by_archetype: dict | None = None,*, seed: int, ensemble_size: int, footprint: list[dict],
                  archetypes: dict, model_version: str,
                  backbone: dict | None = None,
               known_locations: list[dict] | None = None,

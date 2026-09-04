@@ -9,7 +9,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import delete, insert, select, text, update
 
 from .. import config, db, jobs, migrations
-from ..domain import (anchor_estimate, archetype as archetype_resolver,
+from ..domain import (access as access_vocab,anchor_estimate, archetype as archetype_resolver,
                       benchmark_ingest, case_admin, estimate_qa,
                       locations as location_svc,
                       serviceability as service_svc,
@@ -1112,6 +1112,14 @@ def run_simulation(case_id: str, payload: SimIn):
             pinned_priors={"archetype_prior": arch,
                            "bandwidth_basis": bandwidth_basis,
                            "topology_basis": topology_basis,
+                           # Pinned, so a resumed pass prices the same service
+                           # classes the analyst chose when the run started.
+                           # The serviceability table was read and not pinned
+                           # in 4.135 and every site came back unserviceable -
+                           # this is the check that finding produced.
+                           "service_class_by_archetype": (
+                               getattr(case_row, "service_class_by_archetype",
+                                       None) or {}),
                            "backbone": backbone},
             status=jobs.QUEUED, progress_completed=0,
             progress_total=payload.ensemble_size, cancel_requested=False))
@@ -1424,6 +1432,73 @@ class LocationIn(BaseModel):
 class TotalChoiceIn(BaseModel):
     known_fact_id: str = Field(min_length=1, max_length=36)
     chosen_by: str = Field(min_length=1, max_length=120)
+
+
+class ServiceClassChoiceIn(BaseModel):
+    by_archetype: dict[str, str]
+    chosen_by: str = Field(min_length=1, max_length=120)
+
+
+@router.put("/v1/outside-in/cases/{case_id}/service-classes")
+def choose_service_classes(case_id: str, payload: ServiceClassChoiceIn):
+    """Which service class each site type buys, for this case.
+
+    A commercial decision, not a physical one: a store may take a best-effort
+    internet service or a managed VPN, and that is a choice about what the
+    business needs. How it arrives - PON, VDSL, HFC - is whatever serviceability
+    can deliver there, and the analyst does not choose it.
+
+    `primary_product` used to hold both, so picking BROADBAND_HFC for a store
+    asserted a delivery technology as well as a service level - and a store
+    served by PON instead came out as a substitution rather than as the same
+    decision met a different way.
+    """
+    unknown = sorted(set(payload.by_archetype.values())
+                     - set(access_vocab.SERVICE_CLASSES))
+    if unknown:
+        raise HTTPException(422, {
+            "error": "not a service class",
+            "detail": (f"{unknown} are not service classes. Choose from "
+                       f"{list(access_vocab.SERVICE_CLASSES)} - an access "
+                       f"technology such as PON is resolved by serviceability, "
+                       f"not chosen here.")})
+    with S() as s:
+        _one_or_404(s, db.case, db.case.c.case_id, case_id, "case")
+        known = {r.archetype for r in
+                 s.execute(select(db.archetype_prior)).all()}
+        strays = sorted(set(payload.by_archetype) - known)
+        if strays:
+            raise HTTPException(422, {
+                "error": "unknown archetype",
+                "detail": f"{strays} have no archetype prior. Known: "
+                          f"{sorted(known)}"})
+        s.execute(update(db.case).where(db.case.c.case_id == case_id).values(
+            service_class_by_archetype=payload.by_archetype))
+        s.commit()
+        return {"by_archetype": payload.by_archetype,
+                "chosen_by": payload.chosen_by,
+                "note": ("The next simulation prices these site types on this "
+                         "service class. The access technology is still "
+                         "whatever can be delivered at each site.")}
+
+
+@router.get("/v1/outside-in/cases/{case_id}/service-classes")
+def read_service_classes(case_id: str):
+    """The choice, and the seeded default for anything unchosen."""
+    with S() as s:
+        case_row = _one_or_404(s, db.case, db.case.c.case_id, case_id, "case")
+        chosen = getattr(case_row, "service_class_by_archetype", None) or {}
+        rows = s.execute(select(db.archetype_prior)).all()
+        return {
+            "chosen": chosen,
+            "service_classes": list(access_vocab.SERVICE_CLASSES),
+            "by_archetype": [
+                {"archetype": r.archetype,
+                 "chosen": chosen.get(r.archetype),
+                 "default": getattr(r, "primary_service_class", None),
+                 "default_from_product": r.primary_product}
+                for r in sorted(rows, key=lambda r: r.archetype)],
+        }
 
 
 @router.get("/v1/outside-in/cases/{case_id}/footprint:total-candidates")

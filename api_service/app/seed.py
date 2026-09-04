@@ -721,7 +721,10 @@ def _rows():
             for p, l, u, lo, ba, hi in PLATFORM]),
         (archetype_prior, lambda: [
             {"archetype": a, "users_base": u, "bandwidth_mbps_base": b,
-             "dual_access_probability": d, "primary_product": pp, "backup_product": bp}
+             "dual_access_probability": d, "primary_product": pp, "backup_product": bp,
+             # Derived from the one mapping, not restated.
+             "primary_service_class": access.LEGACY_PRODUCT[pp][0],
+             "backup_service_class": access.LEGACY_PRODUCT[bp][0]}
             for a, u, b, d, pp, bp in ARCHETYPES]),
         (lever, lambda: [
             {"lever_id": i, "family": f, "description": d, "cost_layers": cl,

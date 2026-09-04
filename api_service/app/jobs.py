@@ -122,6 +122,12 @@ def run_job(run_id: str, session=None) -> dict:
                     available=r.get("available", True),
                     max_bandwidth_mbps=r.get("max_bandwidth_mbps"))
             for r in ((row.params or {}).get("serviceability") or [])}
+        # What each site type buys, as the analyst chose it when the run
+        # started. From the run's own pinned priors rather than the case, so
+        # changing the choice mid-run does not price half an estate one way and
+        # half the other.
+        service_class_by_archetype = (
+            (row.pinned_priors or {}).get("service_class_by_archetype") or {})
         total = row.progress_total or row.ensemble_size
 
         # Resume from the checkpoint. Replaying an earlier index would be safe
@@ -144,10 +150,12 @@ def run_job(run_id: str, session=None) -> dict:
                         "completed": len(summaries), "total": total}
 
             summaries.append(simulation.summarise_pass(
-                simulation.one_pass(row.seed + i, footprint, archetypes,
-                                    backbone=backbone,
-                                    known_locations=known_locations,
-                                    service_table=service_table), i))
+                simulation.one_pass(
+                    row.seed + i, footprint, archetypes,
+                    service_class_by_archetype=service_class_by_archetype,
+                    backbone=backbone,
+                    known_locations=known_locations,
+                    service_table=service_table), i))
 
             if len(summaries) % config.SIM_CHECKPOINT_EVERY == 0:
                 _set(s, run_id, partial={"summaries": summaries},

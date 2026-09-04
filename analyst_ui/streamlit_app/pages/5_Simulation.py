@@ -152,6 +152,42 @@ if _offered and not str(_fp.get("origin") or "").startswith("KNOWN_FACT"):
         + "\n\nChoosing a total above does not by itself make the register the "
           "source - whatever caused it to be skipped has to be fixed too.")
 
+# What each site type buys. A commercial decision, and the only one an analyst
+# makes about a circuit - how it arrives is whatever serviceability can deliver.
+_sc = api.get(f"/v1/outside-in/cases/{case_id}/service-classes")
+if "_error" in _sc:
+    st.caption(f"Could not read the service classes: {_sc['_error']}")
+else:
+    with st.expander("Service class by site type", expanded=False):
+        st.caption(
+            "What each site type buys. The access technology - PON, VDSL, HFC - "
+            "is resolved by serviceability at each site and is not chosen here: "
+            "a store served by PON rather than HFC is the same decision met a "
+            "different way, not a substitution.")
+        _picked = {}
+        for _row in _sc.get("by_archetype") or []:
+            _default = _row.get("chosen") or _row.get("default")
+            _options = list(_sc.get("service_classes") or [])
+            if _default not in _options and _default:
+                _options = [_default] + _options
+            _picked[_row["archetype"]] = st.selectbox(
+                f"{_row['archetype']}",
+                _options,
+                index=_options.index(_default) if _default in _options else 0,
+                key=f"sc_{_row['archetype']}_{case_id[:8]}",
+                help=(f"seeded default {_row.get('default')}, from "
+                      f"{_row.get('default_from_product')}"))
+        _by = st.text_input("Choosing as (your name)",
+                            key=f"sc_by_{case_id[:8]}")
+        if st.button("Use these service classes", disabled=not _by.strip()):
+            _r = api.put(f"/v1/outside-in/cases/{case_id}/service-classes",
+                         {"by_archetype": _picked, "chosen_by": _by})
+            if "_error" in _r:
+                st.error(_r["_error"])
+            else:
+                api.flash(_r.get("note", "Service classes chosen."))
+                st.rerun()
+
 st.markdown("**Known sites by type**")
 if "_error" in _fp:
     st.error(f"**Could not resolve the footprint.** {_fp['_error']}")

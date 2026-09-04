@@ -345,3 +345,111 @@ def test_the_dimensions_are_derived_from_one_mapping_not_restated():
     for service_class, technology in access.LEGACY_PRODUCT.values():
         assert service_class in access.SERVICE_CLASSES
         assert technology is None or technology in access.ACCESS_TECHNOLOGIES
+
+
+# --------------------------- the analyst chooses the class, not the technology
+def test_the_analyst_choice_overrides_the_seeded_class():
+    """A store may take a best-effort internet service or a managed VPN, and
+    that is a decision about what the business needs."""
+    import types
+
+    from app.domain import simulation
+
+    archetypes = {"STORE": {"dual_access_probability": 0.0,
+                            "primary_product": "BROADBAND_HFC",
+                            "backup_product": "MOBILE_5G", "users_base": 12,
+                            "bandwidth_mbps_base": 50,
+                            "primary_service_class": "BEST_EFFORT",
+                            "backup_service_class": "BEST_EFFORT"}}
+    footprint = [{"country": "GB", "archetype": "STORE", "sites": 100}]
+
+    default = simulation.one_pass(42, footprint, archetypes)
+    chosen = simulation.one_pass(42, footprint, archetypes,
+                                 service_class_by_archetype={"STORE": "IPVPN"})
+    assert {r["service_class"] for r in default["products"]} == {"BEST_EFFORT"}
+    assert {r["service_class"] for r in chosen["products"]} == {"IPVPN"}
+
+
+def test_choosing_a_service_class_does_not_change_the_access_technology():
+    """How it arrives is whatever serviceability can deliver. A store served by
+    PON rather than HFC is the same decision met a different way, not a
+    substitution - which is what `primary_product` could not express."""
+    from app.domain import simulation
+
+    archetypes = {"STORE": {"dual_access_probability": 0.0,
+                            "primary_product": "BROADBAND_HFC",
+                            "backup_product": "MOBILE_5G", "users_base": 12,
+                            "bandwidth_mbps_base": 50,
+                            "primary_service_class": "BEST_EFFORT",
+                            "backup_service_class": "BEST_EFFORT"}}
+    footprint = [{"country": "GB", "archetype": "STORE", "sites": 100}]
+
+    before = simulation.one_pass(42, footprint, archetypes)
+    after = simulation.one_pass(42, footprint, archetypes,
+                                service_class_by_archetype={"STORE": "IPVPN"})
+    assert ([r["access_technology"] for r in before["products"]]
+            == [r["access_technology"] for r in after["products"]])
+
+
+def test_an_unmigrated_prior_still_yields_a_service_class():
+    """A prior written before 4.169 has no service class. Derived from its
+    product rather than left null, so an old reference row still prices."""
+    from app.domain import simulation
+
+    archetypes = {"STORE": {"dual_access_probability": 0.0,
+                            "primary_product": "BROADBAND_HFC",
+                            "backup_product": "MOBILE_5G", "users_base": 12,
+                            "bandwidth_mbps_base": 50}}
+    out = simulation.one_pass(
+        42, [{"country": "GB", "archetype": "STORE", "sites": 10}], archetypes)
+    assert {r["service_class"] for r in out["products"]} == {"BEST_EFFORT"}
+
+
+def test_a_backbone_link_is_ethernet_transport():
+    """It carries the WAN between hubs rather than a site's internet access."""
+    from app.domain import simulation
+
+    out = simulation.one_pass(
+        42, [{"country": "GB", "archetype": "STORE", "sites": 10}],
+        {"STORE": {"dual_access_probability": 0.0,
+                   "primary_product": "BROADBAND_HFC",
+                   "backup_product": "MOBILE_5G", "users_base": 12,
+                   "bandwidth_mbps_base": 50,
+                   "primary_service_class": "BEST_EFFORT",
+                   "backup_service_class": "BEST_EFFORT"}},
+        backbone={"links": [{"tier": "DC_TO_REGION", "region": "EMEA",
+                             "count": 1, "product": "ETHERNET",
+                             "bandwidth_mbps": 10000, "dual": True}]})
+    backbone = [r for r in out["products"] if r["role"] == "BACKBONE"]
+    assert backbone and all(r["service_class"] == access.ETHERNET
+                            for r in backbone)
+
+
+def test_an_access_technology_cannot_be_chosen_as_a_service_class():
+    """The endpoint refuses PON: it is resolved, not chosen."""
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1]
+    app = next(c for c in (root / "api_service" / "app", root / "app")
+               if (c / "routers").exists())
+    api = (app / "routers" / "api.py").read_text()
+    assert "not a service class" in api
+    assert "resolved by serviceability" in api
+
+
+def test_the_service_class_choice_is_pinned_to_the_run():
+    """The serviceability table was read and not pinned in 4.135, and every
+    site came back unserviceable. A choice read from the case rather than the
+    run would price half an estate one way and half the other when the analyst
+    changed it mid-run."""
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1]
+    app = next(c for c in (root / "api_service" / "app", root / "app")
+               if (c / "jobs.py").exists())
+    api = (app / "routers" / "api.py").read_text()
+    jobs = (app / "jobs.py").read_text()
+    assert '"service_class_by_archetype": (' in api, "the route must pin it"
+    assert 'get("service_class_by_archetype")' in jobs, "the runner must read it"
+    assert "service_class_by_archetype=service_class_by_archetype" in jobs, (
+        "and must pass it to the simulation, or it is read and never used")
