@@ -194,3 +194,78 @@ def test_an_unknown_scope_sorts_last_rather_than_first():
     specific price in the system."""
     assert access.scope_rank("NONSENSE") > access.scope_rank("REGION")
     assert access.scope_rank("METRO") == 0
+
+
+# ------------------------------------------------- the vocabulary is wired
+def test_the_vocabulary_is_used_by_the_model_and_not_only_by_its_own_tests():
+    """The audit finding this test exists for.
+
+    The four-class vocabulary shipped in 4.166 with twenty passing tests and
+    nothing importing it. Every symbol read `used by: nothing`. The model still
+    priced on a single bandwidth field, so an IPVPN at 100/30 was still priced
+    on 100 - the exact defect the module was built to prevent.
+
+    That is the same shape as `fx_convention` collected and never read, and
+    `expires` written onto every prior and ignored by match_prior. A module
+    nobody imports is a document, not a control.
+    """
+    import ast
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1]
+    app = next(c for c in (root / "api_service" / "app", root / "app")
+               if (c / "domain").exists())
+
+    importers = set()
+    for path in (app / "domain").glob("*.py"):
+        if path.stem == "access":
+            continue
+        for node in ast.walk(ast.parse(path.read_text())):
+            if isinstance(node, ast.ImportFrom) and any(
+                    a.name == "access" for a in node.names):
+                importers.add(path.stem)
+    assert importers, (
+        "nothing imports domain/access.py - the vocabulary is inert and the "
+        "model still prices on a single bandwidth field")
+    # The two places that must use it: the rate card and serviceability.
+    assert "estimate" in importers, "the rate card must key on the priced rate"
+    assert "serviceability" in importers, (
+        "deliverability must be judged on the bearer")
+
+
+def test_the_rate_card_keys_on_the_priced_rate():
+    """An IPVPN at 100/30 priced on its bearer charges for capacity the client
+    is not buying - 2.33x per circuit on the reference estate's own rate card,
+    across 319 circuits."""
+    import inspect
+
+    from app.domain import estimate
+
+    source = inspect.getsource(estimate.match_prior)
+    assert "access.priced_rate(speed)" in source
+
+
+def test_deliverability_is_judged_on_the_bearer():
+    """The opposite rate to the price. Asking whether 30 Mbps is available
+    would call a 100/30 circuit serviceable wherever 30 is deliverable, which
+    is not what has to be installed."""
+    import inspect
+
+    from app.domain import serviceability
+
+    for fn in (serviceability.resolve, serviceability.resolve_backup):
+        assert "access.sizing_rate(speed)" in inspect.getsource(fn), fn.__name__
+
+
+def test_the_scope_ladder_has_one_definition():
+    """match_prior carried its own ladder in a comment while access.py held
+    the real one - a fourth copy of the same concept, and the copy a reader
+    finds first."""
+    import inspect
+
+    from app.domain import estimate
+
+    source = inspect.getsource(estimate.match_prior)
+    assert "access.scope_rank" in source
+    assert "DISTANCE_BAND" not in source, (
+        "the ladder belongs in the vocabulary, not restated here")

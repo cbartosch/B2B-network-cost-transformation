@@ -18,7 +18,7 @@ That is the double-counting control in 0.2D.
 from dataclasses import dataclass, field
 from decimal import Decimal
 
-from . import locations, transition
+from . import access, locations, transition
 from .money import D, Range, as_str
 
 SIMULATED = "SIMULATED"
@@ -96,6 +96,16 @@ class Component:
 
 
 def match_prior(priors: dict, country: str, product: str, mbps,
+                # The structured speed pair, where the caller has one. When
+                # supplied, the rate card is keyed on the figure that is
+                # actually bought - the committed rate on an IPVPN, the
+                # downstream on a best-effort service - rather than on whatever
+                # single number reached this function.
+                #
+                # An IPVPN at 100/30 priced on 100 charges for a bearer as
+                # though it were capacity, which is a 3.3x overstatement on
+                # every one of the 319 such circuits in the reference estate.
+                speed: dict | None = None,
                 # Scope values to try, most specific first. Optional: without
                 # it the behaviour is exactly as before with `country` as the
                 # only scope, so every existing caller is unaffected.
@@ -121,10 +131,20 @@ def match_prior(priors: dict, country: str, product: str, mbps,
     of this module applies to unpriced scope: report it, never default it
     silently.
     """
-    # Most specific scope first. A less specific scope is only consulted when
-    # the more specific one has nothing at all - not when it has a worse price,
-    # because a national average is not a better answer than a local tariff.
-    for scope in (scopes or [country]):
+    # Most specific scope first, ordered by the vocabulary rather than by the
+    # order the caller happened to pass. This function carried its own ladder
+    # in a comment while domain/access.py held the real one - a fourth copy of
+    # the same concept, and the copy a reader would find first.
+    #
+    # An unrecognised scope sorts last, so a typo can never outrank a national
+    # tariff that exists.
+    # The figure the rate card is keyed on. Falls back to `mbps` so every
+    # existing caller behaves exactly as before.
+    if speed is not None:
+        mbps = access.priced_rate(speed)
+
+    ordered = sorted(scopes or [country], key=access.scope_rank)
+    for scope in ordered:
         exact = priors.get((scope, product, mbps))
         if exact:
             return exact, None

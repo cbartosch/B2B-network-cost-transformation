@@ -31,6 +31,7 @@ archetype field replaces a seeded prior.
 from sqlalchemy import select
 
 from .. import db
+from . import access
 
 DELIVERED = "DELIVERED"
 SUBSTITUTED = "SUBSTITUTED"
@@ -55,13 +56,25 @@ def load(session, countries: list[str] | None = None) -> dict:
 
 
 def resolve(*, table: dict, country: str, density: str | None,
-            product: str, wanted_mbps: int) -> dict:
+            product: str, wanted_mbps: int,
+            # The structured speed pair, where the caller has one.
+            #
+            # Deliverability is judged on the *bearer*, not on what was
+            # committed across it. An IPVPN at 100/30 needs a 100 Mbps circuit
+            # installed; asking whether 30 Mbps is available would call it
+            # serviceable wherever 30 is deliverable, which is not what has to
+            # be built. The opposite rate to the one the price is keyed on, and
+            # the reason the pair carries both.
+            speed: dict | None = None) -> dict:
     """What this site actually gets, and why.
 
     With no density band the site is unclustered, and nothing is known about
     what can be delivered there - so it gets what it asked for, exactly as the
     model behaved before serviceability existed. Silence is not a constraint.
     """
+    # Sized on the bearer. See the note on the parameter.
+    if speed is not None:
+        wanted_mbps = access.sizing_rate(speed)
     if not density:
         return {"product": product, "bandwidth_mbps": wanted_mbps,
                 "outcome": DELIVERED, "asked_for": product,
@@ -125,7 +138,8 @@ def resolve(*, table: dict, country: str, density: str | None,
 
 def resolve_backup(*, table: dict, country: str, density: str | None,
                    product: str, wanted_mbps: int,
-                   primary_product: str | None) -> dict:
+                   primary_product: str | None,
+                   speed: dict | None = None) -> dict:
     """What a site's second access path actually gets, if anything.
 
     The backup went straight from the archetype prior into the circuit count,
@@ -148,6 +162,9 @@ def resolve_backup(*, table: dict, country: str, density: str | None,
     else can be delivered, the site has one path - reported, not silently
     priced as two.
     """
+    # Sized on the bearer. See the note on the parameter.
+    if speed is not None:
+        wanted_mbps = access.sizing_rate(speed)
     served = resolve(table=table, country=country, density=density,
                      product=product, wanted_mbps=wanted_mbps)
     if served["outcome"] == UNSERVICEABLE:

@@ -344,8 +344,67 @@ def ensemble_carries_what_it_computes() -> list:
     return [f"one_pass computes {k!r} and aggregate drops it" for k in lost]
 
 
+def no_orphaned_domain_module() -> list:
+    """A domain module nothing imports is a document, not a control.
+
+    The four-class access vocabulary shipped with twenty passing tests and
+    nothing importing it - every symbol read `used by: nothing`, and the model
+    went on pricing an IPVPN at 100/30 on the 100. Same shape as
+    `fx_convention` collected and never read.
+
+    Handles `from . import x` as well as `from .x import y`: a relative package
+    import has module=None, and the first three versions of this check missed
+    it - reporting a wired module as orphaned, which is the failure mode that
+    makes a checker ignorable.
+    """
+    domain = APP / "domain"
+    if not domain.exists():
+        return []
+    modules = {p.stem for p in domain.glob("*.py")} - {"__init__"}
+    importers = {m: set() for m in modules}
+
+    for path in APP.rglob("*.py"):
+        tree = ast.parse(path.read_text())
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.ImportFrom):
+                continue
+            if node.module is None or node.module.split(".")[-1] == "domain":
+                # `from . import access` / `from .domain import access`
+                for alias in node.names:
+                    if alias.name in modules and path.stem != alias.name:
+                        importers[alias.name].add(path.stem)
+            elif node.module.split(".")[-1] in modules:
+                base = node.module.split(".")[-1]
+                if path.stem != base:
+                    importers[base].add(path.stem)
+
+    # A module only a tool imports is not wired into the running system, and is
+    # reported separately rather than passing quietly.
+    tool_only = set()
+    for path in (ROOT / "tools").glob("*.py"):
+        tree = ast.parse(path.read_text())
+        for node in ast.walk(tree):
+            if isinstance(node, ast.ImportFrom):
+                for alias in node.names:
+                    if alias.name in modules and not importers[alias.name]:
+                        tool_only.add(alias.name)
+
+    # domain/validation.py is deliberately tool-only: it compares estimator
+    # output against cases with known actuals, which is an audit activity
+    # rather than part of producing an estimate. Named here rather than
+    # excluded by a rule, so adding a second tool-only module is a decision
+    # somebody makes on purpose.
+    DELIBERATELY_TOOL_ONLY = {"validation"}
+
+    return [f"nothing in the application imports domain/{m}.py"
+            + (" (only a tool does)" if m in tool_only else "")
+            for m in sorted(modules)
+            if not importers[m] and m not in DELIBERATELY_TOOL_ONLY]
+
+
 CHECKS = [
     ("every name a module uses is bound", unbound_names),
+    ("no orphaned domain module", no_orphaned_domain_module),
     ("the ensemble carries what it computes", ensemble_carries_what_it_computes),
     ("every seeded key is a column", seeded_keys_are_columns),
     ("every run param the runner reads is pinned", pinned_run_params),
