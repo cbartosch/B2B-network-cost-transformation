@@ -53,10 +53,6 @@ def _in_unit_interval(name: str, value: Decimal) -> None:
 @dataclass(frozen=True)
 class ConfidencePolicy:
     set_name: str
-    # A-02: the ceiling that applies when most of the priced value rests on
-    # expert assumptions rather than evidence.
-    unsourced_price_share_trigger: Decimal = Decimal("0.50")
-    unsourced_price_ceiling: Decimal = Decimal("0.40")
     weights: dict                      # component -> weight, must sum to 1
     component_cap_headroom: Decimal
     band_floors: dict                  # band label -> floor
@@ -76,12 +72,16 @@ class ConfidencePolicy:
     # judgement 18.1 says must carry an approver: it sets how much the model
     # trusts a client's self-report about their own estate.
     client_confirmed_evidence_weight: Decimal
-
-    COMPONENTS = ("current_baseline", "target_cost", "realization")
-    STAGES = ("V0",)
-    LEVER_STAGES = ("V2", "V3", "V4", "V5")
-    BASELINE_DRIVERS = ("priced_spend", "evidenced", "completeness")
-    TARGET_DRIVERS = ("prior_coverage", "prior_recency")
+    # A-02: the ceiling that applies when most of the priced value rests on
+    # expert assumptions rather than evidence.
+    #
+    # Last, because these carry defaults. Inserted after `set_name` in 4.161.0
+    # they put eleven non-defaulted fields behind a defaulted one, which is a
+    # TypeError at class-definition time - so this module could not be
+    # imported at all, and nothing in this environment could import it to find
+    # out.
+    unsourced_price_share_trigger: Decimal = Decimal("0.50")
+    unsourced_price_ceiling: Decimal = Decimal("0.40")
 
     @classmethod
     def from_rows(cls, rows: dict, set_name: str = "confidence_policy"):

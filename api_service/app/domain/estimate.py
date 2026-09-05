@@ -344,7 +344,13 @@ def build_components(*, sim_output: dict, users: int, ops_cost_per_site: dict,
 
     for row in sim_output.get("products", []):
         mbps = row.get("bandwidth_mbps")
-        prior, substituted = match_prior(priors, row["country"], row["product"], mbps)
+        # Same two dimensions the coverage gate uses. Two different notions of
+        # "priced" between the gate and the calculation would mean the gate was
+        # measuring something the total did not contain.
+        prior, substituted = match_prior(
+            priors, row["country"], row["product"], mbps,
+            service_class=row.get("service_class"),
+            access_technology=row.get("access_technology"))
         if not prior:
             unpriced.append({**row, "reason": "NO_APPROVED_PRIOR_AT_BANDWIDTH"
                              if mbps else "NO_APPROVED_PRIOR"})

@@ -69,7 +69,17 @@ def derive_scope(*, sim_output: dict, priors: dict,
         # Same matcher the estimate prices with. Two different notions of
         # "priced" between the coverage gate and the calculation would mean the
         # gate was measuring something the total did not contain.
-        prior, substituted = match_prior(priors, row["country"], row["product"], mbps)
+        # The two dimensions, which the simulation has emitted since 4.169.
+        # Passing only `product` meant an IPVPN over VDSL and an IPVPN over
+        # fibre resolved to the same rate - a 4.4x difference in the reference
+        # rate card that the conflated field could not express.
+        #
+        # `product` is still passed so a rate card that has not been re-keyed
+        # still prices: match_prior tries the dimensions first and falls back.
+        prior, substituted = match_prior(
+            priors, row["country"], row["product"], mbps,
+            service_class=row.get("service_class"),
+            access_technology=row.get("access_technology"))
         rate = D(prior["base"]) if prior else fallback.get(row["product"])
         scope.append({
             "country": row["country"], "product": row["product"], "role": row["role"],

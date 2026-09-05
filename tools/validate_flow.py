@@ -402,8 +402,43 @@ def no_orphaned_domain_module() -> list:
             if not importers[m] and m not in DELIBERATELY_TOOL_ONLY]
 
 
+def dataclass_defaults_come_last() -> list:
+    """A defaulted field before a non-defaulted one is a TypeError at import.
+
+    Adding `unsourced_price_share_trigger` after `set_name` in 4.161.0 put
+    eleven non-defaulted fields behind a defaulted one, so
+    domain/policy.py could not be imported at all - and neither could
+    coverage or confidence, which import it.
+
+    It stayed hidden for eleven releases because nothing in this environment
+    could import those modules to find out. py_compile passes: the class body
+    is valid syntax and the error is raised when @dataclass processes it.
+    """
+    problems = []
+    for path in sorted(APP.rglob("*.py")):
+        for node in ast.parse(path.read_text()).body:
+            if not (isinstance(node, ast.ClassDef)
+                    and any("dataclass" in ast.unparse(d)
+                            for d in node.decorator_list)):
+                continue
+            defaulted = None
+            for item in node.body:
+                if not isinstance(item, ast.AnnAssign):
+                    continue
+                if item.value is not None:
+                    defaulted = item.target.id
+                elif defaulted:
+                    problems.append(
+                        f"{path.name}::{node.name}: {item.target.id!r} has no "
+                        f"default and follows {defaulted!r} which does - the "
+                        f"module cannot be imported")
+                    break
+    return problems
+
+
 CHECKS = [
     ("every name a module uses is bound", unbound_names),
+    ("dataclass defaults come last", dataclass_defaults_come_last),
     ("no orphaned domain module", no_orphaned_domain_module),
     ("the ensemble carries what it computes", ensemble_carries_what_it_computes),
     ("every seeded key is a column", seeded_keys_are_columns),

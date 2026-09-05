@@ -643,3 +643,76 @@ def test_a_target_component_keeps_its_dimensions():
     for field in ("product=c.product", "service_class=c.service_class",
                   "access_technology=c.access_technology"):
         assert field in source, field
+
+
+# ---------------------------------------------- the live pipeline is switched
+PRIORS = {
+    "fibre": {"scope": "GB", "service_class": "IPVPN",
+              "access_technology": "ETHERNET_FIBRE",
+              "bandwidth_mbps": 100, "base": "980"},
+    "vdsl": {"scope": "GB", "service_class": "IPVPN",
+             "access_technology": "VDSL", "bandwidth_mbps": 100, "base": "220"},
+    ("GB", "MPLS", 100): {"base": "999"},
+}
+
+
+def _row(**over):
+    row = {"country": "GB", "product": "MPLS", "bandwidth_mbps": 100,
+           "role": "PRIMARY", "count": 10}
+    row.update(over)
+    return row
+
+
+def test_the_pricing_pipeline_discriminates_by_access_technology():
+    """Both live call sites passed `row["product"]` alone, so an IPVPN over
+    VDSL and an IPVPN over fibre resolved to one rate - a 4.4x difference the
+    conflated field could not express, on every circuit in every estate."""
+    from app.domain.estimate import match_prior
+
+    fibre, _ = match_prior(
+        PRIORS, "GB", "MPLS", 100, service_class=access.IPVPN,
+        access_technology="ETHERNET_FIBRE")
+    vdsl, _ = match_prior(
+        PRIORS, "GB", "MPLS", 100, service_class=access.IPVPN,
+        access_technology="VDSL")
+    assert fibre["base"] == "980"
+    assert vdsl["base"] == "220"
+
+
+def test_a_row_without_the_dimensions_still_prices():
+    """The switch is additive. A simulation output written before 4.169 has no
+    service class, and must not become unpriced scope."""
+    from app.domain.estimate import match_prior
+
+    legacy, _ = match_prior(PRIORS, "GB", "MPLS", 100)
+    assert legacy["base"] == "999"
+
+
+@pytest.mark.parametrize("module,call", [
+    ("coverage", "derive_scope"),
+    ("estimate", "build_components"),
+])
+def test_both_live_call_sites_pass_the_dimensions(module, call):
+    """The gate and the calculation must agree. Two different notions of
+    "priced" would mean the gate was measuring something the total did not
+    contain."""
+    import importlib
+    import inspect
+
+    source = inspect.getsource(
+        getattr(importlib.import_module(f"app.domain.{module}"), call))
+    assert 'service_class=row.get("service_class")' in source, module
+    assert 'access_technology=row.get("access_technology")' in source, module
+
+
+def test_the_simulation_emits_what_the_pipeline_reads():
+    """The producer and the consumers have to agree on the field names, or the
+    switch silently reads None and falls back to the legacy key forever - which
+    would look exactly like the switch working."""
+    import inspect
+
+    from app.domain import simulation
+
+    source = inspect.getsource(simulation.one_pass)
+    for field in ('"service_class"', '"access_technology"'):
+        assert field in source, f"the simulation must emit {field}"
