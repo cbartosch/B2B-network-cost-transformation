@@ -445,14 +445,38 @@ def test_the_legacy_fixture_describes_a_state_that_can_actually_upgrade():
     else:
         pytest.skip("cannot locate the application package from this layout")
     mig_src = (app_dir / "migrations.py").read_text()
+    # Found by AST rather than by matching the shapes a loop can take. The
+    # regex version recognised two spellings - a literal call and a
+    # `for column in (...)` loop - and v46 used a third,
+    # `sum(_add_column(...) for c in (...))`, so a migration that does add the
+    # columns was reported as not adding them.
+    #
+    # A check that only recognises the shapes already in the file fails the
+    # next person who writes a new one, which is the opposite of its purpose.
     added = {}
-    for m in re.finditer(r'_add_column\(conn,\s*db\.(\w+),\s*"(\w+)"\)', mig_src):
-        added.setdefault(m.group(1), set()).add(m.group(2))
-    for m in re.finditer(
-            r'for column in \(([^)]*)\):\s*\n\s*added \+= _add_column\(conn, db\.(\w+), column\)',
-            mig_src):
-        for c in re.findall(r'"(\w+)"', m.group(1)):
-            added.setdefault(m.group(2), set()).add(c)
+    mig_tree = ast.parse(mig_src)
+    for call in ast.walk(mig_tree):
+        if not (isinstance(call, ast.Call)
+                and getattr(call.func, "id", "") == "_add_column"
+                and len(call.args) >= 3):
+            continue
+        table = getattr(call.args[1], "attr", None)
+        if table is None:
+            continue
+        column = call.args[2]
+        if isinstance(column, ast.Constant):
+            added.setdefault(table, set()).add(column.value)
+        elif isinstance(column, ast.Name):
+            # A loop variable: take every literal in the enclosing iterable.
+            for parent in ast.walk(mig_tree):
+                if not isinstance(parent, (ast.For, ast.GeneratorExp,
+                                           ast.ListComp)):
+                    continue
+                rendered = ast.unparse(parent)
+                if f"_add_column(conn, db.{table}, {column.id})" not in rendered:
+                    continue
+                for literal in re.findall(r'"(\w+)"', rendered):
+                    added.setdefault(table, set()).add(literal)
 
     db_tree = ast.parse((app_dir / "db.py").read_text())
     current = {}

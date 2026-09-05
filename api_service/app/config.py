@@ -100,4 +100,10 @@ LLM_SEARCH_TIMEOUT_SECONDS = float(
 # modelled, displayed and excluded from every cost. `circuits` now includes it
 # and `circuits_backbone` reports it separately.
 SIMULATION_MODEL_VERSION = "sim-1.7.0"
-CALCULATION_VERSION = "calc-1.0.0"
+# calc-1.1.0: the saving band is accumulated with matched pairing rather than
+# derived as current - target. The target is a function of the current, so
+# subtracting the two crossed bounds a second time and produced worlds that
+# cannot occur - a 71% overstatement on the optimistic case and a negative
+# floor. Stored snapshots stay readable and are not reproducible under this
+# version, which is what a calculation version is for.
+CALCULATION_VERSION = "calc-1.1.0"

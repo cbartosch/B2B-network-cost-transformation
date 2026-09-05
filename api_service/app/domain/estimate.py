@@ -165,9 +165,9 @@ def match_prior(priors: dict, country: str, product: str, mbps,
     Scope is resolved by specificity, not by equality. Openreach publishes by
     regulated area and by distance from the serving exchange, and the reference
     estate's MPLS spans seven times within one country - so a national tariff
-    is a fallback, not the answer. The ladder is CASE, DISTANCE_BAND, AREA,
-    METRO, COUNTRY, REGION, and the first hit wins: a rate for this client
-    outranks a rate for this area, which outranks a rate for the country.
+    is a fallback, not the answer. The ladder lives in domain/access.py and
+    the first hit wins: a rate for this client outranks a rate for this area,
+    which outranks a rate for the country.
 
     `priors` is keyed (country, product, bandwidth_mbps). An exact tier is
     used as-is. Failing that, the cheapest tier *at or above* the requirement
@@ -536,6 +536,10 @@ def scenarios(components: list[Component], levers: list[dict],
 
     for code, label in SCENARIOS:
         remaining = {c.key: [c.value.low, c.value.base, c.value.high] for c in components}
+        # A second ledger, reduced with matched pairing, from which the saving
+        # band is read. See the note at the cut.
+        matched = {c.key: [c.value.low, c.value.base, c.value.high]
+                   for c in components}
         by_key = {c.key: c for c in components}
         applied, not_applied = [], []
 
@@ -571,6 +575,8 @@ def scenarios(components: list[Component], levers: list[dict],
             s_lo, s_ba, s_hi = (D(lever["saving_low"]), D(lever["saving_base"]),
                                 D(lever["saving_high"]))
             cut_total = D(0)
+            # The saving band, accumulated with matched pairing.
+            cut_low, cut_high = D(0), D(0)
             skipped = []
             for key, comp in by_key.items():
                 if comp.layer not in layers:
@@ -589,10 +595,32 @@ def scenarios(components: list[Component], levers: list[dict],
                         f"{f}={getattr(comp, f, None)}" for f in unmet))
                     continue
                 lo, ba, hi = remaining[key]
-                # Conservative pairing: the small saving comes off the high cost.
+                # Two accumulations, because the target band and the saving
+                # band answer different questions and cannot both come from
+                # one subtraction.
+                #
+                # `remaining` is the TARGET cost, and its crossing is right:
+                # the lowest target is the lowest cost meeting the biggest
+                # cut, which is a world that can happen.
+                #
+                # `matched` is the SAVING, and it must pair each bound with
+                # its own share - the low cost with the low share. Deriving it
+                # as current - target crossed a second time and produced a
+                # world where the cost is 80,000 and the target is derived
+                # from 130,000, which is not a world. On a 0.15/0.25/0.35
+                # lever that overstated the optimistic saving by 71% and
+                # reported a floor of -30,500 against a true floor of +12,000.
                 c_lo, c_ba, c_hi = hi * s_lo, ba * s_ba, lo * s_hi
                 remaining[key] = [lo - c_hi, ba - c_ba, hi - c_lo]
-                cut_total += c_ba
+
+                m_lo, m_ba, m_hi = matched[key]
+                saved_lo, saved_ba, saved_hi = (m_lo * s_lo, m_ba * s_ba,
+                                                m_hi * s_hi)
+                matched[key] = [m_lo - saved_lo, m_ba - saved_ba,
+                                m_hi - saved_hi]
+                cut_low += saved_lo
+                cut_total += saved_ba
+                cut_high += saved_hi
             if cut_total:
                 applied.append({"lever_id": lever["lever_id"], "family": lever["family"],
                                 "description": lever["description"],
@@ -629,8 +657,27 @@ def scenarios(components: list[Component], levers: list[dict],
                       value=Range(*remaining[c.key]), source_ref=c.source_ref)
             for c in components]
 
+        # What every lever in this scenario took, per bound.
+        matched_totals = [[c.value.low - D(matched[c.key][0]),
+                           c.value.base - D(matched[c.key][1]),
+                           c.value.high - D(matched[c.key][2])]
+                          for c in components]
+
         target = total(target_components)
-        saving = current - target
+
+        # The saving is what the levers took, with each bound paired to its own
+        # share - not current minus target. Those two bands are correlated: the
+        # target is a function of the current, so subtracting them constructs
+        # worlds that cannot occur.
+        #
+        # They reconcile exactly at base, which is the number anyone checks:
+        # current.base - target.base == saving.base. The bounds do not
+        # subtract, and that is a fact about correlated uncertainty rather than
+        # an inconsistency to paper over.
+        saving = Range(
+            sum((D(v[0]) for v in matched_totals), D(0)),
+            current.base - target.base,
+            sum((D(v[2]) for v in matched_totals), D(0)))
         out[code] = {
             "label": label,
             "target_tco": target.to_dict(),
