@@ -190,8 +190,17 @@ def one_pass(seed: int, footprint: list[dict], archetypes: dict,
             # Keyed with the bandwidth the archetype implies, so the circuit
             # can be priced at the tier it actually needs rather than at
             # whatever rate happened to exist for the product.
-            pkey = (entry["country"], primary_product, "PRIMARY", bw_base,
-                    primary_class)
+            # The speed pair, not one figure. `bw_base` is the bearer that has
+            # to be installed; what the site buys on it is the committed
+            # fraction for a committed service and the upstream for a
+            # best-effort one. Pricing on the bearer overstated an IPVPN by
+            # 980 against 420 a month on the GB card.
+            pair = access.pair_for(
+                service_class=primary_class, bearer_mbps=bw_base,
+                access_technology=served.get("access_technology"),
+                committed_fraction=prior.get("committed_fraction"))
+            pkey = (entry["country"], primary_product, "PRIMARY",
+                    access.priced_rate(pair), primary_class)
             products[pkey] = products.get(pkey, 0) + 1
 
             # The stochastic draw. Whether a site has a second access path is the

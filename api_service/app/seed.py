@@ -614,12 +614,30 @@ ARCHETYPE_BANDWIDTH = [
 # value here must have a matching row in PRIORS or the archetype is unpriceable.
 # WAREHOUSE moved from 200 to 100: 200 was a tier no benchmark quotes, and an
 # invented tier prices nothing.
+# (archetype, users, bandwidth_mbps, dual_access_probability,
+#  primary_product, backup_product, committed_fraction)
+#
+# `committed_fraction` is how much of the installed bearer is actually
+# guaranteed - the 30 in "Access/Port = 100/30". It applies only to a committed
+# service: an IPVPN or an Ethernet service port. A best-effort circuit has an
+# upstream instead, which is a property of the access technology rather than
+# the site type (see access.UPSTREAM_SHARE), and a DIA is symmetric.
+#
+# Set from an analyst's judgement, 4.180.0: a data centre buys a small fraction
+# of a very large bearer because its peak is bursty and bearer capacity is
+# cheap at that scale; a store or branch needs most of its small pipe
+# guaranteed because there is no headroom to burst into.
+#
+# LARGE_OFFICE is the one to revisit first. It sits between the two patterns -
+# a 500 Mbps bearer is large enough for the data-centre logic to start applying
+# - and it is set at the small-site value rather than interpolated, because
+# inventing a number between two stated ones would look like evidence.
 ARCHETYPES = [
-    ("BRANCH", 25, 100, "0.55", "DIA", "BROADBAND_PON"),
-    ("LARGE_OFFICE", 250, 500, "0.90", "ETHERNET", "DIA"),
-    ("WAREHOUSE", 60, 100, "0.45", "DIA", "BROADBAND_HFC"),
-    ("DC", 0, 10000, "1.00", "ETHERNET", "ETHERNET"),
-    ("STORE", 12, 50, "0.35", "BROADBAND_HFC", "MOBILE_5G"),
+    ("BRANCH", 25, 100, "0.55", "DIA", "BROADBAND_PON", "0.50"),
+    ("LARGE_OFFICE", 250, 500, "0.90", "ETHERNET", "DIA", "0.50"),
+    ("WAREHOUSE", 60, 100, "0.45", "DIA", "BROADBAND_HFC", "0.50"),
+    ("DC", 0, 10000, "1.00", "ETHERNET", "ETHERNET", "0.30"),
+    ("STORE", 12, 50, "0.35", "BROADBAND_HFC", "MOBILE_5G", "0.50"),
 ]
 
 # Platform unit costs. These were code constants in an earlier revision, which
@@ -769,8 +787,9 @@ def _rows():
              "dual_access_probability": d, "primary_product": pp, "backup_product": bp,
              # Derived from the one mapping, not restated.
              "primary_service_class": access.LEGACY_PRODUCT[pp][0],
-             "backup_service_class": access.LEGACY_PRODUCT[bp][0]}
-            for a, u, b, d, pp, bp in ARCHETYPES]),
+             "backup_service_class": access.LEGACY_PRODUCT[bp][0],
+             "committed_fraction": cf}
+            for a, u, b, d, pp, bp, cf in ARCHETYPES]),
         (lever, lambda: [
             {"lever_id": i, "family": f, "description": d, "cost_layers": cl,
              "saving_low": lo, "saving_base": ba, "saving_high": hi,

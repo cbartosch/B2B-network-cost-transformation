@@ -104,7 +104,11 @@ LLM_SEARCH_TIMEOUT_SECONDS = float(
 # deliverable if VDSL reaches it - true, and the product-keyed table could not
 # say so - while Ethernet transport there is not, because Ethernet transport is
 # fibre and no fibre reaches.
-SIMULATION_MODEL_VERSION = "sim-1.8.0"
+# 1.9.0: a site emits the speed pair it actually gets, not one figure. The
+# committed fraction of the bearer for a committed service, the technology's
+# upstream for a best-effort one, symmetric for a DIA - so an IPVPN on a
+# 100 Mbps bearer prices on what it buys rather than on what was installed.
+SIMULATION_MODEL_VERSION = "sim-1.9.0"
 # calc-1.1.0: the saving band is accumulated with matched pairing rather than
 # derived as current - target. The target is a function of the current, so
 # subtracting the two crossed bounds a second time and produced worlds that

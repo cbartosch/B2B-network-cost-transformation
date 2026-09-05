@@ -808,3 +808,74 @@ def test_every_table_that_prices_speaks_one_vocabulary():
                    and node.args and isinstance(node.args[0], ast.Constant)}
         assert "service_class" in columns, table
         assert "access_technology" in columns, table
+
+
+# ------------------------------- the second figure, and where it comes from
+def test_a_committed_service_is_priced_on_what_it_buys():
+    """The link that was missing. The model knew one figure per site type and
+    could not say whether it was the pipe or the guarantee, so an IPVPN on a
+    100 Mbps bearer was priced as 100 Mbps of committed capacity - 980 a month
+    against 420 on the GB rate card, on every committed circuit."""
+    pair = access.pair_for(service_class=access.IPVPN, bearer_mbps=100,
+                           committed_fraction="0.50")
+    assert access.priced_rate(pair) == 50
+    assert access.sizing_rate(pair) == 100
+
+
+def test_a_data_centre_buys_a_smaller_fraction_of_a_larger_bearer():
+    """An analyst's judgement, recorded: a data centre's peak is bursty and
+    bearer capacity is cheap at that scale, so it commits 30%. A store has no
+    headroom to burst into and commits half."""
+    from app.seed import ARCHETYPES
+
+    fractions = {row[0]: row[6] for row in ARCHETYPES}
+    assert fractions["DC"] == "0.30"
+    assert fractions["STORE"] == "0.50"
+    assert fractions["BRANCH"] == "0.50"
+
+
+def test_a_best_effort_service_takes_its_upstream_from_the_technology():
+    """Not from the site type. A VDSL line is 80/20 and a GPON line 1000/115
+    because that is what the standard delivers, not because anyone negotiated
+    it - so the second figure belongs to the bearer, not the building."""
+    vdsl = access.pair_for(service_class=access.BEST_EFFORT, bearer_mbps=80,
+                           access_technology="VDSL")
+    pon = access.pair_for(service_class=access.BEST_EFFORT, bearer_mbps=1000,
+                          access_technology="PON")
+    assert (vdsl["primary_mbps"], vdsl["secondary_mbps"]) == (80, 20)
+    assert (pon["primary_mbps"], pon["secondary_mbps"]) == (1000, 115)
+
+
+def test_a_dedicated_service_is_symmetric():
+    pair = access.pair_for(service_class=access.DIA, bearer_mbps=500)
+    assert pair["primary_mbps"] == pair["secondary_mbps"] == 500
+
+
+def test_an_unstated_fraction_yields_no_secondary_rather_than_a_guess():
+    """`priced_rate` then falls back to the bearer, which is the old
+    overstatement - so the absence has to be visible rather than silently
+    priced. Reported, not invented."""
+    pair = access.pair_for(service_class=access.IPVPN, bearer_mbps=100,
+                           committed_fraction=None)
+    assert pair["secondary_mbps"] is None
+    assert access.priced_rate(pair) == 100
+
+
+def test_an_unknown_technology_is_treated_as_symmetric():
+    """The conservative direction: it overstates the upstream, and a site sized
+    on too much upstream is priced correctly while one sized on too little
+    would look deliverable when it is not."""
+    assert access.upstream_share("SOMETHING_NEW") == 1
+    assert access.upstream_share(None) == 1
+
+
+def test_the_simulation_emits_the_priced_rate_not_the_bearer():
+    """The last link. Everything upstream of this was built and nothing
+    supplied a pair, so the pipeline priced on the bearer regardless."""
+    import inspect
+
+    from app.domain import simulation
+
+    source = inspect.getsource(simulation.one_pass)
+    assert "access.pair_for(" in source
+    assert "access.priced_rate(pair)" in source

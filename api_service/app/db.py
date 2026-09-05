@@ -929,6 +929,11 @@ archetype_prior = Table(
     # decision met a different way.
     Column("primary_service_class", String(16)),
     Column("backup_service_class", String(16)),
+    # How much of the installed bearer is guaranteed - the 30 in
+    # "Access/Port = 100/30". Applies to a committed service only: an IPVPN or
+    # an Ethernet service port. Best effort has an upstream instead, which
+    # belongs to the access technology, and a DIA is symmetric.
+    Column("committed_fraction", Numeric(4, 3)),
     schema="reference",
 )
 

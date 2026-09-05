@@ -207,6 +207,78 @@ def validate(*, service_class: str, access_technology: str | None,
     return problems
 
 
+def pair_for(*, service_class: str, bearer_mbps: int,
+             access_technology: str | None = None,
+             committed_fraction=None) -> dict:
+    """The speed pair a site actually gets, from what is known about it.
+
+    This is the link that was missing. The model knew one figure per site type
+    and could not say whether it was the pipe or the guarantee, so an IPVPN on
+    a 100 Mbps bearer was priced as 100 Mbps of committed capacity - 980 a
+    month against 420 on the GB rate card, on every committed circuit.
+
+    Where the second figure comes from differs by class, and neither source is
+    the site type alone:
+
+      BEST_EFFORT  the upstream, a property of the access technology
+      IPVPN        the committed rate, a fraction of the bearer the site buys
+      ETHERNET     the service port, the same fraction
+      DIA          symmetric, so the pair is the bearer twice
+
+    An unstated committed fraction yields no secondary rather than a guess.
+    `priced_rate` then falls back to the bearer, which is the old overstatement
+    - so the absence is reported rather than silently priced.
+    """
+    if service_class == DIA:
+        return speed(bearer_mbps, bearer_mbps, service_class=service_class)
+
+    if service_class == BEST_EFFORT:
+        share = upstream_share(access_technology)
+        return speed(bearer_mbps,
+                     int(Decimal(bearer_mbps) * share),
+                     service_class=service_class)
+
+    # IPVPN and ETHERNET: a fraction of the bearer, if anyone has said what.
+    if committed_fraction in (None, ""):
+        return speed(bearer_mbps, None, service_class=service_class)
+    return speed(bearer_mbps,
+                 int(Decimal(bearer_mbps) * Decimal(str(committed_fraction))),
+                 service_class=service_class)
+
+
+# ------------------------------------------- how the second figure is found
+# The upstream share of the downstream, by access technology. A technical fact
+# from the specifications rather than a commercial choice: a VDSL line is
+# sold 80/20 and a GPON line 1000/115 because that is what the standard
+# delivers, not because anyone negotiated it.
+#
+# Used only for BEST_EFFORT, where the pair is downstream/upstream. A committed
+# service does not work this way - see COMMITTED_FRACTION.
+UPSTREAM_SHARE = {
+    "ADSL": Decimal("0.04"),        # 24/1, near enough
+    "VDSL": Decimal("0.25"),        # 80/20
+    "HFC": Decimal("0.05"),         # 1000/50, and worse under contention
+    "PON": Decimal("0.115"),        # 1000/115 GPON
+    "ETHERNET_FIBRE": Decimal("1"),  # symmetric by construction
+    "DARK_FIBRE": Decimal("1"),
+    "FWA": Decimal("0.10"),
+    "MOBILE_5G": Decimal("0.10"),
+    "MOBILE_4G": Decimal("0.10"),
+    "SATELLITE": Decimal("0.05"),
+}
+
+
+def upstream_share(access_technology: str | None) -> Decimal:
+    """The upstream share of the downstream, or symmetric if unknown.
+
+    Symmetric is the conservative default here, not the optimistic one: it
+    overstates the upstream, and a site sized on too much upstream is priced
+    correctly while a site sized on too little would look deliverable when it
+    is not.
+    """
+    return UPSTREAM_SHARE.get(access_technology or "", Decimal("1"))
+
+
 # ------------------------------- which access can carry which service
 # A service class is bought; an access technology delivers it. Not every
 # pairing exists, and the serviceability table was keyed on the conflated
