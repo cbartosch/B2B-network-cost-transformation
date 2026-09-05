@@ -1062,7 +1062,7 @@ def _migrate_v46(conn) -> None:
     # and move to their own dimension.
     SERVICE = {"LEV-MPLS-001": ["IPVPN"],
                "LEV-BANDWIDTH-001": ["DIA", "IPVPN", "ETHERNET"]}
-    PLATFORM = {"LEV-SASE-001": ["SD_WAN_OVERLAY", "SSE_LICENCE"],
+    PLATFORM = {"LEV-SASE-001": ["SDWAN_OVERLAY", "SSE_LICENCE"],
                 "LEV-SECRETIRE-001": ["SSE_LICENCE"]}
     moved = 0
     for lever_id, classes in SERVICE.items():

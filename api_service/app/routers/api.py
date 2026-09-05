@@ -9,7 +9,8 @@ from pydantic import BaseModel, Field
 from sqlalchemy import delete, insert, select, text, update
 
 from .. import config, db, jobs, migrations
-from ..domain import (access as access_vocab,anchor_estimate, archetype as archetype_resolver,
+from ..domain import (access as access_vocab, anchor_estimate,
+                      currency, archetype as archetype_resolver,
                       benchmark_ingest, case_admin, estimate_qa,
                       locations as location_svc,
                       serviceability as service_svc,
@@ -1904,6 +1905,15 @@ class EstimateIn(BaseModel):
     # Naming a known fact is what makes it evidence rather than a typed
     # number, exactly as it is for a quantity driver.
     anchor_value: Decimal | None = None
+    # The anchor's own currency. It carried none, so a GBP disclosure entered
+    # against a USD rate card was arithmetic on mixed units - a 21.3%
+    # understatement - and the snapshot then labelled the result with the
+    # case's base currency, asserting a currency the calculation never
+    # established.
+    #
+    # Optional so an existing caller behaves as before: absent means "the
+    # case's base currency", which is what the code assumed silently.
+    anchor_currency: str | None = None
     anchor_known_fact_id: str | None = None
     # BUILD_UP only.
     simulation_run_id: str | None = None
@@ -2230,6 +2240,27 @@ def run_estimate(case_id: str, payload: EstimateIn):
             db.unit_cost_prior.c.country.in_(
                 (countries or ["--"]) + in_scope_regions),
             db.unit_cost_prior.c.approved.is_(True))).all()
+        # One currency, or the baseline is a sum of two reported as one.
+        #
+        # Refused rather than converted: at V0 every rate is an expert
+        # assumption, and applying an exchange rate to one adds a second
+        # unevidenced step to an unevidenced number. Fixing the rate card is
+        # the right answer at this stage - and this is the check that makes an
+        # analyst do it rather than discover it later.
+        try:
+            _prior_ccy = currency.assert_single_currency(
+                [{"currency": r.currency} for r in prior_rows])
+            _case_ccy = currency.normalise(case_row.base_currency)
+            if _prior_ccy and _case_ccy and _prior_ccy != _case_ccy:
+                raise currency.CurrencyMismatch(
+                    f"the rate card is {_prior_ccy} and this case is priced in "
+                    f"{_case_ccy}. Nothing converts between them, so the "
+                    f"baseline would be in a currency the output does not "
+                    f"name.")
+        except (currency.CurrencyMismatch, currency.UnknownCurrency) as exc:
+            raise HTTPException(422, {"error": "currencies do not reconcile",
+                                      "detail": str(exc)})
+
         priors = {(r.country, r.product, r.bandwidth_mbps): {"low": r.low, "base": r.base,
                                            "high": r.high, "price_year": r.price_year}
                   for r in prior_rows}

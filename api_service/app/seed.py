@@ -648,7 +648,7 @@ PLATFORM = [
 #
 # Eligibility on the dimension each lever actually acts on. `applies_to_products`
 # held one list for two unrelated things - the L0 levers named MPLS and DIA,
-# the L2/L4 levers named SD_WAN_OVERLAY and SSE_LICENCE - and was keyed on the
+# the L2/L4 levers named SDWAN_OVERLAY and SSE_LICENCE - and was keyed on the
 # vocabulary 4.166 replaced. "MPLS" is no longer a service class.
 #
 # None on a dimension means unconstrained there. A component is eligible when
@@ -673,7 +673,7 @@ LEVERS = [
     # classes and could not be expressed on that dimension at all.
     ("LEV-SASE-001", "Platform consolidation", "Converge SD-WAN, SSE and remote access",
      ["L2", "L4"], "0.12", "0.22", "0.32", None, None,
-     ["SD_WAN_OVERLAY", "SSE_LICENCE"], "C", "V3"),
+     ["SDWAN_OVERLAY", "SSE_LICENCE"], "C", "V3"),
     ("LEV-SECRETIRE-001", "Security appliance retirement", "Retire on-site firewall estate",
      ["L4"], "0.05", "0.10", "0.16", None, None, ["SSE_LICENCE"], "C", "V3"),
     ("LEV-NAAS-001", "Supplier consolidation", "Single global prime with managed edge",

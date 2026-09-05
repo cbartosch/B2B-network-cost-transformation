@@ -531,6 +531,20 @@ def test_the_assignment_is_pinned_to_the_run():
         "prices on whatever the case says now")
 
 
+def _seeded_platform_products():
+    """The platform products the rate card prices, from the seed's source."""
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1]
+    app = next(c for c in (root / "api_service" / "app", root / "app")
+               if (c / "seed.py").exists())
+    source = (app / "seed.py").read_text()
+    start = source.index("PLATFORM = [")
+    namespace = {}
+    exec(source[start:source.index("\n]\n", start) + 3], namespace)
+    return {row[0] for row in namespace["PLATFORM"]}
+
+
 def _seeded_levers():
     """The LEVERS table, read from the seed's source.
 
@@ -588,10 +602,20 @@ def test_every_lever_constraint_names_a_value_the_vocabulary_declares():
                 f"vocabulary does not declare")
         # Platform products are the L2/L4 vocabulary and deliberately not
         # service classes - SSE_LICENCE never was one.
+        #
+        # And they must be products the rate card actually prices. The first
+        # version of this guard checked service classes and access
+        # technologies and not this dimension, so LEV-SASE-001 named
+        # "SD_WAN_OVERLAY" while the platform table seeded "SDWAN_OVERLAY" -
+        # one underscore, and the lever could never match anything.
+        priced = _seeded_platform_products()
         for value in platform or ():
             assert value not in access.SERVICE_CLASSES, (
                 f"{lever_id} lists {value!r} as a platform product and it is "
                 f"also a service class - the two dimensions have collapsed")
+            assert value in priced, (
+                f"{lever_id} is eligible on platform product {value!r}, which "
+                f"the rate card does not price. Priced: {sorted(priced)}")
 
 
 def test_the_dead_product_field_is_not_read_by_the_eligibility_test():
@@ -615,7 +639,7 @@ def test_a_platform_lever_is_not_eligible_on_an_access_circuit():
 
     sase = next(r for r in _seeded_levers() if r[0] == "LEV-SASE-001")
     assert sase[7] is None, "a platform lever constrains no service class"
-    assert sase[9] == ["SD_WAN_OVERLAY", "SSE_LICENCE"]
+    assert sase[9] == ["SDWAN_OVERLAY", "SSE_LICENCE"]
     assert not set(sase[9]) & set(access.SERVICE_CLASSES)
 
 

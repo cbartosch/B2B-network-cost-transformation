@@ -385,7 +385,7 @@ def build_components(*, sim_output: dict, users: int, ops_cost_per_site: dict,
         components.extend(_estate_components(Component(
             key="L2_overlay", layer="L2", driver="sites", quantity=sites,
             quantity_origin=site_origin, unit_cost_origin="BENCHMARK_PRIOR",
-            product="SD_WAN_OVERLAY", role="PLATFORM",
+            product="SDWAN_OVERLAY", role="PLATFORM",
             source_ref=footprint_ref,
             value=Range(overlay_unit["low"], overlay_unit["base"],
                         overlay_unit["high"]).scale(D(sites) * MONTHS))))

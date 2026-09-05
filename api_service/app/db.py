@@ -952,7 +952,7 @@ lever = Table(
     #
     # `applies_to_products` held one list for two unrelated things: the L0
     # levers act on access circuits and named MPLS and DIA, the L2/L4 levers
-    # act on platform components and named SD_WAN_OVERLAY and SSE_LICENCE. The
+    # act on platform components and named SDWAN_OVERLAY and SSE_LICENCE. The
     # same conflation as `product`, one level up.
     #
     # And it was keyed on a dead vocabulary. LEV-MPLS-001 named "MPLS", which
