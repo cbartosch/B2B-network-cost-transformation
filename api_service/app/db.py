@@ -103,6 +103,11 @@ case = Table(
     # {"STORE": "BEST_EFFORT", "DC": "ETHERNET"} - absent archetypes fall back
     # to the seeded prior, so a case that never touches this behaves as before.
     Column("service_class_by_archetype", JSON),
+    # The analyst's committed fraction per archetype, overriding the seeded
+    # default. The seed records a judgement - a data centre commits 30% of a
+    # very large bearer, a store half of a small one - and an engagement with
+    # better information should not need a rebuild to use it.
+    Column("committed_fraction_by_archetype", JSON),
     Column("footprint_total_choice", String(36)),
     Column("footprint_total_chosen_by", String(120)),
     Column("declared_spend_by_country", JSON),

@@ -75,6 +75,55 @@ else:
         "can be delivered at each site, which is the whole reason the two are "
         "separate fields.")
 
+st.subheader("Committed capacity by site type")
+st.caption(
+    "How much of the installed bearer each site type actually commits - the 30 "
+    "in \"Access/Port = 100/30\". A committed service is priced at this share, "
+    "so a 100 Mbps branch buying 50% is priced as a 50 Mbps service rather than "
+    "a 100 Mbps one. A best-effort circuit is not affected: its second figure "
+    "is the upstream, which belongs to the access technology.")
+
+_cf = api.get(f"/v1/outside-in/cases/{case_id}/committed-fractions")
+if "_error" in _cf:
+    st.error(f"Could not read the committed fractions: {_cf['_error']}")
+elif not _cf.get("by_archetype"):
+    st.caption("No archetype priors are seeded, so there is nothing to set.")
+else:
+    _cf_rows = pd.DataFrame([
+        {"site type": r["archetype"],
+         "bearer Mbps": r["bandwidth_mbps"],
+         "committed share": float(r["effective"]) if r["effective"] else None,
+         "seeded default": r["default"] or "-"}
+        for r in _cf["by_archetype"]])
+    _cf_edit = st.data_editor(
+        _cf_rows, hide_index=True, use_container_width=True,
+        disabled=["site type", "bearer Mbps", "seeded default"],
+        column_config={
+            "committed share": st.column_config.NumberColumn(
+                min_value=0.01, max_value=1.0, step=0.05, format="%.2f",
+                help="A share of the bearer. Blank keeps the seeded default."),
+        },
+        key=f"sim_committed_{case_id[:8]}")
+    _cf_who = st.text_input("Setting as (your name)",
+                            key=f"sim_cf_who_{case_id[:8]}")
+    if st.button("Set these committed shares", disabled=not _cf_who.strip()):
+        _picked = {r["site type"]: float(r["committed share"])
+                   for _, r in _cf_edit.iterrows()
+                   if r["committed share"] not in (None, "")}
+        _r = api.put(f"/v1/outside-in/cases/{case_id}/committed-fractions",
+                     {"by_archetype": _picked, "chosen_by": _cf_who})
+        if "_error" in _r:
+            st.error(_r["_error"])
+        else:
+            api.flash(_r.get("note", "Set."))
+            st.rerun()
+    st.caption(
+        "A site type left blank keeps its seeded default, and a default is a "
+        "judgement rather than a measurement: a data centre commits 30% of a "
+        "very large bearer because its peak is bursty, a store half of a small "
+        "one because there is no headroom to burst into. An engagement that "
+        "knows better should say so here.")
+
 st.subheader("Footprint")
 
 # The choice sits outside the resolver's branches on purpose.

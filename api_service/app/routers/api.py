@@ -1121,6 +1121,13 @@ def run_simulation(case_id: str, payload: SimIn):
                            "service_class_by_archetype": (
                                getattr(case_row, "service_class_by_archetype",
                                        None) or {}),
+                           # Pinned for the same reason: a resumed pass must
+                           # price at the fractions the run was started with,
+                           # not at whatever the case says now.
+                           "committed_fraction_by_archetype": (
+                               getattr(case_row,
+                                       "committed_fraction_by_archetype",
+                                       None) or {}),
                            "backbone": backbone},
             status=jobs.QUEUED, progress_completed=0,
             progress_total=payload.ensemble_size, cancel_requested=False))
@@ -1438,6 +1445,81 @@ class TotalChoiceIn(BaseModel):
 class ServiceClassChoiceIn(BaseModel):
     by_archetype: dict[str, str]
     chosen_by: str = Field(min_length=1, max_length=120)
+
+
+class CommittedFractionIn(BaseModel):
+    by_archetype: dict[str, Decimal]
+    chosen_by: str = Field(min_length=1, max_length=120)
+
+
+@router.put("/v1/outside-in/cases/{case_id}/committed-fractions")
+def choose_committed_fractions(case_id: str, payload: CommittedFractionIn):
+    """How much of the installed bearer each site type actually commits.
+
+    The 30 in "Access/Port = 100/30". A commercial decision that varies by
+    engagement: the seeded default records a judgement - a data centre commits
+    30% of a very large bearer because its peak is bursty, a store half of a
+    small one because there is no headroom to burst into - and a case that
+    knows better should not need a rebuild to say so.
+
+    Applies only to a committed service. A best-effort circuit's second figure
+    is its upstream, which belongs to the access technology and is not an
+    analyst's to choose.
+    """
+    with S() as s:
+        _one_or_404(s, db.case, db.case.c.case_id, case_id, "case")
+        known = {r.archetype for r in s.execute(
+            select(db.archetype_prior)).all()}
+        unknown = sorted(set(payload.by_archetype) - known)
+        if unknown:
+            raise HTTPException(422, {
+                "error": "unknown archetype",
+                "detail": f"{unknown} are not seeded site types. Known: "
+                          f"{sorted(known)}"})
+        outside = {a: str(f) for a, f in payload.by_archetype.items()
+                   if not (D(0) < D(str(f)) <= D(1))}
+        if outside:
+            raise HTTPException(422, {
+                "error": "a committed fraction is a share of the bearer",
+                "detail": f"{outside} are outside (0, 1]. A site cannot commit "
+                          f"more than the circuit it has, and committing "
+                          f"nothing is a best-effort service rather than a "
+                          f"committed one with a fraction of zero."})
+        s.execute(update(db.case).where(db.case.c.case_id == case_id).values(
+            committed_fraction_by_archetype={
+                a: str(f) for a, f in payload.by_archetype.items()},
+            ))
+        s.commit()
+        return {"by_archetype": {a: str(f) for a, f in
+                                 payload.by_archetype.items()},
+                "chosen_by": payload.chosen_by,
+                "note": ("Simulations run from now on price a committed "
+                         "service at this share of its bearer. Site types not "
+                         "listed keep the seeded default.")}
+
+
+@router.get("/v1/outside-in/cases/{case_id}/committed-fractions")
+def read_committed_fractions(case_id: str):
+    """The chosen fraction per site type, beside the seeded default."""
+    with S() as s:
+        case_row = _one_or_404(s, db.case, db.case.c.case_id, case_id, "case")
+        chosen = getattr(case_row, "committed_fraction_by_archetype", None) or {}
+        rows = []
+        for prior in s.execute(select(db.archetype_prior)).all():
+            default = getattr(prior, "committed_fraction", None)
+            rows.append({
+                "archetype": prior.archetype,
+                "bandwidth_mbps": prior.bandwidth_mbps_base,
+                "default": None if default is None else str(default),
+                "chosen": chosen.get(prior.archetype),
+                "effective": chosen.get(prior.archetype)
+                             or (None if default is None else str(default)),
+            })
+        return {"by_archetype": sorted(rows, key=lambda r: r["archetype"]),
+                "note": ("A committed service is priced at this share of its "
+                         "bearer. A best-effort one takes its upstream from "
+                         "the access technology instead, which is a property "
+                         "of the bearer rather than a choice.")}
 
 
 @router.put("/v1/outside-in/cases/{case_id}/service-classes")

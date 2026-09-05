@@ -879,3 +879,72 @@ def test_the_simulation_emits_the_priced_rate_not_the_bearer():
     source = inspect.getsource(simulation.one_pass)
     assert "access.pair_for(" in source
     assert "access.priced_rate(pair)" in source
+
+
+# ------------------------- the default is a starting position, not a decision
+def test_the_case_choice_overrides_the_seeded_default():
+    """A seeded fraction records a judgement. An engagement that knows what its
+    sites actually commit should not need a rebuild to say so - the same
+    treatment the service class already gets."""
+    import inspect
+
+    from app.domain import simulation
+
+    source = inspect.getsource(simulation.one_pass)
+    assert "committed_fraction_by_archetype" in source
+    # the case's choice is tried before the seeded default
+    choice = source.index("committed_fraction_by_archetype or {}")
+    seeded = source.index('prior.get("committed_fraction")')
+    assert choice < seeded, "the case choice must be tried first"
+
+
+def test_the_ensemble_forwards_both_analyst_choices():
+    """`service_class_by_archetype` was accepted by run_ensemble and never
+    passed to one_pass - a defaulted positional wedged in front of the
+    keyword-only marker by an automated edit - so every ensemble run silently
+    used the seeded default and the assignment screen appeared to do nothing.
+    """
+    import inspect
+
+    from app.domain import simulation
+
+    source = inspect.getsource(simulation.run_ensemble)
+    assert "service_class_by_archetype=service_class_by_archetype" in source
+    assert "committed_fraction_by_archetype=(" in source
+
+
+def test_the_job_runner_reads_the_choice_it_was_pinned_with():
+    """From the run's own pinned priors rather than the case, so changing the
+    choice mid-run does not price half an estate one way and half the other."""
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1]
+    app = next(c for c in (root / "api_service" / "app", root / "app")
+               if (c / "jobs.py").exists())
+    jobs = (app / "jobs.py").read_text()
+    assert 'get("committed_fraction_by_archetype")' in jobs
+    assert "row.pinned_priors" in jobs
+
+
+def test_a_fraction_outside_the_bearer_is_refused():
+    """A site cannot commit more than the circuit it has, and committing
+    nothing is a best-effort service rather than a committed one with a
+    fraction of zero."""
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1]
+    app = next(c for c in (root / "api_service" / "app", root / "app")
+               if (c / "routers").exists())
+    api = (app / "routers" / "api.py").read_text()
+    assert "outside (0, 1]" in api
+
+
+def test_the_panel_reaches_a_screen():
+    """Three controls this session existed and reached no screen."""
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1]
+    page = next(p for p in (root / "analyst_ui").rglob("*.py")
+                if "Simulation" in p.name).read_text()
+    assert "/committed-fractions" in page
+    assert "Set these committed shares" in page

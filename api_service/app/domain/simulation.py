@@ -36,6 +36,10 @@ MAX_ESTATE_ROWS = 5000
 
 def one_pass(seed: int, footprint: list[dict], archetypes: dict,
              service_class_by_archetype: dict | None = None,
+             # The analyst's committed fraction per site type, overriding the
+             # seeded default. The default records a judgement; a case that
+             # knows what its sites actually commit says so here.
+             committed_fraction_by_archetype: dict | None = None,
              backbone: dict | None = None,
              known_locations: list[dict] | None = None,
              service_table: dict | None = None) -> dict:
@@ -198,7 +202,13 @@ def one_pass(seed: int, footprint: list[dict], archetypes: dict,
             pair = access.pair_for(
                 service_class=primary_class, bearer_mbps=bw_base,
                 access_technology=served.get("access_technology"),
-                committed_fraction=prior.get("committed_fraction"))
+                # The case's choice first, then the seeded default. Same
+                # precedence as the service class, and for the same reason: a
+                # seeded number is a starting position, not a decision.
+                committed_fraction=(
+                    (committed_fraction_by_archetype or {}).get(
+                        entry["archetype"])
+                    or prior.get("committed_fraction")))
             pkey = (entry["country"], primary_product, "PRIMARY",
                     access.priced_rate(pair), primary_class)
             products[pkey] = products.get(pkey, 0) + 1
@@ -458,18 +468,29 @@ def aggregate(summaries: list[dict], *, seed: int, ensemble_size: int,
     }
 
 
-def run_ensemble(
-             service_class_by_archetype: dict | None = None,*, seed: int, ensemble_size: int, footprint: list[dict],
+def run_ensemble(*, seed: int, ensemble_size: int, footprint: list[dict],
                  archetypes: dict, model_version: str,
                  backbone: dict | None = None,
-              known_locations: list[dict] | None = None,
-              service_table: dict | None = None) -> dict:
+                 known_locations: list[dict] | None = None,
+                 service_table: dict | None = None,
+                 service_class_by_archetype: dict | None = None,
+                 committed_fraction_by_archetype: dict | None = None) -> dict:
     """Convenience wrapper: run every pass, then aggregate. The job runner drives
-    the two halves separately so it can checkpoint, cancel and resume."""
+    the two halves separately so it can checkpoint, cancel and resume.
+
+    Both analyst choices are forwarded. `service_class_by_archetype` was
+    accepted here and never passed to one_pass - a defaulted positional wedged
+    in front of the keyword-only marker by an automated edit - so every
+    ensemble run silently used the seeded default and the assignment screen
+    appeared to do nothing.
+    """
     summaries = [summarise_pass(
         one_pass(seed + i, footprint, archetypes, backbone=backbone,
                  known_locations=known_locations,
-                 service_table=service_table), i)
+                 service_table=service_table,
+                 service_class_by_archetype=service_class_by_archetype,
+                 committed_fraction_by_archetype=(
+                     committed_fraction_by_archetype)), i)
                  for i in range(ensemble_size)]
     return aggregate(summaries, seed=seed, ensemble_size=ensemble_size,
                      footprint=footprint, archetypes=archetypes,

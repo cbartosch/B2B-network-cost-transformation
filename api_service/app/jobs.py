@@ -128,6 +128,9 @@ def run_job(run_id: str, session=None) -> dict:
         # half the other.
         service_class_by_archetype = (
             (row.pinned_priors or {}).get("service_class_by_archetype") or {})
+        committed_fraction_by_archetype = (
+            (row.pinned_priors or {}).get("committed_fraction_by_archetype")
+            or {})
         total = row.progress_total or row.ensemble_size
 
         # Resume from the checkpoint. Replaying an earlier index would be safe
@@ -153,6 +156,8 @@ def run_job(run_id: str, session=None) -> dict:
                 simulation.one_pass(
                     row.seed + i, footprint, archetypes,
                     service_class_by_archetype=service_class_by_archetype,
+                    committed_fraction_by_archetype=(
+                        committed_fraction_by_archetype),
                     backbone=backbone,
                     known_locations=known_locations,
                     service_table=service_table), i))
