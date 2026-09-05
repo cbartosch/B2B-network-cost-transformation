@@ -52,6 +52,11 @@ def _fallback_rates(priors: dict) -> dict:
 
 
 def derive_scope(*, sim_output: dict, priors: dict,
+                 # The date the estimate is priced as of. A rate past its own
+                 # expiry still prices and is flagged; without a date nothing
+                 # is treated as expired, which is the honest default for a
+                 # caller that cannot say when.
+                 as_of: str | None = None,
                  sizing_priors: dict | None = None) -> list[dict]:
     """One row per (country, product, role) the simulation actually produced.
 
@@ -61,7 +66,7 @@ def derive_scope(*, sim_output: dict, priors: dict,
     size one for the denominator. Keeping the two separate shrinks the unsizable
     population without pricing anything at a rate that does not apply to it.
     """
-    from .estimate import match_prior
+    from .estimate import is_expired, match_prior
     fallback = _fallback_rates(sizing_priors or priors)
     scope = []
     for row in sim_output.get("products", []):
@@ -102,6 +107,13 @@ def derive_scope(*, sim_output: dict, priors: dict,
             # confidence - which is the mechanism audit finding A-02 describes.
             "evidence_grade": (getattr(prior, "evidence_grade", None) or "E")
                               if prior is not None else None,
+            # Whether the rate that priced this row had passed its own expiry.
+            # Reported rather than withheld: an expired price is worse evidence
+            # than a current one and better than none, so refusing would trade
+            # a stale number for unpriced scope - which reads as "we do not
+            # know" when the truth is "we knew, a while ago".
+            "prior_expired": (is_expired(prior, as_of=as_of)
+                              if isinstance(prior, dict) else False),
             "annual_value": as_str(D(rate) * D(row["count"]) * MONTHS) if rate else "0.00",
         })
     return scope
@@ -228,6 +240,15 @@ def assess(*, scope: list[dict], layers_in_scope: list, layers_priced: set,
         "unsourced_price_share": str(
             (D(sum(D(r["annual_value"]) for r in scope
                    if r["priced"] and r.get("evidence_grade") in ("E", "F")))
+             / priced_value).quantize(D("0.001")))
+        if priced_value else "0",
+        # The share of priced value resting on a rate past its own expiry.
+        # Reported beside unsourced_price_share because they answer the same
+        # question - what is this baseline actually standing on - and a stale
+        # rate and an unsourced one are different weaknesses.
+        "expired_price_share": str(
+            (D(sum(D(r["annual_value"]) for r in scope
+                   if r["priced"] and r.get("prior_expired")))
              / priced_value).quantize(D("0.001")))
         if priced_value else "0",
         "seeded_price_share": str(

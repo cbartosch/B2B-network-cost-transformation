@@ -131,6 +131,46 @@ def _by_dimensions(priors: dict, scope, service_class, technology, mbps):
     return None, None
 
 
+def is_expired(prior: dict, *, as_of: str | None) -> bool:
+    """Has this rate passed the date it says it stops being true?
+
+    Every seeded prior carries `expires` and nothing read it, so on 1 January
+    the whole rate card goes stale and prices silently - the same shape as
+    `fx_convention` collected and never consulted.
+
+    Expired is not the same as absent. A price that was true last year is worse
+    evidence than a current one and better evidence than none, so an expired
+    prior still prices and is reported rather than withheld: refusing would
+    trade a stale number for unpriced scope, which reads as "we do not know"
+    when the truth is "we knew, a while ago".
+
+    Missing `expires` is not expired. A prior that never declared a shelf life
+    cannot have passed it, and treating silence as expiry would retire every
+    rate an analyst entered by hand.
+    """
+    expires = prior.get("expires") if isinstance(prior, dict) else None
+    if not expires or not as_of:
+        return False
+    # Lexical comparison on ISO dates, which sorts correctly and needs no
+    # parsing - and a malformed date compares as not-expired rather than
+    # raising in the middle of a price lookup.
+    return str(expires) < str(as_of)
+
+
+def expired_share(scope: list, *, as_of: str | None) -> str:
+    """The share of priced value resting on a rate past its own expiry.
+
+    Value-weighted, like unsourced_price_share, because ten stale rates on
+    small sites and one on the whole estate are different findings.
+    """
+    priced = sum((D(r["annual_value"]) for r in scope if r.get("priced")), D(0))
+    if not priced:
+        return "0"
+    stale = sum((D(r["annual_value"]) for r in scope
+                 if r.get("priced") and r.get("prior_expired")), D(0))
+    return str((stale / priced).quantize(D("0.001")))
+
+
 def match_prior(priors: dict, country: str, product: str, mbps,
                 # The structured speed pair, where the caller has one. When
                 # supplied, the rate card is keyed on the figure that is

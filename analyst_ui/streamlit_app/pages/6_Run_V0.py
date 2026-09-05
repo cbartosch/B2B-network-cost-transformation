@@ -336,6 +336,33 @@ cb2.metric("Circuit coverage", cov.get("circuit_coverage_pct", "-"),
            delta_color="off")
 cb3.metric("Effective (governs)", cov.get("effective_coverage_pct", "-"),
            "worse of the two", delta_color="off")
+
+# What the priced share is actually standing on. Coverage says how much of the
+# estate carries a rate; these say what those rates are worth. Both controls
+# existed and neither was on a screen, so an estimate priced entirely from
+# expired seeded assumptions looked identical to one priced from current
+# cleared benchmarks.
+_unsourced = cov.get("unsourced_price_share")
+_expired = cov.get("expired_price_share")
+if _unsourced is not None or _expired is not None:
+    qb1, qb2 = st.columns(2)
+    qb1.metric("Priced from assumptions", _unsourced or "-",
+               "grade E or F", delta_color="off")
+    qb2.metric("Priced from expired rates", _expired or "-",
+               "past their own expiry", delta_color="off")
+    _mix = cov.get("evidence_grade_mix") or {}
+    if _mix:
+        st.caption(
+            "Evidence grades behind the priced value: "
+            + ", ".join(f"{g} {v}" for g, v in sorted(_mix.items()))
+            + ". An average of A and F is not C, so the mix is shown rather "
+              "than a single letter.")
+    if _expired and float(_expired) > 0:
+        st.warning(
+            f"{_expired} of the priced value rests on a rate that has passed "
+            f"its own expiry date. An expired price still prices - it is worse "
+            f"evidence than a current one and better than none - but it is not "
+            f"a current market rate and a target built on it should say so.")
 st.caption("Value coverage can be defeated by scope that carries no approved rate in "
            "any country, because unsizable scope contributes nothing to a value "
            "denominator. Circuit coverage always counts it, so the worse of the two "

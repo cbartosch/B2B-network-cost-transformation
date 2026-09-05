@@ -99,3 +99,81 @@ def test_the_anchor_carries_its_own_currency():
     app = next(c for c in (root / "api_service" / "app", root / "app")
                if (c / "routers").exists())
     assert "anchor_currency" in (app / "routers" / "api.py").read_text()
+
+
+# ------------------------------------------------- a rate has a shelf life
+@pytest.mark.parametrize("expires,as_of,expired", [
+    ("2026-12-31", "2027-01-01", True),
+    ("2026-12-31", "2026-06-01", False),
+    # The boundary. A rate expires at the end of the day it names, so the day
+    # itself is still current - and a governed date compared with < rather than
+    # <= is the difference between a card working and failing on 31 December.
+    ("2026-12-31", "2026-12-31", False),
+    (None, "2030-01-01", False),
+    ("2020-01-01", None, False),
+    ("soon", "2027-01-01", False),
+])
+def test_a_rate_expires_when_it_says_it_does(expires, as_of, expired):
+    """Every seeded prior carries `expires` and nothing read it, so on 1
+    January the whole card goes stale and prices silently - the same shape as
+    `fx_convention` collected and never consulted.
+
+    A missing expiry is not an expiry: a prior that never declared a shelf life
+    cannot have passed it, and treating silence as expired would retire every
+    rate an analyst entered by hand. A malformed one compares as current rather
+    than raising in the middle of a price lookup."""
+    from app.domain.estimate import is_expired
+
+    prior = {"expires": expires} if expires is not None else {}
+    assert is_expired(prior, as_of=as_of) is expired
+
+
+def test_an_expired_rate_still_prices_and_is_reported():
+    """Refusing would trade a stale number for unpriced scope, which reads as
+    "we do not know" when the truth is "we knew, a while ago". An expired price
+    is worse evidence than a current one and better evidence than none."""
+    import inspect
+
+    from app.domain import coverage
+
+    source = inspect.getsource(coverage.derive_scope)
+    assert '"prior_expired"' in source
+    assert '"priced": prior is not None' in source, (
+        "an expired prior must still count as priced")
+
+
+def test_the_expired_share_is_value_weighted():
+    """Ten stale rates on small sites and one on the whole estate are
+    different findings."""
+    import inspect
+
+    from app.domain import coverage
+
+    source = inspect.getsource(coverage.assess)
+    assert "expired_price_share" in source
+    assert 'annual_value' in source
+
+
+def test_the_as_of_date_is_pinned_to_the_case_not_to_today():
+    """An estimate must reproduce. "Expired" measured against a moving today
+    would make the same run give different answers on different days."""
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1]
+    app = next(c for c in (root / "api_service" / "app", root / "app")
+               if (c / "routers").exists())
+    api = (app / "routers" / "api.py").read_text()
+    assert 'as_of=f"{case_row.price_year' in api
+
+
+def test_both_evidence_shares_reach_a_screen():
+    """Both controls existed and neither was on a page, so an estimate priced
+    entirely from expired seeded assumptions looked identical to one priced
+    from current cleared benchmarks."""
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1]
+    page = next(p for p in (root / "analyst_ui").rglob("*.py")
+                if "Run_V0" in p.name).read_text()
+    assert "unsourced_price_share" in page
+    assert "expired_price_share" in page

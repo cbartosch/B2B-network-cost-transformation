@@ -2261,8 +2261,19 @@ def run_estimate(case_id: str, payload: EstimateIn):
             raise HTTPException(422, {"error": "currencies do not reconcile",
                                       "detail": str(exc)})
 
-        priors = {(r.country, r.product, r.bandwidth_mbps): {"low": r.low, "base": r.base,
-                                           "high": r.high, "price_year": r.price_year}
+        priors = {(r.country, r.product, r.bandwidth_mbps): {
+                      "low": r.low, "base": r.base, "high": r.high,
+                      "price_year": r.price_year,
+                      # Carried so the scope row can record whether the rate
+                      # that priced it had passed its own expiry. Without it
+                      # `expires` is a column nothing reads.
+                      "expires": getattr(r, "expires", None),
+                      "evidence_grade": getattr(r, "evidence_grade", None),
+                      "scope": r.country, "service_class":
+                          getattr(r, "service_class", None),
+                      "access_technology":
+                          getattr(r, "access_technology", None),
+                      "bandwidth_mbps": r.bandwidth_mbps}
                   for r in prior_rows}
         # Every approved prior, any country. Used only to *size* scope for the
         # coverage denominator - never to price a component (see derive_scope).
@@ -2276,8 +2287,13 @@ def run_estimate(case_id: str, payload: EstimateIn):
 
         # Coverage denominator derived from the simulated scope, per
         # (country, product) pair - not accepted from the caller.
-        scope = coverage.derive_scope(sim_output=sim.output, priors=priors,
-                                      sizing_priors=sizing_priors)
+        scope = coverage.derive_scope(
+            sim_output=sim.output, priors=priors,
+            sizing_priors=sizing_priors,
+            # Priced as of the case's price year, not today: an estimate must
+            # reproduce, and "expired" against a moving today would make the
+            # same run give different answers on different days.
+            as_of=f"{case_row.price_year or 2026}-01-01")
 
         # Resolve quantity provenance. Unnamed drivers are the analyst's typed
         # scope; a named known fact is validated for rights, class and
