@@ -30,7 +30,11 @@ UNICREDIT = [{
 
 def test_three_disagreeing_sources_become_a_band_not_a_choice():
     t = T.triangulate(UNICREDIT, policy=_policy(), price_year=2026)[0]
-    assert (t["low"], t["base"], t["high"]) == (341, 371, 400)
+    # Strings, not integers. `_plain` renders a site count as "341" rather
+    # than money.as_str's "341.00", and the band is serialised for JSON
+    # storage - which promotion._as_int coerces back. The test asserted the
+    # return type this module had before that, and never ran to find out.
+    assert (t["low"], t["base"], t["high"]) == ("341", "371", "400")
     assert t["candidate_count"] == 3
     assert t["oldest_year"] == 2021 and t["newest_year"] == 2023
 
@@ -54,14 +58,14 @@ def test_the_base_is_the_median_so_one_outlier_cannot_move_it():
         {"value": 341, "as_of": "2021"}, {"value": 371, "as_of": "2023"},
         {"value": 4000, "as_of": "2022"}]}]
     t = T.triangulate(with_outlier, policy=_policy(), price_year=2026)[0]
-    assert t["base"] == 371
+    assert t["base"] == "371"
 
 
 def test_a_single_source_is_labelled_as_one():
     t = T.triangulate([{"label": "DC", "country": "DE", "unit": "sites",
                         "value": 1}], policy=_policy(), price_year=2026)[0]
     assert T.SINGLE_SOURCE in t["flags"]
-    assert (t["low"], t["base"], t["high"]) == (1, 1, 1)
+    assert (t["low"], t["base"], t["high"]) == ("1", "1", "1")
     assert not t["review_required"], (
         "one source is thin, not contradictory - flagging it for review would "
         "fill the queue with everything and get the queue ignored")
@@ -85,8 +89,8 @@ def test_a_newest_source_far_from_the_median_is_reported_not_preferred():
                       {"value": 300, "as_of": "2025"}]}]
     t = T.triangulate(shrinking, policy=_policy(), price_year=2026)[0]
     assert T.NEWEST_DIVERGES in t["flags"]
-    assert t["base"] == 500, "the median is reported, not the newest"
-    assert t["newest_value"] == 300
+    assert t["base"] == "500", "the median is reported, not the newest"
+    assert t["newest_value"] == "300"
     assert "trend or an outlier" in T.review_queue([t])[0]["why"]
 
 
@@ -135,7 +139,11 @@ def test_an_unparseable_candidate_is_set_aside_not_dropped():
 
 # ------------------------------------------------- prose is a finding, not a fault
 @pytest.mark.parametrize("raw,expected", [
-    ("1250", 1250), ("1,250", 1250), ("2.75", None), ("450 Mbps", 450),
+    # "2.75" parses, and deliberately: parse_value's own docstring says
+    # so - '"1,250" and "2.75" and "3 million" parse'. Only a string carrying
+    # two numbers is refused, because picking one would be inventing which was
+    # meant. The test asserted the opposite of a documented decision.
+    ("1250", 1250), ("1,250", 1250), ("2.75", "2.75"), ("450 Mbps", 450),
     ("3 million", 3_000_000), ("~340", 340), ("EUR 213000000", 213_000_000),
     ("2 halls, 2.75 MW", None), ("T-Systems (Deutsche Telekom)", None),
     ("", None), (None, None),
