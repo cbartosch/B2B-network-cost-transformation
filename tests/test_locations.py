@@ -71,7 +71,11 @@ def test_no_residual_rows_are_fabricated():
     """A residual is a count, not 393 anonymous locations. A reader has to be
     able to tell which sites exist as named rows and which are a tally."""
     out = _enum(_named(40))
-    assert out["by_country"]["DE"]["residual"] == 310
+    # 440, not 350: the DE footprint is 350 stores plus 90 warehouses, and the
+    # residual is per country rather than per archetype. The test asserted
+    # 350 - 40 and predates the warehouse row - invisible because this file
+    # could not be imported.
+    assert out["by_country"]["DE"]["residual"] == 400
     assert "locations" not in out, "this returns counts, never invented rows"
 
 

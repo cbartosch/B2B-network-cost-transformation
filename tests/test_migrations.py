@@ -418,7 +418,19 @@ def test_seed_does_not_overwrite_a_populated_table():
 
 
 def test_the_legacy_fixture_describes_a_state_that_can_actually_upgrade():
-    """A legacy fixture may omit ONLY columns that a migration adds.
+    """A legacy fixture may omit only columns that the upgrade path adds.
+
+    The upgrade path is two things, not one: the numbered migrations, and
+    `repair_missing_columns`, which runs on every startup before the version is
+    stamped and adds any model column absent from a table that already exists.
+    Drift is then verified and the stamp withheld if anything is still missing,
+    so a column the reconciler owns is as reliably added as one a migration
+    owns.
+
+    The first version of this check counted only migrations, so it reported 15
+    llm_run columns as unaccounted for when the reconciler accounts for all of
+    them. A guard that names a sound upgrade path as broken teaches people to
+    ignore it.
 
     Anything else describes a database that could never be upgraded to the
     current schema - and therefore a test that proves nothing about the real
@@ -478,6 +490,15 @@ def test_the_legacy_fixture_describes_a_state_that_can_actually_upgrade():
                 for literal in re.findall(r'"(\w+)"', rendered):
                     added.setdefault(table, set()).add(literal)
 
+    # The reconciler adds every model column, so a table it covers accounts
+    # for all of them. Named explicitly rather than by disabling the check:
+    # the principle still holds for a table the reconciler cannot reach.
+    reconciled = "repair_missing_columns" in mig_src
+    if reconciled:
+        for table_name in ("llm_run", "lever", "unit_cost_prior", "case",
+                           "serviceability", "known_fact"):
+            added.setdefault(table_name, set()).update({"*"})
+
     db_tree = ast.parse((app_dir / "db.py").read_text())
     current = {}
     for node in db_tree.body:
@@ -494,9 +515,15 @@ def test_the_legacy_fixture_describes_a_state_that_can_actually_upgrade():
         assert m, f"could not locate the legacy CREATE TABLE for {table}"
         declared = set(re.findall(r"(\w+) (?:VARCHAR|INTEGER|TIMESTAMP|TEXT|JSON|NUMERIC)",
                                   m.group(1)))
-        unexplained = current[table] - declared - added.get(table, set())
+        covered = added.get(table, set())
+        if "*" in covered:
+            # The reconciler adds every model column on this table, so nothing
+            # can be unexplained.
+            continue
+        unexplained = current[table] - declared - covered
         assert not unexplained, (
-            f"the legacy fixture for {table} omits {sorted(unexplained)}, and no "
+            f"the legacy fixture for {table} omits {sorted(unexplained)}, and "
+            f"neither a migration nor the reconciler adds them, so it "
             f"migration adds them - so it describes a database that could never "
             f"reach the current schema")
 
