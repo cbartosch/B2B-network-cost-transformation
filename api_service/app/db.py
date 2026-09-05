@@ -516,6 +516,16 @@ benchmark_observation = Table(
     Column("metric", String(96)),                # MRC | NRC | LEAD_TIME_DAYS | ...
     Column("country", String(2)), Column("product", String(48)),
     Column("bandwidth_mbps", Integer),
+    # What was observed, in the two dimensions the rate card is keyed on since
+    # 4.168. Without them a cleared observation derives a prior that
+    # match_prior can only reach through the legacy fallback - so the path
+    # from evidence to a graded rate was broken by the re-key it exists to
+    # serve.
+    #
+    # Nullable: an observation of "MPLS in Germany at 100 Mbps" is a real
+    # observation and the source rarely says which bearer carried it.
+    Column("service_class", String(16)),
+    Column("access_technology", String(20)),
     Column("vendor", String(120)),
     Column("value", Numeric(16, 4)), Column("unit", String(128)),
     Column("currency", String(3)), Column("price_year", Integer),

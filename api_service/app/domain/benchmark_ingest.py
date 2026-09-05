@@ -55,6 +55,7 @@ RIGHTS_BASES = ("PUBLISHED", "VENDOR_SUPPLIED", "PRIOR_ENGAGEMENT")
 # Identical today, and a product added to one would be rejected by the other -
 # the drift would surface as a benchmark that ingests and cannot be promoted,
 # or the reverse.
+from . import access
 from .promotion import PRODUCTS
 
 
@@ -152,6 +153,14 @@ def extract(session, *, text: str, source_document: str,
             metric=r["metric"],
             country=(r.get("country") or None),
             product=(r.get("product") if r.get("product") in PRODUCTS else None),
+            # Derived from the product the agent reported rather than asked for
+            # separately. The prompt names six products and a source rarely
+            # states a bearer, so asking would invite an invented answer -
+            # which is the failure the whole extraction gate exists to prevent.
+            service_class=access.LEGACY_PRODUCT.get(
+                r.get("product"), (None, None))[0],
+            access_technology=access.LEGACY_PRODUCT.get(
+                r.get("product"), (None, None))[1],
             bandwidth_mbps=int(r["bandwidth_mbps"]) if r.get("bandwidth_mbps") else None,
             vendor=r.get("vendor"), value=value, unit=r.get("unit"),
             currency=r.get("currency"),
@@ -246,10 +255,29 @@ def derive_bands(session, *, currency: str = "USD", price_year: int = 2026,
         if dry_run:
             continue
         row_id = f"{country}-{product}-{mbps}-derived"
+        # The two dimensions the rate card is keyed on. Carried from the
+        # observations where they agree, and derived from the product where
+        # they do not - a group that disagrees on service class is not one
+        # band, and is reported rather than averaged.
+        classes = {getattr(o, "service_class", None) for o in obs
+                   if getattr(o, "service_class", None)}
+        technologies = {getattr(o, "access_technology", None) for o in obs
+                        if getattr(o, "access_technology", None)}
+        service_class = (classes.pop() if len(classes) == 1
+                         else access.LEGACY_PRODUCT.get(product, (None,))[0])
+        technology = (technologies.pop() if len(technologies) == 1
+                      else access.LEGACY_PRODUCT.get(product, (None, None))[1])
+
         session.execute(delete(db.unit_cost_prior).where(
             db.unit_cost_prior.c.id == row_id))
         session.execute(insert(db.unit_cost_prior).values(
             id=row_id, country=country, product=product, cost_layer="L0",
+            service_class=service_class, access_technology=technology,
+            # Grade C: a credible market benchmark requiring adjustment. Not A
+            # - these are observed quotes, not this client's transactions - and
+            # not E, which is what the seeded rates are. Without this a derived
+            # prior inherited the column default and looked like an assumption.
+            evidence_grade="C", price_basis="BENCHMARK",
             bandwidth_mbps=mbps, low=band["low"], base=band["base"],
             high=band["high"], currency=currency, price_year=price_year,
             approved=False,

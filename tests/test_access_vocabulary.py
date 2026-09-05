@@ -716,3 +716,71 @@ def test_the_simulation_emits_what_the_pipeline_reads():
     source = inspect.getsource(simulation.one_pass)
     for field in ('"service_class"', '"access_technology"'):
         assert field in source, f"the simulation must emit {field}"
+
+
+# ------------- the evidence path speaks the same vocabulary as the rate card
+def test_a_cleared_observation_derives_a_prior_the_new_key_can_find():
+    """Red-team finding. The rate card was re-keyed on service class and access
+    technology in 4.168; `benchmark_observation` carried neither, and the
+    derive step wrote a prior with only a product.
+
+    So every prior derived from evidence was reachable only through the legacy
+    fallback - the route from a cleared observation to a graded rate was broken
+    by the re-key that route exists to serve, and it would have looked like the
+    benchmark vault simply never improving anything."""
+    import inspect
+
+    from app.domain import benchmark_ingest
+
+    source = inspect.getsource(benchmark_ingest.derive_bands)
+    assert "service_class=service_class" in source
+    assert "access_technology=technology" in source
+
+
+def test_a_derived_prior_is_graded_as_a_benchmark_not_an_assumption():
+    """Without a grade it inherited the column default, which is E - so a rate
+    built from cleared market observations looked exactly like a seeded guess,
+    and `unsourced_price_share` counted it as one."""
+    import inspect
+
+    from app.domain import benchmark_ingest
+
+    source = inspect.getsource(benchmark_ingest.derive_bands)
+    assert 'evidence_grade="C"' in source
+    assert 'price_basis="BENCHMARK"' in source
+
+
+def test_a_group_disagreeing_on_service_class_falls_back_rather_than_averaging():
+    """Observations that disagree on what was bought are not one band. The
+    derivation takes the agreed value where there is one and the product's
+    mapping where there is not - it never picks a winner."""
+    import inspect
+
+    from app.domain import benchmark_ingest
+
+    source = inspect.getsource(benchmark_ingest.derive_bands)
+    assert "if len(classes) == 1" in source
+
+
+def test_every_table_that_prices_speaks_one_vocabulary():
+    """The guard for the class. Three tables were re-keyed and a fourth was
+    not, which is how a chain breaks in the middle: each end is consistent and
+    the join between them is not."""
+    import ast
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1]
+    app = next(c for c in (root / "api_service" / "app", root / "app")
+               if (c / "db.py").exists())
+    source = (app / "db.py").read_text()
+
+    for table in ("unit_cost_prior", "benchmark_observation"):
+        start = source.index(f"{table} = Table(")
+        end = source.index("schema=", start)
+        columns = {node.args[0].value
+                   for node in ast.walk(ast.parse(source[start:end] + ")"))
+                   if isinstance(node, ast.Call)
+                   and getattr(node.func, "id", "") == "Column"
+                   and node.args and isinstance(node.args[0], ast.Constant)}
+        assert "service_class" in columns, table
+        assert "access_technology" in columns, table
