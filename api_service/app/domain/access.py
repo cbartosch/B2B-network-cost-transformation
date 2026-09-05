@@ -207,6 +207,44 @@ def validate(*, service_class: str, access_technology: str | None,
     return problems
 
 
+# ------------------------------- which access can carry which service
+# A service class is bought; an access technology delivers it. Not every
+# pairing exists, and the serviceability table was keyed on the conflated
+# `product` so it could not express the difference: it answered "is MPLS
+# available here", which is a commercial question, rather than "is there a
+# bearer here that can carry a committed VPN", which is a physical one.
+#
+# In preference order, best first. Resolution walks the list and takes the
+# first technology that is deliverable at the site.
+SERVICE_ACCESS = {
+    # A dedicated service needs a bearer that can be dedicated. Consumer
+    # copper and cable are contended by construction and cannot carry an
+    # uncontended promise, whatever a portal offers.
+    DIA: ("ETHERNET_FIBRE", "DARK_FIBRE", "PON", "FWA"),
+    # A committed VPN rides almost anything, because the commitment is a
+    # contractual rate rather than a property of the bearer - which is exactly
+    # why `validate` flags a CIR over contended access rather than refusing
+    # it.
+    IPVPN: ("ETHERNET_FIBRE", "DARK_FIBRE", "PON", "VDSL", "HFC", "MOBILE_5G"),
+    # Ethernet transport is fibre. A point-to-point service over VDSL is not
+    # the same product under a different name.
+    ETHERNET: ("ETHERNET_FIBRE", "DARK_FIBRE"),
+    # Best effort takes whatever reaches the building, in descending order of
+    # what it is worth having.
+    BEST_EFFORT: ("PON", "ETHERNET_FIBRE", "HFC", "VDSL", "ADSL", "FWA",
+                  "MOBILE_5G", "MOBILE_4G", "SATELLITE"),
+}
+
+
+def carriers_for(service_class: str) -> tuple:
+    """The access technologies that can deliver this service, best first."""
+    if service_class not in SERVICE_ACCESS:
+        raise VocabularyError(
+            f"{service_class!r} is not a service class, so there is no set of "
+            f"access technologies that can carry it")
+    return SERVICE_ACCESS[service_class]
+
+
 # ------------------------------------------------- parsing free text
 # Ported from domain/circuits.py, which implemented an earlier and superseded
 # taxonomy. That module was built in this same version, then the vocabulary was

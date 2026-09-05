@@ -99,7 +99,12 @@ LLM_SEARCH_TIMEOUT_SECONDS = float(
 # inter-site transport that one_pass accepted and never read, so it was
 # modelled, displayed and excluded from every cost. `circuits` now includes it
 # and `circuits_backbone` reports it separately.
-SIMULATION_MODEL_VERSION = "sim-1.7.0"
+# 1.8.0: serviceability resolves on the bearer that can carry a service, not
+# on whether a carrier sells the product. An IPVPN in a rural town is now
+# deliverable if VDSL reaches it - true, and the product-keyed table could not
+# say so - while Ethernet transport there is not, because Ethernet transport is
+# fibre and no fibre reaches.
+SIMULATION_MODEL_VERSION = "sim-1.8.0"
 # calc-1.1.0: the saving band is accumulated with matched pairing rather than
 # derived as current - target. The target is a function of the current, so
 # subtracting the two crossed bounds a second time and produced worlds that

@@ -463,42 +463,67 @@ DENSITY_BANDS = ("DENSE_URBAN", "URBAN", "SUBURBAN", "RURAL")
 #
 # Indicative and governed. A steward retunes these per engagement, and a
 # researched fact about a specific area replaces them.
+# What physically reaches a building, by density band.
+#
+# Keyed on the access technology rather than the product. The old table asked
+# "is MPLS available in rural Germany", which a carrier answers by whether it
+# will sell there; this asks whether a bearer reaches the site, which is what a
+# survey establishes. Every service class that bearer can carry then follows
+# from domain/access.SERVICE_ACCESS.
+#
+# The practical difference: an IPVPN in a rural town is now deliverable if VDSL
+# reaches it, which is true and the old table could not say. A DIA in the same
+# town is not, because no dedicated bearer reaches it - which the old table
+# said for the wrong reason.
 SERVICEABILITY = [
-    (c, band, product, available, mbps)
+    (c, band, technology, available, mbps)
     for c in ("DE", "GB", "FR", "NL", "US")
-    for band, product, available, mbps in (
-        ("DENSE_URBAN", "DIA", True, 10000),
-        ("DENSE_URBAN", "ETHERNET", True, 10000),
-        ("DENSE_URBAN", "BROADBAND_HFC", True, 1000),
-        ("DENSE_URBAN", "BROADBAND_PON", True, 1000),
-        ("DENSE_URBAN", "MPLS", True, 1000),
+    for band, technology, available, mbps in (
+        ("DENSE_URBAN", "ETHERNET_FIBRE", True, 10000),
+        ("DENSE_URBAN", "DARK_FIBRE", True, 100000),
+        ("DENSE_URBAN", "PON", True, 1000),
+        ("DENSE_URBAN", "HFC", True, 1000),
+        ("DENSE_URBAN", "VDSL", True, 80),
+        ("DENSE_URBAN", "ADSL", True, 24),
         ("DENSE_URBAN", "MOBILE_5G", True, 300),
+        ("DENSE_URBAN", "MOBILE_4G", True, 50),
 
-        ("URBAN", "DIA", True, 1000),
-        ("URBAN", "ETHERNET", True, 1000),
-        ("URBAN", "BROADBAND_HFC", True, 1000),
-        ("URBAN", "BROADBAND_PON", True, 1000),
-        ("URBAN", "MPLS", True, 1000),
+        ("URBAN", "ETHERNET_FIBRE", True, 1000),
+        ("URBAN", "DARK_FIBRE", True, 10000),
+        ("URBAN", "PON", True, 1000),
+        ("URBAN", "HFC", True, 1000),
+        ("URBAN", "VDSL", True, 80),
+        ("URBAN", "ADSL", True, 24),
         ("URBAN", "MOBILE_5G", True, 300),
+        ("URBAN", "MOBILE_4G", True, 50),
 
-        # Dedicated access thins out first, and at a lower tier.
-        ("SUBURBAN", "DIA", True, 500),
-        ("SUBURBAN", "ETHERNET", True, 500),
-        ("SUBURBAN", "BROADBAND_HFC", True, 500),
-        ("SUBURBAN", "BROADBAND_PON", True, 300),
-        ("SUBURBAN", "MPLS", True, 200),
+        # Dedicated fibre thins out first, and at a lower tier.
+        ("SUBURBAN", "ETHERNET_FIBRE", True, 500),
+        ("SUBURBAN", "DARK_FIBRE", False, None),
+        ("SUBURBAN", "PON", True, 300),
+        ("SUBURBAN", "HFC", True, 500),
+        ("SUBURBAN", "VDSL", True, 80),
+        ("SUBURBAN", "ADSL", True, 24),
         ("SUBURBAN", "MOBILE_5G", True, 200),
+        ("SUBURBAN", "MOBILE_4G", True, 50),
 
         # Rural is where a retail estate's assumptions break. Dedicated fibre
-        # is often a build rather than a service, so it is marked unavailable
-        # rather than expensive: an estimate that prices a circuit nobody can
-        # deliver is worse than one that reports it cannot be delivered.
-        ("RURAL", "DIA", False, None),
-        ("RURAL", "ETHERNET", False, None),
-        ("RURAL", "BROADBAND_HFC", True, 200),
-        ("RURAL", "BROADBAND_PON", True, 100),
-        ("RURAL", "MPLS", False, None),
+        # is a build rather than a service, so it is unavailable rather than
+        # expensive: an estimate that prices a circuit nobody can deliver is
+        # worse than one that reports it cannot be delivered.
+        #
+        # Copper and cable still reach, which is why a best-effort or a
+        # committed VPN is deliverable here and a DIA is not.
+        ("RURAL", "ETHERNET_FIBRE", False, None),
+        ("RURAL", "DARK_FIBRE", False, None),
+        ("RURAL", "PON", True, 100),
+        ("RURAL", "HFC", True, 200),
+        ("RURAL", "VDSL", True, 40),
+        ("RURAL", "ADSL", True, 16),
+        ("RURAL", "FWA", True, 100),
         ("RURAL", "MOBILE_5G", True, 100),
+        ("RURAL", "MOBILE_4G", True, 30),
+        ("RURAL", "SATELLITE", True, 50),
     )
 ]
 
@@ -671,11 +696,15 @@ def _rows():
              "note": "seed starting position; retune per engagement"}
             for i, a, b, share in DENSITY_MIX]),
         (serviceability, lambda: [
-            {"id": f"{c}-{b}-{p}", "country": c, "density_band": b,
-             "product": p, "available": a, "max_bandwidth_mbps": m,
+            {"id": f"{c}-{b}-{t}", "country": c, "density_band": b,
+             # Both, so a resolver reading either still works. `product` is
+             # None because the row no longer describes one: it describes a
+             # bearer, and every product that bearer can carry follows.
+             "access_technology": t, "product": None,
+             "available": a, "max_bandwidth_mbps": m,
              "approved_by": "seed",
              "note": "seed default; retune per engagement"}
-            for c, b, p, a, m in SERVICEABILITY]),
+            for c, b, t, a, m in SERVICEABILITY]),
         (country_region, lambda: [
             {"country": c, "region": r, "note": "seed default"}
             for c, r in COUNTRY_REGION]),

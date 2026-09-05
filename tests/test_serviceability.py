@@ -123,19 +123,40 @@ def test_dedicated_access_thins_out_with_density():
         return {p for c, b, p, a, _m in SERVICEABILITY
                 if c == "DE" and b == band and a}
 
-    assert "DIA" in deliverable("URBAN")
-    assert "DIA" not in deliverable("RURAL")
-    assert deliverable("RURAL") < deliverable("URBAN")
+    # Keyed on the bearer since 4.175. "DIA" is a service class and never
+    # appeared in this table again; dedicated fibre is what thins out, and the
+    # services that need it become unserviceable as a consequence.
+    assert "ETHERNET_FIBRE" in deliverable("URBAN")
+    assert "ETHERNET_FIBRE" not in deliverable("RURAL")
+    # Rural gains satellite and fixed wireless, so it is not a strict subset -
+    # it is a different set, which is the point. What matters is that the
+    # bearers a dedicated service needs are gone.
+    from app.domain import access
+    assert not (set(access.carriers_for(access.ETHERNET))
+                & deliverable("RURAL"))
 
 
 def test_every_deliverable_product_is_one_the_model_prices():
     """A serviceability row naming a product no prior quotes would substitute
     a circuit into the estate that nothing can price - trading a reported
     constraint for silent unpriced scope."""
-    from app.seed import PRIORS
-    priced = {p for _c, p, _l, _bw, *_ in PRIORS}
-    named = {p for _c, _b, p, a, _m in SERVICEABILITY if a}
-    assert named <= priced, f"deliverable but unpriced: {sorted(named - priced)}"
+    # The two sides speak different vocabularies since 4.175: the table names
+    # bearers, the rate card names services. Comparing them directly reported
+    # nine "unpriced" technologies that are priced perfectly well - through the
+    # service class that rides them.
+    #
+    # The invariant that survives the re-key: every bearer the table declares
+    # deliverable must be one that some service class can actually use.
+    # A bearer no service can ride is dead reference data, and it would
+    # substitute a circuit into the estate that nothing can price.
+    from app.domain import access
+
+    usable = {t for c in access.SERVICE_CLASSES
+              for t in access.carriers_for(c)}
+    named = {t for _c, _b, t, a, _m in SERVICEABILITY if a}
+    assert named <= usable, (
+        f"deliverable but no service class can ride it: "
+        f"{sorted(named - usable)}")
 
 
 # --------------------------- absence of data is not evidence of absence
@@ -250,3 +271,100 @@ def test_the_simulation_reports_sites_with_no_deliverable_second_path():
     # and the count must not be incremented when there is no second path
     guarded = src.index("resolve_backup")
     assert src.index("dual_sites += 1") > guarded
+
+
+# --------------------- serviceability keyed on the bearer, not the product
+def _bearer_table():
+    import types
+
+    from app.seed import SERVICEABILITY
+
+    class _Row:
+        def __init__(self, available, mbps):
+            self.available, self.max_bandwidth_mbps = available, mbps
+
+    return {(c, b, t): _Row(a, m) for c, b, t, a, m in SERVICEABILITY}
+
+
+def _resolve(service_class, wanted=100, density="RURAL", country="DE"):
+    return serviceability._by_access(
+        table=_bearer_table(), country=country, density=density,
+        service_class=service_class, wanted_mbps=wanted, asked_for="X")
+
+
+def test_a_committed_vpn_is_deliverable_where_a_dedicated_service_is_not():
+    """The distinction the product-keyed table could not make. It asked "is
+    MPLS available in rural Germany", which a carrier answers by whether it
+    will sell there - and selling is not the constraint. Reaching is.
+
+    An IPVPN in a rural town is deliverable if a bearer reaches it. Ethernet
+    transport is not, because Ethernet transport is fibre and no fibre
+    reaches."""
+    from app.domain import access
+
+    assert _resolve(access.IPVPN)["outcome"] == serviceability.DELIVERED
+    assert _resolve(access.ETHERNET)["outcome"] == serviceability.UNSERVICEABLE
+
+
+def test_the_outcome_names_the_bearer_that_carries_it():
+    """"Deliverable" without saying over what is not an answer a survey would
+    accept."""
+    from app.domain import access
+
+    out = _resolve(access.BEST_EFFORT)
+    assert out["access_technology"] in access.ACCESS_TECHNOLOGIES
+
+
+def test_a_bearer_that_reaches_but_cannot_carry_the_size_substitutes():
+    """A smaller circuit is a real option; a silent downgrade is not."""
+    from app.domain import access
+
+    out = _resolve(access.BEST_EFFORT, wanted=500)
+    assert out["outcome"] == serviceability.SUBSTITUTED
+    assert out["bandwidth_mbps"] < 500
+    assert "below the 500 Mbps" in out["note"]
+
+
+def test_an_unrecorded_bearer_is_unknown_not_unavailable():
+    """The rule the product-keyed resolver had, preserved: an empty table must
+    not read as an estate nobody can serve."""
+    from app.domain import access
+
+    out = serviceability._by_access(
+        table={}, country="ZZ", density="RURAL",
+        service_class=access.DIA, wanted_mbps=100, asked_for="X")
+    assert out["outcome"] == serviceability.DELIVERED
+    assert "nothing is known" in out["note"]
+
+
+def test_every_service_class_has_a_carrier_list_in_the_vocabulary():
+    """A service with no bearers would be unserviceable everywhere, which
+    would look like a finding about the estate rather than a gap in the
+    reference data."""
+    from app.domain import access
+
+    for service_class in access.SERVICE_CLASSES:
+        carriers = access.carriers_for(service_class)
+        assert carriers, service_class
+        for technology in carriers:
+            assert technology in access.ACCESS_TECHNOLOGIES, technology
+
+
+def test_the_seeded_table_is_keyed_on_technologies_the_vocabulary_declares():
+    """A row naming a technology the vocabulary does not know can never be
+    matched, and would be invisible rather than loud."""
+    from app.domain import access
+    from app.seed import SERVICEABILITY
+
+    for _country, _band, technology, _available, _mbps in SERVICEABILITY:
+        assert technology in access.ACCESS_TECHNOLOGIES, technology
+
+
+def test_dense_urban_delivers_what_rural_cannot():
+    """The band has to matter, or the table is decoration."""
+    from app.domain import access
+
+    assert _resolve(access.ETHERNET, density="DENSE_URBAN")["outcome"] == (
+        serviceability.DELIVERED)
+    assert _resolve(access.ETHERNET, density="RURAL")["outcome"] == (
+        serviceability.UNSERVICEABLE)

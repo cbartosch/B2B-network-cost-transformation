@@ -128,7 +128,10 @@ def one_pass(seed: int, footprint: list[dict], archetypes: dict,
         density = (entry.get("density") or "").upper() or None
         served = serviceability.resolve(
             table=service_table or {}, country=entry["country"],
-            density=density, product=primary_product, wanted_mbps=bw_base)
+            density=density, product=primary_product, wanted_mbps=bw_base,
+            # Resolved on the bearer that can carry this service, not on
+            # whether a carrier sells the product here.
+            service_class=primary_class)
         if served["outcome"] == serviceability.UNSERVICEABLE:
             # Reported, not priced. An estimate that prices a circuit nobody
             # can deliver reads as a number; this reads as a question.
@@ -204,7 +207,8 @@ def one_pass(seed: int, footprint: list[dict], archetypes: dict,
                 backup_served = serviceability.resolve_backup(
                     table=service_table or {}, country=entry["country"],
                     density=density, product=backup_product,
-                    wanted_mbps=bw_base, primary_product=primary_product)
+                    wanted_mbps=bw_base, primary_product=primary_product,
+                    service_class=backup_class)
                 if not backup_served["resilient"]:
                     # The draw said this site should have a second path and
                     # none can be delivered. Recorded: an estate whose

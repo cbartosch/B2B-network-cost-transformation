@@ -55,6 +55,55 @@ def load(session, countries: list[str] | None = None) -> dict:
             for r in session.execute(query).all()}
 
 
+def _by_access(*, table: dict, country: str, density: str,
+               service_class: str, wanted_mbps: int, asked_for: str) -> dict:
+    """The first bearer that reaches this site and can carry this service.
+
+    Walks access.SERVICE_ACCESS in preference order. An entry absent from the
+    table is unknown rather than unavailable - the same rule the product-keyed
+    resolver used, and for the same reason: an empty table must not read as an
+    estate nobody can serve.
+    """
+    carriers = access.carriers_for(service_class)
+    known = [t for t in carriers if (country, density, t) in table]
+    if not known:
+        # Nothing recorded about any bearer this service could use. Silence,
+        # not a constraint.
+        return {"product": asked_for, "bandwidth_mbps": wanted_mbps,
+                "outcome": DELIVERED, "asked_for": asked_for,
+                "access_technology": None,
+                "note": (f"no bearer for a {service_class} is recorded in "
+                         f"{density} {country}, so nothing is known rather "
+                         f"than nothing deliverable")}
+
+    for technology in known:
+        row = table[(country, density, technology)]
+        if not getattr(row, "available", False):
+            continue
+        capacity = getattr(row, "max_bandwidth_mbps", None)
+        if capacity is None or int(capacity) >= int(wanted_mbps or 0):
+            return {"product": asked_for, "access_technology": technology,
+                    "bandwidth_mbps": wanted_mbps, "outcome": DELIVERED,
+                    "asked_for": asked_for, "note": None}
+        # Reaches the site but not at this size. Reported as a substitution
+        # rather than a refusal, because a smaller circuit is a real option and
+        # a silent downgrade is not.
+        return {"product": asked_for, "access_technology": technology,
+                "bandwidth_mbps": int(capacity), "outcome": SUBSTITUTED,
+                "asked_for": asked_for,
+                "note": (f"{technology} reaches {density} {country} at "
+                         f"{capacity} Mbps, below the {wanted_mbps} Mbps this "
+                         f"site asked for")}
+
+    return {"product": None, "access_technology": None,
+            "bandwidth_mbps": None, "outcome": UNSERVICEABLE,
+            "asked_for": asked_for,
+            "note": (f"no bearer that can carry a {service_class} is "
+                     f"available in {density} {country} - "
+                     f"{', '.join(known)} are recorded and none is "
+                     f"deliverable")}
+
+
 def resolve(*, table: dict, country: str, density: str | None,
             product: str, wanted_mbps: int,
             # The structured speed pair, where the caller has one.
@@ -65,7 +114,15 @@ def resolve(*, table: dict, country: str, density: str | None,
             # serviceable wherever 30 is deliverable, which is not what has to
             # be built. The opposite rate to the one the price is keyed on, and
             # the reason the pair carries both.
-            speed: dict | None = None) -> dict:
+            speed: dict | None = None,
+            # The service class, where the caller has one. When supplied the
+            # question changes: not "is this product sold here" but "does a
+            # bearer reach this site that can carry this service".
+            #
+            # A carrier sells MPLS wherever it can reach, so the old question
+            # answered itself. An IPVPN in a rural town is deliverable if VDSL
+            # reaches it - true, and the product-keyed table could not say so.
+            service_class: str | None = None) -> dict:
     """What this site actually gets, and why.
 
     With no density band the site is unclustered, and nothing is known about
@@ -75,6 +132,12 @@ def resolve(*, table: dict, country: str, density: str | None,
     # Sized on the bearer. See the note on the parameter.
     if speed is not None:
         wanted_mbps = access.sizing_rate(speed)
+
+    # Resolved on the bearer too, where the caller knows the service class.
+    if service_class is not None and density:
+        return _by_access(table=table, country=country, density=density,
+                          service_class=service_class,
+                          wanted_mbps=wanted_mbps, asked_for=product)
     if not density:
         return {"product": product, "bandwidth_mbps": wanted_mbps,
                 "outcome": DELIVERED, "asked_for": product,

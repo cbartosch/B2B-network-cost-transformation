@@ -620,6 +620,14 @@ serviceability = Table(
     Column("country", String(2), index=True),
     Column("density_band", String(16), index=True),
     Column("product", String(32)),
+    # What is physically deliverable here. `product` answered "is MPLS
+    # available", which is a commercial question - a carrier sells MPLS
+    # wherever it can reach, and reaching is the real constraint. This answers
+    # "is there a bearer", which is what a site survey establishes.
+    #
+    # Additive: `product` is retained so a row seeded before 4.175 still
+    # resolves, and resolution prefers the technology when it is present.
+    Column("access_technology", String(20)),
     Column("available", Boolean, default=True),
     # The most a site in this band can actually take, which is often below
     # what the archetype asks for.
