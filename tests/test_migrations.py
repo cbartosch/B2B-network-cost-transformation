@@ -585,7 +585,32 @@ def test_the_version_stamp_is_earned_not_asserted():
 def test_reconciliation_is_additive_only():
     """It must never be a licence to drop or retype. A schema this reconciler
     could shrink would be worse than one it refuses to touch."""
+    import ast
     import inspect
-    src = inspect.getsource(migrations.repair_missing_columns)
-    for forbidden in ("DROP", "ALTER COLUMN", "TYPE "):
-        assert forbidden not in src.upper().replace("ADD COLUMN", ""), forbidden
+
+    # Scans the SQL the reconciler executes, not its prose. The first version
+    # searched the whole source and matched "never drops" in the docstring
+    # explaining that it never drops, and "ddl_type" in a variable name - so a
+    # correct function failed a check written to protect it.
+    #
+    # A guard that reads its subject's own explanation as evidence against it
+    # is the same defect as the bias probe that found "tax" in the sentence
+    # describing the absence of tax.
+    tree = ast.parse(inspect.cleandoc(
+        inspect.getsource(migrations.repair_missing_columns)))
+    statements = []
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Constant) and isinstance(node.value, str):
+            statements.append(node.value.upper())
+        elif isinstance(node, ast.JoinedStr):
+            statements.append(ast.unparse(node).upper())
+    # The docstring is the first constant and is prose, not SQL.
+    statements = [s for s in statements
+                  if "ADDITIVE ONLY" not in s and "ADD ANY MODEL COLUMN" not in s]
+
+    for statement in statements:
+        cleaned = statement.replace("ADD COLUMN", "")
+        for forbidden in ("DROP ", "ALTER COLUMN", " TYPE "):
+            assert forbidden not in cleaned, (
+                f"the reconciler executes {statement[:80]!r}, which contains "
+                f"{forbidden.strip()!r} - it must only ever add")

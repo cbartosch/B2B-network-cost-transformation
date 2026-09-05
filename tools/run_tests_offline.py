@@ -154,6 +154,27 @@ def _stub(name):
         def __getitem__(self, _k):
             return self
 
+        def __bool__(self):
+            # Falsy, deliberately. A truthy stub makes `assert result` pass
+            # without testing anything, which is worse than the test being
+            # skipped: a skipped test is visibly absent and a vacuous pass is
+            # not. Falsy means a test that reaches the stub fails and is
+            # reported.
+            return False
+
+        def __len__(self):
+            return 0
+
+        def __iter__(self):
+            return iter(())
+
+        def __eq__(self, _o):
+            return False
+
+        def __hash__(self):
+            return id(self)
+
+
     module.__getattr__ = lambda _n: _Any()
     # find_spec raises ValueError on a module whose __spec__ is None, and
     # _importable calls it on every import in every test file.
@@ -161,10 +182,15 @@ def _stub(name):
     sys.modules.setdefault(name, module)
 
 
-for _library in ("sqlalchemy", "sqlalchemy.orm", "sqlalchemy.exc",
-                 "sqlalchemy.engine", "sqlalchemy.dialects",
-                 "sqlalchemy.dialects.postgresql", "psycopg"):
-    _stub(_library)
+# `--no-stubs` runs without them, so the difference in the pass count is
+# exactly the set of tests the stubs unlocked. A stub that lets a test pass
+# without testing anything would be worse than the test being skipped, and
+# this is how that gets measured rather than assumed.
+if "--no-stubs" not in sys.argv:
+    for _library in ("sqlalchemy", "sqlalchemy.orm", "sqlalchemy.exc",
+                     "sqlalchemy.engine", "sqlalchemy.dialects",
+                     "sqlalchemy.dialects.postgresql", "psycopg"):
+        _stub(_library)
 
 # `contract/` is a real package at the bundle root, shared by the API and the
 # interface. Absent from the path it blocked 18 files, which read as a missing
@@ -260,6 +286,10 @@ def main() -> int:
     print(f"  skipped  {len(results['skipped'])}")
     print(f"  blocked  {len(results['blocked'])} file(s), "
           f"{len(results['blocked_tests'])} test(s) on a deferred import")
+    if results["failed"]:
+        print("  NOTE: a stubbed library can make a test fail that would pass "
+              "against the real one.\n        Triage a failure before treating "
+              "it as a defect.")
 
     if results["failed"]:
         print("\nFAILURES")
