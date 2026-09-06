@@ -329,6 +329,61 @@ ps2.metric("Asserted share", v0.get("asserted_share", "-"), "registered facts",
            delta_color="off")
 ps3.metric("Simulated share", v0.get("simulated_share", "-"))
 
+# Specification 0.4. Two independent constructions of the same number: ANCHOR
+# apportions a disclosed figure into layers, BUILD_UP builds a total from sites
+# and rates. Nothing compared them until 4.188, and that comparison is the only
+# self-check the estimate has.
+_cal = api.get(f"/v1/outside-in/cases/{case_id}/calibration")
+if "_error" not in _cal:
+    with st.expander("Calibrate against disclosed spend"):
+        st.caption(
+            "Name the layers the disclosure covers - an analyst's reading of "
+            "the source, not something arithmetic can decide. \"Network "
+            "costs\" might mean circuits only or circuits plus the team that "
+            "runs them, and the difference is the whole answer.")
+        _layers = sorted((v0.get("current_tco") or {}).get("by_layer") or {})
+        _k = case_id[:8]
+        _disc = st.number_input("Disclosed annual spend", min_value=0.0,
+                                step=100000.0, key=f"cal_disc_{_k}")
+        _direct = st.multiselect("Layers this disclosure covers", _layers,
+                                 default=[l for l in _layers if l == "L0"],
+                                 key=f"cal_direct_{_k}")
+        _src = st.text_input("Where the figure comes from",
+                             key=f"cal_src_{_k}")
+        _cby = st.text_input("Calibrating as (your name)", key=f"cal_by_{_k}")
+        if st.button("Calibrate",
+                     disabled=not (_disc > 0 and _direct and _cby.strip())):
+            _r = api.post(f"/v1/outside-in/cases/{case_id}/calibration",
+                          {"estimate_snapshot_id": v0["estimate_snapshot_id"],
+                           "disclosed_total": _disc,
+                           "direct_layers": _direct,
+                           "disclosure_source": _src or None,
+                           "calibrated_by": _cby})
+            if "_error" in _r:
+                st.error(_r["_error"])
+            else:
+                st.rerun()
+
+        for _c in (_cal.get("calibrations") or [])[:3]:
+            _cols = st.columns(3)
+            _cols[0].metric("Direct", _c["direct"])
+            _cols[1].metric("Derived", _c["derived"])
+            _cols[2].metric("Residual", _c["residual"],
+                            f"{_c['variance_pct']}%", delta_color="off")
+            if _c["verdict"] == "AGREES":
+                st.success(
+                    f"Agreement between two independent constructions, within "
+                    f"{_c['variance_pct']}%. Worth more than either alone - "
+                    f"and not proof that both are right in the same way.")
+            else:
+                st.warning(
+                    f"{_c['verdict']}: the modelled layers and the disclosed "
+                    f"figure differ by {_c['variance_pct']}%. Before "
+                    f"concluding the estimate is wrong, rule out what the "
+                    f"disclosure may cover that the model does not:")
+                for _x in _cal.get("check_first") or []:
+                    st.caption(f"   {_x}")
+
 cb1, cb2, cb3 = st.columns(3)
 cb1.metric("Value coverage", cov.get("priced_spend_pct", "-"))
 cb2.metric("Circuit coverage", cov.get("circuit_coverage_pct", "-"),

@@ -10,7 +10,8 @@ from sqlalchemy import delete, insert, select, text, update
 
 from .. import config, db, jobs, migrations
 from ..domain import (access as access_vocab, anchor_estimate,
-                      assumptions, currency, delta_bridge,
+                      assumptions, calibration, currency,
+                      delta_bridge,
                       providers, validation,
                       validation_capture, archetype as archetype_resolver,
                       benchmark_ingest, case_admin, estimate_qa,
@@ -1639,6 +1640,105 @@ class BuildBridgeIn(BaseModel):
     to_snapshot_id: str = Field(min_length=1, max_length=36)
     attributions: list[DeltaAttributionIn]
     built_by: str = Field(min_length=1, max_length=120)
+
+
+class CalibrateIn(BaseModel):
+    estimate_snapshot_id: str = Field(min_length=1, max_length=36)
+    disclosed_total: Decimal
+    # Which layers the disclosure covers. An analyst's reading of the source,
+    # not something arithmetic can decide: "network costs" might mean circuits
+    # only or circuits plus the team that runs them, and the difference is the
+    # whole answer.
+    direct_layers: list[str]
+    disclosure_source: str | None = None
+    disclosure_note: str | None = None
+    calibrated_by: str = Field(min_length=1, max_length=120)
+
+
+@router.post("/v1/outside-in/cases/{case_id}/calibration")
+def calibrate_against_disclosure(case_id: str, payload: CalibrateIn):
+    """Does the bottom-up estimate agree with what the company disclosed?
+
+    Specification 0.4. The only self-check the estimate has: ANCHOR apportions
+    a disclosed figure into layers, BUILD_UP constructs a total from sites and
+    rates, and nothing ran both on one case and asked whether they agreed.
+
+    Reports, never adjusts. An estimate tuned until it matches a disclosure has
+    been fitted to one number and stopped being a measurement.
+    """
+    with S() as s:
+        _one_or_404(s, db.case, db.case.c.case_id, case_id, "case")
+        snapshot = _one_or_404(s, db.estimate_snapshot,
+                               db.estimate_snapshot.c.estimate_snapshot_id,
+                               payload.estimate_snapshot_id, "estimate snapshot",
+                               owned_by_case=case_id)
+        by_layer = {layer: (band or {}).get("base")
+                    for layer, band in
+                    ((snapshot.current_tco or {}).get("by_layer") or {}).items()}
+        if not by_layer:
+            raise HTTPException(422, {
+                "error": "this snapshot has no layer breakdown",
+                "detail": "a calibration compares the modelled layers against "
+                          "what a disclosure covers, and a total with no "
+                          "layers cannot be split by arithmetic."})
+        unknown = sorted(set(payload.direct_layers) - set(by_layer))
+        if unknown:
+            raise HTTPException(422, {
+                "error": "unknown layer",
+                "detail": f"{unknown} are not layers in this estimate. "
+                          f"Present: {sorted(by_layer)}."})
+        try:
+            result = calibration.calibrate(
+                bottom_up=(snapshot.current_tco or {}).get("base"),
+                disclosed=payload.disclosed_total,
+                direct_layers=payload.direct_layers, layer_totals=by_layer,
+                disclosure_note=payload.disclosure_note,
+                currency=(snapshot.pins or {}).get("base_currency"))
+        except calibration.CalibrationInvalid as exc:
+            raise HTTPException(422, {"error": "calibration not run",
+                                      "detail": str(exc)})
+        calibration_id = str(uuid.uuid4())
+        s.execute(insert(db.outside_in_tco_calibration).values(
+            calibration_id=calibration_id, case_id=case_id,
+            estimate_snapshot_id=payload.estimate_snapshot_id,
+            bottom_up_total=D(result["bottom_up_total"]),
+            disclosed_total=D(result["disclosed_total"]),
+            currency=result["currency"], direct=D(result["direct"]),
+            derived=D(result["derived"]), residual=D(result["residual"]),
+            direct_layers=result["direct_layers"],
+            variance_pct=D(result["variance_pct"]), verdict=result["verdict"],
+            disclosure_source=payload.disclosure_source,
+            disclosure_note=payload.disclosure_note,
+            calibrated_by=payload.calibrated_by,
+            calibrated_at=datetime.now(timezone.utc)))
+        s.commit()
+        return {"calibration_id": calibration_id, **result,
+                # A failing calibration is a gap worth registering, and the
+                # caller decides whether to. Offered rather than written: the
+                # register is the analyst's, not the endpoint's.
+                "as_assumption": calibration.as_assumption(result)}
+
+
+@router.get("/v1/outside-in/cases/{case_id}/calibration")
+def list_calibrations(case_id: str):
+    """Every calibration on this case, newest first."""
+    with S() as s:
+        _one_or_404(s, db.case, db.case.c.case_id, case_id, "case")
+        rows = s.execute(select(db.outside_in_tco_calibration).where(
+            db.outside_in_tco_calibration.c.case_id == case_id).order_by(
+            db.outside_in_tco_calibration.c.calibrated_at.desc())).all()
+        return {"calibrations": [
+            {"calibration_id": r.calibration_id,
+             "estimate_snapshot_id": r.estimate_snapshot_id,
+             "bottom_up_total": str(r.bottom_up_total),
+             "disclosed_total": str(r.disclosed_total),
+             "direct": str(r.direct), "derived": str(r.derived),
+             "residual": str(r.residual),
+             "direct_layers": r.direct_layers or [],
+             "variance_pct": str(r.variance_pct), "verdict": r.verdict,
+             "disclosure_source": r.disclosure_source,
+             "calibrated_by": r.calibrated_by} for r in rows],
+            "check_first": list(calibration.COMMON_EXCLUSIONS)}
 
 
 @router.post("/v1/outside-in/cases/{case_id}/delta-bridge")

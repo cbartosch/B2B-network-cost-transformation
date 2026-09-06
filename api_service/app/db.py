@@ -411,6 +411,44 @@ data_request = Table(
 #
 # Additive: nothing existing writes or reads this, and a snapshot without a
 # bridge behaves exactly as before.
+# Specification 0.4: "Calibrate bottom-up current TCO against disclosed or
+# proxy spend", control "Show direct, derived and residual components
+# separately."
+#
+# The only self-check the estimate has. ANCHOR apportions a disclosed figure
+# into layers and BUILD_UP constructs a total from sites and rates; nothing ran
+# both on one case and asked whether they agreed.
+#
+# Additive: no calculation reads this. A calibration reports - an estimate
+# tuned until it matches a disclosure has been fitted to one number and has
+# stopped being a measurement.
+outside_in_tco_calibration = Table(
+    "outside_in_tco_calibration", metadata,
+    Column("calibration_id", String(36), primary_key=True),
+    Column("case_id", String(36), index=True),
+    Column("estimate_snapshot_id", String(36), index=True),
+    Column("bottom_up_total", Numeric(18, 2)),
+    Column("disclosed_total", Numeric(18, 2)),
+    Column("currency", String(3)),
+    # The three parts, never collapsed. Direct is what the disclosure covers,
+    # derived is what the model built beyond it, residual is what neither
+    # explains - and the residual is the number worth arguing about.
+    Column("direct", Numeric(18, 2)),
+    Column("derived", Numeric(18, 2)),
+    Column("residual", Numeric(18, 2)),
+    Column("direct_layers", JSON),
+    Column("variance_pct", Numeric(6, 1)),
+    Column("verdict", String(20), index=True),
+    # Which known fact or source the disclosed figure came from, so a
+    # calibration can be re-read against its evidence rather than a number
+    # somebody typed.
+    Column("disclosure_source", Text),
+    Column("disclosure_note", Text),
+    Column("calibrated_by", String(120)),
+    Column("calibrated_at", DateTime(timezone=True)),
+    schema="outside_in")
+
+
 estimate_delta = Table(
     "estimate_delta", metadata,
     Column("estimate_delta_id", String(36), primary_key=True),
