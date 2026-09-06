@@ -948,3 +948,48 @@ def test_the_panel_reaches_a_screen():
                 if "Simulation" in p.name).read_text()
     assert "/committed-fractions" in page
     assert "Set these committed shares" in page
+
+
+# ------------------ a researched price is evidence, and must arrive as one
+def test_a_promoted_price_carries_a_grade_and_the_dimensions():
+    """The other writer of unit_cost_prior. The benchmark path was fixed in
+    4.177 and this one was not, so a price an agent found - with its claim
+    checked against the page it came from - inherited the column default of E
+    and looked exactly like a seeded guess."""
+    import inspect
+
+    from app.domain import promotion
+
+    source = inspect.getsource(promotion)
+    block = source[source.index('-researched"'):]
+    assert 'evidence_grade="C"' in block[:2000]
+    assert 'price_basis="PROMOTED"' in block[:2000]
+    assert "service_class=access.LEGACY_PRODUCT" in block[:2000]
+
+
+def test_a_promoted_price_keeps_the_currency_the_source_quoted():
+    """Every promoted price was stamped USD regardless of the country
+    researched, so a EUR tariff found in France entered the rate card as
+    dollars - 7 to 8% before anything else happened, and invisible because
+    every other row said USD too.
+
+    The agent has reported a currency since the schema gained one; the
+    promotion discarded it."""
+    import inspect
+
+    from app.domain import promotion
+
+    source = inspect.getsource(promotion)
+    block = source[source.index('-researched"'):]
+    assert 'currency=(q.get("currency") or "USD")' in block[:2500]
+    assert 'currency="USD"' not in block[:2500], (
+        "a hardcoded currency on a researched price is a country-sized error")
+
+
+def test_the_agent_schema_can_report_a_currency():
+    """It always could. The loss was downstream."""
+    from app.llm import schemas
+
+    fields = schemas.Quantity.model_fields
+    assert "currency" in fields
+    assert "term_months" in fields

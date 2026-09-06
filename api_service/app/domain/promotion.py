@@ -33,7 +33,7 @@ from datetime import datetime, timezone
 from sqlalchemy import delete, insert, select
 
 from .. import db
-from . import triangulate
+from . import access, triangulate
 
 # The archetypes the simulation understands. A quantity naming anything else
 # cannot be promoted to a footprint row - it may be a perfectly good finding,
@@ -540,7 +540,28 @@ def promote(session, *, case_id: str, candidate_ids: list[str],
             session.execute(insert(db.unit_cost_prior).values(
                 id=row_id, country=country, product=product, cost_layer="L0",
                 bandwidth_mbps=int(mbps),
-                low=value, base=value, high=value, currency="USD",
+                # The two dimensions the rate card is keyed on. Without them a
+                # promoted price is reachable only through the legacy fallback
+                # - the same defect the benchmark path had until 4.177, in the
+                # other writer of this table.
+                service_class=access.LEGACY_PRODUCT.get(
+                    product, (None, None))[0],
+                access_technology=access.LEGACY_PRODUCT.get(
+                    product, (None, None))[1],
+                # Grade C: a credible market benchmark requiring adjustment.
+                # An agent found a published figure and the claim was checked
+                # against the page it came from, which is worth more than an
+                # assumption and less than a transaction. Without this it
+                # inherited the column default of E and a researched price
+                # looked exactly like a seeded guess.
+                evidence_grade="C", price_basis="PROMOTED",
+                low=value, base=value, high=value,
+                # The currency the source quoted, not USD. Every promoted price
+                # was stamped USD regardless of the country researched, so a
+                # EUR tariff found in France entered the rate card as dollars -
+                # a 7-8% error before anything else happened, and invisible
+                # because the column agreed with every other row.
+                currency=(q.get("currency") or "USD"),
                 price_year=2026, approved=False,
                 source_agent_run_id=e["agent_run_id"],
                 source_note=(f"researched from domain {e['domain_no']} by "
