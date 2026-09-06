@@ -35,7 +35,7 @@ from . import db
 log = logging.getLogger("workbench.migrations")
 
 # Bump when the physical schema changes, and add a step below.
-SCHEMA_VERSION = 50
+SCHEMA_VERSION = 51
 
 VERSION_TABLE = "schema_version"
 VERSION_SCHEMA = "audit"
@@ -1155,13 +1155,26 @@ def _migrate_v50(conn) -> None:
     log.info("v50: committed_fraction_by_archetype added=%s", bool(added))
 
 
+def _migrate_v51(conn) -> None:
+    """outside_in.validation_case.
+
+    The harness could compare an estimate against an outturn since 4.160 and
+    the corpus stayed empty, because nothing produced a case. A folder somebody
+    has to remember to fill is not a workflow.
+
+    create_all builds the table; this step exists so the version advances and
+    the reconciler verifies it.
+    """
+    log.info("v51: validation_case created by create_all and reconciled")
+
+
 MIGRATIONS = {2: _migrate_v2, 3: _migrate_v3, 4: _migrate_v4, 5: _migrate_v5,
               6: _migrate_v6, 7: _migrate_v7, 8: _migrate_v8, 9: _migrate_v9,
               10: _migrate_v10, 11: _migrate_v11, 12: _migrate_v12,
               13: _migrate_v13, 14: _migrate_v14, 15: _migrate_v15,
               16: _migrate_v16, 17: _migrate_v17, 18: _migrate_v18,
               19: _migrate_v19, 20: _migrate_v20,
-              21: _migrate_v21, 22: _migrate_v22, 23: _migrate_v23, 24: _migrate_v24, 25: _migrate_v25, 26: _migrate_v26, 27: _migrate_v27, 28: _migrate_v28, 29: _migrate_v29, 30: _migrate_v30, 31: _migrate_v31, 32: _migrate_v32, 33: _migrate_v33, 34: _migrate_v34, 35: _migrate_v35, 36: _migrate_v36, 37: _migrate_v37, 38: _migrate_v38, 39: _migrate_v39, 40: _migrate_v40, 41: _migrate_v41, 42: _migrate_v42, 43: _migrate_v43, 44: _migrate_v44, 45: _migrate_v45, 46: _migrate_v46, 47: _migrate_v47, 48: _migrate_v48, 49: _migrate_v49, 50: _migrate_v50}
+              21: _migrate_v21, 22: _migrate_v22, 23: _migrate_v23, 24: _migrate_v24, 25: _migrate_v25, 26: _migrate_v26, 27: _migrate_v27, 28: _migrate_v28, 29: _migrate_v29, 30: _migrate_v30, 31: _migrate_v31, 32: _migrate_v32, 33: _migrate_v33, 34: _migrate_v34, 35: _migrate_v35, 36: _migrate_v36, 37: _migrate_v37, 38: _migrate_v38, 39: _migrate_v39, 40: _migrate_v40, 41: _migrate_v41, 42: _migrate_v42, 43: _migrate_v43, 44: _migrate_v44, 45: _migrate_v45, 46: _migrate_v46, 47: _migrate_v47, 48: _migrate_v48, 49: _migrate_v49, 50: _migrate_v50, 51: _migrate_v51}
 
 
 class SchemaDrift(RuntimeError):

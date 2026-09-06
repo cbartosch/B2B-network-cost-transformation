@@ -122,3 +122,63 @@ for rec in recs:
                 st.error(n["_error"])
             else:
                 st.rerun()
+
+
+# ------------------------------------------------------ validation capture
+st.divider()
+st.subheader("Validation case")
+st.caption(
+    "What this estimate said, held against what turns out to be true. The "
+    "estimated half is read from the snapshot and never typed - a case opened "
+    "after the outturn is known would let the estimate be adjusted to match, "
+    "and a corpus that can be fitted measures nothing.")
+
+_vc = api.get("/v1/outside-in/validation-cases")
+if "_error" in _vc:
+    st.error(f"Could not read the validation cases: {_vc['_error']}")
+else:
+    _mine = [c for c in (_vc.get("cases") or []) if c["case_id"] == case_id]
+    _stats = _vc.get("statistics") or {}
+    st.caption(
+        f"{_stats.get('cases_included', 0)} case(s) of an empirical tier across "
+        f"all engagements; {len(_vc.get('awaiting_actuals') or [])} awaiting an "
+        f"outturn. "
+        + (_stats.get("note") or ""))
+
+    _snaps = api.get(f"/v1/outside-in/cases/{case_id}/estimates")
+    _ids = [e["estimate_snapshot_id"] for e in (_snaps or [])
+            if isinstance(_snaps, list)] if isinstance(_snaps, list) else []
+    _open_on = [i for i in _ids
+                if i not in {c["estimate_snapshot_id"] for c in _mine
+                             if c.get("estimate_snapshot_id")}]
+    if _open_on:
+        _pick = st.selectbox("Open a case against", _open_on,
+                             key=f"vc_snap_{case_id[:8]}")
+        _by = st.text_input("Opening as (your name)", key=f"vc_by_{case_id[:8]}")
+        if st.button("Open validation case", disabled=not _by.strip()):
+            _r = api.post(
+                f"/v1/outside-in/cases/{case_id}/estimates/"
+                f"{_pick}:validation-case",
+                {"opened_by": _by})
+            if "_error" in _r:
+                st.error(_r["_error"])
+            else:
+                api.flash(_r.get("note", "Case opened."))
+                st.rerun()
+
+    for _c in _mine:
+        with st.expander(
+                f"{_c['validation_case_id'][:8]} - "
+                + ("comparable" if _c["comparable"] else "awaiting the outturn")):
+            st.write("**What the model said**")
+            st.json(_c["estimated"])
+            if _c["comparable"]:
+                st.write("**What turned out to be true**")
+                st.json(_c["actual"])
+                st.caption(f"Tier {_c['evidence_tier']}, recorded by "
+                           f"{_c['recorded_by']}.")
+            else:
+                st.caption(
+                    "Record the outturn when the engagement finishes - often a "
+                    "year later, often not the same analyst. Until then this "
+                    "case is held and counts toward nothing.")

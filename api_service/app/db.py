@@ -301,6 +301,26 @@ domain_disposition = Table(
     schema="outside_in",
 )
 
+validation_case = Table(
+    "validation_case", metadata,
+    Column("validation_case_id", String(36), primary_key=True),
+    Column("case_id", String(36), index=True),
+    # The snapshot the estimated half was read from. A case is anchored to an
+    # immutable estimate so that what the model said cannot be revised once the
+    # outturn is known - a corpus that can be fitted measures nothing.
+    Column("estimate_snapshot_id", String(36), index=True),
+    Column("estimated", JSON),
+    Column("estimated_at", DateTime(timezone=True)),
+    Column("opened_by", String(120)),
+    # Entered later, often a year later and often by someone else.
+    Column("actual", JSON),
+    Column("evidence_tier", String(32)),
+    Column("recorded_by", String(120)),
+    Column("recorded_at", DateTime(timezone=True)),
+    Column("note", Text),
+    schema="outside_in")
+
+
 estimate_snapshot = Table(
     "estimate_snapshot", metadata,
     Column("estimate_snapshot_id", String(36), primary_key=True),

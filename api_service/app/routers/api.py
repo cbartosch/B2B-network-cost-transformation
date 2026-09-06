@@ -10,7 +10,7 @@ from sqlalchemy import delete, insert, select, text, update
 
 from .. import config, db, jobs, migrations
 from ..domain import (access as access_vocab, anchor_estimate,
-                      currency, archetype as archetype_resolver,
+                      currency, validation, validation_capture, archetype as archetype_resolver,
                       benchmark_ingest, case_admin, estimate_qa,
                       locations as location_svc,
                       serviceability as service_svc,
@@ -1450,6 +1450,119 @@ class ServiceClassChoiceIn(BaseModel):
 class CommittedFractionIn(BaseModel):
     by_archetype: dict[str, Decimal]
     chosen_by: str = Field(min_length=1, max_length=120)
+
+
+class OpenValidationCaseIn(BaseModel):
+    opened_by: str = Field(min_length=1, max_length=120)
+
+
+class ValidationActualsIn(BaseModel):
+    actual: dict[str, Decimal]
+    evidence_tier: str = Field(min_length=1, max_length=32)
+    recorded_by: str = Field(min_length=1, max_length=120)
+
+
+@router.post("/v1/outside-in/cases/{case_id}/estimates/{snapshot_id}:validation-case")
+def open_validation_case(case_id: str, snapshot_id: str,
+                         payload: OpenValidationCaseIn):
+    """Open a validation case against a completed estimate.
+
+    The estimated half is read out of the snapshot, never typed. A case opened
+    after the outturn is known would let someone adjust what the model said to
+    match what happened, and a corpus that can be fitted measures nothing.
+    """
+    with S() as s:
+        # Scoped to the case in the path. C-04: a snapshot id is unique, so
+        # resolving by it alone works - and works for any case, which is how
+        # one engagement's estimate ends up validated against another's
+        # outturn.
+        snapshot = _one_or_404(s, db.estimate_snapshot,
+                               db.estimate_snapshot.c.estimate_snapshot_id,
+                               snapshot_id, "estimate snapshot",
+                               owned_by_case=case_id)
+        existing = s.execute(select(db.validation_case).where(
+            db.validation_case.c.estimate_snapshot_id == snapshot_id)).first()
+        if existing:
+            raise HTTPException(409, {
+                "error": "a case is already open on this estimate",
+                "detail": f"validation case {existing.validation_case_id}. One "
+                          f"estimate is one case; opening a second would let "
+                          f"the more flattering one be kept."})
+
+        sim_output = {}
+        pins = snapshot.pins or {}
+        if pins.get("simulation_run_id"):
+            run = s.execute(select(db.simulation_run).where(
+                db.simulation_run.c.simulation_run_id
+                == pins["simulation_run_id"])).first()
+            sim_output = (run.output if run else {}) or {}
+
+        opened = validation_capture.open_case(
+            snapshot, simulation_output=sim_output,
+            opened_by=payload.opened_by)
+        case_id = str(uuid.uuid4())
+        s.execute(insert(db.validation_case).values(
+            validation_case_id=case_id, case_id=snapshot.case_id,
+            estimate_snapshot_id=snapshot_id,
+            estimated=opened["estimated"],
+            estimated_at=datetime.now(timezone.utc),
+            opened_by=payload.opened_by, note=opened["note"]))
+        s.commit()
+        return {"validation_case_id": case_id, **opened}
+
+
+@router.put("/v1/outside-in/cases/{case_id}/validation-cases/{validation_case_id}")
+def record_validation_actuals(case_id: str, validation_case_id: str,
+                              payload: ValidationActualsIn):
+    """What turned out to be true, against an estimate that already exists."""
+    with S() as s:
+        row = _one_or_404(s, db.validation_case,
+                          db.validation_case.c.validation_case_id,
+                          validation_case_id, "validation case",
+                          owned_by_case=case_id)
+        try:
+            updated = validation_capture.record_actuals(
+                {"estimated": row.estimated},
+                actual={k: str(v) for k, v in payload.actual.items()},
+                evidence_tier=payload.evidence_tier,
+                recorded_by=payload.recorded_by)
+        except validation_capture.CaseIncomplete as exc:
+            raise HTTPException(422, {"error": "actuals not recorded",
+                                      "detail": str(exc)})
+        s.execute(update(db.validation_case).where(
+            db.validation_case.c.validation_case_id == validation_case_id
+        ).values(actual=updated["actual"],
+                 evidence_tier=payload.evidence_tier,
+                 recorded_by=payload.recorded_by,
+                 recorded_at=datetime.now(timezone.utc),
+                 note=updated["note"]))
+        s.commit()
+        return {"validation_case_id": validation_case_id, **updated,
+                "comparable": validation_capture.comparable(updated)}
+
+
+@router.get("/v1/outside-in/validation-cases")
+def list_validation_cases():
+    """Every case, and what the corpus says about the model.
+
+    The statistics exclude synthetic cases by name: an error computed over
+    cases somebody invented measures the inventor.
+    """
+    with S() as s:
+        rows = s.execute(select(db.validation_case)).all()
+        cases = [{"validation_case_id": r.validation_case_id,
+                  "case_id": r.case_id,
+                  "evidence_tier": r.evidence_tier,
+                  "estimated": r.estimated or {}, "actual": r.actual or {},
+                  "opened_by": r.opened_by, "recorded_by": r.recorded_by,
+                  "comparable": validation_capture.comparable(
+                      {"estimated": r.estimated, "actual": r.actual})}
+                 for r in rows]
+        comparisons = [validation.compare(c) for c in cases if c["comparable"]]
+        return {"cases": cases,
+                "awaiting_actuals": [c["validation_case_id"] for c in cases
+                                     if not c["comparable"]],
+                "statistics": validation.statistics(comparisons)}
 
 
 @router.put("/v1/outside-in/cases/{case_id}/committed-fractions")

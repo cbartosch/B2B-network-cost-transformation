@@ -38,6 +38,14 @@ BIAS_THRESHOLD_PCT = Decimal("15")
 
 
 def _load() -> list:
+    """Cases from the corpus folder.
+
+    The folder is for a case somebody exports or hand-writes. The live corpus
+    lives in outside_in.validation_case, where a case is opened against an
+    immutable snapshot at estimate time and its actuals recorded later - see
+    GET /v1/outside-in/validation-cases, which runs these same statistics over
+    it. This tool reads the folder because it must work with no database.
+    """
     if not CORPUS.exists():
         return []
     cases = []
@@ -87,7 +95,10 @@ def main() -> int:
               "actual enterprise network portfolios.")
         print()
         print("  This is not a passing result. It is the absence of a test.")
-        print("  Add a case as validation_cases/<name>.json with:")
+        print("  Two routes:")
+        print("    - finish an engagement: open a validation case against its")
+        print("      estimate, record the outturn, and it counts automatically")
+        print("    - or add a file here for a case from outside the system:")
         print("    evidence_tier, actual{...}, estimated{...}")
         print(f"    tiers: {', '.join(validation.EMPIRICAL_TIERS)}")
 
