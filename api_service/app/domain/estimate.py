@@ -91,6 +91,15 @@ class Component:
     # has neither.
     service_class: str | None = None
     access_technology: str | None = None
+    # What was installed and what is committed on it. A lever acting on this
+    # component knew what kind of service it was and not how big - so
+    # LEV-BANDWIDTH-001, whose whole job is to reduce a committed rate, applied
+    # a flat share with no knowledge of what the committed rate was.
+    #
+    # Right-sizing a 100/50 branch and a 100/95 branch took the same
+    # percentage, when the second has almost no headroom to give back.
+    bearer_mbps: int | None = None
+    committed_mbps: int | None = None
 
     def to_dict(self):
         return {"key": self.key, "layer": self.layer, "driver": self.driver,
@@ -99,8 +108,35 @@ class Component:
                 "product": self.product, "role": self.role,
                 "service_class": self.service_class,
                 "access_technology": self.access_technology,
+                "bearer_mbps": self.bearer_mbps,
+                "committed_mbps": self.committed_mbps,
                 "source_ref": self.source_ref, "value": self.value.to_dict()}
 
+
+
+# A lever that reduces a committed rate cannot take more than the headroom
+# there is. Named here rather than as a lever field because it is a property of
+# the arithmetic, not a tunable: a site committed at 95% of its bearer has 5%
+# to give back whatever the lever's band says.
+HEADROOM_BOUNDED = ("LEV-BANDWIDTH-001",)
+
+
+def headroom_share(component) -> "D | None":
+    """What share of a committed service could be given back, or None.
+
+    `bearer - committed` over the bearer. A 100/50 branch has half its circuit
+    uncommitted and a 100/95 branch has a twentieth, and right-sizing them by
+    the same percentage treats a real constraint as if it were not there.
+
+    None where the component carries no pair - a best-effort circuit has no
+    committed rate to reduce, and a component from a snapshot written before
+    4.189 has no pair at all. The lever then behaves exactly as it did.
+    """
+    bearer = getattr(component, "bearer_mbps", None)
+    committed = getattr(component, "committed_mbps", None)
+    if not bearer or not committed or committed >= bearer:
+        return None
+    return (D(bearer) - D(committed)) / D(bearer)
 
 
 def _by_dimensions(priors: dict, scope, service_class, technology, mbps):
@@ -409,6 +445,11 @@ def build_components(*, sim_output: dict, users: int, ops_cost_per_site: dict,
             # Carried from the simulation, which has emitted them since 4.169.
             service_class=row.get("service_class"),
             access_technology=row.get("access_technology"),
+            # The pair the simulation emitted. `bandwidth_mbps` on the row is
+            # the priced rate - the committed figure on a committed service -
+            # and the bearer is what had to be installed to carry it.
+            bearer_mbps=row.get("bearer_mbps") or row.get("bandwidth_mbps"),
+            committed_mbps=row.get("bandwidth_mbps"),
             value=value,
             source_ref=None if row["role"] == "BACKUP" else footprint_ref)
         # A backup circuit is SIMULATED whatever the enumeration says, so it is
@@ -618,6 +659,7 @@ def scenarios(components: list[Component], levers: list[dict],
             }
             constraints = {field: set(values)
                            for field, values in constraints.items() if values}
+            bounded = lever["lever_id"] in HEADROOM_BOUNDED
             s_lo, s_ba, s_hi = (D(lever["saving_low"]), D(lever["saving_base"]),
                                 D(lever["saving_high"]))
             cut_total = D(0)
@@ -649,6 +691,19 @@ def scenarios(components: list[Component], levers: list[dict],
                 # the lowest target is the lowest cost meeting the biggest
                 # cut, which is a world that can happen.
                 #
+                # A lever that reduces a committed rate is capped by the
+                # headroom there is. LEV-BANDWIDTH-001 applied a flat 3/7/12%
+                # whatever the circuit was committed at, so a 100/95 branch -
+                # with a twentieth to give back - was right-sized as hard as a
+                # 100/50 one. The band stays the band; the headroom is a
+                # ceiling on it.
+                l_lo, l_ba, l_hi = s_lo, s_ba, s_hi
+                if bounded:
+                    room = headroom_share(comp)
+                    if room is not None:
+                        l_lo, l_ba, l_hi = (min(s_lo, room), min(s_ba, room),
+                                            min(s_hi, room))
+
                 # `matched` is the SAVING, and it must pair each bound with
                 # its own share - the low cost with the low share. Deriving it
                 # as current - target crossed a second time and produced a
@@ -656,12 +711,12 @@ def scenarios(components: list[Component], levers: list[dict],
                 # from 130,000, which is not a world. On a 0.15/0.25/0.35
                 # lever that overstated the optimistic saving by 71% and
                 # reported a floor of -30,500 against a true floor of +12,000.
-                c_lo, c_ba, c_hi = hi * s_lo, ba * s_ba, lo * s_hi
+                c_lo, c_ba, c_hi = hi * l_lo, ba * l_ba, lo * l_hi
                 remaining[key] = [lo - c_hi, ba - c_ba, hi - c_lo]
 
                 m_lo, m_ba, m_hi = matched[key]
-                saved_lo, saved_ba, saved_hi = (m_lo * s_lo, m_ba * s_ba,
-                                                m_hi * s_hi)
+                saved_lo, saved_ba, saved_hi = (m_lo * l_lo, m_ba * l_ba,
+                                                m_hi * l_hi)
                 matched[key] = [m_lo - saved_lo, m_ba - saved_ba,
                                 m_hi - saved_hi]
                 cut_low += saved_lo
@@ -700,6 +755,8 @@ def scenarios(components: list[Component], levers: list[dict],
                       product=c.product, role=c.role,
                       service_class=c.service_class,
                       access_technology=c.access_technology,
+                      bearer_mbps=c.bearer_mbps,
+                      committed_mbps=c.committed_mbps,
                       value=Range(*remaining[c.key]), source_ref=c.source_ref)
             for c in components]
 

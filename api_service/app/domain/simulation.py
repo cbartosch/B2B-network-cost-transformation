@@ -214,8 +214,13 @@ def one_pass(seed: int, footprint: list[dict], archetypes: dict,
                     (committed_fraction_by_archetype or {}).get(
                         entry["archetype"])
                     or prior.get("committed_fraction")))
+            # Both figures on the key. `bandwidth_mbps` is the priced rate,
+            # which is what the rate card keys on; the bearer is what had to be
+            # installed to carry it, and a lever that right-sizes a committed
+            # service needs the difference.
             pkey = (entry["country"], primary_product, "PRIMARY",
-                    access.priced_rate(pair), primary_class)
+                    access.priced_rate(pair), primary_class,
+                    access.sizing_rate(pair))
             products[pkey] = products.get(pkey, 0) + 1
 
             # The stochastic draw. Whether a site has a second access path is the
@@ -271,8 +276,11 @@ def one_pass(seed: int, footprint: list[dict], archetypes: dict,
                     dual_sites += 1
                     site_rows[-1]["backup_product"] = b_product
                     site_rows[-1]["backup_outcome"] = backup_served["outcome"]
+                    # Same width as the primary key. A backup is priced and
+                    # sized on the same figure - there is no committed-rate
+                    # distinction on a second path this model expresses.
                     bkey = (entry["country"], b_product, "BACKUP", b_mbps,
-                            backup_class)
+                            backup_class, b_mbps)
                     products[bkey] = products.get(bkey, 0) + 1
 
     # The backbone becomes priceable circuits.
@@ -301,7 +309,7 @@ def one_pass(seed: int, footprint: list[dict], archetypes: dict,
         # A backbone link is Ethernet transport by definition: it carries the
         # WAN between hubs rather than a site's internet access.
         key = (str(link["region"]), str(link["product"]), "BACKBONE", mbps,
-               access.ETHERNET)
+               access.ETHERNET, mbps)
         products[key] = products.get(key, 0) + circuits_here
         backbone_circuits += circuits_here
 
@@ -376,11 +384,15 @@ def one_pass(seed: int, footprint: list[dict], archetypes: dict,
             "products": [{"country": c, "product": p, "role": r,
                           "bandwidth_mbps": bw, "count": n,
                           "service_class": sc,
+                          # What had to be installed. Equal to bandwidth_mbps
+                          # on a symmetric or best-effort service, larger on a
+                          # committed one - and the gap is the headroom.
+                          "bearer_mbps": bearer,
                           # How it arrives, which serviceability resolved
                           # rather than the analyst choosing.
                           "access_technology": access.LEGACY_PRODUCT.get(
                               p, (None, None))[1]}
-                         for (c, p, r, bw, sc), n in sorted(
+                         for (c, p, r, bw, sc, bearer), n in sorted(
                              products.items(), key=lambda kv: str(kv[0]))],
             "nodes": nodes, "edges": edges,        # bounded display sample
             "node_count": sites, "edge_count": circuits}

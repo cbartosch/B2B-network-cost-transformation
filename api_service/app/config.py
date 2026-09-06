@@ -113,11 +113,17 @@ LLM_SEARCH_TIMEOUT_SECONDS = float(
 # it is the same duct with a different service on it - and the product rule of
 # 1.6.0 was a proxy for exactly this. Silent where no provider is recorded: an
 # estate is not single-carrier because nobody wrote the carriers down.
-SIMULATION_MODEL_VERSION = "sim-1.10.0"
+# sim-1.11.0: a product row carries the bearer beside the priced rate, so a
+# lever that reduces a committed rate can see how much there is to reduce.
+SIMULATION_MODEL_VERSION = "sim-1.11.0"
 # calc-1.1.0: the saving band is accumulated with matched pairing rather than
 # derived as current - target. The target is a function of the current, so
 # subtracting the two crossed bounds a second time and produced worlds that
 # cannot occur - a 71% overstatement on the optimistic case and a negative
 # floor. Stored snapshots stay readable and are not reproducible under this
 # version, which is what a calculation version is for.
-CALCULATION_VERSION = "calc-1.1.0"
+# calc-1.2.0: right-sizing is capped by the headroom a circuit actually has.
+# It applied a flat band whatever the commitment, so a 100/95 branch was
+# right-sized as hard as a 100/50 one. Stored snapshots stay readable and do
+# not reproduce under this version.
+CALCULATION_VERSION = "calc-1.2.0"
