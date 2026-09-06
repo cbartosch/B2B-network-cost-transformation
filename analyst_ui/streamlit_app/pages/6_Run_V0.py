@@ -576,6 +576,83 @@ elif _ans:
             st.markdown(f"- **{g['gap']}**: {g['detail']}  \n"
                         f"  *costs* {g['costs']}  \n"
                         f"  *to close it* {g['closes_it']}")
+
+    # Specification 0.4. A gap computed from a snapshot disappears when the
+    # snapshot changes; an assumption has to outlive the estimate that revealed
+    # it, and a gap nobody wrote down is one somebody has to notice again next
+    # week.
+    st.markdown("**Register these as assumptions**")
+    st.caption(
+        "A computed gap is recalculated every run. Registering it makes it "
+        "durable, gives it a materiality and an effort, and puts it in the "
+        "data request an analyst sends to the client.")
+    _all = _ans.get("all_gaps") or []
+    if _all:
+        _pick_gap = st.selectbox(
+            "Gap", [g["gap"] for g in _all], key=f"as_gap_{case_id[:8]}")
+        _g = next(g for g in _all if g["gap"] == _pick_gap)
+        _c1, _c2 = st.columns(2)
+        _mat = _c1.selectbox("Materiality", ["HIGH", "MEDIUM", "LOW"], index=1,
+                             key=f"as_mat_{case_id[:8]}")
+        _eff = _c2.selectbox(
+            "Effort to answer", ["ASK", "EXTRACT", "SURVEY"], index=0,
+            help="A gap needing a site survey cannot be answered this quarter, "
+                 "however material it is.",
+            key=f"as_eff_{case_id[:8]}")
+        _raiser = st.text_input("Raising as (your name)",
+                                key=f"as_who_{case_id[:8]}")
+        if st.button("Register assumption", disabled=not _raiser.strip()):
+            _r = api.post(f"/v1/outside-in/cases/{case_id}/assumptions",
+                          {"gap": _g["gap"], "detail": _g["detail"],
+                           "costs": _g.get("costs"),
+                           "closes_it": _g.get("closes_it"),
+                           "materiality": _mat, "effort": _eff,
+                           "raised_by": _raiser})
+            if "_error" in _r:
+                st.error(_r["_error"])
+            else:
+                api.flash(f"Registered at priority {_r.get('priority')}.")
+                st.rerun()
+
+    _reg = api.get(f"/v1/outside-in/cases/{case_id}/assumptions")
+    if "_error" not in _reg and _reg.get("assumptions"):
+        st.markdown("**Assumption register**")
+        st.caption(_reg["summary"]["note"])
+        st.dataframe(pd.DataFrame([
+            {"assumption": a["assumption"], "materiality": a["materiality"],
+             "effort": a["effort"], "priority": a["priority"],
+             "state": a["state"],
+             "replaced with": a.get("superseded_by_value") or ""}
+            for a in _reg["assumptions"]]),
+            use_container_width=True, hide_index=True)
+        _owner = st.text_input("Data request owner (client side)",
+                               key=f"dr_owner_{case_id[:8]}")
+        _by = st.text_input("Creating as (your name)",
+                            key=f"dr_by_{case_id[:8]}")
+        if st.button("Create data request", disabled=not _by.strip()):
+            _r = api.post(f"/v1/outside-in/cases/{case_id}/data-requests",
+                          {"created_by": _by, "owner": _owner or None,
+                           "due_in_days": 14})
+            if "_error" in _r:
+                st.error(_r["_error"])
+            else:
+                st.success(_r.get("note", "Created."))
+                st.dataframe(pd.DataFrame(_r["items"]),
+                             use_container_width=True, hide_index=True)
+
+        _sent = api.get(f"/v1/outside-in/cases/{case_id}/data-requests")
+        for _req in (_sent.get("data_requests") or []) \
+                if "_error" not in _sent else []:
+            with st.expander(
+                    f"Request {_req['data_request_id'][:8]} - "
+                    f"{len(_req['items'])} question(s), due {_req['due']}"):
+                st.caption(f"Created by {_req['created_by']}"
+                           + (f" for {_req['owner']}" if _req['owner'] else "")
+                           + ". The questions are as they were sent - a "
+                             "request that changed afterwards would not be the "
+                             "one the client answered.")
+                st.dataframe(pd.DataFrame(_req["items"]),
+                             use_container_width=True, hide_index=True)
         if not _ans.get("all_gaps"):
             st.caption("No gaps measured - unusual, and worth checking against "
                        "the coverage figures above rather than believed.")

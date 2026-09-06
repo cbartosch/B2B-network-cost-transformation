@@ -301,6 +301,57 @@ domain_disposition = Table(
     schema="outside_in",
 )
 
+# Specification 0.4: "Create a reviewable assumption and a targeted question
+# for material gaps", with the control "Assumption remains visible after
+# replacement."
+#
+# The workbench computed its gaps, displayed them and forgot them - it could
+# say what it did not know and could not ask for it, which is half of what
+# Stage 0 is for.
+assumption_register = Table(
+    "assumption_register", metadata,
+    Column("assumption_id", String(36), primary_key=True),
+    Column("case_id", String(36), index=True),
+    Column("assumption", String(120)),
+    Column("detail", Text),
+    Column("costs", Text),
+    # The act that would close it, carried from the computed gap. This is the
+    # difference between a register of worries and a list of next steps.
+    Column("closes_it", Text),
+    Column("materiality", String(8)),
+    Column("effort", String(12)),
+    Column("priority", Integer, index=True),
+    Column("state", String(12), index=True),
+    Column("raised_by", String(120)),
+    Column("raised_at", DateTime(timezone=True)),
+    # Superseded, never deleted. The spec's replacement rule keeps both values,
+    # the reason and the approver: an estimate whose assumptions vanish as they
+    # are answered cannot be explained afterwards, and "why did the baseline
+    # move" is the first question anyone asks.
+    Column("superseded_by_value", String(120)),
+    Column("superseded_reason", Text),
+    Column("approved_by", String(120)),
+    Column("superseded_at", DateTime(timezone=True)),
+    schema="outside_in")
+
+
+data_request = Table(
+    "data_request", metadata,
+    Column("data_request_id", String(36), primary_key=True),
+    Column("case_id", String(36), index=True),
+    Column("created_by", String(120)),
+    Column("created_at", DateTime(timezone=True)),
+    Column("owner", String(120)),
+    Column("due", String(32)),
+    # The questions themselves, frozen at the moment the request was made. A
+    # request that re-derived its items from the register would change after it
+    # was sent, and a client answering last week's list would be answering a
+    # document that no longer exists.
+    Column("items", JSON),
+    Column("note", Text),
+    schema="outside_in")
+
+
 validation_case = Table(
     "validation_case", metadata,
     Column("validation_case_id", String(36), primary_key=True),

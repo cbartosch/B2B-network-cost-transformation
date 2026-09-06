@@ -10,7 +10,8 @@ from sqlalchemy import delete, insert, select, text, update
 
 from .. import config, db, jobs, migrations
 from ..domain import (access as access_vocab, anchor_estimate,
-                      currency, validation, validation_capture, archetype as archetype_resolver,
+                      assumptions, currency, validation,
+                      validation_capture, archetype as archetype_resolver,
                       benchmark_ingest, case_admin, estimate_qa,
                       locations as location_svc,
                       serviceability as service_svc,
@@ -1563,6 +1564,170 @@ def list_validation_cases():
                 "awaiting_actuals": [c["validation_case_id"] for c in cases
                                      if not c["comparable"]],
                 "statistics": validation.statistics(comparisons)}
+
+
+class RaiseAssumptionIn(BaseModel):
+    gap: str = Field(min_length=1, max_length=120)
+    detail: str = Field(min_length=1)
+    costs: str | None = None
+    closes_it: str | None = None
+    materiality: str = "MEDIUM"
+    effort: str = "ASK"
+    raised_by: str = Field(min_length=1, max_length=120)
+
+
+class SupersedeAssumptionIn(BaseModel):
+    value: str | None = None
+    reason: str = Field(min_length=1)
+    approved_by: str = Field(min_length=1, max_length=120)
+    retire: bool = False
+
+
+class DataRequestIn(BaseModel):
+    created_by: str = Field(min_length=1, max_length=120)
+    owner: str | None = None
+    due_in_days: int = 14
+
+
+@router.post("/v1/outside-in/cases/{case_id}/assumptions")
+def raise_assumption(case_id: str, payload: RaiseAssumptionIn):
+    """Register what the estimate is standing on, so it outlives the snapshot.
+
+    `estimate_qa.gaps` recomputes from a snapshot every time and disappears
+    when the snapshot changes. An assumption has to outlive the estimate that
+    revealed it.
+    """
+    with S() as s:
+        _one_or_404(s, db.case, db.case.c.case_id, case_id, "case")
+        try:
+            record = assumptions.from_gap(
+                {"gap": payload.gap, "detail": payload.detail,
+                 "costs": payload.costs, "closes_it": payload.closes_it},
+                case_id=case_id, raised_by=payload.raised_by,
+                materiality=payload.materiality, effort=payload.effort)
+        except assumptions.AssumptionInvalid as exc:
+            raise HTTPException(422, {"error": "assumption not registered",
+                                      "detail": str(exc)})
+        assumption_id = str(uuid.uuid4())
+        s.execute(insert(db.assumption_register).values(
+            assumption_id=assumption_id, case_id=case_id,
+            assumption=record["assumption"], detail=record["detail"],
+            costs=record["costs"], closes_it=record["closes_it"],
+            materiality=record["materiality"], effort=record["effort"],
+            priority=record["priority"], state=record["state"],
+            raised_by=payload.raised_by,
+            raised_at=datetime.now(timezone.utc)))
+        s.commit()
+        return {"assumption_id": assumption_id, **record}
+
+
+@router.put("/v1/outside-in/cases/{case_id}/assumptions/{assumption_id}")
+def close_assumption(case_id: str, assumption_id: str,
+                     payload: SupersedeAssumptionIn):
+    """Evidence replaces the assumed value, or the question stops mattering.
+
+    Two different endings. A country leaving scope retires its price
+    assumption; it does not supersede it. Collapsing them would make an
+    engagement look better evidenced than it is - the gap did not close, it
+    left.
+    """
+    with S() as s:
+        row = _one_or_404(s, db.assumption_register,
+                          db.assumption_register.c.assumption_id,
+                          assumption_id, "assumption", owned_by_case=case_id)
+        current = {"state": row.state, "assumption": row.assumption,
+                   "detail": row.detail}
+        try:
+            closed = (assumptions.retire(current, reason=payload.reason,
+                                         approved_by=payload.approved_by)
+                      if payload.retire else
+                      assumptions.supersede(current, value=payload.value,
+                                            reason=payload.reason,
+                                            approved_by=payload.approved_by))
+        except assumptions.AssumptionInvalid as exc:
+            raise HTTPException(422, {"error": "assumption not closed",
+                                      "detail": str(exc)})
+        s.execute(update(db.assumption_register).where(
+            db.assumption_register.c.assumption_id == assumption_id
+        ).values(state=closed["state"],
+                 superseded_by_value=closed.get("superseded_by_value"),
+                 superseded_reason=closed["superseded_reason"],
+                 approved_by=payload.approved_by,
+                 superseded_at=datetime.now(timezone.utc)))
+        s.commit()
+        return {"assumption_id": assumption_id, **closed,
+                "note": ("The original detail is kept. An estimate whose "
+                         "assumptions vanish as they are answered cannot be "
+                         "explained afterwards.")}
+
+
+@router.get("/v1/outside-in/cases/{case_id}/assumptions")
+def list_assumptions(case_id: str):
+    """Everything the estimate rests on, and how much of it is still open."""
+    with S() as s:
+        _one_or_404(s, db.case, db.case.c.case_id, case_id, "case")
+        rows = [dict(r._mapping) for r in s.execute(
+            select(db.assumption_register).where(
+                db.assumption_register.c.case_id == case_id).order_by(
+                db.assumption_register.c.priority.desc())).all()]
+        return {"assumptions": rows,
+                "summary": assumptions.summarise(rows)}
+
+
+@router.get("/v1/outside-in/cases/{case_id}/data-requests")
+def list_data_requests(case_id: str):
+    """Every request made on this case, with the questions as they were sent.
+
+    A request that could not be read back is a document that exists only in the
+    moment it was created - and the point of freezing the items is that
+    somebody can look at what was actually asked, months later, when the
+    answers come back.
+    """
+    with S() as s:
+        _one_or_404(s, db.case, db.case.c.case_id, case_id, "case")
+        rows = s.execute(select(db.data_request).where(
+            db.data_request.c.case_id == case_id).order_by(
+            db.data_request.c.created_at.desc())).all()
+        return {"data_requests": [
+            {"data_request_id": r.data_request_id, "created_by": r.created_by,
+             "created_at": r.created_at.isoformat() if r.created_at else None,
+             "owner": r.owner, "due": r.due, "items": r.items or [],
+             "note": r.note} for r in rows]}
+
+
+@router.post("/v1/outside-in/cases/{case_id}/data-requests")
+def create_data_request(case_id: str, payload: DataRequestIn):
+    """The open assumptions as a question list somebody can send.
+
+    Items are frozen at the moment the request is made. A request that
+    re-derived them from the register would change after it was sent, and a
+    client answering last week's list would be answering a document that no
+    longer exists.
+    """
+    with S() as s:
+        _one_or_404(s, db.case, db.case.c.case_id, case_id, "case")
+        rows = [dict(r._mapping) for r in s.execute(
+            select(db.assumption_register).where(
+                db.assumption_register.c.case_id == case_id)).all()]
+        items = assumptions.request_items(rows, owner=payload.owner,
+                                          due_in_days=payload.due_in_days)
+        if not items:
+            raise HTTPException(409, {
+                "error": "nothing to ask for",
+                "detail": "no assumption on this case is open. A data request "
+                          "with no questions wastes the goodwill the next one "
+                          "will need."})
+        request_id = str(uuid.uuid4())
+        s.execute(insert(db.data_request).values(
+            data_request_id=request_id, case_id=case_id,
+            created_by=payload.created_by, owner=payload.owner,
+            created_at=datetime.now(timezone.utc),
+            due=items[0]["due"], items=items,
+            note=(f"{len(items)} question(s), ordered by what they are worth "
+                  f"against how hard they are to answer.")))
+        s.commit()
+        return {"data_request_id": request_id, "items": items,
+                "note": f"{len(items)} question(s) frozen at creation."}
 
 
 @router.put("/v1/outside-in/cases/{case_id}/committed-fractions")
