@@ -493,3 +493,85 @@ if st.button("Save dispositions", type="primary"):
         if s["budget_exhausted_domains"]:
             st.info(f"BUDGET_EXHAUSTED (recorded distinctly from searched-and-empty): "
                     f"{s['budget_exhausted_domains']}")
+
+
+# ------------------------------------------------- who supplies what, where
+st.divider()
+st.subheader("Providers")
+st.caption(
+    "Domain 8 gathers which carriers and partners the entity uses, and until "
+    "4.185 there was nowhere to put the answer. More than one provider per "
+    "country is the normal case: resilience needs a second carrier, and no "
+    "carrier serves every country.")
+
+_pv = api.get(f"/v1/outside-in/cases/{case_id}/providers")
+if "_error" in _pv:
+    st.error(f"Could not read the providers: {_pv['_error']}")
+else:
+    # Keyed widgets, not a form. A part-finished provider entry has to survive
+    # a page switch - an analyst checking a press release mid-entry should not
+    # come back to an empty box.
+    _k = case_id[:8]
+    _c1, _c2, _c3 = st.columns(3)
+    _name = _c1.text_input("Provider", key=f"pv_name_{_k}")
+    _kind = _c2.selectbox("Kind", ["INCUMBENT", "CHALLENGER", "RESELLER",
+                                   "AGGREGATOR", "MSP", "VENDOR"],
+                          key=f"pv_kind_{_k}",
+                          help="RESELLER matters: two names reselling one "
+                               "carrier's fibre is one physical path.")
+    _role = _c3.selectbox("Role", ["PRIMARY", "BACKUP", "OVERLAY",
+                                   "MANAGEMENT"], key=f"pv_role_{_k}")
+    _c4, _c5, _c6 = st.columns(3)
+    _ctry = _c4.text_input("Country (ISO-2)", max_chars=2, key=f"pv_ctry_{_k}")
+    _stand = _c5.selectbox("Standing", ["HYPOTHESIS", "CLIENT_STATED",
+                                        "EVIDENCED"], key=f"pv_stand_{_k}")
+    _prod = _c6.text_input("Provider's product name", key=f"pv_prod_{_k}",
+                           help="Verbatim. It is how an invoice line is "
+                                "recognised later.")
+    _src = st.text_input("Source (required for a hypothesis)",
+                         key=f"pv_src_{_k}")
+    _who = st.text_input("Recording as (your name)", key=f"pv_who_{_k}")
+    if st.button("Record provider",
+                 disabled=not (_name.strip() and _ctry.strip()
+                               and _who.strip())):
+        _r = api.post(f"/v1/outside-in/cases/{case_id}/providers",
+                      {"provider": _name, "kind": _kind, "role": _role,
+                       "country": (_ctry or "").upper(),
+                       "standing": _stand, "source": _src or None,
+                       "provider_product_name": _prod or None,
+                       "recorded_by": _who})
+        if "_error" in _r:
+            st.error(_r["_error"])
+        else:
+            api.flash(f"{_r['provider']} recorded for {_r['country']}.")
+            st.rerun()
+
+    if _pv.get("providers"):
+        st.dataframe(pd.DataFrame([
+            {"provider": r["provider"], "kind": r["kind"], "role": r["role"],
+             "country": r["country"], "standing": r["standing"],
+             "product": next((p["provider_product_name"]
+                              for p in _pv.get("products") or []
+                              if p["provider_id"] == r["provider_id"]), "")}
+            for r in _pv["providers"]]),
+            use_container_width=True, hide_index=True)
+
+    for _d in _pv.get("by_country") or []:
+        if _d["carrier_diverse"] and not _d["caveats"]:
+            st.success(f"**{_d['country']}** carrier-diverse: "
+                       f"{', '.join(_d['access_providers'])}.")
+        elif _d["carrier_diverse"]:
+            st.warning(f"**{_d['country']}** looks carrier-diverse "
+                       f"({', '.join(_d['access_providers'])}), with "
+                       f"{len(_d['caveats'])} caveat(s):")
+            for _c in _d["caveats"]:
+                st.caption(f"   {_c}")
+        else:
+            st.info(f"**{_d['country']}**: {_d['note']}"
+                    + ("" if not _d["caveats"] else f" {_d['caveats'][0]}"))
+
+    _cov = _pv.get("coverage") or {}
+    if _cov.get("countries_without"):
+        st.warning(
+            f"No supplier recorded for {', '.join(_cov['countries_without'])}. "
+            + _cov["note"])

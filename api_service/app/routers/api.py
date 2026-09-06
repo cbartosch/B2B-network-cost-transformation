@@ -10,7 +10,7 @@ from sqlalchemy import delete, insert, select, text, update
 
 from .. import config, db, jobs, migrations
 from ..domain import (access as access_vocab, anchor_estimate,
-                      assumptions, currency, validation,
+                      assumptions, currency, providers, validation,
                       validation_capture, archetype as archetype_resolver,
                       benchmark_ingest, case_admin, estimate_qa,
                       locations as location_svc,
@@ -1587,6 +1587,98 @@ class DataRequestIn(BaseModel):
     created_by: str = Field(min_length=1, max_length=120)
     owner: str | None = None
     due_in_days: int = 14
+
+
+class ProviderIn(BaseModel):
+    provider: str = Field(min_length=1, max_length=120)
+    kind: str
+    role: str
+    country: str = Field(min_length=2, max_length=2)
+    service_class: str | None = None
+    standing: str = "HYPOTHESIS"
+    share: Decimal | None = None
+    source: str | None = None
+    provider_product_name: str | None = None
+    access_technology: str | None = None
+    recorded_by: str = Field(min_length=1, max_length=120)
+
+
+@router.post("/v1/outside-in/cases/{case_id}/providers")
+def record_provider(case_id: str, payload: ProviderIn):
+    """Who supplies what, where. More than one per country is normal.
+
+    A site has more than one provider for two different reasons: resilience
+    needs a second carrier, and no carrier serves every country. Keyed by
+    (provider, country, role) rather than by case, so both are expressible.
+    """
+    with S() as s:
+        _one_or_404(s, db.case, db.case.c.case_id, case_id, "case")
+        try:
+            record = providers.relationship(
+                provider=payload.provider, kind=payload.kind,
+                role=payload.role, country=payload.country,
+                service_class=payload.service_class,
+                standing=payload.standing, share=payload.share,
+                source=payload.source)
+        except providers.ProviderInvalid as exc:
+            raise HTTPException(422, {"error": "provider not recorded",
+                                      "detail": str(exc)})
+        provider_id = str(uuid.uuid4())
+        s.execute(insert(db.provider).values(
+            provider_id=provider_id, case_id=case_id,
+            provider=record["provider"], kind=record["kind"],
+            role=record["role"], country=record["country"],
+            service_class=record["service_class"],
+            standing=record["standing"], share=record["share"],
+            source=record["source"], recorded_by=payload.recorded_by,
+            recorded_at=datetime.now(timezone.utc)))
+
+        # The provider's own product name, where it was supplied. Kept verbatim
+        # because a carrier's wording is how an invoice line is recognised
+        # later, and normalising it away loses the join.
+        if payload.provider_product_name:
+            s.execute(insert(db.product).values(
+                product_id=str(uuid.uuid4()), case_id=case_id,
+                provider_id=provider_id,
+                provider_product_name=payload.provider_product_name,
+                service_class=payload.service_class,
+                access_technology=payload.access_technology,
+                standing=record["standing"], source=record["source"],
+                recorded_by=payload.recorded_by,
+                recorded_at=datetime.now(timezone.utc)))
+        s.commit()
+        return {"provider_id": provider_id, **record}
+
+
+@router.get("/v1/outside-in/cases/{case_id}/providers")
+def list_providers(case_id: str):
+    """Every supply relationship, with diversity read per country.
+
+    Two providers in the same role is redundancy. Two in different roles is a
+    supply chain - a carrier and the MSP that manages it are not diversity, and
+    counting them as such is the mistake this reports against.
+    """
+    with S() as s:
+        case_row = _one_or_404(s, db.case, db.case.c.case_id, case_id, "case")
+        rows = [dict(r._mapping) for r in s.execute(select(db.provider).where(
+            db.provider.c.case_id == case_id)).all()]
+        for r in rows:
+            r["share"] = None if r["share"] is None else str(r["share"])
+            r["recorded_at"] = (r["recorded_at"].isoformat()
+                                if r["recorded_at"] else None)
+        countries = list(case_row.in_scope_countries or [])
+        products = [dict(p._mapping) for p in s.execute(
+            select(db.product).where(db.product.c.case_id == case_id)).all()]
+        for p in products:
+            p["recorded_at"] = (p["recorded_at"].isoformat()
+                                if p["recorded_at"] else None)
+        return {
+            "providers": rows,
+            "products": products,
+            "by_country": [providers.diversity(rows, country=c)
+                           for c in countries],
+            "coverage": providers.coverage(rows, countries=countries),
+        }
 
 
 @router.post("/v1/outside-in/cases/{case_id}/assumptions")

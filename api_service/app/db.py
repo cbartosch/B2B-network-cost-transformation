@@ -308,6 +308,57 @@ domain_disposition = Table(
 # The workbench computed its gaps, displayed them and forgot them - it could
 # say what it did not know and could not ask for it, which is half of what
 # Stage 0 is for.
+# Specification 0.4: vendor/product signals prepopulate provider and product,
+# "Treat as hypothesis until client evidence confirms."
+#
+# Keyed by (case, provider, country, role) rather than by case: a site has more
+# than one provider and that is the normal case. Resilience needs a second
+# carrier, and no carrier serves every country - an international estate is a
+# patchwork by construction. A single-provider model would have made the
+# diversity work of 4.157 unmeasurable.
+provider = Table(
+    "provider", metadata,
+    Column("provider_id", String(36), primary_key=True),
+    Column("case_id", String(36), index=True),
+    Column("provider", String(120), index=True),
+    # INCUMBENT, CHALLENGER, RESELLER, AGGREGATOR, MSP, VENDOR. Not a
+    # hierarchy: an incumbent in one country is a challenger in the next, and
+    # RESELLER is what makes "two names, one duct" visible.
+    Column("kind", String(16)),
+    Column("role", String(16)),          # PRIMARY, BACKUP, OVERLAY, MANAGEMENT
+    Column("country", String(2), index=True),
+    Column("service_class", String(16)),
+    # HYPOTHESIS until the client confirms it, which is the spec's control.
+    Column("standing", String(16), index=True),
+    # The portion of that country's sites this provider serves, where anyone
+    # knows it. Often unknown: a press release naming a carrier says nothing
+    # about how much of the estate it carries.
+    Column("share", Numeric(4, 3)),
+    Column("source", Text),
+    Column("recorded_by", String(120)),
+    Column("recorded_at", DateTime(timezone=True)),
+    schema="outside_in")
+
+
+product = Table(
+    "product", metadata,
+    Column("product_id", String(36), primary_key=True),
+    Column("case_id", String(36), index=True),
+    Column("provider_id", String(36), index=True),
+    # What the provider actually sells, in their words - "IP Connect UK",
+    # "EAD LA". Kept verbatim beside the model's own vocabulary, because a
+    # carrier's product name is how an invoice line is recognised later and
+    # normalising it away loses the join.
+    Column("provider_product_name", String(160)),
+    Column("service_class", String(16)),
+    Column("access_technology", String(20)),
+    Column("standing", String(16)),
+    Column("source", Text),
+    Column("recorded_by", String(120)),
+    Column("recorded_at", DateTime(timezone=True)),
+    schema="outside_in")
+
+
 assumption_register = Table(
     "assumption_register", metadata,
     Column("assumption_id", String(36), primary_key=True),
