@@ -10,7 +10,8 @@ from sqlalchemy import delete, insert, select, text, update
 
 from .. import config, db, jobs, migrations
 from ..domain import (access as access_vocab, anchor_estimate,
-                      assumptions, currency, providers, validation,
+                      assumptions, currency, delta_bridge,
+                      providers, validation,
                       validation_capture, archetype as archetype_resolver,
                       benchmark_ingest, case_admin, estimate_qa,
                       locations as location_svc,
@@ -1625,6 +1626,84 @@ class ProviderIn(BaseModel):
     provider_product_name: str | None = None
     access_technology: str | None = None
     recorded_by: str = Field(min_length=1, max_length=120)
+
+
+class DeltaAttributionIn(BaseModel):
+    driver: str
+    value: Decimal
+    because: str | None = None
+
+
+class BuildBridgeIn(BaseModel):
+    from_snapshot_id: str = Field(min_length=1, max_length=36)
+    to_snapshot_id: str = Field(min_length=1, max_length=36)
+    attributions: list[DeltaAttributionIn]
+    built_by: str = Field(min_length=1, max_length=120)
+
+
+@router.post("/v1/outside-in/cases/{case_id}/delta-bridge")
+def build_delta_bridge(case_id: str, payload: BuildBridgeIn):
+    """Why the estimate moved, reconciled to the last penny.
+
+    Specification 0.5D. The lineage existed and the explanation did not, and
+    "the baseline moved 12%" is not an answer anyone accepts.
+
+    A residual is stored, never distributed: a bridge that nearly reconciles
+    has lost something, and the thing it lost is the part somebody will ask
+    about.
+    """
+    with S() as s:
+        _one_or_404(s, db.case, db.case.c.case_id, case_id, "case")
+        earlier = _one_or_404(s, db.estimate_snapshot,
+                              db.estimate_snapshot.c.estimate_snapshot_id,
+                              payload.from_snapshot_id, "from snapshot",
+                              owned_by_case=case_id)
+        later = _one_or_404(s, db.estimate_snapshot,
+                            db.estimate_snapshot.c.estimate_snapshot_id,
+                            payload.to_snapshot_id, "to snapshot",
+                            owned_by_case=case_id)
+        try:
+            built = delta_bridge.bridge(
+                from_total=(earlier.current_tco or {}).get("base"),
+                to_total=(later.current_tco or {}).get("base"),
+                attributions=[a.model_dump() for a in payload.attributions],
+                from_pins=earlier.pins or {}, to_pins=later.pins or {})
+        except delta_bridge.BridgeIncomplete as exc:
+            raise HTTPException(422, {"error": "bridge not built",
+                                      "detail": str(exc)})
+        bridge_id = str(uuid.uuid4())
+        s.execute(insert(db.estimate_delta).values(
+            estimate_delta_id=bridge_id, case_id=case_id,
+            from_snapshot_id=payload.from_snapshot_id,
+            to_snapshot_id=payload.to_snapshot_id,
+            from_total=D(built["from_total"]), to_total=D(built["to_total"]),
+            total_change=D(built["total_change"]),
+            drivers=built["drivers"], attributed=D(built["attributed"]),
+            residual=D(built["residual"]), reconciles=built["reconciles"],
+            policy_movement=built["policy"], built_by=payload.built_by,
+            built_at=datetime.now(timezone.utc)))
+        s.commit()
+        return {"estimate_delta_id": bridge_id, **built}
+
+
+@router.get("/v1/outside-in/cases/{case_id}/delta-bridge")
+def list_delta_bridges(case_id: str):
+    """Every bridge on this case, newest first."""
+    with S() as s:
+        _one_or_404(s, db.case, db.case.c.case_id, case_id, "case")
+        rows = s.execute(select(db.estimate_delta).where(
+            db.estimate_delta.c.case_id == case_id).order_by(
+            db.estimate_delta.c.built_at.desc())).all()
+        return {"bridges": [
+            {"estimate_delta_id": r.estimate_delta_id,
+             "from_snapshot_id": r.from_snapshot_id,
+             "to_snapshot_id": r.to_snapshot_id,
+             "from_total": str(r.from_total), "to_total": str(r.to_total),
+             "total_change": str(r.total_change),
+             "drivers": r.drivers or [], "residual": str(r.residual),
+             "reconciles": r.reconciles, "policy": r.policy_movement or {},
+             "built_by": r.built_by} for r in rows],
+            "drivers": list(delta_bridge.DRIVERS)}
 
 
 @router.post("/v1/outside-in/cases/{case_id}/providers")

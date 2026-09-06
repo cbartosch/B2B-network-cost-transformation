@@ -126,6 +126,49 @@ for rec in recs:
 
 # ------------------------------------------------------ validation capture
 st.divider()
+st.subheader("Why the estimate moved")
+st.caption(
+    "Specification 0.5D. The lineage said an estimate superseded another; the "
+    "bridge says why, in eight driver categories that must add up exactly. A "
+    "residual is reported rather than folded into the nearest driver - folding "
+    "it makes the arithmetic tidy and the explanation false.")
+
+_br = api.get(f"/v1/outside-in/cases/{case_id}/delta-bridge")
+if "_error" in _br:
+    st.error(f"Could not read the bridges: {_br['_error']}")
+else:
+    for _b in _br.get("bridges") or []:
+        _head = (f"{_b['from_snapshot_id'][:8]} -> {_b['to_snapshot_id'][:8]}  "
+                 f"{_b['total_change']}")
+        with st.expander(_head + ("" if _b["reconciles"]
+                                  else f"  (residual {_b['residual']})")):
+            _pol = _b.get("policy") or {}
+            if _pol.get("moved"):
+                st.warning(
+                    "Model settings moved between these snapshots: "
+                    + ", ".join(sorted(_pol["moved"]))
+                    + ". That is about the model rather than the client, and "
+                      "it is shown before the drivers for that reason.")
+            st.dataframe(pd.DataFrame([
+                {"driver": d["driver"], "value": d["value"],
+                 "earliest stage": d["earliest_stage"],
+                 "because": "; ".join(d.get("because") or [])}
+                for d in _b["drivers"] if d["value"] not in ("0", "0.00")]),
+                use_container_width=True, hide_index=True)
+            if _b["reconciles"]:
+                st.success("The drivers account for the whole movement.")
+            else:
+                st.error(
+                    f"{_b['residual']} of the {_b['total_change']} change is "
+                    f"unattributed. The bridge does not reconcile, and the "
+                    f"missing part is the one somebody will ask about.")
+    if not (_br.get("bridges") or []):
+        st.caption(
+            "No bridge built on this case. One is built between two estimate "
+            "snapshots, so there is nothing to explain until a second estimate "
+            "exists.")
+
+st.divider()
 st.subheader("Validation case")
 st.caption(
     "What this estimate said, held against what turns out to be true. The "

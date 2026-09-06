@@ -403,6 +403,39 @@ data_request = Table(
     schema="outside_in")
 
 
+# Specification 0.5D and 12.3: the mandatory estimate-delta bridge.
+#
+# estimate_snapshot.supersedes_snapshot_id already carried the lineage, so the
+# system could say *that* an estimate changed and not why. "The baseline moved
+# 12%" is not an answer anyone accepts.
+#
+# Additive: nothing existing writes or reads this, and a snapshot without a
+# bridge behaves exactly as before.
+estimate_delta = Table(
+    "estimate_delta", metadata,
+    Column("estimate_delta_id", String(36), primary_key=True),
+    Column("case_id", String(36), index=True),
+    Column("from_snapshot_id", String(36), index=True),
+    Column("to_snapshot_id", String(36), index=True),
+    Column("from_total", Numeric(18, 2)),
+    Column("to_total", Numeric(18, 2)),
+    Column("total_change", Numeric(18, 2)),
+    # The eight §12.3 categories and what each is attributed to.
+    Column("drivers", JSON),
+    Column("attributed", Numeric(18, 2)),
+    # Reported, never distributed. A bridge that nearly reconciles has lost
+    # something, and the thing it lost is the part somebody will ask about.
+    Column("residual", Numeric(18, 2)),
+    Column("reconciles", Boolean),
+    # Scope, FX and financial-policy movement, shown before the residual test:
+    # a total that moved because the calculation version changed is not a
+    # finding about the client.
+    Column("policy_movement", JSON),
+    Column("built_by", String(120)),
+    Column("built_at", DateTime(timezone=True)),
+    schema="analysis")
+
+
 validation_case = Table(
     "validation_case", metadata,
     Column("validation_case_id", String(36), primary_key=True),
