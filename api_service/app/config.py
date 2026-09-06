@@ -129,4 +129,8 @@ SIMULATION_MODEL_VERSION = "sim-1.11.0"
 # calc-1.3.0: a benchmark band is derived from observations normalised onto one
 # commercial basis. Pooling a 12-month and a 36-month quote made a band's
 # spread partly a spread of contract terms rather than of market price.
-CALCULATION_VERSION = "calc-1.3.0"
+# calc-1.4.0: where observations differ only by term, the factor between them is
+# measured rather than assumed. A pair like that is evidence about the factor,
+# and the convention would otherwise trust itself over the two quotes in front
+# of it. A measured factor grades C; the convention still caps at E.
+CALCULATION_VERSION = "calc-1.4.0"

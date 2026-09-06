@@ -72,6 +72,20 @@ def _dec(value):
         return None
 
 
+def _is_measured(months, measured: dict | None) -> bool:
+    """Was this term's factor measured, or is it the convention?"""
+    if not measured or months is None:
+        return False
+    return int(_dec(months) or 0) in {int(k) for k in measured}
+
+
+def _measured_or_convention(months, measured: dict | None):
+    """A measured factor where one exists, the convention otherwise."""
+    if _is_measured(months, measured):
+        return _dec(measured[int(_dec(months))])
+    return term_factor(months)
+
+
 def term_factor(months) -> Decimal | None:
     """The multiplier from `months` onto the reference term.
 
@@ -100,7 +114,86 @@ def term_factor(months) -> Decimal | None:
     return TERM_FACTORS[lower] + (TERM_FACTORS[upper] - TERM_FACTORS[lower]) * weight
 
 
-def normalise(rate, *, basis: dict, to_term: int = REFERENCE_TERM_MONTHS) -> dict:
+def observed_factors(observations: list, *,
+                     to_term: int = REFERENCE_TERM_MONTHS) -> dict:
+    """Term factors measured from pairs that differ only by term.
+
+    Where the same circuit from the same vendor is observed on two terms, that
+    pair is evidence about the factor - and the convention would rather trust
+    itself than the two quotes in front of it.
+
+    "Only by term" is strict: same country, vendor, service and bandwidth. A
+    pair differing in any of those is two circuits rather than one circuit on
+    two terms, and the ratio between them measures nothing.
+
+    A measured factor supersedes the convention for that market. It is graded
+    on its own evidence rather than inheriting E, because it is a measurement -
+    which is the whole point of preferring it.
+    """
+    # Group by everything except the term. A key that included the term would
+    # put each observation in its own group and find no pairs at all.
+    groups = {}
+    for row in observations:
+        term = _dec(row.get("term_months"))
+        value = _dec(row.get("value"))
+        if term is None or value is None or term <= 0 or value <= 0:
+            continue
+        key = (str(row.get("country") or "").upper(),
+               row.get("vendor"), row.get("service_class") or row.get("product"),
+               row.get("bandwidth_mbps"))
+        groups.setdefault(key, {}).setdefault(int(term), []).append(value)
+
+    measured, evidence = {}, []
+    for key, by_term in groups.items():
+        if to_term not in by_term or len(by_term) < 2:
+            # No anchor on the reference term, so a ratio has nothing to be a
+            # ratio *to*. Reported as unusable rather than chained through an
+            # intermediate term, which would compound two measurements.
+            continue
+        base = sum(by_term[to_term]) / Decimal(len(by_term[to_term]))
+        for term, values in by_term.items():
+            if term == to_term:
+                continue
+            here = sum(values) / Decimal(len(values))
+            ratio = here / base
+            measured.setdefault(term, []).append(ratio)
+            evidence.append({
+                "country": key[0], "vendor": key[1], "service": key[2],
+                "bandwidth_mbps": key[3], "term_months": term,
+                "factor": str(ratio.quantize(Decimal("0.0001"))),
+                "convention": str(TERM_FACTORS.get(term, "")),
+                "pairs": len(values),
+            })
+
+    # Median rather than mean: one mispriced quote should not move the curve,
+    # and a factor derived from three observations has no business being
+    # sensitive to the worst of them.
+    factors = {}
+    for term, ratios in measured.items():
+        ordered = sorted(ratios)
+        middle = len(ordered) // 2
+        factors[term] = (ordered[middle] if len(ordered) % 2
+                         else (ordered[middle - 1] + ordered[middle]) / 2)
+
+    return {
+        "factors": {t: str(f.quantize(Decimal("0.0001")))
+                    for t, f in factors.items()},
+        "evidence": evidence,
+        "terms_measured": sorted(factors),
+        "note": (
+            f"{len(factors)} term factor(s) measured from {len(evidence)} "
+            f"pair(s) that differ only by term. These supersede the market "
+            f"convention for this market: a measured factor is evidence and "
+            f"the convention is not."
+            if factors else
+            "no pair differing only by term was found, so the market "
+            "convention stands. A pair needs the same country, vendor, service "
+            "and bandwidth on two terms, one of which is the reference."),
+    }
+
+
+def normalise(rate, *, basis: dict, to_term: int = REFERENCE_TERM_MONTHS,
+              measured: dict | None = None) -> dict:
     """One rate onto the reference basis, with the arithmetic that got it there.
 
     `basis` is the commercial description of the rate as sold: term_months,
@@ -117,8 +210,11 @@ def normalise(rate, *, basis: dict, to_term: int = REFERENCE_TERM_MONTHS) -> dic
     adjusted = original
 
     from_term = basis.get("term_months")
-    factor_from = term_factor(from_term)
-    factor_to = term_factor(to_term)
+    # A factor measured from this market's own observations beats the market
+    # convention, which is the whole reason for measuring one.
+    factor_from = _measured_or_convention(from_term, measured)
+    factor_to = _measured_or_convention(to_term, measured)
+    from_measured = _is_measured(from_term, measured)
     if factor_from is None or factor_to is None:
         warnings.append(
             "no term is declared on this rate, so it is compared as though it "
@@ -133,10 +229,17 @@ def normalise(rate, *, basis: dict, to_term: int = REFERENCE_TERM_MONTHS) -> dic
             "why": ("a shorter term costs more per month - the carrier "
                     "recovers its install and its risk over fewer of them"),
         })
-        warnings.append(
-            f"adjusted from a {from_term}-month to a {to_term}-month basis "
-            f"using a market-convention factor, which is evidence grade E. "
-            f"The normalised rate is not better evidence than that assumption.")
+        if from_measured:
+            warnings.append(
+                f"adjusted from a {from_term}-month to a {to_term}-month basis "
+                f"using a factor measured from this market's own observations "
+                f"rather than the market convention.")
+        else:
+            warnings.append(
+                f"adjusted from a {from_term}-month to a {to_term}-month basis "
+                f"using a market-convention factor, which is evidence grade E. "
+                f"The normalised rate is not better evidence than that "
+                f"assumption.")
 
     for field, share in INCLUSION_FACTORS.items():
         if basis.get(field):
@@ -170,7 +273,13 @@ def normalise(rate, *, basis: dict, to_term: int = REFERENCE_TERM_MONTHS) -> dic
         # The grade a normalised rate can carry. Never better than E once an
         # adjustment has been applied, whatever the original was graded: the
         # figure now contains an assumption.
-        "grade_ceiling": "E" if steps else None,
+        # A measured factor does not cap the grade at E: it is a measurement,
+        # which is exactly why it is preferred to the convention. An inclusion
+        # adjustment still does, because those factors remain convention.
+        "grade_ceiling": (None if not steps else
+                          "C" if from_measured and len(steps) == 1 else "E"),
+        "factor_source": ("MEASURED" if from_measured else
+                          "CONVENTION" if steps else None),
         "note": ("no adjustment needed - this rate is already on the reference "
                  "basis" if not steps else
                  f"{len(steps)} adjustment(s) applied. The original is kept "

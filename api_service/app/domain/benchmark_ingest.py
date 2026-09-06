@@ -235,6 +235,18 @@ def derive_bands(session, *, currency: str = "USD", price_year: int = 2026,
             continue
         groups.setdefault((r.country, r.product, int(r.bandwidth_mbps)), []).append(r)
 
+    # Term factors measured from this market's own observations, where any
+    # pair differs only by term. A measured factor beats the convention, which
+    # is the whole reason for measuring one - and where no pair exists the
+    # convention stands unchanged.
+    measured = term_basis.observed_factors([
+        {"country": r.country, "vendor": r.vendor,
+         "service_class": getattr(r, "service_class", None) or r.product,
+         "bandwidth_mbps": r.bandwidth_mbps,
+         "term_months": getattr(r, "term_months", None),
+         "value": r.value}
+        for group in groups.values() for r in group])
+
     derived, thin = [], []
     for (country, product, mbps), obs in sorted(groups.items()):
         # Normalised onto one commercial basis before the band is derived.
@@ -251,7 +263,7 @@ def derive_bands(session, *, currency: str = "USD", price_year: int = 2026,
                 "term_months": getattr(o, "term_months", None),
                 "taxes_included": (getattr(o, "tax_basis", None)
                                    in ("INCLUSIVE", "GROSS")),
-            })
+            }, measured=measured["factors"])
             normalised.append(float(adjusted["normalised"]))
             basis_warnings.extend(adjusted["warnings"])
         values = sorted(normalised)
@@ -303,7 +315,13 @@ def derive_bands(session, *, currency: str = "USD", price_year: int = 2026,
                          f"min/median/max of observed quotes; "
                          f"observation_ids={entry['observation_ids']}"
                          + (f"; normalised to a "
-                            f"{term_basis.REFERENCE_TERM_MONTHS}-month basis: "
+                            f"{term_basis.REFERENCE_TERM_MONTHS}-month basis"
+                            + (f" using factors measured from "
+                               f"{len(measured['evidence'])} observed pair(s) "
+                               f"on {measured['terms_measured']}"
+                               if measured["factors"] else
+                               " using the market convention")
+                            + ": "
                             + "; ".join(sorted(set(basis_warnings)))
                             if basis_warnings else
                             "; all observations already on the reference "
