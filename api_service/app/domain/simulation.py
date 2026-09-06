@@ -40,6 +40,11 @@ def one_pass(seed: int, footprint: list[dict], archetypes: dict,
              # seeded default. The default records a judgement; a case that
              # knows what its sites actually commit says so here.
              committed_fraction_by_archetype: dict | None = None,
+             # {(country, role): [provider names]}, from outside_in.provider.
+             # A country has more than one provider and the model cannot know
+             # which serves a given site, so it asks whether carrier diversity
+             # is possible here rather than which carrier this site got.
+             providers_by_role: dict | None = None,
              backbone: dict | None = None,
              known_locations: list[dict] | None = None,
              service_table: dict | None = None) -> dict:
@@ -227,13 +232,28 @@ def one_pass(seed: int, footprint: list[dict], archetypes: dict,
                     table=service_table or {}, country=entry["country"],
                     density=density, product=backup_product,
                     wanted_mbps=bw_base, primary_product=primary_product,
-                    service_class=backup_class)
+                    service_class=backup_class,
+                    # Who supplies each path in this country, where the case
+                    # records it. Absent, the carrier test is silent rather
+                    # than negative.
+                    primary_providers=(providers_by_role or {}).get(
+                        (entry["country"], "PRIMARY")),
+                    backup_providers=(providers_by_role or {}).get(
+                        (entry["country"], "BACKUP")))
                 if not backup_served["resilient"]:
                     # The draw said this site should have a second path and
                     # none can be delivered. Recorded: an estate whose
                     # dual-access count silently shrinks reads as a weaker
                     # architecture rather than a serviceability constraint.
                     single_by_necessity.append({
+                        # Why the second path failed, so a reader can tell a
+                        # serviceability constraint from a supplier one. They
+                        # need different remedies: one is a build, the other is
+                        # a sourcing decision.
+                        "because": ("SAME_CARRIER"
+                                    if backup_served.get(
+                                        "carrier_diverse") is False
+                                    else "NOT_DELIVERABLE"),
                         "country": entry["country"],
                         "archetype": entry["archetype"], "density": density,
                         "asked_for": backup_product,
@@ -474,7 +494,8 @@ def run_ensemble(*, seed: int, ensemble_size: int, footprint: list[dict],
                  known_locations: list[dict] | None = None,
                  service_table: dict | None = None,
                  service_class_by_archetype: dict | None = None,
-                 committed_fraction_by_archetype: dict | None = None) -> dict:
+                 committed_fraction_by_archetype: dict | None = None,
+                 providers_by_role: dict | None = None) -> dict:
     """Convenience wrapper: run every pass, then aggregate. The job runner drives
     the two halves separately so it can checkpoint, cancel and resume.
 
@@ -490,7 +511,8 @@ def run_ensemble(*, seed: int, ensemble_size: int, footprint: list[dict],
                  service_table=service_table,
                  service_class_by_archetype=service_class_by_archetype,
                  committed_fraction_by_archetype=(
-                     committed_fraction_by_archetype)), i)
+                     committed_fraction_by_archetype),
+                 providers_by_role=providers_by_role), i)
                  for i in range(ensemble_size)]
     return aggregate(summaries, seed=seed, ensemble_size=ensemble_size,
                      footprint=footprint, archetypes=archetypes,

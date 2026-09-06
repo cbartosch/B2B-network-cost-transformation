@@ -202,6 +202,18 @@ def resolve(*, table: dict, country: str, density: str | None,
 def resolve_backup(*, table: dict, country: str, density: str | None,
                    product: str, wanted_mbps: int,
                    primary_product: str | None,
+                   # Who supplies each path, where the case records it. A
+                   # stronger test than the product: two different products
+                   # from one carrier still share a duct, and a challenger
+                   # reselling the incumbent's fibre is one physical path
+                   # wearing two names.
+                   #
+                   # Each is a list, because a country has more than one
+                   # provider and the model cannot know which one serves a
+                   # given site - so it asks whether diversity is *possible*
+                   # here, not which carrier this site got.
+                   primary_providers: list | None = None,
+                   backup_providers: list | None = None,
                    speed: dict | None = None) -> dict:
     """What a site's second access path actually gets, if anything.
 
@@ -224,6 +236,13 @@ def resolve_backup(*, table: dict, country: str, density: str | None,
     **An unserviceable backup does not become a cheaper backup.** If nothing
     else can be delivered, the site has one path - reported, not silently
     priced as two.
+
+    **And a second product from the same carrier is not a second carrier.**
+    The product rule above is a proxy for the thing that matters, and a proxy
+    the moment a case records who actually supplies it. Where the only recorded
+    providers are the same on both paths, the site is not carrier-diverse
+    however different the two products look - which is the claim a client
+    tests hardest.
     """
     # Sized on the bearer. See the note on the parameter.
     if speed is not None:
@@ -247,7 +266,25 @@ def resolve_backup(*, table: dict, country: str, density: str | None,
                          f"assumption that makes a resilience number "
                          f"worthless.")}
 
-    return {**served, "resilient": True}
+    # Carrier diversity, where the case knows who supplies what. Absent
+    # provider records this is silent rather than negative: the estate is not
+    # single-carrier because nobody wrote the carriers down.
+    if primary_providers and backup_providers:
+        shared = set(primary_providers) & set(backup_providers)
+        if shared and not (set(backup_providers) - shared):
+            return {**served, "resilient": False,
+                    "carrier_diverse": False,
+                    "note": (f"the only provider recorded for a second path in "
+                             f"{country} is {sorted(shared)}, which also "
+                             f"supplies the primary. A second product from one "
+                             f"carrier is not a second carrier - it is the "
+                             f"same duct with a different service on it.")}
+        return {**served, "resilient": True, "carrier_diverse": True,
+                "note": (f"second path from "
+                         f"{sorted(set(backup_providers) - shared)}, distinct "
+                         f"from the primary's supplier")}
+
+    return {**served, "resilient": True, "carrier_diverse": None}
 
 
 def summarise(outcomes: list[dict]) -> dict:

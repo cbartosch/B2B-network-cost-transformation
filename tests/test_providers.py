@@ -115,3 +115,103 @@ def test_the_providers_product_name_is_kept_verbatim():
 def test_a_vocabulary_it_does_not_know_is_refused(field, value):
     with pytest.raises(providers.ProviderInvalid):
         _rel(**{field: value})
+
+
+# ------------------------- the carrier dimension reaches the resilience model
+def _table():
+    class _Row:
+        def __init__(self, available, mbps):
+            self.available, self.max_bandwidth_mbps = available, mbps
+    return {("GB", "URBAN", t): _Row(True, 1000)
+            for t in ("PON", "VDSL", "HFC", "ETHERNET_FIBRE", "MOBILE_5G")}
+
+
+def _backup(primary=None, backup=None):
+    from app.domain import serviceability
+    return serviceability.resolve_backup(
+        table=_table(), country="GB", density="URBAN",
+        product="BROADBAND_PON", wanted_mbps=100,
+        primary_product="ETHERNET_FIBRE",
+        primary_providers=primary, backup_providers=backup)
+
+
+def test_a_second_product_from_one_carrier_is_not_a_second_carrier():
+    """The 4.157 product rule is a proxy for the thing that matters, and a
+    proxy the moment a case records who actually supplies it. Two different
+    products from one carrier still share a duct."""
+    out = _backup(primary=["BT"], backup=["BT"])
+    assert out["resilient"] is False
+    assert out["carrier_diverse"] is False
+    assert "same duct" in out["note"]
+
+
+def test_a_different_carrier_is_a_second_path():
+    out = _backup(primary=["BT"], backup=["Virgin Media Business"])
+    assert out["resilient"] is True
+    assert out["carrier_diverse"] is True
+
+
+def test_one_shared_provider_does_not_defeat_a_second_one():
+    """A country with two backup carriers, one of which also serves the
+    primary, can still deliver a diverse second path."""
+    out = _backup(primary=["BT"], backup=["BT", "Colt"])
+    assert out["carrier_diverse"] is True
+    assert "Colt" in out["note"]
+
+
+def test_no_provider_recorded_is_silent_not_negative():
+    """An estate is not single-carrier because nobody wrote the carriers down.
+    None, not False - the same rule as an empty serviceability table."""
+    out = _backup()
+    assert out["carrier_diverse"] is None
+    assert out["resilient"] is True
+
+
+def test_the_two_reasons_for_a_single_path_are_distinguished():
+    """A serviceability constraint and a supplier one need different remedies:
+    one is a build, the other is a sourcing decision."""
+    import inspect
+
+    from app.domain import simulation
+
+    source = inspect.getsource(simulation.one_pass)
+    assert '"SAME_CARRIER"' in source
+    assert '"NOT_DELIVERABLE"' in source
+
+
+def test_only_access_roles_count_toward_diversity():
+    """An MSP that manages a site supplies no path, and counting it would make
+    a supply chain look like carrier diversity."""
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1]
+    app = next(c for c in (root / "api_service" / "app", root / "app")
+               if (c / "routers").exists())
+    api = (app / "routers" / "api.py").read_text()
+    helper = api[api.index("def _providers_by_role"):]
+    assert 'in_(("PRIMARY", "BACKUP"))' in helper[:900]
+
+
+def test_the_providers_are_pinned_to_the_run():
+    """A resumed pass must judge diversity on the providers the run started
+    with, not on whatever the case says now."""
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1]
+    app = next(c for c in (root / "api_service" / "app", root / "app")
+               if (c / "jobs.py").exists())
+    api = (app / "routers" / "api.py").read_text()
+    jobs = (app / "jobs.py").read_text()
+    assert '"providers_by_role": _providers_by_role' in api
+    assert 'get("providers_by_role")' in jobs
+
+
+def test_the_ensemble_forwards_the_providers():
+    """run_ensemble accepted service_class_by_archetype and dropped it for
+    twelve releases. Every parameter added since is checked for the same."""
+    import inspect
+
+    from app.domain import simulation
+
+    assert "providers_by_role=providers_by_role" in inspect.getsource(
+        simulation.run_ensemble)

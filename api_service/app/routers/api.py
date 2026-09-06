@@ -71,6 +71,25 @@ def _one_or_404(session, table, column, value, what: str, *,
     return row
 
 
+def _providers_by_role(session, case_id: str) -> dict:
+    """{"COUNTRY|ROLE": [provider names]} for a case.
+
+    Only access roles. An MSP that manages a site supplies no path, and
+    counting it would make a supply chain look like carrier diversity - the
+    mistake providers.diversity refuses to make.
+    """
+    out = {}
+    rows = session.execute(select(db.provider).where(
+        db.provider.c.case_id == case_id,
+        db.provider.c.role.in_(("PRIMARY", "BACKUP")))).all()
+    for row in rows:
+        key = f"{(row.country or '').upper()}|{row.role}"
+        out.setdefault(key, [])
+        if row.provider not in out[key]:
+            out[key].append(row.provider)
+    return out
+
+
 def _policies(s):
     """Load and validate the governed policy sets.
 
@@ -1129,6 +1148,11 @@ def run_simulation(case_id: str, payload: SimIn):
                                getattr(case_row,
                                        "committed_fraction_by_archetype",
                                        None) or {}),
+                           # Who supplies each path per country, pinned so a
+                           # resumed pass judges diversity on the providers the
+                           # run started with. Keyed "COUNTRY|ROLE" because
+                           # JSON has no tuple keys.
+                           "providers_by_role": _providers_by_role(s, case_id),
                            "backbone": backbone},
             status=jobs.QUEUED, progress_completed=0,
             progress_total=payload.ensemble_size, cancel_requested=False))

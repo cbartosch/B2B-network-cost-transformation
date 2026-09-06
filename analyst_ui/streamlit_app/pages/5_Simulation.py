@@ -937,9 +937,12 @@ if sim:
         # the draw left single: this one was selected for a second path and
         # none can be delivered there.
         for _sn in (o.get("single_by_necessity") or [])[:6]:
+            _why = ("the same carrier supplies both paths"
+                    if _sn.get("because") == "SAME_CARRIER"
+                    else "no second bearer reaches these sites")
             st.warning(
                 f"**{_sn['archetype']} in {_sn['density']} {_sn['country']}: "
-                f"no second access path.** {_sn['reason']} Dual-access is not "
+                f"no second access path** ({_why}). {_sn['reason']} Dual-access is not "
                 f"counted for these sites, so the resilience figure reflects "
                 f"what can be delivered rather than what the archetype asks "
                 f"for.")

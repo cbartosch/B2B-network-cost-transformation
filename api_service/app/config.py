@@ -108,7 +108,12 @@ LLM_SEARCH_TIMEOUT_SECONDS = float(
 # committed fraction of the bearer for a committed service, the technology's
 # upstream for a best-effort one, symmetric for a DIA - so an IPVPN on a
 # 100 Mbps bearer prices on what it buys rather than on what was installed.
-SIMULATION_MODEL_VERSION = "sim-1.9.0"
+# 1.10.0: carrier diversity is judged on who supplies each path, where the
+# case records it. A second product from one carrier is not a second carrier -
+# it is the same duct with a different service on it - and the product rule of
+# 1.6.0 was a proxy for exactly this. Silent where no provider is recorded: an
+# estate is not single-carrier because nobody wrote the carriers down.
+SIMULATION_MODEL_VERSION = "sim-1.10.0"
 # calc-1.1.0: the saving band is accumulated with matched pairing rather than
 # derived as current - target. The target is a function of the current, so
 # subtracting the two crossed bounds a second time and produced worlds that
