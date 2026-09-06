@@ -126,4 +126,7 @@ SIMULATION_MODEL_VERSION = "sim-1.11.0"
 # It applied a flat band whatever the commitment, so a 100/95 branch was
 # right-sized as hard as a 100/50 one. Stored snapshots stay readable and do
 # not reproduce under this version.
-CALCULATION_VERSION = "calc-1.2.0"
+# calc-1.3.0: a benchmark band is derived from observations normalised onto one
+# commercial basis. Pooling a 12-month and a 36-month quote made a band's
+# spread partly a spread of contract terms rather than of market price.
+CALCULATION_VERSION = "calc-1.3.0"

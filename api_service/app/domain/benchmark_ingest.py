@@ -55,7 +55,7 @@ RIGHTS_BASES = ("PUBLISHED", "VENDOR_SUPPLIED", "PRIOR_ENGAGEMENT")
 # Identical today, and a product added to one would be rejected by the other -
 # the drift would surface as a benchmark that ingests and cannot be promoted,
 # or the reverse.
-from . import access
+from . import access, term_basis
 from .promotion import PRODUCTS
 
 
@@ -237,7 +237,24 @@ def derive_bands(session, *, currency: str = "USD", price_year: int = 2026,
 
     derived, thin = [], []
     for (country, product, mbps), obs in sorted(groups.items()):
-        values = sorted(float(o.value) for o in obs)
+        # Normalised onto one commercial basis before the band is derived.
+        # Observations of a 12-month and a 36-month price were pooled as though
+        # they were the same number, so a band's spread was partly a spread of
+        # contract terms rather than of market price.
+        #
+        # Warn and normalise rather than refuse: a case whose only benchmark is
+        # on a different term should still be able to use it, with the
+        # adjustment visible.
+        normalised, basis_warnings = [], []
+        for o in obs:
+            adjusted = term_basis.normalise(o.value, basis={
+                "term_months": getattr(o, "term_months", None),
+                "taxes_included": (getattr(o, "tax_basis", None)
+                                   in ("INCLUSIVE", "GROSS")),
+            })
+            normalised.append(float(adjusted["normalised"]))
+            basis_warnings.extend(adjusted["warnings"])
+        values = sorted(normalised)
         if len(values) < min_observations:
             thin.append({"country": country, "product": product,
                          "bandwidth_mbps": mbps, "observations": len(values),
@@ -284,7 +301,13 @@ def derive_bands(session, *, currency: str = "USD", price_year: int = 2026,
             source_note=(f"derived from {len(values)} cleared observation(s) "
                          f"({', '.join(entry['vendors']) or 'vendors unnamed'}); "
                          f"min/median/max of observed quotes; "
-                         f"observation_ids={entry['observation_ids']}")))
+                         f"observation_ids={entry['observation_ids']}"
+                         + (f"; normalised to a "
+                            f"{term_basis.REFERENCE_TERM_MONTHS}-month basis: "
+                            + "; ".join(sorted(set(basis_warnings)))
+                            if basis_warnings else
+                            "; all observations already on the reference "
+                            "commercial basis"))))
     if not dry_run:
         session.commit()
 
