@@ -76,7 +76,11 @@ def _prompt(text: str, hint: dict) -> str:
 def extract(session, *, text: str, source_document: str,
             source_locator: str | None = None, source_org: str | None = None,
             rights_basis: str = "PUBLISHED", as_of: str | None = None,
-            provider: str = "anthropic", max_tokens: int = 8000) -> dict:
+            provider: str = "anthropic",
+            # None defers to the governed budget. It was a hardcoded 8000 -
+            # the right number in a second place, which is a number that
+            # drifts the moment the policy is tuned.
+            max_tokens: int | None = None) -> dict:
     """Structure one source into observations. Stores them; derives nothing."""
     if rights_basis not in RIGHTS_BASES:
         raise ValueError(f"rights_basis must be one of {RIGHTS_BASES}")

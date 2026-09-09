@@ -169,7 +169,11 @@ def verify_liveness(call, local_start: datetime, local_end: datetime) -> None:
 
 
 def execute(session, *, agent_run_id: str, provider: str, system: str,
-            prompt: str, max_tokens: int = 1500,
+            # Required. Its only caller is structured_call, which resolves the
+            # governed budget - and a default here was a third ceiling,
+            # unreachable and therefore untested, sitting in the function that
+            # actually talks to the provider.
+            prompt: str, max_tokens: int,
             tools: list[dict] | None = None,
             definition=None, schema_name: str | None = None,
             supplied_source_ids: list | None = None) -> dict:
@@ -297,9 +301,51 @@ def _is_transient(exc: Exception) -> bool:
     return any(hint.lower() in text.lower() for hint in _TRANSIENT)
 
 
+# The ceiling used when no policy row exists. Deliberately the governed
+# default rather than something lower: a call that falls back should behave
+# like a governed one, not like a truncated one.
+FALLBACK_MAX_TOKENS = 8000
+
+
+def governed_max_tokens(session, *, key: str = "max_output_tokens_per_call",
+                        fallback: int = FALLBACK_MAX_TOKENS) -> int:
+    """The governed output budget, or the fallback if the row is absent.
+
+    Read here rather than at each call site, on exactly the reasoning the
+    truncation check uses one function below: research and the benchmark ingest
+    each grew their own lookup, and the seven that did not were the ones being
+    cut off at 4000.
+    """
+    try:
+        row = session.execute(select(db.threshold).where(
+            db.threshold.c.set_name == "research_budget_profile",
+            db.threshold.c.key == key)).first()
+    except Exception:                                       # noqa: BLE001
+        # A budget lookup must never be the thing that fails a run. An
+        # unreachable policy table is a reason to use the governed default,
+        # not a reason to abandon the call.
+        return fallback
+    if row is None or row.value in (None, ""):
+        return fallback
+    try:
+        return int(str(row.value))
+    except (TypeError, ValueError):
+        return fallback
+
+
 def structured_call(session, *, agent_run_id: str, prompt_id: str,
                     prompt: str, provider: str = "anthropic",
-                    max_tokens: int = 4000, tools: list[dict] | None = None,
+                    # None means "use the governed budget". A number overrides
+                    # it, for a caller that genuinely needs a different
+                    # ceiling.
+                    #
+                    # It was 4000 - a hardcoded default half the governed
+                    # 8000 - and seven of the ten call sites passed nothing,
+                    # so the policy that exists to be tuned per engagement was
+                    # unreachable from most of the system. Raising the governed
+                    # number would have changed nothing.
+                    max_tokens: int | None = None,
+                    tools: list[dict] | None = None,
                     prompt_version: str | None = None,
                     supplied_source_ids: list | None = None,
                     gate_context: dict | None = None,
@@ -350,6 +396,12 @@ def structured_call(session, *, agent_run_id: str, prompt_id: str,
     ctx = dict(gate_context or {})
     attempts, last = [], None
     body = prompt
+
+    # Resolved once, before the retry loop: a budget that changed between
+    # attempts would make the truncation message name a ceiling the failing
+    # attempt did not have.
+    if max_tokens is None:
+        max_tokens = governed_max_tokens(session)
 
     for attempt in range(1, max(1, max_attempts) + 1):
         # A cut connection is not a poor answer, and it escaped this loop
