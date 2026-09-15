@@ -234,7 +234,16 @@ def resolve_backup(*, table: dict, country: str, density: str | None,
                    # here, not which carrier this site got.
                    primary_providers: list | None = None,
                    backup_providers: list | None = None,
-                   speed: dict | None = None) -> dict:
+                   speed: dict | None = None,
+                   # The backup's service class. Added to `resolve` in 4.175
+                   # and not here, while the simulation was changed to pass it
+                   # to both - so every dual-access site raised TypeError and
+                   # every run with a backup path died.
+                   #
+                   # Same meaning as on `resolve`: the question becomes whether
+                   # a bearer reaches this site that can carry this service,
+                   # rather than whether a carrier sells the product here.
+                   service_class: str | None = None) -> dict:
     """What a site's second access path actually gets, if anything.
 
     The backup went straight from the archetype prior into the circuit count,
@@ -267,8 +276,19 @@ def resolve_backup(*, table: dict, country: str, density: str | None,
     # Sized on the bearer. See the note on the parameter.
     if speed is not None:
         wanted_mbps = access.sizing_rate(speed)
+    # Delegated to `resolve`, which already knows how to ask the bearer
+    # question. Passing the class through is the whole fix: it was added to
+    # `resolve` in 4.175 and not to this signature, while the simulation was
+    # changed to pass it to both - so every dual-access site raised TypeError
+    # and every run with a backup path died.
+    #
+    # Not passing it on would be worse than the crash: the backup would
+    # resolve on the conflated product while the primary resolved on the
+    # bearer, and the two paths on one site would be judged by different
+    # questions.
     served = resolve(table=table, country=country, density=density,
-                     product=product, wanted_mbps=wanted_mbps)
+                     product=product, wanted_mbps=wanted_mbps,
+                     service_class=service_class)
     if served["outcome"] == UNSERVICEABLE:
         return {**served, "resilient": False,
                 "note": (f"no second access path is deliverable in "

@@ -441,6 +441,44 @@ def dataclass_defaults_come_last() -> list:
     return problems
 
 
+def class_attributes_a_classmethod_reads_exist() -> list:
+    """A classmethod reading cls.X where the class defines no X.
+
+    `ConfidencePolicy.COMPONENTS`, `.STAGES`, `.BASELINE_DRIVERS` and
+    `.TARGET_DRIVERS` were lost in 4.173.0: the edit that moved two defaulted
+    fields to the end of the class trimmed lines from the bottom of the body
+    and took the class constants with them. The same edit ate the @classmethod
+    decorator, which I noticed and put back, and these which I did not.
+
+    from_rows reads all four, so every call raised AttributeError and no
+    confidence score could be produced. The class imports fine - which is why
+    nothing caught it - and it is the third defect of that shape in this file
+    alone.
+    """
+    problems = []
+    for path in sorted(APP.rglob("*.py")):
+        for node in ast.parse(path.read_text()).body:
+            if not isinstance(node, ast.ClassDef):
+                continue
+            defined = {t.id for item in node.body
+                       if isinstance(item, ast.Assign)
+                       for t in item.targets if isinstance(t, ast.Name)}
+            defined |= {item.target.id for item in node.body
+                        if isinstance(item, ast.AnnAssign)}
+            methods = {item.name for item in node.body
+                       if isinstance(item, ast.FunctionDef)}
+            used = {n.attr for n in ast.walk(node)
+                    if isinstance(n, ast.Attribute)
+                    and getattr(n.value, "id", "") == "cls"}
+            for missing in sorted(used - defined - methods):
+                problems.append(
+                    f"{path.name}::{node.name} reads cls.{missing} and defines "
+                    f"no {missing} - every call raises AttributeError, and the "
+                    f"class imports fine so nothing catches it until a route "
+                    f"runs")
+    return problems
+
+
 def seeded_values_fit_their_type() -> list:
     """A seeded value the column cannot hold fails the whole seed.
 
@@ -542,6 +580,8 @@ CHECKS = [
     ("every constructed class can be constructed",
      every_constructed_class_can_be_constructed),
     ("every seeded value fits its column type", seeded_values_fit_their_type),
+    ("every cls attribute a classmethod reads exists",
+     class_attributes_a_classmethod_reads_exist),
     ("no orphaned domain module", no_orphaned_domain_module),
     ("the ensemble carries what it computes", ensemble_carries_what_it_computes),
     ("every seeded key is a column", seeded_keys_are_columns),

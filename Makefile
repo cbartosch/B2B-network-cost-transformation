@@ -1,4 +1,4 @@
-.PHONY: lock check-lock test-offline validate-cases audit-contract audit-identity check-duplication validate-flow verify-domains backup restore deck benchmarks reach tls-doctor tls-doctor-in-container check up down logs test seed reset psql doctor migrate pins attest
+.PHONY: lock check-lock test-offline end-to-end validate-cases audit-contract audit-identity check-duplication validate-flow verify-domains backup restore deck benchmarks reach tls-doctor tls-doctor-in-container check up down logs test seed reset psql doctor migrate pins attest
 
 lock: ## record the transitive versions that actually install
 	@echo "Requires built containers. Produces the files check-lock verifies."
@@ -11,6 +11,10 @@ check-lock: ## are the builds reproducible?
 
 test-offline: ## run the suite without pytest, for a locked-down environment
 	python tools/run_tests_offline.py
+
+end-to-end:  ## one estimate through the whole chain, no database
+	python3 tools/run_end_to_end.py
+
 
 validate-cases: ## compare estimator output against cases with known actuals
 	python tools/validate_cases.py

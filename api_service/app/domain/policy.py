@@ -83,6 +83,23 @@ class ConfidencePolicy:
     unsourced_price_share_trigger: Decimal = Decimal("0.50")
     unsourced_price_ceiling: Decimal = Decimal("0.40")
 
+    # Class constants, not fields. Restored in 4.197.0: the 4.173.0 edit that
+    # moved the two defaulted fields to the end trimmed lines from the bottom
+    # of the class body and took these with them - the same edit that also ate
+    # the @classmethod decorator below, which I noticed and put back.
+    #
+    # from_rows reads cls.COMPONENTS, cls.STAGES, cls.BASELINE_DRIVERS and
+    # cls.TARGET_DRIVERS, so without them every call raised AttributeError and
+    # no confidence score could be produced at all.
+    #
+    # They sit after the defaulted fields because a bare assignment with no
+    # annotation is not a dataclass field and does not affect field ordering.
+    COMPONENTS = ("current_baseline", "target_cost", "realization")
+    STAGES = ("V0",)
+    LEVER_STAGES = ("V2", "V3", "V4", "V5")
+    BASELINE_DRIVERS = ("priced_spend", "evidenced", "completeness")
+    TARGET_DRIVERS = ("prior_coverage", "prior_recency")
+
     @classmethod
     def from_rows(cls, rows: dict, set_name: str = "confidence_policy"):
         r = lambda k: _require(rows, k, set_name)          # noqa: E731
