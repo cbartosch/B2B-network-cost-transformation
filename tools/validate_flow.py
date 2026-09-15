@@ -255,7 +255,16 @@ def unbound_names() -> list[str]:
                 bound.add(node.name)
             elif isinstance(node, ast.Global):
                 bound.update(node.names)
-        missing = sorted(used - bound - set(dir(builtins)))
+        # Module builtins Python provides. __file__ in particular: a module
+        # that locates a file beside itself needs it, and reporting that is
+        # the kind of false positive that teaches people to ignore a checker.
+        #
+        # Parenthesised: `a - b - c | d` unions d back in after subtracting,
+        # which reported every module builtin as missing rather than none.
+        missing = sorted(used - bound
+                         - (set(dir(builtins))
+                            | {"__file__", "__name__", "__doc__",
+                               "__package__"}))
         if missing:
             problems.append(f"{path.name} uses {missing} and never binds them")
     return problems
@@ -441,6 +450,95 @@ def dataclass_defaults_come_last() -> list:
     return problems
 
 
+def enum_members_gates_name_exist() -> list:
+    """Rejection.X where the enum declares no X.
+
+    quality.py named `Rejection.OPTION_NOT_SUPPLIED` and the enum did not
+    define it, so the gate raised AttributeError instead of returning a
+    governed rejection - the reply was refused for the wrong reason and the run
+    recorded a crash rather than a finding.
+    """
+    problems = []
+    for path in sorted(APP.rglob("*.py")):
+        tree = ast.parse(path.read_text())
+        enums = {}
+        for node in ast.walk(tree):
+            if isinstance(node, ast.ClassDef) and any(
+                    "Enum" in ast.unparse(b) for b in node.bases):
+                enums[node.name] = {
+                    item.targets[0].id for item in node.body
+                    if isinstance(item, ast.Assign)
+                    and isinstance(item.targets[0], ast.Name)}
+        for node in ast.walk(tree):
+            if (isinstance(node, ast.Attribute)
+                    and getattr(node.value, "id", "") in enums
+                    and node.attr not in enums[getattr(node.value, "id")]
+                    and not node.attr.startswith("_")
+                    and node.attr not in ("value", "name")):
+                problems.append(
+                    f"{path.name}:{node.lineno} names "
+                    f"{node.value.id}.{node.attr} and the enum does not "
+                    f"declare it - AttributeError instead of a governed "
+                    f"outcome")
+    return problems
+
+
+def policies_validate_their_own_fields() -> list:
+    """A validate() checking a field its class does not declare.
+
+    The transport-retry bound was checked in QualityPolicy, which does not
+    declare the field - so it validated an attribute always absent there, and
+    AgentQualityPolicy, which owns it, accepted any budget.
+    """
+    problems = []
+    source = (APP / "domain" / "policy.py").read_text()
+    for node in ast.parse(source).body:
+        if not isinstance(node, ast.ClassDef):
+            continue
+        declared = {item.target.id for item in node.body
+                    if isinstance(item, ast.AnnAssign)}
+        declared |= {t.id for item in node.body
+                     if isinstance(item, ast.Assign)
+                     for t in item.targets if isinstance(t, ast.Name)}
+        validate = next((m for m in node.body
+                         if isinstance(m, ast.FunctionDef)
+                         and m.name == "validate"), None)
+        if validate is None:
+            continue
+        for inner in ast.walk(validate):
+            if (isinstance(inner, ast.Attribute)
+                    and getattr(inner.value, "id", "") == "self"
+                    and inner.attr not in declared
+                    and not inner.attr.startswith("_")):
+                problems.append(
+                    f"{node.name}.validate checks self.{inner.attr}, which "
+                    f"{node.name} does not declare - the check never sees the "
+                    f"field and the class that owns it is unvalidated")
+    return problems
+
+
+def release_identity_has_one_source() -> list:
+    """A hardcoded build string beside the VERSION file.
+
+    _version.py held a literal "kept in sync by hand" and drifted to 4.31.0
+    while VERSION said 4.198.0 - 167 releases, with /v1/health reporting the
+    old one, so an operator could not tell which release was running. Its own
+    comment recorded that this had happened before.
+    """
+    version_module = APP / "_version.py"
+    if not version_module.exists():
+        return []
+    source = version_module.read_text()
+    for node in ast.parse(source).body:
+        if (isinstance(node, ast.Assign)
+                and getattr(node.targets[0], "id", "") == "BUILD"
+                and isinstance(node.value, ast.Constant)):
+            return [f"_version.py hardcodes BUILD = {node.value.value!r}; it "
+                    f"must read the VERSION file, which is the only place a "
+                    f"release number is maintained"]
+    return []
+
+
 def class_attributes_a_classmethod_reads_exist() -> list:
     """A classmethod reading cls.X where the class defines no X.
 
@@ -582,6 +680,10 @@ CHECKS = [
     ("every seeded value fits its column type", seeded_values_fit_their_type),
     ("every cls attribute a classmethod reads exists",
      class_attributes_a_classmethod_reads_exist),
+    ("every enum member a gate names exists", enum_members_gates_name_exist),
+    ("a policy validates only fields it declares",
+     policies_validate_their_own_fields),
+    ("release identity has one source", release_identity_has_one_source),
     ("no orphaned domain module", no_orphaned_domain_module),
     ("the ensemble carries what it computes", ensemble_carries_what_it_computes),
     ("every seeded key is a column", seeded_keys_are_columns),

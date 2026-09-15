@@ -43,6 +43,12 @@ RUN python tools/verify_tls_before_build.py
 
 COPY api_service/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
+# The single source of release identity. _version.py read a hardcoded string
+# kept in sync by hand, which drifted to 4.31.0 while VERSION said 4.198.0 -
+# 167 releases, with /v1/health reporting the old one. Its own comment recorded
+# that this had happened before and asked for a real fix rather than another
+# patch.
+COPY VERSION ./VERSION
 COPY api_service/app ./app
 # Tests live at the bundle root, beside the two services they exercise -
 # test_compose.py and test_wiring.py read files from both.

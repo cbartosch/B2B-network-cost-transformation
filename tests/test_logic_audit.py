@@ -549,7 +549,12 @@ def test_no_module_references_a_name_it_never_binds(module):
         elif isinstance(node, ast.Global):
             bound.update(node.names)
 
-    missing = sorted(used - bound - set(dir(builtins)))
+    # Module builtins Python provides. `_version.py` locates the VERSION file
+    # beside itself and needs __file__ to do it, and reporting that is the kind
+    # of false positive that teaches people to ignore a checker.
+    missing = sorted(used - bound
+                     - (set(dir(builtins))
+                        | {"__file__", "__name__", "__doc__", "__package__"}))
     assert not missing, f"{module} uses {missing} and never binds them"
 
 

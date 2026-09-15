@@ -256,7 +256,32 @@ def ready(response: Response):
         response.status_code = 503
         return {"ready": False, "reason": "database unreachable",
                 "detail": str(exc)[:200]}
-    return {"ready": True, "environment": config.environment()}
+    # The governed policies an estimate cannot be produced without. A
+    # database round-trip alone said ready while ConfidencePolicy could not
+    # load at all - so an orchestrator would route traffic to an instance that
+    # answers every request and cannot compute a confidence score.
+    #
+    # Cheap: the thresholds are one table and building a policy is arithmetic.
+    # Never cached, for the same reason readiness is never cached.
+    try:
+        with S() as s:
+            rows = {}
+            for row in s.execute(select(db.threshold)).all():
+                rows.setdefault(row.set_name, {})[row.key] = row.value
+            for name, cls in (("confidence_policy", policy.ConfidencePolicy),
+                              ("coverage_policy", policy.CoveragePolicy),
+                              ("footprint_policy", policy.FootprintPolicy)):
+                cls.from_rows(rows.get(name, {}), set_name=name)
+    except Exception as exc:                     # noqa: BLE001
+        response.status_code = 503
+        return {"ready": False, "reason": "governed policy unusable",
+                "detail": f"{type(exc).__name__}: {str(exc)[:200]}",
+                "note": ("this instance can answer requests and cannot "
+                         "produce an estimate, which is worse than being "
+                         "down - it looks available")}
+
+    return {"ready": True, "environment": config.environment(),
+            "policies": "loadable"}
 
 
 @router.get("/v1/health")
@@ -608,7 +633,13 @@ def entity_candidates(case_id: str):
 
 class ConfirmIn(BaseModel):
     candidate_id: str
-    confirmed_by: str
+    # A named person, not an empty string. This accepted "" and "   ", so the
+    # record of who confirmed an identity could be blank - and entity
+    # confirmation is the decision every later stage is scoped to.
+    #
+    # min_length alone lets whitespace through, which is why the validator
+    # strips before checking.
+    confirmed_by: str = Field(min_length=1, max_length=120)
     group_perimeter: str = "SINGLE_ENTITY"
     included_entities: list[str] = []
     excluded_entities: list[str] = []
@@ -616,7 +647,19 @@ class ConfirmIn(BaseModel):
 
 @router.post("/v1/outside-in/cases/{case_id}:confirm-entity")
 def confirm_entity(case_id: str, payload: ConfirmIn):
+    if not payload.confirmed_by.strip():
+        raise HTTPException(422, {
+            "error": "confirmation needs a named person",
+            "detail": "whitespace is not attribution, and entity confirmation "
+                      "is the decision every later stage is scoped to"})
     with S() as s:
+        # C-04: the case must exist and own what follows. The candidate was
+        # fetched by id alone, so one case could confirm an identity resolved
+        # for another.
+        _one_or_404(s, db.case, db.case.c.case_id, case_id, "case")
+        _one_or_404(s, db.entity_candidate,
+                    db.entity_candidate.c.candidate_id, payload.candidate_id,
+                    "entity candidate", owned_by_case=case_id)
         return entity_resolution.confirm(
             s, case_id=case_id, candidate_id=payload.candidate_id,
             confirmed_by=payload.confirmed_by, group_perimeter=payload.group_perimeter,

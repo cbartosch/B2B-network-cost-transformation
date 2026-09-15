@@ -44,6 +44,11 @@ class Rejection(str, Enum):
     # A figure the estimate does not contain. Distinct from a contradiction:
     # the answer is internally coherent and states a number nobody computed.
     FIGURE_NOT_IN_PACKET = "FIGURE_NOT_IN_PACKET"
+    # An answer naming an option the question did not offer. Used by
+    # estimate_answer and never declared, so the gate raised AttributeError
+    # instead of returning a governed rejection - the reply was refused for
+    # the wrong reason and the run recorded a crash rather than a finding.
+    OPTION_NOT_SUPPLIED = "OPTION_NOT_SUPPLIED"
     # Asked about five things and answered about two. Distinct from an empty
     # result: the reply is well-formed and simply silent on part of the task,
     # which reads downstream as "nothing exists" rather than "not attempted".

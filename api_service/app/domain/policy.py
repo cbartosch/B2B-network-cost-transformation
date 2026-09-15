@@ -487,10 +487,6 @@ class QualityPolicy:
             raise PolicyInvalid(
                 "max_attempts_per_call must be at least 1 - zero would mean no "
                 "call is ever made")
-        if self.max_transport_retries < 0 or self.max_transport_retries > 5:
-            raise PolicyInvalid(
-                "max_transport_retries must be between 0 and 5: past a handful "
-                "the network is down rather than flaky, and retrying hides it")
         if self.max_attempts_per_call > 5:
             raise PolicyInvalid(
                 f"max_attempts_per_call={self.max_attempts_per_call} is high "
@@ -525,6 +521,17 @@ class AgentQualityPolicy:
     def validate(self) -> None:
         if self.max_attempts_per_call < 1:
             raise PolicyInvalid("max_attempts_per_call must be at least 1")
+        # A retry budget this class owns. The bound was checked in
+        # QualityPolicy, which does not declare the field - so it validated an
+        # attribute always absent there and never the one on this class, and
+        # AgentQualityPolicy accepted any budget, including ones that turn a
+        # dead network into a twenty-minute stall.
+        if not 0 <= self.max_transport_retries <= 5:
+            raise PolicyInvalid(
+                f"{self.set_name}: max_transport_retries is "
+                f"{self.max_transport_retries} - must be between 0 and 5, "
+                f"because past a handful the network is down rather than "
+                f"flaky and retrying hides it")
         if self.max_attempts_per_call > 5:
             raise PolicyInvalid(
                 f"max_attempts_per_call is {self.max_attempts_per_call}: past "
