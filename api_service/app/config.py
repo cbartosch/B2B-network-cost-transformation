@@ -123,7 +123,11 @@ LLM_SEARCH_TIMEOUT_SECONDS = float(
 # supplied BICS L3 benchmark where it covers the industry, and from this
 # repository's judgement where it does not. A supermarket store at 25-75% and a
 # trading floor at 100% were both being modelled at 50%.
-SIMULATION_MODEL_VERSION = "sim-1.13.0"
+# sim-1.14.0: serviceability resolves again. The loader kept keying on `product`
+# after the 4.175 re-key while the seed writes it as None, so every key was
+# (country, band, None) and every lookup missed - and an empty table reads as
+# "nothing known", so every site came back priced with no constraint applied.
+SIMULATION_MODEL_VERSION = "sim-1.14.0"
 # calc-1.1.0: the saving band is accumulated with matched pairing rather than
 # derived as current - target. The target is a function of the current, so
 # subtracting the two crossed bounds a second time and produced worlds that

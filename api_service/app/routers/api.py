@@ -1183,7 +1183,12 @@ def run_simulation(case_id: str, payload: SimIn):
                     # "10 sites in URBAN DE cannot be served at all", which is
                     # impossible.
                     "serviceability": [
+                        # k[2] is the bearer - access_technology where the row
+                        # has one. Named `product` in the pin for continuity
+                        # with a run recorded before 4.175; the runner reads
+                        # whichever it finds.
                         {"country": k[0], "density_band": k[1], "product": k[2],
+                         "access_technology": k[2],
                          "available": bool(v.available),
                          "max_bandwidth_mbps": v.max_bandwidth_mbps}
                         for k, v in service_table.items()]},

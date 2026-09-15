@@ -46,13 +46,33 @@ FALLBACK_ORDER = ("DIA", "ETHERNET", "MPLS", "BROADBAND_HFC",
 
 
 def load(session, countries: list[str] | None = None) -> dict:
-    """Governed serviceability, keyed (country, density_band, product)."""
+    """Governed serviceability, keyed (country, density_band, bearer).
+
+    The bearer is `access_technology` where the row has one and `product`
+    where it does not. Both, because the table was re-keyed in 4.175 and the
+    old column is retained so a row seeded before then still resolves.
+
+    This keyed on `product` alone after the re-key, while the seed writes
+    `product=None` and `_by_access` looks up by technology - so every key was
+    (GB, URBAN, None) and every lookup missed. An empty table reads as
+    "nothing known" rather than "nothing deliverable", which is the right
+    default and made the failure silent: every site came back priced as asked,
+    with no serviceability constraint applied anywhere.
+    """
     query = select(db.serviceability)
     if countries:
         query = query.where(db.serviceability.c.country.in_(
             [c.upper() for c in countries]))
-    return {(r.country, r.density_band, r.product): r
-            for r in session.execute(query).all()}
+    table = {}
+    for row in session.execute(query).all():
+        bearer = getattr(row, "access_technology", None) or row.product
+        if bearer is None:
+            # A row describing neither a technology nor a product cannot be
+            # matched by anything. Skipped rather than keyed on None, which
+            # would collapse every such row onto one entry.
+            continue
+        table[(row.country, row.density_band, bearer)] = row
+    return table
 
 
 def _by_access(*, table: dict, country: str, density: str,

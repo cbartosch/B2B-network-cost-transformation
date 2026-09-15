@@ -117,7 +117,8 @@ def run_job(run_id: str, session=None) -> dict:
         # half generated.
         import types as _types
         service_table = {
-            (r["country"], r["density_band"], r["product"]):
+            (r["country"], r["density_band"],
+             r.get("access_technology") or r["product"]):
                 _types.SimpleNamespace(
                     available=r.get("available", True),
                     max_bandwidth_mbps=r.get("max_bandwidth_mbps"))

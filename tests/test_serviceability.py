@@ -368,3 +368,69 @@ def test_dense_urban_delivers_what_rural_cannot():
         serviceability.DELIVERED)
     assert _resolve(access.ETHERNET, density="RURAL")["outcome"] == (
         serviceability.UNSERVICEABLE)
+
+
+# ------------- the loader, the pin and the lookup must agree on one key
+def test_the_loader_keys_on_the_bearer_the_lookup_uses():
+    """The defect this test exists for.
+
+    `load()` kept keying on `product` after the 4.175 re-key, while the seed
+    writes `product=None` and `_by_access` looks up by `access_technology`. So
+    every key was (GB, URBAN, None) and every lookup missed.
+
+    An empty table reads as "nothing known" rather than "nothing deliverable" -
+    the right default, and what made this silent. Every site came back priced
+    as asked with no serviceability constraint applied anywhere, which looks
+    exactly like an estate that can be served."""
+    import inspect
+
+    source = inspect.getsource(serviceability.load)
+    assert 'getattr(row, "access_technology", None) or row.product' in source, (
+        "the loader must key on the bearer, falling back to product for a row "
+        "seeded before the re-key")
+
+
+def test_every_seeded_row_produces_a_key():
+    """170 rows keyed on a column the seed sets to None gives 170 rows and one
+    key. The count is the tell."""
+    from app.seed import SERVICEABILITY
+
+    class _Row:
+        def __init__(self, country, band, technology, available, mbps):
+            self.country, self.density_band = country, band
+            self.access_technology, self.product = technology, None
+            self.available, self.max_bandwidth_mbps = available, mbps
+
+    keys = set()
+    for row in (_Row(*r) for r in SERVICEABILITY):
+        bearer = getattr(row, "access_technology", None) or row.product
+        if bearer:
+            keys.add((row.country, row.density_band, bearer))
+    assert len(keys) == len(SERVICEABILITY)
+
+
+def test_a_row_with_neither_a_technology_nor_a_product_is_skipped():
+    """Keyed on None it would collapse every such row onto one entry, and the
+    last one loaded would silently win."""
+    import inspect
+
+    source = inspect.getsource(serviceability.load)
+    assert "if bearer is None:" in source
+    assert "continue" in source
+
+
+def test_the_pin_and_the_runner_agree_on_the_key():
+    """4.135 was the serviceability table read and not pinned, and every site
+    came back unserviceable. The same shape returns if the pin and the runner
+    key differently."""
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1]
+    app = next(c for c in (root / "api_service" / "app", root / "app")
+               if (c / "jobs.py").exists())
+    api = (app / "routers" / "api.py").read_text()
+    jobs = (app / "jobs.py").read_text()
+    assert '"access_technology": k[2]' in api, "the pin must carry the bearer"
+    assert 'r.get("access_technology") or r["product"]' in jobs, (
+        "the runner must read the bearer, falling back to product for a run "
+        "pinned before 4.175")
