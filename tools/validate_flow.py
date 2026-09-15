@@ -441,9 +441,53 @@ def dataclass_defaults_come_last() -> list:
     return problems
 
 
+def every_constructed_class_can_be_constructed() -> list:
+    """A class whose classmethod calls cls(field=...) needs a generated init.
+
+    `FootprintPolicy` lost its @dataclass in 4.165.0 - TransitionPolicy was
+    inserted immediately above and the insertion consumed the decorator line.
+    A plain class has no __init__ taking keywords, so from_rows raised
+    "FootprintPolicy() takes no arguments" and page 5 could not resolve a
+    footprint at all.
+
+    It survived 28 releases because the class *imports* fine and nothing in the
+    offline suite constructs one. The 4.173 check missed it by construction: it
+    inspected field ordering on classes that had the decorator, so a class
+    without one was never examined.
+    """
+    problems = []
+    for path in sorted(APP.rglob("*.py")):
+        for node in ast.parse(path.read_text()).body:
+            if not isinstance(node, ast.ClassDef):
+                continue
+            decorated = any("dataclass" in ast.unparse(d)
+                            for d in node.decorator_list)
+            if decorated:
+                continue
+            # Does anything inside construct it with keywords?
+            keyword_construction = any(
+                isinstance(inner, ast.Call)
+                and getattr(inner.func, "id", "") == "cls"
+                and inner.keywords
+                for inner in ast.walk(node))
+            declares_fields = any(isinstance(item, ast.AnnAssign)
+                                  for item in node.body)
+            has_init = any(isinstance(item, ast.FunctionDef)
+                           and item.name == "__init__" for item in node.body)
+            if keyword_construction and declares_fields and not has_init:
+                problems.append(
+                    f"{path.name}::{node.name} calls cls(field=...) and has "
+                    f"neither @dataclass nor an __init__ - constructing it "
+                    f"raises TypeError at runtime, and the class imports fine "
+                    f"so nothing catches it until a route calls it")
+    return problems
+
+
 CHECKS = [
     ("every name a module uses is bound", unbound_names),
     ("dataclass defaults come last", dataclass_defaults_come_last),
+    ("every constructed class can be constructed",
+     every_constructed_class_can_be_constructed),
     ("no orphaned domain module", no_orphaned_domain_module),
     ("the ensemble carries what it computes", ensemble_carries_what_it_computes),
     ("every seeded key is a column", seeded_keys_are_columns),

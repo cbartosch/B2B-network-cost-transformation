@@ -593,6 +593,19 @@ class TransitionPolicy:
                 f"{self.set_name}: dual running cannot be negative")
 
 
+
+# frozen, like every other policy: a governed set that a caller could mutate
+# after loading is not governed.
+#
+# The decorator was lost in 4.165.0, when TransitionPolicy was inserted
+# immediately above and the insertion consumed this line. A plain class has no
+# generated __init__, so `cls(set_name=..., ...)` in from_rows raised
+# "FootprintPolicy() takes no arguments" - and page 5 could not resolve a
+# footprint at all.
+#
+# It survived 28 releases because nothing in the offline test suite constructs
+# a FootprintPolicy: the class imports fine, and only calling from_rows fails.
+@dataclass(frozen=True)
 class FootprintPolicy:
     """How coarse a footprint row may be.
 
