@@ -258,6 +258,18 @@ if "_error" in v0:
 
 cov, conf = v0["coverage"], v0["confidence"]
 
+# How well the archetype vocabulary fits this sector. Shown next to coverage
+# because it is the same kind of statement: what this estimate does not know
+# about the estate.
+if v0.get("industry_caveat"):
+    st.warning(
+        f"**{v0['industry']}** - archetype fit {v0['archetype_fit']}. "
+        + v0["industry_caveat"])
+elif v0.get("industry"):
+    st.caption(
+        f"Sector {v0['industry']}, modelled with a site shape that matches "
+        f"the five archetypes well.")
+
 _method = v0.get("method", "BUILD_UP")
 if _method == "ANCHOR":
     _b = v0.get("anchor_basis") or {}

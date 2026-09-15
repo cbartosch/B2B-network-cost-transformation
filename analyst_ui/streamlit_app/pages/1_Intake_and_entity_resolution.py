@@ -83,15 +83,32 @@ aliases_text = st.text_input(
          "and the perimeter check discards every source that uses the "
          "brand.", disabled=is_locked, key="ik_aliases_text")
 
-_INDUSTRIES = ["", "FINANCIAL_SERVICES", "LOGISTICS", "DISTRIBUTION",
-               "RETAIL", "MANUFACTURING"]
+# Read from the taxonomy rather than listed here. The hardcoded five went
+# stale the moment the table gained twenty-three more, and an analyst choosing
+# from a stale list cannot know that GROCERY and QSR produce different estates.
+_ind_meta = api.get("/v1/outside-in/industries")
+_ind_rows = ([] if "_error" in _ind_meta
+             else sorted(_ind_meta.get("industries") or [],
+                         key=lambda r: r["industry"]))
+_INDUSTRIES = [""] + [r["industry"] for r in _ind_rows if r["industry"] != "DEFAULT"]
 _cur_ind = (case.get("industry") or "")
 industry = st.selectbox(
     "Industry", _INDUSTRIES,
     index=_INDUSTRIES.index(_cur_ind) if _cur_ind in _INDUSTRIES else 0,
     help="Sets the bandwidth tier per site type. A retail bank branch and "
          "a parts depot of the same size do not need the same circuit; "
-         "leave blank to use the generic tiers.", disabled=is_locked, key=f"ik_industry_{case_id[:8]}")
+         "leave blank to use the generic tiers.", disabled=is_locked,
+    key=f"ik_industry_{case_id[:8]}")
+
+# What the chosen sector implies, and where the five archetypes fit it badly.
+_chosen = next((r for r in _ind_rows if r["industry"] == industry), None)
+if _chosen:
+    st.caption(
+        f"Shape **{_chosen['shape']}** - {_chosen['note']}"
+        + (f" Split from {_chosen['split_from']}."
+           if _chosen.get("split_from") else ""))
+    if _chosen.get("caveat"):
+        st.warning(_chosen["caveat"])
 
 c4, c5, c6 = st.columns(3)
 _perimeter_options = ["SINGLE_ENTITY", "GROUP_CONSOLIDATED", "NAMED_SUBSIDIARIES",

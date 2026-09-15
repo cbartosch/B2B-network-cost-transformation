@@ -2,7 +2,7 @@
 exist only as a code constant - they live here and are versioned in the database."""
 from sqlalchemy import delete, insert, select
 
-from .domain import access
+from .domain import access, industries
 from .domain.research_briefs import (
     BRIEF_CATALOGUE_VERSION, RESEARCH_BRIEFS)
 # The agent map lives with the research module; the brief rows record which
@@ -397,56 +397,13 @@ PRIORS = [
 # branches with more office weight; a distributor sits between the two with far
 # more warehouse. Getting the shape roughly right beats an empty table, and
 # getting it exactly right is what the named locations and domain 2 are for.
-DENSITY_MIX = [
-    # --- retail: many small customer-facing sites, few of anything else
-    ("RETAIL", "STORE", "DENSE_URBAN", "0.1000"),
-    ("RETAIL", "STORE", "URBAN", "0.4000"),
-    ("RETAIL", "STORE", "SUBURBAN", "0.3200"),
-    ("RETAIL", "STORE", "RURAL", "0.1400"),
-    ("RETAIL", "WAREHOUSE", "SUBURBAN", "0.0250"),
-    ("RETAIL", "LARGE_OFFICE", "URBAN", "0.0100"),
-    ("RETAIL", "DC", "URBAN", "0.0050"),
-
-    # --- distribution and wholesale: trade counters plus real warehousing
-    ("DISTRIBUTION", "STORE", "URBAN", "0.3000"),
-    ("DISTRIBUTION", "STORE", "SUBURBAN", "0.3000"),
-    ("DISTRIBUTION", "STORE", "RURAL", "0.1200"),
-    ("DISTRIBUTION", "WAREHOUSE", "SUBURBAN", "0.1800"),
-    ("DISTRIBUTION", "WAREHOUSE", "RURAL", "0.0600"),
-    ("DISTRIBUTION", "LARGE_OFFICE", "URBAN", "0.0300"),
-    ("DISTRIBUTION", "DC", "URBAN", "0.0100"),
-
-    # --- banking: branches concentrate where people are, with office weight
-    ("FINANCIAL_SERVICES", "STORE", "DENSE_URBAN", "0.2000"),
-    ("FINANCIAL_SERVICES", "STORE", "URBAN", "0.4500"),
-    ("FINANCIAL_SERVICES", "STORE", "SUBURBAN", "0.2300"),
-    ("FINANCIAL_SERVICES", "STORE", "RURAL", "0.0500"),
-    ("FINANCIAL_SERVICES", "LARGE_OFFICE", "DENSE_URBAN", "0.0400"),
-    ("FINANCIAL_SERVICES", "DC", "URBAN", "0.0300"),
-
-    # --- logistics: depots dominate and sit where land is cheap
-    ("LOGISTICS", "WAREHOUSE", "SUBURBAN", "0.4500"),
-    ("LOGISTICS", "WAREHOUSE", "RURAL", "0.2500"),
-    ("LOGISTICS", "STORE", "URBAN", "0.2000"),
-    ("LOGISTICS", "LARGE_OFFICE", "URBAN", "0.0700"),
-    ("LOGISTICS", "DC", "URBAN", "0.0300"),
-
-    # --- manufacturing: plants, not outlets
-    ("MANUFACTURING", "WAREHOUSE", "SUBURBAN", "0.4000"),
-    ("MANUFACTURING", "WAREHOUSE", "RURAL", "0.3000"),
-    ("MANUFACTURING", "LARGE_OFFICE", "URBAN", "0.2000"),
-    ("MANUFACTURING", "STORE", "URBAN", "0.0700"),
-    ("MANUFACTURING", "DC", "URBAN", "0.0300"),
-
-    # --- the fallback for a sector with no row of its own. Deliberately
-    # office-and-branch shaped rather than retail-shaped: an unknown industry
-    # is more likely a general enterprise than a grocer.
-    ("DEFAULT", "BRANCH", "URBAN", "0.4000"),
-    ("DEFAULT", "BRANCH", "SUBURBAN", "0.2500"),
-    ("DEFAULT", "LARGE_OFFICE", "URBAN", "0.1500"),
-    ("DEFAULT", "WAREHOUSE", "SUBURBAN", "0.1500"),
-    ("DEFAULT", "DC", "URBAN", "0.0500"),
-]
+# Generated from domain/industries.py rather than hand-written.
+#
+# Twenty-eight industries x five archetypes x four density bands is a hundred
+# and eighty-seven rows, and twenty-eight hand-written mixes would be
+# twenty-eight chances to fat-finger a share that has to sum to exactly one.
+# The shapes are the thing that differs; the industries choose a shape.
+DENSITY_MIX = industries.density_mix_rows()
 
 # Density bands, weakest coverage last. Derivable from a postcode without a
 # survey, which is why the model clusters on them: serviceability itself needs
@@ -566,49 +523,10 @@ TOPOLOGY_TEMPLATE = [
 # video traffic back to a data centre; a parts depot of the same size runs
 # scanning and a warehouse session. A distributor's trade counter sits between
 # the two. Treating them alike is what one bandwidth per archetype did.
-ARCHETYPE_BANDWIDTH = [
-    # --- generic fallback, matching the archetype defaults
-    ("DEFAULT", "BRANCH", 100), ("DEFAULT", "STORE", 50),
-    ("DEFAULT", "WAREHOUSE", 100), ("DEFAULT", "LARGE_OFFICE", 500),
-    ("DEFAULT", "DC", 10000),
-
-    # --- banking and insurance: branches are transaction and video heavy
-    ("FINANCIAL_SERVICES", "STORE", 100),
-    ("FINANCIAL_SERVICES", "BRANCH", 100),
-    ("FINANCIAL_SERVICES", "LARGE_OFFICE", 1000),
-    ("FINANCIAL_SERVICES", "WAREHOUSE", 100),
-    ("FINANCIAL_SERVICES", "DC", 10000),
-
-    # --- logistics: depots and hubs move scan and telemetry traffic, and the
-    # sorting sites are the bandwidth-heavy ones rather than the offices
-    ("LOGISTICS", "WAREHOUSE", 500),
-    ("LOGISTICS", "STORE", 50),
-    ("LOGISTICS", "BRANCH", 100),
-    ("LOGISTICS", "LARGE_OFFICE", 500),
-    ("LOGISTICS", "DC", 10000),
-
-    # --- distribution and wholesale: a trade counter is a small shop with a
-    # stock system behind it
-    ("DISTRIBUTION", "STORE", 100),
-    ("DISTRIBUTION", "WAREHOUSE", 500),
-    ("DISTRIBUTION", "BRANCH", 100),
-    ("DISTRIBUTION", "LARGE_OFFICE", 500),
-    ("DISTRIBUTION", "DC", 10000),
-
-    # --- retail: many small sites, card and stock traffic
-    ("RETAIL", "STORE", 50),
-    ("RETAIL", "WAREHOUSE", 500),
-    ("RETAIL", "BRANCH", 100),
-    ("RETAIL", "LARGE_OFFICE", 500),
-    ("RETAIL", "DC", 10000),
-
-    # --- manufacturing: plants carry machine and telemetry traffic
-    ("MANUFACTURING", "WAREHOUSE", 500),
-    ("MANUFACTURING", "LARGE_OFFICE", 500),
-    ("MANUFACTURING", "BRANCH", 100),
-    ("MANUFACTURING", "STORE", 50),
-    ("MANUFACTURING", "DC", 10000),
-]
+# Generated, for the same reason. A quick-service restaurant and an airport
+# terminal are both "a site" and one needs two orders of magnitude more
+# circuit - which is the whole point of keeping the industry dimension.
+ARCHETYPE_BANDWIDTH = industries.bandwidth_rows()
 
 # bandwidth_mbps_base is now also the tier a circuit is priced at, so every
 # value here must have a matching row in PRIORS or the archetype is unpriceable.

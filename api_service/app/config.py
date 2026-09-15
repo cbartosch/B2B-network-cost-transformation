@@ -115,7 +115,11 @@ LLM_SEARCH_TIMEOUT_SECONDS = float(
 # estate is not single-carrier because nobody wrote the carriers down.
 # sim-1.11.0: a product row carries the bearer beside the priced rate, so a
 # lever that reduces a committed rate can see how much there is to reduce.
-SIMULATION_MODEL_VERSION = "sim-1.11.0"
+# sim-1.12.0: twenty-eight industry segments, each choosing a site shape that
+# decides how a total splits across density bands and what bandwidth each site
+# type gets. An estate of airports and an estate of quick-service restaurants
+# no longer split or size the same way.
+SIMULATION_MODEL_VERSION = "sim-1.12.0"
 # calc-1.1.0: the saving band is accumulated with matched pairing rather than
 # derived as current - target. The target is a function of the current, so
 # subtracting the two crossed bounds a second time and produced worlds that

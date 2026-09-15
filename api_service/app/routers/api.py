@@ -11,7 +11,7 @@ from sqlalchemy import delete, insert, select, text, update
 from .. import config, db, jobs, migrations
 from ..domain import (access as access_vocab, anchor_estimate,
                       assumptions, calibration, currency,
-                      delta_bridge,
+                      delta_bridge, industries,
                       providers, validation,
                       validation_capture, archetype as archetype_resolver,
                       benchmark_ingest, case_admin, estimate_qa,
@@ -1806,6 +1806,28 @@ def list_delta_bridges(case_id: str):
             "drivers": list(delta_bridge.DRIVERS)}
 
 
+@router.get("/v1/outside-in/industries")
+def list_industries():
+    """The industry taxonomy, with what each one implies about an estate.
+
+    Intake takes free text and falls back to DEFAULT, so an unlisted sector
+    still resolves - but an analyst choosing blind cannot know that GROCERY
+    and QSR produce different estates, or that AIRPORTS is modelled with site
+    types it does not really have.
+    """
+    return {"industries": [
+        {"industry": name, "split_from": parent, "shape": shape,
+         "archetype_fit": fit, "note": note,
+         "caveat": industries.caveat(name)}
+        for name, parent, shape, fit, note in industries.INDUSTRIES],
+        "shapes": sorted(industries.SHAPES),
+        "note": ("An industry chooses a site shape, and the shape decides how "
+                 "a site total splits across density bands and what bandwidth "
+                 "each site type gets. A sector whose fit is FAIR or POOR is "
+                 "modelled with the archetypes available, and the caveat says "
+                 "what that costs.")}
+
+
 @router.post("/v1/outside-in/cases/{case_id}/providers")
 def record_provider(case_id: str, payload: ProviderIn):
     """Who supplies what, where. More than one per country is normal.
@@ -2748,6 +2770,13 @@ def _run_anchor_estimate(s, *, case_id, case_row, payload,
     # that everything downstream reads one contract.
     return {"estimate_snapshot_id": snap_id, "method": anchor_estimate.METHOD_ANCHOR,
             "v0_status": cov["status"], "anchor_basis": basis,
+            # How well the five site archetypes describe this sector's estate.
+            # A container yard is not a warehouse and an airport terminal is
+            # not a large office, and a V0 that does not say so presents a
+            # placeholder mix as a model of the client.
+            "industry": (case_row.industry or "DEFAULT").upper(),
+            "archetype_fit": industries.fit_of(case_row.industry),
+            "industry_caveat": industries.caveat(case_row.industry),
             "current_tco": cur["total"], "by_layer": cur["by_layer"],
             "origin_breakdown": cur["origin_breakdown"],
             "components": cur["components"],
