@@ -211,7 +211,17 @@ THRESHOLDS = [
     # 120 a month is nearly three years, which is why a payback computed
     # without it is meaningless.
     ("transition_policy", "sites_migrated_per_month", "120"),
-    ("transition_policy", "evidence_grade", "E"),
+    # transition_policy.evidence_grade is deliberately NOT seeded here.
+    #
+    # reference.threshold.value is Numeric(12,4) - a threshold is a number you
+    # compare against - and seeding the letter "E" into it made the whole seed
+    # fail on insert: "invalid input syntax for type numeric". One row out of
+    # eighty-four, and it took the other eighty-three with it.
+    #
+    # TransitionPolicy.from_rows reads it with .get("evidence_grade", "E")
+    # rather than _require, so the default already covers it and nothing needed
+    # the row. A steward wanting to raise the grade once real transition data
+    # exists changes the field, not a threshold.
     ("footprint_policy", "max_sites_per_archetype_row", "100"),
     # The same rule for a row that says where its sites are. 100 was set when a
     # row meant (country, archetype) and every site in it was claimed identical

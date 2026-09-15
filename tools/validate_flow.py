@@ -441,6 +441,59 @@ def dataclass_defaults_come_last() -> list:
     return problems
 
 
+def seeded_values_fit_their_type() -> list:
+    """A seeded value the column cannot hold fails the whole seed.
+
+    `transition_policy.evidence_grade = "E"` went into
+    reference.threshold.value, which is Numeric(12,4). One row out of
+    eighty-four, and it took the other eighty-three with it - the seed aborts
+    on the insert, so a database gets no thresholds at all and every policy
+    read then reports an incomplete governed set.
+
+    Checked against the declared column type rather than by trying the insert,
+    because the insert needs a database and this has to fail in the build.
+    """
+    from decimal import Decimal, InvalidOperation
+
+    problems = []
+    db_source = (APP / "db.py").read_text()
+    seed_source = (APP / "seed.py").read_text()
+
+    # Which columns are numeric, per table.
+    numeric = {}
+    for match in re.finditer(r"^(\w+) = Table\(", db_source, re.M):
+        table = match.group(1)
+        start = match.start()
+        end = db_source.index("schema=", start)
+        for column in re.finditer(
+                r'Column\("(\w+)",\s*(Numeric|Integer|Float)', db_source[start:end]):
+            numeric.setdefault(table, set()).add(column.group(1))
+
+    # The seeded tuple lists whose rows carry a value into one of them.
+    for name, table, index in (("THRESHOLDS", "threshold", 2),):
+        if f"{name} = [" not in seed_source:
+            continue
+        start = seed_source.index(f"{name} = [")
+        namespace = {}
+        try:
+            exec(seed_source[start:seed_source.index("\n]\n", start) + 3],
+                 namespace)
+        except Exception:                                   # noqa: BLE001
+            problems.append(f"{name} could not be read to check its values")
+            continue
+        if "value" not in numeric.get(table, set()):
+            continue
+        for row in namespace[name]:
+            try:
+                Decimal(str(row[index]))
+            except (InvalidOperation, TypeError, ValueError):
+                problems.append(
+                    f"{name} seeds {row[0]}.{row[1]} = {row[index]!r} into "
+                    f"{table}.value, which is numeric - the insert fails and "
+                    f"takes every other row with it")
+    return problems
+
+
 def every_constructed_class_can_be_constructed() -> list:
     """A class whose classmethod calls cls(field=...) needs a generated init.
 
@@ -488,6 +541,7 @@ CHECKS = [
     ("dataclass defaults come last", dataclass_defaults_come_last),
     ("every constructed class can be constructed",
      every_constructed_class_can_be_constructed),
+    ("every seeded value fits its column type", seeded_values_fit_their_type),
     ("no orphaned domain module", no_orphaned_domain_module),
     ("the ensemble carries what it computes", ensemble_carries_what_it_computes),
     ("every seeded key is a column", seeded_keys_are_columns),

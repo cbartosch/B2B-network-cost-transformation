@@ -112,3 +112,66 @@ def test_no_class_calls_cls_with_keywords_without_a_generated_init():
             if constructs and declares and not has_init:
                 offenders.append(f"{path.name}::{node.name}")
     assert not offenders, offenders
+
+
+# ------------------------- a seeded value has to fit the column it goes into
+def _thresholds():
+    """The THRESHOLDS list, read from the seed's source.
+
+    app.seed imports sqlalchemy, so importing it blocks this wherever there is
+    no database - which is exactly where a seed defect needs catching.
+    """
+    root = Path(__file__).resolve().parents[1]
+    app = next(c for c in (root / "api_service" / "app", root / "app")
+               if (c / "seed.py").exists())
+    source = (app / "seed.py").read_text()
+    start = source.index("THRESHOLDS = [")
+    namespace = {}
+    exec(source[start:source.index("\n]\n", start) + 3], namespace)
+    return namespace["THRESHOLDS"]
+
+
+def test_every_threshold_value_is_a_number():
+    """`transition_policy.evidence_grade = "E"` went into
+    reference.threshold.value, which is Numeric(12,4). One row out of
+    eighty-four, and it took the other eighty-three with it: the seed aborts on
+    the insert, so a database gets no thresholds at all and every policy read
+    then reports an incomplete governed set.
+
+    A threshold is a number you compare against. An evidence grade is a
+    label."""
+    from decimal import Decimal, InvalidOperation
+
+    offenders = []
+    for row in _thresholds():
+        try:
+            Decimal(str(row[2]))
+        except (InvalidOperation, TypeError, ValueError):
+            offenders.append(f"{row[0]}.{row[1]} = {row[2]!r}")
+    assert not offenders, offenders
+
+
+def test_the_transition_grade_is_not_seeded_as_a_threshold():
+    """And does not need to be: from_rows reads it with .get(..., "E") rather
+    than _require, unlike the five numeric fields beside it."""
+    keys = {(row[0], row[1]) for row in _thresholds()}
+    assert ("transition_policy", "evidence_grade") not in keys
+
+
+def test_the_transition_policy_still_carries_a_grade_without_the_row():
+    """Removing the row must not lose the grade - the note in transition.py
+    reports it, and a payback with no stated evidence quality reads as better
+    than it is."""
+    built = policy.TransitionPolicy.from_rows({
+        "one_time_cost_per_site_low": "400",
+        "one_time_cost_per_site_base": "900",
+        "one_time_cost_per_site_high": "1800",
+        "dual_running_months": "3",
+        "sites_migrated_per_month": "120"})
+    assert built.evidence_grade == "E"
+
+
+def test_a_missing_numeric_threshold_is_still_refused():
+    """The five that are required must stay required."""
+    with pytest.raises(policy.PolicyIncomplete, match="missing"):
+        policy.TransitionPolicy.from_rows({"dual_running_months": "3"})
