@@ -256,7 +256,8 @@ def test_advance_refuses_an_unacknowledged_report(session):
 def test_advance_requires_a_named_person(session):
     case_id = _ready_case(session)
     report = stage.assess(session, case_id=case_id)
-    stage.acknowledge(session, report_id=report["report_id"],
+    stage.acknowledge(session, case_id=case_id,
+                      report_id=report["report_id"],
                       acknowledged_by="Jane Okafor")
     with pytest.raises(ValueError):
         stage.advance(session, case_id=case_id, advanced_by="   ")
@@ -265,7 +266,8 @@ def test_advance_requires_a_named_person(session):
 def test_a_clean_acknowledged_report_advances_the_case(session):
     case_id = _ready_case(session)
     report = stage.assess(session, case_id=case_id)
-    stage.acknowledge(session, report_id=report["report_id"],
+    stage.acknowledge(session, case_id=case_id,
+                      report_id=report["report_id"],
                       acknowledged_by="Jane Okafor")
 
     result = stage.advance(session, case_id=case_id, advanced_by="Sam Patel")
@@ -281,7 +283,8 @@ def test_a_clean_acknowledged_report_advances_the_case(session):
 def test_a_case_cannot_be_advanced_to_v1_twice(session):
     case_id = _ready_case(session)
     report = stage.assess(session, case_id=case_id)
-    stage.acknowledge(session, report_id=report["report_id"],
+    stage.acknowledge(session, case_id=case_id,
+                      report_id=report["report_id"],
                       acknowledged_by="Jane Okafor")
     stage.advance(session, case_id=case_id, advanced_by="Sam Patel")
 
@@ -294,7 +297,8 @@ def test_a_case_cannot_be_advanced_to_v1_twice(session):
 def test_reassessing_an_already_advanced_case_blocks_on_current_stage(session):
     case_id = _ready_case(session)
     report = stage.assess(session, case_id=case_id)
-    stage.acknowledge(session, report_id=report["report_id"],
+    stage.acknowledge(session, case_id=case_id,
+                      report_id=report["report_id"],
                       acknowledged_by="Jane Okafor")
     stage.advance(session, case_id=case_id, advanced_by="Sam Patel")
 

@@ -953,8 +953,17 @@ def run_preflight(case_id: str, payload: PreflightRunIn):
 @router.post("/v1/outside-in/cases/{case_id}/preflight:acknowledge")
 def ack_preflight(case_id: str, payload: PreflightAckIn):
     with S() as s:
-        return preflight.acknowledge(s, report_id=payload.report_id,
-                                     acknowledged_by=payload.acknowledged_by)
+        # The case from the path, passed into the operation. It was accepted
+        # and dropped, so the acknowledgement was bound to a report rather
+        # than to a case.
+        try:
+            return preflight.acknowledge(
+                s, case_id=case_id, report_id=payload.report_id,
+                acknowledged_by=payload.acknowledged_by)
+        except LookupError as exc:
+            raise HTTPException(404, str(exc))
+        except ValueError as exc:
+            raise HTTPException(422, str(exc))
 
 
 # --------------------------------------------------------------- 0.3B simulation
@@ -3690,8 +3699,9 @@ def get_stage(case_id: str, target_stage: str = "V1"):
 def ack_stage(case_id: str, payload: StageAckIn):
     with S() as s:
         try:
-            return stage.acknowledge(s, report_id=payload.report_id,
-                                     acknowledged_by=payload.acknowledged_by)
+            return stage.acknowledge(
+                s, case_id=case_id, report_id=payload.report_id,
+                acknowledged_by=payload.acknowledged_by)
         except LookupError as exc:
             raise HTTPException(404, str(exc))
         except ValueError as exc:

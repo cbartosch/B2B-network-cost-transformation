@@ -517,25 +517,38 @@ def policies_validate_their_own_fields() -> list:
     return problems
 
 
-def release_identity_has_one_source() -> list:
-    """A hardcoded build string beside the VERSION file.
+def release_identity_agrees() -> list:
+    """VERSION and _version.py must declare the same release.
 
-    _version.py held a literal "kept in sync by hand" and drifted to 4.31.0
-    while VERSION said 4.198.0 - 167 releases, with /v1/health reporting the
-    old one, so an operator could not tell which release was running. Its own
-    comment recorded that this had happened before.
+    They were kept in sync by hand and drifted to 4.31.0 against 4.198.0 - 167
+    releases, with /v1/health reporting the old one.
+
+    My first version of this check forbade the literal and required
+    _version.py to read VERSION at import. That fixed the drift and broke
+    something else: a release number that exists only at runtime cannot be
+    read by a static auditor, an SBOM or a diff, and an external audit
+    reported the build identity as missing entirely.
+
+    So both are literals and `tools/set_release.py` writes them together. The
+    check enforces what actually matters - that they agree - rather than a
+    particular mechanism for keeping them agreeing.
     """
-    version_module = APP / "_version.py"
-    if not version_module.exists():
+    version_file = ROOT / "VERSION"
+    module = APP / "_version.py"
+    if not version_file.exists() or not module.exists():
         return []
-    source = version_module.read_text()
-    for node in ast.parse(source).body:
-        if (isinstance(node, ast.Assign)
-                and getattr(node.targets[0], "id", "") == "BUILD"
-                and isinstance(node.value, ast.Constant)):
-            return [f"_version.py hardcodes BUILD = {node.value.value!r}; it "
-                    f"must read the VERSION file, which is the only place a "
-                    f"release number is maintained"]
+    declared = re.search(r"build:\s*([0-9A-Za-z.\-+]+)", version_file.read_text())
+    build = re.search(r'^BUILD\s*=\s*"([^"]+)"', module.read_text(), re.M)
+    if build is None:
+        return ["_version.py declares no BUILD literal - a value computed at "
+                "import cannot be read by a static auditor, an SBOM or a diff"]
+    if declared is None:
+        return ["VERSION declares no build"]
+    if declared.group(1) != build.group(1):
+        return [f"release identity disagrees: VERSION={declared.group(1)} but "
+                f"_version.py={build.group(1)}. /v1/health reports the second, "
+                f"so an operator would be told the wrong release. "
+                f"`python3 tools/set_release.py <release>` writes both."]
     return []
 
 
@@ -683,7 +696,7 @@ CHECKS = [
     ("every enum member a gate names exists", enum_members_gates_name_exist),
     ("a policy validates only fields it declares",
      policies_validate_their_own_fields),
-    ("release identity has one source", release_identity_has_one_source),
+    ("release identity agrees", release_identity_agrees),
     ("no orphaned domain module", no_orphaned_domain_module),
     ("the ensemble carries what it computes", ensemble_carries_what_it_computes),
     ("every seeded key is a column", seeded_keys_are_columns),

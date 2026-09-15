@@ -147,13 +147,37 @@ def latest(session, case_id: str):
         .order_by(db.preflight_report.c.created_at.desc()).limit(1)).first()
 
 
-def acknowledge(session, *, report_id: str, acknowledged_by: str) -> dict:
-    session.execute(update(db.preflight_report)
-                    .where(db.preflight_report.c.report_id == report_id)
-                    .values(acknowledged_by=acknowledged_by,
-                            acknowledged_at=datetime.now(timezone.utc)))
+def acknowledge(session, *, case_id: str, report_id: str,
+                acknowledged_by: str) -> dict:
+    """Acknowledge a pre-flight report, for one case, by a named person.
+
+    Scoped and named here rather than in the route. The route had the case in
+    its path and did not pass it in, so the operation acknowledged a report by
+    id alone - and report ids are globally unique, so one case could
+    acknowledge another's pre-flight and unlock its own later stages on a
+    report about a different estate.
+
+    A blank name is refused for the same reason it is on entity confirmation:
+    an acknowledgement is a person taking responsibility, and whitespace is
+    not a person.
+    """
+    if not str(acknowledged_by or "").strip():
+        raise ValueError(
+            "acknowledgement needs a named person - it is the record of who "
+            "accepted these findings before the case proceeded")
+
+    result = session.execute(
+        update(db.preflight_report)
+        .where(db.preflight_report.c.report_id == report_id,
+               db.preflight_report.c.case_id == case_id)
+        .values(acknowledged_by=acknowledged_by.strip(),
+                acknowledged_at=datetime.now(timezone.utc)))
+    if not result.rowcount:
+        raise LookupError(
+            f"pre-flight report {report_id!r} not found on case {case_id!r}")
     session.commit()
-    return {"report_id": report_id, "acknowledged_by": acknowledged_by}
+    return {"report_id": report_id, "case_id": case_id,
+            "acknowledged_by": acknowledged_by.strip()}
 
 
 def assert_clear_to_run(session, case_id: str) -> None:

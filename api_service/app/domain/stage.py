@@ -244,13 +244,18 @@ def latest(session, case_id: str, target_stage: str = "V1"):
         .order_by(db.stage_readiness_report.c.created_at.desc()).limit(1)).first()
 
 
-def acknowledge(session, *, report_id: str, acknowledged_by: str) -> dict:
+def acknowledge(session, *, case_id: str, report_id: str,
+                acknowledged_by: str) -> dict:
     if not acknowledged_by or not acknowledged_by.strip():
         raise ValueError(
             "acknowledged_by is mandatory; an unattributed acknowledgement is "
             "rejected, same bar as known_facts.asserted_by")
+    # Scoped to the case. The route had it in the path and did not pass it in,
+    # so this acknowledged a report by id alone - and report ids are globally
+    # unique, so one case could acknowledge another's stage readiness.
     row = session.execute(select(db.stage_readiness_report).where(
-        db.stage_readiness_report.c.report_id == report_id)).one_or_none()
+        db.stage_readiness_report.c.report_id == report_id,
+        db.stage_readiness_report.c.case_id == case_id)).one_or_none()
     if row is None:
         raise LookupError(f"no such stage-readiness report: {report_id}")
     session.execute(update(db.stage_readiness_report)

@@ -126,11 +126,28 @@ def propose_candidates(session, *, case_id: str, name_hint: str,
 
 def confirm(session, *, case_id: str, candidate_id: str, confirmed_by: str,
             group_perimeter: str, included: list, excluded: list) -> dict:
-    """Named confirmation. There is no auto-confirm path in this module."""
+    """Named confirmation. There is no auto-confirm path in this module.
+
+    Scoped to the case, and named. Both were enforceable in the route and are
+    enforced here as well, because this function is the operation: a caller
+    reaching it another way would otherwise confirm an identity resolved for
+    a different engagement, and entity confirmation is what every later stage
+    is scoped to.
+    """
+    if not str(confirmed_by or "").strip():
+        raise ValueError(
+            "confirmation needs a named person. Whitespace is not attribution, "
+            "and this is the decision every later stage is scoped to.")
+
     cand = session.execute(select(db.entity_candidate).where(
-        db.entity_candidate.c.candidate_id == candidate_id)).first()
+        db.entity_candidate.c.candidate_id == candidate_id,
+        # C-04. Loaded by candidate_id alone, so one case could confirm a
+        # candidate another case's research produced - and the candidate ids
+        # are globally unique, so it worked.
+        db.entity_candidate.c.case_id == case_id)).first()
     if cand is None:
-        raise LookupError(f"entity candidate {candidate_id!r} not found")
+        raise LookupError(
+            f"entity candidate {candidate_id!r} not found on case {case_id!r}")
     case_row = session.execute(select(db.case).where(
         db.case.c.case_id == case_id)).first()
     current = (case_row.perimeter_version if case_row else 0) or 0
