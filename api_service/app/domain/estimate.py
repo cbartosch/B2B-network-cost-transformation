@@ -193,11 +193,17 @@ def is_expired(prior: dict, *, as_of: str | None) -> bool:
     return str(expires) < str(as_of)
 
 
-def expired_share(scope: list, *, as_of: str | None) -> str:
+def expired_share(scope: list) -> str:
     """The share of priced value resting on a rate past its own expiry.
 
     Value-weighted, like unsourced_price_share, because ten stale rates on
     small sites and one on the whole estate are different findings.
+
+    Reads the `prior_expired` flag `derive_scope` already put on each row
+    rather than re-deciding what expired means. It took an `as_of` and never
+    used it, which is why no caller could fit it - `assess` has no as_of, so
+    the arithmetic was written inline there instead and the documented
+    function sat unused.
     """
     priced = sum((D(r["annual_value"]) for r in scope if r.get("priced")), D(0))
     if not priced:

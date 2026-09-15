@@ -124,6 +124,7 @@ def assess(*, scope: list[dict], layers_in_scope: list, layers_priced: set,
            declared_spend_by_country: dict | None = None) -> dict:
     # No thresholds dict with code defaults behind it: the policy is required
     # and was validated when it was loaded from reference data.
+    from .estimate import expired_share
     t = {"v0_prior_coverage_min": policy.prior_coverage_min,
          "v0_prior_coverage_floor": policy.prior_coverage_floor,
          "v0_material_country_floor": policy.material_country_floor,
@@ -246,11 +247,14 @@ def assess(*, scope: list[dict], layers_in_scope: list, layers_priced: set,
         # Reported beside unsourced_price_share because they answer the same
         # question - what is this baseline actually standing on - and a stale
         # rate and an unsourced one are different weaknesses.
-        "expired_price_share": str(
-            (D(sum(D(r["annual_value"]) for r in scope
-                   if r["priced"] and r.get("prior_expired")))
-             / priced_value).quantize(D("0.001")))
-        if priced_value else "0",
+        # estimate.expired_share, not a second copy of the arithmetic. This
+        # was computed inline here while the documented function sat unused in
+        # estimate.py - the same value-weighted calculation in two places, and
+        # the unused one carried the explanation.
+        # estimate.expired_share, not a second copy. This was computed inline
+        # while the documented function sat unused, because that function took
+        # an `as_of` it never read and assess has none to give.
+        "expired_price_share": expired_share(scope),
         "seeded_price_share": str(
             (D(sum(int(r["count"]) for r in scope
                    if r["priced"] and r.get("price_basis") == "SEED"))
