@@ -870,6 +870,51 @@ topology_template = Table(
     schema="reference",
 )
 
+# The supplied BICS L3 industry WAN benchmark. 44 rows across 10 sectors, 42
+# level-3 industries and 37 site archetypes.
+#
+# The first reference data in this model that was not invented here. The five
+# site archetypes and their bandwidths were the workbench's own judgement, and
+# nine industries carried an honest "POOR fit" caveat because a terminal, a
+# mine and a tower site are not branches.
+#
+# Kept as its own table rather than merged into archetype_bandwidth: this is a
+# published benchmark with a provenance, and folding it into the seeded rows
+# would make an external figure indistinguishable from one we made up.
+industry_benchmark = Table(
+    "industry_benchmark", metadata,
+    Column("industry_benchmark_id", String(80), primary_key=True),
+    Column("sector", String(48), index=True),
+    Column("industry_l3", String(80), index=True),
+    Column("industry_code", String(80), index=True),
+    Column("site_archetype", String(80)),
+    Column("archetype_code", String(80), index=True),
+    Column("location_context", String(24)),
+    Column("density_band", String(16)),
+    # A range, not a point. "1-20 Gbps" is a factor of twenty, and that width
+    # is information: it says the archetype covers genuinely different sites.
+    Column("bandwidth_low_mbps", Integer),
+    Column("bandwidth_base_mbps", Integer),
+    Column("bandwidth_high_mbps", Integer),
+    # The committed rate as a share of the bearer - the 30 in "100/30". Finer
+    # than the per-archetype fraction of 4.181 and sometimes disagreeing with
+    # it: a supermarket store is 25-75% and a trading floor is 100%, and
+    # treating both as 50% was wrong in opposite directions.
+    Column("committed_share_low", Numeric(4, 3)),
+    Column("committed_share_base", Numeric(4, 3)),
+    Column("committed_share_high", Numeric(4, 3)),
+    # Criticality is what dual access is for. A Tier 1 site has a second path
+    # because losing it stops the business; a Tier 3 store does not.
+    Column("criticality_tier", String(12)),
+    Column("dual_access_probability", Numeric(4, 3)),
+    # Carried for a later release to price a direct cloud on-ramp. Nothing
+    # reads these yet, recorded here rather than left implicit.
+    Column("cloud_requirement", String(16)),
+    Column("cloud_direct", String(24)),
+    Column("source", Text),
+    schema="reference")
+
+
 archetype_bandwidth = Table(
     "archetype_bandwidth", metadata,
     Column("id", String(80), primary_key=True),          # {industry}-{archetype}

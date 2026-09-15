@@ -45,6 +45,12 @@ def one_pass(seed: int, footprint: list[dict], archetypes: dict,
              # which serves a given site, so it asks whether carrier diversity
              # is possible here rather than which carrier this site got.
              providers_by_role: dict | None = None,
+             # Criticality from the published benchmark, as a probability that
+             # a site of this type has a second access path. A Tier 1 site has
+             # one because losing it stops the business; a Tier 3 store does
+             # not. Overrides the seeded per-archetype guess where the
+             # benchmark covers the archetype.
+             dual_access_by_archetype: dict | None = None,
              backbone: dict | None = None,
              known_locations: list[dict] | None = None,
              service_table: dict | None = None) -> dict:
@@ -100,7 +106,13 @@ def one_pass(seed: int, footprint: list[dict], archetypes: dict,
 
     for entry in sorted(footprint, key=lambda e: (e["country"], e["archetype"])):
         prior = archetypes.get(entry["archetype"], {})
-        p_dual = float(prior.get("dual_access_probability", 0.5))
+        # Published criticality first, then the seeded per-archetype guess.
+        # A Tier 1 site is 1.00 rather than 0.95: a tier 1 site without a
+        # second path is a finding about that site, and serviceability already
+        # reports one it cannot deliver as `single_by_necessity`.
+        p_dual = float(
+            (dual_access_by_archetype or {}).get(entry["archetype"])
+            or prior.get("dual_access_probability", 0.5))
         primary_product = prior.get("primary_product", "DIA")
         backup_product = prior.get("backup_product", "BROADBAND_PON")
         # What is bought, as distinct from how it arrives. The analyst's choice
@@ -507,7 +519,8 @@ def run_ensemble(*, seed: int, ensemble_size: int, footprint: list[dict],
                  service_table: dict | None = None,
                  service_class_by_archetype: dict | None = None,
                  committed_fraction_by_archetype: dict | None = None,
-                 providers_by_role: dict | None = None) -> dict:
+                 providers_by_role: dict | None = None,
+                 dual_access_by_archetype: dict | None = None) -> dict:
     """Convenience wrapper: run every pass, then aggregate. The job runner drives
     the two halves separately so it can checkpoint, cancel and resume.
 
@@ -524,7 +537,8 @@ def run_ensemble(*, seed: int, ensemble_size: int, footprint: list[dict],
                  service_class_by_archetype=service_class_by_archetype,
                  committed_fraction_by_archetype=(
                      committed_fraction_by_archetype),
-                 providers_by_role=providers_by_role), i)
+                 providers_by_role=providers_by_role,
+                 dual_access_by_archetype=dual_access_by_archetype), i)
                  for i in range(ensemble_size)]
     return aggregate(summaries, seed=seed, ensemble_size=ensemble_size,
                      footprint=footprint, archetypes=archetypes,

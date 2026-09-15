@@ -11,7 +11,7 @@ from sqlalchemy import delete, insert, select, text, update
 from .. import config, db, jobs, migrations
 from ..domain import (access as access_vocab, anchor_estimate,
                       assumptions, calibration, currency,
-                      delta_bridge, industries,
+                      delta_bridge, industries, industry_benchmark,
                       providers, validation,
                       validation_capture, archetype as archetype_resolver,
                       benchmark_ingest, case_admin, estimate_qa,
@@ -971,9 +971,64 @@ def run_simulation(case_id: str, payload: SimIn):
         for r in sorted(_bw_rows, key=lambda r: r.industry == "DEFAULT",
                         reverse=True):
             _bw[r.archetype] = int(r.bandwidth_mbps)
+        # The supplied BICS L3 benchmark for this industry, where it covers it.
+        # Preferred over the seeded bandwidth because it is published data
+        # rather than this repository's own judgement - and it names the site
+        # archetypes the industry actually has, which is why nine industries
+        # carried a POOR-fit caveat.
+        _bench = s.execute(select(db.industry_benchmark).where(
+            db.industry_benchmark.c.industry_code == _industry)).all()
+        _bench_rows = [
+            {"archetype_code": r.archetype_code,
+             "site_archetype": r.site_archetype,
+             "bandwidth_low_mbps": r.bandwidth_low_mbps,
+             "bandwidth_base_mbps": r.bandwidth_base_mbps,
+             "bandwidth_high_mbps": r.bandwidth_high_mbps,
+             "committed_share_base": (None if r.committed_share_base is None
+                                      else str(r.committed_share_base)),
+             "criticality_tier": r.criticality_tier,
+             "dual_access_probability": (
+                 None if r.dual_access_probability is None
+                 else str(r.dual_access_probability)),
+             "density_band": r.density_band}
+            for r in _bench]
+        # The benchmark's own figures override the seeded ones per archetype,
+        # and only where it has a row. A seeded value is not discarded - it is
+        # what covers an archetype the benchmark does not name.
+        for _row in _bench_rows:
+            _bw[_row["archetype_code"]] = int(_row["bandwidth_base_mbps"])
+
+        # The benchmark's committed share and criticality, keyed the way the
+        # simulation reads them. 4.181 took one fraction per archetype from an
+        # analyst's judgement; the benchmark is finer and sometimes disagrees -
+        # a supermarket store is 25-75% and a trading floor is 100%, and
+        # treating both as 50% was wrong in opposite directions.
+        #
+        # A case-level choice still wins: an engagement that knows what its
+        # sites commit outranks a published average for its industry.
+        benchmark_committed = {
+            _row["archetype_code"]: _row["committed_share_base"]
+            for _row in _bench_rows if _row["committed_share_base"]}
+        benchmark_dual_access = {
+            _row["archetype_code"]: _row["dual_access_probability"]
+            for _row in _bench_rows if _row["dual_access_probability"]}
+
         bandwidth_basis = {"industry": _industry,
                            "matched": _industry in {r.industry for r in _bw_rows},
-                           "by_archetype": dict(sorted(_bw.items()))}
+                           "by_archetype": dict(sorted(_bw.items())),
+                           # Which figures came from the published benchmark
+                           # and which from this repository's judgement. A
+                           # reader should be able to tell them apart.
+                           "benchmark": _bench_rows,
+                           "benchmark_matched": bool(_bench_rows),
+                           "benchmark_note": (
+                               f"{len(_bench_rows)} published benchmark row(s) "
+                               f"for {_industry}; these override the seeded "
+                               f"bandwidth for the archetypes they name"
+                               if _bench_rows else
+                               f"no published benchmark row for {_industry}, "
+                               f"so every figure is this repository's own "
+                               f"judgement at evidence grade E")}
 
         # Register statements are read here rather than written on
         # registration, so a fact edited on page 2 takes effect without a
@@ -1146,10 +1201,22 @@ def run_simulation(case_id: str, payload: SimIn):
                            # Pinned for the same reason: a resumed pass must
                            # price at the fractions the run was started with,
                            # not at whatever the case says now.
-                           "committed_fraction_by_archetype": (
-                               getattr(case_row,
-                                       "committed_fraction_by_archetype",
-                                       None) or {}),
+                           # Precedence: the case's own choice, then the
+                           # published benchmark for its industry, then the
+                           # seeded default. An engagement that knows what its
+                           # sites commit outranks a published average, and a
+                           # published average outranks our judgement.
+                           "committed_fraction_by_archetype": {
+                               **benchmark_committed,
+                               **(getattr(case_row,
+                                          "committed_fraction_by_archetype",
+                                          None) or {})},
+                           # Criticality drives dual access. A Tier 1 site has
+                           # a second path because losing it stops the
+                           # business; a Tier 3 store does not - which is a
+                           # property of the site's role rather than a seeded
+                           # probability per archetype.
+                           "dual_access_by_archetype": benchmark_dual_access,
                            # Who supplies each path per country, pinned so a
                            # resumed pass judges diversity on the providers the
                            # run started with. Keyed "COUNTRY|ROLE" because
@@ -1810,16 +1877,44 @@ def list_delta_bridges(case_id: str):
 def list_industries():
     """The industry taxonomy, with what each one implies about an estate.
 
+    Two taxonomies are offered. The workbench's own - six parents split into
+    28 - decides a site shape and the density split. The supplied BICS L3
+    benchmark covers 42 level-3 industries with published bandwidth, committed
+    share and criticality, and names the site archetypes an industry actually
+    has rather than the five this repository invented.
+
+    Both, rather than one: the BICS set is better evidence where it reaches,
+    and an engagement that only knows "retail" should not have to pick a
+    level-3 code it cannot support.
+
     Intake takes free text and falls back to DEFAULT, so an unlisted sector
     still resolves - but an analyst choosing blind cannot know that GROCERY
     and QSR produce different estates, or that AIRPORTS is modelled with site
     types it does not really have.
     """
+    _bics = industry_benchmark.seeded()
     return {"industries": [
         {"industry": name, "split_from": parent, "shape": shape,
          "archetype_fit": fit, "note": note,
          "caveat": industries.caveat(name)}
         for name, parent, shape, fit, note in industries.INDUSTRIES],
+        # The supplied BICS L3 benchmark, offered beside the workbench's own
+        # taxonomy rather than replacing it. Choosing a BICS industry gets
+        # published bandwidth, committed share and criticality; choosing one of
+        # ours gets this repository's judgement, and an analyst should be able
+        # to see which is on offer.
+        "bics_l3": [
+            {"industry_code": code,
+             "industry_l3": next(r["industry_l3"] for r in _bics["rows"]
+                                 if r["industry_code"] == code),
+             "sector": next(r["sector"] for r in _bics["rows"]
+                            if r["industry_code"] == code),
+             "site_archetypes": sorted(
+                 r["archetype_code"] for r in _bics["rows"]
+                 if r["industry_code"] == code)}
+            for code in _bics["industries"]],
+        "bics_sectors": _bics["sectors"],
+        "bics_note": _bics["note"],
         "shapes": sorted(industries.SHAPES),
         "note": ("An industry chooses a site shape, and the shape decides how "
                  "a site total splits across density bands and what bandwidth "

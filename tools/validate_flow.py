@@ -65,7 +65,12 @@ def table_flow() -> list[str]:
                 "research_brief", "unit_cost_prior",
                 # Governed reference data: filled by the seed and retuned by a
                 # steward, never written by the application.
-                "serviceability", "density_mix"):
+                "serviceability", "density_mix",
+                # A supplied external benchmark. Seed-only by design: the
+                # application must not write to it, because a published figure
+                # edited in place stops being the published figure and nothing
+                # would record that it changed.
+                "industry_benchmark"):
             problems.append(
                 f"{table}: read and never written outside the seed - the stage "
                 f"that should fill it does not")

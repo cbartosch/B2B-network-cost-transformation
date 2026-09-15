@@ -2,7 +2,7 @@
 exist only as a code constant - they live here and are versioned in the database."""
 from sqlalchemy import delete, insert, select
 
-from .domain import access, industries
+from .domain import access, industry_benchmark, industries
 from .domain.research_briefs import (
     BRIEF_CATALOGUE_VERSION, RESEARCH_BRIEFS)
 # The agent map lives with the research module; the brief rows record which
@@ -15,6 +15,10 @@ DOMAIN_AGENT_MAP_SEED = {
 }
 from .db import (SessionLocal, archetype_bandwidth, archetype_prior,
                  density_mix,
+                 # Aliased: the table and the domain module that parses it
+                 # share a name, and importing both unaliased would let Python
+                 # keep whichever came last.
+                 industry_benchmark as industry_benchmark_table,
                  serviceability,
                  country_region, topology_template, lever, platform_unit_cost,
                  research_brief,
@@ -528,6 +532,12 @@ TOPOLOGY_TEMPLATE = [
 # circuit - which is the whole point of keeping the industry dimension.
 ARCHETYPE_BANDWIDTH = industries.bandwidth_rows()
 
+# The supplied BICS L3 WAN benchmark, parsed at seed time rather than stored
+# pre-parsed. A refused row is named in the seed log rather than silently
+# dropped: an industry left with no benchmark and no explanation is discovered
+# as a missing figure three screens later.
+INDUSTRY_BENCHMARK = industry_benchmark.seeded()
+
 # bandwidth_mbps_base is now also the tier a circuit is priced at, so every
 # value here must have a matching row in PRIORS or the archetype is unpriceable.
 # WAREHOUSE moved from 200 to 100: 200 was a tier no benchmark quotes, and an
@@ -641,6 +651,27 @@ def _rows():
              "approved_by": "seed",
              "note": "seed default; retune per engagement"}
             for c, b, t, a, m in SERVICEABILITY]),
+        (industry_benchmark_table, lambda: [
+            {"industry_benchmark_id":
+                 f"{r['industry_code']}-{r['archetype_code']}",
+             "sector": r["sector"], "industry_l3": r["industry_l3"],
+             "industry_code": r["industry_code"],
+             "site_archetype": r["site_archetype"],
+             "archetype_code": r["archetype_code"],
+             "location_context": r["location_context"],
+             "density_band": r["density_band"],
+             "bandwidth_low_mbps": r["bandwidth_low_mbps"],
+             "bandwidth_base_mbps": r["bandwidth_base_mbps"],
+             "bandwidth_high_mbps": r["bandwidth_high_mbps"],
+             "committed_share_low": r["committed_share_low"],
+             "committed_share_base": r["committed_share_base"],
+             "committed_share_high": r["committed_share_high"],
+             "criticality_tier": r["criticality_tier"],
+             "dual_access_probability": r["dual_access_probability"],
+             "cloud_requirement": r["cloud_requirement"],
+             "cloud_direct": r["cloud_direct"],
+             "source": "Comprehensive Industry WAN Benchmark, BICS L3"}
+            for r in INDUSTRY_BENCHMARK["rows"]]),
         (country_region, lambda: [
             {"country": c, "region": r, "note": "seed default"}
             for c, r in COUNTRY_REGION]),

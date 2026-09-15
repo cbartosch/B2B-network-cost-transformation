@@ -119,7 +119,11 @@ LLM_SEARCH_TIMEOUT_SECONDS = float(
 # decides how a total splits across density bands and what bandwidth each site
 # type gets. An estate of airports and an estate of quick-service restaurants
 # no longer split or size the same way.
-SIMULATION_MODEL_VERSION = "sim-1.12.0"
+# sim-1.13.0: bandwidth, committed share and dual-access probability come from the
+# supplied BICS L3 benchmark where it covers the industry, and from this
+# repository's judgement where it does not. A supermarket store at 25-75% and a
+# trading floor at 100% were both being modelled at 50%.
+SIMULATION_MODEL_VERSION = "sim-1.13.0"
 # calc-1.1.0: the saving band is accumulated with matched pairing rather than
 # derived as current - target. The target is a function of the current, so
 # subtracting the two crossed bounds a second time and produced worlds that
