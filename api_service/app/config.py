@@ -127,7 +127,11 @@ LLM_SEARCH_TIMEOUT_SECONDS = float(
 # after the 4.175 re-key while the seed writes it as None, so every key was
 # (country, band, None) and every lookup missed - and an empty table reads as
 # "nothing known", so every site came back priced with no constraint applied.
-SIMULATION_MODEL_VERSION = "sim-1.14.0"
+# sim-1.15.0: BICS L3 is the industry taxonomy. Two existed and three of
+# forty-two codes overlapped, so an analyst picking from the intake list got no
+# benchmark row and the published bandwidth, committed share and criticality
+# were unreachable for twenty-five of twenty-eight industries.
+SIMULATION_MODEL_VERSION = "sim-1.15.0"
 # calc-1.1.0: the saving band is accumulated with matched pairing rather than
 # derived as current - target. The target is a function of the current, so
 # subtracting the two crossed bounds a second time and produced worlds that

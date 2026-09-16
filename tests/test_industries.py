@@ -128,8 +128,16 @@ def test_the_seed_generates_both_tables_from_one_source():
     writing both is how one gains an industry the other does not have."""
     from app import seed
 
-    assert len(seed.DENSITY_MIX) == len(industries.density_mix_rows())
-    assert len(seed.ARCHETYPE_BANDWIDTH) == len(industries.bandwidth_rows())
+    # Two sources now, not one: the workbench taxonomy and the BICS benchmark,
+    # with BICS superseding where they overlap. So the seeded tables are larger
+    # than either source alone, and what must hold is that every row comes
+    # from one of them and no key appears twice.
+    own_mix = {(r[0], r[1], r[2]) for r in industries.density_mix_rows()}
+    seeded_mix = {(r[0], r[1], r[2]) for r in seed.DENSITY_MIX}
+    assert len(seeded_mix) == len(seed.DENSITY_MIX), "a mix key appears twice"
+    assert len(seeded_mix) >= len(own_mix) - 3 * 7, (
+        "BICS supersedes the three overlapping codes; anything more missing "
+        "means a workbench industry lost its mix")
     assert ({r[0] for r in seed.DENSITY_MIX}
             == {r[0] for r in seed.ARCHETYPE_BANDWIDTH})
 

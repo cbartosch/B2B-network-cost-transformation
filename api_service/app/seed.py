@@ -2,7 +2,7 @@
 exist only as a code constant - they live here and are versioned in the database."""
 from sqlalchemy import delete, insert, select
 
-from .domain import access, industry_benchmark, industries
+from .domain import access, bics, industry_benchmark, industries
 from .domain.research_briefs import (
     BRIEF_CATALOGUE_VERSION, RESEARCH_BRIEFS)
 # The agent map lives with the research module; the brief rows record which
@@ -417,7 +417,34 @@ PRIORS = [
 # and eighty-seven rows, and twenty-eight hand-written mixes would be
 # twenty-eight chances to fat-finger a share that has to sum to exactly one.
 # The shapes are the thing that differs; the industries choose a shape.
-DENSITY_MIX = industries.density_mix_rows()
+# BICS L3 is the taxonomy. Two existed and three of forty-two codes overlapped,
+# so an analyst picking AIRPORTS or DEFENSE from the intake list got no
+# benchmark row and the published data was unreachable for twenty-five of
+# twenty-eight industries.
+#
+# The mix is derived from the estate shape rather than from the benchmark: the
+# benchmark names one representative archetype per industry and an estate has
+# several. A supermarket chain has stores, distribution centres and a head
+# office, and the benchmark says only "STORE".
+#
+# The workbench's own rows are kept as well, so a case created before this
+# still resolves its industry.
+# The supplied BICS L3 WAN benchmark, parsed at seed time rather than stored
+# pre-parsed. A refused row is named in the seed log rather than silently
+# dropped: an industry left with no benchmark and no explanation is discovered
+# as a missing figure three screens later.
+INDUSTRY_BENCHMARK = industry_benchmark.seeded()
+
+# BICS supersedes, never adds. RETAIL_BANKING, INSURANCE and LOGISTICS exist
+# in both taxonomies - the three-code overlap - and appending gave each of them
+# two mixes summing to 2.0000, which the footprint resolver would have read as
+# twice the estate.
+_BICS_MIX = bics.density_mix_rows(INDUSTRY_BENCHMARK["industries"],
+                                  industries.SHAPES)
+_BICS_CODES = {row[0] for row in _BICS_MIX}
+DENSITY_MIX = ([row for row in industries.density_mix_rows()
+                if row[0] not in _BICS_CODES]
+               + _BICS_MIX)
 
 # Density bands, weakest coverage last. Derivable from a postcode without a
 # survey, which is why the model clusters on them: serviceability itself needs
@@ -540,13 +567,58 @@ TOPOLOGY_TEMPLATE = [
 # Generated, for the same reason. A quick-service restaurant and an airport
 # terminal are both "a site" and one needs two orders of magnitude more
 # circuit - which is the whole point of keeping the industry dimension.
-ARCHETYPE_BANDWIDTH = industries.bandwidth_rows()
+# Bandwidth per (industry, archetype). The workbench's own rows plus one per
+# BICS industry for the archetype its benchmark names - so a case on a BICS
+# code prices the site type that industry actually has, at the published
+# figure, rather than falling back to a seeded guess for BRANCH.
+# Same rule: a published figure supersedes a seeded one for the same
+# (industry, archetype), and the workbench row survives where BICS is silent -
+# a BICS industry still needs a bandwidth for the supporting archetypes its
+# estate shape includes and its benchmark does not name.
+# Capped at the top tier the rate card quotes. The benchmark runs to 250 Gbps
+# for a hyperscale campus and the card stops at 10 Gbps, so 22 of its 44 rows
+# would have asked for a tier no prior covers - and an unpriceable site is
+# unpriced scope, which defeats the coverage gate rather than informing it.
+#
+# industries.MAX_PRICEABLE_MBPS already existed for this and the BICS rows
+# bypassed it. Capping is not pretending the site is smaller: the benchmark
+# figure is kept on industry_benchmark, where a reader can see the site needs
+# more than the card can price, and extending the card is the real fix.
+_BICS_BW = [(r["industry_code"], r["archetype_code"],
+             min(int(r["bandwidth_base_mbps"]), industries.MAX_PRICEABLE_MBPS))
+            for r in INDUSTRY_BENCHMARK["rows"]]
+_BICS_BW_KEYS = {(i, a) for i, a, _ in _BICS_BW}
+# Every archetype a BICS estate shape includes needs a figure, not just the one
+# its benchmark names. A supermarket shape has stores, a warehouse, an office
+# and a DC; the benchmark says only STORE, and the other three would have been
+# in the mix and unpriceable.
+#
+# The supporting ones take the DEFAULT industry's figure for that archetype:
+# this repository's own judgement, which is what it was before BICS existed,
+# and it is not pretending the benchmark said anything about them.
+_DEFAULT_BW = {a: m for i, a, m in industries.bandwidth_rows()
+               if i == "DEFAULT"}
+_SURVIVING_BW = {(row[0], row[1]) for row in industries.bandwidth_rows()
+                 if (row[0], row[1]) not in _BICS_BW_KEYS}
+_SUPPORTING = []
+for _industry in {row[0] for row in _BICS_MIX}:
+    for _archetype in {row[1] for row in _BICS_MIX if row[0] == _industry}:
+        # Not already priced by the benchmark, and not already priced by the
+        # workbench rows that survive. RETAIL_BANKING, INSURANCE and LOGISTICS
+        # are in both taxonomies, so their supporting archetypes were added a
+        # second time - ten duplicate keys, where whichever the query returned
+        # last would have won silently.
+        if ((_industry, _archetype) not in _BICS_BW_KEYS
+                and (_industry, _archetype) not in _SURVIVING_BW
+                and _archetype in _DEFAULT_BW):
+            _SUPPORTING.append((_industry, _archetype,
+                                _DEFAULT_BW[_archetype]))
 
-# The supplied BICS L3 WAN benchmark, parsed at seed time rather than stored
-# pre-parsed. A refused row is named in the seed log rather than silently
-# dropped: an industry left with no benchmark and no explanation is discovered
-# as a missing figure three screens later.
-INDUSTRY_BENCHMARK = industry_benchmark.seeded()
+ARCHETYPE_BANDWIDTH = (
+    [row for row in industries.bandwidth_rows()
+     if (row[0], row[1]) not in _BICS_BW_KEYS]
+    + _BICS_BW + _SUPPORTING)
+
 
 # bandwidth_mbps_base is now also the tier a circuit is priced at, so every
 # value here must have a matching row in PRIORS or the archetype is unpriceable.

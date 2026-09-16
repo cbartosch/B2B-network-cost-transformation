@@ -14,14 +14,25 @@ from app.seed import ARCHETYPE_BANDWIDTH, ARCHETYPES, PRIORS
 BY_KEY = {(i, a): b for i, a, b in ARCHETYPE_BANDWIDTH}
 
 
-def test_every_industry_covers_every_archetype():
-    """A gap falls through to DEFAULT silently, which is the behaviour that
-    made one bandwidth per archetype look adequate in the first place."""
-    archetypes = {a for a, *_ in ARCHETYPES}
-    industries = {i for i, *_ in ARCHETYPE_BANDWIDTH}
-    missing = [(i, a) for i in industries for a in archetypes
-               if (i, a) not in BY_KEY]
-    assert not missing, f"industry/archetype pairs with no bandwidth: {missing}"
+def test_every_archetype_in_an_estate_mix_has_a_bandwidth():
+    """Every archetype an industry's estate actually contains, not every
+    archetype that exists.
+
+    The old rule required all five for all industries, which was true while
+    every industry shared the same five site types. Since BICS became the
+    taxonomy an estate contains what its shape says: a semiconductor estate
+    has a fab, an office and a DC and no STORE, and a bandwidth row for
+    (SEMICONDUCTORS, STORE) would be data about a site that does not exist.
+
+    What must hold is narrower and stronger: nothing in a mix may be
+    unpriceable, because a site in the footprint with no rate is unpriced
+    scope."""
+    from app.seed import ARCHETYPE_BANDWIDTH, DENSITY_MIX
+
+    priced = {(i, a) for i, a, _m in ARCHETYPE_BANDWIDTH}
+    in_mix = {(i, a) for i, a, _b, _s in DENSITY_MIX}
+    missing = sorted(in_mix - priced)
+    assert not missing, f"in an estate mix and unpriced: {missing[:8]}"
 
 
 def test_a_default_row_exists_for_every_archetype():

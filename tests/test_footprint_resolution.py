@@ -354,9 +354,16 @@ def test_a_retail_estate_is_mostly_stores_and_a_logistics_one_is_not():
         rows = _propose(1000, industry)["rows"]
         return sum(r["sites"] for r in rows if r["archetype"] == archetype)
 
+    # RETAIL is the workbench code and survives - BICS supersedes only
+    # RETAIL_BANKING, INSURANCE and LOGISTICS.
     assert share_of("RETAIL", "STORE") > 900
-    assert share_of("LOGISTICS", "WAREHOUSE") > 600
-    assert share_of("LOGISTICS", "STORE") < 300
+    # LOGISTICS is one of the three BICS supersedes. Its benchmark archetype
+    # is DISTRIBUTION_CENTER, which maps to few-large - warehouses and offices
+    # rather than the workbench's warehouse-dominant mix - so the old
+    # thresholds describe a taxonomy that no longer governs this code.
+    assert share_of("LOGISTICS", "WAREHOUSE") > 200
+    assert share_of("LOGISTICS", "STORE") == 0, (
+        "a few-large logistics estate has no stores at all")
 
 
 def test_every_proposed_row_carries_a_density_band():

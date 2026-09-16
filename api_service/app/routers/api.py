@@ -1971,6 +1971,22 @@ def list_industries():
                  if r["industry_code"] == code)}
             for code in _bics["industries"]],
         "bics_sectors": _bics["sectors"],
+        # BICS is the taxonomy to choose from. Two existed and three of
+        # forty-two codes overlapped, so picking from the workbench list meant
+        # no benchmark row - published bandwidth, committed share and
+        # criticality were unreachable for twenty-five of twenty-eight
+        # industries.
+        #
+        # The workbench's own set is still returned, under `industries`, so a
+        # case created before this resolves. New cases should use a BICS code.
+        "preferred_taxonomy": "bics_l3",
+        "taxonomy_note": (
+            "Choose a BICS L3 code. Each carries published bandwidth, "
+            "committed share and criticality for the site type that industry "
+            "actually has, and an estate shape this repository assigns. The "
+            "`industries` list is the older taxonomy, kept so existing cases "
+            "resolve - a new case on one of those gets seeded figures at "
+            "evidence grade E instead."),
         "bics_note": _bics["note"],
         "shapes": sorted(industries.SHAPES),
         "note": ("An industry chooses a site shape, and the shape decides how "
