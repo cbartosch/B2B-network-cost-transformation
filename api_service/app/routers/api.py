@@ -263,22 +263,51 @@ def ready(response: Response):
     #
     # Cheap: the thresholds are one table and building a policy is arithmetic.
     # Never cached, for the same reason readiness is never cached.
-    try:
-        with S() as s:
-            rows = {}
-            for row in s.execute(select(db.threshold)).all():
-                rows.setdefault(row.set_name, {})[row.key] = row.value
-            for name, cls in (("confidence_policy", policy.ConfidencePolicy),
-                              ("coverage_policy", policy.CoveragePolicy),
-                              ("footprint_policy", policy.FootprintPolicy)):
-                cls.from_rows(rows.get(name, {}), set_name=name)
-    except Exception as exc:                     # noqa: BLE001
+    # The governed policies an estimate cannot be produced without.
+    #
+    # An external audit was right that readiness must fail when a core policy
+    # is unusable: an instance that answers every request and cannot compute a
+    # confidence score is worse than being down, because it looks available.
+    #
+    # The first version of this conflated two different things and deadlocked
+    # the stack. An unseeded database cannot load a policy either - and
+    # seeding runs *after* `docker compose up`, so the container never became
+    # healthy, the UI's `depends_on` never released, and the only way to seed
+    # was through a container that would not start.
+    #
+    # So the two cases are separated. No thresholds at all is a database
+    # waiting to be seeded: ready, and saying what it is waiting for. Rows
+    # present and a policy that will not build from them is a real fault.
+    with S() as s:
+        rows = {}
+        for row in s.execute(select(db.threshold)).all():
+            rows.setdefault(row.set_name, {})[row.key] = row.value
+
+    if not rows:
+        return {"ready": True, "environment": config.environment(),
+                "policies": "not seeded",
+                "note": ("reference.threshold is empty, so no governed policy "
+                         "can be built yet. Run `python -m app.seed`. The "
+                         "instance is up and will refuse an estimate until "
+                         "then rather than producing one from defaults.")}
+
+    unusable = []
+    for name, cls in (("confidence_policy", policy.ConfidencePolicy),
+                      ("v0_coverage_threshold_set", policy.CoveragePolicy),
+                      ("footprint_policy", policy.FootprintPolicy)):
+        try:
+            cls.from_rows(rows.get(name, {}), set_name=name)
+        except Exception as exc:                 # noqa: BLE001
+            unusable.append(f"{name}: {type(exc).__name__}: {str(exc)[:140]}")
+
+    if unusable:
         response.status_code = 503
         return {"ready": False, "reason": "governed policy unusable",
-                "detail": f"{type(exc).__name__}: {str(exc)[:200]}",
-                "note": ("this instance can answer requests and cannot "
-                         "produce an estimate, which is worse than being "
-                         "down - it looks available")}
+                "detail": unusable,
+                "note": ("thresholds are present and a core policy will not "
+                         "build from them. This instance can answer requests "
+                         "and cannot produce an estimate, which is worse than "
+                         "being down - it looks available.")}
 
     return {"ready": True, "environment": config.environment(),
             "policies": "loadable"}
