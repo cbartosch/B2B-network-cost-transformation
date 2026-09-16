@@ -57,6 +57,10 @@ def derive_scope(*, sim_output: dict, priors: dict,
                  # is treated as expired, which is the honest default for a
                  # caller that cannot say when.
                  as_of: str | None = None,
+                 # This client's own rates, tried before the market card. The
+                 # coverage gate has to measure the same thing the calculation
+                 # prices, or it reports a denominator the total does not use.
+                 case_rates: dict | None = None,
                  sizing_priors: dict | None = None) -> list[dict]:
     """One row per (country, product, role) the simulation actually produced.
 
@@ -84,7 +88,8 @@ def derive_scope(*, sim_output: dict, priors: dict,
         prior, substituted = match_prior(
             priors, row["country"], row["product"], mbps,
             service_class=row.get("service_class"),
-            access_technology=row.get("access_technology"))
+            access_technology=row.get("access_technology"),
+            case_rates=case_rates)
         rate = D(prior["base"]) if prior else fallback.get(row["product"])
         scope.append({
             "country": row["country"], "product": row["product"], "role": row["role"],

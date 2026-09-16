@@ -251,3 +251,20 @@ else:
                           f"a run made before this is distinguishable from one "
                           f"made after.")
                 st.rerun()
+
+
+
+# Client rates are deliberately NOT on this page. The vault is the shared
+# market store - published tariffs and cleared benchmarks that every
+# engagement prices from - and it has no case in scope.
+#
+# A client's own invoiced rates belong to one case and must never reach
+# another, so they live on the simulation page where a case is selected. The
+# separation is the control: a rate cannot be recorded into the shared store
+# by accident because the shared store's page cannot name a client.
+st.divider()
+st.caption(
+    "This client's own rates are recorded on the simulation page, where a "
+    "case is in scope. They price that case ahead of this card and are never "
+    "promoted into it - one client's negotiated deal has no business pricing "
+    "another's estate.")

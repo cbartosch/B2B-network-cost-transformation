@@ -238,6 +238,10 @@ def match_prior(priors: dict, country: str, product: str, mbps,
                 # rate, and never the reverse.
                 service_class: str | None = None,
                 access_technology: str | None = None,
+                # This client's own rates, keyed like the priors. Tried before
+                # the market card: an invoiced price is what this company pays
+                # and a benchmark is what somebody else paid.
+                case_rates: dict | None = None,
                 # Scope values to try, most specific first. Optional: without
                 # it the behaviour is exactly as before with `country` as the
                 # only scope, so every existing caller is unaffected.
@@ -276,6 +280,24 @@ def match_prior(priors: dict, country: str, product: str, mbps,
         mbps = access.priced_rate(speed)
 
     ordered = sorted(scopes or [country], key=access.scope_rank)
+
+    # This client's own rates first, always. An invoiced price is a
+    # transaction that happened at this company, and a market benchmark is
+    # what somebody else paid - no amount of market evidence outranks the
+    # client's own bill.
+    #
+    # Keyed the same way, so a case rate and a prior are interchangeable to
+    # everything downstream except the evidence grade they carry.
+    if case_rates:
+        hit = case_rates.get(
+            (country, service_class, access_technology, mbps))
+        if hit is None and access_technology is not None:
+            # A client rate recorded without a bearer still prices: the
+            # invoice said what they pay for an IPVPN at 100 Mbps and may not
+            # have said what carried it.
+            hit = case_rates.get((country, service_class, None, mbps))
+        if hit is not None:
+            return hit, None
 
     if service_class is not None:
         # Keyed on the two dimensions. Tried before the legacy key so a
@@ -316,6 +338,10 @@ def match_prior(priors: dict, country: str, product: str, mbps,
 
 def build_components(*, sim_output: dict, users: int, ops_cost_per_site: dict,
                      priors: dict,
+                     # This client's own rates. The same set the coverage gate
+                     # used, or the gate measures one thing and the total
+                     # prices another.
+                     case_rates: dict | None = None,
                      driver_origins: dict | None = None,
                      # What share of each country's estate exists as a named
                      # location. Optional: without it every site-driven
@@ -432,7 +458,8 @@ def build_components(*, sim_output: dict, users: int, ops_cost_per_site: dict,
         prior, substituted = match_prior(
             priors, row["country"], row["product"], mbps,
             service_class=row.get("service_class"),
-            access_technology=row.get("access_technology"))
+            access_technology=row.get("access_technology"),
+            case_rates=case_rates)
         if not prior:
             unpriced.append({**row, "reason": "NO_APPROVED_PRIOR_AT_BANDWIDTH"
                              if mbps else "NO_APPROVED_PRIOR"})

@@ -1007,3 +1007,77 @@ if runs:
                "passes and resumes to the identical result, because every pass is a "
                "pure function of seed plus index.")
     st.dataframe(pd.DataFrame(runs), use_container_width=True)
+
+
+# --------------------------------------------------- this client's own rates
+st.divider()
+st.subheader("This client's rates")
+st.caption(
+    "What this client actually pays. Priced ahead of the market rate card and "
+    "never promoted to it - one client's negotiated deal has no business "
+    "pricing another's estate, which is why this is a second store rather "
+    "than a flag on the first. An invoiced rate is the only evidence in this "
+    "model that reaches grade A.")
+
+_rk = case_id[:8]
+_r1, _r2, _r3 = st.columns(3)
+_cr_ctry = _r1.text_input("Country (ISO-2)", max_chars=2, key=f"cr_c_{_rk}")
+_cr_cls = _r2.selectbox("Service class",
+                        ["DIA", "IPVPN", "ETHERNET", "BEST_EFFORT"],
+                        key=f"cr_sc_{_rk}")
+_cr_tech = _r3.text_input("Access technology (optional)", key=f"cr_at_{_rk}")
+_r4, _r5, _r6 = st.columns(3)
+_cr_bw = _r4.number_input("Bandwidth Mbps", min_value=0, step=10,
+                          key=f"cr_bw_{_rk}")
+_cr_mrc = _r5.number_input("Monthly charge", min_value=0.0, step=10.0,
+                           key=f"cr_mrc_{_rk}")
+_cr_cur = _r6.text_input("Currency", max_chars=3, key=f"cr_cur_{_rk}")
+_r7, _r8 = st.columns(2)
+_cr_basis = _r7.selectbox(
+    "Basis", ["INVOICE", "CONTRACT", "QUOTE", "CLIENT_STATED"],
+    help="An invoice is what they pay; a quote is what a supplier says they "
+         "would charge. Only the first two reach grade A.",
+    key=f"cr_b_{_rk}")
+_cr_n = _r8.number_input("Circuits this rate covers", min_value=1, step=1,
+                         key=f"cr_n_{_rk}")
+_cr_src = st.text_input("Source (required for an invoice or contract)",
+                        key=f"cr_src_{_rk}")
+_cr_who = st.text_input("Supplying as (your name)", key=f"cr_who_{_rk}")
+if st.button("Record rate",
+             disabled=not (_cr_ctry.strip() and _cr_cur.strip()
+                           and _cr_who.strip() and _cr_mrc > 0)):
+    _res = api.post(f"/v1/outside-in/cases/{case_id}/rates", {
+        "country": _cr_ctry.upper(), "service_class": _cr_cls,
+        "access_technology": _cr_tech or None,
+        "bandwidth_mbps": int(_cr_bw) or None,
+        "monthly_recurring": _cr_mrc, "currency": _cr_cur.upper(),
+        "basis": _cr_basis, "circuit_count": int(_cr_n),
+        "source": _cr_src or None, "supplied_by": _cr_who})
+    if "_error" in _res:
+        st.error(_res["_error"])
+    else:
+        api.flash(f"Recorded at evidence grade {_res['evidence_grade']}.")
+        st.rerun()
+
+_crs = api.get(f"/v1/outside-in/cases/{case_id}/rates")
+if "_error" in _crs:
+    st.error(f"Could not read the rates: {_crs['_error']}")
+elif _crs.get("rates"):
+    st.dataframe(pd.DataFrame([
+        {"country": r["country"], "class": r["service_class"],
+         "access": r["access_technology"] or "", "Mbps": r["bandwidth_mbps"],
+         "monthly": r["monthly_recurring"], "ccy": r["currency"],
+         "basis": r["basis"], "grade": r["evidence_grade"],
+         "circuits": r["circuit_count"]}
+        for r in _crs["rates"]]), use_container_width=True, hide_index=True)
+    _rec = _crs.get("reconciliation") or {}
+    if _rec.get("reconciles") is True:
+        st.success(_rec["note"])
+    elif _rec.get("reconciles") is False:
+        st.warning(_rec["note"])
+    else:
+        st.caption(_rec.get("note", ""))
+else:
+    st.caption(
+        "No rates recorded. Until then this case prices entirely from the "
+        "market card, which is the same card every other engagement uses.")

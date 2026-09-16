@@ -10,7 +10,7 @@ from sqlalchemy import delete, insert, select, text, update
 
 from .. import config, db, jobs, migrations
 from ..domain import (access as access_vocab, anchor_estimate,
-                      assumptions, calibration, currency,
+                      assumptions, calibration, case_rates, currency,
                       delta_bridge, industries, industry_benchmark,
                       providers, validation,
                       validation_capture, archetype as archetype_resolver,
@@ -1996,6 +1996,95 @@ def list_industries():
                  "what that costs.")}
 
 
+class CaseRateIn(BaseModel):
+    country: str = Field(min_length=2, max_length=2)
+    service_class: str
+    access_technology: str | None = None
+    bandwidth_mbps: int | None = None
+    monthly_recurring: Decimal
+    currency: str = Field(min_length=3, max_length=3)
+    basis: str
+    term_months: int | None = None
+    circuit_count: int | None = None
+    source: str | None = None
+    supplied_by: str = Field(min_length=1, max_length=120)
+
+
+@router.post("/v1/outside-in/cases/{case_id}/rates")
+def add_case_rate(case_id: str, payload: CaseRateIn):
+    """A rate this client actually pays.
+
+    Scoped to the case and never promoted. reference.unit_cost_prior is the
+    market card shared by every engagement, and one client's negotiated deal
+    has no business pricing another's estate - which is why this is a second
+    store rather than a flag on the first.
+    """
+    with S() as s:
+        _one_or_404(s, db.case, db.case.c.case_id, case_id, "case")
+        try:
+            record = case_rates.rate(
+                case_id=case_id, country=payload.country,
+                service_class=payload.service_class,
+                access_technology=payload.access_technology,
+                bandwidth_mbps=payload.bandwidth_mbps,
+                monthly_recurring=payload.monthly_recurring,
+                currency=payload.currency, basis=payload.basis,
+                term_months=payload.term_months, source=payload.source,
+                circuit_count=payload.circuit_count)
+        except case_rates.RateRejected as exc:
+            raise HTTPException(422, {"error": "rate not recorded",
+                                      "detail": str(exc)})
+        rate_id = str(uuid.uuid4())
+        s.execute(insert(db.case_rate).values(
+            case_rate_id=rate_id, case_id=case_id,
+            country=record["country"], service_class=record["service_class"],
+            access_technology=record["access_technology"],
+            bandwidth_mbps=record["bandwidth_mbps"],
+            monthly_recurring=D(record["monthly_recurring"]),
+            currency=record["currency"], basis=record["basis"],
+            evidence_grade=record["evidence_grade"],
+            term_months=record["term_months"],
+            circuit_count=record["circuit_count"], source=record["source"],
+            supplied_by=payload.supplied_by,
+            supplied_at=datetime.now(timezone.utc)))
+        s.commit()
+        return {"case_rate_id": rate_id, **record}
+
+
+@router.get("/v1/outside-in/cases/{case_id}/rates")
+def list_case_rates(case_id: str):
+    """This client's rates, with what they reconcile to.
+
+    The self-check a case rate makes possible and a market rate never could:
+    if the supplied lines total less than the client's stated spend, the
+    difference is scope the model has not seen or spend outside the perimeter.
+    """
+    with S() as s:
+        case_row = _one_or_404(s, db.case, db.case.c.case_id, case_id, "case")
+        rows = [
+            {"case_rate_id": r.case_rate_id, "country": r.country,
+             "service_class": r.service_class,
+             "access_technology": r.access_technology,
+             "bandwidth_mbps": r.bandwidth_mbps,
+             "monthly_recurring": str(r.monthly_recurring),
+             "currency": r.currency, "basis": r.basis,
+             "evidence_grade": r.evidence_grade,
+             "term_months": r.term_months, "circuit_count": r.circuit_count,
+             "source": r.source, "supplied_by": r.supplied_by}
+            for r in s.execute(select(db.case_rate).where(
+                db.case_rate.c.case_id == case_id)).all()]
+        declared = case_row.declared_spend_by_country or {}
+        stated = sum(D(str(v)) for v in declared.values()) if declared else None
+        return {
+            "rates": rows,
+            "priced_keys": [list(k) for k in case_rates.index(rows)],
+            "reconciliation": case_rates.leakage(rows, stated_total=stated),
+            "note": ("These price this case ahead of the market rate card and "
+                     "are never promoted to it. A markup derived against a "
+                     "published tariff may cross; the charge itself may not."),
+        }
+
+
 @router.post("/v1/outside-in/cases/{case_id}/providers")
 def record_provider(case_id: str, payload: ProviderIn):
     """Who supplies what, where. More than one per country is normal.
@@ -3092,6 +3181,22 @@ def run_estimate(case_id: str, payload: EstimateIn):
             db.unit_cost_prior.c.country.in_(
                 (countries or ["--"]) + in_scope_regions),
             db.unit_cost_prior.c.approved.is_(True))).all()
+        # This client's own rates, indexed the way match_prior looks priors
+        # up. Tried before the market card: an invoiced price is what this
+        # company pays and a benchmark is what somebody else paid.
+        _case_rate_rows = [
+            {"country": r.country, "service_class": r.service_class,
+             "access_technology": r.access_technology,
+             "bandwidth_mbps": r.bandwidth_mbps,
+             "monthly_recurring": str(r.monthly_recurring),
+             "currency": r.currency, "basis": r.basis,
+             "evidence_grade": r.evidence_grade,
+             "term_months": r.term_months,
+             "circuit_count": r.circuit_count}
+            for r in s.execute(select(db.case_rate).where(
+                db.case_rate.c.case_id == case_id)).all()]
+        client_rates = case_rates.index(_case_rate_rows)
+
         # One currency, or the baseline is a sum of two reported as one.
         #
         # Refused rather than converted: at V0 every rate is an expert
@@ -3141,7 +3246,7 @@ def run_estimate(case_id: str, payload: EstimateIn):
         # (country, product) pair - not accepted from the caller.
         scope = coverage.derive_scope(
             sim_output=sim.output, priors=priors,
-            sizing_priors=sizing_priors,
+            sizing_priors=sizing_priors, case_rates=client_rates,
             # Priced as of the case's price year, not today: an estimate must
             # reproduce, and "expired" against a moving today would make the
             # same run give different answers on different days.
@@ -3209,7 +3314,7 @@ def run_estimate(case_id: str, payload: EstimateIn):
             sim_output=sim.output, users=_resolved_users,
             enumeration=_enumeration,
             ops_cost_per_site={"low": ops * D("0.8"), "base": ops, "high": ops * D("1.3")},
-            priors=priors,
+            priors=priors, case_rates=client_rates,
             # build_components takes driver_origins/driver_refs keyed by the
             # driver names it uses internally ("sites", "users"). This call
             # passed footprint_origin= and users_origin=, which are not

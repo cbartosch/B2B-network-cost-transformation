@@ -359,6 +359,47 @@ product = Table(
     schema="outside_in")
 
 
+# A client's own rates. reference.unit_cost_prior is the market card, keyed by
+# country and product and shared by every engagement - it has no case_id, so
+# there was nowhere to put a price a client actually pays.
+#
+# Which meant the choice was between the best evidence the model can have and
+# not contaminating the reference set, and it took the second by having no
+# third option. Loading one client's invoices into the shared card would price
+# every other engagement off their negotiated deal.
+#
+# outside_in, not reference: the schema is the boundary. Nothing here promotes
+# to a prior. A markup derived against a published tariff may cross, because a
+# markup says something about the market; the charge underneath it says what
+# one company negotiated.
+case_rate = Table(
+    "case_rate", metadata,
+    Column("case_rate_id", String(36), primary_key=True),
+    Column("case_id", String(36), index=True),
+    Column("country", String(2), index=True),
+    Column("service_class", String(16), index=True),
+    Column("access_technology", String(20)),
+    Column("bandwidth_mbps", Integer),
+    Column("monthly_recurring", Numeric(18, 2)),
+    Column("currency", String(3)),
+    # INVOICE, CONTRACT, QUOTE, CLIENT_STATED. Not a formality: an invoice is
+    # what the client pays and a quote is what a supplier says they would
+    # charge, and a baseline of quotes is a baseline of offers.
+    Column("basis", String(16), index=True),
+    # Follows from the basis. An invoice is the only thing in this model that
+    # reaches grade A - a transaction that happened, for this client, at this
+    # price.
+    Column("evidence_grade", String(2)),
+    Column("term_months", Integer),
+    # How many circuits this rate was observed on, so a reader can tell a rate
+    # from one line from a rate from four hundred.
+    Column("circuit_count", Integer),
+    Column("source", Text),
+    Column("supplied_by", String(120)),
+    Column("supplied_at", DateTime(timezone=True)),
+    schema="outside_in")
+
+
 assumption_register = Table(
     "assumption_register", metadata,
     Column("assumption_id", String(36), primary_key=True),

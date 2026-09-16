@@ -149,4 +149,9 @@ SIMULATION_MODEL_VERSION = "sim-1.15.0"
 # measured rather than assumed. A pair like that is evidence about the factor,
 # and the convention would otherwise trust itself over the two quotes in front
 # of it. A measured factor grades C; the convention still caps at E.
-CALCULATION_VERSION = "calc-1.4.0"
+# calc-1.5.0: a client's own invoiced rates price their case ahead of the market
+# card. All eleven reference tables the estimate read were global, so two
+# clients in the same industry and country got the same rate card and only
+# their footprints differed - and there was nowhere to put an invoice, which
+# is the best evidence this model can have.
+CALCULATION_VERSION = "calc-1.5.0"
