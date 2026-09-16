@@ -28,6 +28,80 @@ def _c(item, state, detail):
     return {"item": item, "state": state, "detail": detail}
 
 
+# The fields a pre-flight condition is computed from. Named explicitly rather
+# than hashing the whole case row: `stage`, `stage_advanced_at` and the
+# acknowledgement columns change as a consequence of the workflow moving on,
+# and hashing those would invalidate a report for the act of using it.
+#
+# A field added to the case that a condition reads must be added here too.
+# There is a check in validate_flow for that, because the failure is silent -
+# the report stays valid while the thing it described has changed.
+INPUT_FIELDS = (
+    "subject_entity_legal_name", "entity_identifier", "entity_confirmed_by",
+    "resolved_entity_id", "perimeter_version", "group_perimeter",
+    "included_entities", "excluded_entities",
+    "in_scope_countries", "in_scope_region", "in_scope_cost_layers",
+    "in_scope_service_families", "base_currency", "price_year",
+    "fx_convention", "declared_users", "declared_spend_by_country",
+    "declared_ops_cost_per_site", "engagement_purpose",
+    "client_contact_status", "baseline_reference_period",
+    "analysis_horizon_years", "discount_rate_set_id",
+)
+
+
+def input_digest(session, case_id: str) -> str:
+    """A deterministic hash of everything a pre-flight report is computed from.
+
+    `assert_clear_to_run` trusted the latest acknowledged report and nothing
+    else, so a named person could sign off on findings, the case data could
+    change underneath them, and every later gate still cited that approval.
+    The record of a human decision described a case that no longer existed.
+
+    Covers the three things `run()` reads: the case fields above, the known
+    facts, and which countries have an approved price. Sorted, so two runs over
+    the same data agree - a hash that depends on row order would invalidate a
+    report because the database returned it differently.
+    """
+    import hashlib
+    import json
+
+    row = session.execute(select(db.case).where(
+        db.case.c.case_id == case_id)).first()
+    if row is None:
+        raise LookupError(f"case {case_id!r} not found")
+
+    payload = {field: _stable(getattr(row, field, None))
+               for field in INPUT_FIELDS}
+
+    # Known facts: what each one asserts and whether it is cleared and
+    # corroborated, not when it was written. A fact re-saved without change
+    # must not invalidate an approval.
+    payload["known_facts"] = sorted(
+        (str(f.fact_id), str(f.fact_class), _stable(f.value),
+         str(f.basis), bool(f.rights_cleared), str(f.corroboration_state))
+        for f in session.execute(select(db.known_fact).where(
+            db.known_fact.c.case_id == case_id)).all())
+
+    payload["priced_countries"] = sorted(
+        _priced_countries(session, list(row.in_scope_countries or [])))
+
+    return hashlib.sha256(
+        json.dumps(payload, sort_keys=True, default=str).encode()
+    ).hexdigest()
+
+
+def _stable(value):
+    """A value in a form that hashes the same twice.
+
+    A list is sorted and a dict is left to json's sort_keys: `in_scope_countries`
+    holding ["GB","DE"] and ["DE","GB"] is the same scope, and treating them as
+    different would invalidate an approval for a reordering.
+    """
+    if isinstance(value, (list, tuple, set)):
+        return sorted(str(v) for v in value)
+    return value
+
+
 def run(session, *, case_id: str, mode: str = "LIVE") -> dict:
     row = session.execute(select(db.case).where(db.case.c.case_id == case_id)).first()
     if row is None:
@@ -121,10 +195,16 @@ def run(session, *, case_id: str, mode: str = "LIVE") -> dict:
 
     blocked = any(c["state"] == BLOCK for c in conditions)
     report_id = str(uuid.uuid4())
+    # The digest of what these conditions were computed from, stored with
+    # them. Computed here rather than at acknowledgement, because the thing
+    # being approved is the report and the report describes this data.
+    digest = input_digest(session, case_id)
     session.execute(insert(db.preflight_report).values(
-        report_id=report_id, case_id=case_id, conditions=conditions, blocked=blocked))
+        report_id=report_id, case_id=case_id, conditions=conditions,
+        blocked=blocked, input_digest=digest))
     session.commit()
     return {"report_id": report_id, "blocked": blocked, "conditions": conditions,
+            "input_digest": digest,
             "blocks": [c for c in conditions if c["state"] == BLOCK],
             "warns": [c for c in conditions if c["state"] == WARN]}
 
@@ -188,5 +268,28 @@ def assert_clear_to_run(session, case_id: str) -> None:
     if report.blocked:
         blocks = [c["item"] for c in report.conditions if c["state"] == BLOCK]
         raise PermissionError(f"pre-flight BLOCK conditions open: {', '.join(blocks)}")
+
+    # The case must still be the case that was approved.
+    #
+    # This trusted the latest acknowledged report and nothing else, so a named
+    # person could sign off on findings, the case data could change underneath
+    # them, and every later gate still cited that approval - the record of a
+    # human decision describing a case that no longer existed.
+    #
+    # A report with no digest was written before this was recorded. Reported as
+    # unverifiable rather than treated as a mismatch: an approval given in good
+    # faith should not become a block because the model learned to check
+    # something new.
+    stored = getattr(report, "input_digest", None)
+    if stored:
+        current = input_digest(session, case_id)
+        if current != stored:
+            raise PermissionError(
+                f"the pre-flight report acknowledged by "
+                f"{report.acknowledged_by or 'nobody'} was computed from "
+                f"different case data - scope, known facts or approved pricing "
+                f"has changed since. Re-run the readiness check and have it "
+                f"acknowledged again; the old approval described a case that "
+                f"no longer exists.")
     if not report.acknowledged_by:
         raise PermissionError("pre-flight report has not been acknowledged by a named user")

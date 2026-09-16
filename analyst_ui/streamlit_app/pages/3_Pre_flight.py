@@ -107,3 +107,27 @@ else:
             api.flash("Acknowledged. The report is persisted and will be "
                       "reproduced beside the published estimate.")
             st.rerun()
+
+
+
+# ------------------------------------- whether the approval still describes it
+# Reads the report the page already fetched rather than calling again: two
+# fetches of the same thing can disagree, and the second would be the one
+# nobody looked at.
+if report and report.get("acknowledged_by"):
+    if not report.get("input_digest"):
+        st.info(
+            "This report was acknowledged before the workbench recorded what "
+            "its findings were computed from, so whether the case has changed "
+            "since cannot be checked. Re-running the readiness check records "
+            "it.")
+    elif report.get("stale"):
+        st.error(
+            f"The acknowledgement by {report['acknowledged_by']} describes "
+            f"different case data - scope, known facts or approved pricing has "
+            f"changed since. Re-run the check and have it acknowledged again: "
+            f"the old approval described a case that no longer exists.")
+    else:
+        st.success(
+            f"Acknowledged by {report['acknowledged_by']}, and the case is "
+            f"still the case that was approved.")

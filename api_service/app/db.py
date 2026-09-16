@@ -253,6 +253,11 @@ preflight_report = Table(
     Column("case_id", String(36), ForeignKey("engagement.engagement_case.case_id"), index=True),
     Column("created_at", DateTime(timezone=True), default=_now),
     Column("conditions", JSON), Column("blocked", Boolean),
+    # A hash of everything the conditions were computed from. The gate
+    # trusted the latest acknowledged report and nothing else, so a named
+    # person could sign off, the case could change underneath them, and every
+    # later stage still cited that approval.
+    Column("input_digest", String(64), index=True),
     Column("acknowledged_by", String(120)),
     Column("acknowledged_at", DateTime(timezone=True)),
     schema="outside_in",

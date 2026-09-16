@@ -45,13 +45,29 @@ def test_a_default_row_exists_for_every_archetype():
 def test_the_industries_actually_differ_from_the_default():
     """A table where every sector matches DEFAULT buys nothing and costs a
     join. Each industry has to disagree somewhere or it should not be there."""
+    # Compared only on archetypes DEFAULT also has. Since BICS became the
+    # taxonomy an industry can name a site type DEFAULT has never heard of -
+    # TOWER_SITE, FAB, MEGA_CONTAINER_PORT - and there is nothing to compare
+    # those against. An industry whose only site type is one of those differs
+    # from DEFAULT by definition.
     industries = {i for i, *_ in ARCHETYPE_BANDWIDTH} - {"DEFAULT"}
+    default_archetypes = {a for (i, a) in BY_KEY if i == "DEFAULT"}
     for industry in industries:
-        differs = [a for (i, a), b in BY_KEY.items()
-                   if i == industry and b != BY_KEY[("DEFAULT", a)]]
-        assert differs, (
-            f"{industry} is identical to DEFAULT at every site type - either "
-            f"it differs somewhere or it does not belong in the table")
+        mine = {a for (i, a) in BY_KEY if i == industry}
+        if not (mine & default_archetypes):
+            continue                    # every site type is its own
+        # An industry differs if it disagrees on a shared site type OR if it
+        # names one of its own. SEMICONDUCTORS shares only supporting
+        # archetypes with DEFAULT - an office and a DC - and those take
+        # DEFAULT's figures deliberately, because the benchmark said nothing
+        # about them. Its FAB is where it differs, and the FAB is the point.
+        differs = [a for a in mine & default_archetypes
+                   if BY_KEY[(industry, a)] != BY_KEY[("DEFAULT", a)]]
+        own = sorted(mine - default_archetypes)
+        assert differs or own, (
+            f"{industry} matches DEFAULT at every shared site type and names "
+            f"none of its own - either it differs somewhere or it does not "
+            f"belong in the table")
 
 
 def test_a_bank_branch_needs_more_than_a_generic_store():

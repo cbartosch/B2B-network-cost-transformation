@@ -927,10 +927,23 @@ def get_preflight(case_id: str):
         row = preflight.latest(s, case_id)
         if row is None:
             raise HTTPException(404, "no pre-flight report; POST :run first")
+        # Whether the case is still the case these findings describe.
+        #
+        # Read-only, and computed rather than stored: storing it would go
+        # stale itself. A report with no digest predates this check and is
+        # reported as unverifiable, not as a mismatch - an approval given in
+        # good faith should not become a block because the model learned to
+        # check something new.
+        stored = getattr(row, "input_digest", None)
+        stale = None
+        if stored:
+            stale = preflight.input_digest(s, case_id) != stored
         return {"case_id": case_id,
                 "report_id": row.report_id, "blocked": row.blocked,
                 "conditions": row.conditions,
                 "acknowledged_by": row.acknowledged_by,
+                "input_digest": stored,
+                "stale": stale,
                 "blocks": [c for c in row.conditions if c["state"] == "BLOCK"],
                 "warns": [c for c in row.conditions if c["state"] == "WARN"]}
 
