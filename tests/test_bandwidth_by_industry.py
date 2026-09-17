@@ -166,3 +166,75 @@ def test_a_higher_tier_costs_more_than_the_one_below_it():
             assert tiers[upper] > tiers[lower], (
                 f"{country}/{product}: {upper} Mbps costs {tiers[upper]} and "
                 f"{lower} Mbps costs {tiers[lower]}")
+
+
+def test_every_country_prices_the_primary_circuits_its_estates_need():
+    """A Dutch and French estate came back 67% covered while the same estate in
+    the US covered 100%. France and the Netherlands quoted no Ethernet at all
+    and no DIA above 500 Mbps, while GB, DE and US quoted both.
+
+    Nothing caught it because the priceability check above asks "does *any*
+    country quote this tier" - and ETHERNET 250 exists in the US, so it passed
+    while France could not price it. A global check hiding a per-country gap is
+    the same shape as the defect it was written to catch."""
+    from app.domain.access import LEGACY_PRODUCT
+    from app.seed import ARCHETYPES, ARCHETYPE_BANDWIDTH, PRIORS, SERVICEABILITY
+
+    product_of = {row[0]: row[4] for row in ARCHETYPES}
+    tiers, countries = {}, set()
+    for country, product, _layer, mbps, *_rest in PRIORS:
+        tiers.setdefault((country, product), set()).add(int(mbps))
+        if len(country) == 2:
+            countries.add(country)
+
+    # Primary circuits only: a 5G backup at 50 Mbps behind a 275 Mbps primary
+    # is a deliberate degraded path, not a missing rate.
+    wanted = {(product_of[a], int(m)) for _i, a, m in ARCHETYPE_BANDWIDTH
+              if a in product_of}
+    # And only where the bearer can be delivered. Singapore quotes no cable
+    # broadband because Singapore has no cable network.
+    deliverable = {(c, t) for c, _b, t, available, _m in SERVICEABILITY
+                   if available}
+    bearer = {p: pair[1] for p, pair in LEGACY_PRODUCT.items()}
+
+    gaps = {}
+    for country in sorted(countries):
+        missing = [(p, m) for p, m in sorted(wanted)
+                   if not (bearer.get(p)
+                           and (country, bearer[p]) not in deliverable)
+                   and not any(t >= m
+                               for t in tiers.get((country, p), set()))]
+        if missing:
+            gaps[country] = missing
+    assert not gaps, gaps
+
+
+def test_a_filled_tier_leaves_no_hole_beneath_it():
+    """match_prior takes the cheapest tier at or above the requirement, so a
+    hole between 100 and 1000 prices a 500 Mbps circuit at the gigabit rate.
+    The UAE had exactly that until the 500 row was emitted alongside."""
+    from app.seed import PRIORS
+
+    by_key = {}
+    for country, product, _layer, mbps, *_rest in PRIORS:
+        by_key.setdefault((country, product), set()).add(int(mbps))
+
+    for (country, product), tiers in by_key.items():
+        if product != "DIA" or len(country) != 2:
+            continue
+        if 100 in tiers and 1000 in tiers:
+            assert 500 in tiers, (
+                f"{country}/DIA jumps 100 to 1000 with no 500 - a 500 Mbps "
+                f"circuit there is priced at the gigabit rate")
+
+
+def test_a_country_with_no_rate_curve_is_left_alone():
+    """A country quoting no DIA at all has no curve to extend, and inventing
+    one would assert a market rather than extend a known one."""
+    from app.seed import PRIORS
+
+    dia = {c for c, p, *_ in PRIORS if p == "DIA"}
+    ethernet = {c for c, p, *_ in PRIORS if p == "ETHERNET"}
+    invented = sorted(c for c in ethernet if c not in dia and len(c) == 2)
+    assert not invented, (
+        f"{invented} have Ethernet tiers without a DIA row to scale from")

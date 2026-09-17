@@ -317,6 +317,73 @@ THRESHOLDS = [
 #
 # Bandwidth tiers follow the archetype bandwidth_mbps_base values below, so a
 # site's required bandwidth has a price to match rather than a nearest guess.
+# The tiers each country's own estates need and its card does not quote.
+#
+# A Dutch and French estate came back 67% covered while the same estate in the
+# US covered 100%: FR and NL quote no Ethernet at all and no DIA above 500
+# Mbps, while GB, DE and US quote both. Nothing caught it because the
+# priceability check asked "does *any* country quote this tier" - and ETHERNET
+# 250 exists in the US, so it passed while France could not price it.
+#
+# Derived from each country's own DIA curve rather than copied from Germany.
+# France and the Netherlands both price DIA at 100 and 500, so the shape of
+# their own market is known; what is missing is the top of the curve and the
+# Ethernet product beside it. Copying DE would assert that a French circuit
+# costs what a German one costs, which is the thing a rate card exists to
+# answer rather than assume.
+#
+# Grade E, like every seeded rate. They make these estates priceable; they do
+# not make them evidenced, and a real engagement in France should replace them
+# with a quote.
+_TIER_FILL = (
+    # (product, tier, multiple of this country's own DIA 500 base)
+    #
+    # DIA 500 is emitted too, for a country anchored on its 100 row: leaving a
+    # hole between 100 and 1000 means match_prior takes the next tier up, so a
+    # 500 Mbps circuit in the UAE would have been priced at the gigabit rate.
+    ("DIA", 500, "1.00"),
+    ("DIA", 1000, "1.45"),        # DE and GB both run ~1.45x from 500 to 1000
+    ("ETHERNET", 500, "0.80"),    # Ethernet undercuts DIA at the same tier
+    ("ETHERNET", 1000, "1.15"),
+    ("ETHERNET", 10000, "3.80"),  # DE runs 4000/1090 = 3.7x from DIA 500
+)
+
+
+def _fill_country_tiers(rows):
+    """Tiers a country's estates need, scaled from that country's own DIA 500.
+
+    Only for a country that already quotes DIA at 500 - that row is the anchor,
+    and a country without one has no curve to extend. Never overwrites an
+    existing row.
+    """
+    from decimal import Decimal as _D
+
+    anchors, present = {}, set()
+    for country, product, layer, mbps, low, base, high in rows:
+        present.add((country, product, mbps))
+        # DIA 500 is the preferred anchor. The UAE quotes DIA at 100 only, so
+        # its curve starts lower - scaled from 100 with the step to 500 that
+        # every other market shows, rather than left unpriceable. A country
+        # with no DIA row at all is left alone: there is no curve to extend and
+        # inventing one would assert a market.
+        if product == "DIA" and len(country) == 2:
+            rank = {500: 2, 100: 1}.get(mbps)
+            if rank and rank > anchors.get(country, (0,))[0]:
+                scale = _D("1") if mbps == 500 else _D("1.90")
+                anchors[country] = (rank, layer, _D(low) * scale,
+                                    _D(base) * scale, _D(high) * scale)
+
+    out = []
+    for country, (_rank, layer, low, base, high) in sorted(anchors.items()):
+        for product, tier, factor in _TIER_FILL:
+            if (country, product, tier) in present:
+                continue
+            f = _D(factor)
+            out.append((country, product, layer, tier,
+                        int(low * f), int(base * f), int(high * f)))
+    return out
+
+
 # Consumer-access tiers above 100 Mbps, added in 4.205.0.
 #
 # The BICS benchmark puts a supermarket store at 275 Mbps and the card quoted
@@ -461,6 +528,7 @@ PRIORS = [
 ]
 
 PRIORS = PRIORS + _consumer_tiers(PRIORS)
+PRIORS = PRIORS + _fill_country_tiers(PRIORS)
 
 # How an estate of a given kind typically distributes. Shares of the whole
 # estate, so each industry's rows sum to 1.

@@ -169,4 +169,8 @@ SIMULATION_MODEL_VERSION = "sim-1.17.0"
 # breadth of inclusions. Comparing the basis alone reported a narrower rule as
 # wider and flagged a correct pair of counts as impossible - a France-only
 # company-operated footprint against a published global store count.
-CALCULATION_VERSION = "calc-1.6.1"
+# calc-1.7.0: every country prices the primary circuits its own estates need.
+# France and the Netherlands quoted no Ethernet and no DIA above 500 Mbps while
+# GB, DE and US quoted both, so a Dutch and French estate covered 67% where the
+# same estate in the US covered 100%.
+CALCULATION_VERSION = "calc-1.7.0"

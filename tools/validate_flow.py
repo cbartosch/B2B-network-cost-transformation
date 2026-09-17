@@ -655,6 +655,101 @@ def seeded_bandwidths_are_priceable() -> list:
     return problems
 
 
+def every_country_prices_what_its_estates_need() -> list:
+    """A product an estate needs that one country in scope cannot price.
+
+    The check above asks "does *any* country quote this tier" and passes while
+    a specific country cannot. ETHERNET 250 exists in the US, so it passed -
+    and France and the Netherlands quote no Ethernet at all and no DIA above
+    500 Mbps, which is why a Dutch and French estate came back 67% covered
+    while the same estate in the US covered 100%.
+
+    A global check hiding a per-country gap is the same shape as the defect it
+    was written to catch.
+
+    Reported per country rather than per industry: the fix is a rate row in a
+    market, not a change to an industry.
+    """
+    import importlib.machinery
+    import sys
+    import types as _types
+
+    for library in ("sqlalchemy", "sqlalchemy.orm", "sqlalchemy.exc",
+                    "sqlalchemy.engine", "sqlalchemy.dialects",
+                    "sqlalchemy.dialects.postgresql", "psycopg"):
+        stub = _types.ModuleType(library)
+        stub.__getattr__ = lambda _n: type("A", (), {
+            "__getattr__": lambda s, _x: s,
+            "__call__": lambda s, *a, **k: s})()
+        stub.__spec__ = importlib.machinery.ModuleSpec(library, loader=None)
+        sys.modules.setdefault(library, stub)
+    sys.path[:0] = [str(ROOT), str(ROOT / "api_service")]
+    try:
+        from app import seed as seed_module
+    except Exception as exc:                                # noqa: BLE001
+        return [f"the seed could not be imported: {type(exc).__name__}"]
+
+    product_of = {row[0]: row[4] for row in seed_module.ARCHETYPES}
+    backup_of = {row[0]: row[5] for row in seed_module.ARCHETYPES}
+
+    # Two-letter scopes only. A region is a deliberate fallback for a country
+    # with no card of its own, and holding it to the same completeness would
+    # report every region as broken.
+    tiers = {}
+    countries = set()
+    for country, product, _layer, mbps, *_rest in seed_module.PRIORS:
+        tiers.setdefault((country, product), set()).add(int(mbps))
+        if len(country) == 2:
+            countries.add(country)
+
+    # What a PRIMARY circuit can ask for. Backups are excluded: a 5G backup at
+    # 50 Mbps behind a 275 Mbps primary is a deliberate degraded path, not a
+    # missing rate, and pairing a backup product with the primary's bandwidth
+    # reported fourteen such pairs as gaps.
+    wanted = set()
+    for industry, archetype, mbps in seed_module.ARCHETYPE_BANDWIDTH:
+        product = product_of.get(archetype)
+        if product:
+            wanted.add((product, int(mbps)))
+
+    # And only where the bearer can actually be delivered. Singapore quotes no
+    # cable broadband because Singapore has no cable network - serviceability
+    # records that, the model substitutes fibre, and reporting it as a pricing
+    # gap is reporting a market that does not exist.
+    deliverable = set()
+    for country, _band, technology, available, _mbps in (
+            seed_module.SERVICEABILITY):
+        if available:
+            deliverable.add((country, technology))
+    legacy = {}
+    try:
+        from app.domain.access import LEGACY_PRODUCT
+        legacy = {product: pair[1] for product, pair in LEGACY_PRODUCT.items()}
+    except Exception:                                       # noqa: BLE001
+        pass
+
+    problems = []
+    for country in sorted(countries):
+        missing = []
+        for product, mbps in sorted(wanted):
+            technology = legacy.get(product)
+            if technology and (country, technology) not in deliverable:
+                # Not deliverable here, so not a pricing gap.
+                continue
+            if not any(tier >= mbps
+                       for tier in tiers.get((country, product), set())):
+                missing.append((product, mbps))
+        if missing:
+            shown = ", ".join(f"{p} {m}" for p, m in missing[:4])
+            problems.append(
+                f"{country} cannot price {len(missing)} (product, bandwidth) "
+                f"pair(s) its estates can ask for - {shown}"
+                + (f" and {len(missing) - 4} more" if len(missing) > 4 else "")
+                + ". An estate in this country is unpriced scope wherever it "
+                  "needs one of these, whatever another country quotes.")
+    return problems
+
+
 def seeded_values_fit_their_type() -> list:
     """A seeded value the column cannot hold fails the whole seed.
 
@@ -758,6 +853,8 @@ CHECKS = [
     ("every seeded value fits its column type", seeded_values_fit_their_type),
     ("every seeded bandwidth has a tier that can price it",
      seeded_bandwidths_are_priceable),
+    ("every country prices what its estates need",
+     every_country_prices_what_its_estates_need),
     ("every cls attribute a classmethod reads exists",
      class_attributes_a_classmethod_reads_exist),
     ("every enum member a gate names exists", enum_members_gates_name_exist),
