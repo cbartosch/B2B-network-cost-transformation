@@ -232,8 +232,30 @@ def compare(*, left_count, left_rule: dict, right_count,
                      if gap else "the same rule and the same count"),
         }
 
-    wider = ("right" if right_breadth > left_breadth
-             else "left" if left_breadth > right_breadth else None)
+    # Basis and inclusions are separate axes, and the first version of this
+    # compared only the basis. That produced a false contradiction: a
+    # CONNECTED_LOCATION rule excluding franchise is *narrower* than an
+    # OPERATED_FACILITY rule including it, and reporting the first as "the
+    # wider rule returning the smaller count" accused a correct pair of
+    # counts of being impossible.
+    #
+    # One rule is wider only if it is at least as wide on both axes and
+    # strictly wider on one. Anything else is two rules that overlap, and
+    # overlapping rules support no directional claim at all.
+    left_included = set(left_rule.get("includes") or ())
+    right_included = set(right_rule.get("includes") or ())
+
+    def _wider_than(a_breadth, a_inc, b_breadth, b_inc):
+        return (a_breadth >= b_breadth and a_inc >= b_inc
+                and (a_breadth > b_breadth or a_inc > b_inc))
+
+    if _wider_than(right_breadth, right_included, left_breadth, left_included):
+        wider = "right"
+    elif _wider_than(left_breadth, left_included, right_breadth, right_included):
+        wider = "left"
+    else:
+        wider = None
+
     expectation = None
     if wider == "right" and right < left:
         expectation = ("the wider rule returns the smaller count, which cannot "

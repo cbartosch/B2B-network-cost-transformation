@@ -125,9 +125,19 @@ def test_different_rules_on_one_geography_answer_different_questions():
 
 
 def test_a_wider_rule_returning_a_smaller_count_is_flagged():
-    """On one geography that cannot both be true."""
+    """On one geography that cannot both be true.
+
+    The narrow rule must be narrower on BOTH axes. This asserted a
+    contradiction against a MAJOR_SITE rule that included every category -
+    narrower basis, wider inclusions - and neither rule contains the other,
+    so no direction was ever available. A CONNECTED_LOCATION rule excluding
+    franchise is genuinely narrower than an OPERATED_FACILITY rule including
+    it, and calling the first "wider" accused a correct pair of counts of
+    being impossible."""
     narrow = site_rule.rule(basis=site_rule.MAJOR_SITE,
-                            includes=list(site_rule.INCLUSIONS),
+                            includes=["FRANCHISE"],
+                            excludes=[i for i in site_rule.INCLUSIONS
+                                      if i != "FRANCHISE"],
                             minimum_headcount=50)
     out = site_rule.compare(left_count=400, left_rule=_full(),
                             left_scope=["FR"], right_count=900,
@@ -194,3 +204,52 @@ def test_a_footprint_row_can_say_where_its_number_came_from():
     api = (app / "routers" / "api.py").read_text()
     block = api[api.index("class FootprintRow"):][:900]
     assert "count_source" in block
+
+
+# ------------------- a rule is wider on two axes, not one
+def test_basis_alone_does_not_decide_which_rule_is_wider():
+    """The false contradiction this fixes.
+
+    A CONNECTED_LOCATION rule that excludes franchise is *narrower* than an
+    OPERATED_FACILITY rule that includes it - the basis is wider and the
+    inclusions are not. Comparing the basis alone reported the first as "the
+    wider rule returning the smaller count" and accused a correct pair of
+    counts of being impossible.
+
+    This came out of a real check: a France-only company-operated footprint of
+    5,230 against a published global store count of 14,000."""
+    narrow_basis_wide_inclusions = site_rule.rule(
+        basis=site_rule.OPERATED_FACILITY,
+        includes=["FRANCHISE", "PARTNER_OPERATED", "SHARED_TENANCY",
+                  "SEASONAL"],
+        excludes=["UNMANNED", "UNDER_CONSTRUCTION"])
+    wide_basis_narrow_inclusions = site_rule.rule(
+        basis=site_rule.CONNECTED_LOCATION,
+        includes=["SHARED_TENANCY"],
+        excludes=["FRANCHISE", "PARTNER_OPERATED", "UNMANNED", "SEASONAL",
+                  "UNDER_CONSTRUCTION"])
+
+    out = site_rule.compare(
+        left_count=5230, left_rule=wide_basis_narrow_inclusions,
+        right_count=14000, right_rule=narrow_basis_wide_inclusions,
+        left_scope=["FR"], right_scope=["FR"])
+    assert out["comparable"] is False
+    assert out["wider"] is None, (
+        "neither rule contains the other, so no direction can be claimed")
+    assert not out.get("contradiction"), (
+        "two overlapping rules returning different counts is not a "
+        "contradiction")
+
+
+def test_the_same_rule_makes_a_difference_a_real_disagreement():
+    """Identical rules and different counts is the one case where somebody is
+    actually wrong about the estate."""
+    rule = site_rule.rule(basis=site_rule.OPERATED_FACILITY,
+                          includes=["FRANCHISE"],
+                          excludes=[i for i in site_rule.INCLUSIONS
+                                    if i != "FRANCHISE"])
+    out = site_rule.compare(left_count=5230, left_rule=rule,
+                            right_count=5700, right_rule=rule,
+                            left_scope=["FR"], right_scope=["FR"])
+    assert out["comparable"] is True
+    assert out["difference"] == "470"

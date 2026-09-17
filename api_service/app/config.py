@@ -165,4 +165,8 @@ SIMULATION_MODEL_VERSION = "sim-1.17.0"
 # calc-1.6.0: consumer access is priced above 100 Mbps. The BICS benchmark put a
 # supermarket store at 275 Mbps and the card stopped at 100, so every store in
 # every retail estate was unpriced scope - 2% coverage for a French grocer.
-CALCULATION_VERSION = "calc-1.6.0"
+# calc-1.6.1: two site-inclusion rules are compared on breadth of basis AND
+# breadth of inclusions. Comparing the basis alone reported a narrower rule as
+# wider and flagged a correct pair of counts as impossible - a France-only
+# company-operated footprint against a published global store count.
+CALCULATION_VERSION = "calc-1.6.1"
