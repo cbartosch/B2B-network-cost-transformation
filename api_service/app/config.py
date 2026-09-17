@@ -177,4 +177,8 @@ SIMULATION_MODEL_VERSION = "sim-1.17.0"
 # countries that have a card. The three regions held one backbone row each, so
 # a country without its own card fell through to a region that could not price
 # a branch - and the map had nine rows, so most countries reached no region.
-CALCULATION_VERSION = "calc-1.8.0"
+# calc-1.9.0: every ISO-3166-1 country reaches a region, generated against the
+# system's iso-codes list. The map had seventy rows chosen by thinking about
+# where clients are - eight African countries out of fifty-four - so Ethiopian
+# Airlines came back 37% covered because nobody had listed Ethiopia.
+CALCULATION_VERSION = "calc-1.9.0"

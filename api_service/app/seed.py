@@ -728,37 +728,77 @@ SERVICEABILITY = [
 # country is reported rather than guessed.
 # Which region a country falls back to when it has no card of its own.
 #
-# This had nine rows - the seven countries that already have a card, plus
-# Brazil and India. So Poland, Japan, Mexico, Australia and every other
-# country mapped to nothing and could not reach a fallback at all: an estate
-# there was unpriced scope whatever the regions held.
+# Every ISO-3166-1 alpha-2 country, generated against the system's own
+# iso-codes list rather than typed from memory: 242 assigned, 7 uninhabited or
+# research-only skipped, and a test asserts no ISO code is missing.
 #
-# The three regions are the ones the backbone is scoped to. A country is
-# placed by where its access market resembles its neighbours, not by
-# geography alone: Turkey and Israel sit in EMEA because that is how carriers
-# sell there, and Mexico in AMER for the same reason.
+# This had nine rows - the seven countries with a card, plus Brazil and India.
+# Then seventy, chosen by thinking about where clients are, which encoded a
+# Western bias: Africa got eight of fifty-four, and Ethiopian Airlines came
+# back 37% covered because Ethiopia, Togo and Cote d'Ivoire were all absent.
+# An estate was unpriced because nobody had listed its country.
+#
+# EMEA = Europe, the Middle East and Africa. AMER = the Americas. APAC = Asia
+# and Oceania. Three regions is the shape the backbone already uses.
+#
+# **These assignments are carrier-market judgements, not geography.** The
+# Caucasus and Central Asia sit in APAC here because that is the more common
+# carrier split; several operators put them in EMEA, and an engagement whose
+# supplier does can retune the row. Turkey and Israel are in EMEA for the same
+# reason. The table is governed data, so a steward changes it without a
+# release.
+#
+# EMEA spans Germany and Ethiopia, which is a median across markets differing
+# by more than a factor of three. Splitting it needs at least one African
+# country with a real rate card to derive from - a research task, not a code
+# one - and until then the scope ladder records that a REGION price was used
+# and the confidence score counts it as unsourced.
 COUNTRY_REGION = [
-    # --- EMEA
-    ("GB", "EMEA"), ("DE", "EMEA"), ("FR", "EMEA"), ("NL", "EMEA"),
-    ("AE", "EMEA"), ("IE", "EMEA"), ("BE", "EMEA"), ("LU", "EMEA"),
-    ("ES", "EMEA"), ("PT", "EMEA"), ("IT", "EMEA"), ("CH", "EMEA"),
-    ("AT", "EMEA"), ("DK", "EMEA"), ("SE", "EMEA"), ("NO", "EMEA"),
-    ("FI", "EMEA"), ("PL", "EMEA"), ("CZ", "EMEA"), ("SK", "EMEA"),
-    ("HU", "EMEA"), ("RO", "EMEA"), ("BG", "EMEA"), ("GR", "EMEA"),
-    ("HR", "EMEA"), ("SI", "EMEA"), ("EE", "EMEA"), ("LV", "EMEA"),
-    ("LT", "EMEA"), ("TR", "EMEA"), ("IL", "EMEA"), ("SA", "EMEA"),
-    ("QA", "EMEA"), ("KW", "EMEA"), ("BH", "EMEA"), ("OM", "EMEA"),
-    ("EG", "EMEA"), ("MA", "EMEA"), ("ZA", "EMEA"), ("NG", "EMEA"),
-    ("KE", "EMEA"), ("GH", "EMEA"), ("TZ", "EMEA"), ("UA", "EMEA"),
-    # --- AMER
-    ("US", "AMER"), ("CA", "AMER"), ("MX", "AMER"), ("BR", "AMER"),
-    ("AR", "AMER"), ("CL", "AMER"), ("CO", "AMER"), ("PE", "AMER"),
-    ("UY", "AMER"), ("PA", "AMER"), ("CR", "AMER"), ("DO", "AMER"),
-    # --- APAC
-    ("SG", "APAC"), ("IN", "APAC"), ("JP", "APAC"), ("KR", "APAC"),
-    ("CN", "APAC"), ("HK", "APAC"), ("TW", "APAC"), ("AU", "APAC"),
-    ("NZ", "APAC"), ("MY", "APAC"), ("TH", "APAC"), ("ID", "APAC"),
-    ("PH", "APAC"), ("VN", "APAC"),
+    # --- EMEA: Europe, Middle East, Africa (125 countries)
+    ("AD", "EMEA"), ("AE", "EMEA"), ("AL", "EMEA"), ("AO", "EMEA"), ("AT", "EMEA"), ("AX", "EMEA"),
+    ("BA", "EMEA"), ("BE", "EMEA"), ("BF", "EMEA"), ("BG", "EMEA"), ("BH", "EMEA"), ("BI", "EMEA"),
+    ("BJ", "EMEA"), ("BW", "EMEA"), ("BY", "EMEA"), ("CD", "EMEA"), ("CF", "EMEA"), ("CG", "EMEA"),
+    ("CH", "EMEA"), ("CI", "EMEA"), ("CM", "EMEA"), ("CV", "EMEA"), ("CY", "EMEA"), ("CZ", "EMEA"),
+    ("DE", "EMEA"), ("DJ", "EMEA"), ("DK", "EMEA"), ("DZ", "EMEA"), ("EE", "EMEA"), ("EG", "EMEA"),
+    ("EH", "EMEA"), ("ER", "EMEA"), ("ES", "EMEA"), ("ET", "EMEA"), ("FI", "EMEA"), ("FO", "EMEA"),
+    ("FR", "EMEA"), ("GA", "EMEA"), ("GB", "EMEA"), ("GG", "EMEA"), ("GH", "EMEA"), ("GI", "EMEA"),
+    ("GM", "EMEA"), ("GN", "EMEA"), ("GQ", "EMEA"), ("GR", "EMEA"), ("GW", "EMEA"), ("HR", "EMEA"),
+    ("HU", "EMEA"), ("IE", "EMEA"), ("IL", "EMEA"), ("IM", "EMEA"), ("IQ", "EMEA"), ("IR", "EMEA"),
+    ("IS", "EMEA"), ("IT", "EMEA"), ("JE", "EMEA"), ("JO", "EMEA"), ("KE", "EMEA"), ("KM", "EMEA"),
+    ("KW", "EMEA"), ("LB", "EMEA"), ("LI", "EMEA"), ("LR", "EMEA"), ("LS", "EMEA"), ("LT", "EMEA"),
+    ("LU", "EMEA"), ("LV", "EMEA"), ("LY", "EMEA"), ("MA", "EMEA"), ("MC", "EMEA"), ("MD", "EMEA"),
+    ("ME", "EMEA"), ("MG", "EMEA"), ("MK", "EMEA"), ("ML", "EMEA"), ("MR", "EMEA"), ("MT", "EMEA"),
+    ("MU", "EMEA"), ("MW", "EMEA"), ("MZ", "EMEA"), ("NA", "EMEA"), ("NE", "EMEA"), ("NG", "EMEA"),
+    ("NL", "EMEA"), ("NO", "EMEA"), ("OM", "EMEA"), ("PL", "EMEA"), ("PS", "EMEA"), ("PT", "EMEA"),
+    ("QA", "EMEA"), ("RE", "EMEA"), ("RO", "EMEA"), ("RS", "EMEA"), ("RU", "EMEA"), ("RW", "EMEA"),
+    ("SA", "EMEA"), ("SC", "EMEA"), ("SD", "EMEA"), ("SE", "EMEA"), ("SH", "EMEA"), ("SI", "EMEA"),
+    ("SJ", "EMEA"), ("SK", "EMEA"), ("SL", "EMEA"), ("SM", "EMEA"), ("SN", "EMEA"), ("SO", "EMEA"),
+    ("SS", "EMEA"), ("ST", "EMEA"), ("SY", "EMEA"), ("SZ", "EMEA"), ("TD", "EMEA"), ("TG", "EMEA"),
+    ("TN", "EMEA"), ("TR", "EMEA"), ("TZ", "EMEA"), ("UA", "EMEA"), ("UG", "EMEA"), ("VA", "EMEA"),
+    ("YE", "EMEA"), ("YT", "EMEA"), ("ZA", "EMEA"), ("ZM", "EMEA"), ("ZW", "EMEA"),
+    # --- AMER: the Americas (55 countries)
+    ("AG", "AMER"), ("AI", "AMER"), ("AR", "AMER"), ("AW", "AMER"), ("BB", "AMER"), ("BL", "AMER"),
+    ("BM", "AMER"), ("BO", "AMER"), ("BQ", "AMER"), ("BR", "AMER"), ("BS", "AMER"), ("BZ", "AMER"),
+    ("CA", "AMER"), ("CL", "AMER"), ("CO", "AMER"), ("CR", "AMER"), ("CU", "AMER"), ("CW", "AMER"),
+    ("DM", "AMER"), ("DO", "AMER"), ("EC", "AMER"), ("FK", "AMER"), ("GD", "AMER"), ("GF", "AMER"),
+    ("GL", "AMER"), ("GP", "AMER"), ("GT", "AMER"), ("GY", "AMER"), ("HN", "AMER"), ("HT", "AMER"),
+    ("JM", "AMER"), ("KN", "AMER"), ("KY", "AMER"), ("LC", "AMER"), ("MF", "AMER"), ("MQ", "AMER"),
+    ("MS", "AMER"), ("MX", "AMER"), ("NI", "AMER"), ("PA", "AMER"), ("PE", "AMER"), ("PM", "AMER"),
+    ("PR", "AMER"), ("PY", "AMER"), ("SR", "AMER"), ("SV", "AMER"), ("SX", "AMER"), ("TC", "AMER"),
+    ("TT", "AMER"), ("US", "AMER"), ("UY", "AMER"), ("VC", "AMER"), ("VE", "AMER"), ("VG", "AMER"),
+    ("VI", "AMER"),
+    # --- APAC: Asia and Oceania (62 countries)
+    ("AF", "APAC"), ("AM", "APAC"), ("AS", "APAC"), ("AU", "APAC"), ("AZ", "APAC"), ("BD", "APAC"),
+    ("BN", "APAC"), ("BT", "APAC"), ("CC", "APAC"), ("CK", "APAC"), ("CN", "APAC"), ("CX", "APAC"),
+    ("FJ", "APAC"), ("FM", "APAC"), ("GE", "APAC"), ("GU", "APAC"), ("HK", "APAC"), ("ID", "APAC"),
+    ("IN", "APAC"), ("JP", "APAC"), ("KG", "APAC"), ("KH", "APAC"), ("KI", "APAC"), ("KP", "APAC"),
+    ("KR", "APAC"), ("KZ", "APAC"), ("LA", "APAC"), ("LK", "APAC"), ("MH", "APAC"), ("MM", "APAC"),
+    ("MN", "APAC"), ("MO", "APAC"), ("MP", "APAC"), ("MV", "APAC"), ("MY", "APAC"), ("NC", "APAC"),
+    ("NF", "APAC"), ("NP", "APAC"), ("NR", "APAC"), ("NU", "APAC"), ("NZ", "APAC"), ("PF", "APAC"),
+    ("PG", "APAC"), ("PH", "APAC"), ("PK", "APAC"), ("PN", "APAC"), ("PW", "APAC"), ("SB", "APAC"),
+    ("SG", "APAC"), ("TH", "APAC"), ("TJ", "APAC"), ("TK", "APAC"), ("TL", "APAC"), ("TM", "APAC"),
+    ("TO", "APAC"), ("TV", "APAC"), ("TW", "APAC"), ("UZ", "APAC"), ("VN", "APAC"), ("VU", "APAC"),
+    ("WF", "APAC"), ("WS", "APAC"),
 ]
 
 # The regions a price may be scoped to, taken from COUNTRY_REGION so the two

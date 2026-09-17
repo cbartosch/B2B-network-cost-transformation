@@ -150,3 +150,91 @@ def test_the_backbone_row_is_not_reused_as_site_access():
     assert hit is not None and hit["base"] == "840", (
         "a 500 Mbps Ethernet tail in Poland must take the derived regional "
         "rate, not the backbone row")
+
+
+# ----------------------------------- every ISO country reaches a region
+# Codes with no enterprise estate: uninhabited, research stations, or
+# administered territories with no commercial network. Asserting a region for
+# them is noise in a governed table.
+UNINHABITED = frozenset(
+    "AQ BV GS HM TF IO UM".split())
+
+
+def _iso_alpha_2():
+    """Every ISO-3166-1 alpha-2 code, from the system's own iso-codes data.
+
+    Read rather than hardcoded. A list typed from memory is exactly how the
+    first version of this map ended up with eight African countries out of
+    fifty-four - and a test that checks a hand-written list against a
+    hand-written list checks nothing.
+    """
+    import json
+    from pathlib import Path
+
+    for candidate in (Path("/usr/share/iso-codes/json/iso_3166-1.json"),
+                      Path("/usr/share/zoneinfo/iso3166.tab")):
+        if not candidate.exists():
+            continue
+        if candidate.suffix == ".json":
+            data = json.loads(candidate.read_text())
+            return {c["alpha_2"] for c in data["3166-1"]}
+        return {line.split("\t")[0] for line in candidate.read_text().splitlines()
+                if line and not line.startswith("#")}
+    return set()
+
+
+def test_every_iso_country_reaches_a_region():
+    """Ethiopian Airlines came back 37% covered because Ethiopia, Togo and
+    Cote d'Ivoire were absent from the map - 58 of its 69 sites unpriced, and
+    not because the model could not price an airline but because nobody had
+    listed its country.
+
+    A map picked by thinking about where clients are encodes whoever was
+    thinking. This one is generated against the ISO list."""
+    from app.seed import COUNTRY_REGION
+
+    iso = _iso_alpha_2()
+    if not iso:
+        import pytest
+        pytest.skip("no iso-codes data on this system to check against")
+
+    mapped = {c for c, _r in COUNTRY_REGION}
+    missing = sorted(iso - mapped - UNINHABITED)
+    assert not missing, (
+        f"{len(missing)} ISO countries reach no region: {missing[:12]}")
+
+
+def test_the_map_invents_no_country():
+    """A row for a code that is not a country is a row nobody will ever
+    match, and it makes the count look complete when it is not."""
+    from app.seed import COUNTRY_REGION
+
+    iso = _iso_alpha_2()
+    if not iso:
+        import pytest
+        pytest.skip("no iso-codes data on this system to check against")
+
+    invented = sorted({c for c, _r in COUNTRY_REGION} - iso)
+    assert not invented, invented
+
+
+def test_no_uninhabited_territory_is_assigned():
+    """Antarctica has no enterprise estate. Assigning it a region is noise."""
+    from app.seed import COUNTRY_REGION
+
+    mapped = {c for c, _r in COUNTRY_REGION}
+    assert not (mapped & UNINHABITED), sorted(mapped & UNINHABITED)
+
+
+def test_each_region_carries_a_usable_share_of_the_world():
+    """A region with three members is not a fallback. This is a sanity floor,
+    not a target - the shape only matters because a region has to have enough
+    members for the fallback to be worth having."""
+    from collections import Counter
+
+    from app.seed import COUNTRY_REGION
+
+    counts = Counter(r for _c, r in COUNTRY_REGION)
+    assert set(counts) == {"EMEA", "AMER", "APAC"}
+    for region, n in counts.items():
+        assert n >= 40, f"{region} has only {n} countries"
