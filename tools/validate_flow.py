@@ -728,6 +728,18 @@ def every_country_prices_what_its_estates_need() -> list:
     except Exception:                                       # noqa: BLE001
         pass
 
+    # The whole fallback chain, not the country alone. Since the workbook
+    # loaded, 71 countries have GPON and HFC of their own and take DIA from
+    # their region - so asking per country reported every one of them as a
+    # pricing gap when the ladder answers.
+    from app.domain.scope import REGION_PARENT
+    region_of = dict(seed_module.COUNTRY_REGION)
+
+    def _chain(country):
+        sub = region_of.get(country)
+        return [c for c in (country, sub, REGION_PARENT.get(sub) if sub else None)
+                if c]
+
     problems = []
     for country in sorted(countries):
         missing = []
@@ -737,7 +749,8 @@ def every_country_prices_what_its_estates_need() -> list:
                 # Not deliverable here, so not a pricing gap.
                 continue
             if not any(tier >= mbps
-                       for tier in tiers.get((country, product), set())):
+                       for scope in _chain(country)
+                       for tier in tiers.get((scope, product), set())):
                 missing.append((product, mbps))
         if missing:
             shown = ", ".join(f"{p} {m}" for p, m in missing[:4])

@@ -178,7 +178,11 @@ def test_every_country_prices_the_primary_circuits_its_estates_need():
     while France could not price it. A global check hiding a per-country gap is
     the same shape as the defect it was written to catch."""
     from app.domain.access import LEGACY_PRODUCT
-    from app.seed import ARCHETYPES, ARCHETYPE_BANDWIDTH, PRIORS, SERVICEABILITY
+    from app.domain.scope import REGION_PARENT
+    from app.seed import (ARCHETYPES, ARCHETYPE_BANDWIDTH, COUNTRY_REGION,
+                          PRIORS, SERVICEABILITY)
+
+    region_of = dict(COUNTRY_REGION)
 
     product_of = {row[0]: row[4] for row in ARCHETYPES}
     tiers, countries = {}, set()
@@ -199,11 +203,17 @@ def test_every_country_prices_the_primary_circuits_its_estates_need():
 
     gaps = {}
     for country in sorted(countries):
+        # The whole chain. 71 countries have GPON and HFC of their own since
+        # the workbook loaded and take DIA from their region, so asking per
+        # country reported every one of them as a gap the ladder answers.
+        chain = [x for x in (country, region_of.get(country),
+                             REGION_PARENT.get(region_of.get(country)))
+                 if x]
         missing = [(p, m) for p, m in sorted(wanted)
                    if not (bearer.get(p)
                            and (country, bearer[p]) not in deliverable)
-                   and not any(t >= m
-                               for t in tiers.get((country, p), set()))]
+                   and not any(t >= m for scope in chain
+                               for t in tiers.get((scope, p), set()))]
         if missing:
             gaps[country] = missing
     assert not gaps, gaps
@@ -328,3 +338,84 @@ def test_the_retail_basis_is_stated_on_the_source():
     assert survey, "no survey-grade rates to check"
     for row in survey:
         assert "retail" in row[7].lower(), row[7]
+
+
+# ------------------- the supplied Global Access Pricing Workbook
+def test_the_workbook_loads_gpon_and_hfc_only():
+    """DIA, Ethernet and MPLS are deliberately not loaded: the workbook quotes
+    one tier for each and does not say whether 1G means a full gigabit
+    committed rate or a gigabit port with a lower CIR. The model prices a
+    committed service on its CIR, so it cannot place the figure - and a German
+    quote for a 1G port with a 300 Mbit CIR came in 31% below the workbook's
+    Germany DIA 1G, which is what both readings look like."""
+    from app.seed import WORKBOOK_ACCESS_PRICES
+
+    products = {p for _c, p, _m, _v in WORKBOOK_ACCESS_PRICES}
+    assert products == {"BROADBAND_PON", "BROADBAND_HFC"}, sorted(products)
+
+
+def test_the_workbook_covers_four_tiers_per_product():
+    from app.seed import WORKBOOK_ACCESS_PRICES
+
+    by_product = {}
+    for _cluster, product, mbps, _v in WORKBOOK_ACCESS_PRICES:
+        by_product.setdefault(product, set()).add(mbps)
+    for product, tiers in by_product.items():
+        assert tiers == {100, 250, 500, 1000}, (product, sorted(tiers))
+
+
+def test_a_market_with_no_cable_network_gets_no_cable_price():
+    """GCC, Middle East Other, Africa Other and Singapore are blank for HFC in
+    the workbook because those markets have no cable network. Filling them
+    would price a market that does not exist, and the serviceability table
+    reaches the same conclusion independently."""
+    from app.seed import WORKBOOK_ACCESS_PRICES, WORKBOOK_CLUSTERS
+
+    has_hfc = {c for c, p, _m, _v in WORKBOOK_ACCESS_PRICES
+               if p == "BROADBAND_HFC"}
+    for cluster in ("GCC", "Middle East Other", "Africa Other", "Singapore"):
+        assert cluster not in has_hfc, cluster
+        assert cluster in WORKBOOK_CLUSTERS, cluster
+
+
+def test_the_workbook_widens_country_coverage_and_narrows_nothing():
+    """78 of the model's 242 countries are in a cluster. Using the clusters as
+    the only scope would have cut coverage from 242 to 78; a country outside
+    every cluster keeps the regional fallback it already had."""
+    from app.seed import COUNTRY_REGION, PRIORS, WORKBOOK_CLUSTERS
+
+    clustered = {c for members in WORKBOOK_CLUSTERS.values() for c in members}
+    own_card = {c for c, *_rest in PRIORS if len(c) == 2}
+    mapped = {c for c, _r in COUNTRY_REGION}
+
+    assert len(clustered) == 78, len(clustered)
+    assert clustered <= own_card, "a clustered country must have its own rows"
+    assert len(mapped) > len(clustered), (
+        "the region map must still reach every country the clusters miss")
+
+
+def test_the_currency_inference_is_recorded_as_one():
+    """The workbook states no currency. It reads as USD because the UK cluster
+    matches separately sourced GB figures - which is an inference, and the 1.5x
+    GB finding earlier came from exactly that kind of assumption made
+    silently."""
+    from app.seed import WORKBOOK_CURRENCY, WORKBOOK_CURRENCY_BASIS
+
+    assert WORKBOOK_CURRENCY == "USD"
+    assert "inferred" in WORKBOOK_CURRENCY_BASIS.lower()
+
+
+def test_the_tier_below_the_workbook_floor_is_rescaled_under_it():
+    """The workbook starts at 100, so the seeded 50 Mbps rows survived - and
+    where the workbook came in below the assumption it replaced, the old 50
+    sat above the new 100. The US quoted PON at 105 for 50 Mbps and 85 for
+    100, which would make right-sizing recommend an upgrade to save money."""
+    from app.seed import PRIORS
+
+    rates = {}
+    for country, product, _l, mbps, _lo, base, _hi in PRIORS:
+        rates.setdefault((country, product), {})[int(mbps)] = base
+
+    for key, tiers in rates.items():
+        if 50 in tiers and 100 in tiers:
+            assert tiers[50] < tiers[100], (key, tiers[50], tiers[100])

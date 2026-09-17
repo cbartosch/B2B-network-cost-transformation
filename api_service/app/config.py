@@ -189,4 +189,9 @@ SIMULATION_MODEL_VERSION = "sim-1.17.0"
 # seeded assumption was overstated 1.3x to 1.9x, and GB is the anchor
 # EUROPE_WEST and EMEA derive from - so roughly a third came off every European
 # baseline. The band is the published range, not a point with a spread.
-CALCULATION_VERSION = "calc-1.11.0"
+# calc-1.12.0: consumer access is priced from the supplied Global Access Pricing
+# Workbook - GPON and HFC at four tiers across twenty market clusters, 78
+# countries with their own card instead of seven. DIA, Ethernet and MPLS are
+# held back until the workbook states whether its 1G figure is a committed rate
+# or a port.
+CALCULATION_VERSION = "calc-1.12.0"

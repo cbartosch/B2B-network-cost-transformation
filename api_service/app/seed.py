@@ -317,6 +317,259 @@ THRESHOLDS = [
 #
 # Bandwidth tiers follow the archetype bandwidth_mbps_base values below, so a
 # site's required bandwidth has a price to match rather than a nearest guess.
+# Consumer-access prices from the supplied Global Access Pricing Workbook.
+#
+# GPON and HFC only, at 100 / 250 / 500 / 1000 Mbps across twenty market
+# clusters - the store and branch products, which is where most of a retail or
+# branch estate's site count sits. Four complete tiers against the seeded
+# assumption they replace.
+#
+# **DIA, Ethernet and MPLS are deliberately NOT loaded.** The workbook quotes
+# one tier for each (1G) and does not state whether that is a full 1 Gbps
+# committed rate or a 1 Gbps port with a lower CIR. The model prices a
+# committed service on its CIR, so it cannot place the figure without knowing
+# which - and a German quote for a 1G port with a 300 Mbit CIR came in 31%
+# below the workbook's Germany DIA 1G, which is what both readings would look
+# like. A number that might mean two products is worse in the card than an
+# assumption known to be one.
+#
+# GPON and HFC have no such ambiguity: a 250 Mbps GPON service is a 250 Mbps
+# GPON service, best-effort by construction, and the model already treats
+# BEST_EFFORT as priced on its headline rate.
+#
+# **HFC is blank for four clusters** - GCC, Middle East Other, Africa Other and
+# Singapore - because those markets have no cable network. Left blank rather
+# than filled: the serviceability table reaches the same conclusion
+# independently, and inventing a cable price for Singapore would price a market
+# that does not exist.
+#
+# Grade C: a benchmark somebody compiled that a person can check, and the
+# workbook states no source or date - so it is not B. The currency is inferred
+# as USD from the UK cluster matching a separately sourced GB figure to within
+# 2%, which is an inference and is recorded as one.
+WORKBOOK_CURRENCY = "USD"
+WORKBOOK_CURRENCY_BASIS = (
+    "inferred, not stated. UK & Ireland GPON 100M is 70 and HFC 100M is 80, "
+    "which match the independently sourced GB rows exactly; DIA 1G at 750 "
+    "matches a sourced 737. A workbook that stated its currency would not "
+    "need this note.")
+
+# (cluster, product, mbps, monthly price)
+WORKBOOK_ACCESS_PRICES = [
+    ("UK & Ireland", "BROADBAND_HFC", 100, 80),
+    ("UK & Ireland", "BROADBAND_HFC", 250, 108),
+    ("UK & Ireland", "BROADBAND_HFC", 500, 140),
+    ("UK & Ireland", "BROADBAND_HFC", 1000, 176),
+    ("UK & Ireland", "BROADBAND_PON", 100, 70),
+    ("UK & Ireland", "BROADBAND_PON", 250, 95),
+    ("UK & Ireland", "BROADBAND_PON", 500, 120),
+    ("UK & Ireland", "BROADBAND_PON", 1000, 155),
+    ("Benelux", "BROADBAND_HFC", 100, 78),
+    ("Benelux", "BROADBAND_HFC", 250, 105),
+    ("Benelux", "BROADBAND_HFC", 500, 135),
+    ("Benelux", "BROADBAND_HFC", 1000, 171),
+    ("Benelux", "BROADBAND_PON", 100, 62),
+    ("Benelux", "BROADBAND_PON", 250, 83),
+    ("Benelux", "BROADBAND_PON", 500, 105),
+    ("Benelux", "BROADBAND_PON", 1000, 136),
+    ("Germany", "BROADBAND_HFC", 100, 74),
+    ("Germany", "BROADBAND_HFC", 250, 99),
+    ("Germany", "BROADBAND_HFC", 500, 128),
+    ("Germany", "BROADBAND_HFC", 1000, 162),
+    ("Germany", "BROADBAND_PON", 100, 78),
+    ("Germany", "BROADBAND_PON", 250, 105),
+    ("Germany", "BROADBAND_PON", 500, 132),
+    ("Germany", "BROADBAND_PON", 1000, 171),
+    ("France", "BROADBAND_HFC", 100, 84),
+    ("France", "BROADBAND_HFC", 250, 113),
+    ("France", "BROADBAND_HFC", 500, 145),
+    ("France", "BROADBAND_HFC", 1000, 184),
+    ("France", "BROADBAND_PON", 100, 68),
+    ("France", "BROADBAND_PON", 250, 91),
+    ("France", "BROADBAND_PON", 500, 115),
+    ("France", "BROADBAND_PON", 1000, 149),
+    ("Nordics", "BROADBAND_HFC", 100, 88),
+    ("Nordics", "BROADBAND_HFC", 250, 118),
+    ("Nordics", "BROADBAND_HFC", 500, 152),
+    ("Nordics", "BROADBAND_HFC", 1000, 193),
+    ("Nordics", "BROADBAND_PON", 100, 60),
+    ("Nordics", "BROADBAND_PON", 250, 80),
+    ("Nordics", "BROADBAND_PON", 500, 100),
+    ("Nordics", "BROADBAND_PON", 1000, 130),
+    ("Southern Europe", "BROADBAND_HFC", 100, 82),
+    ("Southern Europe", "BROADBAND_HFC", 250, 110),
+    ("Southern Europe", "BROADBAND_HFC", 500, 142),
+    ("Southern Europe", "BROADBAND_HFC", 1000, 180),
+    ("Southern Europe", "BROADBAND_PON", 100, 65),
+    ("Southern Europe", "BROADBAND_PON", 250, 88),
+    ("Southern Europe", "BROADBAND_PON", 500, 110),
+    ("Southern Europe", "BROADBAND_PON", 1000, 143),
+    ("Eastern Europe", "BROADBAND_HFC", 100, 65),
+    ("Eastern Europe", "BROADBAND_HFC", 250, 88),
+    ("Eastern Europe", "BROADBAND_HFC", 500, 112),
+    ("Eastern Europe", "BROADBAND_HFC", 1000, 145),
+    ("Eastern Europe", "BROADBAND_PON", 100, 50),
+    ("Eastern Europe", "BROADBAND_PON", 250, 68),
+    ("Eastern Europe", "BROADBAND_PON", 500, 84),
+    ("Eastern Europe", "BROADBAND_PON", 1000, 110),
+    ("North America", "BROADBAND_HFC", 100, 120),
+    ("North America", "BROADBAND_HFC", 250, 162),
+    ("North America", "BROADBAND_HFC", 500, 208),
+    ("North America", "BROADBAND_HFC", 1000, 264),
+    ("North America", "BROADBAND_PON", 100, 85),
+    ("North America", "BROADBAND_PON", 250, 114),
+    ("North America", "BROADBAND_PON", 500, 145),
+    ("North America", "BROADBAND_PON", 1000, 187),
+    ("Mexico", "BROADBAND_HFC", 100, 105),
+    ("Mexico", "BROADBAND_HFC", 250, 142),
+    ("Mexico", "BROADBAND_HFC", 500, 182),
+    ("Mexico", "BROADBAND_HFC", 1000, 230),
+    ("Mexico", "BROADBAND_PON", 100, 78),
+    ("Mexico", "BROADBAND_PON", 250, 105),
+    ("Mexico", "BROADBAND_PON", 500, 132),
+    ("Mexico", "BROADBAND_PON", 1000, 171),
+    ("Brazil", "BROADBAND_HFC", 100, 115),
+    ("Brazil", "BROADBAND_HFC", 250, 155),
+    ("Brazil", "BROADBAND_HFC", 500, 198),
+    ("Brazil", "BROADBAND_HFC", 1000, 250),
+    ("Brazil", "BROADBAND_PON", 100, 82),
+    ("Brazil", "BROADBAND_PON", 250, 110),
+    ("Brazil", "BROADBAND_PON", 500, 138),
+    ("Brazil", "BROADBAND_PON", 1000, 180),
+    ("LatAm Other", "BROADBAND_HFC", 100, 125),
+    ("LatAm Other", "BROADBAND_HFC", 250, 169),
+    ("LatAm Other", "BROADBAND_HFC", 500, 216),
+    ("LatAm Other", "BROADBAND_HFC", 1000, 273),
+    ("LatAm Other", "BROADBAND_PON", 100, 90),
+    ("LatAm Other", "BROADBAND_PON", 250, 121),
+    ("LatAm Other", "BROADBAND_PON", 500, 152),
+    ("LatAm Other", "BROADBAND_PON", 1000, 198),
+    ("GCC", "BROADBAND_PON", 100, 68),
+    ("GCC", "BROADBAND_PON", 250, 91),
+    ("GCC", "BROADBAND_PON", 500, 105),
+    ("GCC", "BROADBAND_PON", 1000, 132),
+    ("Middle East Other", "BROADBAND_PON", 100, 72),
+    ("Middle East Other", "BROADBAND_PON", 250, 96),
+    ("Middle East Other", "BROADBAND_PON", 500, 120),
+    ("Middle East Other", "BROADBAND_PON", 1000, 156),
+    ("South Africa", "BROADBAND_HFC", 100, 125),
+    ("South Africa", "BROADBAND_HFC", 250, 169),
+    ("South Africa", "BROADBAND_HFC", 500, 216),
+    ("South Africa", "BROADBAND_HFC", 1000, 273),
+    ("South Africa", "BROADBAND_PON", 100, 80),
+    ("South Africa", "BROADBAND_PON", 250, 108),
+    ("South Africa", "BROADBAND_PON", 500, 135),
+    ("South Africa", "BROADBAND_PON", 1000, 176),
+    ("Africa Other", "BROADBAND_PON", 100, 105),
+    ("Africa Other", "BROADBAND_PON", 250, 142),
+    ("Africa Other", "BROADBAND_PON", 500, 178),
+    ("Africa Other", "BROADBAND_PON", 1000, 231),
+    ("India", "BROADBAND_HFC", 100, 55),
+    ("India", "BROADBAND_HFC", 250, 75),
+    ("India", "BROADBAND_HFC", 500, 95),
+    ("India", "BROADBAND_HFC", 1000, 125),
+    ("India", "BROADBAND_PON", 100, 40),
+    ("India", "BROADBAND_PON", 250, 55),
+    ("India", "BROADBAND_PON", 500, 70),
+    ("India", "BROADBAND_PON", 1000, 92),
+    ("North Asia", "BROADBAND_HFC", 100, 70),
+    ("North Asia", "BROADBAND_HFC", 250, 95),
+    ("North Asia", "BROADBAND_HFC", 500, 122),
+    ("North Asia", "BROADBAND_HFC", 1000, 155),
+    ("North Asia", "BROADBAND_PON", 100, 55),
+    ("North Asia", "BROADBAND_PON", 250, 74),
+    ("North Asia", "BROADBAND_PON", 500, 93),
+    ("North Asia", "BROADBAND_PON", 1000, 120),
+    ("Singapore", "BROADBAND_PON", 100, 68),
+    ("Singapore", "BROADBAND_PON", 250, 91),
+    ("Singapore", "BROADBAND_PON", 500, 115),
+    ("Singapore", "BROADBAND_PON", 1000, 149),
+    ("ASEAN Tier 2", "BROADBAND_HFC", 100, 65),
+    ("ASEAN Tier 2", "BROADBAND_HFC", 250, 88),
+    ("ASEAN Tier 2", "BROADBAND_HFC", 500, 112),
+    ("ASEAN Tier 2", "BROADBAND_HFC", 1000, 143),
+    ("ASEAN Tier 2", "BROADBAND_PON", 100, 60),
+    ("ASEAN Tier 2", "BROADBAND_PON", 250, 80),
+    ("ASEAN Tier 2", "BROADBAND_PON", 500, 100),
+    ("ASEAN Tier 2", "BROADBAND_PON", 1000, 130),
+    ("Oceania", "BROADBAND_HFC", 100, 115),
+    ("Oceania", "BROADBAND_HFC", 250, 155),
+    ("Oceania", "BROADBAND_HFC", 500, 198),
+    ("Oceania", "BROADBAND_HFC", 1000, 250),
+    ("Oceania", "BROADBAND_PON", 100, 75),
+    ("Oceania", "BROADBAND_PON", 250, 101),
+    ("Oceania", "BROADBAND_PON", 500, 127),
+    ("Oceania", "BROADBAND_PON", 1000, 165),
+]
+
+
+# Which countries each workbook cluster covers.
+#
+# 78 of the 242 countries the model maps. The clusters are finer than the
+# model's ten regions where it matters - Benelux apart from Germany, Nordics
+# apart from Southern Europe, GCC apart from the rest of the Middle East, South
+# Africa apart from the rest of the continent - and those are distinctions the
+# model could not previously make.
+#
+# A country outside every cluster keeps the regional fallback it already had.
+# Loading this must not narrow coverage from 242 countries to 78, which is
+# what using the clusters as the only scope would do.
+WORKBOOK_CLUSTERS = {
+    "ASEAN Tier 2": ["ID", "MY", "PH", "TH", "VN"],
+    "Africa Other": ["AO", "CI", "GH", "KE", "NG", "SN", "TZ", "UG"],
+    "Benelux": ["BE", "LU", "NL"],
+    "Brazil": ["BR"],
+    "Eastern Europe": ["BG", "CZ", "EE", "HR", "HU", "LT", "LV", "PL", "RO", "RS", "SI", "SK"],
+    "France": ["FR"],
+    "GCC": ["AE", "BH", "KW", "OM", "QA", "SA"],
+    "Germany": ["AT", "CH", "DE"],
+    "India": ["IN"],
+    "LatAm Other": ["AR", "CL", "CO", "CR", "EC", "PA", "PE", "UY"],
+    "Mexico": ["MX"],
+    "Middle East Other": ["EG", "IL", "JO", "MA", "TR"],
+    "Nordics": ["DK", "FI", "IS", "NO", "SE"],
+    "North America": ["CA", "US"],
+    "North Asia": ["CN", "HK", "JP", "KR", "TW"],
+    "Oceania": ["AU", "NZ"],
+    "Singapore": ["SG"],
+    "South Africa": ["ZA"],
+    "Southern Europe": ["CY", "ES", "GR", "IT", "MT", "PT"],
+    "UK & Ireland": ["GB", "IE"],
+}
+
+
+def _workbook_priors(prices, clusters):
+    """Workbook cluster prices as per-country rows.
+
+    Written per country rather than per cluster, because the scope ladder has
+    no cluster rung: a price scoped to "Benelux" would sit below COUNTRY and
+    above REGION with nothing to rank it, and `scope_rank` returns the same
+    value for every unrecognised scope so the order would come from sort
+    stability rather than from the ladder.
+
+    A band around the point, because the model needs low/base/high and the
+    workbook gives one figure. +/-25%, which is narrower than the published UK
+    retail spread of roughly +/-40% and wider than nothing - and it is an
+    invented spread, which is why these stay grade C rather than becoming the
+    evidence the point itself is.
+    """
+    from decimal import Decimal as _D
+
+    by_cluster = {}
+    for cluster, product, mbps, price in prices:
+        by_cluster.setdefault(cluster, []).append((product, int(mbps), price))
+
+    out = []
+    for cluster, entries in sorted(by_cluster.items()):
+        for country in clusters.get(cluster, []):
+            for product, mbps, price in entries:
+                base = _D(price)
+                out.append((country, product, "L0", mbps,
+                            int(base * _D("0.75")), int(base),
+                            int(base * _D("1.25"))))
+    return out
+
+
 # Rates sourced to a publication, superseding the seeded assumption for the
 # same key.
 #
@@ -768,6 +1021,55 @@ def _reprice_between_sourced(rows):
     return out
 
 
+# Workbook consumer-access prices supersede the seeded assumption for the same
+# (country, product, bandwidth). Applied before the regional derivation, so
+# EUROPE_NORTH, EUROPE_SOUTH and the African bands derive from real cluster
+# figures instead of falling through to a European median - which is the first
+# time those bands have anything of their own.
+_WORKBOOK_ROWS = _workbook_priors(WORKBOOK_ACCESS_PRICES, WORKBOOK_CLUSTERS)
+_WORKBOOK_KEYS = {(r[0], r[1], r[3]) for r in _WORKBOOK_ROWS}
+PRIORS = [row for row in PRIORS
+          if (row[0], row[1], int(row[3])) not in _WORKBOOK_KEYS]
+PRIORS = PRIORS + _WORKBOOK_ROWS
+
+# The 50 Mbps tier the workbook does not quote.
+#
+# The workbook starts at 100, so the seeded 50 Mbps rows survived - and where
+# the workbook came in below the assumption they replaced, the old 50 was left
+# sitting ABOVE the new 100. The US quoted PON at 105 for 50 Mbps and 85 for
+# 100, which reads as nonsense and would make right-sizing recommend an
+# upgrade to save money.
+#
+# Scaled down from the workbook's own 100 Mbps figure by the ratio the seeded
+# card used between its 50 and 100 tiers, so the shape of the market is kept
+# and only the level moves. Stays grade E: it is an extrapolation below the
+# lowest published point, and extrapolating is exactly what the term-factor
+# work refuses to do for the same reason.
+def _rescale_lowest_tier(rows, workbook_keys):
+    """A tier below the workbook's floor, rescaled to sit under it."""
+    from decimal import Decimal as _D
+
+    base = {(c, p, bw): ba for c, p, _l, bw, _lo, ba, _hi in rows}
+    out = []
+    for row in rows:
+        country, product, layer, mbps, low, mid, high = row
+        if (country, product, mbps) in workbook_keys or mbps != 50:
+            out.append(row)
+            continue
+        above = base.get((country, product, 100))
+        if above is None or _D(mid) <= _D(above):
+            out.append(row)
+            continue
+        # The seeded card's own 50/100 ratio, applied to the workbook's 100.
+        ratio = _D("0.80")          # every seeded pair sat within 0.78-0.84
+        new = _D(above) * ratio
+        out.append((country, product, layer, mbps,
+                    int(new * _D("0.75")), int(new), int(new * _D("1.25"))))
+    return out
+
+
+PRIORS = _rescale_lowest_tier(PRIORS, _WORKBOOK_KEYS)
+
 # A sourced rate supersedes the seeded assumption for the same key, and does so
 # BEFORE the regional derivation - so EUROPE_WEST and EMEA are derived from the
 # published GB band rather than from the overstatement it replaced.
@@ -1035,6 +1337,13 @@ PRIORS = PRIORS + _regional_tiers(
     PRIORS, [(country, REGION_PARENT[region])
              for country, region in COUNTRY_REGION
              if region in REGION_PARENT])
+
+# Again, after the derivation. A region's 50 Mbps row is the median of its
+# members' 50 Mbps rows, which is computed from the rescaled country figures -
+# but EUROPE_CENTRAL took its 100 from a workbook cluster and its 50 from the
+# median of countries whose own 50 came from elsewhere, so the inversion
+# reappeared one level up. The check that caught it is the same one.
+PRIORS = _rescale_lowest_tier(PRIORS, _WORKBOOK_KEYS)
 
 # The backbone. ETHERNET at 10 Gbps between a data centre and its regional hub,
 # and between a regional hub and the global core - which is the shape and the
