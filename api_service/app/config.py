@@ -131,7 +131,11 @@ LLM_SEARCH_TIMEOUT_SECONDS = float(
 # forty-two codes overlapped, so an analyst picking from the intake list got no
 # benchmark row and the published bandwidth, committed share and criticality
 # were unreachable for twenty-five of twenty-eight industries.
-SIMULATION_MODEL_VERSION = "sim-1.15.0"
+# sim-1.16.0: five industries the supplied benchmark does not cover. A
+# thirty-company run mapped fourteen to a nearest neighbour - a steelmaker to
+# forestry and paper among them, which is indefensible however sound the
+# estate shape.
+SIMULATION_MODEL_VERSION = "sim-1.16.0"
 # calc-1.1.0: the saving band is accumulated with matched pairing rather than
 # derived as current - target. The target is a function of the current, so
 # subtracting the two crossed bounds a second time and produced worlds that

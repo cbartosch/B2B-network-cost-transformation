@@ -135,6 +135,30 @@ SHAPE_OF_BICS = {
     # is assigned by reading rather than by matching. A near-miss like that is
     # exactly what a substring bridge would have got wrong.
     "CHEMICALS": "plant-centric",
+
+    # ---- industries the supplied benchmark does not cover -----------------
+    # Their rows are this repository's own (see industry_benchmark.
+    # LOCAL_INDUSTRY_ROWS) and so are these shapes. Derived the same way as
+    # the rest: from the archetype the row names, not from the industry's
+    # name.
+    #
+    # Industrials: MANUFACTURING_PLANT. Siemens, Schneider, ABB, Caterpillar
+    # and Philips were all being mapped to AUTOMOTIVE_OEM, which has the right
+    # shape and the wrong label.
+    "INDUSTRIAL_CONGLOMERATE": "plant-centric",
+    # Materials: PRODUCTION_PLANT. Cement, aggregates and glass - hundreds of
+    # small fixed sites, many genuinely rural because a quarry is where the
+    # rock is. Saint-Gobain, Holcim, Heidelberg, CRH and CEMEX.
+    "BUILDING_MATERIALS": "plant-centric",
+    # Materials: MILL. ArcelorMittal was mapped to FORESTRY_PAPER - the
+    # archetype was right and the label was indefensible.
+    "STEEL": "plant-centric",
+    # Industrials: ENGINEERING_CAMPUS. Design data rather than plant
+    # telemetry, so office-centric despite the assembly sites. Airbus.
+    "AEROSPACE_DEFENSE": "office-centric",
+    # Consumer Staples: PLANT. Closer to food manufacturing than to speciality
+    # chemicals. Unilever and L'Oreal.
+    "HOUSEHOLD_PERSONAL_CARE": "plant-centric",
 }
 
 # The shape used when a BICS code has no assignment. Office-centric rather than

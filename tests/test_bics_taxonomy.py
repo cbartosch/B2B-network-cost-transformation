@@ -131,3 +131,40 @@ def test_the_intake_offers_bics_as_the_taxonomy_to_choose():
     api = (app / "routers" / "api.py").read_text()
     assert '"preferred_taxonomy": "bics_l3"' in api
     assert "taxonomy_note" in api
+
+
+def test_the_locally_added_industries_have_a_shape_and_a_priceable_estate():
+    """An industry with a benchmark row and no estate shape takes the default,
+    and a wrong specific shape reads as knowledge. These five were dropped
+    when the shape map was first written on the grounds that the benchmark had
+    no rows for them - which was the wrong call: a benchmark gap is a reason to
+    seed a grade E row and say so, not a reason to leave a steelmaker with
+    nowhere to go."""
+    from app.domain import industry_benchmark as benchmark
+    from app.seed import ARCHETYPE_BANDWIDTH, DENSITY_MIX
+
+    local = benchmark.seeded()["local_industries"]
+    assert len(local) == 5
+
+    priced = {(i, a) for i, a, _m in ARCHETYPE_BANDWIDTH}
+    in_mix = {(i, a) for i, a, _b, _s in DENSITY_MIX}
+    for code in local:
+        assert bics.shape_for(code) != bics.DEFAULT_SHAPE or code in (
+            "AEROSPACE_DEFENSE",), f"{code} fell back to the default shape"
+        mine = {(i, a) for (i, a) in in_mix if i == code}
+        assert mine, f"{code} has no estate mix"
+        assert not (mine - priced), f"{code} has unpriceable site types"
+
+
+def test_steel_is_not_forestry():
+    """The one mapping that could not be defended. The archetype was right and
+    the label was not."""
+    from app.domain import industry_benchmark as benchmark
+
+    rows = {r["industry_code"]: r for r in benchmark.seeded()["rows"]}
+    assert rows["STEEL"]["archetype_code"] == "MILL"
+    assert rows["STEEL"]["sector"] == "Materials"
+    assert rows["FORESTRY_PAPER"]["archetype_code"] == "MILL"
+    # Same archetype, different industry - which is the point: a shared estate
+    # shape is not a shared industry.
+    assert bics.shape_for("STEEL") == bics.shape_for("FORESTRY_PAPER")

@@ -19,10 +19,17 @@ def test_every_supplied_row_reads_into_the_models_units():
     discovered as a missing figure three screens later."""
     out = ib.seeded()
     assert out["refused"] == []
-    assert len(out["rows"]) == 44
+    # The supplied benchmark is 44 rows across 42 industries. `seeded()` also
+    # returns this repository's own rows for industries the benchmark does not
+    # cover, so a total is no longer the thing to assert - the counts would
+    # move every time a sector is added, and the test would be maintained
+    # rather than informative.
+    supplied = len(ib.INDUSTRY_WAN_BENCHMARK)
+    local = len(ib.LOCAL_INDUSTRY_ROWS)
+    assert supplied == 44, "the supplied benchmark itself must not change"
+    assert len(out["rows"]) == supplied + local
+    assert len(out["local_industries"]) == local
     assert len(out["sectors"]) == 10
-    assert len(out["industries"]) == 42
-    assert len(out["archetypes"]) == 37
 
 
 @pytest.mark.parametrize("text,expected", [
@@ -71,6 +78,27 @@ def test_a_committed_share_above_the_bearer_is_refused():
         ib.parse_cir("120%")
     with pytest.raises(ib.BenchmarkRowInvalid, match="share of a bearer"):
         ib.parse_cir("0%")
+
+
+def test_a_local_row_is_marked_as_ours_and_a_supplied_one_is_not():
+    """A reader has to be able to tell a published figure from one we wrote.
+    Both are grade E in this model; only one is somebody else's."""
+    out = ib.seeded()
+    by_code = {r["industry_code"]: r for r in out["rows"]}
+    assert by_code["STEEL"]["source"] == "LOCAL"
+    assert by_code["SUPERMARKETS"]["source"] == "BICS_L3_BENCHMARK"
+    assert "source=LOCAL" in out["note"]
+
+
+def test_the_industries_that_had_no_code_now_have_one():
+    """A thirty-company run mapped fourteen to a nearest neighbour, and
+    ArcelorMittal to FORESTRY_PAPER - a mill is a mill, and telling a client
+    their steelworks was modelled as forestry and paper is finished before it
+    starts."""
+    codes = set(ib.seeded()["industries"])
+    for code in ("INDUSTRIAL_CONGLOMERATE", "BUILDING_MATERIALS", "STEEL",
+                 "AEROSPACE_DEFENSE", "HOUSEHOLD_PERSONAL_CARE"):
+        assert code in codes, code
 
 
 def test_every_location_context_maps_to_a_real_density_band():

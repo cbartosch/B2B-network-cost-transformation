@@ -133,6 +133,59 @@ INDUSTRY_WAN_BENCHMARK = [
 ]
 
 
+# Industries the supplied benchmark does not cover, added here because the
+# taxonomy has to cover the industries the firm actually works with.
+#
+# A thirty-company run mapped fourteen of them to a nearest neighbour:
+# Siemens, Schneider, ABB, Caterpillar and Philips to AUTOMOTIVE_OEM;
+# Saint-Gobain, Holcim, Heidelberg, CRH and CEMEX to CHEMICALS; Airbus to
+# AUTOMOTIVE_OEM; Unilever and L'Oreal to FOOD_MANUFACTURING; and
+# ArcelorMittal to FORESTRY_PAPER - which is the one that cannot be defended.
+# A mill is a mill and the estate shape was sound, but an output telling a
+# client their steelworks was modelled as forestry and paper is finished
+# before it starts.
+#
+# **These are this repository's figures, not the supplied benchmark's.** They
+# are kept in their own list and carry `source` = LOCAL so a reader can tell
+# which of the two produced any given row. Every one is an expert assumption
+# about a typical site of that kind, which is what evidence grade E means, and
+# they should be replaced the first time a real engagement in one of these
+# sectors produces better.
+#
+# I dropped these five when the shape map was first written, on the grounds
+# that the benchmark had no rows for them. That was the wrong call: a benchmark
+# gap is a reason to seed a grade E row and say so, not a reason to leave a
+# steelmaker with nowhere to go.
+LOCAL_INDUSTRY_ROWS = [
+    # Diversified industrials. Many mid-sized plants plus large engineering
+    # campuses; bandwidth driven by design data and plant telemetry rather
+    # than by either alone.
+    ("Industrials", "Industrial Conglomerate", "Manufacturing Plant",
+     "Industrial", "200 Mbps-2 Gbps", "50-80%", "High", "Recommended",
+     "Tier 2"),
+    # Cement, aggregates, glass, plasterboard. Hundreds of small fixed sites,
+    # many genuinely rural - a quarry is where the rock is - and low per-site
+    # bandwidth with high availability requirements because a kiln does not stop.
+    ("Materials", "Building Materials", "Production Plant",
+     "Regional", "50-500 Mbps", "50-100%", "Medium", "No", "Tier 2"),
+    # Steel and metals processing. A works is a continuous process with heavy
+    # sensor traffic and a small number of very large sites.
+    ("Materials", "Steel", "Mill",
+     "Industrial", "500 Mbps-5 Gbps", "80-100%", "Medium-High", "Optional",
+     "Tier 1"),
+    # Aerospace and defence. Engineering campuses carrying very large design
+    # datasets, and assembly sites with tight availability requirements.
+    ("Industrials", "Aerospace & Defense", "Engineering Campus",
+     "Developed Urban", "1-20 Gbps", "80-100%", "Very High", "Required",
+     "Tier 1"),
+    # Household and personal care. Consumer-goods plants and distribution,
+    # closer to food manufacturing than to speciality chemicals.
+    ("Consumer Staples", "Household & Personal Care", "Plant",
+     "Regional", "100 Mbps-1 Gbps", "50-80%", "Medium-High", "Optional",
+     "Tier 2"),
+]
+
+
 class BenchmarkRowInvalid(ValueError):
     """A row that cannot be read into the model's units."""
 
@@ -307,9 +360,23 @@ COLUMNS = ("Sector", "Industry L3", "Site Archetype", "Location Context",
 
 
 def seeded() -> dict:
-    """The benchmark as shipped, parsed. The seed's single entry point."""
-    return read_all([dict(zip(COLUMNS, row))
-                     for row in INDUSTRY_WAN_BENCHMARK])
+    """The benchmark as shipped plus this repository's own rows, parsed.
+
+    Both, because the taxonomy has to cover the industries the firm works
+    with - and marked, because a reader has to be able to tell a published
+    figure from one we wrote. `source` says which.
+    """
+    out = read_all([dict(zip(COLUMNS, row))
+                    for row in INDUSTRY_WAN_BENCHMARK + LOCAL_INDUSTRY_ROWS])
+    local = {industry_code(row[1]) for row in LOCAL_INDUSTRY_ROWS}
+    for entry in out["rows"]:
+        entry["source"] = ("LOCAL" if entry["industry_code"] in local
+                           else "BICS_L3_BENCHMARK")
+    out["local_industries"] = sorted(local)
+    out["note"] += (f"; {len(local)} of these are this repository's own rows "
+                    f"for industries the supplied benchmark does not cover, "
+                    f"marked source=LOCAL and graded as assumptions")
+    return out
 
 
 def for_industry(industry_code: str, *, rows: list | None = None) -> list:

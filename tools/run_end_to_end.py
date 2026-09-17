@@ -125,9 +125,15 @@ for name in ("sqlalchemy", "sqlalchemy.orm", "sqlalchemy.exc", "psycopg"):
 from app.domain import industry_benchmark as bench           # noqa: E402
 
 catalogue = bench.seeded()
+# The count is the supplied rows plus this repository's own, so asserting a
+# total would need maintaining every time a sector is added. What matters is
+# that nothing was refused - a row the parser cannot read leaves an industry
+# with no benchmark and no explanation.
 check("the BICS benchmark loads with nothing refused",
-      not catalogue["refused"] and len(catalogue["rows"]) == 44,
-      catalogue["note"])
+      not catalogue["refused"] and len(catalogue["rows"]) == (
+          len(bench.INDUSTRY_WAN_BENCHMARK)
+          + len(bench.LOCAL_INDUSTRY_ROWS)),
+      catalogue["note"][:150])
 
 # ---------------------------------------------------------------- simulation
 sim_source = (APP / "domain" / "simulation.py").read_text()
