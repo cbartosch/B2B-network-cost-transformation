@@ -138,7 +138,7 @@ SHAPE_OF_BICS = {
 
     # ---- industries the supplied benchmark does not cover -----------------
     # Their rows are this repository's own (see industry_benchmark.
-    # LOCAL_INDUSTRY_ROWS) and so are these shapes. Derived the same way as
+    # UNBENCHMARKED_BICS_ROWS) and so are these shapes. Derived the same way as
     # the rest: from the archetype the row names, not from the industry's
     # name.
     #

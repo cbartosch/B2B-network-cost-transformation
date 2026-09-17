@@ -133,7 +133,7 @@ def test_the_intake_offers_bics_as_the_taxonomy_to_choose():
     assert "taxonomy_note" in api
 
 
-def test_the_locally_added_industries_have_a_shape_and_a_priceable_estate():
+def test_the_unbenchmarked_industries_have_a_shape_and_a_priceable_estate():
     """An industry with a benchmark row and no estate shape takes the default,
     and a wrong specific shape reads as knowledge. These five were dropped
     when the shape map was first written on the grounds that the benchmark had
@@ -143,12 +143,12 @@ def test_the_locally_added_industries_have_a_shape_and_a_priceable_estate():
     from app.domain import industry_benchmark as benchmark
     from app.seed import ARCHETYPE_BANDWIDTH, DENSITY_MIX
 
-    local = benchmark.seeded()["local_industries"]
-    assert len(local) == 5
+    unbenchmarked = benchmark.seeded()["unbenchmarked_industries"]
+    assert len(unbenchmarked) == 5
 
     priced = {(i, a) for i, a, _m in ARCHETYPE_BANDWIDTH}
     in_mix = {(i, a) for i, a, _b, _s in DENSITY_MIX}
-    for code in local:
+    for code in unbenchmarked:
         assert bics.shape_for(code) != bics.DEFAULT_SHAPE or code in (
             "AEROSPACE_DEFENSE",), f"{code} fell back to the default shape"
         mine = {(i, a) for (i, a) in in_mix if i == code}

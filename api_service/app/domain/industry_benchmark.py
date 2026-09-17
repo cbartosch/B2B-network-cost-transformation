@@ -156,7 +156,19 @@ INDUSTRY_WAN_BENCHMARK = [
 # that the benchmark had no rows for them. That was the wrong call: a benchmark
 # gap is a reason to seed a grade E row and say so, not a reason to leave a
 # steelmaker with nowhere to go.
-LOCAL_INDUSTRY_ROWS = [
+# BICS L3 industries the supplied workbook has no row for.
+#
+# The industry codes are standard - STEEL, AEROSPACE_DEFENSE and
+# BUILDING_MATERIALS are real BICS level-3 classifications. What is missing is
+# the *benchmark figures* for them: the workbook covers 42 of the 47 industries
+# this model needs, and these five were among the gaps.
+#
+# So what differs is the provenance of the bandwidth, committed share and
+# criticality below, not the legitimacy of the classification. An earlier
+# version marked these rows "LOCAL", which read as though the industry itself
+# were invented - indefensible next to ArcelorMittal, and wrong: steel is a
+# BICS industry and always was.
+UNBENCHMARKED_BICS_ROWS = [
     # Diversified industrials. Many mid-sized plants plus large engineering
     # campuses; bandwidth driven by design data and plant telemetry rather
     # than by either alone.
@@ -184,6 +196,12 @@ LOCAL_INDUSTRY_ROWS = [
      "Regional", "100 Mbps-1 Gbps", "50-80%", "Medium-High", "Optional",
      "Tier 2"),
 ]
+
+
+# Where a row's figures came from. Not a statement about the industry code,
+# which is a standard BICS L3 classification in every row.
+SUPPLIED_BENCHMARK = "SUPPLIED_BENCHMARK"
+WORKBENCH_ESTIMATE = "WORKBENCH_ESTIMATE"
 
 
 class BenchmarkRowInvalid(ValueError):
@@ -367,15 +385,23 @@ def seeded() -> dict:
     figure from one we wrote. `source` says which.
     """
     out = read_all([dict(zip(COLUMNS, row))
-                    for row in INDUSTRY_WAN_BENCHMARK + LOCAL_INDUSTRY_ROWS])
-    local = {industry_code(row[1]) for row in LOCAL_INDUSTRY_ROWS}
+                    for row in INDUSTRY_WAN_BENCHMARK + UNBENCHMARKED_BICS_ROWS])
+    unbenchmarked = {industry_code(row[1])
+                     for row in UNBENCHMARKED_BICS_ROWS}
     for entry in out["rows"]:
-        entry["source"] = ("LOCAL" if entry["industry_code"] in local
-                           else "BICS_L3_BENCHMARK")
-    out["local_industries"] = sorted(local)
-    out["note"] += (f"; {len(local)} of these are this repository's own rows "
-                    f"for industries the supplied benchmark does not cover, "
-                    f"marked source=LOCAL and graded as assumptions")
+        # Where the FIGURES came from. The industry code is a standard BICS
+        # L3 classification either way, and a label implying otherwise is the
+        # defect this replaced.
+        entry["figures_from"] = (
+            WORKBENCH_ESTIMATE if entry["industry_code"] in unbenchmarked
+            else SUPPLIED_BENCHMARK)
+    out["unbenchmarked_industries"] = sorted(unbenchmarked)
+    out["note"] += (
+        f"; {len(unbenchmarked)} are standard BICS L3 industries the supplied "
+        f"workbook has no row for, so their bandwidth, committed share and "
+        f"criticality are this repository's estimates at evidence grade E. "
+        f"The classification is BICS in every case; only the figures differ "
+        f"in provenance.")
     return out
 
 

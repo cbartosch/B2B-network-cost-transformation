@@ -132,7 +132,7 @@ catalogue = bench.seeded()
 check("the BICS benchmark loads with nothing refused",
       not catalogue["refused"] and len(catalogue["rows"]) == (
           len(bench.INDUSTRY_WAN_BENCHMARK)
-          + len(bench.LOCAL_INDUSTRY_ROWS)),
+          + len(bench.UNBENCHMARKED_BICS_ROWS)),
       catalogue["note"][:150])
 
 # ---------------------------------------------------------------- simulation

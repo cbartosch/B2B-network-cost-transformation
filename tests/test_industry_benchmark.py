@@ -25,10 +25,10 @@ def test_every_supplied_row_reads_into_the_models_units():
     # move every time a sector is added, and the test would be maintained
     # rather than informative.
     supplied = len(ib.INDUSTRY_WAN_BENCHMARK)
-    local = len(ib.LOCAL_INDUSTRY_ROWS)
+    unbenchmarked = len(ib.UNBENCHMARKED_BICS_ROWS)
     assert supplied == 44, "the supplied benchmark itself must not change"
-    assert len(out["rows"]) == supplied + local
-    assert len(out["local_industries"]) == local
+    assert len(out["rows"]) == supplied + unbenchmarked
+    assert len(out["unbenchmarked_industries"]) == unbenchmarked
     assert len(out["sectors"]) == 10
 
 
@@ -80,14 +80,22 @@ def test_a_committed_share_above_the_bearer_is_refused():
         ib.parse_cir("0%")
 
 
-def test_a_local_row_is_marked_as_ours_and_a_supplied_one_is_not():
-    """A reader has to be able to tell a published figure from one we wrote.
-    Both are grade E in this model; only one is somebody else's."""
+def test_the_label_describes_the_figures_not_the_industry_code():
+    """STEEL is a standard BICS L3 classification and always was. What this
+    repository supplied is its bandwidth, committed share and criticality,
+    because the workbook has no row for it.
+
+    An earlier version marked these rows "LOCAL", which read as though the
+    industry itself were invented - indefensible next to ArcelorMittal, and
+    wrong. A reader still has to be able to tell a published figure from one
+    we wrote; they must not be told the classification is ours."""
     out = ib.seeded()
     by_code = {r["industry_code"]: r for r in out["rows"]}
-    assert by_code["STEEL"]["source"] == "LOCAL"
-    assert by_code["SUPERMARKETS"]["source"] == "BICS_L3_BENCHMARK"
-    assert "source=LOCAL" in out["note"]
+    assert by_code["STEEL"]["figures_from"] == ib.WORKBENCH_ESTIMATE
+    assert by_code["SUPERMARKETS"]["figures_from"] == ib.SUPPLIED_BENCHMARK
+    # and nothing in the output implies the code is non-standard
+    assert "LOCAL" not in out["note"]
+    assert "classification is BICS in every case" in out["note"]
 
 
 def test_the_industries_that_had_no_code_now_have_one():
