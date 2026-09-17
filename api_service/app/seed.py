@@ -317,6 +317,76 @@ THRESHOLDS = [
 #
 # Bandwidth tiers follow the archetype bandwidth_mbps_base values below, so a
 # site's required bandwidth has a price to match rather than a nearest guess.
+# Regional fallback rates, derived from the member countries that have a card.
+#
+# The three regions held exactly one row each - ETHERNET at 10 Gbps, for the
+# backbone - so a country without its own card fell through to a region that
+# could not price a branch, a store or an office. Brazil and India were mapped
+# and still came back unpriced.
+#
+# **Derived, and only where there is something to derive from.** A region takes
+# the median of its member countries at each (product, tier), which is a
+# defensible average of real markets where several exist. Where only one member
+# has a card, the region is that country wearing a regional label - so it is
+# still emitted, because refusing leaves every estate in the region unpriced,
+# but `member_count` records how thin it is and the source note says so.
+#
+# The median, not the mean: EMEA spans Germany and Egypt, and one expensive
+# market should not carry the region.
+#
+# Grade E, and a wider grade E than a country row - the scope ladder records
+# that a REGION price was used, and `unsourced_price_share` counts it. A
+# regional average across EMEA is a starting point for research, not an answer.
+def _regional_tiers(rows, country_region):
+    """One row per (region, product, tier) the region's members price."""
+    from decimal import Decimal as _D
+
+    region_of = dict(country_region)
+    present = {(country, product, mbps)
+               for country, product, _l, mbps, *_r in rows}
+
+    grouped, members = {}, {}
+    for country, product, layer, mbps, low, base, high in rows:
+        region = region_of.get(country)
+        if region is None or len(country) != 2:
+            continue
+        key = (region, product, int(mbps))
+        grouped.setdefault(key, []).append(
+            (_D(low), _D(base), _D(high), layer))
+        members.setdefault(region, set()).add(country)
+
+    def _median(values):
+        ordered = sorted(values)
+        middle = len(ordered) // 2
+        return (ordered[middle] if len(ordered) % 2
+                else (ordered[middle - 1] + ordered[middle]) / 2)
+
+    out = []
+    for (region, product, mbps), quotes in sorted(grouped.items()):
+        if (region, product, mbps) in present:
+            # A row already exists at this key, and for the regions that means
+            # the backbone: ETHERNET at 10 Gbps between a hub and the core.
+            #
+            # Not overwritten, and not added beside. `match_prior` is keyed
+            # (scope, product, bandwidth) and ignores role, so one row has to
+            # serve both a backbone leg and a 10 Gbps site access circuit in
+            # an unlisted country - and EMEA's backbone price is 7000 against
+            # GB's 3700 for access. Overwriting would underprice the backbone;
+            # adding a second row is impossible on a shared key; leaving it
+            # means a Polish data centre prices at 1.9x.
+            #
+            # So the region declines to price site access at that tier. An
+            # unlisted-country 10 Gbps site is unpriced scope, reported by the
+            # coverage gate, which is the model's answer everywhere else it
+            # cannot tell two things apart.
+            continue
+        out.append((region, product, quotes[0][3], mbps,
+                    int(_median([q[0] for q in quotes])),
+                    int(_median([q[1] for q in quotes])),
+                    int(_median([q[2] for q in quotes]))))
+    return out
+
+
 # The tiers each country's own estates need and its card does not quote.
 #
 # A Dutch and French estate came back 67% covered while the same estate in the
@@ -656,16 +726,49 @@ SERVICEABILITY = [
 # prices for, plus the ones the illustrative footprint uses - a mapping is
 # useless without prices behind the products it implies, and an unmapped
 # country is reported rather than guessed.
+# Which region a country falls back to when it has no card of its own.
+#
+# This had nine rows - the seven countries that already have a card, plus
+# Brazil and India. So Poland, Japan, Mexico, Australia and every other
+# country mapped to nothing and could not reach a fallback at all: an estate
+# there was unpriced scope whatever the regions held.
+#
+# The three regions are the ones the backbone is scoped to. A country is
+# placed by where its access market resembles its neighbours, not by
+# geography alone: Turkey and Israel sit in EMEA because that is how carriers
+# sell there, and Mexico in AMER for the same reason.
 COUNTRY_REGION = [
+    # --- EMEA
     ("GB", "EMEA"), ("DE", "EMEA"), ("FR", "EMEA"), ("NL", "EMEA"),
-    ("AE", "EMEA"), ("US", "AMER"), ("BR", "AMER"), ("SG", "APAC"),
-    ("IN", "APAC"),
+    ("AE", "EMEA"), ("IE", "EMEA"), ("BE", "EMEA"), ("LU", "EMEA"),
+    ("ES", "EMEA"), ("PT", "EMEA"), ("IT", "EMEA"), ("CH", "EMEA"),
+    ("AT", "EMEA"), ("DK", "EMEA"), ("SE", "EMEA"), ("NO", "EMEA"),
+    ("FI", "EMEA"), ("PL", "EMEA"), ("CZ", "EMEA"), ("SK", "EMEA"),
+    ("HU", "EMEA"), ("RO", "EMEA"), ("BG", "EMEA"), ("GR", "EMEA"),
+    ("HR", "EMEA"), ("SI", "EMEA"), ("EE", "EMEA"), ("LV", "EMEA"),
+    ("LT", "EMEA"), ("TR", "EMEA"), ("IL", "EMEA"), ("SA", "EMEA"),
+    ("QA", "EMEA"), ("KW", "EMEA"), ("BH", "EMEA"), ("OM", "EMEA"),
+    ("EG", "EMEA"), ("MA", "EMEA"), ("ZA", "EMEA"), ("NG", "EMEA"),
+    ("KE", "EMEA"), ("GH", "EMEA"), ("TZ", "EMEA"), ("UA", "EMEA"),
+    # --- AMER
+    ("US", "AMER"), ("CA", "AMER"), ("MX", "AMER"), ("BR", "AMER"),
+    ("AR", "AMER"), ("CL", "AMER"), ("CO", "AMER"), ("PE", "AMER"),
+    ("UY", "AMER"), ("PA", "AMER"), ("CR", "AMER"), ("DO", "AMER"),
+    # --- APAC
+    ("SG", "APAC"), ("IN", "APAC"), ("JP", "APAC"), ("KR", "APAC"),
+    ("CN", "APAC"), ("HK", "APAC"), ("TW", "APAC"), ("AU", "APAC"),
+    ("NZ", "APAC"), ("MY", "APAC"), ("TH", "APAC"), ("ID", "APAC"),
+    ("PH", "APAC"), ("VN", "APAC"),
 ]
 
 # The regions a price may be scoped to, taken from COUNTRY_REGION so the two
 # cannot drift: a backbone price for a region nobody maps to is unreachable,
 # and a region that has no price leaves its core circuits unpriced.
 REGION_CODES = sorted({r for _c, r in COUNTRY_REGION})
+
+# Applied here, after COUNTRY_REGION exists. A region's rates are derived from
+# its member countries, so the map has to be read before they can be.
+PRIORS = PRIORS + _regional_tiers(PRIORS, COUNTRY_REGION)
 
 # The backbone. ETHERNET at 10 Gbps between a data centre and its regional hub,
 # and between a regional hub and the global core - which is the shape and the

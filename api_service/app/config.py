@@ -173,4 +173,8 @@ SIMULATION_MODEL_VERSION = "sim-1.17.0"
 # France and the Netherlands quoted no Ethernet and no DIA above 500 Mbps while
 # GB, DE and US quoted both, so a Dutch and French estate covered 67% where the
 # same estate in the US covered 100%.
-CALCULATION_VERSION = "calc-1.7.0"
+# calc-1.8.0: 70 countries fall back to a regional rate derived from the member
+# countries that have a card. The three regions held one backbone row each, so
+# a country without its own card fell through to a region that could not price
+# a branch - and the map had nine rows, so most countries reached no region.
+CALCULATION_VERSION = "calc-1.8.0"
