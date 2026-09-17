@@ -11,6 +11,7 @@ from sqlalchemy import delete, insert, select, text, update
 from .. import config, db, jobs, migrations
 from ..domain import (access as access_vocab, anchor_estimate,
                       assumptions, calibration, case_rates, currency,
+                      site_rule,
                       delta_bridge, industries, industry_benchmark,
                       site_rule,
                       providers, validation,
@@ -1014,6 +1015,11 @@ class FootprintRow(BaseModel):
     country: str = Field(min_length=2, max_length=2)
     archetype: str = Field(min_length=1, max_length=48)
     sites: int = Field(ge=0, le=config.MAX_SIM_SITES)
+    # Where this count came from. A filing, the company's own store locator,
+    # the client, or somebody's judgement - and the evidence grade follows
+    # from it. Optional so an existing caller still works; a row without one
+    # is reported as an analyst estimate rather than silently graded higher.
+    count_source: str | None = None
     # Where this number came from. A filing, the company's own store locator,
     # the client, or somebody's judgement - and the evidence grade follows
     # from that, exactly as it does for a rate.
@@ -1273,7 +1279,14 @@ def run_simulation(case_id: str, payload: SimIn):
             # Pinned, so a resumed pass rebuilds the same estate: the named
             # sites decide which rows are known, and a run that resumed
             # without them would generate different rows for the same seed.
-            params={"footprint": footprint, "backbone": backbone,
+            # The rule the footprint was counted under, pinned with it. A
+            # stored run whose site count has no unit cannot be reconciled
+            # against anything later - and the site count is the largest
+            # single driver of the baseline.
+            params={"footprint": footprint,
+                    "site_inclusion_rule": getattr(
+                        case_row, "site_inclusion_rule", None),
+                    "backbone": backbone,
                     # What counts as a site, and where each count came from.
                     # Pinned with the footprint because they are part of what
                     # the number means, not a note about how it was made - a

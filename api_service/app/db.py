@@ -66,6 +66,12 @@ case = Table(
     # to 689 in one edit.
     Column("site_rule", JSON),
     Column("in_scope_countries", JSON), Column("in_scope_cost_layers", JSON),
+    # What counts as a site. The case declared which countries, which cost
+    # layers and which entities were in scope and nothing about this - so a
+    # footprint of 5,230 was unanswerable: hypermarkets only, all banners,
+    # franchise stores, every connected location? Four different numbers, and
+    # the site count is the largest single driver of the baseline.
+    Column("site_inclusion_rule", JSON),
     Column("in_scope_service_families", JSON),
     # Descriptor for how in_scope_countries was chosen: null for an explicit
     # list, a region code, or "GLOBAL". Never read for pricing or coverage -
