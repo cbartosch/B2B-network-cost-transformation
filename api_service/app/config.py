@@ -154,4 +154,7 @@ SIMULATION_MODEL_VERSION = "sim-1.15.0"
 # clients in the same industry and country got the same rate card and only
 # their footprints differed - and there was nowhere to put an invoice, which
 # is the best evidence this model can have.
-CALCULATION_VERSION = "calc-1.5.0"
+# calc-1.6.0: consumer access is priced above 100 Mbps. The BICS benchmark put a
+# supermarket store at 275 Mbps and the card stopped at 100, so every store in
+# every retail estate was unpriced scope - 2% coverage for a French grocer.
+CALCULATION_VERSION = "calc-1.6.0"

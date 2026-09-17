@@ -317,6 +317,63 @@ THRESHOLDS = [
 #
 # Bandwidth tiers follow the archetype bandwidth_mbps_base values below, so a
 # site's required bandwidth has a price to match rather than a nearest guess.
+# Consumer-access tiers above 100 Mbps, added in 4.205.0.
+#
+# The BICS benchmark puts a supermarket store at 275 Mbps and the card quoted
+# BROADBAND_HFC and BROADBAND_PON at 50 and 100 only - so every store in every
+# retail estate was unpriced scope. A nine-company run came back at 2% coverage
+# for Carrefour, 15% for Aldi and 15% for Marks & Spencer, and correctly
+# refused to price the rest.
+#
+# The gate was working. The card had simply not kept up with the bandwidths
+# 4.193 introduced, and nothing caught it because the pricing tests use
+# industries whose figures happen to land on a quoted tier.
+#
+# 250 / 500 / 1000 are the commonest business broadband tiers in these markets.
+# Priced by extending each country's own 100 Mbps row rather than by inventing
+# a figure: the step from 100 to 250 costs less than 2.5x because the access is
+# the same and only the profile changes, which is how these are actually sold.
+#
+# Grade E, like every other seeded rate. They make a retail estate priceable;
+# they do not make it evidenced.
+_CONSUMER_UPLIFT = ((250, "1.35"), (500, "1.70"), (1000, "2.20"))
+
+
+def _consumer_tiers(rows):
+    """Higher tiers for each country that already prices consumer access.
+
+    Extends what is there rather than adding countries: a country with no HFC
+    row has no HFC market recorded, and inventing three tiers for it would be
+    asserting a market rather than extending one.
+    """
+    from decimal import Decimal as _D
+
+    # Anchored on each country's own highest existing tier, not on a 100 Mbps
+    # row. France and the Netherlands price HFC at 50 only, so keying on 100
+    # skipped them - and a French supermarket estate stayed unpriceable, which
+    # is the defect this whole change exists to fix, reproduced one level down.
+    highest = {}
+    for country, product, layer, mbps, low, base, high in rows:
+        if product not in ("BROADBAND_HFC", "BROADBAND_PON"):
+            continue
+        key = (country, product)
+        if key not in highest or mbps > highest[key][0]:
+            highest[key] = (mbps, layer, low, base, high)
+
+    out = []
+    for (country, product), (mbps, layer, low, base, high) in highest.items():
+        for tier, factor in _CONSUMER_UPLIFT:
+            if tier <= mbps:
+                continue                 # already priced at or above this
+            # Scaled from the anchor's own bandwidth, so a country anchored at
+            # 50 is not charged as though it were anchored at 100.
+            scale = _D(factor) * _D(100) / _D(mbps)
+            out.append((country, product, layer, tier,
+                        int(_D(low) * scale), int(_D(base) * scale),
+                        int(_D(high) * scale)))
+    return out
+
+
 PRIORS = [
     # --- GB
     ("GB", "DIA", "L0", 100, 380, 520, 720), ("GB", "DIA", "L0", 500, 720, 980, 1350),
@@ -402,6 +459,8 @@ PRIORS = [
     ("AE", "BROADBAND_PON", "L0", 100, 120, 190, 290),
     ("AE", "MOBILE_5G", "L0", 50, 55, 95, 160),
 ]
+
+PRIORS = PRIORS + _consumer_tiers(PRIORS)
 
 # How an estate of a given kind typically distributes. Shares of the whole
 # estate, so each industry's rows sum to 1.

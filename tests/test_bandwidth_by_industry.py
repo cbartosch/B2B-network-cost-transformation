@@ -99,3 +99,70 @@ def test_the_simulation_puts_bandwidth_on_the_edge():
     src = inspect.getsource(simulation.one_pass)
     assert src.count('"bandwidth_mbps": bw_base') == 2, (
         "both the primary and the backup edge must carry their bandwidth")
+
+
+def test_every_seeded_bandwidth_has_a_tier_that_can_price_it():
+    """The BICS benchmark put a supermarket store at 275 Mbps while the card
+    quoted consumer access at 50 and 100 only, so every store in every retail
+    estate was unpriced scope - 2% coverage for a French grocer and 15% for a
+    German discounter, with the gate correctly refusing to price the rest.
+
+    `match_prior` takes the cheapest tier at or above the requirement and never
+    substitutes downward, so a bandwidth above every tier is unpriceable rather
+    than approximated. Nothing caught it because the other pricing tests use
+    industries whose figures happen to land on a quoted tier."""
+    from app.seed import ARCHETYPES, ARCHETYPE_BANDWIDTH, PRIORS
+
+    product_of = {row[0]: row[4] for row in ARCHETYPES}
+    tiers = {}
+    for _country, product, _layer, mbps, *_rest in PRIORS:
+        tiers.setdefault(product, set()).add(int(mbps))
+
+    unpriceable = []
+    for industry, archetype, mbps in ARCHETYPE_BANDWIDTH:
+        product = product_of.get(archetype)
+        if product is None:
+            continue
+        quoted = tiers.get(product, set())
+        if not quoted or not any(t >= int(mbps) for t in quoted):
+            unpriceable.append(f"{industry}/{archetype} needs {mbps} Mbps of "
+                               f"{product}, highest tier "
+                               f"{max(quoted) if quoted else 'none'}")
+    assert not unpriceable, unpriceable
+
+
+def test_the_consumer_tiers_extend_a_market_rather_than_inventing_one():
+    """A country with no HFC row has no HFC market recorded, and adding three
+    tiers for it would assert a market rather than extend one."""
+    from app.seed import PRIORS
+
+    by_country = {}
+    for country, product, _layer, mbps, *_rest in PRIORS:
+        if product in ("BROADBAND_HFC", "BROADBAND_PON"):
+            by_country.setdefault((country, product), set()).add(int(mbps))
+
+    # Anchored on each country's own lowest recorded tier, not on a 100 Mbps
+    # row: France and the Netherlands price HFC at 50 only, and requiring 100
+    # skipped them - leaving a French supermarket estate unpriceable, which is
+    # the defect this change exists to fix.
+    for (country, product), tiers in by_country.items():
+        assert min(tiers) <= 100, (
+            f"{country}/{product} starts at {min(tiers)} Mbps with no lower "
+            f"anchor - these tiers were not extended from a recorded market")
+
+
+def test_a_higher_tier_costs_more_than_the_one_below_it():
+    """A 250 Mbps service cheaper than a 100 Mbps one would make right-sizing
+    recommend an upgrade."""
+    from app.seed import PRIORS
+
+    by_key = {}
+    for country, product, _layer, mbps, low, base, high in PRIORS:
+        by_key.setdefault((country, product), {})[int(mbps)] = int(base)
+
+    for (country, product), tiers in by_key.items():
+        ordered = sorted(tiers)
+        for lower, upper in zip(ordered, ordered[1:]):
+            assert tiers[upper] > tiers[lower], (
+                f"{country}/{product}: {upper} Mbps costs {tiers[upper]} and "
+                f"{lower} Mbps costs {tiers[lower]}")

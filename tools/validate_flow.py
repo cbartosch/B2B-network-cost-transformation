@@ -590,6 +590,71 @@ def class_attributes_a_classmethod_reads_exist() -> list:
     return problems
 
 
+def seeded_bandwidths_are_priceable() -> list:
+    """An (industry, archetype) bandwidth with no rate tier at or above it.
+
+    The BICS benchmark put a supermarket store at 275 Mbps while the card
+    quoted consumer access at 50 and 100 only, so every store in every retail
+    estate was unpriced scope - 2% coverage for a French grocer, 15% for a
+    German discounter, and the gate correctly refusing to price the rest.
+    match_prior takes the cheapest tier at or above the requirement and never
+    substitutes downward, so a bandwidth above every tier is unpriceable
+    rather than approximated.
+
+    Nothing caught it because the pricing tests use industries whose figures
+    happen to land on a quoted tier. This checks all of them.
+    """
+    seed_source = (APP / "seed.py").read_text()
+
+    # Imported, not sliced: ARCHETYPE_BANDWIDTH and PRIORS are computed
+    # expressions rather than literal lists, so reading the text finds a
+    # prefix and misses the rows appended to it.
+    import importlib.machinery
+    import sys
+    import types as _types
+
+    for library in ("sqlalchemy", "sqlalchemy.orm", "sqlalchemy.exc",
+                    "sqlalchemy.engine", "sqlalchemy.dialects",
+                    "sqlalchemy.dialects.postgresql", "psycopg"):
+        stub = _types.ModuleType(library)
+        stub.__getattr__ = lambda _n: type("A", (), {
+            "__getattr__": lambda s, _x: s,
+            "__call__": lambda s, *a, **k: s})()
+        stub.__spec__ = importlib.machinery.ModuleSpec(library, loader=None)
+        sys.modules.setdefault(library, stub)
+    sys.path[:0] = [str(ROOT), str(ROOT / "api_service")]
+    try:
+        from app import seed as seed_module
+    except Exception as exc:                                # noqa: BLE001
+        return [f"the seed could not be imported to check its bandwidths: "
+                f"{type(exc).__name__}"]
+
+    product_of = {row[0]: row[4] for row in seed_module.ARCHETYPES}
+    tiers = {}
+    for country, product, _layer, mbps, *_rest in seed_module.PRIORS:
+        tiers.setdefault(product, set()).add(int(mbps))
+
+    problems = []
+    for industry, archetype, mbps in seed_module.ARCHETYPE_BANDWIDTH:
+        product = product_of.get(archetype)
+        if product is None:
+            # An archetype with no prior profile is priced through whatever
+            # the estimate assigns it; not this check's business.
+            continue
+        quoted = tiers.get(product, set())
+        if not quoted:
+            problems.append(
+                f"{industry}/{archetype} is a {product} and no country prices "
+                f"that product at all")
+            continue
+        if not any(tier >= int(mbps) for tier in quoted):
+            problems.append(
+                f"{industry}/{archetype} needs {mbps} Mbps of {product} and "
+                f"the highest tier quoted anywhere is {max(quoted)} - every "
+                f"site of this type is unpriced scope")
+    return problems
+
+
 def seeded_values_fit_their_type() -> list:
     """A seeded value the column cannot hold fails the whole seed.
 
@@ -691,6 +756,8 @@ CHECKS = [
     ("every constructed class can be constructed",
      every_constructed_class_can_be_constructed),
     ("every seeded value fits its column type", seeded_values_fit_their_type),
+    ("every seeded bandwidth has a tier that can price it",
+     seeded_bandwidths_are_priceable),
     ("every cls attribute a classmethod reads exists",
      class_attributes_a_classmethod_reads_exist),
     ("every enum member a gate names exists", enum_members_gates_name_exist),
