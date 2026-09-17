@@ -22,6 +22,28 @@ from sqlalchemy import select
 
 from .. import db
 
+# A sub-region's parent, for the second rung of the fallback.
+#
+# A country with no card falls to its sub-region; a sub-region with no priced
+# member falls to its parent. Ethiopia reaches AFRICA_SSA, which has no rates,
+# and then EMEA, which does - so the estate prices instead of refusing, and the
+# scope recorded on the price says which rung answered.
+#
+# AMER and APAC are their own parents: there is nothing above them, and mapping
+# them to a global average across markets differing by a factor of three would
+# be a worse answer than the region itself.
+REGION_PARENT = {
+    "AFRICA_NORTH": "EMEA",
+    "AFRICA_SSA": "EMEA",
+    "EUROPE_CENTRAL": "EMEA",
+    "EUROPE_EAST": "EMEA",
+    "EUROPE_NORTH": "EMEA",
+    "EUROPE_SOUTH": "EMEA",
+    "EUROPE_WEST": "EMEA",
+    "MIDDLE_EAST": "EMEA",
+}
+
+
 SCOPE_MODES = ("COUNTRIES", "REGION", "GLOBAL")
 
 # Maintained by hand: there is no atlas anywhere else in this system, and a

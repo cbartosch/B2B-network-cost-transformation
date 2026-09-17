@@ -147,13 +147,34 @@ def test_a_price_scope_may_be_a_region_and_says_so():
 
 
 def test_the_seed_labels_regional_rows_as_regions():
-    from app.seed import COUNTRY_REGION, PRIORS, REGION_CODES
-    assert REGION_CODES == sorted({r for _c, r in COUNTRY_REGION}), (
-        "the region codes a price may use must come from the region table, or "
-        "a backbone price can be scoped to a region nobody maps to")
-    regional = [c for c, *_ in PRIORS if c in REGION_CODES]
-    assert set(regional) == set(REGION_CODES), (
-        "every region needs a backbone price or its core circuits are unpriced")
+    """Two different sets, conflated until EMEA split into eight.
+
+    A BACKBONE price is scoped to the hub tier - an estate has one EMEA hub,
+    not one per European band - so BACKBONE_REGIONS stayed at three. Deriving
+    it from the country map made it ten and asked for a backbone price for
+    EUROPE_NORTH, a hub nobody has.
+
+    REGION_CODES is the wider set: every scope that is a region rather than a
+    country, for labelling a rate row. A EUROPE_CENTRAL access rate is as much
+    a regional price as an EMEA one."""
+    from app.domain.scope import REGION_PARENT
+    from app.seed import (BACKBONE_REGIONS, COUNTRY_REGION, PRIORS,
+                          REGION_CODES)
+
+    mapped = {r for _c, r in COUNTRY_REGION}
+    assert set(BACKBONE_REGIONS) == (
+        set(REGION_PARENT.values()) | (mapped - set(REGION_PARENT))), (
+        "a backbone price must be scoped to a hub region, and every hub must "
+        "be reachable from the country map")
+
+    backbone_priced = {c for c, *_ in PRIORS if c in BACKBONE_REGIONS}
+    assert backbone_priced == set(BACKBONE_REGIONS), (
+        "every hub region needs a backbone price or its core circuits are "
+        "unpriced")
+
+    assert mapped <= set(REGION_CODES), (
+        "a region a country maps to must be labelled REGION, or its rates sit "
+        "on the COUNTRY rung of the ladder")
 
 
 def test_a_region_is_never_offered_as_an_in_scope_country():

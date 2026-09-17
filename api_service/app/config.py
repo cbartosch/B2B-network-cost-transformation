@@ -181,4 +181,8 @@ SIMULATION_MODEL_VERSION = "sim-1.17.0"
 # system's iso-codes list. The map had seventy rows chosen by thinking about
 # where clients are - eight African countries out of fifty-four - so Ethiopian
 # Airlines came back 37% covered because nobody had listed Ethiopia.
-CALCULATION_VERSION = "calc-1.9.0"
+# calc-1.10.0: EMEA split into five European bands, the Middle East, and Africa
+# north and south of the Sahara. A country falls to its band, a band with no
+# priced member falls to EMEA - so Saudi Arabia takes the Middle East rate of
+# 1300 rather than a pan-EMEA 550, a 2.4x correction one region could not make.
+CALCULATION_VERSION = "calc-1.10.0"

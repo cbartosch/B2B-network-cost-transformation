@@ -3312,9 +3312,17 @@ def run_estimate(case_id: str, payload: EstimateIn):
         #
         # Only the regions this case's countries actually map into: a case with
         # no APAC sites has no business pricing an APAC backbone.
-        in_scope_regions = sorted({
+        # The sub-region and its parent. Since 4.213 EMEA is eight sub-regions
+        # and five of them contain no country with a rate card - so a Nordic
+        # or African estate reaches a sub-region that prices nothing and needs
+        # the rung beneath it. Loading only the sub-region would have made the
+        # split a coverage regression.
+        _sub = sorted({
             r.region for r in s.execute(select(db.country_region).where(
                 db.country_region.c.country.in_(countries or ["--"]))).all()})
+        in_scope_regions = sorted(set(_sub) | {
+            scope.REGION_PARENT[r] for r in _sub
+            if r in scope.REGION_PARENT})
         prior_rows = s.execute(select(db.unit_cost_prior).where(
             db.unit_cost_prior.c.country.in_(
                 (countries or ["--"]) + in_scope_regions),

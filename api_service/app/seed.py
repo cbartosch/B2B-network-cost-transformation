@@ -728,87 +728,133 @@ SERVICEABILITY = [
 # country is reported rather than guessed.
 # Which region a country falls back to when it has no card of its own.
 #
-# Every ISO-3166-1 alpha-2 country, generated against the system's own
-# iso-codes list rather than typed from memory: 242 assigned, 7 uninhabited or
-# research-only skipped, and a test asserts no ISO code is missing.
+# Ten regions. EMEA was one, spanning Germany and Ethiopia - 125 countries
+# taking a median of five European markets, which is a number with very little
+# information in it. It is now eight: five European bands, the Middle East, and
+# Africa north and south of the Sahara.
 #
-# This had nine rows - the seven countries with a card, plus Brazil and India.
-# Then seventy, chosen by thinking about where clients are, which encoded a
-# Western bias: Africa got eight of fifty-four, and Ethiopian Airlines came
-# back 37% covered because Ethiopia, Togo and Cote d'Ivoire were all absent.
-# An estate was unpriced because nobody had listed its country.
+# **A sub-region only prices what its own members price, so most of these have
+# no rates yet.** Only western Europe (GB, FR, NL), central Europe (DE) and the
+# Middle East (AE) contain a country with a card. The other five would leave
+# every estate in them unpriced - which is why REGION_PARENT exists below and
+# the fallback is a chain rather than a single rung.
 #
-# EMEA = Europe, the Middle East and Africa. AMER = the Americas. APAC = Asia
-# and Oceania. Three regions is the shape the backbone already uses.
+# The split is the structure for research to land in: when an African or Nordic
+# rate card arrives, AFRICA_SSA or EUROPE_NORTH starts pricing from it and
+# nothing else has to change.
 #
-# **These assignments are carrier-market judgements, not geography.** The
-# Caucasus and Central Asia sit in APAC here because that is the more common
-# carrier split; several operators put them in EMEA, and an engagement whose
-# supplier does can retune the row. Turkey and Israel are in EMEA for the same
-# reason. The table is governed data, so a steward changes it without a
-# release.
+# Generated against the system's iso-codes list, not typed from memory - which
+# is how the previous map ended up with eight African countries out of
+# fifty-four.
 #
-# EMEA spans Germany and Ethiopia, which is a median across markets differing
-# by more than a factor of three. Splitting it needs at least one African
-# country with a real rate card to derive from - a research task, not a code
-# one - and until then the scope ladder records that a REGION price was used
-# and the confidence score counts it as unsourced.
+# Assignments are carrier-market judgements. Turkey sits in MIDDLE_EAST and
+# Russia in EUROPE_EAST because that is how carriers sell, not where the
+# borders are; these are governed rows a steward retunes without a release.
 COUNTRY_REGION = [
-    # --- EMEA: Europe, Middle East, Africa (125 countries)
-    ("AD", "EMEA"), ("AE", "EMEA"), ("AL", "EMEA"), ("AO", "EMEA"), ("AT", "EMEA"), ("AX", "EMEA"),
-    ("BA", "EMEA"), ("BE", "EMEA"), ("BF", "EMEA"), ("BG", "EMEA"), ("BH", "EMEA"), ("BI", "EMEA"),
-    ("BJ", "EMEA"), ("BW", "EMEA"), ("BY", "EMEA"), ("CD", "EMEA"), ("CF", "EMEA"), ("CG", "EMEA"),
-    ("CH", "EMEA"), ("CI", "EMEA"), ("CM", "EMEA"), ("CV", "EMEA"), ("CY", "EMEA"), ("CZ", "EMEA"),
-    ("DE", "EMEA"), ("DJ", "EMEA"), ("DK", "EMEA"), ("DZ", "EMEA"), ("EE", "EMEA"), ("EG", "EMEA"),
-    ("EH", "EMEA"), ("ER", "EMEA"), ("ES", "EMEA"), ("ET", "EMEA"), ("FI", "EMEA"), ("FO", "EMEA"),
-    ("FR", "EMEA"), ("GA", "EMEA"), ("GB", "EMEA"), ("GG", "EMEA"), ("GH", "EMEA"), ("GI", "EMEA"),
-    ("GM", "EMEA"), ("GN", "EMEA"), ("GQ", "EMEA"), ("GR", "EMEA"), ("GW", "EMEA"), ("HR", "EMEA"),
-    ("HU", "EMEA"), ("IE", "EMEA"), ("IL", "EMEA"), ("IM", "EMEA"), ("IQ", "EMEA"), ("IR", "EMEA"),
-    ("IS", "EMEA"), ("IT", "EMEA"), ("JE", "EMEA"), ("JO", "EMEA"), ("KE", "EMEA"), ("KM", "EMEA"),
-    ("KW", "EMEA"), ("LB", "EMEA"), ("LI", "EMEA"), ("LR", "EMEA"), ("LS", "EMEA"), ("LT", "EMEA"),
-    ("LU", "EMEA"), ("LV", "EMEA"), ("LY", "EMEA"), ("MA", "EMEA"), ("MC", "EMEA"), ("MD", "EMEA"),
-    ("ME", "EMEA"), ("MG", "EMEA"), ("MK", "EMEA"), ("ML", "EMEA"), ("MR", "EMEA"), ("MT", "EMEA"),
-    ("MU", "EMEA"), ("MW", "EMEA"), ("MZ", "EMEA"), ("NA", "EMEA"), ("NE", "EMEA"), ("NG", "EMEA"),
-    ("NL", "EMEA"), ("NO", "EMEA"), ("OM", "EMEA"), ("PL", "EMEA"), ("PS", "EMEA"), ("PT", "EMEA"),
-    ("QA", "EMEA"), ("RE", "EMEA"), ("RO", "EMEA"), ("RS", "EMEA"), ("RU", "EMEA"), ("RW", "EMEA"),
-    ("SA", "EMEA"), ("SC", "EMEA"), ("SD", "EMEA"), ("SE", "EMEA"), ("SH", "EMEA"), ("SI", "EMEA"),
-    ("SJ", "EMEA"), ("SK", "EMEA"), ("SL", "EMEA"), ("SM", "EMEA"), ("SN", "EMEA"), ("SO", "EMEA"),
-    ("SS", "EMEA"), ("ST", "EMEA"), ("SY", "EMEA"), ("SZ", "EMEA"), ("TD", "EMEA"), ("TG", "EMEA"),
-    ("TN", "EMEA"), ("TR", "EMEA"), ("TZ", "EMEA"), ("UA", "EMEA"), ("UG", "EMEA"), ("VA", "EMEA"),
-    ("YE", "EMEA"), ("YT", "EMEA"), ("ZA", "EMEA"), ("ZM", "EMEA"), ("ZW", "EMEA"),
-    # --- AMER: the Americas (55 countries)
-    ("AG", "AMER"), ("AI", "AMER"), ("AR", "AMER"), ("AW", "AMER"), ("BB", "AMER"), ("BL", "AMER"),
-    ("BM", "AMER"), ("BO", "AMER"), ("BQ", "AMER"), ("BR", "AMER"), ("BS", "AMER"), ("BZ", "AMER"),
-    ("CA", "AMER"), ("CL", "AMER"), ("CO", "AMER"), ("CR", "AMER"), ("CU", "AMER"), ("CW", "AMER"),
-    ("DM", "AMER"), ("DO", "AMER"), ("EC", "AMER"), ("FK", "AMER"), ("GD", "AMER"), ("GF", "AMER"),
-    ("GL", "AMER"), ("GP", "AMER"), ("GT", "AMER"), ("GY", "AMER"), ("HN", "AMER"), ("HT", "AMER"),
-    ("JM", "AMER"), ("KN", "AMER"), ("KY", "AMER"), ("LC", "AMER"), ("MF", "AMER"), ("MQ", "AMER"),
-    ("MS", "AMER"), ("MX", "AMER"), ("NI", "AMER"), ("PA", "AMER"), ("PE", "AMER"), ("PM", "AMER"),
-    ("PR", "AMER"), ("PY", "AMER"), ("SR", "AMER"), ("SV", "AMER"), ("SX", "AMER"), ("TC", "AMER"),
-    ("TT", "AMER"), ("US", "AMER"), ("UY", "AMER"), ("VC", "AMER"), ("VE", "AMER"), ("VG", "AMER"),
-    ("VI", "AMER"),
-    # --- APAC: Asia and Oceania (62 countries)
-    ("AF", "APAC"), ("AM", "APAC"), ("AS", "APAC"), ("AU", "APAC"), ("AZ", "APAC"), ("BD", "APAC"),
-    ("BN", "APAC"), ("BT", "APAC"), ("CC", "APAC"), ("CK", "APAC"), ("CN", "APAC"), ("CX", "APAC"),
-    ("FJ", "APAC"), ("FM", "APAC"), ("GE", "APAC"), ("GU", "APAC"), ("HK", "APAC"), ("ID", "APAC"),
-    ("IN", "APAC"), ("JP", "APAC"), ("KG", "APAC"), ("KH", "APAC"), ("KI", "APAC"), ("KP", "APAC"),
-    ("KR", "APAC"), ("KZ", "APAC"), ("LA", "APAC"), ("LK", "APAC"), ("MH", "APAC"), ("MM", "APAC"),
-    ("MN", "APAC"), ("MO", "APAC"), ("MP", "APAC"), ("MV", "APAC"), ("MY", "APAC"), ("NC", "APAC"),
-    ("NF", "APAC"), ("NP", "APAC"), ("NR", "APAC"), ("NU", "APAC"), ("NZ", "APAC"), ("PF", "APAC"),
-    ("PG", "APAC"), ("PH", "APAC"), ("PK", "APAC"), ("PN", "APAC"), ("PW", "APAC"), ("SB", "APAC"),
-    ("SG", "APAC"), ("TH", "APAC"), ("TJ", "APAC"), ("TK", "APAC"), ("TL", "APAC"), ("TM", "APAC"),
-    ("TO", "APAC"), ("TV", "APAC"), ("TW", "APAC"), ("UZ", "APAC"), ("VN", "APAC"), ("VU", "APAC"),
+    # --- EUROPE_WEST (11)
+    ("BE", "EUROPE_WEST"), ("FO", "EUROPE_WEST"), ("FR", "EUROPE_WEST"), ("GB", "EUROPE_WEST"), ("GG", "EUROPE_WEST"),
+    ("IE", "EUROPE_WEST"), ("IM", "EUROPE_WEST"), ("JE", "EUROPE_WEST"), ("LU", "EUROPE_WEST"), ("MC", "EUROPE_WEST"),
+    ("NL", "EUROPE_WEST"),
+    # --- EUROPE_CENTRAL (9)
+    ("AT", "EUROPE_CENTRAL"), ("CH", "EUROPE_CENTRAL"), ("CZ", "EUROPE_CENTRAL"), ("DE", "EUROPE_CENTRAL"), ("HU", "EUROPE_CENTRAL"),
+    ("LI", "EUROPE_CENTRAL"), ("PL", "EUROPE_CENTRAL"), ("SI", "EUROPE_CENTRAL"), ("SK", "EUROPE_CENTRAL"),
+    # --- EUROPE_NORTH (10)
+    ("AX", "EUROPE_NORTH"), ("DK", "EUROPE_NORTH"), ("EE", "EUROPE_NORTH"), ("FI", "EUROPE_NORTH"), ("IS", "EUROPE_NORTH"),
+    ("LT", "EUROPE_NORTH"), ("LV", "EUROPE_NORTH"), ("NO", "EUROPE_NORTH"), ("SE", "EUROPE_NORTH"), ("SJ", "EUROPE_NORTH"),
+    # --- EUROPE_SOUTH (16)
+    ("AD", "EUROPE_SOUTH"), ("AL", "EUROPE_SOUTH"), ("BA", "EUROPE_SOUTH"), ("CY", "EUROPE_SOUTH"), ("ES", "EUROPE_SOUTH"),
+    ("GI", "EUROPE_SOUTH"), ("GR", "EUROPE_SOUTH"), ("HR", "EUROPE_SOUTH"), ("IT", "EUROPE_SOUTH"), ("ME", "EUROPE_SOUTH"),
+    ("MK", "EUROPE_SOUTH"), ("MT", "EUROPE_SOUTH"), ("PT", "EUROPE_SOUTH"), ("RS", "EUROPE_SOUTH"), ("SM", "EUROPE_SOUTH"),
+    ("VA", "EUROPE_SOUTH"),
+    # --- EUROPE_EAST (6)
+    ("BG", "EUROPE_EAST"), ("BY", "EUROPE_EAST"), ("MD", "EUROPE_EAST"), ("RO", "EUROPE_EAST"), ("RU", "EUROPE_EAST"),
+    ("UA", "EUROPE_EAST"),
+    # --- MIDDLE_EAST (15)
+    ("AE", "MIDDLE_EAST"), ("BH", "MIDDLE_EAST"), ("IL", "MIDDLE_EAST"), ("IQ", "MIDDLE_EAST"), ("IR", "MIDDLE_EAST"),
+    ("JO", "MIDDLE_EAST"), ("KW", "MIDDLE_EAST"), ("LB", "MIDDLE_EAST"), ("OM", "MIDDLE_EAST"), ("PS", "MIDDLE_EAST"),
+    ("QA", "MIDDLE_EAST"), ("SA", "MIDDLE_EAST"), ("SY", "MIDDLE_EAST"), ("TR", "MIDDLE_EAST"), ("YE", "MIDDLE_EAST"),
+    # --- AFRICA_NORTH (8)
+    ("DZ", "AFRICA_NORTH"), ("EG", "AFRICA_NORTH"), ("EH", "AFRICA_NORTH"), ("LY", "AFRICA_NORTH"), ("MA", "AFRICA_NORTH"),
+    ("MR", "AFRICA_NORTH"), ("SD", "AFRICA_NORTH"), ("TN", "AFRICA_NORTH"),
+    # --- AFRICA_SSA (50)
+    ("AO", "AFRICA_SSA"), ("BF", "AFRICA_SSA"), ("BI", "AFRICA_SSA"), ("BJ", "AFRICA_SSA"), ("BW", "AFRICA_SSA"),
+    ("CD", "AFRICA_SSA"), ("CF", "AFRICA_SSA"), ("CG", "AFRICA_SSA"), ("CI", "AFRICA_SSA"), ("CM", "AFRICA_SSA"),
+    ("CV", "AFRICA_SSA"), ("DJ", "AFRICA_SSA"), ("ER", "AFRICA_SSA"), ("ET", "AFRICA_SSA"), ("GA", "AFRICA_SSA"),
+    ("GH", "AFRICA_SSA"), ("GM", "AFRICA_SSA"), ("GN", "AFRICA_SSA"), ("GQ", "AFRICA_SSA"), ("GW", "AFRICA_SSA"),
+    ("KE", "AFRICA_SSA"), ("KM", "AFRICA_SSA"), ("LR", "AFRICA_SSA"), ("LS", "AFRICA_SSA"), ("MG", "AFRICA_SSA"),
+    ("ML", "AFRICA_SSA"), ("MU", "AFRICA_SSA"), ("MW", "AFRICA_SSA"), ("MZ", "AFRICA_SSA"), ("NA", "AFRICA_SSA"),
+    ("NE", "AFRICA_SSA"), ("NG", "AFRICA_SSA"), ("RE", "AFRICA_SSA"), ("RW", "AFRICA_SSA"), ("SC", "AFRICA_SSA"),
+    ("SH", "AFRICA_SSA"), ("SL", "AFRICA_SSA"), ("SN", "AFRICA_SSA"), ("SO", "AFRICA_SSA"), ("SS", "AFRICA_SSA"),
+    ("ST", "AFRICA_SSA"), ("SZ", "AFRICA_SSA"), ("TD", "AFRICA_SSA"), ("TG", "AFRICA_SSA"), ("TZ", "AFRICA_SSA"),
+    ("UG", "AFRICA_SSA"), ("YT", "AFRICA_SSA"), ("ZA", "AFRICA_SSA"), ("ZM", "AFRICA_SSA"), ("ZW", "AFRICA_SSA"),
+    # --- AMER (55)
+    ("AG", "AMER"), ("AI", "AMER"), ("AR", "AMER"), ("AW", "AMER"), ("BB", "AMER"),
+    ("BL", "AMER"), ("BM", "AMER"), ("BO", "AMER"), ("BQ", "AMER"), ("BR", "AMER"),
+    ("BS", "AMER"), ("BZ", "AMER"), ("CA", "AMER"), ("CL", "AMER"), ("CO", "AMER"),
+    ("CR", "AMER"), ("CU", "AMER"), ("CW", "AMER"), ("DM", "AMER"), ("DO", "AMER"),
+    ("EC", "AMER"), ("FK", "AMER"), ("GD", "AMER"), ("GF", "AMER"), ("GL", "AMER"),
+    ("GP", "AMER"), ("GT", "AMER"), ("GY", "AMER"), ("HN", "AMER"), ("HT", "AMER"),
+    ("JM", "AMER"), ("KN", "AMER"), ("KY", "AMER"), ("LC", "AMER"), ("MF", "AMER"),
+    ("MQ", "AMER"), ("MS", "AMER"), ("MX", "AMER"), ("NI", "AMER"), ("PA", "AMER"),
+    ("PE", "AMER"), ("PM", "AMER"), ("PR", "AMER"), ("PY", "AMER"), ("SR", "AMER"),
+    ("SV", "AMER"), ("SX", "AMER"), ("TC", "AMER"), ("TT", "AMER"), ("US", "AMER"),
+    ("UY", "AMER"), ("VC", "AMER"), ("VE", "AMER"), ("VG", "AMER"), ("VI", "AMER"),
+    # --- APAC (62)
+    ("AF", "APAC"), ("AM", "APAC"), ("AS", "APAC"), ("AU", "APAC"), ("AZ", "APAC"),
+    ("BD", "APAC"), ("BN", "APAC"), ("BT", "APAC"), ("CC", "APAC"), ("CK", "APAC"),
+    ("CN", "APAC"), ("CX", "APAC"), ("FJ", "APAC"), ("FM", "APAC"), ("GE", "APAC"),
+    ("GU", "APAC"), ("HK", "APAC"), ("ID", "APAC"), ("IN", "APAC"), ("JP", "APAC"),
+    ("KG", "APAC"), ("KH", "APAC"), ("KI", "APAC"), ("KP", "APAC"), ("KR", "APAC"),
+    ("KZ", "APAC"), ("LA", "APAC"), ("LK", "APAC"), ("MH", "APAC"), ("MM", "APAC"),
+    ("MN", "APAC"), ("MO", "APAC"), ("MP", "APAC"), ("MV", "APAC"), ("MY", "APAC"),
+    ("NC", "APAC"), ("NF", "APAC"), ("NP", "APAC"), ("NR", "APAC"), ("NU", "APAC"),
+    ("NZ", "APAC"), ("PF", "APAC"), ("PG", "APAC"), ("PH", "APAC"), ("PK", "APAC"),
+    ("PN", "APAC"), ("PW", "APAC"), ("SB", "APAC"), ("SG", "APAC"), ("TH", "APAC"),
+    ("TJ", "APAC"), ("TK", "APAC"), ("TL", "APAC"), ("TM", "APAC"), ("TO", "APAC"),
+    ("TV", "APAC"), ("TW", "APAC"), ("UZ", "APAC"), ("VN", "APAC"), ("VU", "APAC"),
     ("WF", "APAC"), ("WS", "APAC"),
 ]
+
+
+# REGION_PARENT lives in domain/scope.py, which is where region logic
+# belongs - the API router needs it and must not import this module,
+# because importing the seed builds every rate list as a side effect.
+from .domain.scope import REGION_PARENT  # noqa: E402
 
 # The regions a price may be scoped to, taken from COUNTRY_REGION so the two
 # cannot drift: a backbone price for a region nobody maps to is unreachable,
 # and a region that has no price leaves its core circuits unpriced.
-REGION_CODES = sorted({r for _c, r in COUNTRY_REGION})
+# The regions a BACKBONE price is scoped to: the hub tier, not the bands.
+#
+# A backbone connects regional hubs to the global core, and an estate has one
+# EMEA hub - not one per European band. So this is the parent tier plus the
+# regions that are their own parent, and it stayed at three when EMEA split
+# into eight.
+#
+# Deriving it from COUNTRY_REGION made it ten, which asked for a backbone
+# price for EUROPE_NORTH - a hub nobody has.
+BACKBONE_REGIONS = sorted(
+    set(REGION_PARENT.values())
+    | {r for _c, r in COUNTRY_REGION if r not in REGION_PARENT})
+
+# Every scope that is a region rather than a country, for labelling a rate row
+# `scope_kind="REGION"`. Both tiers: a EUROPE_CENTRAL rate is as much a
+# regional price as an EMEA one, and labelling it COUNTRY would put it on the
+# wrong rung of the ladder.
+REGION_CODES = sorted(
+    {r for _c, r in COUNTRY_REGION} | set(REGION_PARENT.values()))
 
 # Applied here, after COUNTRY_REGION exists. A region's rates are derived from
 # its member countries, so the map has to be read before they can be.
+# Sub-region rates first, from the countries that have a card. Then the parent,
+# from the same countries - so EMEA still exists as the rung beneath a
+# sub-region that prices nothing, and Ethiopia reaches a rate instead of
+# refusing.
 PRIORS = PRIORS + _regional_tiers(PRIORS, COUNTRY_REGION)
+PRIORS = PRIORS + _regional_tiers(
+    PRIORS, [(country, REGION_PARENT[region])
+             for country, region in COUNTRY_REGION
+             if region in REGION_PARENT])
 
 # The backbone. ETHERNET at 10 Gbps between a data centre and its regional hub,
 # and between a regional hub and the global core - which is the shape and the

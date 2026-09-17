@@ -56,15 +56,24 @@ def test_no_country_is_mapped_twice():
     assert not duplicated, duplicated
 
 
-def test_every_mapped_region_actually_exists():
+def test_every_mapped_region_resolves_to_rates_eventually():
     """A country pointing at a region with no rates is mapped and still
-    unpriced, which is how Brazil behaved."""
+    unpriced, which is how Brazil behaved.
+
+    Since EMEA split, a region may legitimately price nothing - five of the
+    eight bands contain no country with a card - as long as its parent does.
+    What must not exist is a region that prices nothing and has nowhere to
+    fall."""
+    from app.domain.scope import REGION_PARENT
     from app.seed import COUNTRY_REGION, PRIORS
 
     with_rates = {c for c, *_rest in PRIORS if len(c) > 2}
-    pointed_at = {r for _c, r in COUNTRY_REGION}
-    assert not pointed_at - with_rates, (
-        f"{sorted(pointed_at - with_rates)} are mapped to and price nothing")
+    stranded = sorted(
+        r for r in {r for _c, r in COUNTRY_REGION}
+        if r not in with_rates
+        and REGION_PARENT.get(r) not in with_rates)
+    assert not stranded, (
+        f"{stranded} price nothing and their parent prices nothing either")
 
 
 @pytest.mark.parametrize("country", ["PL", "TR", "ZA", "MX", "JP", "AU", "BR"])
@@ -74,11 +83,17 @@ def test_an_unlisted_country_prices_a_branch_through_its_region(country):
     from app.domain.access import LEGACY_PRODUCT
     from app.domain.estimate import match_prior
 
+    from app.domain.scope import REGION_PARENT
+
+    # The whole chain. South Africa reaches AFRICA_SSA, which has no rates,
+    # and passing only that rung reported a pricing gap where there was a
+    # missing query.
     region = _region_of()[country]
+    chain = [country, region, REGION_PARENT.get(region)]
     service_class, technology = LEGACY_PRODUCT["DIA"]
     hit, _substituted = match_prior(
         _priors(), country, "DIA", 100, service_class=service_class,
-        access_technology=technology, scopes=[country, region])
+        access_technology=technology, scopes=[c for c in chain if c])
     assert hit is not None, f"{country} cannot price a 100 Mbps office"
 
 
@@ -106,9 +121,15 @@ def test_a_region_only_prices_what_its_members_price():
     for country, product, _layer, mbps, *_rest in PRIORS:
         by_scope.setdefault(country, set()).add((product, int(mbps)))
 
-    for region in ("EMEA", "AMER", "APAC"):
+    from app.domain.scope import REGION_PARENT
+
+    for region in sorted({r for _c, r in COUNTRY_REGION}
+                         | set(REGION_PARENT.values())):
+        # A parent's members are every country beneath any of its bands, not
+        # the countries mapped directly to it - nothing maps to EMEA now.
         members = [c for c, r in region_of.items()
-                   if r == region and c in by_scope]
+                   if c in by_scope
+                   and (r == region or REGION_PARENT.get(r) == region)]
         member_rates = set()
         for country in members:
             member_rates |= by_scope[country]
@@ -226,15 +247,119 @@ def test_no_uninhabited_territory_is_assigned():
     assert not (mapped & UNINHABITED), sorted(mapped & UNINHABITED)
 
 
-def test_each_region_carries_a_usable_share_of_the_world():
-    """A region with three members is not a fallback. This is a sanity floor,
-    not a target - the shape only matters because a region has to have enough
-    members for the fallback to be worth having."""
+def test_no_region_is_too_small_to_be_worth_having():
+    """A region with two members is a country wearing a label. The floor is
+    low - EUROPE_EAST has six - because a small band whose members share a
+    market is more useful than a large one that does not, which is the whole
+    argument for splitting EMEA."""
     from collections import Counter
 
     from app.seed import COUNTRY_REGION
 
     counts = Counter(r for _c, r in COUNTRY_REGION)
-    assert set(counts) == {"EMEA", "AMER", "APAC"}
+    assert len(counts) == 10, sorted(counts)
     for region, n in counts.items():
-        assert n >= 40, f"{region} has only {n} countries"
+        assert n >= 5, f"{region} has only {n} countries"
+
+
+# ------------------------- ten regions, and a chain rather than one rung
+def test_emea_is_split_into_bands_that_mean_something():
+    """One EMEA spanned Germany and Ethiopia: 125 countries taking a median of
+    five European markets, which is a number with very little information in
+    it."""
+    from app.seed import COUNTRY_REGION
+
+    regions = {r for _c, r in COUNTRY_REGION}
+    for expected in ("EUROPE_WEST", "EUROPE_CENTRAL", "EUROPE_NORTH",
+                     "EUROPE_SOUTH", "EUROPE_EAST", "MIDDLE_EAST",
+                     "AFRICA_NORTH", "AFRICA_SSA", "AMER", "APAC"):
+        assert expected in regions, expected
+    assert "EMEA" not in regions, (
+        "EMEA is the parent now, not a country's own region")
+
+
+def test_every_sub_region_has_a_parent_to_fall_through_to():
+    """Five of the eight contain no country with a rate card. Without a parent
+    the split would be a coverage regression - a Nordic or African estate would
+    reach a region that prices nothing and refuse."""
+    from app.domain.scope import REGION_PARENT
+    from app.seed import COUNTRY_REGION, PRIORS
+
+    priced = {c for c, *_rest in PRIORS}
+    for region in {r for _c, r in COUNTRY_REGION}:
+        if region in priced:
+            continue
+        assert region in REGION_PARENT, (
+            f"{region} prices nothing and has no parent, so every estate in "
+            f"it is unpriced scope")
+        assert REGION_PARENT[region] in priced
+
+
+def test_a_priced_sub_region_beats_its_parent():
+    """The point of splitting. Saudi Arabia took a pan-EMEA 550 and now takes
+    the Middle East 1300 - a 2.4x correction that one region could not
+    express."""
+    from app.domain.estimate import match_prior
+    from app.domain.scope import REGION_PARENT
+    from app.seed import COUNTRY_REGION
+
+    region_of = dict(COUNTRY_REGION)
+    for country, expected_scope in (("SA", "MIDDLE_EAST"),
+                                    ("PL", "EUROPE_CENTRAL"),
+                                    ("IE", "EUROPE_WEST")):
+        sub = region_of[country]
+        chain = [country, sub, REGION_PARENT.get(sub)]
+        hit, _s = match_prior(
+            _priors(), country, "DIA", 100, service_class="DIA",
+            access_technology="ETHERNET_FIBRE",
+            scopes=[c for c in chain if c])
+        assert hit is not None and hit["scope"] == expected_scope, (
+            f"{country} priced by {hit and hit['scope']}, not {expected_scope}")
+
+
+def test_an_unpriced_sub_region_reaches_its_parent():
+    """Ethiopia reaches AFRICA_SSA, which has no rates, and then EMEA, which
+    does - so the estate prices instead of refusing, and the scope recorded on
+    the price says which rung answered."""
+    from app.domain.estimate import match_prior
+    from app.domain.scope import REGION_PARENT
+    from app.seed import COUNTRY_REGION
+
+    region_of = dict(COUNTRY_REGION)
+    for country in ("ET", "DK", "IT", "RU", "MA"):
+        sub = region_of[country]
+        hit, _s = match_prior(
+            _priors(), country, "DIA", 100, service_class="DIA",
+            access_technology="ETHERNET_FIBRE",
+            scopes=[country, sub, REGION_PARENT[sub]])
+        assert hit is not None, f"{country} cannot price a 100 Mbps office"
+        assert hit["scope"] == REGION_PARENT[sub], (
+            f"{country} should have fallen through {sub} to its parent")
+
+
+def test_the_route_loads_both_rungs():
+    """Loading only the sub-region would have made the split a coverage
+    regression, and the failure would have looked like a pricing gap rather
+    than a missing query."""
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1]
+    app = next(c for c in (root / "api_service" / "app", root / "app")
+               if (c / "routers").exists())
+    api = (app / "routers" / "api.py").read_text()
+    assert "scope.REGION_PARENT" in api
+    assert "set(_sub) |" in api
+
+
+def test_region_parent_does_not_live_in_the_seed():
+    """The router needs it and must not import the seed: importing that module
+    builds every rate list as a side effect."""
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1]
+    app = next(c for c in (root / "api_service" / "app", root / "app")
+               if (c / "routers").exists())
+    api = (app / "routers" / "api.py").read_text()
+    assert "from ..seed import" not in api
+    scope_src = (app / "domain" / "scope.py").read_text()
+    assert "REGION_PARENT = {" in scope_src
