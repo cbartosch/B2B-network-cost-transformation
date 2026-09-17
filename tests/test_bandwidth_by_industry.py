@@ -419,3 +419,68 @@ def test_the_tier_below_the_workbook_floor_is_rescaled_under_it():
     for key, tiers in rates.items():
         if 50 in tiers and 100 in tiers:
             assert tiers[50] < tiers[100], (key, tiers[50], tiers[100])
+
+
+def test_the_v2_observation_is_kept_apart_from_its_derivations():
+    """Every cluster's three extra DIA columns are a fixed ratio of that
+    cluster's own 1G CIR - 0.80 in all twenty rows for the 300M tier. So the
+    four DIA tiers are one observation restated four times, and loading them as
+    four independent rates would make the card look four times better
+    evidenced than it is."""
+    from decimal import Decimal as D
+
+    from app.seed import (WORKBOOK_CIR_RATIOS, WORKBOOK_COMMITTED_DERIVED,
+                          WORKBOOK_COMMITTED_OBSERVED)
+
+    observed = {(c, k, m): v for c, k, m, v in WORKBOOK_COMMITTED_OBSERVED}
+    for cluster, kind, mbps, price, ratio in WORKBOOK_COMMITTED_DERIVED:
+        anchor = observed.get((cluster, "DIA_CIR", 1000))
+        assert anchor, cluster
+        # within a point of the stated ratio, which is what a rounded
+        # spreadsheet cell gives
+        implied = D(price) / D(anchor)
+        assert abs(implied - D(ratio)) < D("0.01"), (
+            cluster, kind, mbps, str(implied), ratio)
+
+
+def test_the_cir_ratio_is_governed_because_a_quote_disagrees_with_it():
+    """It is the single number that moves three of the four DIA tiers, and the
+    only real quote in evidence implies nearer 0.69 where the workbook models
+    0.80."""
+    from app.seed import WORKBOOK_CIR_RATIOS
+
+    assert ("DIA_CIR", 300) in WORKBOOK_CIR_RATIOS
+    assert WORKBOOK_CIR_RATIOS[("DIA_CIR", 300)] == "0.80"
+
+
+def test_a_best_effort_fibre_port_is_not_loaded_as_dia():
+    """Mapping DIA_BE to "DIA" put a best-effort gigabit port and a committed
+    gigabit at the same (country, product, bandwidth) key, so a Dutch 1 Gbps
+    DIA came back at 878 or 1350 depending on which row the query returned
+    last. Caught by the duplicate-key and monotonicity checks together.
+
+    BEST_EFFORT over ETHERNET_FIBRE is valid in the two-dimension vocabulary;
+    what is missing is a name for it in the legacy product column the card is
+    still keyed on."""
+    from app.domain.access import carriers_for
+    from app.seed import WORKBOOK_KIND, WORKBOOK_UNLOADED
+
+    assert "DIA_BE" not in WORKBOOK_KIND
+    assert "DIA_BE" in WORKBOOK_UNLOADED
+    # and the reason given is true: the pair is valid, the product name is not
+    assert "ETHERNET_FIBRE" in carriers_for("BEST_EFFORT")
+
+
+def test_the_committed_tiers_are_monotonic_in_every_scope():
+    """A 300 Mbps CIR cheaper than a 100 Mbps one, or dearer than a gigabit,
+    would make right-sizing recommend the wrong direction."""
+    from app.seed import PRIORS
+
+    rates = {}
+    for country, product, _l, mbps, _lo, base, _hi in PRIORS:
+        rates.setdefault((country, product), {})[int(mbps)] = base
+
+    for key, tiers in rates.items():
+        ordered = sorted(tiers)
+        for lower, upper in zip(ordered, ordered[1:]):
+            assert tiers[upper] > tiers[lower], (key, lower, upper)

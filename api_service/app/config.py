@@ -194,4 +194,9 @@ SIMULATION_MODEL_VERSION = "sim-1.17.0"
 # countries with their own card instead of seven. DIA, Ethernet and MPLS are
 # held back until the workbook states whether its 1G figure is a committed rate
 # or a port.
-CALCULATION_VERSION = "calc-1.12.0"
+# calc-1.13.0: committed access from workbook v2, which separates port speed from
+# CIR. DIA at 300/500/1000 Mbps CIR, Ethernet and MPLS, across 78 countries.
+# The three extra DIA columns are a fixed ratio of each cluster's own 1G CIR,
+# so they are one observation restated and the ratio is governed - a real
+# German quote implies nearer 0.69 where the workbook models 0.80.
+CALCULATION_VERSION = "calc-1.13.0"

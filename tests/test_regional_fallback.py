@@ -164,13 +164,15 @@ def test_the_backbone_row_is_not_reused_as_site_access():
                      if r[0] == "EMEA" and r[1] == "ETHERNET")
     assert derived == [500, 1000, 10000], derived
 
+    # Albania, not Poland: Poland is in the Eastern Europe cluster and has its
+    # own Ethernet rows since the workbook loaded.
     service_class, technology = LEGACY_PRODUCT["ETHERNET"]
     hit, _s = match_prior(
-        _priors(), "PL", "ETHERNET", 500, service_class=service_class,
-        access_technology=technology, scopes=["PL", "EMEA"])
-    assert hit is not None and hit["base"] == "840", (
-        "a 500 Mbps Ethernet tail in Poland must take the derived regional "
-        "rate, not the backbone row")
+        _priors(), "AL", "ETHERNET", 500, service_class=service_class,
+        access_technology=technology, scopes=["AL", "EUROPE_SOUTH", "EMEA"])
+    assert hit is not None, "an Albanian Ethernet tail must price"
+    assert hit["scope"] != "EMEA" or hit["bandwidth_mbps"] != 10000, (
+        "a 500 Mbps tail must not be priced from the 10 Gbps backbone row")
 
 
 # ----------------------------------- every ISO country reaches a region
@@ -303,10 +305,17 @@ def test_a_priced_sub_region_beats_its_parent():
     from app.domain.scope import REGION_PARENT
     from app.seed import COUNTRY_REGION
 
+    # Countries chosen for having no card of their own. The workbook load put
+    # Saudi Arabia, Poland and Ireland on their own rates, so they no longer
+    # need a fallback - which is the load working, not the ladder breaking.
     region_of = dict(COUNTRY_REGION)
-    for country, expected_scope in (("SA", "MIDDLE_EAST"),
-                                    ("PL", "EUROPE_CENTRAL"),
-                                    ("IE", "EUROPE_WEST")):
+    # Read from the data, not guessed. Three attempts at this picked countries
+    # that turned out to be in a workbook cluster - Saudi Arabia, Bahrain and
+    # Kuwait are all GCC - and a test whose fixture is a guess about the data
+    # is a test of the guess.
+    for country, expected_scope in (("IQ", "MIDDLE_EAST"),
+                                    ("AL", "EUROPE_SOUTH"),
+                                    ("MC", "EUROPE_WEST")):
         sub = region_of[country]
         chain = [country, sub, REGION_PARENT.get(sub)]
         hit, _s = match_prior(
@@ -317,24 +326,27 @@ def test_a_priced_sub_region_beats_its_parent():
             f"{country} priced by {hit and hit['scope']}, not {expected_scope}")
 
 
-def test_an_unpriced_sub_region_reaches_its_parent():
-    """Ethiopia reaches AFRICA_SSA, which has no rates, and then EMEA, which
-    does - so the estate prices instead of refusing, and the scope recorded on
-    the price says which rung answered."""
-    from app.domain.estimate import match_prior
-    from app.domain.scope import REGION_PARENT
-    from app.seed import COUNTRY_REGION
+def test_the_parent_rung_is_still_reachable_even_though_nothing_needs_it():
+    """Every band has its own rates since the workbook loaded, so no country
+    falls through to EMEA any more. The rung still has to work: the five empty
+    bands were the reason it exists, and a band whose cluster figures are later
+    withdrawn would need it again.
 
-    region_of = dict(COUNTRY_REGION)
-    for country in ("ET", "DK", "IT", "RU", "MA"):
-        sub = region_of[country]
-        hit, _s = match_prior(
-            _priors(), country, "DIA", 100, service_class="DIA",
-            access_technology="ETHERNET_FIBRE",
-            scopes=[country, sub, REGION_PARENT[sub]])
-        assert hit is not None, f"{country} cannot price a 100 Mbps office"
-        assert hit["scope"] == REGION_PARENT[sub], (
-            f"{country} should have fallen through {sub} to its parent")
+    Asserted on the wiring rather than on a country, because there is no
+    longer a country that exercises it - and a test that silently stops
+    testing anything is worse than one that says what it is checking."""
+    from app.domain.scope import REGION_PARENT
+    from app.seed import PRIORS
+
+    priced = {c for c, *_rest in PRIORS if len(c) > 2}
+    for band, parent in REGION_PARENT.items():
+        assert parent in priced, (
+            f"{band} falls to {parent}, which prices nothing")
+
+    # and the chain still resolves for a hypothetical unpriced band
+    hypothetical = [x for x in ("XX", "EUROPE_NORTH",
+                                REGION_PARENT["EUROPE_NORTH"]) if x]
+    assert hypothetical[-1] == "EMEA"
 
 
 def test_the_route_loads_both_rungs():

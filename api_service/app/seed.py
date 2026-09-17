@@ -570,6 +570,240 @@ def _workbook_priors(prices, clusters):
     return out
 
 
+# Committed access from the supplied workbook, v2.
+#
+# v1 quoted a single "DIA 1G" and did not say whether it meant a gigabit
+# committed rate or a gigabit port. The model prices a committed service on its
+# CIR, so it could not place the figure and DIA was held back. v2 separates
+# port speed from CIR and its methodology sheet says so, which is what unblocked
+# this.
+#
+# **Sixty observations and sixty derivations, kept apart.** Every cluster's
+# three extra DIA columns are a fixed ratio of that cluster's own 1G CIR -
+# 0.6496-0.6507, 0.8000 in all twenty rows, and 0.9197-0.9203. So the four DIA
+# tiers are one observation restated four times, not four benchmarks, and the
+# methodology sheet is honest about it: "added", not measured. Loading them as
+# four independent rates would make the card look four times better evidenced
+# than it is.
+#
+# What follows is that if a cluster's 1G CIR is wrong, all four of its tiers
+# are wrong by the same factor - which is why the ratio is a governed
+# assumption below rather than a constant here.
+#
+# A real German quote of EUR 950 for a 1 Gbps port with a 300 Mbit CIR converts
+# to USD 1,091 against the workbook's Germany 300M CIR of 1,264: 0.86x, and
+# 0.69x of the 1G CIR where the workbook models 0.80. One data point against
+# one model, and it says the CIR discount may be steeper than assumed.
+
+# The ratio each derived DIA tier bears to its cluster's 1G CIR. Governed,
+# because it is the single number that moves three of the four tiers and the
+# only real quote in evidence already disagrees with the middle one.
+WORKBOOK_CIR_RATIOS = {
+    ("DIA_BE", 1000): "0.65",     # best effort on a gigabit port
+    ("DIA_CIR", 300): "0.80",     # the German quote implies nearer 0.69
+    ("DIA_CIR", 500): "0.92",
+}
+
+# (cluster, kind, mbps, price) - the workbook's own observations.
+WORKBOOK_COMMITTED_OBSERVED = [
+    ("UK & Ireland", "DIA_CIR", 1000, 750),
+    ("UK & Ireland", "ETHERNET", 1000, 750),
+    ("UK & Ireland", "MPLS", 100, 1000),
+    ("Benelux", "DIA_CIR", 1000, 1350),
+    ("Benelux", "ETHERNET", 1000, 1100),
+    ("Benelux", "MPLS", 100, 950),
+    ("Germany", "DIA_CIR", 1000, 1580),
+    ("Germany", "ETHERNET", 1000, 1250),
+    ("Germany", "MPLS", 100, 1050),
+    ("France", "DIA_CIR", 1000, 1520),
+    ("France", "ETHERNET", 1000, 1200),
+    ("France", "MPLS", 100, 1000),
+    ("Nordics", "DIA_CIR", 1000, 1250),
+    ("Nordics", "ETHERNET", 1000, 1050),
+    ("Nordics", "MPLS", 100, 950),
+    ("Southern Europe", "DIA_CIR", 1000, 1300),
+    ("Southern Europe", "ETHERNET", 1000, 1050),
+    ("Southern Europe", "MPLS", 100, 950),
+    ("Eastern Europe", "DIA_CIR", 1000, 950),
+    ("Eastern Europe", "ETHERNET", 1000, 800),
+    ("Eastern Europe", "MPLS", 100, 750),
+    ("North America", "DIA_CIR", 1000, 1350),
+    ("North America", "ETHERNET", 1000, 1050),
+    ("North America", "MPLS", 100, 900),
+    ("Mexico", "DIA_CIR", 1000, 1450),
+    ("Mexico", "ETHERNET", 1000, 1150),
+    ("Mexico", "MPLS", 100, 1050),
+    ("Brazil", "DIA_CIR", 1000, 1600),
+    ("Brazil", "ETHERNET", 1000, 1300),
+    ("Brazil", "MPLS", 100, 1250),
+    ("LatAm Other", "DIA_CIR", 1000, 1750),
+    ("LatAm Other", "ETHERNET", 1000, 1450),
+    ("LatAm Other", "MPLS", 100, 1350),
+    ("GCC", "DIA_CIR", 1000, 2400),
+    ("GCC", "ETHERNET", 1000, 2000),
+    ("GCC", "MPLS", 100, 1600),
+    ("Middle East Other", "DIA_CIR", 1000, 2000),
+    ("Middle East Other", "ETHERNET", 1000, 1650),
+    ("Middle East Other", "MPLS", 100, 1350),
+    ("South Africa", "DIA_CIR", 1000, 1650),
+    ("South Africa", "ETHERNET", 1000, 1350),
+    ("South Africa", "MPLS", 100, 1300),
+    ("Africa Other", "DIA_CIR", 1000, 2600),
+    ("Africa Other", "ETHERNET", 1000, 2100),
+    ("Africa Other", "MPLS", 100, 1900),
+    ("India", "DIA_CIR", 1000, 900),
+    ("India", "ETHERNET", 1000, 700),
+    ("India", "MPLS", 100, 750),
+    ("North Asia", "DIA_CIR", 1000, 1400),
+    ("North Asia", "ETHERNET", 1000, 1100),
+    ("North Asia", "MPLS", 100, 1000),
+    ("Singapore", "DIA_CIR", 1000, 1800),
+    ("Singapore", "ETHERNET", 1000, 1450),
+    ("Singapore", "MPLS", 100, 1150),
+    ("ASEAN Tier 2", "DIA_CIR", 1000, 1400),
+    ("ASEAN Tier 2", "ETHERNET", 1000, 1150),
+    ("ASEAN Tier 2", "MPLS", 100, 1000),
+    ("Oceania", "DIA_CIR", 1000, 1750),
+    ("Oceania", "ETHERNET", 1000, 1450),
+    ("Oceania", "MPLS", 100, 1250),
+]
+
+# (cluster, kind, mbps, price, ratio) - restatements of the 1G CIR above.
+WORKBOOK_COMMITTED_DERIVED = [
+    ("UK & Ireland", "DIA_BE", 1000, 488, "0.65"),
+    ("UK & Ireland", "DIA_CIR", 300, 600, "0.80"),
+    ("UK & Ireland", "DIA_CIR", 500, 690, "0.92"),
+    ("Benelux", "DIA_BE", 1000, 878, "0.65"),
+    ("Benelux", "DIA_CIR", 300, 1080, "0.80"),
+    ("Benelux", "DIA_CIR", 500, 1242, "0.92"),
+    ("Germany", "DIA_BE", 1000, 1027, "0.65"),
+    ("Germany", "DIA_CIR", 300, 1264, "0.80"),
+    ("Germany", "DIA_CIR", 500, 1454, "0.92"),
+    ("France", "DIA_BE", 1000, 988, "0.65"),
+    ("France", "DIA_CIR", 300, 1216, "0.80"),
+    ("France", "DIA_CIR", 500, 1398, "0.92"),
+    ("Nordics", "DIA_BE", 1000, 812, "0.65"),
+    ("Nordics", "DIA_CIR", 300, 1000, "0.80"),
+    ("Nordics", "DIA_CIR", 500, 1150, "0.92"),
+    ("Southern Europe", "DIA_BE", 1000, 845, "0.65"),
+    ("Southern Europe", "DIA_CIR", 300, 1040, "0.80"),
+    ("Southern Europe", "DIA_CIR", 500, 1196, "0.92"),
+    ("Eastern Europe", "DIA_BE", 1000, 618, "0.65"),
+    ("Eastern Europe", "DIA_CIR", 300, 760, "0.80"),
+    ("Eastern Europe", "DIA_CIR", 500, 874, "0.92"),
+    ("North America", "DIA_BE", 1000, 878, "0.65"),
+    ("North America", "DIA_CIR", 300, 1080, "0.80"),
+    ("North America", "DIA_CIR", 500, 1242, "0.92"),
+    ("Mexico", "DIA_BE", 1000, 942, "0.65"),
+    ("Mexico", "DIA_CIR", 300, 1160, "0.80"),
+    ("Mexico", "DIA_CIR", 500, 1334, "0.92"),
+    ("Brazil", "DIA_BE", 1000, 1040, "0.65"),
+    ("Brazil", "DIA_CIR", 300, 1280, "0.80"),
+    ("Brazil", "DIA_CIR", 500, 1472, "0.92"),
+    ("LatAm Other", "DIA_BE", 1000, 1138, "0.65"),
+    ("LatAm Other", "DIA_CIR", 300, 1400, "0.80"),
+    ("LatAm Other", "DIA_CIR", 500, 1610, "0.92"),
+    ("GCC", "DIA_BE", 1000, 1560, "0.65"),
+    ("GCC", "DIA_CIR", 300, 1920, "0.80"),
+    ("GCC", "DIA_CIR", 500, 2208, "0.92"),
+    ("Middle East Other", "DIA_BE", 1000, 1300, "0.65"),
+    ("Middle East Other", "DIA_CIR", 300, 1600, "0.80"),
+    ("Middle East Other", "DIA_CIR", 500, 1840, "0.92"),
+    ("South Africa", "DIA_BE", 1000, 1072, "0.65"),
+    ("South Africa", "DIA_CIR", 300, 1320, "0.80"),
+    ("South Africa", "DIA_CIR", 500, 1518, "0.92"),
+    ("Africa Other", "DIA_BE", 1000, 1690, "0.65"),
+    ("Africa Other", "DIA_CIR", 300, 2080, "0.80"),
+    ("Africa Other", "DIA_CIR", 500, 2392, "0.92"),
+    ("India", "DIA_BE", 1000, 585, "0.65"),
+    ("India", "DIA_CIR", 300, 720, "0.80"),
+    ("India", "DIA_CIR", 500, 828, "0.92"),
+    ("North Asia", "DIA_BE", 1000, 910, "0.65"),
+    ("North Asia", "DIA_CIR", 300, 1120, "0.80"),
+    ("North Asia", "DIA_CIR", 500, 1288, "0.92"),
+    ("Singapore", "DIA_BE", 1000, 1170, "0.65"),
+    ("Singapore", "DIA_CIR", 300, 1440, "0.80"),
+    ("Singapore", "DIA_CIR", 500, 1656, "0.92"),
+    ("ASEAN Tier 2", "DIA_BE", 1000, 910, "0.65"),
+    ("ASEAN Tier 2", "DIA_CIR", 300, 1120, "0.80"),
+    ("ASEAN Tier 2", "DIA_CIR", 500, 1288, "0.92"),
+    ("Oceania", "DIA_BE", 1000, 1138, "0.65"),
+    ("Oceania", "DIA_CIR", 300, 1400, "0.80"),
+    ("Oceania", "DIA_CIR", 500, 1610, "0.92"),
+]
+
+
+# How a workbook "kind" becomes the model's own vocabulary.
+#
+# DIA_CIR is a committed internet service: priced on its CIR, which is the
+# bandwidth on the row. DIA_BE is a gigabit port sold best-effort, so its
+# service class is BEST_EFFORT and its priced rate is the port - a different
+# product from a committed gigabit, which is the distinction v1 could not make.
+WORKBOOK_KIND = {
+    "DIA_CIR": ("DIA", "DIA"),
+    "ETHERNET": ("ETHERNET", "ETHERNET"),
+    "MPLS": ("IPVPN", "MPLS"),
+}
+
+# DIA_BE - a gigabit fibre port sold best effort - is NOT loaded.
+#
+# The two-dimension vocabulary handles it: BEST_EFFORT over ETHERNET_FIBRE is a
+# valid pair and `carriers_for("BEST_EFFORT")` returns ETHERNET_FIBRE. What is
+# missing is a name for it in the legacy `product` column the rate card is
+# still keyed on, whose best-effort products are PON, HFC and 5G only.
+#
+# Mapping it to "DIA" put a best-effort port and a committed gigabit at the
+# same (country, product, bandwidth) key - so a Dutch 1 Gbps DIA came back at
+# 878 or 1350 depending on which row the query returned last. Caught by the
+# duplicate-key and monotonicity checks together.
+#
+# Naming a new product is a vocabulary change that touches the simulation key,
+# the legacy fallback and every migration that derived dimensions from a
+# product string. It deserves its own release rather than the end of this one,
+# and until then this figure is recorded in the workbook and not in the card.
+WORKBOOK_UNLOADED = {
+    "DIA_BE": ("a best-effort gigabit fibre port has no name in the legacy "
+               "product vocabulary, whose best-effort products are PON, HFC "
+               "and 5G. BEST_EFFORT over ETHERNET_FIBRE is valid in the "
+               "two-dimension vocabulary and the card is not yet keyed on it."),
+}
+
+
+def _workbook_committed(observed, derived, clusters):
+    """Committed-access rows per country, from cluster prices.
+
+    Per country because the scope ladder has no cluster rung, same as the
+    consumer-access loader above.
+
+    The band is +/-25% around the point, and the point is the workbook's. A
+    derived tier carries the same band as an observed one, because the width
+    reflects market spread rather than confidence in the figure - the
+    confidence difference is recorded in the source note instead, where a
+    reader can act on it.
+    """
+    from decimal import Decimal as _D
+
+    entries = [(c, k, m, v, None) for c, k, m, v in observed
+               if k in WORKBOOK_KIND]
+    entries += [(c, k, m, v, r) for c, k, m, v, r in derived
+                if k in WORKBOOK_KIND]
+
+    by_cluster = {}
+    for cluster, kind, mbps, price, ratio in entries:
+        by_cluster.setdefault(cluster, []).append((kind, mbps, price, ratio))
+
+    out = []
+    for cluster, rows in sorted(by_cluster.items()):
+        for country in clusters.get(cluster, []):
+            for kind, mbps, price, _ratio in rows:
+                _service, product = WORKBOOK_KIND[kind]
+                base = _D(price)
+                out.append((country, product, "L0", int(mbps),
+                            int(base * _D("0.75")), int(base),
+                            int(base * _D("1.25"))))
+    return out
+
+
 # Rates sourced to a publication, superseding the seeded assumption for the
 # same key.
 #
@@ -1069,6 +1303,16 @@ def _rescale_lowest_tier(rows, workbook_keys):
 
 
 PRIORS = _rescale_lowest_tier(PRIORS, _WORKBOOK_KEYS)
+
+# Committed access from v2, on the same terms: supersedes the seeded row for
+# the same key, applied before the regional derivation so the bands derive from
+# cluster figures.
+_V2_ROWS = _workbook_committed(WORKBOOK_COMMITTED_OBSERVED,
+                               WORKBOOK_COMMITTED_DERIVED, WORKBOOK_CLUSTERS)
+_V2_KEYS = {(r[0], r[1], r[3]) for r in _V2_ROWS}
+PRIORS = [row for row in PRIORS
+          if (row[0], row[1], int(row[3])) not in _V2_KEYS]
+PRIORS = PRIORS + _V2_ROWS
 
 # A sourced rate supersedes the seeded assumption for the same key, and does so
 # BEFORE the regional derivation - so EUROPE_WEST and EMEA are derived from the
