@@ -185,4 +185,8 @@ SIMULATION_MODEL_VERSION = "sim-1.17.0"
 # north and south of the Sahara. A country falls to its band, a band with no
 # priced member falls to EMEA - so Saudi Arabia takes the Middle East rate of
 # 1300 rather than a pan-EMEA 550, a 2.4x correction one region could not make.
-CALCULATION_VERSION = "calc-1.10.0"
+# calc-1.11.0: the GB card is sourced to published market ranges at grade C. The
+# seeded assumption was overstated 1.3x to 1.9x, and GB is the anchor
+# EUROPE_WEST and EMEA derive from - so roughly a third came off every European
+# baseline. The band is the published range, not a point with a spread.
+CALCULATION_VERSION = "calc-1.11.0"

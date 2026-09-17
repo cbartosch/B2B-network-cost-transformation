@@ -317,6 +317,125 @@ THRESHOLDS = [
 #
 # Bandwidth tiers follow the archetype bandwidth_mbps_base values below, so a
 # site's required bandwidth has a price to match rather than a nearest guess.
+# Rates sourced to a publication, superseding the seeded assumption for the
+# same key.
+#
+# The seeded GB card was overstated against the published market by 1.3x to
+# 1.9x, averaging about 1.5x - and GB is the anchol EUROPE_WEST and EMEA derive
+# from, so the overstatement propagated to every European estate and roughly
+# half the baseline in every run.
+#
+# **The band is the published range, not a point with an invented spread.**
+# 150-350 becomes the low and the high. Narrowing a market range to a midpoint
+# and then generating a band around it would assert a precision the sources do
+# not have, and the width is the information: a 1 Gbps circuit genuinely costs
+# two to three times more in one postcode than another.
+#
+# **The basis is SME retail, and that is a known bias.** These ranges come from
+# comparison sites and ISP guides. A fifty-site enterprise on a framework pays
+# materially less than a single-site SME quote, and a two-thousand-site estate
+# less again. So this corrects an overstatement and installs a smaller one in
+# the same direction for large estates - which is recorded on the row rather
+# than discovered later.
+#
+# Grade C: a market benchmark somebody published and a person can check. Not B,
+# which is a real transactable price from the seller; not A, which is an
+# invoice. Only the Openreach wholesale figure below is a seller's own tariff.
+#
+# (country, product, mbps, low_local, high_local, currency, grade, source)
+SOURCED_RATES = [
+    # UK leased line / DIA retail market, September 2026. Five independent
+    # sources agree on these bands to within about 15%.
+    ("GB", "DIA", 100, 150, 350, "GBP", "C",
+     "UK leased line market survey, Sept 2026 (Cloudswitched, Purple, "
+     "CompareYourBusinessCosts); SME retail basis"),
+    ("GB", "DIA", 1000, 300, 800, "GBP", "C",
+     "UK leased line market survey, Sept 2026; SME retail basis"),
+    ("GB", "ETHERNET", 500, 250, 600, "GBP", "C",
+     "UK leased line market survey, Sept 2026; SME retail basis"),
+    ("GB", "ETHERNET", 1000, 300, 800, "GBP", "C",
+     "UK leased line market survey, Sept 2026; SME retail basis"),
+    ("GB", "ETHERNET", 10000, 800, 3500, "GBP", "C",
+     "UK leased line market survey, Sept 2026; SME retail basis"),
+    # Virgin Media Business publishes an entry price for its own 100 Mbps
+    # dedicated access, which is a seller's tariff rather than a survey - so
+    # grade B, and it anchors the bottom of the band above.
+    ("GB", "DIA", 100, 185, 185, "GBP", "B",
+     "Virgin Media Business published entry price for 100 Mbps Dedicated "
+     "Internet Access, Sept 2026"),
+]
+
+# Where a country's rate is quoted in its own currency. The seeded card is USD
+# throughout, so a sourced sterling rate has to be converted before it can sit
+# beside one - and the conversion is recorded rather than folded in silently.
+#
+# This is the mistake that produced the 1.5x finding in the first place: the
+# seeded priors are USD and were compared against sterling market figures, so
+# the overstatement was reported as 2.6x when it is 1.9x. The model has a
+# currency module built to prevent exactly that; the comparison was done
+# outside it.
+SOURCED_FX = {"GBP": "1.34"}     # GBP/USD mid-market, 16 September 2026
+SOURCED_FX_NOTE = ("GBP/USD 1.34, mid-market 16 September 2026. A rate this "
+                   "old prices a circuit at last month's exchange rate; the "
+                   "case's own fx_convention governs a live estimate.")
+
+
+def _sourced_priors(rows):
+    """Sourced rates in the seed's tuple shape, converted to USD.
+
+    The base is the midpoint of the published band, because a band needs one.
+    Which is the one invented number here, and it is an average of two figures
+    that were both published rather than a figure conjured between them.
+
+    A finer grade wins on the same key: the Virgin Media tariff is grade B and
+    supersedes the survey band at 100 Mbps.
+    """
+    from decimal import Decimal as _D
+
+    # A point observation ANCHORS the band; it does not replace it.
+    #
+    # The first version let a finer grade win outright, so Virgin Media's
+    # published 185 entry price superseded the 150-350 survey band and the
+    # rate collapsed to a single number. An entry price is the bottom of a
+    # market, not the whole of it: one seller's cheapest tariff says nothing
+    # about what the same circuit costs in a harder postcode.
+    bands, anchors = {}, {}
+    for country, product, mbps, low, high, currency, grade, source in rows:
+        key = (country, product, int(mbps))
+        if low == high:
+            # A single quoted price. Kept as a floor for the band.
+            keep = anchors.get(key)
+            if keep is None or _D(low) < _D(keep[0]):
+                anchors[key] = (low, currency, grade, source)
+        else:
+            bands[key] = (low, high, currency, grade, source)
+
+    out = []
+    for key in sorted(set(bands) | set(anchors)):
+        country, product, mbps = key
+        if key in bands:
+            low, high, currency, _grade, _source = bands[key]
+        else:
+            # Only a point, so the band is that point - honest about having
+            # one observation rather than inventing a spread around it.
+            low, currency, _grade, _source = anchors[key]
+            high = low
+        fx = _D(SOURCED_FX.get(currency, "1"))
+        lo, hi = _D(low) * fx, _D(high) * fx
+        if key in anchors and key in bands:
+            # The seller's own tariff sets the floor if it is below the
+            # survey's, because a published price is better evidence of what
+            # the cheapest end of the market is than a survey's estimate of it.
+            anchor_low = _D(anchors[key][0]) * _D(
+                SOURCED_FX.get(anchors[key][1], "1"))
+            lo = min(lo, anchor_low)
+        out.append((country, product, "L0", int(mbps),
+                    int(lo), int((lo + hi) / 2), int(hi)))
+    return out
+
+
+
+
 # Regional fallback rates, derived from the member countries that have a card.
 #
 # The three regions held exactly one row each - ETHERNET at 10 Gbps, for the
@@ -596,6 +715,67 @@ PRIORS = [
     ("AE", "BROADBAND_PON", "L0", 100, 120, 190, 290),
     ("AE", "MOBILE_5G", "L0", 50, 55, 95, 160),
 ]
+
+def _reprice_between_sourced(rows):
+    """Unsourced tiers that now sit above a sourced tier above them.
+
+    Sourcing GB DIA at 100 and 1000 left the seeded 500 Mbps row untouched at
+    980 while the sourced gigabit came in at 737 - a 500 Mbps circuit priced
+    above a 1 Gbps one. `match_prior` takes the cheapest tier at or above the
+    requirement so it self-corrects in the estimate, but the card is then
+    internally inconsistent and a reader comparing two rows sees nonsense.
+
+    Interpolated on log bandwidth between the two sourced neighbours, because
+    access pricing is roughly logarithmic in capacity - doubling the bearer
+    does not double the charge. Marked nowhere as sourced: it is an
+    interpolation between two published points and stays grade E.
+    """
+    from decimal import Decimal as _D
+    import math
+
+    sourced = {}
+    for country, product, mbps, low, high, currency, _g, _s in SOURCED_RATES:
+        fx = _D(SOURCED_FX.get(currency, "1"))
+        key = (country, product)
+        sourced.setdefault(key, {})[int(mbps)] = (
+            _D(low) * fx, _D(high) * fx)
+
+    out = []
+    for row in rows:
+        country, product, layer, mbps, low, base, high = row
+        tiers = sourced.get((country, product))
+        if not tiers or int(mbps) in tiers:
+            out.append(row)
+            continue
+        below = [t for t in tiers if t < int(mbps)]
+        above = [t for t in tiers if t > int(mbps)]
+        if not below or not above:
+            out.append(row)
+            continue
+        lo_t, hi_t = max(below), min(above)
+        # Only reprice where the row actually contradicts its neighbour.
+        if _D(base) <= (tiers[hi_t][0] + tiers[hi_t][1]) / 2:
+            out.append(row)
+            continue
+        span = math.log(hi_t / lo_t)
+        position = math.log(int(mbps) / lo_t) / span if span else 0
+        def _between(a, b):
+            return a * (b / a) ** _D(str(position)) if a > 0 else b
+        new_low = _between(tiers[lo_t][0], tiers[hi_t][0])
+        new_high = _between(tiers[lo_t][1], tiers[hi_t][1])
+        out.append((country, product, layer, int(mbps), int(new_low),
+                    int((new_low + new_high) / 2), int(new_high)))
+    return out
+
+
+# A sourced rate supersedes the seeded assumption for the same key, and does so
+# BEFORE the regional derivation - so EUROPE_WEST and EMEA are derived from the
+# published GB band rather than from the overstatement it replaced.
+_SOURCED_KEYS = {(r[0], r[1], int(r[2])) for r in SOURCED_RATES}
+PRIORS = [row for row in PRIORS
+          if (row[0], row[1], int(row[3])) not in _SOURCED_KEYS]
+PRIORS = PRIORS + _sourced_priors(SOURCED_RATES)
+PRIORS = _reprice_between_sourced(PRIORS)
 
 PRIORS = PRIORS + _consumer_tiers(PRIORS)
 PRIORS = PRIORS + _fill_country_tiers(PRIORS)

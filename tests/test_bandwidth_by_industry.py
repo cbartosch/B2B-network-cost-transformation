@@ -238,3 +238,93 @@ def test_a_country_with_no_rate_curve_is_left_alone():
     invented = sorted(c for c in ethernet if c not in dia and len(c) == 2)
     assert not invented, (
         f"{invented} have Ethernet tiers without a DIA row to scale from")
+
+
+# ------------------------------- a rate sourced to a publication
+def test_a_sourced_rate_supersedes_the_seeded_assumption():
+    """The seeded GB card was overstated against the published market by 1.3x
+    to 1.9x, and GB is the anchor EUROPE_WEST and EMEA derive from - so the
+    overstatement propagated to every European estate."""
+    from app.seed import PRIORS, SOURCED_RATES
+
+    sourced = {(c, p, int(m)) for c, p, m, *_rest in SOURCED_RATES}
+    rows = {(c, p, int(bw)): (lo, ba, hi)
+            for c, p, _l, bw, lo, ba, hi in PRIORS}
+    for key in sourced:
+        assert key in rows, f"{key} is sourced and not in the card"
+
+    # the published band, converted at the recorded rate
+    from decimal import Decimal as D
+
+    from app.seed import SOURCED_FX
+
+    low, base, high = rows[("GB", "ETHERNET", 1000)]
+    expected_low = int(D(300) * D(SOURCED_FX["GBP"]))
+    assert low == expected_low, (low, expected_low)
+
+
+def test_the_band_is_the_published_range_not_an_invented_spread():
+    """150-350 becomes the low and the high. Narrowing a market range to a
+    midpoint and generating a band around it would assert a precision the
+    sources do not have, and the width is the information."""
+    from decimal import Decimal as D
+
+    from app.seed import PRIORS, SOURCED_FX
+
+    rows = {(c, p, int(bw)): (lo, ba, hi)
+            for c, p, _l, bw, lo, ba, hi in PRIORS}
+    low, base, high = rows[("GB", "ETHERNET", 10000)]
+    fx = D(SOURCED_FX["GBP"])
+    assert low == int(D(800) * fx) and high == int(D(3500) * fx)
+    assert base == int((D(800) * fx + D(3500) * fx) / 2)
+
+
+def test_a_published_point_anchors_the_band_rather_than_replacing_it():
+    """Virgin Media's 185 entry price is grade B and the survey band is grade
+    C, so letting the finer grade win outright collapsed GB DIA 100 to a
+    single number. An entry price is the bottom of a market, not the whole of
+    it - one seller's cheapest tariff says nothing about what the same circuit
+    costs in a harder postcode."""
+    from app.seed import PRIORS
+
+    rows = {(c, p, int(bw)): (lo, ba, hi)
+            for c, p, _l, bw, lo, ba, hi in PRIORS}
+    low, base, high = rows[("GB", "DIA", 100)]
+    assert low < high, "the band collapsed to a point"
+    assert low < base < high
+
+
+def test_an_unsourced_tier_is_repriced_between_its_sourced_neighbours():
+    """Sourcing GB DIA at 100 and 1000 left the seeded 500 row at 980 while
+    the sourced gigabit came in at 737 - a 500 Mbps circuit priced above a
+    1 Gbps one. match_prior self-corrects, and the card is then internally
+    inconsistent for anyone reading two rows."""
+    from app.seed import PRIORS
+
+    rows = {(c, p, int(bw)): ba for c, p, _l, bw, _lo, ba, _hi in PRIORS}
+    assert rows[("GB", "DIA", 100)] < rows[("GB", "DIA", 500)] \
+        < rows[("GB", "DIA", 1000)]
+
+
+def test_the_conversion_rate_is_recorded_not_folded_in():
+    """The 1.5x finding was first reported as 2.6x because the seeded priors
+    are USD and were compared against sterling market figures. The model has a
+    currency module built to prevent exactly that; the comparison was done
+    outside it."""
+    from app.seed import SOURCED_FX, SOURCED_FX_NOTE
+
+    assert "GBP" in SOURCED_FX
+    assert "2026" in SOURCED_FX_NOTE, "the rate needs its date"
+
+
+def test_the_retail_basis_is_stated_on_the_source():
+    """These ranges are SME retail. A fifty-site enterprise on a framework
+    pays materially less, so this corrects an overstatement and installs a
+    smaller one in the same direction for large estates - which belongs on the
+    row rather than being discovered later."""
+    from app.seed import SOURCED_RATES
+
+    survey = [r for r in SOURCED_RATES if r[6] == "C"]
+    assert survey, "no survey-grade rates to check"
+    for row in survey:
+        assert "retail" in row[7].lower(), row[7]
