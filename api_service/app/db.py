@@ -51,6 +51,20 @@ case = Table(
     Column("subject_entity_legal_name", Text), Column("entity_identifier", Text),
     Column("country_of_domicile", String(2)), Column("group_perimeter", String(32)),
     Column("included_entities", JSON), Column("excluded_entities", JSON),
+    # What counts as a site. The case declared which countries, which cost
+    # layers and which entities, and nothing about this - so a footprint of
+    # 5,230 was unanswerable: hypermarkets only, all banners, franchise
+    # convenience stores, every connected location?
+    #
+    # It surfaced when a run was checked against public store counts. One
+    # figure was a store count and the other was connected locations in one
+    # country; both defensible, neither stated, and the disagreement
+    # unresolvable because nobody had written the rule down.
+    # JSON, not JSONB: this file imports JSON and every other structured
+    # column on the case uses it. A type the module does not import breaks
+    # import for the whole application, which took the suite from 1197 passing
+    # to 689 in one edit.
+    Column("site_rule", JSON),
     Column("in_scope_countries", JSON), Column("in_scope_cost_layers", JSON),
     Column("in_scope_service_families", JSON),
     # Descriptor for how in_scope_countries was chosen: null for an explicit

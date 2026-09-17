@@ -12,6 +12,7 @@ from .. import config, db, jobs, migrations
 from ..domain import (access as access_vocab, anchor_estimate,
                       assumptions, calibration, case_rates, currency,
                       delta_bridge, industries, industry_benchmark,
+                      site_rule,
                       providers, validation,
                       validation_capture, archetype as archetype_resolver,
                       benchmark_ingest, case_admin, estimate_qa,
@@ -1013,6 +1014,13 @@ class FootprintRow(BaseModel):
     country: str = Field(min_length=2, max_length=2)
     archetype: str = Field(min_length=1, max_length=48)
     sites: int = Field(ge=0, le=config.MAX_SIM_SITES)
+    # Where this number came from. A filing, the company's own store locator,
+    # the client, or somebody's judgement - and the evidence grade follows
+    # from that, exactly as it does for a rate.
+    #
+    # Optional so an existing caller still works; absent reads as
+    # ANALYST_ESTIMATE, which is what an undeclared count has always been.
+    count_source: str | None = None
     # Optional. Without it the row is unclustered and prices exactly as it did
     # before serviceability existed - silence is not a constraint. With it, the
     # row states where its sites are, and what can be delivered there is
@@ -1266,6 +1274,14 @@ def run_simulation(case_id: str, payload: SimIn):
             # sites decide which rows are known, and a run that resumed
             # without them would generate different rows for the same seed.
             params={"footprint": footprint, "backbone": backbone,
+                    # What counts as a site, and where each count came from.
+                    # Pinned with the footprint because they are part of what
+                    # the number means, not a note about how it was made - a
+                    # count re-read later without its rule is the ambiguity
+                    # this exists to remove.
+                    "site_rule": (getattr(case_row, "site_rule", None)
+                                  or {"basis": None,
+                                      "note": "not declared"}),
                     "known_locations": known_locations,
                     # Pinned as plain rows. The runner rebuilds the table from
                     # these, so a steward retuning serviceability mid-run does
@@ -2050,6 +2066,74 @@ class CaseRateIn(BaseModel):
     circuit_count: int | None = None
     source: str | None = None
     supplied_by: str = Field(min_length=1, max_length=120)
+
+
+class SiteRuleIn(BaseModel):
+    basis: str
+    includes: list[str] = []
+    excludes: list[str] = []
+    minimum_headcount: int | None = None
+    minimum_area_sqm: int | None = None
+    note: str | None = None
+    declared_by: str = Field(min_length=1, max_length=120)
+
+
+@router.put("/v1/outside-in/cases/{case_id}/site-rule")
+def set_site_rule(case_id: str, payload: SiteRuleIn):
+    """Declare what counts as a site, before the footprint.
+
+    The largest single driver of the baseline was the one number with no
+    stated basis. A footprint of 5,230 is unanswerable without this: stores
+    only, all banners, franchise locations, every connected point?
+    """
+    if not payload.declared_by.strip():
+        raise HTTPException(422, {
+            "error": "the rule needs a named person",
+            "detail": "it is a scope decision, on the same terms as the "
+                      "geography and the cost layers"})
+    with S() as s:
+        _one_or_404(s, db.case, db.case.c.case_id, case_id, "case")
+        try:
+            declared = site_rule.rule(
+                basis=payload.basis, includes=payload.includes,
+                excludes=payload.excludes,
+                minimum_headcount=payload.minimum_headcount,
+                minimum_area_sqm=payload.minimum_area_sqm, note=payload.note)
+        except site_rule.RuleInvalid as exc:
+            raise HTTPException(422, {"error": "rule not accepted",
+                                      "detail": str(exc)})
+        declared["declared_by"] = payload.declared_by.strip()
+        s.execute(update(db.case).where(db.case.c.case_id == case_id)
+                  .values(site_rule=declared))
+        s.commit()
+        return declared
+
+
+@router.get("/v1/outside-in/cases/{case_id}/site-rule")
+def get_site_rule(case_id: str):
+    """The rule, and what it leaves undecided."""
+    with S() as s:
+        row = _one_or_404(s, db.case, db.case.c.case_id, case_id, "case")
+        declared = getattr(row, "site_rule", None)
+        if not declared or not declared.get("basis"):
+            return {
+                "declared": False,
+                "note": ("no site-inclusion rule. Every site count on this "
+                         "case is a number without a unit, and a published "
+                         "figure cannot be reconciled against it."),
+            }
+        return {
+            "declared": True, "rule": declared,
+            "summary": site_rule.describe(declared),
+            "undecided": declared.get("undecided") or [],
+            "note": (
+                "this is what the site counts on this case mean"
+                if declared.get("complete") else
+                f"the rule does not say whether "
+                f"{', '.join(declared.get('undecided') or [])} are counted, "
+                f"so the footprint is either too high or too low by their "
+                f"number"),
+        }
 
 
 @router.post("/v1/outside-in/cases/{case_id}/rates")

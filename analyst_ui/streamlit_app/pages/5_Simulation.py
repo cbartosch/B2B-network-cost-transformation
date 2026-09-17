@@ -1009,6 +1009,66 @@ if runs:
     st.dataframe(pd.DataFrame(runs), use_container_width=True)
 
 
+# --------------------------------------------------------- what counts as a site
+st.divider()
+st.subheader("What counts as a site")
+st.caption(
+    "The largest single driver of the baseline, and the one number that had no "
+    "stated basis. A footprint of 5,230 is unanswerable without this: stores "
+    "only, all banners, franchise locations, every connected point? A "
+    "published figure cannot be reconciled against a count whose rule nobody "
+    "wrote down.")
+
+_sr = api.get(f"/v1/outside-in/cases/{case_id}/site-rule")
+_sk = case_id[:8]
+if "_error" in _sr:
+    st.error(f"Could not read the rule: {_sr['_error']}")
+else:
+    if _sr.get("declared"):
+        if _sr.get("undecided"):
+            st.warning(_sr["note"])
+        else:
+            st.success(_sr["summary"])
+    else:
+        st.warning(_sr["note"])
+
+    with st.expander("Declare or change the rule",
+                     expanded=not _sr.get("declared")):
+        _basis = st.selectbox(
+            "A site is", ["CONNECTED_LOCATION", "OPERATED_FACILITY",
+                          "OWNED_PREMISES", "MAJOR_SITE"],
+            help="Widest first. Each is a subset of the one above it.",
+            key=f"sr_b_{_sk}")
+        _cats = ["FRANCHISE", "PARTNER_OPERATED", "UNMANNED", "SEASONAL",
+                 "SHARED_TENANCY", "UNDER_CONSTRUCTION"]
+        _inc = st.multiselect("Counted", _cats, key=f"sr_i_{_sk}")
+        _exc = st.multiselect("Not counted",
+                              [c for c in _cats if c not in _inc],
+                              key=f"sr_e_{_sk}")
+        _left = [c for c in _cats if c not in _inc and c not in _exc]
+        if _left:
+            st.caption(
+                f"Undecided: {', '.join(_left)}. Each is a set of sites the "
+                f"footprint either contains or does not, and the baseline "
+                f"moves by their connectivity cost either way - so an "
+                f"undecided category becomes a named assumption rather than "
+                f"a silence.")
+        _hc = st.number_input("Minimum staff (MAJOR_SITE only)", min_value=0,
+                              step=5, key=f"sr_h_{_sk}")
+        _note = st.text_input("Note", key=f"sr_n_{_sk}")
+        _who = st.text_input("Declaring as (your name)", key=f"sr_w_{_sk}")
+        if st.button("Declare rule", disabled=not _who.strip()):
+            _res = api.put(f"/v1/outside-in/cases/{case_id}/site-rule", {
+                "basis": _basis, "includes": _inc, "excludes": _exc,
+                "minimum_headcount": int(_hc) or None,
+                "note": _note or None, "declared_by": _who})
+            if "_error" in _res:
+                st.error(_res["_error"])
+            else:
+                api.flash("Rule declared and pinned into the next run.")
+                st.rerun()
+
+
 # --------------------------------------------------- this client's own rates
 st.divider()
 st.subheader("This client's rates")

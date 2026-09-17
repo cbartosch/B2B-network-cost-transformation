@@ -135,7 +135,11 @@ LLM_SEARCH_TIMEOUT_SECONDS = float(
 # thirty-company run mapped fourteen to a nearest neighbour - a steelmaker to
 # forestry and paper among them, which is indefensible however sound the
 # estate shape.
-SIMULATION_MODEL_VERSION = "sim-1.16.0"
+# sim-1.17.0: a site count declares what it counts. The case named which countries
+# and which cost layers and nothing about what a site is, so a footprint of
+# 5,230 was unanswerable - and a published store count could not be reconciled
+# against it because nobody had written the rule down.
+SIMULATION_MODEL_VERSION = "sim-1.17.0"
 # calc-1.1.0: the saving band is accumulated with matched pairing rather than
 # derived as current - target. The target is a function of the current, so
 # subtracting the two crossed bounds a second time and produced worlds that
