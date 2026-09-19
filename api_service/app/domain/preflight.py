@@ -76,9 +76,21 @@ def input_digest(session, case_id: str) -> str:
     # Known facts: what each one asserts and whether it is cleared and
     # corroborated, not when it was written. A fact re-saved without change
     # must not invalidate an approval.
+    # Column names read from db.py, not from memory. The first version asked
+    # for `fact_id` and `value`; the table has `known_fact_id` and a
+    # low/base/high triple, so every pre-flight run raised AttributeError as
+    # soon as a case had a fact.
+    #
+    # It passed its tests because the fixture was a hand-written class with
+    # the attributes the code wanted - a test of the fixture, not of the
+    # schema. The last assertion in this module's test file now reads the
+    # real column list.
     payload["known_facts"] = sorted(
-        (str(f.fact_id), str(f.fact_class), _stable(f.value),
-         str(f.basis), bool(f.rights_cleared), str(f.corroboration_state))
+        (str(f.known_fact_id), str(f.fact_class), str(f.subject or ""),
+         _stable(f.value_low), _stable(f.value_base), _stable(f.value_high),
+         str(f.unit or ""), str(f.currency or ""),
+         str(f.basis), bool(f.rights_cleared),
+         str(f.corroboration_state), str(f.superseded_by or ""))
         for f in session.execute(select(db.known_fact).where(
             db.known_fact.c.case_id == case_id)).all())
 

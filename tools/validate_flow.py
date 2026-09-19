@@ -763,6 +763,84 @@ def every_country_prices_what_its_estates_need() -> list:
     return problems
 
 
+def columns_read_are_columns() -> list:
+    """`row.foo` on a SELECT of a table that has no `foo`.
+
+    `preflight.input_digest` asked a known_fact row for `fact_id` and `value`;
+    the table has `known_fact_id` and a low/base/high triple. Every pre-flight
+    run raised AttributeError as soon as a case had a fact - and it shipped,
+    because the test fixture was a hand-written class carrying the attributes
+    the code wanted rather than the columns the table has.
+
+    Only checks a loop whose source table is unambiguous: `for x in
+    session.execute(select(db.TABLE)...)` followed by `x.attr`. A row built
+    from a join or a column list is out of scope here, because guessing the
+    source would produce false positives and a checker people ignore.
+    """
+    db_source = (APP / "db.py").read_text()
+    columns = {}
+    for match in re.finditer(r"^(\w+) = Table\(", db_source, re.M):
+        table, start = match.group(1), match.start()
+        end = db_source.index("schema=", start)
+        columns[table] = set(
+            re.findall(r'Column\("(\w+)"', db_source[start:end]))
+
+    problems = []
+    for path in sorted(APP.rglob("*.py")):
+        if path.name == "db.py":
+            continue
+        source = path.read_text()
+        try:
+            tree = ast.parse(source)
+        except SyntaxError:
+            continue
+        for node in ast.walk(tree):
+            if not isinstance(node, (ast.comprehension, ast.For)):
+                continue
+            target = node.target
+            if not isinstance(target, ast.Name):
+                continue
+            iterated = ast.unparse(node.iter)
+            found = re.search(r"select\(db\.(\w+)\)", iterated)
+            if not found or found.group(1) not in columns:
+                continue
+            table = found.group(1)
+            # Only within THIS comprehension or loop body. Walking the whole
+            # module matched every `r` in the file against every table and
+            # reported nine tables for one line - a checker that cries wolf
+            # is one people switch off, which is the note on the term-factor
+            # work two modules over.
+            if isinstance(node, ast.comprehension):
+                # the comprehension's own element and conditions
+                scope_nodes = list(node.ifs)
+                for outer in ast.walk(tree):
+                    if isinstance(outer, (ast.ListComp, ast.SetComp,
+                                          ast.GeneratorExp)) and \
+                            node in outer.generators:
+                        scope_nodes.append(outer.elt)
+                    elif isinstance(outer, ast.DictComp) and \
+                            node in outer.generators:
+                        scope_nodes.extend([outer.key, outer.value])
+            else:
+                scope_nodes = list(node.body)
+
+            for scope_node in scope_nodes:
+                for inner in ast.walk(scope_node):
+                    if not isinstance(inner, ast.Attribute):
+                        continue
+                    if (isinstance(inner.value, ast.Name)
+                            and inner.value.id == target.id
+                            and inner.attr not in columns[table]
+                            and not inner.attr.startswith("_")
+                            and inner.attr not in ("count", "index", "keys")):
+                        problems.append(
+                            f"{path.name}:{inner.lineno} reads .{inner.attr} "
+                            f"from a {table} row and {table} has no such "
+                            f"column - AttributeError at runtime, and a "
+                            f"hand-written test fixture will not catch it")
+    return sorted(set(problems))
+
+
 def seeded_values_fit_their_type() -> list:
     """A seeded value the column cannot hold fails the whole seed.
 
@@ -876,6 +954,7 @@ CHECKS = [
     ("release identity agrees", release_identity_agrees),
     ("no orphaned domain module", no_orphaned_domain_module),
     ("the ensemble carries what it computes", ensemble_carries_what_it_computes),
+    ("every column a query reads exists", columns_read_are_columns),
     ("every seeded key is a column", seeded_keys_are_columns),
     ("every run param the runner reads is pinned", pinned_run_params),
     ("tables written and read", table_flow),

@@ -61,11 +61,33 @@ class _Row:
 
 
 class _Fact:
-    def __init__(self, fact_id="f1", value="340", basis="CLIENT_CONVERSATION",
-                 cleared=True, corroboration="CORROBORATED"):
-        self.fact_id, self.value, self.basis = fact_id, value, basis
+    """A known_fact row, with the columns the table actually has.
+
+    The first version carried `fact_id` and `value` because that is what the
+    code asked for. The table has `known_fact_id` and a low/base/high triple,
+    so every pre-flight run raised AttributeError as soon as a case had a fact
+    - and these tests passed throughout, because a fixture built from the
+    code's expectations tests the expectations.
+
+    `test_the_fixture_matches_the_schema` below reads db.py and fails if this
+    class drifts from it.
+    """
+
+    def __init__(self, known_fact_id="f1", value_base="340",
+                 basis="CLIENT_CONVERSATION", cleared=True,
+                 corroboration="CORROBORATED"):
+        self.known_fact_id = known_fact_id
         self.fact_class = "SITE_COUNT"
-        self.rights_cleared, self.corroboration_state = cleared, corroboration
+        self.subject = "sites"
+        self.value_low = value_base
+        self.value_base = value_base
+        self.value_high = value_base
+        self.unit = "count"
+        self.currency = None
+        self.basis = basis
+        self.rights_cleared = cleared
+        self.corroboration_state = corroboration
+        self.superseded_by = None
 
 
 class _Session:
@@ -116,8 +138,8 @@ def test_a_real_change_changes_the_digest(label, row):
 def test_a_fact_changing_its_value_changes_the_digest():
     """A known fact is an input to a condition, so the approval described the
     fact as it was."""
-    before = _digest(_Row(), [_Fact(value="340")])
-    after = _digest(_Row(), [_Fact(value="1840")])
+    before = _digest(_Row(), [_Fact(value_base="340")])
+    after = _digest(_Row(), [_Fact(value_base="1840")])
     assert before != after
 
 
@@ -188,3 +210,34 @@ def test_every_case_field_a_condition_reads_is_in_the_digest():
     assert not missing, (
         f"preflight.run reads {missing} from the case and the digest does not "
         f"cover them")
+
+
+def test_the_fixture_matches_the_schema():
+    """The check that would have caught the shipped defect.
+
+    A fixture built from what the code asks for tests the code against itself.
+    This reads db.py and fails if the fixture carries an attribute the table
+    does not have, or omits one the digest reads."""
+    import re
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1]
+    app = next(c for c in (root / "api_service" / "app", root / "app")
+               if (c / "db.py").exists())
+    db_source = (app / "db.py").read_text()
+    start = db_source.index("known_fact = Table(")
+    end = db_source.index("schema=", start)
+    columns = set(re.findall(r'Column\("(\w+)"', db_source[start:end]))
+
+    fixture = {k for k in vars(_Fact()) if not k.startswith("_")}
+    invented = sorted(fixture - columns)
+    assert not invented, (
+        f"the fixture carries {invented}, which known_fact does not have")
+
+    # and everything the digest reads must be on the fixture
+    source = preflight._source
+    block = source[source.index('payload["known_facts"]'):][:700]
+    read = set(re.findall(r"\bf\.(\w+)", block))
+    missing = sorted(read - fixture)
+    assert not missing, (
+        f"the digest reads {missing}, which the fixture does not carry")
