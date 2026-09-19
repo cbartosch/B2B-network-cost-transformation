@@ -763,6 +763,54 @@ def every_country_prices_what_its_estates_need() -> list:
     return problems
 
 
+def no_local_shadows_an_imported_module() -> list:
+    """A function that assigns `x` and also reads `x.attr` from an import.
+
+    `run_estimate` assigns a local called `scope` at line 3393 and read
+    `scope.REGION_PARENT` at 3324. Python decides local-or-global per function
+    rather than per line, so the earlier read was an unbound local and every
+    estimate raised UnboundLocalError.
+
+    The unbound-names check one function up does not catch this: `scope` IS
+    bound in that function, just later. That is the whole trap.
+    """
+    problems = []
+    for path in sorted(APP.rglob("*.py")):
+        try:
+            tree = ast.parse(path.read_text())
+        except SyntaxError:
+            continue
+        imported = set()
+        for node in tree.body:
+            if isinstance(node, (ast.Import, ast.ImportFrom)):
+                for alias in node.names:
+                    imported.add(alias.asname or alias.name.split(".")[0])
+        for node in ast.walk(tree):
+            if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                continue
+            assigned, attribute_reads = {}, {}
+            for inner in ast.walk(node):
+                if (isinstance(inner, ast.Name)
+                        and isinstance(inner.ctx, ast.Store)
+                        and inner.id in imported):
+                    assigned.setdefault(inner.id, inner.lineno)
+                elif (isinstance(inner, ast.Attribute)
+                      and isinstance(inner.value, ast.Name)
+                      and inner.value.id in imported):
+                    attribute_reads.setdefault(
+                        inner.value.id, []).append(inner.lineno)
+            for name, first_assignment in assigned.items():
+                earlier = [n for n in attribute_reads.get(name, [])
+                           if n < first_assignment]
+                if earlier:
+                    problems.append(
+                        f"{path.name}::{node.name} assigns a local `{name}` at "
+                        f"line {first_assignment} and reads `{name}.` at "
+                        f"{earlier[0]} - the import is shadowed for the whole "
+                        f"function, so the earlier read is an unbound local")
+    return problems
+
+
 def columns_read_are_columns() -> list:
     """`row.foo` on a SELECT of a table that has no `foo`.
 
@@ -955,6 +1003,8 @@ CHECKS = [
     ("no orphaned domain module", no_orphaned_domain_module),
     ("the ensemble carries what it computes", ensemble_carries_what_it_computes),
     ("every column a query reads exists", columns_read_are_columns),
+    ("no local shadows an imported module it also uses",
+     no_local_shadows_an_imported_module),
     ("every seeded key is a column", seeded_keys_are_columns),
     ("every run param the runner reads is pinned", pinned_run_params),
     ("tables written and read", table_flow),

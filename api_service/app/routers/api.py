@@ -9,6 +9,12 @@ from pydantic import BaseModel, Field
 from sqlalchemy import delete, insert, select, text, update
 
 from .. import config, db, jobs, migrations
+# Imported by name, not through the module. `run_estimate` assigns a local
+# called `scope` further down, which makes `scope` local for the whole
+# function - so `REGION_PARENT` earlier in the same function raised
+# UnboundLocalError on every estimate. Python decides local-or-global per
+# function, not per line.
+from ..domain.scope import REGION_PARENT as REGION_PARENT
 from ..domain import (access as access_vocab, anchor_estimate,
                       assumptions, calibration, case_rates, currency,
                       site_rule,
@@ -3321,8 +3327,8 @@ def run_estimate(case_id: str, payload: EstimateIn):
             r.region for r in s.execute(select(db.country_region).where(
                 db.country_region.c.country.in_(countries or ["--"]))).all()})
         in_scope_regions = sorted(set(_sub) | {
-            scope.REGION_PARENT[r] for r in _sub
-            if r in scope.REGION_PARENT})
+            REGION_PARENT[r] for r in _sub
+            if r in REGION_PARENT})
         prior_rows = s.execute(select(db.unit_cost_prior).where(
             db.unit_cost_prior.c.country.in_(
                 (countries or ["--"]) + in_scope_regions),

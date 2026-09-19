@@ -359,7 +359,12 @@ def test_the_route_loads_both_rungs():
     app = next(c for c in (root / "api_service" / "app", root / "app")
                if (c / "routers").exists())
     api = (app / "routers" / "api.py").read_text()
-    assert "scope.REGION_PARENT" in api
+    # `REGION_PARENT`, not `scope.REGION_PARENT`: run_estimate assigns a local
+    # called `scope`, which makes the name local for the whole function and
+    # made the earlier attribute read an unbound local. Asserting the module
+    # path here pinned the very construction that broke every estimate.
+    assert "from ..domain.scope import REGION_PARENT" in api
+    assert "scope.REGION_PARENT" not in api
     assert "set(_sub) |" in api
 
 
