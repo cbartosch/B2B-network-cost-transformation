@@ -163,8 +163,11 @@ def test_the_audit_tool_runs_and_finds_the_known_remainder():
     #
     # A ceiling rather than a target. It must not grow unnoticed, and lowering
     # it is the work.
-    assert remaining <= 20, (
-        f"{remaining} format findings, up from the 20 known at 4.223.0")
+    # 38 at 4.224.0. The jump from 20 is a new check, not new defects: free
+    # text inside a repeating structure is what fills a budget, and nothing
+    # was looking for it until llm01 truncated twice.
+    assert remaining <= 38, (
+        f"{remaining} format findings, up from the 38 known at 4.224.0")
 
 
 # ---------------------- an unbounded reply truncates at any budget
@@ -213,6 +216,65 @@ def test_the_instruction_keeps_its_intent_and_gains_a_ceiling():
     start = prompts.index('prompt_id="llm01.public_evidence.extract"')
     block = prompts[start:start + 3600]
     assert "Do not average them" in block, "the original intent must survive"
-    assert "at most 12 quantities" in block
+    # 10/4/10, not 12/6/20: the first caps were chosen without sizing the
+    # reply and left it three times over budget.
+    assert "at most 10 quantities" in block
     assert "never the ones you find most convincing" in block
-    assert re.search(r'prompt_version="2\.5\.0"', block)
+    assert re.search(r'prompt_version="2\.6\.0"', block)
+
+
+def test_the_llm01_reply_fits_inside_its_budget():
+    """The arithmetic the first fix skipped.
+
+    Bounding the lists to 12 quantities and 6 candidates left 72 candidates,
+    each carrying an unbounded excerpt, note and URL - roughly 22,000 tokens
+    against a budget of 8,000. Free text is what fills a budget; list length
+    only multiplies it.
+
+    Sized here rather than asserted by eye, because "I bounded the lists" was
+    true and insufficient."""
+    import re
+
+    schemas = (_app() / "llm" / "schemas.py").read_text()
+
+    def cap(pattern, default):
+        # DOTALL, because two of these Field(...) calls wrap onto a second
+        # line - and a regex that silently misses returns the default, which
+        # made the first run report 150,765 tokens.
+        found = re.search(pattern, schemas, re.S)
+        assert found, f"no match for {pattern}"
+        return int(found.group(1))
+
+    quantities = cap(r"quantities: list\[Quantity\].{0,120}?max_length=(\d+)", 99)
+    candidates = cap(r"candidates: list\[QuantityCandidate\].{0,120}?"
+                     r"max_length=(\d+)", 99)
+    sources = cap(r"sources: list\[SourceRef\].{0,120}?max_length=(\d+)", 99)
+    excerpt = cap(r"EXCERPT_MAX = (\d+)", 999)
+    note = cap(r"NOTE_MAX = (\d+)", 999)
+    label = cap(r"LABEL_MAX = (\d+)", 999)
+    url = cap(r"URL_MAX = (\d+)", 999)
+
+    # 1,500 finding + 400 confidence note, and 80 chars of JSON scaffolding
+    # per repeated object.
+    chars = (1900
+             + quantities * (label + 200)
+             + quantities * candidates * (excerpt + note + url + 80)
+             + sources * (excerpt + url + 80))
+    tokens = chars // 4
+    assert tokens <= 8000, (
+        f"the worst-case reply is ~{tokens} tokens against the 8,000 that "
+        f"truncated it")
+
+
+def test_the_governed_budget_gives_the_reply_room():
+    """Both remedies, not one. The error message offered raising the budget
+    OR asking for less; the reply had to be made finite either way, and the
+    budget gives it room to be finite without being thin."""
+    from app.seed import THRESHOLDS
+
+    budgets = {k: v for s, k, v, *_ in THRESHOLDS
+               if s == "research_budget_profile"}
+    assert int(budgets["max_output_tokens_per_call"]) >= 16000
+    # the sweep stays where 4.147 put it: one call per fact class, and a
+    # larger budget there invites back the five-at-once reply it replaced
+    assert int(budgets["max_output_tokens_per_sweep_call"]) == 6000

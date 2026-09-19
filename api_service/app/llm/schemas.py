@@ -81,8 +81,27 @@ class FigureBasis(str, Enum):
     INFERRED = "INFERRED"
 
 
+# Free text is what fills a token budget, not list length.
+#
+# llm01 truncated at 8,000 tokens with 12 quantities and 6 candidates each -
+# 72 candidates, every one carrying an unbounded excerpt, note and URL. That
+# sizes at roughly 22,000 tokens, nearly three times the budget, and bounding
+# the lists alone left it over.
+#
+# An excerpt is a short verbatim quote that proves a figure, not a paragraph.
+# 160 characters is a sentence, which is what a quote needs to be - and it is
+# what the copyright limits elsewhere in this system already assume.
+EXCERPT_MAX = 160
+NOTE_MAX = 120
+LABEL_MAX = 120
+# A URL long enough for a deep link into a filing, and short enough that
+# seventy of them do not consume the reply. Four of the eight remaining
+# unbounded fields in this model are URLs.
+URL_MAX = 200
+
+
 class SourceRef(Strict):
-    url: str
+    url: str = Field(max_length=URL_MAX)
     publisher: str | None = None
     as_of: str | None = None
     # Provenance the agent observed. These are reports about the source, never
@@ -90,7 +109,7 @@ class SourceRef(Strict):
     source_class: SourceClass | None = None
     how_read: HowRead | None = None
     figure_basis: FigureBasis | None = None
-    excerpt: str | None = None
+    excerpt: str | None = Field(None, max_length=EXCERPT_MAX)
 
 
 class QuantityCandidate(Strict):
@@ -114,10 +133,10 @@ class QuantityCandidate(Strict):
     # decided deterministically rather than by refusing the reply.
     value: str
     unit: str | None = None
-    source_url: str | None = None
+    source_url: str | None = Field(None, max_length=URL_MAX)
     publisher: str | None = None
     as_of: str | None = None
-    note: str | None = None
+    note: str | None = Field(None, max_length=NOTE_MAX)
     # The same provenance SourceRef carries, because a candidate *is* one
     # source's figure. The base contract says "for every source, state
     # source_class, how_read and figure_basis" - the agent complied, put them
@@ -127,7 +146,7 @@ class QuantityCandidate(Strict):
     source_class: SourceClass | None = None
     how_read: HowRead | None = None
     figure_basis: FigureBasis | None = None
-    excerpt: str | None = None
+    excerpt: str | None = Field(None, max_length=EXCERPT_MAX)
 
 
 class Quantity(Strict):
@@ -143,7 +162,7 @@ class Quantity(Strict):
     one source states one figure. Where several sources disagree, the agent
     lists them all in `candidates` and leaves the band to code.
     """
-    label: str
+    label: str = Field(max_length=LABEL_MAX)
     # As above: a string the code parses. A quantity that cannot be parsed is
     # kept as a qualitative finding rather than discarded, and never reaches
     # the estimate.
@@ -162,7 +181,7 @@ class Quantity(Strict):
     term_months: int | None = None
     technology: str | None = None
     candidates: list[QuantityCandidate] = Field(default_factory=list,
-                                                max_length=6)
+                                                max_length=4)
     # How many more sources stated this figure than could be returned. The
     # instruction is to list every one and not to average them; the cap is
     # what makes that finite, and this is what says the cap was reached.
@@ -172,7 +191,7 @@ class Quantity(Strict):
 class PublicEvidenceResult(Strict):
     found: bool
     subject: str | None = None
-    finding: str | None = None
+    finding: str | None = Field(None, max_length=1500)
     # Bounded, because the list nests: quantities x candidates grows
     # multiplicatively and truncated at 8,000 tokens after 114 seconds on the
     # company-profile domain. Raising the budget moves where it truncates; it
@@ -181,7 +200,7 @@ class PublicEvidenceResult(Strict):
     # The instruction to return every source and not to average them is right
     # and is kept - what it lacked was a ceiling and a way to say it had been
     # reached.
-    quantities: list[Quantity] = Field(default_factory=list, max_length=12)
+    quantities: list[Quantity] = Field(default_factory=list, max_length=10)
     # How many more the agent found and could not return. A thin answer
     # because the market is thin and a thin answer because the cap was hit are
     # different findings, and only the second is worth another call.
@@ -190,8 +209,8 @@ class PublicEvidenceResult(Strict):
     # different findings, and only the second is worth another call.
     quantities_omitted: int = 0
     sources: list[SourceRef] = Field(default_factory=list,
-                                     max_length=20)
-    confidence_note: str | None = None
+                                     max_length=10)
+    confidence_note: str | None = Field(None, max_length=400)
     abstention_reason: AbstentionReason | None = None
 
 

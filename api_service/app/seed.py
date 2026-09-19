@@ -261,7 +261,7 @@ THRESHOLDS = [
     # domain that searched properly and answered fully was cut off mid-JSON at
     # roughly 4,900 characters, and surfaced as "model output was not valid
     # JSON" - a prompt problem that was really a budget problem.
-    ("research_budget_profile", "max_output_tokens_per_call", "8000"),
+    ("research_budget_profile", "max_output_tokens_per_call", "16000"),
     # The public sweep asks about one fact class per call now, so its replies
     # are small - but a searching call carries its results in the response, so
     # the budget is not just the prose. Governed rather than hardcoded because

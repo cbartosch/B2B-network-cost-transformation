@@ -128,6 +128,7 @@ def _prompts():
 # "24-36 months" when it is an int. That is a modelling gap, not a prompting
 # one, and it is the only class that produced a real failure.
 findings = {"loose_without_qualifier": [], "unbounded_list": [],
+            "unbounded_text": [], "reply_exceeds_budget": [],
             "no_model": []}
 
 for prompt in sorted(_prompts(), key=lambda p: p["prompt_id"]):
@@ -153,6 +154,24 @@ for prompt in sorted(_prompts(), key=lambda p: p["prompt_id"]):
                 f"{prompt['prompt_id']}: {model}.{name} is an unbounded "
                 f"{spec['annotation']} - a reply that grows with what the "
                 f"agent finds truncates at whatever budget it is given")
+
+        # Free text is what fills a token budget, not list length. llm01
+        # truncated at 8,000 with its lists already capped: 72 candidates,
+        # every one carrying an unbounded excerpt, note and URL, sizes at
+        # roughly 22,000 tokens.
+        #
+        # Only fields inside a bounded list are reported. A single top-level
+        # string cannot blow a budget on its own, and reporting every one
+        # would bury the ones that repeat.
+        if ("str" in spec["annotation"] and "list[" not in spec["annotation"]
+                and "max_length" not in (spec["default"] or "")
+                and any("list[" in f["annotation"]
+                        and "max_length" in (f["default"] or "")
+                        for f in fields.values())):
+            findings["unbounded_text"].append(
+                f"{prompt['prompt_id']}: {model}.{name} is unbounded text "
+                f"inside a repeating structure - it is multiplied by the "
+                f"list cap and is what actually fills the budget")
 
         base = spec["annotation"].split("|")[0].strip()
         # A low/base/high triple already expresses a range, so a source saying

@@ -75,7 +75,10 @@ def test_the_sweep_keeps_its_own_smaller_budget():
     app = _app()
     seed = (app / "seed.py").read_text()
     assert '"max_output_tokens_per_sweep_call", "6000"' in seed
-    assert '"max_output_tokens_per_call", "8000"' in seed
+    # 16,000 since 4.224.0. llm01 truncated twice at 8,000, and the reply was
+    # bounded AND given room - the error message offered both remedies and
+    # only doing one left 25 tokens of headroom.
+    assert '"max_output_tokens_per_call", "16000"' in seed
     known = (app / "domain" / "known_facts.py").read_text()
     assert "_sweep_budget(session)" in known
 
