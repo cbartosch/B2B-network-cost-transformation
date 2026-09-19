@@ -229,3 +229,53 @@ def test_the_campus_prior_is_a_dc_with_people_on_it():
     assert campus[2] == dc[2], "both sit at the top bandwidth tier"
     assert float(campus[6]) > float(dc[6]), (
         "a campus sustains load where a data hall bursts")
+
+
+# --------------------------------- the screen that chooses an industry
+def test_the_intake_reads_the_taxonomy_the_endpoint_prefers():
+    """An analyst looking for a drug maker found only PHARMACY_RETAIL, which
+    is Boots.
+
+    The endpoint returned both lists and said which to prefer; the page read
+    `industries` - the twenty-eight workbench codes - while `bics_l3` sat
+    beside it with forty-seven. The whole BICS load was unreachable from the
+    one screen that chooses an industry, and the call succeeded, so nothing
+    looked wrong."""
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1]
+    page = next(root.glob("analyst_ui/streamlit_app/pages/1_Intake*.py"))
+    source = page.read_text()
+
+    assert "preferred_taxonomy" in source, (
+        "the page must read the taxonomy the endpoint prefers, not the first "
+        "list in the payload")
+    assert "bics_l3" in source
+
+
+def test_a_case_on_the_older_taxonomy_is_not_silently_blanked():
+    """A case created before the BICS load carries one of the old codes. If
+    the dropdown no longer offers it, the next save writes an empty
+    industry."""
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1]
+    page = next(root.glob("analyst_ui/streamlit_app/pages/1_Intake*.py"))
+    source = page.read_text()
+
+    assert "_INDUSTRIES.append(_cur_for_list)" in source
+    assert "earlier taxonomy" in source, (
+        "an older code must be flagged as pricing from seeded figures")
+
+
+def test_the_endpoint_offers_both_lists_and_names_the_preferred_one():
+    """Two arrays and no guidance is how the page picked the wrong one."""
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1]
+    app = next(c for c in (root / "api_service" / "app", root / "app")
+               if (c / "routers").exists())
+    api = (app / "routers" / "api.py").read_text()
+    assert '"preferred_taxonomy": "bics_l3"' in api
+    assert '"bics_l3"' in api
+    assert '"industries"' in api

@@ -87,10 +87,44 @@ aliases_text = st.text_input(
 # stale the moment the table gained twenty-three more, and an analyst choosing
 # from a stale list cannot know that GROCERY and QSR produce different estates.
 _ind_meta = api.get("/v1/outside-in/industries")
-_ind_rows = ([] if "_error" in _ind_meta
-             else sorted(_ind_meta.get("industries") or [],
-                         key=lambda r: r["industry"]))
-_INDUSTRIES = [""] + [r["industry"] for r in _ind_rows if r["industry"] != "DEFAULT"]
+
+# The taxonomy the endpoint says to prefer, not the first list in the payload.
+#
+# This read `industries` - the twenty-eight workbench codes - while the same
+# response also carried `bics_l3` with forty-seven. So an analyst looking for a
+# drug maker found only PHARMACY_RETAIL, which is Boots, and the whole BICS
+# load was unreachable from the one screen that chooses an industry.
+#
+# The comment above about a hardcoded list going stale was right and did not go
+# far enough: reading the wrong list from a live endpoint goes stale the same
+# way, and more quietly, because the call succeeds.
+_preferred = ("" if "_error" in _ind_meta
+              else _ind_meta.get("preferred_taxonomy") or "industries")
+if _preferred == "bics_l3":
+    _bics_rows = sorted(_ind_meta.get("bics_l3") or [],
+                        key=lambda r: (r.get("sector") or "", r["industry_code"]))
+    _ind_rows = [{"industry": r["industry_code"], "shape": None,
+                  "note": f"{r.get('sector','')} - site types "
+                          f"{', '.join(r.get('site_archetypes') or [])}",
+                  "split_from": None, "caveat": None, "sector": r.get("sector")}
+                 for r in _bics_rows]
+else:
+    _ind_rows = ([] if "_error" in _ind_meta
+                 else sorted(_ind_meta.get("industries") or [],
+                             key=lambda r: r["industry"]))
+
+# The older list stays reachable, because a case created before the BICS load
+# still has one of its codes and must be able to show it.
+_legacy = ([] if "_error" in _ind_meta
+           else sorted(r["industry"] for r in (_ind_meta.get("industries") or [])
+                       if r["industry"] != "DEFAULT"))
+_INDUSTRIES = [""] + [r["industry"] for r in _ind_rows
+                      if r["industry"] != "DEFAULT"]
+_cur_for_list = (case.get("industry") or "")
+if _cur_for_list and _cur_for_list not in _INDUSTRIES:
+    # A case on the older taxonomy. Shown so it is not silently blanked on the
+    # next save, and flagged so the analyst knows it gets seeded figures.
+    _INDUSTRIES.append(_cur_for_list)
 _cur_ind = (case.get("industry") or "")
 industry = st.selectbox(
     "Industry", _INDUSTRIES,
@@ -103,12 +137,29 @@ industry = st.selectbox(
 # What the chosen sector implies, and where the five archetypes fit it badly.
 _chosen = next((r for r in _ind_rows if r["industry"] == industry), None)
 if _chosen:
-    st.caption(
-        f"Shape **{_chosen['shape']}** - {_chosen['note']}"
-        + (f" Split from {_chosen['split_from']}."
-           if _chosen.get("split_from") else ""))
+    # A BICS row carries a sector and its real site types; a workbench row
+    # carries an estate shape and a fit caveat. Rendering whichever the chosen
+    # row actually has, rather than assuming - `shape` is None on a BICS row
+    # and printing "Shape None" is how a screen teaches people to ignore it.
+    if _chosen.get("shape"):
+        st.caption(
+            f"Shape **{_chosen['shape']}** - {_chosen['note']}"
+            + (f" Split from {_chosen['split_from']}."
+               if _chosen.get("split_from") else ""))
+    else:
+        st.caption(_chosen.get("note") or "")
     if _chosen.get("caveat"):
         st.warning(_chosen["caveat"])
+elif industry:
+    # A code from the older taxonomy, kept selectable so an existing case is
+    # not silently blanked - but it gets seeded figures rather than the
+    # published benchmark, and that belongs on the screen.
+    st.warning(
+        f"{industry} is from the earlier taxonomy. It still resolves, and it "
+        f"prices from this repository's seeded figures at evidence grade E "
+        f"rather than from the published industry benchmark. A BICS code "
+        f"carries bandwidth, committed share and criticality for the site "
+        f"types that industry actually has.")
 
 c4, c5, c6 = st.columns(3)
 _perimeter_options = ["SINGLE_ENTITY", "GROUP_CONSOLIDATED", "NAMED_SUBSIDIARIES",
