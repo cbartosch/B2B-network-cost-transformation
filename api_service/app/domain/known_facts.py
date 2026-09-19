@@ -283,6 +283,29 @@ def register(session, *, case_id: str, fact_class: str, subject: str,
             f"{supplied_note + ' | ' if supplied_note else ''}"
             f"unit as supplied: {_qualification}")
 
+    # Refused here rather than by Postgres.
+    #
+    # fact_class is String(64) and an agent returned 66 characters, so the
+    # insert failed with StringDataRightTruncation - a wall of SQL and bound
+    # parameters that tells an analyst nothing about what to change.
+    #
+    # The width is not the point and is left alone: a class longer than this
+    # is not a class, it is a class with a description attached, and widening
+    # the column would let the description in.
+    too_long = [(name, value, limit)
+                for name, value, limit in (("fact_class", fact_class, 64),
+                                           ("subject", subject, 200),
+                                           ("unit", unit, 128))
+                if value and len(str(value)) > limit]
+    if too_long:
+        name, value, limit = too_long[0]
+        raise ValueError(
+            f"{name} is {len(str(value))} characters and the register allows "
+            f"{limit}: {str(value)[:80]!r}. A class longer than its limit is "
+            f"usually a class with a description attached - put the "
+            f"description in the note, where it describes the figure rather "
+            f"than naming its class.")
+
     conflict = (unit_conflicts_with_class(fact_class, unit)
                 or subject_conflicts_with_class(fact_class, subject)
                 or value_implausible_for_class(fact_class, value_base,
@@ -913,6 +936,37 @@ def prefill_from_public(session, *, case_id: str, fact_classes=None,
         provenance = prov or provenance
         payload = result.model_dump()
         for i, fact in enumerate(payload.get("facts") or []):
+            # The class is the one this call asked for, not the one the reply
+            # came back with.
+            #
+            # The sweep runs one call per class, so it is already known - and
+            # the agent elaborated it: "Operating-model cost" came back as
+            # "Operating-model cost - Selling, general and administrative
+            # expense", 66 characters into a 64-character column, and the
+            # insert failed with a Postgres truncation error the analyst had
+            # no way to read.
+            #
+            # Width was the symptom. The defect is that an invented class
+            # breaks the register: corroboration and the prefill dedupe both
+            # match on (fact_class, subject), and the analyst cannot select
+            # that class by hand, so the fact could never meet another about
+            # the same thing.
+            #
+            # The elaboration is real information and is kept, in the note
+            # where it describes the figure rather than names its class.
+            returned = str(fact.get("fact_class") or "").strip()
+            fact = {**fact, "fact_class": fact_class}
+            if returned and returned != fact_class:
+                detail = returned
+                for separator in (" - ", " \u2014 ", " \u2013 ", ": "):
+                    if separator in returned:
+                        detail = returned.split(separator, 1)[1].strip()
+                        break
+                existing_note = str(fact.get("note") or "").strip()
+                fact["note"] = (f"{detail}. {existing_note}".strip()
+                                if existing_note else detail)
+                fact["class_as_returned"] = returned
+
             key = (fact.get("fact_class"),
                    (fact.get("subject") or "").strip().lower())
             proposals.append({

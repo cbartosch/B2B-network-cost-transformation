@@ -103,3 +103,63 @@ def test_the_flag_actually_stops_the_binding():
     assert "binding_conflict" in block
     assert block.index("binding_conflict") < block.index(
         "unit_conflicts_with_class")
+
+
+# ------------------- an agent that elaborates the class it was asked for
+def test_the_class_is_the_one_requested_not_the_one_returned():
+    """The sweep runs one call per fact class, so the class is already known.
+
+    The agent elaborated it: "Operating-model cost" came back as
+    "Operating-model cost - Selling, general and administrative expense",
+    66 characters into a 64-character column, and the insert failed with a
+    Postgres truncation error the analyst had no way to read.
+
+    Width was the symptom. An invented class breaks the register:
+    corroboration and the prefill dedupe both match on (fact_class, subject),
+    and the analyst cannot select that class by hand - so the fact could never
+    meet another about the same thing."""
+    source = (_app_domain() / "known_facts.py").read_text()
+    block = source[source.index('for i, fact in enumerate('):][:2000]
+    assert 'fact = {**fact, "fact_class": fact_class}' in block, (
+        "the requested class must override the returned one")
+    assert "class_as_returned" in block, (
+        "what the agent said must be recorded, not silently dropped")
+
+
+def test_the_elaboration_is_kept_as_a_note():
+    """"Selling, general and administrative expense" is real information about
+    the figure. Losing it is worse than keeping it - it just belongs in the
+    note, where it describes the number rather than naming its class."""
+    source = (_app_domain() / "known_facts.py").read_text()
+    block = source[source.index('for i, fact in enumerate('):][:2000]
+    assert 'fact["note"]' in block
+    for separator in (" - ", ": "):
+        assert repr(separator) in block or separator in block
+
+
+def test_an_over_long_field_is_refused_readably():
+    """StringDataRightTruncation is a wall of SQL and bound parameters that
+    tells an analyst nothing about what to change."""
+    import ast
+
+    # The whole function, not a guessed window. A 2,600-character slice
+    # reached the length check and stopped short of the insert 4,402
+    # characters in, so the ordering assertion had nothing to compare.
+    source = (_app_domain() / "known_facts.py").read_text()
+    register = next(n for n in ast.walk(ast.parse(source))
+                    if isinstance(n, ast.FunctionDef) and n.name == "register")
+    block = ast.unparse(register)
+
+    assert "too_long" in block
+    assert "characters and the register allows" in block
+    assert block.index("too_long") < block.index("insert("), (
+        "the length must be refused before the row is written")
+
+
+def _app_domain():
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1]
+    app = next(c for c in (root / "api_service" / "app", root / "app")
+               if (c / "domain").exists())
+    return app / "domain"
