@@ -62,9 +62,23 @@ with st.expander("Run research (LLM-01 / LLM-08)"):
         started = time.monotonic()
 
         for i, d in enumerate(pending, start=1):
-            status.write(f"({i}/{len(pending)}) {d['domain_no']}. "
-                         f"{d['domain_name']} - {d['agent_id']} "
-                         f"[{int(time.monotonic() - started)}s elapsed]")
+            # The elapsed figure was written here, before the call, so it
+            # showed the time at the START of this domain - 0s for the first
+            # one, and frozen for however long the provider took. A label that
+            # cannot move reads as a hung run, which is the one thing it was
+            # added to disprove.
+            #
+            # Streamlit cannot update a widget while a synchronous call is in
+            # flight, so the honest fix is not a live counter: it is to say
+            # what is happening and how long it is expected to take, and to
+            # report the real duration once it lands.
+            _done = int(time.monotonic() - started)
+            status.write(
+                f"({i}/{len(pending)}) {d['domain_no']}. "
+                f"{d['domain_name']} - {d['agent_id']} - searching and "
+                f"fetching now, usually one to three minutes"
+                + (f" ({i - 1} done in {_done // 60}m {_done % 60}s)"
+                   if i > 1 else ""))
             _t0 = time.monotonic()
             r = api.post(f"/v1/outside-in/cases/{case_id}/domain-research:run",
                          {"overwrite": overwrite, "domain_nos": [d["domain_no"]]},
