@@ -412,12 +412,13 @@ _DEFS = [
 
     PromptDefinition(
         prompt_id="llm09.benchmark.extract",
-        prompt_version="2.0.0", agent_id="LLM-09",
+        prompt_version="2.1.0", agent_id="LLM-09",
         task=("Structure the supplied source into individual benchmark "
               "observations. Extract and classify only: never convert a "
               "currency, annualise, average or infer a band. One observation "
               "per data point. Distinguish a quoted price from an incumbent "
-              "price being paid today."),
+              "price being paid today."
+              " Where the source qualifies the price - \"from GBP 250\", \"prices start at\", \"up to\" - put the number in value and the qualifier in value_qualifier as AT_LEAST, AT_MOST or APPROXIMATELY. An entry price recorded as a market price understates the rate card. Where the tariff offers a choice of terms, record which one the price belongs to in term_months_basis."),
         output_model=schemas.BenchmarkExtractionResult,
         evaluation_suite="conformance/benchmark"),
 ]

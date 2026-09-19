@@ -167,6 +167,10 @@ def extract(session, *, text: str, source_document: str,
                 r.get("product"), (None, None))[1],
             bandwidth_mbps=int(r["bandwidth_mbps"]) if r.get("bandwidth_mbps") else None,
             vendor=r.get("vendor"), value=value, unit=r.get("unit"),
+            # Stored, because a field the agent fills and the table drops is
+            # the defect this whole audit was looking for.
+            value_qualifier=(r.get("value_qualifier") or "EXACTLY"),
+            term_months_basis=r.get("term_months_basis"),
             currency=r.get("currency"),
             price_year=int(r["price_year"]) if r.get("price_year") else None,
             term_months=int(r["term_months"]) if r.get("term_months") else None,
@@ -262,7 +266,18 @@ def derive_bands(session, *, currency: str = "USD", price_year: int = 2026,
         # on a different term should still be able to use it, with the
         # adjustment visible.
         normalised, basis_warnings = [], []
+        # Qualified observations, kept apart from the points they would
+        # otherwise distort.
+        bounds = []
         for o in obs:
+            # An AT_LEAST observation is a floor, not a point. "From GBP 250"
+            # tells you the market does not go below 250; it says nothing
+            # about the middle or the top, and averaging it with exact
+            # observations pulls the band down towards an entry price.
+            qualifier = (getattr(o, "value_qualifier", None) or "EXACTLY")
+            if qualifier in ("AT_LEAST", "AT_MOST"):
+                bounds.append((qualifier, o.value))
+                continue
             adjusted = term_basis.normalise(o.value, basis={
                 "term_months": getattr(o, "term_months", None),
                 "taxes_included": (getattr(o, "tax_basis", None)

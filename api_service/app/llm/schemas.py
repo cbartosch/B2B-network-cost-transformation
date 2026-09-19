@@ -412,6 +412,19 @@ class EntityResolutionResult(Strict):
 class BenchmarkObservationOut(Strict):
     metric: str
     value: Decimal
+    # How the source states the price, on the same terms as a corroboration
+    # candidate.
+    #
+    # This feeds the rate card, and a tariff page is the likeliest place to
+    # meet a qualified figure: "from GBP 250 a month", "up to 1 Gbps", "prices
+    # start at". A Decimal with nowhere to put "from" fails the way
+    # known_fact.corroborate failed on "over 100" - three attempts, all
+    # rejected, and the observation lost.
+    #
+    # AT_LEAST is the common one here and it matters: an entry price read as a
+    # market price understates the card, and the card is what every European
+    # estate now derives from.
+    value_qualifier: ValueQualifier = ValueQualifier.EXACTLY
     unit: str | None = None
     country: str | None = None
     product: str | None = None
@@ -420,6 +433,11 @@ class BenchmarkObservationOut(Strict):
     currency: str | None = None
     price_year: int | None = None
     term_months: int | None = None
+    # A tariff usually offers a choice - "12, 24 or 36 months" - and the
+    # observed price belongs to one of them. The longest is the one a headline
+    # price is normally quoted against, so recording which was read stops a
+    # 36-month price being normalised as though it were a 12-month one.
+    term_months_basis: str | None = None
     tax_basis: str | None = None
     sla_compliant: bool | None = None
     as_of: str | None = None

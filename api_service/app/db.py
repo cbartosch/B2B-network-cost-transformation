@@ -793,6 +793,14 @@ benchmark_observation = Table(
     Column("vendor", String(120)),
     Column("value", Numeric(16, 4)), Column("unit", String(128)),
     Column("currency", String(3)), Column("price_year", Integer),
+    # How the source states the price. A tariff page is the likeliest place to
+    # meet a qualified figure - "from GBP 250", "prices start at", "up to" -
+    # and an entry price recorded as a market price understates the card that
+    # every European estate now derives from.
+    Column("value_qualifier", String(16), server_default="EXACTLY"),
+    # Which of the terms a tariff offers the price belongs to, where it offers
+    # a choice.
+    Column("term_months_basis", String(32)),
     Column("term_months", Integer), Column("tax_basis", String(24)),
     Column("sla_compliant", Boolean),
     # --- how it got here

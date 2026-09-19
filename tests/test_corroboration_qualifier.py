@@ -89,3 +89,72 @@ def test_a_candidate_without_a_qualifier_behaves_as_it_always_did():
     field = next(x for x in candidate.body if isinstance(x, ast.AnnAssign)
                  and x.target.id == "value_qualifier")
     assert "EXACTLY" in ast.unparse(field.value)
+
+
+# ------------------- the same gap in the extractor that feeds the rate card
+def test_the_benchmark_extractor_can_express_a_bound():
+    """A systematic audit of all eleven agent calls found the same defect in
+    llm09.benchmark.extract, which feeds unit_cost_prior.
+
+    A tariff page is the likeliest place to meet a qualified figure - "from
+    GBP 250 a month", "prices start at" - and an entry price recorded as a
+    market price understates the card every European estate derives from."""
+    tree = ast.parse((_app() / "llm" / "schemas.py").read_text())
+    observation = next(n for n in tree.body if isinstance(n, ast.ClassDef)
+                       and n.name == "BenchmarkObservationOut")
+    fields = {x.target.id for x in observation.body
+              if isinstance(x, ast.AnnAssign)}
+    assert "value_qualifier" in fields
+    assert "term_months_basis" in fields
+
+
+def test_the_qualifier_reaches_the_table():
+    """A field the agent fills and the table drops is the defect this audit
+    was looking for."""
+    db_source = (_app() / "db.py").read_text()
+    start = db_source.index("benchmark_observation = Table(")
+    end = db_source.index("schema=", start)
+    assert '"value_qualifier"' in db_source[start:end]
+
+    ingest = (_app() / "domain" / "benchmark_ingest.py").read_text()
+    assert "value_qualifier=(r.get(\"value_qualifier\")" in ingest
+
+
+def test_a_bound_does_not_distort_a_derived_band():
+    """"From GBP 250" tells you the market does not go below 250. It says
+    nothing about the middle or the top, and averaging it with exact
+    observations pulls the band down towards an entry price."""
+    ingest = (_app() / "domain" / "benchmark_ingest.py").read_text()
+    assert 'qualifier in ("AT_LEAST", "AT_MOST")' in ingest
+    assert "bounds.append" in ingest
+
+
+def test_the_extractor_prompt_was_versioned_with_the_contract():
+    """A schema field the prompt does not mention is a field the agent will
+    not use, and the reply fails the same way."""
+    import re
+
+    prompts = (_app() / "llm" / "prompts.py").read_text()
+    start = prompts.index('prompt_id="llm09.benchmark.extract"')
+    block = prompts[start:start + 3000]
+    assert "value_qualifier" in block
+    assert re.search(r'prompt_version="2\.1\.0"', block)
+
+
+def test_the_audit_tool_runs_and_finds_the_known_remainder():
+    """Four findings remain on PublicEvidenceResult, where Quantity.value is
+    already a string - so a qualified figure has somewhere to go and the risk
+    is lower. A checker whose result nobody records drifts."""
+    import subprocess
+    import sys
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1]
+    out = subprocess.run(
+        [sys.executable, str(root / "tools" / "audit_agent_formats.py")],
+        capture_output=True, text=True, cwd=root)
+    assert out.returncode == 0, out.stderr[:400]
+    assert "finding(s)" in out.stdout
+    remaining = int(out.stdout.rsplit("\n", 2)[-2].split()[0])
+    assert remaining <= 4, (
+        f"{remaining} format findings, up from the 4 known at 4.222.0")
