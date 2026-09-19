@@ -248,6 +248,19 @@ known_fact = Table(
     # which records what a later check concluded rather than what was supplied.
     Column("supplied_note", Text),
     Column("rights_cleared", Boolean, default=False),        # required when basis=PRIOR_ENGAGEMENT
+    # Why this fact cannot bind to what its class counts, if it cannot.
+    #
+    # "80 countries with active presence" was registered as a Location
+    # footprint and became 80 sites to allocate. The checks that refuse it now
+    # did not exist when it was stored, and a fact already in the register is
+    # not refused retroactively: it was asserted in good faith, an estimate may
+    # have been run on it, and unbinding it silently would change a number
+    # nobody was told about.
+    #
+    # So it is flagged. The fact stays, the binding stops, and the reason sits
+    # on the row where whoever registered it will see it.
+    Column("binding_conflict", Text),
+    Column("binding_conflict_found_at", DateTime(timezone=True)),
     Column("superseded_by", String(64)),
     Column("created_at", DateTime(timezone=True), default=_now),
     schema="outside_in",

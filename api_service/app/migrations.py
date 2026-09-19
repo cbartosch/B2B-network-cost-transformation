@@ -28,14 +28,14 @@ import logging
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import inspect, select, text
+from sqlalchemy import inspect, select, text, update
 
 from . import db
 
 log = logging.getLogger("workbench.migrations")
 
 # Bump when the physical schema changes, and add a step below.
-SCHEMA_VERSION = 60
+SCHEMA_VERSION = 61
 
 VERSION_TABLE = "schema_version"
 VERSION_SCHEMA = "audit"
@@ -1279,13 +1279,54 @@ def _migrate_v60(conn) -> None:
              bool(added), bool(added_basis))
 
 
+def _migrate_v61(conn) -> None:
+    """known_fact.binding_conflict - a fact that cannot count what its class says.
+
+    Existing facts are re-checked and flagged, not deleted. "80 countries with
+    active presence" became 80 sites to allocate, and an estimate may already
+    rest on it - so the binding stops and the reason is recorded where whoever
+    registered it will see it.
+
+    Facts that pass are left with a NULL flag, so a clean register is
+    indistinguishable from one that was never checked. Deliberate: a column
+    full of "OK" tells a reader nothing.
+    """
+    from datetime import datetime, timezone as _tz
+
+    from .domain import known_facts as _kf
+
+    added = _add_column(conn, db.known_fact, "binding_conflict")
+    _add_column(conn, db.known_fact, "binding_conflict_found_at")
+    if not added:
+        log.info("v61: binding_conflict already present")
+        return
+
+    flagged = 0
+    rows = conn.execute(select(
+        db.known_fact.c.known_fact_id, db.known_fact.c.fact_class,
+        db.known_fact.c.subject, db.known_fact.c.unit)).all()
+    for row in rows:
+        reason = (_kf.unit_conflicts_with_class(row.fact_class, row.unit)
+                  or _kf.subject_conflicts_with_class(row.fact_class,
+                                                      row.subject))
+        if not reason:
+            continue
+        conn.execute(update(db.known_fact)
+                     .where(db.known_fact.c.known_fact_id == row.known_fact_id)
+                     .values(binding_conflict=reason,
+                             binding_conflict_found_at=datetime.now(_tz.utc)))
+        flagged += 1
+    log.info("v61: %s of %s existing fact(s) flagged as unbindable",
+             flagged, len(rows))
+
+
 MIGRATIONS = {2: _migrate_v2, 3: _migrate_v3, 4: _migrate_v4, 5: _migrate_v5,
               6: _migrate_v6, 7: _migrate_v7, 8: _migrate_v8, 9: _migrate_v9,
               10: _migrate_v10, 11: _migrate_v11, 12: _migrate_v12,
               13: _migrate_v13, 14: _migrate_v14, 15: _migrate_v15,
               16: _migrate_v16, 17: _migrate_v17, 18: _migrate_v18,
               19: _migrate_v19, 20: _migrate_v20,
-              21: _migrate_v21, 22: _migrate_v22, 23: _migrate_v23, 24: _migrate_v24, 25: _migrate_v25, 26: _migrate_v26, 27: _migrate_v27, 28: _migrate_v28, 29: _migrate_v29, 30: _migrate_v30, 31: _migrate_v31, 32: _migrate_v32, 33: _migrate_v33, 34: _migrate_v34, 35: _migrate_v35, 36: _migrate_v36, 37: _migrate_v37, 38: _migrate_v38, 39: _migrate_v39, 40: _migrate_v40, 41: _migrate_v41, 42: _migrate_v42, 43: _migrate_v43, 44: _migrate_v44, 45: _migrate_v45, 46: _migrate_v46, 47: _migrate_v47, 48: _migrate_v48, 49: _migrate_v49, 50: _migrate_v50, 51: _migrate_v51, 52: _migrate_v52, 53: _migrate_v53, 54: _migrate_v54, 55: _migrate_v55, 56: _migrate_v56, 57: _migrate_v57, 58: _migrate_v58, 59: _migrate_v59, 60: _migrate_v60}
+              21: _migrate_v21, 22: _migrate_v22, 23: _migrate_v23, 24: _migrate_v24, 25: _migrate_v25, 26: _migrate_v26, 27: _migrate_v27, 28: _migrate_v28, 29: _migrate_v29, 30: _migrate_v30, 31: _migrate_v31, 32: _migrate_v32, 33: _migrate_v33, 34: _migrate_v34, 35: _migrate_v35, 36: _migrate_v36, 37: _migrate_v37, 38: _migrate_v38, 39: _migrate_v39, 40: _migrate_v40, 41: _migrate_v41, 42: _migrate_v42, 43: _migrate_v43, 44: _migrate_v44, 45: _migrate_v45, 46: _migrate_v46, 47: _migrate_v47, 48: _migrate_v48, 49: _migrate_v49, 50: _migrate_v50, 51: _migrate_v51, 52: _migrate_v52, 53: _migrate_v53, 54: _migrate_v54, 55: _migrate_v55, 56: _migrate_v56, 57: _migrate_v57, 58: _migrate_v58, 59: _migrate_v59, 60: _migrate_v60, 61: _migrate_v61}
 
 
 class SchemaDrift(RuntimeError):

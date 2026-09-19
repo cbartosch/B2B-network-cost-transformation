@@ -16,4 +16,4 @@ scripted rather than remembered, and `make check-identity` fails the build if
 they ever disagree.
 """
 
-BUILD = "4.224.0"
+BUILD = "4.225.0"

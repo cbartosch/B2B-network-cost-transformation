@@ -51,10 +51,25 @@ INCOMPATIBLE_UNITS = {
         "/year", "per year", "p.a.", "/month", "per month", "/mo", "annual",
         "users", "employees", "headcount", "fte", "staff",
         "mbps", "gbps", "mbit", "circuits", "%", "percent", "share",
+        # Other things a company counts.
+        #
+        # "80 countries with active presence" was registered as a Location
+        # footprint and became 80 sites to allocate - and because a count of
+        # countries is a count, none of the checks above saw anything wrong.
+        # The splitter then put all eighty in GB, which is what a single-row
+        # total does.
+        #
+        # AstraZeneca is in roughly 100 countries and has roughly 100 sites,
+        # so the number was close enough to look right. That is the hazard: a
+        # unit error between two counts is invisible in the figure.
+        "countries", "country", "markets", "territories", "jurisdictions",
+        "regions", "continents", "subsidiaries", "legal entities", "entities",
+        "brands", "products", "customers", "patients", "suppliers",
     ),
     "users": (
         "eur", "usd", "gbp", "chf", "currency", "cost", "spend", "revenue",
         "sites", "locations", "branches", "stores", "mbps", "gbps",
+        "countries", "country", "markets", "territories", "subsidiaries",
         "%", "percent", "share",
     ),
 }
@@ -133,6 +148,50 @@ def split_unit(unit) -> tuple:
     # No natural break - keep the head and carry the whole thing in the note,
     # so the record still says what the agent meant.
     return text[:UNIT_MAX].strip(), text
+
+
+# What a subject is counting, when the unit does not say.
+#
+# "80 countries with active presence" arrived as a Location footprint with no
+# unit - so the unit check saw nothing, the value was a plausible site count,
+# and eighty countries became eighty sites in one GB row.
+#
+# The subject is what the agent or the analyst actually wrote, and it is the
+# only place the mistake is visible. A phrase here does not refuse the fact by
+# itself; it refuses the binding of that fact to a site count, which is the
+# thing that goes wrong.
+SUBJECT_COUNTS_SOMETHING_ELSE = {
+    "sites": ("countr", "market", "territor", "jurisdiction", "region",
+              "continent", "subsidiar", "legal entit", "brand", "product",
+              "customer", "patient", "supplier", "employee", "headcount",
+              "staff", "revenue", "spend", "cost"),
+    "users": ("countr", "market", "site", "location", "branch", "store",
+              "facility", "facilit", "revenue", "spend", "cost"),
+}
+
+
+def subject_conflicts_with_class(fact_class: str, subject) -> str | None:
+    """The reason this subject is not what this class counts, or None.
+
+    Checked because the unit is optional and usually absent. A fact whose
+    subject says "countries with active presence" is a count of countries
+    however its unit is filled in, and Location footprint means sites.
+    """
+    driver = BINDABLE.get(fact_class)
+    if not driver:
+        return None
+    text = str(subject or "").strip().lower()
+    if not text:
+        return None
+    for token in SUBJECT_COUNTS_SOMETHING_ELSE.get(driver, ()):
+        if token in text:
+            return (
+                f"{fact_class!r} is a count of {driver}, and {subject!r} "
+                f"reads as a count of something else. A figure filed here "
+                f"becomes the site total the estimate allocates and prices, "
+                f"so it is refused rather than stored. If the subject is "
+                f"right, the class is wrong.")
+    return None
 
 
 def unit_conflicts_with_class(fact_class: str, unit) -> str | None:
@@ -225,6 +284,7 @@ def register(session, *, case_id: str, fact_class: str, subject: str,
             f"unit as supplied: {_qualification}")
 
     conflict = (unit_conflicts_with_class(fact_class, unit)
+                or subject_conflicts_with_class(fact_class, subject)
                 or value_implausible_for_class(fact_class, value_base,
                                                plausibility_bounds)
                 or value_implausible_for_class(fact_class, value_high,

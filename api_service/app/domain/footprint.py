@@ -525,7 +525,8 @@ def _best_footprint_fact(session, case_row) -> tuple:
     # that check exists already carry whatever was typed - and a disclosed cost
     # line read as a site count is the failure this whole chain is worst at
     # noticing, because every stage after it behaves correctly.
-    from .known_facts import (unit_conflicts_with_class,
+    from .known_facts import (subject_conflicts_with_class,
+                              unit_conflicts_with_class,
                               value_implausible_for_class)
 
     # Both checks, because they catch different mistakes. The unit check finds
@@ -545,7 +546,16 @@ def _best_footprint_fact(session, case_row) -> tuple:
         My own arity test excluded nested functions, which is exactly why it
         passed while this was broken.
         """
+        # A flag set by the migration that re-checked the register. It is
+        # first because it is the only one that carries a timestamp: whoever
+        # registered the fact can see when the model started refusing it,
+        # which a freshly computed reason cannot tell them.
+        stored = getattr(row, "binding_conflict", None)
+        if stored:
+            return stored
         return (unit_conflicts_with_class("Location footprint", row.unit)
+                or subject_conflicts_with_class("Location footprint",
+                                                row.subject)
                 or value_implausible_for_class("Location footprint",
                                                row.value_base))
 
