@@ -43,6 +43,16 @@ other is not, and a reader should be able to tell which figure came from where.
 # 41 of 42 were derived mechanically from the archetype. The exception is
 # noted where it sits, because an assignment made by reading should look
 # different from one made by matching.
+# Six codes moved from office-centric to campus-centric in 4.219.0.
+#
+# Each names a campus in its own benchmark row - R_D_CAMPUS, RESEARCH_CAMPUS,
+# ENGINEERING_CAMPUS or ENGINEERING_HUB - while office-centric put 53% of their
+# sites in branches. AstraZeneca was modelled with a branch network it does not
+# have, and the shape contradicted the benchmark beside it.
+#
+# Insurance and commercial real estate name an office and stay office-centric.
+# Investment banking names a trading floor and integrated oil a refinery; those
+# are different estates again and keep what they had.
 SHAPE_OF_BICS = {
     # Industrials: OPERATIONS_CENTER
     "AIRLINES": "network-centric",
@@ -51,7 +61,7 @@ SHAPE_OF_BICS = {
     # Consumer Discretionary: MANUFACTURING_PLANT
     "AUTOMOTIVE_OEM": "plant-centric",
     # Healthcare: RESEARCH_CAMPUS
-    "BIOTECHNOLOGY": "office-centric",
+    "BIOTECHNOLOGY": "campus-centric",
     # Communication Services: HEADEND
     "CABLE_OPERATOR": "network-centric",
     # Information Technology: DATA_CENTER
@@ -71,7 +81,7 @@ SHAPE_OF_BICS = {
     # Consumer Discretionary: FULFILLMENT_CENTER
     "E_COMMERCE": "few-large",
     # Financials: ENGINEERING_HUB
-    "FINTECH": "office-centric",
+    "FINTECH": "campus-centric",
     # Communication Services: CORE_SITE
     "FIXED_OPERATOR": "network-centric",
     # Consumer Staples: PLANT
@@ -99,7 +109,7 @@ SHAPE_OF_BICS = {
     # Financials: PROCESSING_CENTER
     "PAYMENT_NETWORKS": "network-centric",
     # Healthcare: R_D_CAMPUS
-    "PHARMACEUTICALS": "office-centric",
+    "PHARMACEUTICALS": "campus-centric",
     # Industrials: MEGA_CONTAINER_PORT
     "PORT": "few-large",
     # Industrials: OPERATIONS_CENTER
@@ -113,11 +123,11 @@ SHAPE_OF_BICS = {
     # produced this map had BRANCH in the wrong set.
     "RETAIL_BANKING": "network-centric",
     # Information Technology: ENGINEERING_CAMPUS
-    "SAAS": "office-centric",
+    "SAAS": "campus-centric",
     # Information Technology: FAB
     "SEMICONDUCTORS": "plant-centric",
     # Information Technology: ENGINEERING_CAMPUS
-    "SOFTWARE": "office-centric",
+    "SOFTWARE": "campus-centric",
     # Consumer Staples: STORE
     "SUPERMARKETS": "many-small",
     # Communication Services: TOWER_SITE
@@ -155,7 +165,7 @@ SHAPE_OF_BICS = {
     "STEEL": "plant-centric",
     # Industrials: ENGINEERING_CAMPUS. Design data rather than plant
     # telemetry, so office-centric despite the assembly sites. Airbus.
-    "AEROSPACE_DEFENSE": "office-centric",
+    "AEROSPACE_DEFENSE": "campus-centric",
     # Consumer Staples: PLANT. Closer to food manufacturing than to speciality
     # chemicals. Unilever and L'Oreal.
     "HOUSEHOLD_PERSONAL_CARE": "plant-centric",

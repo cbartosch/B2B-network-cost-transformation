@@ -1697,6 +1697,22 @@ ARCHETYPES = [
     ("WAREHOUSE", 60, 100, "0.45", "DIA", "BROADBAND_HFC", "0.50"),
     ("DC", 0, 10000, "1.00", "ETHERNET", "ETHERNET", "0.30"),
     ("STORE", 12, 50, "0.35", "BROADBAND_HFC", "MOBILE_5G", "0.50"),
+    # A research, engineering or manufacturing campus.
+    #
+    # Not a big office and not a data centre. A DC has no users and bursts; a
+    # campus has thousands of people AND the compute they use, so it carries
+    # both a high committed rate and a platform layer a data hall gets none of.
+    #
+    # Every figure except the user count comes from the benchmark's own campus
+    # rows rather than from judgement: R_D_CAMPUS, RESEARCH_CAMPUS and
+    # ENGINEERING_CAMPUS all sit at 10.5 Gbps with a committed share of 0.9 to
+    # 1.0 and criticality Tier 1, which is a dual-access probability of 1.00.
+    # Capped at 10 Gbps because that is the top tier the rate card quotes.
+    #
+    # 5,000 users is the one invented number, and it is the number a real
+    # engagement replaces first: a campus is one footprint row carrying a
+    # workforce, so the platform layers scale off it.
+    ("CAMPUS", 5000, 10000, "1.00", "ETHERNET", "ETHERNET", "0.95"),
 ]
 
 # Platform unit costs. These were code constants in an earlier revision, which

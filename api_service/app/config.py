@@ -139,7 +139,11 @@ LLM_SEARCH_TIMEOUT_SECONDS = float(
 # and which cost layers and nothing about what a site is, so a footprint of
 # 5,230 was unanswerable - and a published store count could not be reconciled
 # against it because nobody had written the rule down.
-SIMULATION_MODEL_VERSION = "sim-1.17.0"
+# sim-1.18.0: a CAMPUS archetype and a campus-centric estate shape. Six BICS codes
+# name a campus in their own benchmark row while office-centric put 53% of
+# their sites in branches - so AstraZeneca was modelled with a branch network
+# it does not have, and the shape contradicted the benchmark beside it.
+SIMULATION_MODEL_VERSION = "sim-1.18.0"
 # calc-1.1.0: the saving band is accumulated with matched pairing rather than
 # derived as current - target. The target is a function of the current, so
 # subtracting the two crossed bounds a second time and produced worlds that

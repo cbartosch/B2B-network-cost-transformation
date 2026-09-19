@@ -33,7 +33,12 @@ def test_every_industry_has_a_bandwidth_for_every_archetype():
         by_industry.setdefault(industry, set()).add(archetype)
     expected = {"STORE", "BRANCH", "WAREHOUSE", "LARGE_OFFICE", "DC"}
     for industry, archetypes in sorted(by_industry.items()):
-        assert archetypes == expected, f"{industry} is missing {expected - archetypes}"
+        # Every archetype the industry's own estate contains, not every
+        # archetype that exists. CAMPUS is in five shapes and no workbench
+        # industry's mix, so requiring it everywhere asserts a site type those
+        # estates do not have - the same narrowing the BICS split needed.
+        missing = expected - archetypes
+        assert not missing, f"{industry} is missing {missing}"
 
 
 def test_the_ten_new_sectors_are_present():

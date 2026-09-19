@@ -42,7 +42,11 @@ def test_the_shape_follows_the_site_archetype_not_the_industry_name():
     assert bics.shape_for("SEMICONDUCTORS") == "plant-centric"
     assert bics.shape_for("GOLD_MINING") == "plant-centric"
     assert bics.shape_for("INVESTMENT_BANKING") == "office-centric"
-    assert bics.shape_for("SAAS") == "office-centric"
+    # SAAS moved to campus-centric in 4.219.0: its benchmark row names an
+    # ENGINEERING_CAMPUS, and office-centric put 53% of its sites in branches.
+    # Investment banking above keeps office-centric because its row names a
+    # trading floor, not a campus - which is the distinction this test is for.
+    assert bics.shape_for("SAAS") == "campus-centric"
     assert bics.shape_for("TOWER_COMPANY") == "network-centric"
     assert bics.shape_for("MOBILE_OPERATOR") == "network-centric"
 
@@ -168,3 +172,60 @@ def test_steel_is_not_forestry():
     # Same archetype, different industry - which is the point: a shared estate
     # shape is not a shared industry.
     assert bics.shape_for("STEEL") == bics.shape_for("FORESTRY_PAPER")
+
+
+# ------------------------------------------- the campus estate
+def test_a_campus_estate_has_no_branch_network():
+    """AstraZeneca was modelled with a branch network it does not have.
+
+    office-centric puts 53% of its sites in BRANCH, and the pharmaceutical
+    benchmark row names R_D_CAMPUS as the representative site - so the shape
+    was contradicting the benchmark beside it."""
+    from app.domain import industries
+
+    campus = industries.SHAPES["campus-centric"]
+    assert not any(a == "BRANCH" for a, _b, _s in campus)
+    assert any(a == "CAMPUS" for a, _b, _s in campus)
+
+
+def test_only_the_codes_whose_benchmark_names_a_campus_are_campus_centric():
+    """Decided from the benchmark, not the industry name. Insurance and
+    commercial real estate name an office; investment banking names a trading
+    floor and integrated oil a refinery. Those are different estates."""
+    from app.domain import bics, industry_benchmark as benchmark
+
+    archetype_of = {r["industry_code"]: r["archetype_code"]
+                    for r in benchmark.seeded()["rows"]}
+    for code, shape in bics.SHAPE_OF_BICS.items():
+        names_campus = "CAMPUS" in (archetype_of.get(code) or "") \
+            or "HUB" in (archetype_of.get(code) or "")
+        if shape == "campus-centric":
+            assert names_campus, (
+                f"{code} is campus-centric and its benchmark names "
+                f"{archetype_of.get(code)}")
+
+
+def test_a_campus_is_priced_like_a_campus_not_an_office():
+    """A campus carries a workforce and the compute it uses. Pricing it beside
+    a large office would understate it by an order of magnitude."""
+    from app.seed import ARCHETYPE_BANDWIDTH
+
+    rates = {(i, a): m for i, a, m in ARCHETYPE_BANDWIDTH}
+    campus = rates.get(("PHARMACEUTICALS", "CAMPUS"))
+    office = rates.get(("PHARMACEUTICALS", "LARGE_OFFICE"))
+    assert campus and office and campus >= office * 5
+
+
+def test_the_campus_prior_is_a_dc_with_people_on_it():
+    """Not a big office and not a data hall. A DC has no users and bursts; a
+    campus has thousands of people AND the compute they use, so it carries a
+    high committed rate and a platform layer a data hall gets none of."""
+    from app.seed import ARCHETYPES
+
+    priors = {row[0]: row for row in ARCHETYPES}
+    campus, dc = priors["CAMPUS"], priors["DC"]
+    assert campus[1] > 1000, "a campus has a workforce"
+    assert dc[1] == 0, "a data centre does not"
+    assert campus[2] == dc[2], "both sit at the top bandwidth tier"
+    assert float(campus[6]) > float(dc[6]), (
+        "a campus sustains load where a data hall bursts")

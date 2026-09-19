@@ -146,6 +146,34 @@ SHAPES = {
         ("WAREHOUSE", "SUBURBAN", "0.0250"),
         ("LARGE_OFFICE", "URBAN", "0.0100"), ("DC", "URBAN", "0.0050"),
     ],
+    "campus-centric": [
+        # A handful of very large research, engineering or manufacturing
+        # campuses, the offices around them, and a data centre.
+        #
+        # No BRANCH at all, which is the point. office-centric puts 53% of its
+        # sites in branches, so AstraZeneca was modelled with a branch network
+        # it does not have - and its own benchmark row names R_D_CAMPUS as the
+        # representative site, so the shape contradicted the benchmark beside
+        # it.
+        #
+        # Six BICS codes name a campus in their benchmark row: pharmaceuticals,
+        # biotechnology, aerospace and defence, software, SaaS and fintech.
+        # Insurance and commercial real estate name an office and keep
+        # office-centric; investment banking names a trading floor and
+        # integrated oil a refinery, which are their own shapes.
+        #
+        # Half campus, 40% office, 10% data centre: a campus estate is a small
+        # number of very large sites, which is what makes it expensive per site
+        # and cheap per user.
+        ("CAMPUS", "DENSE_URBAN", "0.1500"),
+        ("CAMPUS", "URBAN", "0.2000"),
+        # Suburban because a research or manufacturing campus is usually out of
+        # town - land, and in pharma distance from anything it might harm.
+        ("CAMPUS", "SUBURBAN", "0.1500"),
+        ("LARGE_OFFICE", "DENSE_URBAN", "0.1500"),
+        ("LARGE_OFFICE", "URBAN", "0.2500"),
+        ("DC", "DENSE_URBAN", "0.0600"), ("DC", "URBAN", "0.0400"),
+    ],
     "few-large": [
         # A handful of enormous sites. The office is the terminal or the
         # operations centre; there is no store layer at all.
@@ -201,17 +229,23 @@ SHAPES = {
 # The sectors that genuinely need more are exactly the ones flagged POOR, and
 # their caveat already says the archetype is wrong for them. A 100G figure
 # would add a second error rather than fix the first.
+# CAMPUS sits at 10 Gbps in every shape.
+#
+# The benchmark's own campus rows - R_D_CAMPUS, RESEARCH_CAMPUS,
+# ENGINEERING_CAMPUS - are all 10.5 Gbps, capped at the top tier the rate card
+# quotes. It is the same figure in every shape because a research campus is a
+# research campus whether the company also runs stores or refineries.
 SHAPE_BANDWIDTH = {
     "many-small":     {"STORE": 50, "BRANCH": 100, "WAREHOUSE": 100,
-                       "LARGE_OFFICE": 500, "DC": 10000},
+                       "LARGE_OFFICE": 500, "CAMPUS": 10000, "DC": 10000},
     "few-large":      {"STORE": 100, "BRANCH": 500, "WAREHOUSE": 1000,
-                       "LARGE_OFFICE": 10000, "DC": 10000},
+                       "LARGE_OFFICE": 10000, "CAMPUS": 10000, "DC": 10000},
     "plant-centric":  {"STORE": 50, "BRANCH": 100, "WAREHOUSE": 500,
-                       "LARGE_OFFICE": 1000, "DC": 10000},
+                       "LARGE_OFFICE": 1000, "CAMPUS": 10000, "DC": 10000},
     "office-centric": {"STORE": 50, "BRANCH": 100, "WAREHOUSE": 100,
-                       "LARGE_OFFICE": 1000, "DC": 10000},
+                       "LARGE_OFFICE": 1000, "CAMPUS": 10000, "DC": 10000},
     "network-centric": {"STORE": 100, "BRANCH": 1000, "WAREHOUSE": 500,
-                        "LARGE_OFFICE": 10000, "DC": 10000},
+                        "LARGE_OFFICE": 10000, "CAMPUS": 10000, "DC": 10000},
 }
 
 # The highest tier the seeded rate card prices. A bandwidth above this is
