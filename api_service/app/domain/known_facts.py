@@ -647,9 +647,28 @@ def _compare_candidates(*, asserted, unit, currency, candidates, tolerance):
                  "note": c.get("comparison_notes")})
             continue
         got_unit = (c.get("unit") or "").strip().lower()
+        # A qualified figure is a bound, not a point.
+        #
+        # A source saying "over 100" corroborates an asserted 340 - it is
+        # consistent with it - and comparing 100 against 340 would call the
+        # assertion contradicted by a source that says no such thing.
+        #
+        # Defaults to EXACTLY, so a candidate from before the qualifier
+        # existed behaves exactly as it did.
+        qualifier = (c.get("value_qualifier") or "EXACTLY").upper()
         row = {"publisher": c.get("publisher"), "url": c.get("url"),
                "value": float(value), "unit": c.get("unit"),
-               "as_of": c.get("as_of")}
+               "qualifier": qualifier, "as_of": c.get("as_of")}
+        if qualifier == "AT_LEAST" and target >= D(value):
+            detail.setdefault("consistent_bound", []).append(
+                {**row, "note": f"states at least {value}, and {asserted} "
+                                f"is not less than that"})
+            continue
+        if qualifier == "AT_MOST" and target <= D(value):
+            detail.setdefault("consistent_bound", []).append(
+                {**row, "note": f"states at most {value}, and {asserted} "
+                                f"is not more than that"})
+            continue
         if want_unit and got_unit and got_unit != want_unit:
             detail["other_unit"].append(row)
             continue

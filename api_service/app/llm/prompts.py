@@ -293,7 +293,7 @@ _DEFS = [
 
     PromptDefinition(
         prompt_id="known_fact.corroborate",
-        prompt_version="2.1.0", agent_id="LLM-01",
+        prompt_version="2.2.0", agent_id="LLM-01",
         task=("Search for public sources that state the asserted value for the "
               "named subject, then return what each one says. Do not judge "
               "whether the assertion is corroborated - that comparison is made "
@@ -309,7 +309,13 @@ _DEFS = [
               "subsidiary pages; business directories and registry listings; "
               "and trade press covering openings and closures. If the "
               "sources give a range or disagree, return each as its own "
-              "candidate with what it says - do not average them."),
+              "candidate with what it says - do not average them. "
+              "Where a source qualifies the figure - \"over 100 sites\", "
+              "\"more than 5,000\", \"approximately 300\" - put the number in "
+              "public_value and the qualifier in value_qualifier as AT_LEAST, "
+              "AT_MOST or APPROXIMATELY. Do not put words in public_value and "
+              "do not drop the qualifier: \"over 100\" recorded as 100 "
+              "understates the estate by however much \"over\" was doing."),
         output_model=schemas.CorroborationResult,
         tool_policy=ToolPolicy.WEB_SEARCH,
         evaluation_suite="conformance/corroboration"),

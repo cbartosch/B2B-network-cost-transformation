@@ -222,6 +222,22 @@ class AdvisoryNarrative(Strict):
     narrative: str
 
 
+# How a source states a number it does not state precisely.
+#
+# AT_LEAST for "over 100" and "more than 5,000"; AT_MOST for "fewer than";
+# APPROXIMATELY for "around" and "roughly"; EXACTLY when the source gives the
+# figure plainly.
+#
+# A bound is not a worse figure than a point - it is a different claim, and
+# reporting it as a point is the error. "Over 100 sites" read as 100 sites
+# understates an estate by however much the word "over" was doing.
+class ValueQualifier(str, Enum):
+    EXACTLY = "EXACTLY"
+    AT_LEAST = "AT_LEAST"          # "over 100", "more than 5,000"
+    AT_MOST = "AT_MOST"            # "fewer than", "up to"
+    APPROXIMATELY = "APPROXIMATELY"  # "around", "roughly", "circa"
+
+
 # --------------------------------------------------- known-fact corroboration
 class CorroborationCandidate(Strict):
     url: str
@@ -235,6 +251,20 @@ class CorroborationCandidate(Strict):
     figure_basis: FigureBasis | None = None
 
     public_value: Decimal | None = None
+    # How the source states the figure.
+    #
+    # A run failed closed on "over 100" three times: the agent found a source
+    # saying "over 100 sites" and had nowhere to put the "over". That is a
+    # lower bound, which is real evidence and the commonest way an annual
+    # report states a count - "more than", "approximately", "in excess of".
+    #
+    # Coercing it to 100 drops the word and understates; rejecting it loses the
+    # source entirely. Both are worse than recording the bound, and this model
+    # already reasons in low/base/high everywhere else.
+    #
+    # Defaults to EXACTLY, so a reply that omits it is read as a precise figure
+    # - which is what every reply before this one meant.
+    value_qualifier: ValueQualifier = ValueQualifier.EXACTLY
     unit: str | None = None
     currency: str | None = None
     exact_excerpt: str | None = None
