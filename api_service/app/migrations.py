@@ -1541,7 +1541,65 @@ def ensure(engine=None) -> dict:
         log.info("schema migrated %s -> %s (steps: %s)", found, SCHEMA_VERSION, applied)
     else:
         log.info("schema at version %s (%s)", SCHEMA_VERSION, how)
+
+    # A fresh database when backups exist is almost always a lost volume.
+    #
+    # This logged one line among twenty and seeded an empty world. `docker
+    # compose down -v` drops the volume and appears in this project's own
+    # troubleshooting notes as a way past a schema problem, so the database
+    # comes back with the same name and no rows - and the only sign was the
+    # words "(fresh database)" in a startup log nobody reads until something
+    # is missing.
+    #
+    # Said loudly here because this is the one moment the difference is
+    # knowable: a first run has no backups, and a lost volume usually does.
+    if how == "fresh database":
+        report["fresh_database"] = True
+        report["restorable_backups"] = _count_backups()
+        # Warned unconditionally, not only when backups are visible.
+        #
+        # The API runs in a container and the backups sit on the host, so the
+        # count is 0 in exactly the deployment where this matters. Making the
+        # warning conditional on seeing them would silence it precisely when
+        # it is needed.
+        #
+        # This cannot tell a first run from a lost volume - both are an empty
+        # database - so it says which it would be and lets the operator
+        # decide, rather than guessing and being wrong half the time.
+        found_here = report["restorable_backups"]
+        log.warning(
+            "this database is EMPTY - no tables existed before this start. "
+            "If this is a first run, that is expected. If it is not, a volume "
+            "was dropped (`docker compose down -v` does this) and every case "
+            "is gone: restore with `python tools/backup_cases.py restore "
+            "--dir ./case-backups --same-ids` BEFORE entering anything, "
+            "because a restore mints new ids once the register is no longer "
+            "empty.%s",
+            f" {found_here} backup file(s) visible from here."
+            if found_here else
+            " No backup files visible from this process - they are on the "
+            "host, so check ./case-backups there.")
     return report
+
+
+def _count_backups() -> int:
+    """How many case backup files are sitting next to the repository.
+
+    Best effort and never raises: a missing directory, an unreadable one or a
+    path this process cannot see all mean the same thing here - no backups to
+    mention - and a startup path is the wrong place to fail over a warning.
+    """
+    import pathlib as _pathlib
+
+    for candidate in (_pathlib.Path("case-backups"),
+                      _pathlib.Path(__file__).resolve().parents[2]
+                      / "case-backups"):
+        try:
+            if candidate.is_dir():
+                return len(list(candidate.glob("*.json")))
+        except OSError:
+            continue
+    return 0
 
 
 def status(engine=None) -> dict:

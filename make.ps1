@@ -158,6 +158,34 @@ switch ($Target) {
         if (-not (Test-Path $Path)) {
             throw "No such file: $Path`nCheck the name - browsers rename .bundle downloads."
         }
+
+        <#
+        Back up every case before merging anything.
+
+        A merge is followed by `docker compose up --build` and a re-seed, and
+        somewhere in that sequence a volume gets dropped - `down -v` appears in
+        this project's own troubleshooting notes as a way past a schema
+        problem. Eleven bundles were merged in one day with no backup between
+        them, and the only file in ./case-backups was three weeks old.
+
+        Best effort: a backup that cannot run must not stop a merge. The API
+        may legitimately be down, and refusing to merge because of that would
+        make this the thing operators route around.
+        #>
+        try {
+            $py = Get-Python
+            Write-Host ""
+            Write-Host "Backing up cases before merging..." -ForegroundColor Cyan
+            & $py 'tools/backup_cases.py' 'backup' '--out' './case-backups'
+            if ($LASTEXITCODE -ne 0) {
+                Write-Host "  Backup did not complete. Merging anyway - your cases are not saved." -ForegroundColor Yellow
+            }
+        } catch {
+            Write-Host "  Could not back up ($($_.Exception.Message))." -ForegroundColor Yellow
+            Write-Host "  Merging anyway. If the API is up, run this first:" -ForegroundColor Yellow
+            Write-Host "    python tools/backup_cases.py backup --out ./case-backups"
+        }
+
         & git bundle verify $Path
         if ($LASTEXITCODE -ne 0) {
             throw "That file is not a valid git bundle. If it was downloaded, it may " +
