@@ -197,7 +197,7 @@ class PromptDefinition:
 _DEFS = [
     PromptDefinition(
         prompt_id="llm01.public_evidence.extract",
-        prompt_version="2.6.0", agent_id="LLM-01",
+        prompt_version="2.7.0", agent_id="LLM-01",
         task=("Research one input domain of an outside-in enterprise network "
               "cost estimate for the named entity. Search before answering, "
               "and return everything you find with its provenance - a thin "

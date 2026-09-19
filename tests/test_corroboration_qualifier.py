@@ -220,7 +220,9 @@ def test_the_instruction_keeps_its_intent_and_gains_a_ceiling():
     # reply and left it three times over budget.
     assert "at most 10 quantities" in block
     assert "never the ones you find most convincing" in block
-    assert re.search(r'prompt_version="2\.6\.0"', block)
+    # 2.7.0: the caps now coerce instead of rejecting, which changes what the
+    # agent can expect back from a reply that overshoots.
+    assert re.search(r'prompt_version="2\.7\.0"', block)
 
 
 def test_the_llm01_reply_fits_inside_its_budget():
@@ -278,3 +280,46 @@ def test_the_governed_budget_gives_the_reply_room():
     # the sweep stays where 4.147 put it: one call per fact class, and a
     # larger budget there invites back the five-at-once reply it replaced
     assert int(budgets["max_output_tokens_per_sweep_call"]) == 6000
+
+
+def test_a_length_cap_coerces_rather_than_rejects():
+    """Bounding llm01 in 4.224.0 made a complete answer unusable.
+
+    The agent returned nine good sources and a 1,600-character finding, and
+    every attempt was rejected for the excess - three failures in a row, the
+    domain abandoned, and a hundred characters the reason.
+
+    A cap has two jobs that pull apart: in the JSON schema it guides
+    generation, which is what stops a reply growing until it truncates; as a
+    validation rule it throws the answer away. It must do the first and not
+    the second."""
+    source = (_app() / "llm" / "schemas.py").read_text()
+    assert "_fit_declared_limits" in source
+    assert 'model_validator(mode="before")' in source
+    # on the base class, so every nested model inherits it - sources.8.excerpt
+    # was one of the three errors
+    base = source[source.index("class Strict(BaseModel):"):]
+    assert "_fit_declared_limits" in base[:3000]
+
+
+def test_trimming_is_visible():
+    """Silently shortened evidence is worse than obviously shortened
+    evidence: a reader has to be able to tell a quote ended from a quote that
+    was cut."""
+    source = (_app() / "llm" / "schemas.py").read_text()
+    block = source[source.index("def _fit_declared_limits"):][:1600]
+    assert "\\u2026" in block or "…" in block
+
+
+def test_the_limit_still_reaches_the_provider():
+    """The cap has to stay in the JSON schema, or the model stops aiming for
+    it and the reply grows until it truncates - which is the failure the cap
+    was added to prevent."""
+    source = (_app() / "llm" / "schemas.py").read_text()
+    # still declared as Field(max_length=...), which is what
+    # model_json_schema() renders as maxLength
+    assert "max_length=1500" in source
+    assert "max_length=EXCERPT_MAX" in source
+    assert "_declared_max" in source, (
+        "the validator must read the declared limit, not a parallel table "
+        "that would go stale")

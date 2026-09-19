@@ -578,6 +578,19 @@ def class_attributes_a_classmethod_reads_exist() -> list:
                         if isinstance(item, ast.AnnAssign)}
             methods = {item.name for item in node.body
                        if isinstance(item, ast.FunctionDef)}
+            # Attributes a base class provides. This flagged
+            # `cls.model_fields` on a pydantic model, which BaseModel defines
+            # - the check reads one class at a time and cannot see up the
+            # hierarchy, and a checker that reports a working line is one
+            # people stop reading.
+            #
+            # Named rather than "skip anything with a base", because the
+            # defect it catches - ConfidencePolicy losing five class
+            # constants - was on a class with a base too.
+            if any(ast.unparse(base).endswith(("BaseModel", "Strict", "Enum"))
+                   for base in node.bases):
+                methods |= {"model_fields", "model_config", "model_validate",
+                            "model_dump", "model_json_schema", "__fields__"}
             used = {n.attr for n in ast.walk(node)
                     if isinstance(n, ast.Attribute)
                     and getattr(n.value, "id", "") == "cls"}

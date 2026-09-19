@@ -23,7 +23,20 @@ is a stronger control than validating it away afterwards.
 from decimal import Decimal
 from enum import Enum
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
+
+
+def _declared_max(field) -> int | None:
+    """The max_length a field declares, whether string or list.
+
+    Read from the field's own metadata rather than kept in a parallel table,
+    which would be one more thing to leave stale.
+    """
+    for entry in getattr(field, "metadata", ()):
+        value = getattr(entry, "max_length", None)
+        if isinstance(value, int):
+            return value
+    return None
 
 
 class Strict(BaseModel):
@@ -34,6 +47,42 @@ class Strict(BaseModel):
     again. Enforcing it here means the guarantee holds whoever answered.
     """
     model_config = ConfigDict(extra="forbid")
+
+    @model_validator(mode="before")
+    @classmethod
+    def _fit_declared_limits(cls, data):
+        """Trim over-long strings and lists rather than rejecting the reply.
+
+        A length cap has two jobs and they pull apart. In the JSON schema sent
+        to the provider it guides generation, which is what stops a reply
+        growing until it truncates. As a validation rule it throws the whole
+        answer away.
+
+        Bounding llm01 in 4.224.0 did both: the agent returned nine good
+        sources and a 1,600-character finding, and every attempt was rejected
+        for the excess - so a complete answer was lost to a hundred characters
+        and the domain failed three times over.
+
+        Coerced here instead. The limit still reaches the provider through
+        `model_json_schema()`, so the model still aims for it; what arrives is
+        made to fit rather than refused. Truncation is visible - a trimmed
+        string ends in an ellipsis - because silently shortened evidence is
+        worse than obviously shortened evidence.
+        """
+        if not isinstance(data, dict):
+            return data
+        for name, field in cls.model_fields.items():
+            if name not in data or data[name] is None:
+                continue
+            limit = _declared_max(field)
+            if limit is None:
+                continue
+            value = data[name]
+            if isinstance(value, str) and len(value) > limit:
+                data[name] = value[:max(0, limit - 1)].rstrip() + "\u2026"
+            elif isinstance(value, list) and len(value) > limit:
+                data[name] = value[:limit]
+        return data
 
 
 class AbstentionReason(str, Enum):
