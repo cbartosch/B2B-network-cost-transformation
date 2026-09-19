@@ -161,15 +161,36 @@ class Quantity(Strict):
     vendor: str | None = None
     term_months: int | None = None
     technology: str | None = None
-    candidates: list[QuantityCandidate] = Field(default_factory=list)
+    candidates: list[QuantityCandidate] = Field(default_factory=list,
+                                                max_length=6)
+    # How many more sources stated this figure than could be returned. The
+    # instruction is to list every one and not to average them; the cap is
+    # what makes that finite, and this is what says the cap was reached.
+    candidates_omitted: int = 0
 
 
 class PublicEvidenceResult(Strict):
     found: bool
     subject: str | None = None
     finding: str | None = None
-    quantities: list[Quantity] = Field(default_factory=list)
-    sources: list[SourceRef] = Field(default_factory=list)
+    # Bounded, because the list nests: quantities x candidates grows
+    # multiplicatively and truncated at 8,000 tokens after 114 seconds on the
+    # company-profile domain. Raising the budget moves where it truncates; it
+    # does not make an unbounded reply finite.
+    #
+    # The instruction to return every source and not to average them is right
+    # and is kept - what it lacked was a ceiling and a way to say it had been
+    # reached.
+    quantities: list[Quantity] = Field(default_factory=list, max_length=12)
+    # How many more the agent found and could not return. A thin answer
+    # because the market is thin and a thin answer because the cap was hit are
+    # different findings, and only the second is worth another call.
+    # How many more the agent found and could not return. A thin answer
+    # because the market is thin and a thin answer because the cap was hit are
+    # different findings, and only the second is worth another call.
+    quantities_omitted: int = 0
+    sources: list[SourceRef] = Field(default_factory=list,
+                                     max_length=20)
     confidence_note: str | None = None
     abstention_reason: AbstentionReason | None = None
 

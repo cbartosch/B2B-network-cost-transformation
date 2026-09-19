@@ -197,7 +197,7 @@ class PromptDefinition:
 _DEFS = [
     PromptDefinition(
         prompt_id="llm01.public_evidence.extract",
-        prompt_version="2.4.0", agent_id="LLM-01",
+        prompt_version="2.5.0", agent_id="LLM-01",
         task=("Research one input domain of an outside-in enterprise network "
               "cost estimate for the named entity. Search before answering, "
               "and return everything you find with its provenance - a thin "
@@ -212,7 +212,8 @@ _DEFS = [
               "find less convincing: the spread and the vintage range are "
               "computed downstream and are usually more informative than any "
               "single figure. Three sources saying 341, 371 and 400 is a "
-              "better answer than one saying 371."),
+              "better answer than one saying 371."
+              "\n Return at most 12 quantities, at most 6 candidates each and at most 20 sources. Where you found more, keep the most recent and the most distinct - never the ones you find most convincing - and put how many you left out in quantities_omitted and candidates_omitted. A thin answer because the market is thin and a thin answer because the cap was reached are different findings, and only the second is worth another call."),
         output_model=schemas.PublicEvidenceResult,
         tool_policy=ToolPolicy.WEB_SEARCH,
         evaluation_suite="conformance/public_evidence"),

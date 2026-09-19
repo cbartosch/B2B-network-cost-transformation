@@ -156,5 +156,63 @@ def test_the_audit_tool_runs_and_finds_the_known_remainder():
     assert out.returncode == 0, out.stderr[:400]
     assert "finding(s)" in out.stdout
     remaining = int(out.stdout.rsplit("\n", 2)[-2].split()[0])
-    assert remaining <= 4, (
-        f"{remaining} format findings, up from the 4 known at 4.222.0")
+    # 20 at 4.223.0: 4 loose numeric fields on PublicEvidenceResult, where
+    # Quantity.value beside them is already a string, and 16 unbounded lists
+    # across six prompts. The one that actually truncated is fixed; the rest
+    # are the same failure waiting for a large enough answer.
+    #
+    # A ceiling rather than a target. It must not grow unnoticed, and lowering
+    # it is the work.
+    assert remaining <= 20, (
+        f"{remaining} format findings, up from the 20 known at 4.223.0")
+
+
+# ---------------------- an unbounded reply truncates at any budget
+def test_the_public_evidence_reply_is_bounded():
+    """llm01.public_evidence.extract was cut off at 8,000 tokens after 114
+    seconds - the governed budget, working correctly since 4.192.0.
+
+    The reply nests: quantities x candidates grows multiplicatively, and the
+    prompt said "return everything you find", "put every number", "list EVERY
+    one". The agent was doing exactly what it was told. Raising the budget
+    moves where it truncates; only a bound makes the reply finite."""
+    tree = ast.parse((_app() / "llm" / "schemas.py").read_text())
+    for cls, field in (("PublicEvidenceResult", "quantities"),
+                       ("PublicEvidenceResult", "sources"),
+                       ("Quantity", "candidates")):
+        node = next(n for n in tree.body
+                    if isinstance(n, ast.ClassDef) and n.name == cls)
+        spec = next(x for x in node.body if isinstance(x, ast.AnnAssign)
+                    and x.target.id == field)
+        assert "max_length" in ast.unparse(spec.value), f"{cls}.{field}"
+
+
+def test_the_cap_being_reached_is_reported():
+    """A thin answer because the market is thin and a thin answer because the
+    cap was hit are different findings, and only the second is worth another
+    call. Without a counter they look identical."""
+    tree = ast.parse((_app() / "llm" / "schemas.py").read_text())
+    result = next(n for n in tree.body if isinstance(n, ast.ClassDef)
+                  and n.name == "PublicEvidenceResult")
+    quantity = next(n for n in tree.body if isinstance(n, ast.ClassDef)
+                    and n.name == "Quantity")
+    assert "quantities_omitted" in {x.target.id for x in result.body
+                                    if isinstance(x, ast.AnnAssign)}
+    assert "candidates_omitted" in {x.target.id for x in quantity.body
+                                    if isinstance(x, ast.AnnAssign)}
+
+
+def test_the_instruction_keeps_its_intent_and_gains_a_ceiling():
+    """"Do not average them, pick between them or drop the ones you find less
+    convincing" is right - the spread and the vintage are more informative
+    than any single figure. What it lacked was a ceiling and a way to say the
+    ceiling had been reached."""
+    import re
+
+    prompts = (_app() / "llm" / "prompts.py").read_text()
+    start = prompts.index('prompt_id="llm01.public_evidence.extract"')
+    block = prompts[start:start + 3600]
+    assert "Do not average them" in block, "the original intent must survive"
+    assert "at most 12 quantities" in block
+    assert "never the ones you find most convincing" in block
+    assert re.search(r'prompt_version="2\.5\.0"', block)

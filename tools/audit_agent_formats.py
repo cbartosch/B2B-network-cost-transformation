@@ -37,7 +37,11 @@ PROMPT_TREE = ast.parse(PROMPTS)
 LOOSE_TYPES = ("Decimal", "int", "float")
 
 # Fields whose looseness is already handled, or where a bound makes no sense.
-QUALIFIED = {"value_qualifier"}
+# Fields whose looseness is already handled, or where a bound makes no sense.
+# A count of what was omitted is arithmetic the agent performs, not a figure it
+# reads from a source - "approximately 3 omitted" is not a thing.
+QUALIFIED = {"value_qualifier", "quantities_omitted", "candidates_omitted",
+             "price_year", "as_of_year"}
 
 
 def _classes():
@@ -123,7 +127,7 @@ def _prompts():
 # fit it: a source that says "over 100" when the field is a Decimal, or
 # "24-36 months" when it is an int. That is a modelling gap, not a prompting
 # one, and it is the only class that produced a real failure.
-findings = {"loose_without_qualifier": [], "range_field_without_a_range": [],
+findings = {"loose_without_qualifier": [], "unbounded_list": [],
             "no_model": []}
 
 for prompt in sorted(_prompts(), key=lambda p: p["prompt_id"]):
@@ -135,6 +139,21 @@ for prompt in sorted(_prompts(), key=lambda p: p["prompt_id"]):
     fields = _expand(model)
 
     for name, spec in sorted(fields.items()):
+        # An unbounded list in a schema-enforced reply truncates eventually.
+        # llm01.public_evidence.extract was cut off at 8,000 tokens after 114
+        # seconds because quantities x candidates grows multiplicatively and
+        # nothing capped either - and a prompt saying "return everything you
+        # find" with no ceiling gets exactly that.
+        #
+        # Raising the budget moves where it truncates. Only a bound makes the
+        # reply finite.
+        if (spec["annotation"].lstrip().startswith("list[")
+                and "max_length" not in (spec["default"] or "")):
+            findings["unbounded_list"].append(
+                f"{prompt['prompt_id']}: {model}.{name} is an unbounded "
+                f"{spec['annotation']} - a reply that grows with what the "
+                f"agent finds truncates at whatever budget it is given")
+
         base = spec["annotation"].split("|")[0].strip()
         # A low/base/high triple already expresses a range, so a source saying
         # "300 to 500" has somewhere to go. A lone number does not.
