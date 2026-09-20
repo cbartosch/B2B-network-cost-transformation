@@ -33,6 +33,22 @@ RUN set -eu; \
     fi
 # pip and the runtime both verify against the system bundle, which now contains
 # the corporate anchor if one was supplied.
+# An inspecting proxy adds a hop to every package download, and bootstrap-ca
+# rebuilds without cache - so every wheel is fetched again on a link slower
+# than the open internet. pip defaults to a 15-second read timeout and five
+# retries, which a corporate link loses on the larger wheels: the build dies
+# on ReadTimeoutError from files.pythonhosted.org partway through.
+#
+# Waiting longer rather than failing. A build that takes four minutes is
+# better than one that has to be run three times.
+#
+# Set as its own ENV, outside the continuation above: a comment inside a
+# backslash-continued instruction is handled differently by different Docker
+# versions, and this file is the one thing that must build everywhere.
+ENV PIP_DEFAULT_TIMEOUT=120 \
+    PIP_RETRIES=10 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
+
 ENV PIP_CERT=/etc/ssl/certs/ca-certificates.crt \
     LLM_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
 
