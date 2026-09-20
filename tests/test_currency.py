@@ -76,10 +76,13 @@ def test_a_partial_reconciliation_says_it_is_partial():
     assert "only part of the input" in out["note"]
 
 
-def test_the_estimate_refuses_a_rate_card_in_another_currency():
-    """Refused rather than converted: at V0 every rate is an expert
-    assumption, and applying an exchange rate to one adds a second unevidenced
-    step to an unevidenced number."""
+def test_the_estimate_refuses_a_rate_card_it_cannot_convert():
+    """Refused where no rate exists, converted where one does.
+
+    This refused outright until 4.230.0 - correct while nothing converted,
+    and a dead end for any engagement not priced in dollars. The refusal
+    stands for a pair reference.fx_rate does not hold, because a missing rate
+    treated as parity would be invisible in the result."""
     from pathlib import Path
 
     root = Path(__file__).resolve().parents[1]

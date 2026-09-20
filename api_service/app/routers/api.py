@@ -3356,16 +3356,41 @@ def run_estimate(case_id: str, payload: EstimateIn):
         # unevidenced step to an unevidenced number. Fixing the rate card is
         # the right answer at this stage - and this is the check that makes an
         # analyst do it rather than discover it later.
+        # One currency by the time anything prices, and an explicit conversion
+        # where the card and the case disagree.
+        #
+        # This used to refuse outright: correct while nothing converted, and a
+        # dead end for a GBP engagement against a USD card. The rate now comes
+        # from reference.fx_rate, chosen by the case's own fx_convention - the
+        # field pre-flight has always collected and no calculation ever read.
+        #
+        # Converted here, once, before anything reads `priors`. Converting at
+        # the point of use would mean every consumer carrying the rate, and
+        # one of them eventually not.
+        _fx = None
         try:
             _prior_ccy = currency.assert_single_currency(
                 [{"currency": r.currency} for r in prior_rows])
             _case_ccy = currency.normalise(case_row.base_currency)
             if _prior_ccy and _case_ccy and _prior_ccy != _case_ccy:
-                raise currency.CurrencyMismatch(
-                    f"the rate card is {_prior_ccy} and this case is priced in "
-                    f"{_case_ccy}. Nothing converts between them, so the "
-                    f"baseline would be in a currency the output does not "
-                    f"name.")
+                _fx = currency.select_rate(
+                    [{"from_currency": r.from_currency,
+                      "to_currency": r.to_currency, "rate": r.rate,
+                      "as_of": str(r.as_of) if r.as_of else None,
+                      "convention": r.convention, "source": r.source,
+                      "evidence_grade": r.evidence_grade}
+                     for r in s.execute(select(db.fx_rate)).all()],
+                    frm=_prior_ccy, to=_case_ccy,
+                    convention=getattr(case_row, "fx_convention", None),
+                    as_of=f"{case_row.price_year or 2026}-12-31")
+                if _fx is None:
+                    raise currency.CurrencyMismatch(
+                        f"the rate card is {_prior_ccy} and this case is "
+                        f"priced in {_case_ccy}, and reference.fx_rate holds "
+                        f"no rate for that pair. Refused rather than assumed: "
+                        f"a missing rate treated as parity would be invisible "
+                        f"in the result. A steward adds the rate, or the case "
+                        f"prices in {_prior_ccy}.")
         except (currency.CurrencyMismatch, currency.UnknownCurrency) as exc:
             raise HTTPException(422, {"error": "currencies do not reconcile",
                                       "detail": str(exc)})
@@ -3384,12 +3409,34 @@ def run_estimate(case_id: str, payload: EstimateIn):
                           getattr(r, "access_technology", None),
                       "bandwidth_mbps": r.bandwidth_mbps}
                   for r in prior_rows}
+
         # Every approved prior, any country. Used only to *size* scope for the
         # coverage denominator - never to price a component (see derive_scope).
         sizing_priors = {(r.country, r.product, r.bandwidth_mbps): {"low": r.low, "base": r.base,
                                                   "high": r.high, "price_year": r.price_year}
                          for r in s.execute(select(db.unit_cost_prior).where(
                              db.unit_cost_prior.c.approved.is_(True))).all()}
+
+        if _fx is not None:
+            # Applied to the three band bounds and nothing else. A bandwidth
+            # is not money and a price year is not money; multiplying a field
+            # because it happens to be numeric is how a unit error gets in.
+            _rate = _fx["rate"]
+            _inverse = D("1") / _rate if _fx.get("inverted") else None
+            _factor = _inverse if _inverse is not None else _rate
+            for _key, _prior in priors.items():
+                for _bound in ("low", "base", "high"):
+                    if _prior.get(_bound) is not None:
+                        _prior[_bound] = D(str(_prior[_bound])) * _factor
+                _prior["converted_from"] = _prior_ccy
+                _prior["fx_rate"] = str(_factor)
+            # Sizing priors price nothing, so they are left alone - but they
+            # are compared against converted ones in the coverage denominator,
+            # so they have to move too or the comparison is across units.
+            for _prior in sizing_priors.values():
+                for _bound in ("low", "base", "high"):
+                    if _prior.get(_bound) is not None:
+                        _prior[_bound] = D(str(_prior[_bound])) * _factor
         platform = {r.product: {"low": r.low, "base": r.base, "high": r.high}
                     for r in s.execute(select(db.platform_unit_cost).where(
                         db.platform_unit_cost.c.approved.is_(True))).all()}
@@ -3555,6 +3602,21 @@ def run_estimate(case_id: str, payload: EstimateIn):
                   "perimeter_version": case_row.perimeter_version,
                   "discount_rate_set_id": case_row.discount_rate_set_id,
                   "base_currency": case_row.base_currency,
+                  # The conversion, pinned like every other input that moves a
+                  # number. A baseline that shifted because of an exchange
+                  # rate has to say so where a reader looks - and a rerun next
+                  # week must use the same rate, or the same case gives a
+                  # different answer for a reason nobody chose.
+                  "fx": ({"from": _prior_ccy, "to": case_row.base_currency,
+                          "rate": str(_fx["rate"]),
+                          "inverted": _fx.get("inverted"),
+                          "convention": _fx.get("convention"),
+                          "as_of": _fx.get("as_of"),
+                          "evidence_grade": _fx.get("evidence_grade"),
+                          "as_asked": _fx.get("exact"),
+                          "source": _fx.get("source"),
+                          "note": _fx.get("note")}
+                         if _fx is not None else None),
                   "price_year": case_row.price_year,
                   "analysis_horizon_years": case_row.analysis_horizon_years,
                   "confidence_policy_set": confidence_policy.set_name,

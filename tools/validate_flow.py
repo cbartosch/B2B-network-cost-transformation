@@ -66,6 +66,11 @@ def table_flow() -> list[str]:
                 # Governed reference data: filled by the seed and retuned by a
                 # steward, never written by the application.
                 "serviceability", "density_mix",
+                # Exchange rates. Seed-only on purpose: a rate a steward
+                # approved on a date is reproducible, and a case re-run next
+                # week prices the same way. The application writing its own
+                # rates would make an estimate a function of when it ran.
+                "fx_rate",
                 # A supplied external benchmark. Seed-only by design: the
                 # application must not write to it, because a published figure
                 # edited in place stops being the published figure and nothing

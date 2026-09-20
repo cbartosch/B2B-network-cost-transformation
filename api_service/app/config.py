@@ -203,4 +203,8 @@ SIMULATION_MODEL_VERSION = "sim-1.18.0"
 # The three extra DIA columns are a fixed ratio of each cluster's own 1G CIR,
 # so they are one observation restated and the ratio is governed - a real
 # German quote implies nearer 0.69 where the workbook models 0.80.
-CALCULATION_VERSION = "calc-1.13.0"
+# calc-1.14.0: a case priced in one currency against a card in another converts,
+# at a rate from reference.fx_rate chosen by the case's own fx_convention -
+# the field pre-flight has always collected and no calculation ever read. A
+# pair with no rate still refuses: parity assumed is invisible in the result.
+CALCULATION_VERSION = "calc-1.14.0"

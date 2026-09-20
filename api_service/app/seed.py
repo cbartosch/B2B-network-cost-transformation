@@ -1,5 +1,7 @@
 """Reference-data seed. Spec 18.1: no material threshold, weight or prior may
 exist only as a code constant - they live here and are versioned in the database."""
+from datetime import date as _date
+
 from sqlalchemy import delete, insert, select
 
 from .domain import access, bics, industry_benchmark, industries
@@ -14,6 +16,7 @@ DOMAIN_AGENT_MAP_SEED = {
     21: 'LLM-08', 22: 'LLM-08',
 }
 from .db import (SessionLocal, archetype_bandwidth, archetype_prior,
+                 fx_rate,
                  density_mix,
                  # Aliased: the table and the domain module that parses it
                  # share a name, and importing both unaliased would let Python
@@ -1452,6 +1455,54 @@ SERVICEABILITY = [
 # prices for, plus the ones the illustrative footprint uses - a mapping is
 # useless without prices behind the products it implies, and an unmapped
 # country is reported rather than guessed.
+# Exchange rates, as governed reference data.
+#
+# Only two are sourced. GBP/USD and EUR/USD were looked up this month while
+# correcting the GB rate card, so they carry a date and a basis; the rest are
+# indicative and say so. That asymmetry is the honest state of it, and a
+# steward replacing a row with a client's own budget rate is the normal case
+# rather than an exception.
+#
+# All quoted as X per USD, because every seeded prior is USD and the
+# conversion an estimate needs is card -> case. `currency.convert()` derives
+# the inverse, so a USD case against a GBP card works from the same rows.
+#
+# SPOT dated when it was read. A BUDGET rate is what a client sets for their
+# year and this model has no client's budget rate, so none is seeded - an
+# engagement that has one adds it, and `select_rate` will prefer it over these
+# the moment it exists.
+#
+# (from, to, rate, as_of, convention, grade, source)
+FX_RATES = [
+    ("USD", "GBP", "0.7463", "2026-09-16", "SPOT", "B",
+     "mid-market GBP/USD 1.3400 inverted, 16 September 2026; the rate used to "
+     "convert the sourced UK market bands on this card"),
+    ("USD", "EUR", "0.8711", "2026-09-17", "SPOT", "B",
+     "mid-market EUR/USD 1.1480 inverted, 17 September 2026; the rate used to "
+     "read a German quote against this card"),
+    # Indicative. Grade E and dated the start of the pricing year rather than
+    # a day, because a figure nobody looked up should not wear a date that
+    # says somebody did.
+    ("USD", "CHF", "0.80", "2026-01-01", "SPOT", "E", "indicative only"),
+    ("USD", "SEK", "9.50", "2026-01-01", "SPOT", "E", "indicative only"),
+    ("USD", "NOK", "10.30", "2026-01-01", "SPOT", "E", "indicative only"),
+    ("USD", "DKK", "6.50", "2026-01-01", "SPOT", "E", "indicative only"),
+    ("USD", "PLN", "3.80", "2026-01-01", "SPOT", "E", "indicative only"),
+    ("USD", "CZK", "21.50", "2026-01-01", "SPOT", "E", "indicative only"),
+    ("USD", "AED", "3.6725", "2026-01-01", "SPOT", "C",
+     "the UAE dirham is pegged to the dollar at 3.6725; a peg is better "
+     "evidence than a guess and worse than a quote"),
+    ("USD", "SGD", "1.28", "2026-01-01", "SPOT", "E", "indicative only"),
+    ("USD", "AUD", "1.48", "2026-01-01", "SPOT", "E", "indicative only"),
+    ("USD", "CAD", "1.36", "2026-01-01", "SPOT", "E", "indicative only"),
+    ("USD", "JPY", "148.0", "2026-01-01", "SPOT", "E", "indicative only"),
+    ("USD", "INR", "84.0", "2026-01-01", "SPOT", "E", "indicative only"),
+    ("USD", "BRL", "5.50", "2026-01-01", "SPOT", "E", "indicative only"),
+    ("USD", "MXN", "18.50", "2026-01-01", "SPOT", "E", "indicative only"),
+    ("USD", "ZAR", "18.00", "2026-01-01", "SPOT", "E", "indicative only"),
+]
+
+
 # Which region a country falls back to when it has no card of its own.
 #
 # Ten regions. EMEA was one, spanning Germany and Ethiopia - 125 countries
@@ -1779,6 +1830,12 @@ LEVERS = [
 def _rows():
     """Table -> row builder. Kept together so a new reference table cannot be
     added to the model without also being given seed content."""
+    # Imported here, as every other builder in this module does. The fx row
+    # builder used a bare `D` that this module does not define - the seed
+    # would have raised NameError on the first run, and the unbound-name check
+    # caught it before it shipped.
+    from decimal import Decimal as _D
+
     return [
         (threshold, lambda: [
             {"set_name": a, "key": b, "value": c, "version": 1,
@@ -1819,6 +1876,16 @@ def _rows():
              "cloud_direct": r["cloud_direct"],
              "source": "Comprehensive Industry WAN Benchmark, BICS L3"}
             for r in INDUSTRY_BENCHMARK["rows"]]),
+        (fx_rate, lambda: [
+            {"fx_rate_id": f"{f}-{t}-{a}-{cv}",
+             "from_currency": f, "to_currency": t, "rate": _D(r),
+             "as_of": _date.fromisoformat(a), "convention": cv,
+             "evidence_grade": g, "source": src,
+             "approved_by": "seed",
+             "note": ("indicative: nobody looked this up, and an estimate "
+                      "converted at it should say so"
+                      if g == "E" else None)}
+            for f, t, r, a, cv, g, src in FX_RATES]),
         (country_region, lambda: [
             {"country": c, "region": r, "note": "seed default"}
             for c, r in COUNTRY_REGION]),

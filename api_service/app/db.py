@@ -932,6 +932,42 @@ serviceability = Table(
     schema="reference",
 )
 
+# Exchange rates, governed like every other priced input.
+#
+# `fx_convention` sat on the case since pre-flight and was read by no
+# calculation, and `currency.convert()` was written, tested and called by
+# nothing - so a GBP case against a USD card had no way to price and the
+# estimate refused. Correct, and a dead end.
+#
+# Reference data rather than a live feed on purpose. A rate a steward approved
+# on a date is reproducible: the same case re-run next week prices the same
+# way, and a run recorded in March can be explained in September. A live feed
+# would make an estimate a function of when it was run.
+#
+# One direction per pair. `currency.convert()` derives the inverse when the
+# direct pair is absent, and holding both invites them to disagree by a
+# rounding.
+fx_rate = Table(
+    "fx_rate", metadata,
+    Column("fx_rate_id", String(64), primary_key=True),
+    Column("from_currency", String(3), index=True),
+    Column("to_currency", String(3), index=True),
+    Column("rate", Numeric(18, 8)),
+    # The date the rate is for, not the date it was entered. A budget rate for
+    # 2026 is dated the start of the year it governs.
+    Column("as_of", Date, index=True),
+    # SPOT | AVERAGE | BUDGET. Not interchangeable: a budget rate is set once
+    # and held, so a baseline priced at it stays comparable to a plan priced
+    # at it, while a spot rate makes the same estate cost a different amount
+    # on Tuesday.
+    Column("convention", String(12), index=True),
+    Column("source", Text),
+    Column("evidence_grade", String(2)),
+    Column("approved_by", String(120)),
+    Column("note", Text),
+    schema="reference")
+
+
 country_region = Table(
     "country_region", metadata,
     Column("country", String(2), primary_key=True),

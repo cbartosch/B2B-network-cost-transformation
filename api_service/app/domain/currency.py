@@ -153,3 +153,116 @@ def assert_single_currency(rows: list, *, field: str = "currency") -> str | None
             f"adds a second unevidenced step to an unevidenced number; fixing "
             f"the rate card is usually the right answer at this stage.")
     return found.pop() if found else None
+
+
+# How an engagement picks the rate it prices at.
+#
+# `fx_convention` has been on the case since pre-flight and read by no
+# calculation - the finding this module was written for. These are the three
+# an engagement actually uses, and they are not interchangeable: a budget rate
+# is set once and held, so a baseline priced at it stays comparable to a plan
+# priced at it, while a spot rate makes the same estate cost a different amount
+# on Tuesday.
+SPOT = "SPOT"            # the rate on a named day
+AVERAGE = "AVERAGE"      # the average across the pricing period
+BUDGET = "BUDGET"        # the rate the client set for the year
+CONVENTIONS = (SPOT, AVERAGE, BUDGET)
+
+
+def select_rate(rows, *, frm: str, to: str, convention: str | None,
+                as_of: str | None) -> dict | None:
+    """The rate this case should price at, and why that one.
+
+    Returns a record, not a number, for the same reason `convert` does: a
+    reader has to be able to see which rate was used and whether it was the
+    one the engagement asked for.
+
+    Preference order, and each step is a worse answer than the one above:
+
+      1. the convention the case declared, dated on or before the pricing date
+      2. that convention at any date - a rate from the wrong month beats no
+         rate, and the date is reported so the reader can judge
+      3. another convention, named - a spot rate where a budget rate was asked
+         for is a different claim about the year, and saying so is the point
+      4. None, and the caller refuses
+
+    The direction is not searched here. `convert` already derives an inverse
+    when the direct pair is absent, and holding both directions invites them
+    to disagree.
+    """
+    source, target = normalise(frm), normalise(to)
+    if source is None or target is None:
+        return None
+    if source == target:
+        return {"rate": Decimal("1"), "convention": convention,
+                "as_of": as_of, "exact": True, "inverted": False,
+                "note": f"no conversion needed; both sides are {target}"}
+
+    def _pair(row):
+        got_from = normalise(row.get("from_currency"))
+        got_to = normalise(row.get("to_currency"))
+        if (got_from, got_to) == (source, target):
+            return False          # direct
+        if (got_from, got_to) == (target, source):
+            return True           # the caller will invert
+        return None
+
+    usable = []
+    for row in rows or []:
+        try:
+            inverted = _pair(row)
+        except UnknownCurrency:
+            # A row naming a currency this model cannot price is not a reason
+            # to fail the estimate; it is a row a steward should fix.
+            continue
+        if inverted is None:
+            continue
+        usable.append({**row, "inverted": inverted})
+
+    if not usable:
+        return None
+
+    wanted = (convention or "").strip().upper() or None
+    on_convention = [r for r in usable
+                     if (r.get("convention") or "").upper() == wanted] \
+        if wanted else []
+
+    def _dated(candidates):
+        """Those dated on or before the pricing date, newest first."""
+        if not as_of:
+            return sorted(candidates, key=lambda r: str(r.get("as_of") or ""),
+                          reverse=True)
+        return sorted([r for r in candidates
+                       if str(r.get("as_of") or "") <= str(as_of)],
+                      key=lambda r: str(r.get("as_of") or ""), reverse=True)
+
+    for candidates, exact, why in (
+            (_dated(on_convention), True, None),
+            (sorted(on_convention, key=lambda r: str(r.get("as_of") or "")),
+             False, "no {c} rate on or before {d}, so the nearest {c} rate is "
+                    "used and it is dated after the pricing date"),
+            (_dated(usable), False,
+             "no {c} rate exists for this pair, so a {g} rate is used - a "
+             "different claim about the year than the one this case asked "
+             "for"),
+            (sorted(usable, key=lambda r: str(r.get("as_of") or "")), False,
+             "no {c} rate exists and no rate is dated on or before {d}, so "
+             "the nearest available rate is used"),
+    ):
+        if not candidates:
+            continue
+        chosen = candidates[0]
+        note = (why or "").format(c=wanted or "declared",
+                                  d=as_of or "the pricing date",
+                                  g=chosen.get("convention") or "undeclared")
+        return {"rate": Decimal(str(chosen["rate"])),
+                "convention": chosen.get("convention"),
+                "as_of": chosen.get("as_of"),
+                "source": chosen.get("source"),
+                "evidence_grade": chosen.get("evidence_grade"),
+                "inverted": chosen["inverted"],
+                "exact": exact,
+                "note": note or (
+                    f"{chosen.get('convention')} rate dated "
+                    f"{chosen.get('as_of')}, as the case asked for")}
+    return None
