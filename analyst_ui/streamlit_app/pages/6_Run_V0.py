@@ -146,7 +146,16 @@ def _picker(label, driver, column):
         tag = "corroborated" if f["corroboration_state"] == "CORROBORATED" else "asserted"
         labels[f"{f['subject']} — {f['value_base']} ({f['asserted_by']}, {tag})"] = \
             f["known_fact_id"]
-    choice = column.selectbox(label, list(labels), key="v0_choice")
+    # Keyed on the driver, because this function is called twice - once for
+    # the footprint and once for the user count - and a fixed key makes the
+    # second call collide with the first.
+    #
+    # Streamlit raises on the duplicate, which is the good outcome. The one to
+    # avoid is the version where it does not: two widgets sharing a key share
+    # a value, so picking a footprint fact would silently set the user-count
+    # source to the same row, and the estimate would credit a fact as the
+    # source of a number it never stated.
+    choice = column.selectbox(label, list(labels), key=f"v0_choice_{driver}")
     picked = labels[choice]
     if picked:
         f = next(x for x in options if x["known_fact_id"] == picked)
