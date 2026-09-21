@@ -143,7 +143,12 @@ LLM_SEARCH_TIMEOUT_SECONDS = float(
 # name a campus in their own benchmark row while office-centric put 53% of
 # their sites in branches - so AstraZeneca was modelled with a branch network
 # it does not have, and the shape contradicted the benchmark beside it.
-SIMULATION_MODEL_VERSION = "sim-1.18.0"
+# sim-1.19.0: resilience keyed (industry, archetype), the key the estate mix uses.
+# The benchmark's criticality reached 4 of 47 industries because it was keyed
+# on a representative archetype the mix does not contain; three industries
+# priced identically. Composed now from the site type's own need and the
+# industry's posture, and stored against every archetype an estate can hold.
+SIMULATION_MODEL_VERSION = "sim-1.19.0"
 # calc-1.1.0: the saving band is accumulated with matched pairing rather than
 # derived as current - target. The target is a function of the current, so
 # subtracting the two crossed bounds a second time and produced worlds that

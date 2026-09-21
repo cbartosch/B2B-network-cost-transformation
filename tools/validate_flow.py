@@ -71,6 +71,11 @@ def table_flow() -> list[str]:
                 # week prices the same way. The application writing its own
                 # rates would make an estimate a function of when it ran.
                 "fx_rate",
+                # Resilience per (industry, archetype). Derived from the
+                # industry benchmark and the archetype baseline at seed time,
+                # and stored rather than computed so a steward can inspect and
+                # override one pair without rerunning a derivation.
+                "archetype_resilience",
                 # A supplied external benchmark. Seed-only by design: the
                 # application must not write to it, because a published figure
                 # edited in place stops being the published figure and nothing

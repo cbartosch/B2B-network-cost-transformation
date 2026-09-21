@@ -1119,12 +1119,37 @@ def run_simulation(case_id: str, payload: SimIn):
         #
         # A case-level choice still wins: an engagement that knows what its
         # sites commit outranks a published average for its industry.
+        # Read from reference.archetype_resilience, which is keyed
+        # (industry, archetype) - the key the estate mix uses.
+        #
+        # These two dicts were built from the benchmark's own rows, keyed on
+        # its representative archetype. That archetype is absent from the
+        # estate mix for 43 of 47 industries, so both dicts were usually
+        # empty and the simulation fell back to the archetype baseline:
+        # chemicals, household products and semiconductors priced identically
+        # despite benchmark rows differing by nearly 10x.
+        #
+        # The benchmark still supplies the posture. What changed is that the
+        # posture is now composed with each site type's own need and stored
+        # against every archetype an estate can contain, so it reaches.
+        _res_rows = s.execute(select(db.archetype_resilience).where(
+            db.archetype_resilience.c.industry == _industry)).all()
         benchmark_committed = {
-            _row["archetype_code"]: _row["committed_share_base"]
-            for _row in _bench_rows if _row["committed_share_base"]}
+            r.archetype: str(r.committed_fraction)
+            for r in _res_rows if r.committed_fraction is not None}
         benchmark_dual_access = {
-            _row["archetype_code"]: _row["dual_access_probability"]
-            for _row in _bench_rows if _row["dual_access_probability"]}
+            r.archetype: str(r.dual_access_probability)
+            for r in _res_rows if r.dual_access_probability is not None}
+        # What the two axes resolved to, for the interface to show. An
+        # estate shape and a resilience posture are different claims and the
+        # page said neither, which is how 43 inert rows went unnoticed.
+        _resilience_basis = {
+            "industry": _industry,
+            "criticality_tier": next(
+                (r.criticality_tier for r in _res_rows
+                 if r.criticality_tier), None),
+            "archetypes_covered": len(_res_rows),
+        }
 
         bandwidth_basis = {"industry": _industry,
                            "matched": _industry in {r.industry for r in _bw_rows},
@@ -1350,6 +1375,15 @@ def run_simulation(case_id: str, payload: SimIn):
                            # property of the site's role rather than a seeded
                            # probability per archetype.
                            "dual_access_by_archetype": benchmark_dual_access,
+                           # The two axes, named separately.
+                           #
+                           # An estate shape and a resilience posture are
+                           # different claims from different sources, and the
+                           # interface said neither - which is how a benchmark
+                           # inert for 43 of 47 industries went unnoticed. A
+                           # reader can now see what the industry chose on
+                           # each axis, and how many archetypes it reached.
+                           "resilience_basis": _resilience_basis,
                            # Who supplies each path per country, pinned so a
                            # resumed pass judges diversity on the providers the
                            # run started with. Keyed "COUNTRY|ROLE" because

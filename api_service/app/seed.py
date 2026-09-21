@@ -16,6 +16,7 @@ DOMAIN_AGENT_MAP_SEED = {
     21: 'LLM-08', 22: 'LLM-08',
 }
 from .db import (SessionLocal, archetype_bandwidth, archetype_prior,
+                 archetype_resilience,
                  fx_rate,
                  density_mix,
                  # Aliased: the table and the domain module that parses it
@@ -1714,6 +1715,33 @@ for _industry in {row[0] for row in _BICS_MIX}:
             _SUPPORTING.append((_industry, _archetype,
                                 _DEFAULT_BW[_archetype]))
 
+# Resilience per (industry, archetype), generated the way bandwidth already is.
+#
+# The industry benchmark's criticality tier, committed share and dual-access
+# probability reached almost nothing: they applied only where the benchmark's
+# representative archetype appeared in the industry's estate mix, and it does
+# not for 43 of 47 industries. Three industries with benchmark rows differing
+# by nearly 10x in bandwidth returned byte-identical baselines.
+#
+# Bandwidth never had this problem because ARCHETYPE_BANDWIDTH is keyed
+# (industry, archetype) - the key the estate mix uses - and covers 100% of the
+# pairs that occur. This is the same key, built from the same pairs.
+#
+# Generated rather than typed: 249 rows, each a composition of the site type's
+# own need and the industry's posture, and a hand-written table of that size
+# would drift from the mixes it is supposed to mirror.
+def _archetype_resilience():
+    """(industry, archetype, dual, committed, tier) for every estate pair."""
+    from .domain import resilience as _resilience
+
+    pairs = {(industry, archetype)
+             for industry, archetype, _band, _share in DENSITY_MIX}
+    return _resilience.rows_for(
+        [(a, d, cf) for a, _u, _bw, d, _pp, _bp, cf in ARCHETYPES],
+        industry_benchmark.seeded()["rows"],
+        pairs)
+
+
 ARCHETYPE_BANDWIDTH = (
     [row for row in industries.bandwidth_rows()
      if (row[0], row[1]) not in _BICS_BW_KEYS]
@@ -1895,6 +1923,15 @@ def _rows():
              "region_to_core_mbps": cm, "dc_dual": dd, "core_dual": cd,
              "note": note}
             for n, v, dp, dm, cp, cm, dd, cd, note in TOPOLOGY_TEMPLATE]),
+        (archetype_resilience, lambda: [
+            {"industry": i, "archetype": a,
+             "dual_access_probability": _D(d),
+             "committed_fraction": _D(cf),
+             "criticality_tier": tier,
+             "note": ("archetype baseline; the benchmark covers no such "
+                      "industry" if tier is None else
+                      f"site-type baseline modulated by industry {tier}")}
+            for i, a, d, cf, tier in _archetype_resilience()]),
         (archetype_bandwidth, lambda: [
             {"id": f"{ind}-{arch}", "industry": ind, "archetype": arch,
              "bandwidth_mbps": mbps, "approved_by": "seed",

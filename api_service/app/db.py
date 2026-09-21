@@ -1038,6 +1038,31 @@ industry_benchmark = Table(
     schema="reference")
 
 
+# Resilience per (industry, archetype), keyed the way bandwidth is.
+#
+# The industry benchmark's criticality reached almost nothing because it was
+# keyed on a representative archetype the estate mix often does not contain.
+# This is the key the mix actually uses, so every row here is reachable by
+# construction.
+#
+# Both figures are derived - a composition of the site type's own need and the
+# industry's posture - and both are stored rather than computed at read time,
+# so a steward can inspect and override one pair without rerunning a
+# derivation.
+archetype_resilience = Table(
+    "archetype_resilience", metadata,
+    Column("industry", String(48), primary_key=True),
+    Column("archetype", String(32), primary_key=True),
+    Column("dual_access_probability", Numeric(6, 4)),
+    Column("committed_fraction", Numeric(6, 4)),
+    # The benchmark's tier for this industry, carried so a reader can see why
+    # the figures moved. Null where the benchmark covers no such industry, in
+    # which case the row is the archetype baseline unchanged.
+    Column("criticality_tier", String(12)),
+    Column("note", Text),
+    schema="reference")
+
+
 archetype_bandwidth = Table(
     "archetype_bandwidth", metadata,
     Column("id", String(80), primary_key=True),          # {industry}-{archetype}
