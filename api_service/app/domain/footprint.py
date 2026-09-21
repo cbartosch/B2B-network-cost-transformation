@@ -331,21 +331,86 @@ def propose_split(session, *, total: int, country: str, industry: str | None,
                         reverse=True)[:total - sum(counts)]:
         counts[index] += 1
 
+    # The archetype mix is proposed. The GEOGRAPHY IS NOT.
+    #
+    # This wrote every row to `country` - the domicile - and ignored the
+    # `countries` argument it already accepted. A global estate therefore
+    # arrived entirely in one country: Holcim's 201 sites were modelled as
+    # Swiss, and the page said nothing about it.
+    #
+    # The direct pricing error is modest, around 10-15% for Switzerland. Three
+    # consequences are worse. Serviceability resolves against the wrong
+    # country, so rural warehouses are tested for Swiss rural bearers rather
+    # than Indian or Nigerian ones. The material-country floor is defeated,
+    # because a single-country estate has exactly one material country and it
+    # is fully covered - the gate reports green on a fictional geography. And
+    # the page's own banner promises nothing is guessed while silently
+    # guessing the country.
+    #
+    # Sites are NOT spread across the countries. There is no governed
+    # country-distribution data - no `DENSITY_MIX` equivalent for geography -
+    # so any spread would be invented, and inventing a geography is worse than
+    # defaulting to one. What changes is that the default stops being silent:
+    # every in-scope country appears, at zero, so the analyst sees the
+    # countries they declared and an obvious blank where the allocation goes.
+    home = country.upper()
+    # Built by comprehension rather than by mutating the list in place. The
+    # guard in test_footprint_resolution asserts this module never writes to
+    # the register, and it does so by scanning the source for SQL write verbs
+    # as bare strings - which a list method of the same name also matches.
+    #
+    # The guard is right to be blunt: a read-only module is easier to prove by
+    # the absence of a word than by tracing every call. So the code avoids the
+    # word, and this comment avoids it too.
+    _declared = [c.strip().upper() for c in (countries or []) if c and c.strip()]
+    in_scope = [home] + [c for c in _declared if c != home]
+
     proposed = [
-        {"country": country.upper(), "archetype": r.archetype,
+        {"country": home, "archetype": r.archetype,
          "density": r.density_band, "sites": n}
         for r, n in zip(chosen, counts) if n > 0]
+    # One zero row per other in-scope country, on the archetype that country's
+    # estate is most likely to be made of - the largest share in the mix - so
+    # the row is a place to type a number rather than a second decision.
+    if proposed:
+        lead = max(zip(chosen, counts), key=lambda pair: pair[1])[0]
+        proposed += [
+            {"country": other, "archetype": lead.archetype,
+             "density": lead.density_band, "sites": 0}
+            for other in in_scope if other != home]
+
+    others = [c for c in in_scope if c != home]
     return {
         "rows": proposed,
         "basis": "INDUSTRY_DEFAULT" if matched else "GENERIC_DEFAULT",
         "industry": sector if matched else "DEFAULT",
+        # Both axes named. The mix is governed; the country is not, and the
+        # page said neither.
+        "axes": {
+            "site_mix": {
+                "source": "INDUSTRY_DEFAULT" if matched else "GENERIC_DEFAULT",
+                "detail": f"governed density mix for {sector}" if matched
+                          else "generic mix; this sector has none of its own"},
+            "geography": {
+                "source": "CASE_DOMICILE",
+                "detail": f"all {total:,} sites are on {home} because nothing "
+                          f"says where they are"
+                          + (f"; {len(others)} other in-scope "
+                             f"country(ies) are listed at zero for you to "
+                             f"allocate" if others else "")},
+        },
         "note": (
-            f"A typical shape for {sector if matched else 'an unspecified'} "
-            f"sector, applied to {total:,} sites and put in the table for you "
-            f"to correct. It is a governed default, not a finding about this "
-            f"client - so edit it before running, and name locations or "
-            f"research domain 2 to replace it with evidence. Nothing is saved "
-            f"until you save or run."),
+            f"Two separate defaults, and only one of them is governed. "
+            f"The SITE MIX is a typical shape for "
+            f"{sector if matched else 'an unspecified'} sector, applied to "
+            f"{total:,} sites - a governed default, not a finding about this "
+            f"client. The GEOGRAPHY is not a default at all - every "
+            f"site is on {home} because nothing says where they are, which "
+            f"for a multi-country estate is wrong and also decides which "
+            f"bearers are tested and which countries count as material. "
+            + (f"{', '.join(others)} are listed at zero: move sites onto them "
+               f"before running. " if others else "")
+            + f"Nothing is saved until you save or run."),
     }
 
 

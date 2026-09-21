@@ -2682,9 +2682,12 @@ def propose_footprint_split(case_id: str):
         country = (resolved.get("suggested_country")
                    or case_row.country_of_domicile
                    or (list(case_row.in_scope_countries or []) or ["DE"])[0])
+        # The in-scope countries, which this never passed - so the parameter
+        # was dead and every proposed row landed on the domicile.
         return {**footprint_resolver.propose_split(
                     s, total=int(total), country=country,
-                    industry=case_row.industry),
+                    industry=case_row.industry,
+                    countries=list(case_row.in_scope_countries or [])),
                 "total": int(total)}
 
 

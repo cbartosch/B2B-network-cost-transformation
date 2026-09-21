@@ -408,7 +408,34 @@ if _unallocated:
         st.error(_sp["_error"])
     elif _sp and _sp.get("rows"):
         st.info(_sp.get("note", ""))
-        st.dataframe(pd.DataFrame(_sp["rows"]), use_container_width=True,
+        # The two axes, side by side, because only one of them is governed.
+        #
+        # The banner above promises nothing is guessed, and the site mix is
+        # indeed a governed sector default. The geography was also a guess -
+        # the domicile - and the page said nothing, so 201 Holcim sites read
+        # as a Swiss estate. Showing both makes the ungoverned one visible.
+        _axes = _sp.get("axes") or {}
+        if _axes:
+            _mix, _geo = st.columns(2)
+            with _mix:
+                st.markdown(
+                    f"**Site mix** · `{_axes.get('site_mix', {}).get('source')}`"
+                    f"  \n{_axes.get('site_mix', {}).get('detail', '')}")
+            with _geo:
+                st.markdown(
+                    f"**Geography** · `{_axes.get('geography', {}).get('source')}`"
+                    f"  \n{_axes.get('geography', {}).get('detail', '')}")
+        _rows = _sp["rows"]
+        _zero = [r for r in _rows if not r.get("sites")]
+        if _zero:
+            st.warning(
+                f"{len(_zero)} in-scope country(ies) are listed at zero "
+                f"sites. A multi-country estate priced entirely in one "
+                f"country tests the wrong bearers and leaves one material "
+                f"country covering the whole estate, so the coverage gate "
+                f"passes on a geography nobody entered. Move sites onto them "
+                f"before running.")
+        st.dataframe(pd.DataFrame(_rows), use_container_width=True,
                      hide_index=True)
         if st.button("Put this in the table below", type="primary"):
             st.session_state["_split_apply"] = _sp["rows"]
