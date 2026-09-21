@@ -3309,7 +3309,28 @@ def run_estimate(case_id: str, payload: EstimateIn):
         if blockers:
             raise HTTPException(409, {"error": "V0 cannot publish", "blockers": blockers})
 
-        countries = case_row.in_scope_countries or []
+        # The countries the estimate has to price, not the ones the case
+        # declared.
+        #
+        # This read in_scope_countries alone, while the scope being priced
+        # comes from the simulated footprint - two lists nothing forces to
+        # agree. A footprint row in a country the case never declared loaded
+        # no rates for it, and every circuit there came back unpriced: 4,120
+        # circuits, 0 priced, coverage 0.0%, on a rate card that held the
+        # right row all along.
+        #
+        # The comment below records the same defect found once before and
+        # fixed only on the region half. The country half stayed, and the gap
+        # widened as footprint rows became easier to create anywhere.
+        #
+        # A union, so this can only add rates. A case whose declared list
+        # already covers its footprint is unaffected.
+        _declared = list(case_row.in_scope_countries or [])
+        _simulated = sorted({
+            str(row.get("country")) for row in (sim.output or {}).get(
+                "products", []) or []
+            if row.get("country")})
+        countries = sorted(set(_declared) | set(_simulated))
         # Region-scoped priors as well as the in-scope countries. A backbone
         # circuit is priced against EMEA, and this filtered on the case's
         # country list alone - so every core circuit would have landed unpriced
