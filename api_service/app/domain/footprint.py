@@ -702,3 +702,63 @@ def _best_footprint_fact(session, case_row) -> tuple:
     # claims - "1,840 UK stores" and "89 Ireland stores" are complementary and
     # this takes the larger.
     return usable[0], "", usable
+
+
+# Which site types are genuinely uniform in bulk.
+#
+# A footprint row claims every site in it is identical. For a STORE or a
+# NETWORK_SITE that claim is usually true: parcel shops, packstations and
+# unmanned tower sites are mass-deployed to one specification, and an estate of
+# 20,000 of them really is one product at one bandwidth. For a LARGE_OFFICE,
+# PLANT, CAMPUS, DC, TERMINAL or CONTROL_CENTER it is not - each site is
+# individually significant, and 11,400 German offices in one row is a claim
+# nobody made.
+#
+# So the ceiling follows how much a single site matters, which is the inverse
+# of how many of them there are. One ceiling for every archetype refused the
+# estates it should have accepted and accepted the rows it should have refused.
+UNIFORM_ARCHETYPES = frozenset({"STORE", "NETWORK_SITE"})
+
+
+def row_site_limit(row, policy) -> tuple:
+    """(limit, why) for one footprint row.
+
+    Returned together so the message can name the limit it actually applied.
+    Both the API and the interface call this: reporting a different number
+    from the one enforced is how an analyst came to be told "refused above
+    100" about a row that breached 2,000, and advised to split by a site type
+    already chosen.
+    """
+    archetype = str(row.get("archetype") or "").strip().upper()
+    if archetype in UNIFORM_ARCHETYPES and row.get("density"):
+        return (int(getattr(policy, "max_sites_per_uniform_row", 25000)),
+                f"a {archetype} cluster is mass-deployed to one "
+                f"specification, so a large row is a fair claim")
+    if row.get("density"):
+        return (int(policy.max_sites_per_cluster_row),
+                "a row with a density band is a cluster - same country, same "
+                "type, same deliverable access")
+    return (int(policy.max_sites_per_archetype_row),
+            "a row with no density band asserts a whole country's estate is "
+            "alike")
+
+
+def row_limit_remedy(row) -> str:
+    """What to actually do about an over-large row.
+
+    "Split by site type" is unfollowable once the site type is chosen, which
+    is every row that reaches this check. The remedy depends on which
+    dimension is still free.
+    """
+    archetype = str(row.get("archetype") or "").strip().upper()
+    if not row.get("density"):
+        return ("give it a density band - a row that says which band its "
+                "sites are in claims much less and gets a higher ceiling")
+    if archetype in UNIFORM_ARCHETYPES:
+        return ("split it across densities or countries, or reduce the count "
+                "- even a mass-deployed estate has a ceiling")
+    return (f"a {archetype} is individually significant, so a row this large "
+            f"is unlikely to be right. Check the site type first: a parcel "
+            f"shop or packstation is a STORE, not a LARGE_OFFICE, and a "
+            f"depot is a WAREHOUSE. If the type is right, split by density "
+            f"or country")

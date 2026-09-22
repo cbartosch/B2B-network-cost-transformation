@@ -643,6 +643,7 @@ class FootprintPolicy:
     # assertion that a whole country's sites are alike, so it earns a looser
     # bound.
     max_sites_per_cluster_row: int = 2000
+    max_sites_per_uniform_row: int = 25000
 
     @classmethod
     def from_rows(cls, rows: dict, set_name: str = "footprint_policy"):

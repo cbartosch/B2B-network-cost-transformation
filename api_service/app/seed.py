@@ -238,6 +238,20 @@ THRESHOLDS = [
     # discounter's urban estate. Still bounded: 4,000 stores in one row is not
     # a cluster, it is a tally.
     ("footprint_policy", "max_sites_per_cluster_row", "2000"),
+    # A cluster row of mass-deployed sites, where the homogeneity claim is
+    # true rather than convenient.
+    #
+    # The 2,000 ceiling is right for a row of offices or plants: each is
+    # individually significant, and asserting that 11,400 German offices are
+    # alike is a claim nobody made. It is wrong for a parcel network. A
+    # packstation estate genuinely is 20,000 near-identical sites - same
+    # product, same bandwidth, same posture - and forcing it into ten rows of
+    # 2,000 adds no information, it just makes the analyst type.
+    #
+    # The homogeneity argument is weakest exactly where the counts are
+    # largest, which is why one ceiling for every archetype refused the
+    # estates it should have accepted.
+    ("footprint_policy", "max_sites_per_uniform_row", "25000"),
 
     # --- quality gate.
     # How many times a registered call may be re-issued after the gate rejects

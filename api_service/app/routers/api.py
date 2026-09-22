@@ -1276,29 +1276,38 @@ def run_simulation(case_id: str, payload: SimIn):
         # a density band is a cluster - same country, same type, same
         # deliverable access - and claims far less than a row that asserts a
         # whole country's estate is alike.
-        def _limit(row):
-            return (fp_policy.max_sites_per_cluster_row if row.get("density")
-                    else fp_policy.max_sites_per_archetype_row)
-
-        coarse = [r for r in footprint if int(r["sites"]) > _limit(r)]
+        # One shared rule, in footprint_resolver, so this and the interface
+        # cannot report different numbers. They did: a row breaching the
+        # 2,000 cluster ceiling was told "refused above 100", and advised to
+        # split by a site type it had already chosen.
+        coarse = [r for r in footprint
+                  if int(r["sites"]) > footprint_resolver.row_site_limit(
+                      r, fp_policy)[0]]
         if coarse:
             raise HTTPException(422, {
                 "error": "a single archetype row carries too many sites",
-                "limit": {r["country"] + "/" + r["archetype"]
-                          + ("/" + r["density"] if r.get("density") else ""):
-                          _limit(r) for r in coarse},
-                "rows": [{"country": r["country"], "archetype": r["archetype"],
-                          "sites": r["sites"]} for r in coarse],
+                "rows": [
+                    {"country": r["country"], "archetype": r["archetype"],
+                     "density": r.get("density"), "sites": r["sites"],
+                     # The limit that was actually applied, and why it is
+                     # that one rather than another.
+                     "limit": footprint_resolver.row_site_limit(
+                         r, fp_policy)[0],
+                     "limit_because": footprint_resolver.row_site_limit(
+                         r, fp_policy)[1],
+                     "remedy": footprint_resolver.row_limit_remedy(r)}
+                    for r in coarse],
                 "detail": (
-                    f"A footprint row states that every site in it is "
-                    f"identical - same bandwidth, same primary and backup "
-                    f"product, same dual-access probability - and the whole row "
-                    f"is priced at that archetype's tier. Above "
-                    f"{fp_policy.max_sites_per_archetype_row} sites that is a "
-                    f"claim about the estate nobody made. Split these rows by "
-                    f"site type and country: a trade counter or bank branch is "
-                    f"a STORE, a depot or plant is a WAREHOUSE, a regional "
-                    f"office is a LARGE_OFFICE, a computing facility is a DC.")})
+                    "A footprint row states that every site in it is "
+                    "identical - same bandwidth, same primary and backup "
+                    "product, same dual-access probability - and the whole "
+                    "row is priced at that archetype's tier. The ceiling "
+                    "follows how much a single site matters: a store or a "
+                    "tower site is mass-deployed to one specification and a "
+                    "large row is a fair claim, while an office, plant or "
+                    "data centre is individually significant. Each row above "
+                    "carries the limit applied to it and what to do about "
+                    "it.")})
 
         # Ask before creating the row. The candidate must not count itself,
         # and a refused run should never have existed.
@@ -2810,9 +2819,16 @@ def resolve_footprint(case_id: str):
                 _fp_policy.max_sites_per_archetype_row
             resolved["max_sites_per_cluster_row"] = \
                 _fp_policy.max_sites_per_cluster_row
+            # The third ceiling, for mass-deployed site types. Published with
+            # the other two or the page falls back to its own default and the
+            # two layers disagree about what will be accepted - which is the
+            # defect this whole publication exists to prevent.
+            resolved["max_sites_per_uniform_row"] = \
+                _fp_policy.max_sites_per_uniform_row
         except policy.PolicyIncomplete:
             resolved["max_sites_per_archetype_row"] = None
             resolved["max_sites_per_cluster_row"] = None
+            resolved["max_sites_per_uniform_row"] = None
         return resolved
 
 

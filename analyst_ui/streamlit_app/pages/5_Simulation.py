@@ -747,19 +747,56 @@ _edited, _edit_problems = _clean_footprint(fp)
 # The limit follows how much the row says. A row with a density band is a real
 # cluster - same country, same type, same deliverable access - and claims far
 # less than one asserting a whole country's estate is alike.
-_ROW_LIMIT = (_fp or {}).get("max_sites_per_archetype_row") or 100
-_CLUSTER_LIMIT = (_fp or {}).get("max_sites_per_cluster_row") or 2000
-_coarse = [r for r in _edited
-           if r["sites"] > (_CLUSTER_LIMIT if r.get("density") else _ROW_LIMIT)]
+# The ceiling follows how much a single site matters, which is the inverse of
+# how many of them there are. A STORE or NETWORK_SITE cluster is mass-deployed
+# to one specification, so 20,000 packstations in one row is a fair claim; an
+# office, plant or data centre is individually significant.
+#
+# This reported _ROW_LIMIT whatever limit it had applied, so a row breaching
+# the 2,000 cluster ceiling was told "refused above 100" - and advised to
+# "split by site type", which is unfollowable once the site type is chosen.
+# Every row that reaches this check has already chosen one.
+_UNIFORM = {"STORE", "NETWORK_SITE"}
+_LIMITS = {
+    "row": (_fp or {}).get("max_sites_per_archetype_row") or 100,
+    "cluster": (_fp or {}).get("max_sites_per_cluster_row") or 2000,
+    "uniform": (_fp or {}).get("max_sites_per_uniform_row") or 25000,
+}
+
+
+def _row_limit(row):
+    archetype = (row.get("archetype") or "").strip().upper()
+    if not row.get("density"):
+        return _LIMITS["row"], "no density band, so it claims a whole country"
+    if archetype in _UNIFORM:
+        return _LIMITS["uniform"], "mass-deployed to one specification"
+    return _LIMITS["cluster"], "a cluster of individually significant sites"
+
+
+def _row_remedy(row):
+    archetype = (row.get("archetype") or "").strip().upper()
+    if not row.get("density"):
+        return "give it a density band"
+    if archetype in _UNIFORM:
+        return "split across densities or countries, or reduce the count"
+    return (f"check the site type first - a parcel shop or packstation is a "
+            f"STORE, not a {archetype}, and a depot is a WAREHOUSE. If the "
+            f"type is right, split by density or country")
+
+
+_coarse = [r for r in _edited if r["sites"] > _row_limit(r)[0]]
 if _coarse:
     st.error(
-        "**These rows carry too many sites to be one row:** "
-        + "; ".join(f"{r['country']} {r['archetype']} {r['sites']:,}"
-                    for r in _coarse)
-        + f". A row asserts that every site in it is identical - one bandwidth, "
-          f"one primary and backup product, one dual-access probability - and "
-          f"the whole row is priced at that archetype's tier. Split them by "
-          f"site type. The run is refused above {_ROW_LIMIT} per row.")
+        "**These rows carry too many sites to be one row.** A row asserts "
+        "that every site in it is identical - one bandwidth, one primary and "
+        "backup product, one dual-access probability - and the whole row is "
+        "priced at that archetype's tier.\n\n"
+        + "\n".join(
+            f"- **{r['country']} {r['archetype']}"
+            + (f" {r['density']}" if r.get('density') else "")
+            + f" {r['sites']:,}** - refused above {_row_limit(r)[0]:,} "
+              f"({_row_limit(r)[1]}). {_row_remedy(r)}."
+            for r in _coarse))
 
 if _unallocated:
     _done = sum(r["sites"] for r in _edited)
