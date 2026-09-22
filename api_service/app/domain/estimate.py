@@ -755,6 +755,39 @@ def scenarios(components: list[Component], levers: list[dict],
                 cut_low += saved_lo
                 cut_total += saved_ba
                 cut_high += saved_hi
+            # A lever that booked nothing, and why.
+            #
+            # `not_applied` was recorded only when the lever carried service
+            # class or product constraints. A lever whose whole COST LAYER has
+            # no baseline matched nothing and vanished without trace: two
+            # levers act on OPS, nothing in this model ever builds an OPS
+            # cost, and scenario D therefore reported a saving of zero with no
+            # indication that 34 percentage points of the lever book had
+            # nowhere to act.
+            #
+            # That is the same defect as the inert industry benchmark and the
+            # dead `countries` parameter: a governed input that reaches no
+            # output. It is recorded here so a reader sees an empty scenario
+            # as an unmeasured cost pool rather than as a scenario with
+            # nothing in it.
+            present_layers = {c.layer for c in by_key.values()}
+            layer_missing = not (layers & present_layers)
+            if not cut_total and not (layers & present_layers):
+                not_applied.append({
+                    'lever_id': lever['lever_id'],
+                    'family': lever['family'],
+                    'cost_layers': sorted(layers),
+                    'reason': (
+                        f"{lever['family']} acts on "
+                        f"{'/'.join(sorted(layers))}, and this estimate has "
+                        f"no baseline for "
+                        f"{'/'.join(sorted(layers - present_layers))} at all "
+                        f"- it prices "
+                        f"{'/'.join(sorted(present_layers)) or 'nothing'}. "
+                        f"The saving is not zero; it is unmeasured, and a "
+                        f"headline that omits it is understated by however "
+                        f"much that layer costs."),
+                    'saving_base': '0'})
             if cut_total:
                 applied.append({"lever_id": lever["lever_id"], "family": lever["family"],
                                 "description": lever["description"],
@@ -763,7 +796,12 @@ def scenarios(components: list[Component], levers: list[dict],
                                     field: sorted(allowed)
                                     for field, allowed in constraints.items()},
                                 "saving_base": as_str(cut_total)})
-            elif constraints:
+            elif constraints and not layer_missing:
+                # Only when the layer IS priced. A lever failing on both its
+                # layer and a product constraint was reported twice, and the
+                # layer is the reason that matters: there is no cost pool for
+                # the constraint to narrow.
+                #
                 # Offered and inapplicable. A scenario that quietly contains
                 # fewer levers than it declares reads as a weaker opportunity
                 # rather than a different estate, and the difference matters:
@@ -814,7 +852,38 @@ def scenarios(components: list[Component], levers: list[dict],
             sum((D(v[0]) for v in matched_totals), D(0)),
             current.base - target.base,
             sum((D(v[2]) for v in matched_totals), D(0)))
+        # A scenario cannot save more than the layers it acts on cost.
+        #
+        # Nothing checked this. A hand-built ladder compounding four scenario
+        # families against one L0 baseline produced a 74% saving where the
+        # layer-scoped answer is 21-29%, because two of the four families act
+        # on cost pools that baseline never contained. The model itself was
+        # right - it scopes by layer, so those levers booked nothing - and
+        # there was no guard to catch a consumer that was not.
+        #
+        # Reported rather than raised. A scenario over its ceiling is a lever
+        # book that needs correcting, not a case that should refuse to open,
+        # and refusing here would hide the diagnostic a reader needs.
+        _touched = sorted({layer for lev in levers
+                           if lev["scenario"] == code
+                           for layer in (lev.get("cost_layers") or [])})
+        _addressable = sum(
+            (D(c.value.base) for c in components if c.layer in _touched),
+            D(0))
+        _breach = (saving.base > _addressable) if _addressable \
+            else bool(saving.base)
         out[code] = {
+            "ceiling": {
+                "layers_addressed": _touched,
+                "addressable_base": as_str(_addressable),
+                "saving_base": as_str(saving.base),
+                "within_ceiling": not _breach,
+                "note": (
+                    f"scenario {code} saves {as_str(saving.base)} against an "
+                    f"addressable base of {as_str(_addressable)} in "
+                    f"{'/'.join(_touched) or 'no priced layer'} - a saving "
+                    f"cannot exceed the cost it removes") if _breach else None,
+            },
             "label": label,
             "target_tco": target.to_dict(),
             "gross_run_rate_savings": saving.to_dict(),

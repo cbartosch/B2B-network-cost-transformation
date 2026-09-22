@@ -222,4 +222,8 @@ SIMULATION_MODEL_VERSION = "sim-2.0.0"
 # at a rate from reference.fx_rate chosen by the case's own fx_convention -
 # the field pre-flight has always collected and no calculation ever read. A
 # pair with no rate still refuses: parity assumed is invisible in the result.
-CALCULATION_VERSION = "calc-1.14.0"
+# calc-1.15.0: a scenario reports the ceiling it was measured against, and a lever
+# whose whole cost layer has no baseline says so instead of vanishing. Two
+# levers act on OPS and nothing prices OPS, so a third of the lever book had
+# nowhere to land and an empty scenario looked like no opportunity.
+CALCULATION_VERSION = "calc-1.15.0"
