@@ -2,7 +2,7 @@
 exist only as a code constant - they live here and are versioned in the database."""
 from datetime import date as _date
 
-from sqlalchemy import delete, insert, select
+from sqlalchemy import delete, insert, select, update
 
 from .domain import access, bics, industry_benchmark, industries
 from .domain.research_briefs import (
@@ -2122,6 +2122,7 @@ def seed(force: bool = False):
     s = SessionLocal()
     try:
         loaded, topped_up, skipped, removed = [], [], [], []
+        updated = []
         for table, builder in _rows():
             name = f"{table.schema}.{table.name}"
             pk_cols = [c.name for c in table.primary_key.columns]
@@ -2140,6 +2141,41 @@ def seed(force: bool = False):
                 removed.append(f"{name} ({len(stale_pks)})")
                 existing_pks -= stale_pks
 
+            # --force reconciles VALUES, not only keys.
+            #
+            # A row whose primary key still exists was left alone even when
+            # the seeded value had changed - and for density_mix the key is
+            # industry-archetype-density, so changing LOGISTICS from few-large
+            # to distribution-led left every overlapping row at its old share
+            # and inserted only the new ones. The database ended up holding
+            # 0.85 of one shape plus 0.29 of another: shares summing to 1.14,
+            # and a 38,000-site footprint allocated as 43,320.
+            #
+            # Every estate shape changed in the last several releases was
+            # invisible on any instance that had already been seeded once.
+            #
+            # Only under --force. A plain seed still leaves an existing row
+            # alone, because a steward's hand edit is the thing that
+            # protects - and reconciling on every start would silently undo
+            # it. --force is the operator saying "make it match the code".
+            if force:
+                reconciled = 0
+                for pk, row in wanted.items():
+                    if pk not in existing_pks:
+                        continue
+                    cond = [table.c[c] == v for c, v in zip(pk_cols, pk)]
+                    current = s.execute(select(table).where(*cond)).first()
+                    if current is None:
+                        continue
+                    drift = {c: v for c, v in row.items()
+                             if c in table.c
+                             and str(getattr(current, c, None)) != str(v)}
+                    if drift:
+                        s.execute(update(table).where(*cond).values(**drift))
+                        reconciled += 1
+                if reconciled:
+                    updated.append(f"{name} ({reconciled})")
+
             missing = {pk: r for pk, r in wanted.items() if pk not in existing_pks}
             if not missing:
                 if existing_pks:
@@ -2156,6 +2192,11 @@ def seed(force: bool = False):
                  f"{', '.join(topped_up)}")
         if removed:
             print(f"removed stale rows (--force): {', '.join(removed)}")
+        if updated:
+            # Reported, because a value silently changing under an operator is
+            # worse than one that does not change at all.
+            print(f"reconciled changed values (--force): "
+                  f"{', '.join(updated)}")
         if skipped:
             print(f"already complete, left untouched: {', '.join(skipped)}")
         if not (loaded or topped_up or removed or skipped):

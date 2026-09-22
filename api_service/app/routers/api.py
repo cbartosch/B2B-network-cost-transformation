@@ -308,6 +308,36 @@ def ready(response: Response):
         except Exception as exc:                 # noqa: BLE001
             unusable.append(f"{name}: {type(exc).__name__}: {str(exc)[:140]}")
 
+    # Do the seeded estate shares still add up IN THE DATABASE?
+    #
+    # The shapes are asserted to sum to 1 in the code, and that test passed
+    # throughout. The database held something else: --force reconciled keys
+    # and not values, so changing an industry's shape left every overlapping
+    # row at its old share and inserted only the new ones. LOGISTICS ended up
+    # at 1.14, and a 38,000-site footprint was allocated as 43,320.
+    #
+    # Checked here because this is the one place that reads the database
+    # rather than the constant. A test against `seed.DENSITY_MIX` cannot see
+    # a divergence between the two, which is exactly what went wrong.
+    with S() as s:
+        _mix = {}
+        for _row in s.execute(select(db.density_mix)).all():
+            _mix[_row.industry] = _mix.get(_row.industry, Decimal("0")) \
+                + Decimal(str(_row.share))
+    _wrong = {i: str(t) for i, t in sorted(_mix.items())
+              if t != Decimal("1.0000")}
+    if _wrong:
+        response.status_code = 503
+        return {
+            "ready": False, "reason": "seeded estate shares do not sum to one",
+            "detail": _wrong,
+            "note": ("an estate share set that does not total 1.0000 "
+                     "allocates more or fewer sites than the register holds, "
+                     "and the footprint page will show the difference as an "
+                     "over-allocation. This happens when a shape changed and "
+                     "the database was seeded without --force. Run "
+                     "`python -m app.seed --force`.")}
+
     if unusable:
         response.status_code = 503
         return {"ready": False, "reason": "governed policy unusable",
