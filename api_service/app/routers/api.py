@@ -324,19 +324,32 @@ def ready(response: Response):
         for _row in s.execute(select(db.density_mix)).all():
             _mix[_row.industry] = _mix.get(_row.industry, Decimal("0")) \
                 + Decimal(str(_row.share))
+    # Reported, NOT a 503.
+    #
+    # The first version of this returned 503 and made the container
+    # unhealthy - and the only remedy is `python -m app.seed --force`, which
+    # needs a running container. That is the same deadlock 4.204.0 fixed for
+    # an unseeded database, reintroduced in a new form one release after I
+    # wrote the comment describing it.
+    #
+    # The rule, stated so it is not relearned a third time: readiness may
+    # fail only for a fault that running the seed CANNOT fix. A policy that
+    # will not build from present rows is such a fault. Shares that do not
+    # total one are not - they are precisely what the seed repairs.
+    _share_warning = None
     _wrong = {i: str(t) for i, t in sorted(_mix.items())
               if t != Decimal("1.0000")}
     if _wrong:
-        response.status_code = 503
-        return {
-            "ready": False, "reason": "seeded estate shares do not sum to one",
-            "detail": _wrong,
-            "note": ("an estate share set that does not total 1.0000 "
-                     "allocates more or fewer sites than the register holds, "
-                     "and the footprint page will show the difference as an "
-                     "over-allocation. This happens when a shape changed and "
-                     "the database was seeded without --force. Run "
-                     "`python -m app.seed --force`.")}
+        _share_warning = {
+            "reason": "seeded estate shares do not sum to one",
+            "industries": _wrong,
+            "note": ("these allocate more or fewer sites than the register "
+                     "holds, and the footprint page shows the difference as "
+                     "an over-allocation. It happens when an estate shape "
+                     "changed and the database was seeded without --force. "
+                     "Run `python -m app.seed --force`. Readiness is not "
+                     "failed for this: the remedy needs this container "
+                     "running.")}
 
     if unusable:
         response.status_code = 503
@@ -348,6 +361,7 @@ def ready(response: Response):
                          "being down - it looks available.")}
 
     return {"ready": True, "environment": config.environment(),
+            "warnings": [_share_warning] if _share_warning else [],
             "policies": "loadable"}
 
 

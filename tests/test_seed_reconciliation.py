@@ -76,12 +76,27 @@ def test_readiness_checks_the_shares_in_the_database():
     assert "seed --force" in ready
 
 
-def test_readiness_refuses_rather_than_warns():
-    """A footprint allocated 14% over the register is not a warning - it is
-    an instance that cannot produce a correct estimate."""
+def test_readiness_warns_and_does_not_refuse():
+    """The first version returned 503 and made the container unhealthy - and
+    the only remedy, `seed --force`, needs a running container.
+
+    That is the deadlock 4.204.0 fixed for an unseeded database, reintroduced
+    one release after the comment describing it was written.
+
+    The rule: readiness may fail only for a fault that running the seed
+    CANNOT fix. A policy that will not build from present rows is such a
+    fault. Shares that do not total one are precisely what the seed
+    repairs."""
     ready = _ready()
-    block = ready[ready.index("seeded estate shares do not sum to one") - 400:]
-    assert "response.status_code = 503" in block[:500]
+    failures = [line for line in ready.splitlines()
+                if "'ready': False" in line]
+    assert failures, "readiness must still be able to fail"
+    for line in failures:
+        assert "estate shares" not in line, (
+            "a fault the seed repairs must not block the container that runs "
+            "the seed")
+    assert "warnings" in ready
+    assert "the remedy needs this container" in ready
 
 
 def test_the_shares_still_sum_to_one_in_the_code():

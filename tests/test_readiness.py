@@ -103,3 +103,56 @@ def test_the_healthcheck_calls_the_endpoint_this_governs():
     root = Path(__file__).resolve().parents[1]
     dockerfile = (root / "api_service" / "Dockerfile").read_text()
     assert "/v1/ready" in dockerfile
+
+
+def test_readiness_never_fails_for_something_the_seed_repairs():
+    """The rule, as a standing guard rather than a comment.
+
+    4.204.0 fixed this for an unseeded database: a 503 made the container
+    unhealthy, the healthcheck polls /v1/ready, and the remedy is a command
+    that needs a running container. 4.248.0 reintroduced it for estate shares
+    that do not sum to one - one release after the comment describing the
+    original was written.
+
+    Any future check that fails readiness has to clear this bar: can the
+    operator fix it without the container? If not, it is a warning.
+    """
+    import ast
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1]
+    app = next(c for c in (root / "api_service" / "app", root / "app")
+               if (c / "routers").exists())
+    source = (app / "routers" / "api.py").read_text()
+    node = next(n for n in ast.parse(source).body
+                if isinstance(n, ast.FunctionDef) and n.name == "ready")
+    body = ast.unparse(node)
+
+    # Faults a running seed cannot repair, and which may therefore 503.
+    ALLOWED = ("database unreachable", "governed policy unusable")
+    for line in body.splitlines():
+        if "'ready': False" not in line:
+            continue
+        assert any(reason in line for reason in ALLOWED), (
+            f"readiness fails for a reason not on the allow-list, and the "
+            f"container healthcheck polls it: {line.strip()[:120]}")
+
+
+def test_the_healthcheck_still_polls_readiness():
+    """The coupling that makes the rule above matter.
+
+    The container healthcheck calls /v1/ready, which is why a 503 there stops
+    the stack rather than reporting a fault. If this moves, the deadlock
+    reasoning has to be revisited rather than silently voided.
+
+    Lost once already: truncating this file to remove a duplicated block took
+    this test with it, and the run stayed green because a missing test cannot
+    fail.
+    """
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1]
+    dockerfile = (root / "api_service" / "Dockerfile").read_text()
+    assert "/v1/ready" in dockerfile, (
+        "the healthcheck no longer polls readiness - re-check whether a 503 "
+        "there can still deadlock the stack")
