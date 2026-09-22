@@ -747,78 +747,46 @@ _edited, _edit_problems = _clean_footprint(fp)
 # The limit follows how much the row says. A row with a density band is a real
 # cluster - same country, same type, same deliverable access - and claims far
 # less than one asserting a whole country's estate is alike.
-# The ceiling follows how much a single site matters, which is the inverse of
-# how many of them there are. A STORE or NETWORK_SITE cluster is mass-deployed
-# to one specification, so 20,000 packstations in one row is a fair claim; an
-# office, plant or data centre is individually significant.
+# Large rows are reported, not refused.
 #
-# This reported _ROW_LIMIT whatever limit it had applied, so a row breaching
-# the 2,000 cluster ceiling was told "refused above 100" - and advised to
-# "split by site type", which is unfollowable once the site type is chosen.
-# Every row that reaches this check has already chosen one.
+# This blocked the run above a ceiling. Everything else in this model prices
+# and reports - an expired rate, a regional fallback, a substituted bandwidth
+# tier - and refusal is for what cannot be computed. A large row can be
+# computed; its homogeneity is a precision caveat like the others.
+#
+# Refusing a real 38,000-site parcel estate did not make the model more
+# accurate. The analyst's only route through was to mis-type the rows, which
+# is worse than an imprecise row honestly labelled.
 _UNIFORM = {"STORE", "NETWORK_SITE"}
-_LIMITS = {
-    "row": (_fp or {}).get("max_sites_per_archetype_row") or 100,
-    "cluster": (_fp or {}).get("max_sites_per_cluster_row") or 2000,
-    "uniform": (_fp or {}).get("max_sites_per_uniform_row") or 25000,
-}
+_NOTABLE = (_fp or {}).get("max_sites_per_cluster_row") or 2000
+_NOTABLE_UNIFORM = (_fp or {}).get("max_sites_per_uniform_row") or 25000
 
 
-def _row_limit(row):
+def _notable(row):
     archetype = (row.get("archetype") or "").strip().upper()
-    if not row.get("density"):
-        return _LIMITS["row"], "no density band, so it claims a whole country"
-    if archetype in _UNIFORM:
-        return _LIMITS["uniform"], "mass-deployed to one specification"
-    return _LIMITS["cluster"], "a cluster of individually significant sites"
+    if archetype in _UNIFORM and row.get("density"):
+        return row["sites"] > _NOTABLE_UNIFORM
+    return row["sites"] > _NOTABLE
 
 
-# Only where a large count implies the type itself is wrong. A WAREHOUSE row
-# gets no type hint: a depot IS a warehouse, and telling it otherwise was
-# advice it had already taken.
-_MISTAKEN_FOR = {
-    "LARGE_OFFICE": "if these are outlets, parcel shops or packstations they "
-                    "are STOREs, which take much larger rows",
-    "DC": "a computing estate this size is unusual - check these are not "
-          "depots (WAREHOUSE) or outlets (STORE)",
-    "BRANCH": "if these are customer-facing they are STOREs, which take much "
-              "larger rows",
-}
-
-
-def _row_remedy(row):
-    archetype = (row.get("archetype") or "").strip().upper()
-    if not row.get("density"):
-        return "add a density band"
-    if archetype in _UNIFORM:
-        return "split across densities or countries, or reduce the count"
-    hint = _MISTAKEN_FOR.get(archetype)
-    return (f"split by density or country - or {hint}" if hint
-            else "split by density or country, or reduce the count")
-
-
-_coarse = [r for r in _edited if r["sites"] > _row_limit(r)[0]]
+_coarse = [r for r in _edited if _notable(r)]
 if _coarse:
-    st.error(
-        "**These rows carry too many sites to be one row.** A row asserts "
-        "that every site in it is identical - one bandwidth, one primary and "
-        "backup product, one dual-access probability - and the whole row is "
-        "priced at that archetype's tier.\n\n"
+    _total = sum(r["sites"] for r in _edited) or 1
+    _in_rows = sum(r["sites"] for r in _coarse)
+    st.info(
+        f"**{_in_rows / _total:.0%} of the estate is priced as one block per "
+        f"row.** A row states that every site in it is identical - one "
+        f"bandwidth, one primary and backup product, one dual-access "
+        f"probability - and the whole row prices at that archetype's tier. "
+        f"That runs; it is recorded with the estimate and shown as a gap on "
+        f"the savings page.\n\n"
         + "\n".join(
             f"- **{r['country']} {r['archetype']}"
             + (f" {r['density']}" if r.get('density') else "")
-            + f" {r['sites']:,}** - above {_row_limit(r)[0]:,}. "
-              f"{_row_remedy(r)}."
-            for r in _coarse))
-    # The glossary once, below the rows, rather than appended to each of them.
-    # Six refused rows produced six near-identical paragraphs.
-    st.caption(
-        "Site types: STORE for a customer-facing outlet, parcel shop or "
-        "packstation; WAREHOUSE for a depot or distribution centre; PLANT for "
-        "production; LARGE_OFFICE for a headquarters or regional office; DC "
-        "for a computing facility; NETWORK_SITE for unmanned infrastructure. "
-        "STORE and NETWORK_SITE are mass-deployed to one specification, so "
-        "they take far larger rows than the rest.")
+            + f" {r['sites']:,}**"
+            for r in _coarse)
+        + "\n\nSplitting the largest by density or country narrows the "
+          "claim. Naming the biggest sites individually narrows it further.")
 
 if _unallocated:
     _done = sum(r["sites"] for r in _edited)
@@ -867,14 +835,10 @@ if _save_col.button("Save footprint"):
                       f"They will be here next time without running anything.")
             st.rerun()
 
-# Disabled while a row breaches its ceiling. Pressing Run anyway sent the
-# footprint to an API that refuses it for the same reason, so the analyst saw
-# the same refusal twice in different words - and the second one arrived below
-# the button, where it reads as a new problem.
-if _run_col.button("Run simulation", type="primary",
-                   disabled=bool(_coarse),
-                   help=("Fix the over-large rows above first"
-                         if _coarse else None)):
+# Never disabled for row size. The API no longer refuses a large row either,
+# so there is nothing here to protect the analyst from - only a disclosure
+# above, which runs with the estimate rather than instead of it.
+if _run_col.button("Run simulation", type="primary"):
     footprint, problems = _clean_footprint(fp)
     for message in problems:
         st.error(message)

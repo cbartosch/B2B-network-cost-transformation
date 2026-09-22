@@ -708,89 +708,87 @@ def _best_footprint_fact(session, case_row) -> tuple:
 #
 # A footprint row claims every site in it is identical. For a STORE or a
 # NETWORK_SITE that claim is usually true: parcel shops, packstations and
-# unmanned tower sites are mass-deployed to one specification, and an estate of
-# 20,000 of them really is one product at one bandwidth. For a LARGE_OFFICE,
-# PLANT, CAMPUS, DC, TERMINAL or CONTROL_CENTER it is not - each site is
-# individually significant, and 11,400 German offices in one row is a claim
-# nobody made.
+# unmanned tower sites are mass-deployed to one specification. For a
+# LARGE_OFFICE, PLANT, CAMPUS, DC, TERMINAL or CONTROL_CENTER it is weaker -
+# each site is individually significant.
 #
-# So the ceiling follows how much a single site matters, which is the inverse
-# of how many of them there are. One ceiling for every archetype refused the
-# estates it should have accepted and accepted the rows it should have refused.
+# This used to be a GATE. A row above its ceiling was refused and the run
+# blocked, which is inconsistent with everything else in this model: an
+# expired rate prices and reports its staleness, a regional fallback prices
+# and records the scope it used, a substituted bandwidth tier prices and
+# discloses the substitution. Refusal is for what cannot be computed - a
+# missing rate, a missing FX pair - not for what can be computed imprecisely.
+#
+# A large row can be computed. Its homogeneity is a precision caveat exactly
+# like the others, so it prices and is reported. Refusing a real 24,000-site
+# estate did not make the model more accurate; it made it unusable on the
+# estates that most need it.
 UNIFORM_ARCHETYPES = frozenset({"STORE", "NETWORK_SITE"})
 
+# Above this many sites in one row, the homogeneity claim is worth reporting.
+# A reporting band, not a gate - nothing is refused for exceeding it.
+HOMOGENEITY_NOTABLE = 2000
+HOMOGENEITY_NOTABLE_UNIFORM = 25000
 
-def row_site_limit(row, policy) -> tuple:
-    """(limit, why) for one footprint row.
 
-    Returned together so the message can name the limit it actually applied.
-    Both the API and the interface call this: reporting a different number
-    from the one enforced is how an analyst came to be told "refused above
-    100" about a row that breached 2,000, and advised to split by a site type
-    already chosen.
+def homogeneity_note(row) -> dict | None:
+    """What one row claims about its sites, where that is worth saying.
+
+    Returns None for a row small enough that the claim is unremarkable. Never
+    refuses: the caller reports this alongside the estimate, the way unpriced
+    scope and stale rates are reported.
     """
+    try:
+        sites = int(row.get("sites") or 0)
+    except (TypeError, ValueError):
+        return None
     archetype = str(row.get("archetype") or "").strip().upper()
-    if archetype in UNIFORM_ARCHETYPES and row.get("density"):
-        return (int(getattr(policy, "max_sites_per_uniform_row", 25000)),
-                f"a {archetype} cluster is mass-deployed to one "
-                f"specification, so a large row is a fair claim")
-    if row.get("density"):
-        return (int(policy.max_sites_per_cluster_row),
-                "a row with a density band is a cluster - same country, same "
-                "type, same deliverable access")
-    return (int(policy.max_sites_per_archetype_row),
-            "a row with no density band asserts a whole country's estate is "
-            "alike")
+    uniform = archetype in UNIFORM_ARCHETYPES and bool(row.get("density"))
+    threshold = (HOMOGENEITY_NOTABLE_UNIFORM if uniform
+                 else HOMOGENEITY_NOTABLE)
+    if sites <= threshold:
+        return None
+    return {
+        "country": row.get("country"),
+        "archetype": archetype,
+        "density": row.get("density"),
+        "sites": sites,
+        "uniform_by_construction": uniform,
+        "note": (
+            f"{sites:,} sites priced as one block at the {archetype} tier - "
+            + ("mass-deployed to one specification, so the claim is usually "
+               "sound"
+               if uniform else
+               f"a {archetype} is individually significant, so a single "
+               f"bandwidth, product pair and dual-access probability across "
+               f"{sites:,} of them is a strong assumption")),
+        "narrows_it": (
+            "split by density or country, or name the largest sites "
+            "individually on this page"
+            if row.get("density") else
+            "add a density band - the row currently claims a whole country's "
+            "estate is alike"),
+    }
 
 
-def row_limit_remedy(row) -> str:
-    """What to do about this one over-large row.
+def homogeneity_report(footprint) -> dict:
+    """Every notable row, and how much of the estate they account for.
 
-    Per row and short. The first version appended the same site-type glossary
-    to every row, so six refused rows produced six near-identical paragraphs -
-    and it told a WAREHOUSE row that "a depot is a WAREHOUSE", which is the
-    advice it had already taken.
-
-    A type suggestion is only made where the count actually implies a
-    different type. Everything else says which dimension is still free.
+    The share is what makes this actionable: 24,000 sites in one row matters
+    very differently at 3% of the estate than at 90% of it.
     """
-    archetype = str(row.get("archetype") or "").strip().upper()
-    if not row.get("density"):
-        return ("add a density band - a row that says which band its sites "
-                "are in claims much less")
-    if archetype in UNIFORM_ARCHETYPES:
-        return "split across densities or countries, or reduce the count"
-    hint = MISTAKEN_FOR.get(archetype)
-    if hint:
-        return f"split by density or country - or {hint}"
-    return "split by density or country, or reduce the count"
-
-
-# Where a large count suggests the site type itself is wrong.
-#
-# Only for the types a high-volume estate gets mis-assigned to. A row of 11,400
-# LARGE_OFFICE in one country is far more likely to be a retail or parcel
-# network typed wrongly than an office estate; a row of 2,280 DC is not a data
-# centre estate. A WAREHOUSE row gets no such hint, because a depot IS a
-# warehouse and suggesting otherwise was the advice it had already followed.
-MISTAKEN_FOR = {
-    "LARGE_OFFICE": ("if these are customer-facing outlets, parcel shops or "
-                     "packstations they are STOREs, which take much larger "
-                     "rows"),
-    "DC": ("a computing facility estate this size is unusual - check these "
-           "are not depots (WAREHOUSE) or outlets (STORE)"),
-    "BRANCH": ("if these are customer-facing they are STOREs, which take "
-               "much larger rows"),
-}
-
-
-# Said once, not per row. The glossary belongs with the refusal, not appended
-# to every line of it.
-ROW_LIMIT_GLOSSARY = (
-    "Site types: STORE for a customer-facing outlet, parcel shop or "
-    "packstation; WAREHOUSE for a depot or distribution centre; PLANT for "
-    "production; LARGE_OFFICE for a headquarters or regional office; DC for a "
-    "computing facility; NETWORK_SITE for unmanned infrastructure. STORE and "
-    "NETWORK_SITE rows are mass-deployed to one specification, so they take "
-    "far larger rows than the rest."
-)
+    rows = list(footprint or [])
+    total = sum(int(r.get("sites") or 0) for r in rows) or 0
+    notes = [n for n in (homogeneity_note(r) for r in rows) if n]
+    blocked = sum(n["sites"] for n in notes)
+    strong = sum(n["sites"] for n in notes
+                 if not n["uniform_by_construction"])
+    return {
+        "rows": notes,
+        "sites_in_large_rows": blocked,
+        "share_in_large_rows": (f"{blocked / total:.3f}" if total else "0.000"),
+        "share_asserted_alike": (f"{strong / total:.3f}" if total
+                                 else "0.000"),
+        "basis": ("sites in rows above the reporting band; nothing is refused "
+                  "for this - the row prices and the claim is disclosed"),
+    }

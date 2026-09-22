@@ -231,6 +231,32 @@ def gaps(*, snapshot: dict, dispositions: list[dict],
                          "simulation page",
         })
 
+    # Sites priced as one homogeneous block. Reported rather than refused:
+    # the row prices, and what it claims about its sites belongs next to the
+    # number it produced.
+    homo = (snapshot.get("pins") or {}).get("homogeneity") or {}
+    _asserted = homo.get("share_asserted_alike")
+    if _asserted and float(_asserted) > 0.25:
+        _rows = homo.get("rows") or []
+        _worst = max(_rows, key=lambda r: r.get("sites") or 0) if _rows else {}
+        found.append({
+            "gap": "estate priced as one block",
+            "detail": (
+                f"{float(_asserted) * 100:.0f}% of the estate sits in rows "
+                f"asserting that every site in them is identical - one "
+                f"bandwidth, one primary and backup product, one dual-access "
+                f"probability. The largest is "
+                f"{_worst.get('country')} {_worst.get('archetype')} at "
+                f"{(_worst.get('sites') or 0):,} sites."),
+            "costs": ("precision on the largest part of the baseline - a "
+                      "single tier across thousands of individually "
+                      "significant sites understates the spread and hides "
+                      "which sites drive the cost"),
+            "closes_it": ("split the largest rows by density or country on "
+                          "the simulation page, or name the biggest sites "
+                          "individually - each split narrows the claim"),
+        })
+
     anchor = (snapshot.get("pins") or {}).get("anchor_basis") or {}
     if anchor and anchor.get("anchor_origin") not in (None, "", "EVIDENCED_PUBLIC"):
         found.append({

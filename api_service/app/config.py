@@ -226,4 +226,9 @@ SIMULATION_MODEL_VERSION = "sim-2.0.0"
 # whose whole cost layer has no baseline says so instead of vanishing. Two
 # levers act on OPS and nothing prices OPS, so a third of the lever book had
 # nowhere to land and an empty scenario looked like no opportunity.
-CALCULATION_VERSION = "calc-1.15.0"
+# calc-1.16.0: no site-count gate. A large footprint row prices and its
+# homogeneity is reported, the way an expired rate and a regional fallback
+# already are. Refusal is for what cannot be computed, not for what can be
+# computed imprecisely - and refusing a real 38,000-site estate left the
+# analyst mis-typing rows to get through.
+CALCULATION_VERSION = "calc-1.16.0"

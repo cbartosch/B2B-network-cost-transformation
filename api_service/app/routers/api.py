@@ -1276,38 +1276,19 @@ def run_simulation(case_id: str, payload: SimIn):
         # a density band is a cluster - same country, same type, same
         # deliverable access - and claims far less than a row that asserts a
         # whole country's estate is alike.
-        # One shared rule, in footprint_resolver, so this and the interface
-        # cannot report different numbers. They did: a row breaching the
-        # 2,000 cluster ceiling was told "refused above 100", and advised to
-        # split by a site type it had already chosen.
-        coarse = [r for r in footprint
-                  if int(r["sites"]) > footprint_resolver.row_site_limit(
-                      r, fp_policy)[0]]
-        if coarse:
-            raise HTTPException(422, {
-                "error": "a single archetype row carries too many sites",
-                "rows": [
-                    {"country": r["country"], "archetype": r["archetype"],
-                     "density": r.get("density"), "sites": r["sites"],
-                     # The limit that was actually applied, and why it is
-                     # that one rather than another.
-                     "limit": footprint_resolver.row_site_limit(
-                         r, fp_policy)[0],
-                     "limit_because": footprint_resolver.row_site_limit(
-                         r, fp_policy)[1],
-                     "remedy": footprint_resolver.row_limit_remedy(r)}
-                    for r in coarse],
-                "detail": (
-                    "A footprint row states that every site in it is "
-                    "identical - same bandwidth, same primary and backup "
-                    "product, same dual-access probability - and the whole "
-                    "row is priced at that archetype's tier. The ceiling "
-                    "follows how much a single site matters: a store or a "
-                    "tower site is mass-deployed to one specification and a "
-                    "large row is a fair claim, while an office, plant or "
-                    "data centre is individually significant. Each row above "
-                    "carries the limit applied to it and what to do about "
-                    "it.")})
+        # No site-count gate. A large row prices and its claim is reported.
+        #
+        # This refused above a ceiling, which is inconsistent with everything
+        # else here: an expired rate prices and reports its staleness, a
+        # regional fallback prices and records the scope, a substituted
+        # bandwidth tier prices and discloses the substitution. Refusal is for
+        # what cannot be computed - a missing rate, a missing FX pair - not
+        # for what can be computed imprecisely.
+        #
+        # Refusing a real 24,000-site estate did not make the model more
+        # accurate. It made it unusable on the estates that most need it, and
+        # the analyst's only route through was to mis-type the rows.
+        homogeneity = footprint_resolver.homogeneity_report(footprint)
 
         # Ask before creating the row. The candidate must not count itself,
         # and a refused run should never have existed.
@@ -1335,6 +1316,15 @@ def run_simulation(case_id: str, payload: SimIn):
             params={"footprint": footprint,
                     "site_inclusion_rule": getattr(
                         case_row, "site_inclusion_rule", None),
+                    # How much of the estate is priced as one homogeneous
+                    # block. Pinned with the footprint because it is part of
+                    # what the number means: 19,380 sites priced at one tier
+                    # is a different claim from 19,380 sites priced
+                    # individually, and the estimate reads the same either
+                    # way unless this says so.
+                    #
+                    # Replaced a refusal. A large row now prices and reports.
+                    "homogeneity": homogeneity,
                     "backbone": backbone,
                     # What counts as a site, and where each count came from.
                     # Pinned with the footprint because they are part of what
