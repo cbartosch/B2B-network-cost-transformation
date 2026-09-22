@@ -148,7 +148,11 @@ LLM_SEARCH_TIMEOUT_SECONDS = float(
 # on a representative archetype the mix does not contain; three industries
 # priced identically. Composed now from the site type's own need and the
 # industry's posture, and stored against every archetype an estate can hold.
-SIMULATION_MODEL_VERSION = "sim-1.19.0"
+# sim-1.20.0: every industry reaches a published benchmark. 24 of the 27 older
+# workbench codes had no row of their own, so a case created before the BICS
+# load got no bandwidth, committed share, dual access or criticality from the
+# benchmark - it fell back to seeded defaults without saying so.
+SIMULATION_MODEL_VERSION = "sim-1.20.0"
 # calc-1.1.0: the saving band is accumulated with matched pairing rather than
 # derived as current - target. The target is a function of the current, so
 # subtracting the two crossed bounds a second time and produced worlds that

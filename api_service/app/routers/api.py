@@ -16,7 +16,8 @@ from .. import config, db, jobs, migrations
 # function, not per line.
 from ..domain.scope import REGION_PARENT as REGION_PARENT
 from ..domain import (access as access_vocab, anchor_estimate,
-                      assumptions, calibration, case_rates, currency,
+                      assumptions, bics, calibration, case_rates,
+                      currency,
                       site_rule,
                       delta_bridge, industries, industry_benchmark,
                       providers, validation,
@@ -1089,8 +1090,14 @@ def run_simulation(case_id: str, payload: SimIn):
         # rather than this repository's own judgement - and it names the site
         # archetypes the industry actually has, which is why nine industries
         # carried a POOR-fit caveat.
+        # Mapped, so an older workbench code reaches a published benchmark.
+        # 24 of the 27 legacy codes have no row of their own, and a case
+        # created before the BICS load therefore got no bandwidth, committed
+        # share, dual access or criticality from the benchmark at all - it
+        # fell back to seeded defaults without saying so.
+        _bench_code = bics.benchmark_code(_industry) or _industry
         _bench = s.execute(select(db.industry_benchmark).where(
-            db.industry_benchmark.c.industry_code == _industry)).all()
+            db.industry_benchmark.c.industry_code == _bench_code)).all()
         _bench_rows = [
             {"archetype_code": r.archetype_code,
              "site_archetype": r.site_archetype,
@@ -1132,8 +1139,11 @@ def run_simulation(case_id: str, payload: SimIn):
         # The benchmark still supplies the posture. What changed is that the
         # posture is now composed with each site type's own need and stored
         # against every archetype an estate can contain, so it reaches.
+        # Same mapping as the bandwidth lookup above. Resilience is keyed on
+        # the BICS code, so a legacy code has to resolve to one or the whole
+        # posture falls back to the archetype default.
         _res_rows = s.execute(select(db.archetype_resilience).where(
-            db.archetype_resilience.c.industry == _industry)).all()
+            db.archetype_resilience.c.industry == _bench_code)).all()
         benchmark_committed = {
             r.archetype: str(r.committed_fraction)
             for r in _res_rows if r.committed_fraction is not None}

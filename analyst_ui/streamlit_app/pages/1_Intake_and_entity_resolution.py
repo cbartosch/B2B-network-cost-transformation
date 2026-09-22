@@ -21,36 +21,34 @@ st.subheader("Mandatory intake block")
 
 is_locked = bool(case.get("resolved_entity_id"))
 if is_locked:
-    # Six fields are locked, and this named four.
+    # The lock is the API's, and the API locks five fields.
     #
-    # `disabled=is_locked` is set on the legal name, the identifier, the
-    # domicile, the aliases, the industry and the group perimeter. The message
-    # listed the first three and the last, so an analyst finding the industry
-    # selector greyed out had no way to know why - and the stated reason,
-    # provenance drift from a confirmed entity, does not obviously apply to a
-    # modelling choice.
+    # `update_case` refuses subject_entity_legal_name, entity_identifier,
+    # country_of_domicile, group_perimeter and excluded_entities once an
+    # entity is confirmed - those five are set BY confirming an entity, so
+    # editing them directly would make the estimate describe something other
+    # than what was resolved.
     #
-    # Two of the six are also different in kind, and the message now says so
-    # rather than implying one rule covers all six. Aliases and industry are
-    # not attributes of the resolved entity: the aliases decide which sources
-    # a search accepts as being about this company, and the industry decides
-    # which estate shape and resilience posture the model applies. Both were
-    # swept into the lock, which is why a case created before the taxonomy
-    # grew from 28 codes to 47 cannot take one of the new ones without
-    # re-resolving.
+    # This page additionally locked the aliases and the industry, which the
+    # API has never locked. A `PUT` with an industry succeeds on a confirmed
+    # case; only the interface refused. So the restriction was not a control,
+    # it was a bug that made a modelling choice unreachable - and a case
+    # created before the taxonomy grew from 28 codes to 47 could not take one
+    # of the new ones at all.
+    #
+    # The list below is the API's five. If it drifts from `update_case`, the
+    # guard in tests/test_lock_message.py fails.
     st.info(
-        "Entity confirmed. Six fields are locked: legal name, identifier, "
-        "country of domicile, aliases, industry and group perimeter. To "
-        "change any of them, resolve and confirm the entity again below - "
-        "that is what advances the perimeter version.\n\n"
-        "The first three and the perimeter are locked so an estimate's "
-        "provenance cannot drift from what was actually confirmed. Aliases "
-        "and industry are locked with them, and arguably should not be: "
-        "aliases govern which sources a search accepts as being about this "
-        "company, and industry selects the estate shape and resilience "
-        "posture the model applies. Neither is an attribute of the confirmed "
-        "entity, so re-resolving is a heavier step than changing them "
-        "warrants.")
+        "Entity confirmed. Five fields are locked: legal name, identifier, "
+        "country of domicile, group perimeter and excluded entities. They "
+        "are set by confirming an entity, so an estimate's provenance cannot "
+        "drift from what was actually resolved. To change any of them, "
+        "resolve and confirm the entity again below - that is what advances "
+        "the perimeter version.\n\n"
+        "Industry and aliases are not locked: industry selects the estate "
+        "shape and resilience posture the model applies, and aliases govern "
+        "which sources a search accepts as being about this company. Neither "
+        "is an attribute of the confirmed entity, so both stay editable.")
 
 # Scope mode lives outside the form: a form batches its own widgets and only
 # reruns the script on submit, so a radio inside it can't reveal or hide the
@@ -106,7 +104,7 @@ aliases_text = st.text_input(
          "for example HypoVereinsbank and HVB for UniCredit's German bank. "
          "Without these, research searches only the registered legal name "
          "and the perimeter check discards every source that uses the "
-         "brand.", disabled=is_locked, key="ik_aliases_text")
+         "brand.", key="ik_aliases_text")
 
 # Read from the taxonomy rather than listed here. The hardcoded five went
 # stale the moment the table gained twenty-three more, and an analyst choosing
@@ -156,7 +154,7 @@ industry = st.selectbox(
     index=_INDUSTRIES.index(_cur_ind) if _cur_ind in _INDUSTRIES else 0,
     help="Sets the bandwidth tier per site type. A retail bank branch and "
          "a parts depot of the same size do not need the same circuit; "
-         "leave blank to use the generic tiers.", disabled=is_locked,
+         "leave blank to use the generic tiers.",
     key=f"ik_industry_{case_id[:8]}")
 
 # What the chosen sector implies, and where the five archetypes fit it badly.

@@ -210,3 +210,91 @@ def density_mix_rows(industry_codes, shapes: dict) -> list:
         for archetype, band, share in shapes[shape_for(code)]:
             rows.append((code, archetype, band, share))
     return rows
+
+
+# Each older workbench code, mapped to the BICS code that carries a published
+# benchmark.
+#
+# The dropdown offers 47 BICS codes since 4.220.0, and 24 of the 27 older codes
+# have no benchmark row of their own - so a case created before that load fell
+# back to this repository's seeded grade E figures and got no bandwidth,
+# committed share, dual access or criticality from the benchmark at all.
+#
+# Mapped rather than filled in. Writing 24 new benchmark rows would be 24 new
+# assumptions; pointing at an existing row reuses data somebody supplied, and a
+# reader can check whether the mapping is reasonable. Where a legacy code is
+# broader than any single BICS code - MANUFACTURING, RETAIL, FINANCIAL_SERVICES
+# - the most representative member is used and `LEGACY_MAPPING_IS_BROAD` names
+# it, because "manufacturing" priced as an automotive plant is a choice worth
+# seeing.
+LEGACY_TO_BICS = {
+    # --- transport and logistics
+    "PARCEL_LOGISTICS": "LOGISTICS",
+    "FREIGHT_FORWARDING": "LOGISTICS",
+    "DISTRIBUTION": "WAREHOUSING",
+    "WHOLESALE_DISTRIBUTION": "WAREHOUSING",
+    "AIRPORTS": "AIRPORT",
+    "PORTS": "PORT",
+    "TRAVEL_TOURISM": "HOTELS",
+    # --- retail
+    "RETAIL": "DEPARTMENT_STORES",
+    "GROCERY_RETAIL": "SUPERMARKETS",
+    "PHARMACY_RETAIL": "DRUG_RETAIL",
+    "SPECIALTY_RETAIL": "DEPARTMENT_STORES",
+    "QSR_RESTAURANTS": "DEPARTMENT_STORES",
+    # --- manufacturing and resources
+    "AUTOMOTIVE": "AUTOMOTIVE_OEM",
+    "MANUFACTURING": "INDUSTRIAL_CONGLOMERATE",
+    "DISCRETE_MANUFACTURING": "AUTOMOTIVE_OEM",
+    "PROCESS_MANUFACTURING": "CHEMICALS",
+    "NATURAL_RESOURCES": "DIVERSIFIED_MINING",
+    "DEFENSE": "AEROSPACE_DEFENSE",
+    # --- services and public sector
+    "IT_SERVICES": "SOFTWARE",
+    "TELECOM": "FIXED_OPERATOR",
+    "CAPITAL_MARKETS": "INVESTMENT_BANKING",
+    "FINANCIAL_SERVICES": "UNIVERSAL_BANKING",
+    "GOVERNMENT": "COMMERCIAL_REIT",
+    "PUBLIC_SAFETY": "UTILITIES",
+}
+
+# Mappings where the older code covers more ground than the BICS row it points
+# at. The estimate still prices, and the reader is told which member was used.
+LEGACY_MAPPING_IS_BROAD = {
+    "MANUFACTURING": "priced as a diversified industrial; a single-product "
+                     "plant estate differs materially",
+    "RETAIL": "priced as department stores; a specialist or convenience "
+              "estate has a different site mix",
+    "SPECIALTY_RETAIL": "priced as department stores; specialist formats are "
+                        "usually smaller sites",
+    "QSR_RESTAURANTS": "priced as department stores for want of a food-service "
+                       "row; restaurant sites are smaller and thinner",
+    "FINANCIAL_SERVICES": "priced as universal banking; an asset manager or "
+                          "insurer has a very different estate",
+    "GOVERNMENT": "priced as commercial real estate for want of a public "
+                  "administration row",
+    "PUBLIC_SAFETY": "priced as utilities for their control-centre pattern; "
+                     "the field estate differs",
+    "TRAVEL_TOURISM": "priced as hotels; an airline or agency estate differs",
+    "DISCRETE_MANUFACTURING": "priced as an automotive OEM, the largest "
+                              "discrete manufacturer pattern available",
+    "PROCESS_MANUFACTURING": "priced as chemicals, the representative process "
+                             "industry here",
+    "IT_SERVICES": "priced as software; a managed-services estate carries more "
+                   "small sites",
+}
+
+
+def benchmark_code(industry: str | None) -> str | None:
+    """The code whose benchmark row should price this industry.
+
+    A BICS code answers for itself. An older workbench code answers with its
+    mapped BICS equivalent, so a case created before the BICS load still gets a
+    published benchmark rather than a seeded default.
+    """
+    if not industry:
+        return None
+    code = str(industry).strip().upper()
+    if code in SHAPE_OF_BICS:
+        return code
+    return LEGACY_TO_BICS.get(code)

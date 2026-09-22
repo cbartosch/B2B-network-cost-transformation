@@ -58,23 +58,60 @@ def _locked_labels(source):
     return labels
 
 
-def test_the_lock_disables_six_fields():
-    """A canary. If this changes, the message below has to change with it."""
-    assert len(_locked_labels(_page())) == 6
+def _api_locked():
+    """The authoritative lock: the field set `update_case` refuses.
+
+    Derived from the route rather than restated here. The page had locked two
+    fields the API never locked, and the previous version of this test
+    asserted the page's own wrong list back at itself - a test of the
+    spelling, not of the control.
+    """
+    import re
+
+    root = Path(__file__).resolve().parents[1]
+    app = next(c for c in (root / "api_service" / "app", root / "app")
+               if (c / "routers").exists())
+    api = (app / "routers" / "api.py").read_text()
+    start = api.index('            locked = {"subject_entity_legal_name"')
+    return set(re.findall(r'"(\w+)"', api[start:start + 260]))
+
+
+def test_the_page_locks_exactly_what_the_api_locks():
+    """A restriction in one layer and not the other is not a control.
+
+    `industry` and the aliases were disabled on this page and accepted by the
+    API, so a PUT succeeded where the interface refused - which made a
+    modelling choice unreachable rather than governed."""
+    page = _page()
+    for never in ("ik_industry", "ik_aliases_text"):
+        block = page[page.index(never) - 400:page.index(never) + 60]
+        assert "disabled=is_locked" not in block, (
+            f"{never} is locked on the page and not by the API")
+
+
+def test_the_api_lock_set_is_the_five_entity_attributes():
+    """A canary on the authoritative list. If the API starts locking
+    something else, the message below has to change."""
+    assert _api_locked() == {
+        "subject_entity_legal_name", "entity_identifier",
+        "country_of_domicile", "group_perimeter", "excluded_entities"}
 
 
 def test_the_message_names_every_locked_field():
     """It named four of six. Industry and aliases were silent."""
     message = _message().lower()
-    for token in ("legal name", "identifier", "domicile", "alias",
-                  "industry", "perimeter"):
+    for token in ("legal name", "identifier", "domicile", "perimeter",
+                  "excluded entities"):
         assert token in message, f"the lock message does not mention {token}"
+    # and it must say the two that are NOT locked, because an analyst who
+    # remembers them being greyed out needs telling they no longer are
+    assert "not locked" in message
 
 
 def test_the_message_says_how_many():
     """A count is checkable by a reader; a list is not."""
     message = _message()
-    assert "Six fields are locked" in message
+    assert "Five fields are locked" in message
 
 
 def test_the_message_separates_provenance_from_modelling():
@@ -82,8 +119,8 @@ def test_the_message_separates_provenance_from_modelling():
     industry are not - they govern which sources a search accepts and which
     estate shape the model applies. One reason does not cover both."""
     message = _message()
-    assert "arguably should not be" in message
     assert "an attribute of the confirmed entity" in message
+    assert "estate shape" in message
 
 
 def test_the_route_out_is_stated():
