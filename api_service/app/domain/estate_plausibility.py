@@ -47,12 +47,30 @@ PER_COUNTRY_CEILING = {
     "CAMPUS": 150,
     "CONTROL_CENTER": 150,
     "PLANT": 800,
+    # A depot or distribution centre is a building with loading bays. DHL
+    # runs a few hundred in Germany and Amazon around a hundred fulfilment
+    # centres; 25,840 is not an estate, it is a parcel network typed as
+    # depots. This was left unbounded in the first version and let exactly
+    # that through.
+    "WAREHOUSE": 3000,
+    # A bank's branch network. Deutsche Bank ran roughly a thousand; the
+    # largest national networks reach a few thousand under one operator.
+    "BRANCH": 5000,
+    # Extraction and generation sites. A large utility runs thousands of
+    # substations, but those are NETWORK_SITE - a mine or a wind farm is
+    # counted in dozens to low hundreds.
+    "REMOTE_SITE": 4000,
     "LARGE_OFFICE": 4000,
 }
 
-# Site types whose count is genuinely unbounded, listed so the absence of a
-# ceiling is a decision rather than an omission.
-UNBOUNDED = ("STORE", "BRANCH", "WAREHOUSE", "NETWORK_SITE", "REMOTE_SITE")
+# Genuinely unbounded, and only these two.
+#
+# A postal network really does have 30,000 collection points and a tower
+# company 40,000 cabinets: both are mass-deployed to one specification and
+# the count is the business. Everything else has a ceiling, because the first
+# version exempted five types and let 25,840 warehouses through - the same
+# error as the one it was written to catch, one site type over.
+UNBOUNDED = ("STORE", "NETWORK_SITE")
 
 # Above this many sites in one country, the estate is a network of small
 # things. A 38,000-site estate is not 44% large offices - at that scale the
@@ -174,4 +192,13 @@ def _likely_cause(archetype: str) -> str:
         "CONTROL_CENTER": ("a control centre is an operations or dispatch "
                            "room, of which a company has a handful"),
         "PLANT": "a production site, not a depot or an outlet",
+        "WAREHOUSE": ("a depot or distribution centre is a building with "
+                      "loading bays - a parcel shop, packstation or "
+                      "collection point is a STORE, and there can be tens of "
+                      "thousands of those"),
+        "BRANCH": ("if these are customer-facing they are STOREs, which have "
+                   "no ceiling"),
+        "REMOTE_SITE": ("an extraction or generation site - passive "
+                        "infrastructure like a cabinet or mast is a "
+                        "NETWORK_SITE, which has no ceiling"),
     }.get(archetype, "the site type is applied to the wrong rows")

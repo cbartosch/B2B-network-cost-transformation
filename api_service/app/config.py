@@ -239,4 +239,7 @@ SIMULATION_MODEL_VERSION = "sim-2.1.0"
 # calc-1.17.0: the estate is checked for being possible, not only for being
 # priceable. A German footprint with 3,800 data centres and 19,000 large
 # offices priced at 1.21 billion with coverage 1.000 and every gate green.
-CALCULATION_VERSION = "calc-1.17.0"
+# calc-1.18.0: only STORE and NETWORK_SITE are unbounded. The first plausibility
+# check exempted five site types and let 25,840 warehouses in one country
+# through - the same error it was written to catch, one site type over.
+CALCULATION_VERSION = "calc-1.18.0"

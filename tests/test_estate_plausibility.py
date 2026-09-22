@@ -86,6 +86,16 @@ def test_over_allocation_against_the_register_is_caught():
     ("chemicals", [
         {"country": "DE", "archetype": "PLANT", "sites": 140},
         {"country": "DE", "archetype": "LARGE_OFFICE", "sites": 30}]),
+    ("grocery chain", [
+        {"country": "GB", "archetype": "STORE", "sites": 2800},
+        {"country": "GB", "archetype": "WAREHOUSE", "sites": 28}]),
+    ("contract logistics", [
+        {"country": "DE", "archetype": "WAREHOUSE", "sites": 420},
+        {"country": "DE", "archetype": "BRANCH", "sites": 130}]),
+    ("large utility", [
+        {"country": "DE", "archetype": "NETWORK_SITE", "sites": 12000},
+        {"country": "DE", "archetype": "CONTROL_CENTER", "sites": 11},
+        {"country": "DE", "archetype": "REMOTE_SITE", "sites": 300}]),
 ])
 def test_it_is_silent_on_estates_that_are_real(name, footprint):
     """A ceiling that fires on a real estate is worse than no ceiling. A
@@ -96,10 +106,36 @@ def test_it_is_silent_on_estates_that_are_real(name, footprint):
     assert result["plausible"], (name, result["findings"])
 
 
-def test_the_high_count_site_types_have_no_ceiling_on_purpose():
-    """Listed rather than omitted, so the absence is a decision."""
+def test_only_two_site_types_are_genuinely_unbounded():
+    """The first version exempted five and let 25,840 warehouses in Germany
+    through - the same error it was written to catch, one site type over.
+
+    A postal network really does have 30,000 collection points and a tower
+    company 40,000 cabinets. A depot is a building with loading bays: DHL runs
+    a few hundred in Germany, Amazon around a hundred fulfilment centres."""
+    assert set(plausibility.UNBOUNDED) == {"STORE", "NETWORK_SITE"}
     for archetype in plausibility.UNBOUNDED:
         assert archetype not in plausibility.PER_COUNTRY_CEILING
+    for archetype in ("WAREHOUSE", "BRANCH", "REMOTE_SITE"):
+        assert archetype in plausibility.PER_COUNTRY_CEILING
+
+
+def test_a_parcel_network_typed_as_depots_is_caught():
+    """What DHL's footprint became once the shape drift was repaired: the
+    right total, spread over the wrong site type."""
+    result = plausibility.assess([
+        {"country": "DE", "archetype": "BRANCH", "sites": 7980},
+        {"country": "DE", "archetype": "DC", "sites": 1140},
+        {"country": "DE", "archetype": "LARGE_OFFICE", "sites": 3040},
+        {"country": "DE", "archetype": "WAREHOUSE", "sites": 25840},
+    ], registered_total=38000)
+    assert not result["plausible"]
+    flagged = {f["archetype"] for f in result["findings"]
+               if f["kind"] == "IMPOSSIBLE_COUNT"}
+    assert {"WAREHOUSE", "BRANCH", "DC"} <= flagged
+    warehouse = next(f for f in result["findings"]
+                     if f.get("archetype") == "WAREHOUSE")
+    assert "STORE" in warehouse["likely_cause"]
 
 
 def test_it_reports_rather_than_refuses():
