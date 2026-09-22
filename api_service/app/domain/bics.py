@@ -127,7 +127,7 @@ SHAPE_OF_BICS = {
     # and many-small is a STORE shape - the proportions fit and the archetype
     # does not, and BRANCH dominates network-centric. The generator that
     # produced this map had BRANCH in the wrong set.
-    "RETAIL_BANKING": "network-centric",
+    "RETAIL_BANKING": "branch-network",
     # Information Technology: ENGINEERING_CAMPUS
     "SAAS": "campus-centric",
     # Information Technology: FAB
@@ -139,7 +139,7 @@ SHAPE_OF_BICS = {
     # Communication Services: TOWER_SITE
     "TOWER_COMPANY": "network-centric",
     # Financials: CORE_BANKING_DC
-    "UNIVERSAL_BANKING": "network-centric",
+    "UNIVERSAL_BANKING": "branch-network",
     # Energy: PRODUCTION_SITE
     "UPSTREAM_E_P": "plant-centric",
     # Energy: CONTROL_CENTER

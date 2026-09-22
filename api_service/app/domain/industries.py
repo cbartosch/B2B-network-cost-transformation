@@ -146,6 +146,30 @@ SHAPES = {
         ("WAREHOUSE", "SUBURBAN", "0.0250"),
         ("LARGE_OFFICE", "URBAN", "0.0100"), ("DC", "URBAN", "0.0050"),
     ],
+    "branch-network": [
+        # A retail bank. Branches, and two to three times as many cash
+        # machines.
+        #
+        # Retail and universal banking sat on network-centric alongside cloud
+        # providers and tower companies, which gave them 25% data centres and
+        # no cash machines at all. A bank runs a handful of data centres and
+        # thousands of ATMs, and the ATM layer is most of the site count and
+        # a real slice of the connectivity spend.
+        #
+        # Roughly 3:1 against branches, which is where the large European
+        # networks sit. The ratio is this repository's judgement; that the
+        # layer exists is not.
+        ("ATM", "URBAN", "0.3400"),
+        ("ATM", "SUBURBAN", "0.2200"),
+        ("ATM", "RURAL", "0.1000"),
+        ("BRANCH", "URBAN", "0.1300"),
+        ("BRANCH", "SUBURBAN", "0.0900"),
+        ("BRANCH", "RURAL", "0.0400"),
+        ("LARGE_OFFICE", "DENSE_URBAN", "0.0300"),
+        ("LARGE_OFFICE", "URBAN", "0.0200"),
+        ("DC", "DENSE_URBAN", "0.0200"),
+        ("DC", "URBAN", "0.0100"),
+    ],
     "distribution-led": [
         # Contract logistics, freight forwarding, third-party warehousing.
         #
@@ -183,9 +207,21 @@ SHAPES = {
         # real engagement replaces first. The shape of the distribution -
         # overwhelming retail count, thin depot layer, tiny hub layer - is the
         # part that is not in doubt.
-        ("STORE", "URBAN", "0.4840"),
-        ("STORE", "SUBURBAN", "0.3100"),
-        ("STORE", "RURAL", "0.1200"),
+        # Split between staffed counters and unmanned lockers, because they
+        # are not the same circuit. A parcel shop is a counter inside a
+        # newsagent, usually carried by the host's line; a packstation is one
+        # unmanned device on cellular in a car park. Both were STORE, which
+        # priced them as staffed outlets with a LAN and a till.
+        #
+        # Roughly three counters to two lockers, which is the direction most
+        # European parcel networks have moved. The split is this repository's
+        # judgement; that the two differ is not.
+        ("SERVICE_POINT", "URBAN", "0.2900"),
+        ("SERVICE_POINT", "SUBURBAN", "0.1900"),
+        ("SERVICE_POINT", "RURAL", "0.0700"),
+        ("SELF_SERVICE_TERMINAL", "URBAN", "0.1940"),
+        ("SELF_SERVICE_TERMINAL", "SUBURBAN", "0.1200"),
+        ("SELF_SERVICE_TERMINAL", "RURAL", "0.0500"),
         # Delivery depots and delivery offices - hundreds, not thousands.
         ("WAREHOUSE", "SUBURBAN", "0.0450"),
         ("WAREHOUSE", "URBAN", "0.0250"),
@@ -304,27 +340,32 @@ SHAPE_BANDWIDTH = {
                        "LARGE_OFFICE": 500, "CAMPUS": 10000, "DC": 10000,
                        "PLANT": 1000, "REMOTE_SITE": 100,
                        "CONTROL_CENTER": 1000,
-                       "NETWORK_SITE": 100, "TERMINAL": 10000},
+                       "SERVICE_POINT": 50, "SELF_SERVICE_TERMINAL": 50,
+                       "ATM": 50, "NETWORK_SITE": 100, "TERMINAL": 10000},
     "few-large":      {"STORE": 100, "BRANCH": 500, "WAREHOUSE": 1000,
                        "LARGE_OFFICE": 10000, "CAMPUS": 10000, "DC": 10000,
                        "PLANT": 1000, "REMOTE_SITE": 100,
                        "CONTROL_CENTER": 1000,
-                       "NETWORK_SITE": 100, "TERMINAL": 10000},
+                       "SERVICE_POINT": 50, "SELF_SERVICE_TERMINAL": 50,
+                       "ATM": 50, "NETWORK_SITE": 100, "TERMINAL": 10000},
     "plant-centric":  {"STORE": 50, "BRANCH": 100, "WAREHOUSE": 500,
                        "LARGE_OFFICE": 1000, "CAMPUS": 10000, "DC": 10000,
                        "PLANT": 1000, "REMOTE_SITE": 100,
                        "CONTROL_CENTER": 1000,
-                       "NETWORK_SITE": 100, "TERMINAL": 10000},
+                       "SERVICE_POINT": 50, "SELF_SERVICE_TERMINAL": 50,
+                       "ATM": 50, "NETWORK_SITE": 100, "TERMINAL": 10000},
     "office-centric": {"STORE": 50, "BRANCH": 100, "WAREHOUSE": 100,
                        "LARGE_OFFICE": 1000, "CAMPUS": 10000, "DC": 10000,
                        "PLANT": 1000, "REMOTE_SITE": 100,
                        "CONTROL_CENTER": 1000,
-                       "NETWORK_SITE": 100, "TERMINAL": 10000},
+                       "SERVICE_POINT": 50, "SELF_SERVICE_TERMINAL": 50,
+                       "ATM": 50, "NETWORK_SITE": 100, "TERMINAL": 10000},
     "network-centric": {"STORE": 100, "BRANCH": 1000, "WAREHOUSE": 500,
                         "LARGE_OFFICE": 10000, "CAMPUS": 10000, "DC": 10000,
                        "PLANT": 1000, "REMOTE_SITE": 100,
                        "CONTROL_CENTER": 1000,
-                       "NETWORK_SITE": 100, "TERMINAL": 10000},
+                       "SERVICE_POINT": 50, "SELF_SERVICE_TERMINAL": 50,
+                       "ATM": 50, "NETWORK_SITE": 100, "TERMINAL": 10000},
 }
 
 # The highest tier the seeded rate card prices. A bandwidth above this is

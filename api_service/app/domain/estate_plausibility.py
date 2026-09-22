@@ -70,7 +70,8 @@ PER_COUNTRY_CEILING = {
 # the count is the business. Everything else has a ceiling, because the first
 # version exempted five types and let 25,840 warehouses through - the same
 # error as the one it was written to catch, one site type over.
-UNBOUNDED = ("STORE", "NETWORK_SITE")
+UNBOUNDED = ("STORE", "NETWORK_SITE", "SERVICE_POINT",
+             "SELF_SERVICE_TERMINAL", "ATM")
 
 # Above this many sites in one country, the estate is a network of small
 # things. A 38,000-site estate is not 44% large offices - at that scale the
@@ -78,7 +79,9 @@ UNBOUNDED = ("STORE", "NETWORK_SITE")
 LARGE_ESTATE_SITES = 5000
 LARGE_ESTATE_SMALL_SITE_SHARE = Decimal("0.60")
 SMALL_SITE_TYPES = frozenset({"STORE", "BRANCH", "NETWORK_SITE",
-                              "REMOTE_SITE", "WAREHOUSE"})
+                              "REMOTE_SITE", "WAREHOUSE",
+                              "SERVICE_POINT", "SELF_SERVICE_TERMINAL",
+                              "ATM"})
 
 
 def assess(footprint: list, *, registered_total: int | None = None) -> dict:

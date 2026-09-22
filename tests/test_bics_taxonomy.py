@@ -51,12 +51,28 @@ def test_the_shape_follows_the_site_archetype_not_the_industry_name():
     assert bics.shape_for("MOBILE_OPERATOR") == "network-centric"
 
 
-def test_retail_banking_is_network_centric_not_office_centric():
-    """Branches are the estate. An investment bank and a retail bank are both
-    financials and have nothing in common structurally."""
-    assert bics.shape_for("RETAIL_BANKING") == "network-centric"
-    assert bics.shape_for("INVESTMENT_BANKING") == "office-centric"
+def test_retail_banking_is_a_branch_and_cash_machine_network():
+    """It sat on network-centric alongside cloud providers and tower
+    companies, which gave it 25% data centres and no cash machines at all.
 
+    A bank runs a handful of data centres and thousands of ATMs, and the ATM
+    layer is most of the site count and a real slice of the connectivity
+    spend."""
+    from collections import defaultdict
+    from decimal import Decimal
+
+    from app.domain import bics
+    from app.seed import DENSITY_MIX
+
+    assert bics.shape_for("RETAIL_BANKING") == "branch-network"
+
+    mix = defaultdict(Decimal)
+    for industry, archetype, _band, share in DENSITY_MIX:
+        if industry == "RETAIL_BANKING":
+            mix[archetype] += Decimal(share)
+    assert max(mix, key=lambda a: mix[a]) == "ATM"
+    assert mix["BRANCH"] > 0
+    assert mix["DC"] < Decimal("0.10"), "a bank has a handful of data centres"
 
 def test_an_unclassified_code_gets_the_least_wrong_default():
     """Office-centric rather than something more specific: a wrong specific

@@ -168,7 +168,12 @@ LLM_SEARCH_TIMEOUT_SECONDS = float(
 # German estate is a parcel network AND a contract-logistics estate; from one
 # industry the larger half is wrong whichever is chosen. A row naming none
 # uses the case's, which is every row that exists today.
-SIMULATION_MODEL_VERSION = "sim-2.2.0"
+# sim-2.3.0: service points, self-service terminals and cash machines. A STORE
+# is a staffed outlet with a till, a LAN and twelve people; a packstation, a
+# vending machine and an ATM are one device with nobody there and usually no
+# fixed line. Pricing 30,000 packstations as cable-connected shops overstates
+# the largest row in a postal estate several times over.
+SIMULATION_MODEL_VERSION = "sim-2.3.0"
 # calc-1.1.0: the saving band is accumulated with matched pairing rather than
 # derived as current - target. The target is a function of the current, so
 # subtracting the two crossed bounds a second time and produced worlds that

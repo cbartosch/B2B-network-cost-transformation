@@ -1885,6 +1885,34 @@ ARCHETYPES = [
     # public-facing and safety-critical at once. Closer to a small city than
     # to an office.
     ("TERMINAL", 2000, 10000, "1.00", "ETHERNET", "ETHERNET", "0.85"),
+    # Three kinds of very small site, which STORE was absorbing.
+    #
+    # A STORE is a staffed outlet with a till, a LAN and twelve people. A
+    # packstation, a vending machine and a cash machine are none of those:
+    # one device, nobody there, and usually no fixed line. Pricing 30,000
+    # packstations as cable-connected shops overstates them several times
+    # over, and it is the largest row in a postal or retail estate.
+    #
+    # SERVICE_POINT: a staffed counter hosted inside another business - a
+    # parcel counter in a newsagent, a bank desk in a supermarket. The
+    # defining feature is that the host's connection often carries it, so the
+    # committed share is low and the primary is consumer-grade. Where a
+    # client confirms these ride the host's line entirely, the row belongs at
+    # zero sites rather than at a cheap rate, and the analyst says so.
+    ("SERVICE_POINT", 3, 50, "0.20", "BROADBAND_PON", "MOBILE_5G", "0.30"),
+    # SELF_SERVICE_TERMINAL: packstation, parcel locker, ticket or check-in
+    # kiosk, vending. Unmanned, one device, cellular first because there is
+    # rarely a fixed line where these are sited - a car park, a station
+    # concourse, a supermarket lobby. Telemetry and transactions, not
+    # browsing.
+    ("SELF_SERVICE_TERMINAL", 0, 50, "0.15", "MOBILE_5G", "BROADBAND_PON",
+     "0.25"),
+    # ATM: physically the same as a terminal and a different posture. Cash is
+    # at stake and card data is in scope for PCI DSS, so availability and
+    # path diversity matter far more than capacity. Dual access is common
+    # where a terminal has none, and the committed share is higher because
+    # the session must not degrade mid-transaction.
+    ("ATM", 0, 50, "0.55", "MOBILE_5G", "BROADBAND_PON", "0.60"),
 ]
 
 # Platform unit costs. These were code constants in an earlier revision, which

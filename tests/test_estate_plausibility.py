@@ -106,14 +106,19 @@ def test_it_is_silent_on_estates_that_are_real(name, footprint):
     assert result["plausible"], (name, result["findings"])
 
 
-def test_only_two_site_types_are_genuinely_unbounded():
+def test_only_the_mass_deployed_site_types_are_unbounded():
     """The first version exempted five and let 25,840 warehouses in Germany
     through - the same error it was written to catch, one site type over.
 
     A postal network really does have 30,000 collection points and a tower
     company 40,000 cabinets. A depot is a building with loading bays: DHL runs
     a few hundred in Germany, Amazon around a hundred fulfilment centres."""
-    assert set(plausibility.UNBOUNDED) == {"STORE", "NETWORK_SITE"}
+    # Five since the unmanned site types were added. A packstation, a vending
+    # machine and a cash machine run to tens of thousands in one country for
+    # one company, the same as a store or a tower cabinet.
+    assert set(plausibility.UNBOUNDED) == {
+        "STORE", "NETWORK_SITE", "SERVICE_POINT", "SELF_SERVICE_TERMINAL",
+        "ATM"}
     for archetype in plausibility.UNBOUNDED:
         assert archetype not in plausibility.PER_COUNTRY_CEILING
     for archetype in ("WAREHOUSE", "BRANCH", "REMOTE_SITE"):

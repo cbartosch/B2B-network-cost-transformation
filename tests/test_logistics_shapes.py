@@ -28,7 +28,15 @@ def test_a_parcel_network_is_mostly_retail_collection_points():
     for industry, archetype, _band, share in DENSITY_MIX:
         if industry == "POSTAL_AND_PARCEL_NETWORK":
             mix[archetype] += Decimal(share)
-    assert mix["STORE"] > Decimal("0.85"), dict(mix)
+    # The retail layer is now split between staffed counters and unmanned
+    # lockers, because they are not the same circuit: a parcel shop is a
+    # counter inside a newsagent, usually carried by the host's line, and a
+    # packstation is one unmanned device on cellular in a car park. Both were
+    # STORE, which priced them as staffed outlets with a LAN and a till.
+    collection = mix["SERVICE_POINT"] + mix["SELF_SERVICE_TERMINAL"]
+    assert collection > Decimal("0.85"), dict(mix)
+    assert mix["SERVICE_POINT"] > 0 and mix["SELF_SERVICE_TERMINAL"] > 0, (
+        "the two must be modelled separately, not collapsed")
     assert mix["TERMINAL"] > 0, "a parcel network has sortation hubs"
     assert mix["TERMINAL"] < Decimal("0.05"), "and very few of them"
 
@@ -98,3 +106,50 @@ def test_the_postal_figures_are_marked_as_ours():
     rows = {r["industry_code"]: r for r in industry_benchmark.seeded()["rows"]}
     assert rows["POSTAL_AND_PARCEL_NETWORK"]["figures_from"] == \
         industry_benchmark.WORKBENCH_ESTIMATE
+
+
+# ------------------------- unmanned single-device sites
+def test_the_unmanned_site_types_exist_and_differ_from_a_store():
+    """A STORE is a staffed outlet with a till, a LAN and twelve people. A
+    packstation, a vending machine and a cash machine are none of those: one
+    device, nobody there, and usually no fixed line.
+
+    Pricing 30,000 packstations as cable-connected shops overstates them
+    several times over, and it is the largest row in a postal estate."""
+    from app.seed import ARCHETYPES
+
+    priors = {row[0]: row for row in ARCHETYPES}
+    for name in ("SERVICE_POINT", "SELF_SERVICE_TERMINAL", "ATM"):
+        assert name in priors, name
+
+    store = priors["STORE"]
+    for name in ("SELF_SERVICE_TERMINAL", "ATM"):
+        assert priors[name][1] == 0, f"{name} has nobody there"
+        assert priors[name][4] == "MOBILE_5G", (
+            f"{name} is cellular first - there is rarely a fixed line where "
+            f"these are sited")
+    assert priors["SERVICE_POINT"][1] < store[1], (
+        "a hosted counter is smaller than a staffed outlet")
+
+
+def test_a_cash_machine_carries_a_higher_posture_than_a_kiosk():
+    """Physically the same and a different claim. Cash is at stake and card
+    data is in PCI scope, so availability and path diversity matter far more
+    than capacity."""
+    from app.seed import ARCHETYPES
+
+    priors = {row[0]: row for row in ARCHETYPES}
+    atm, kiosk = priors["ATM"], priors["SELF_SERVICE_TERMINAL"]
+    assert float(atm[3]) > float(kiosk[3]), "an ATM is likelier to be dual-fed"
+    assert float(atm[6]) > float(kiosk[6]), (
+        "and its session must not degrade mid-transaction")
+
+
+def test_every_new_type_has_a_fallback_bandwidth_in_every_shape():
+    """An archetype with no figure is unpriceable scope, which is what four
+    guards reported the last time the vocabulary grew."""
+    from app.domain import industries
+
+    for shape, table in industries.SHAPE_BANDWIDTH.items():
+        for name in ("SERVICE_POINT", "SELF_SERVICE_TERMINAL", "ATM"):
+            assert name in table, (shape, name)
