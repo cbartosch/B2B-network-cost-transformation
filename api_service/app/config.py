@@ -236,4 +236,7 @@ SIMULATION_MODEL_VERSION = "sim-2.1.0"
 # already are. Refusal is for what cannot be computed, not for what can be
 # computed imprecisely - and refusing a real 38,000-site estate left the
 # analyst mis-typing rows to get through.
-CALCULATION_VERSION = "calc-1.16.0"
+# calc-1.17.0: the estate is checked for being possible, not only for being
+# priceable. A German footprint with 3,800 data centres and 19,000 large
+# offices priced at 1.21 billion with coverage 1.000 and every gate green.
+CALCULATION_VERSION = "calc-1.17.0"

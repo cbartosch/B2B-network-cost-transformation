@@ -17,7 +17,7 @@ from .. import config, db, jobs, migrations
 from ..domain.scope import REGION_PARENT as REGION_PARENT
 from ..domain import (access as access_vocab, anchor_estimate,
                       assumptions, bics, calibration, case_rates,
-                      currency,
+                      currency, estate_plausibility,
                       site_rule,
                       delta_bridge, industries, industry_benchmark,
                       providers, validation,
@@ -3517,6 +3517,33 @@ def run_estimate(case_id: str, payload: EstimateIn):
 
         # Coverage denominator derived from the simulated scope, per
         # (country, product) pair - not accepted from the caller.
+        # Is this an estate a company could have?
+        #
+        # Coverage asks whether the estate can be PRICED. Nothing asked
+        # whether it is POSSIBLE - so a German footprint with 3,800 data
+        # centres and 19,000 large offices priced at 1.21 billion, and the
+        # page reported "V0 COMPLETE - all coverage tests passed" on coverage
+        # of 1.000.
+        #
+        # That green light is what made it dangerous. A number nobody believes
+        # is harmless; a number with every gate satisfied is not.
+        #
+        # Reported, not refused. An implausible estate is an analyst error
+        # rather than a missing input, and refusing would strand a case
+        # mid-edit - but it appears on the estimate, so a reviewer sees it
+        # where the number is.
+        # The footprint this run was given, from the simulation's own pinned
+        # params rather than re-read from the case - so the check applies to
+        # what was actually priced.
+        _plausibility = estate_plausibility.assess(
+            (sim.params or {}).get("footprint") or [],
+            # No registered total passed here. It lives on the chosen
+            # known fact rather than on the case, and the over-allocation
+            # check belongs where the table is edited - page 5 already has
+            # both numbers and reports the mismatch. Guessing a column name
+            # for it three times is how this got written.
+            registered_total=None)
+
         scope = coverage.derive_scope(
             sim_output=sim.output, priors=priors,
             sizing_priors=sizing_priors, case_rates=client_rates,
@@ -3675,6 +3702,10 @@ def run_estimate(case_id: str, payload: EstimateIn):
                   "resolved_entity_id": case_row.resolved_entity_id,
                   "perimeter_version": case_row.perimeter_version,
                   "discount_rate_set_id": case_row.discount_rate_set_id,
+                  # Whether the estate is one a company could have, pinned
+                  # beside the coverage that says it could be priced. The two
+                  # are different questions and only one of them was asked.
+                  "estate_plausibility": _plausibility,
                   "base_currency": case_row.base_currency,
                   # The conversion, pinned like every other input that moves a
                   # number. A baseline that shifted because of an exchange

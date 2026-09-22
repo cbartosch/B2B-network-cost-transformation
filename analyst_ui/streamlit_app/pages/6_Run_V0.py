@@ -308,6 +308,22 @@ if v0["v0_status"] == "PARTIAL":
 else:
     st.success("**V0 COMPLETE** - all coverage tests passed.")
 
+    # Coverage passing is not the estate being real.
+    #
+    # A German footprint with 3,800 data centres and 19,000 large offices
+    # priced at 1.21 billion, and this line said all tests passed on coverage
+    # of 1.000. The green light is what made it dangerous: a number nobody
+    # believes is harmless, and a number with every gate satisfied is not.
+    _plaus = ((v0.get("pins") or {}).get("estate_plausibility") or {})
+    for _f in (_plaus.get("findings") or []):
+        st.error(
+            f"**The estate is not one a company could have.** "
+            f"{_f.get('detail', '')}\n\n"
+            f"Likely cause: {_f.get('likely_cause', '')}. "
+            f"Coverage passing means this estate could be PRICED, not that it "
+            f"is POSSIBLE - the baseline above is arithmetic on a footprint "
+            f"that needs correcting on page 5 first.")
+
 a, b, c, d = st.columns(4)
 a.metric("Current TCO (base)", f"{float(v0['current_tco']['base']):,.0f}")
 b.metric("Overall confidence", conf["overall"], conf["band"])
