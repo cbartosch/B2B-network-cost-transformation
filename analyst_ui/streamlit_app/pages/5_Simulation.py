@@ -773,15 +773,28 @@ def _row_limit(row):
     return _LIMITS["cluster"], "a cluster of individually significant sites"
 
 
+# Only where a large count implies the type itself is wrong. A WAREHOUSE row
+# gets no type hint: a depot IS a warehouse, and telling it otherwise was
+# advice it had already taken.
+_MISTAKEN_FOR = {
+    "LARGE_OFFICE": "if these are outlets, parcel shops or packstations they "
+                    "are STOREs, which take much larger rows",
+    "DC": "a computing estate this size is unusual - check these are not "
+          "depots (WAREHOUSE) or outlets (STORE)",
+    "BRANCH": "if these are customer-facing they are STOREs, which take much "
+              "larger rows",
+}
+
+
 def _row_remedy(row):
     archetype = (row.get("archetype") or "").strip().upper()
     if not row.get("density"):
-        return "give it a density band"
+        return "add a density band"
     if archetype in _UNIFORM:
         return "split across densities or countries, or reduce the count"
-    return (f"check the site type first - a parcel shop or packstation is a "
-            f"STORE, not a {archetype}, and a depot is a WAREHOUSE. If the "
-            f"type is right, split by density or country")
+    hint = _MISTAKEN_FOR.get(archetype)
+    return (f"split by density or country - or {hint}" if hint
+            else "split by density or country, or reduce the count")
 
 
 _coarse = [r for r in _edited if r["sites"] > _row_limit(r)[0]]
@@ -794,9 +807,18 @@ if _coarse:
         + "\n".join(
             f"- **{r['country']} {r['archetype']}"
             + (f" {r['density']}" if r.get('density') else "")
-            + f" {r['sites']:,}** - refused above {_row_limit(r)[0]:,} "
-              f"({_row_limit(r)[1]}). {_row_remedy(r)}."
+            + f" {r['sites']:,}** - above {_row_limit(r)[0]:,}. "
+              f"{_row_remedy(r)}."
             for r in _coarse))
+    # The glossary once, below the rows, rather than appended to each of them.
+    # Six refused rows produced six near-identical paragraphs.
+    st.caption(
+        "Site types: STORE for a customer-facing outlet, parcel shop or "
+        "packstation; WAREHOUSE for a depot or distribution centre; PLANT for "
+        "production; LARGE_OFFICE for a headquarters or regional office; DC "
+        "for a computing facility; NETWORK_SITE for unmanned infrastructure. "
+        "STORE and NETWORK_SITE are mass-deployed to one specification, so "
+        "they take far larger rows than the rest.")
 
 if _unallocated:
     _done = sum(r["sites"] for r in _edited)
@@ -845,7 +867,14 @@ if _save_col.button("Save footprint"):
                       f"They will be here next time without running anything.")
             st.rerun()
 
-if _run_col.button("Run simulation", type="primary"):
+# Disabled while a row breaches its ceiling. Pressing Run anyway sent the
+# footprint to an API that refuses it for the same reason, so the analyst saw
+# the same refusal twice in different words - and the second one arrived below
+# the button, where it reads as a new problem.
+if _run_col.button("Run simulation", type="primary",
+                   disabled=bool(_coarse),
+                   help=("Fix the over-large rows above first"
+                         if _coarse else None)):
     footprint, problems = _clean_footprint(fp)
     for message in problems:
         st.error(message)

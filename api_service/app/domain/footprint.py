@@ -744,21 +744,53 @@ def row_site_limit(row, policy) -> tuple:
 
 
 def row_limit_remedy(row) -> str:
-    """What to actually do about an over-large row.
+    """What to do about this one over-large row.
 
-    "Split by site type" is unfollowable once the site type is chosen, which
-    is every row that reaches this check. The remedy depends on which
-    dimension is still free.
+    Per row and short. The first version appended the same site-type glossary
+    to every row, so six refused rows produced six near-identical paragraphs -
+    and it told a WAREHOUSE row that "a depot is a WAREHOUSE", which is the
+    advice it had already taken.
+
+    A type suggestion is only made where the count actually implies a
+    different type. Everything else says which dimension is still free.
     """
     archetype = str(row.get("archetype") or "").strip().upper()
     if not row.get("density"):
-        return ("give it a density band - a row that says which band its "
-                "sites are in claims much less and gets a higher ceiling")
+        return ("add a density band - a row that says which band its sites "
+                "are in claims much less")
     if archetype in UNIFORM_ARCHETYPES:
-        return ("split it across densities or countries, or reduce the count "
-                "- even a mass-deployed estate has a ceiling")
-    return (f"a {archetype} is individually significant, so a row this large "
-            f"is unlikely to be right. Check the site type first: a parcel "
-            f"shop or packstation is a STORE, not a LARGE_OFFICE, and a "
-            f"depot is a WAREHOUSE. If the type is right, split by density "
-            f"or country")
+        return "split across densities or countries, or reduce the count"
+    hint = MISTAKEN_FOR.get(archetype)
+    if hint:
+        return f"split by density or country - or {hint}"
+    return "split by density or country, or reduce the count"
+
+
+# Where a large count suggests the site type itself is wrong.
+#
+# Only for the types a high-volume estate gets mis-assigned to. A row of 11,400
+# LARGE_OFFICE in one country is far more likely to be a retail or parcel
+# network typed wrongly than an office estate; a row of 2,280 DC is not a data
+# centre estate. A WAREHOUSE row gets no such hint, because a depot IS a
+# warehouse and suggesting otherwise was the advice it had already followed.
+MISTAKEN_FOR = {
+    "LARGE_OFFICE": ("if these are customer-facing outlets, parcel shops or "
+                     "packstations they are STOREs, which take much larger "
+                     "rows"),
+    "DC": ("a computing facility estate this size is unusual - check these "
+           "are not depots (WAREHOUSE) or outlets (STORE)"),
+    "BRANCH": ("if these are customer-facing they are STOREs, which take "
+               "much larger rows"),
+}
+
+
+# Said once, not per row. The glossary belongs with the refusal, not appended
+# to every line of it.
+ROW_LIMIT_GLOSSARY = (
+    "Site types: STORE for a customer-facing outlet, parcel shop or "
+    "packstation; WAREHOUSE for a depot or distribution centre; PLANT for "
+    "production; LARGE_OFFICE for a headquarters or regional office; DC for a "
+    "computing facility; NETWORK_SITE for unmanned infrastructure. STORE and "
+    "NETWORK_SITE rows are mass-deployed to one specification, so they take "
+    "far larger rows than the rest."
+)

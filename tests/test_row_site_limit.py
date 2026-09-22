@@ -83,6 +83,46 @@ def test_the_remedy_never_names_a_dimension_already_used():
     assert "density band" in remedy
 
 
+def test_the_remedy_does_not_tell_a_row_to_be_what_it_already_is():
+    """It told a WAREHOUSE row that "a depot is a WAREHOUSE" - the advice it
+    had already taken. A type suggestion is only made where the count
+    actually implies a different type."""
+    rule = _rule()
+    for archetype in ("WAREHOUSE", "PLANT", "CAMPUS", "TERMINAL"):
+        remedy = rule["row_limit_remedy"](
+            {"archetype": archetype, "density": "URBAN"})
+        assert archetype not in remedy, (archetype, remedy)
+
+    # where the count does imply a different type, it says so
+    remedy = rule["row_limit_remedy"](
+        {"archetype": "LARGE_OFFICE", "density": "URBAN"})
+    assert "STORE" in remedy
+
+
+def test_the_glossary_is_said_once_not_per_row():
+    """Six refused rows produced six near-identical paragraphs."""
+    rule = _rule()
+    assert rule["ROW_LIMIT_GLOSSARY"].strip()
+    for archetype in ("LARGE_OFFICE", "DC", "WAREHOUSE"):
+        remedy = rule["row_limit_remedy"](
+            {"archetype": archetype, "density": "URBAN"})
+        assert "NETWORK_SITE" not in remedy, (
+            "the glossary must not be appended to each row")
+
+    page = next(Path(__file__).resolve().parents[1].glob(
+        "analyst_ui/streamlit_app/pages/5_Simulation*.py")).read_text()
+    assert page.count("mass-deployed to one specification") <= 2
+
+
+def test_run_is_disabled_while_a_row_breaches_its_ceiling():
+    """Pressing Run sent the footprint to an API that refuses it for the same
+    reason, so the analyst saw the same refusal twice - the second below the
+    button, where it reads as a new problem."""
+    page = next(Path(__file__).resolve().parents[1].glob(
+        "analyst_ui/streamlit_app/pages/5_Simulation*.py")).read_text()
+    assert "disabled=bool(_coarse)" in page
+
+
 def test_both_layers_use_the_one_rule():
     """The page and the API reported different numbers. Reporting a limit
     other than the one enforced is the defect, not the limit itself."""
