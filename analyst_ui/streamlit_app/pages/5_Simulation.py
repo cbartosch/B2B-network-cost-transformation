@@ -626,6 +626,58 @@ if st.session_state.get("_fp_rows") is None:
     st.session_state["_fp_rows"] = list(_resolved)
 
 _working = st.session_state["_fp_rows"]
+
+# Does the saved footprint still match what this industry would propose?
+#
+# "Whatever is in the table below is what runs" - and the table is whatever
+# was last saved, which may have been saved under a different industry or
+# before an estate shape changed. A DHL case kept a 44% LARGE_OFFICE mix long
+# after LOGISTICS had been changed to 68% WAREHOUSE, and nothing on the page
+# said the two disagreed. The analyst re-proposed, saw the same table, and
+# reasonably concluded the fix had not worked.
+#
+# Compared on composition rather than row-for-row: the analyst is expected to
+# edit the rows, and flagging every hand-correction as stale would make this
+# noise. A shape that differs by more than a fifth on any site type is a
+# different shape, not an edit.
+_STALE_SHAPE_TOLERANCE = 0.20
+# The industry from the footprint's own basis. This page has no `case`
+# object - a fifth invented name, and the fifth caught by a check rather
+# than by reading first.
+_ind_for_shape = str(
+    ((_fp or {}).get("basis") or {}).get("industry")
+    or (_fp or {}).get("industry") or "").strip().upper()
+if _working and _ind_for_shape:
+    # Read from the resolved footprint, which publishes what the industry
+    # implies alongside the rows - one source, so the page cannot disagree
+    # with the API about the shape.
+    _implied = (_fp or {}).get("industry_mix") or {}
+    if _implied:
+        _have = {}
+        _tot = sum(int(r.get("sites") or 0) for r in _working) or 1
+        for r in _working:
+            _a = (r.get("archetype") or "").upper()
+            _have[_a] = _have.get(_a, 0) + int(r.get("sites") or 0)
+        # Underscore-prefixed throughout. The page-level check reads a
+        # comprehension's own variable as a module name used before binding,
+        # and it is right to: a bare `share` at module scope is one rebind
+        # away from being read by something else.
+        _drift = {
+            _k: (round(_have.get(_k, 0) / _tot, 3), round(float(_v), 3))
+            for _k, _v in _implied.items()
+            if abs(_have.get(_k, 0) / _tot - float(_v))
+            > _STALE_SHAPE_TOLERANCE}
+        if _drift:
+            st.warning(
+                f"**The saved footprint does not match what "
+                f"{_ind_for_shape} implies.** It was probably saved under a "
+                f"different industry, or before this industry's estate shape "
+                f"changed - so re-proposing and re-applying will change it. "
+                + "; ".join(
+                    f"{_a} is {_is:.0%} here and {_want:.0%} in the shape"
+                    for _a, (_is, _want) in sorted(_drift.items()))
+                + ". Edited rows are expected to differ; a whole site type "
+                  "being out by this much usually is not.")
 if _applied:
     st.success(f"{len(_applied)} proposed row(s) put in the table. Correct "
                f"them, then Save or Run - nothing is stored until you do.")

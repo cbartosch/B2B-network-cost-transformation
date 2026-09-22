@@ -2815,6 +2815,27 @@ def resolve_footprint(case_id: str):
             # defect this whole publication exists to prevent.
             resolved["max_sites_per_uniform_row"] = \
                 _fp_policy.max_sites_per_uniform_row
+            # What this industry's estate shape implies, so the page can tell
+            # a saved footprint that predates a shape change from one an
+            # analyst edited on purpose. Published here rather than derived in
+            # the page: a second copy of the shape is a second thing to leave
+            # stale, which is the defect this whole block exists to prevent.
+            # The case's industry, read here - this handler takes only a
+            # case_id and had no case_row in scope. Fourth invented name in
+            # this session's wiring, and the fourth caught by the
+            # unbound-name check rather than by me reading first.
+            _case_for_mix = s.execute(select(db.case.c.industry).where(
+                db.case.c.case_id == case_id)).first()
+            _mix_rows = s.execute(select(db.density_mix).where(
+                db.density_mix.c.industry == (
+                    (_case_for_mix.industry if _case_for_mix else "")
+                    or ""))).all()
+            _implied_mix = {}
+            for _row in _mix_rows:
+                _implied_mix[_row.archetype] = str(
+                    Decimal(_implied_mix.get(_row.archetype, "0"))
+                    + Decimal(str(_row.share)))
+            resolved["industry_mix"] = _implied_mix
         except policy.PolicyIncomplete:
             resolved["max_sites_per_archetype_row"] = None
             resolved["max_sites_per_cluster_row"] = None

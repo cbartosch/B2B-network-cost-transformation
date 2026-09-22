@@ -123,3 +123,44 @@ def test_the_finding_reaches_the_estimate_and_the_page():
         "analyst_ui/streamlit_app/pages/6_Run_V0*.py")).read_text()
     assert "estate_plausibility" in page
     assert "could be PRICED, not that it" in page
+
+
+# ------------------- a saved footprint that predates a shape change
+def test_the_page_warns_when_the_saved_footprint_disagrees_with_the_industry():
+    """"Whatever is in the table below is what runs" - and the table is
+    whatever was last saved, possibly under a different industry or before an
+    estate shape changed.
+
+    A DHL case kept a 44% LARGE_OFFICE mix long after LOGISTICS had been
+    changed to 68% WAREHOUSE, and nothing said the two disagreed. The analyst
+    re-proposed, saw the same table, and reasonably concluded the fix had not
+    worked."""
+    root = Path(__file__).resolve().parents[1]
+    page = next(root.glob(
+        "analyst_ui/streamlit_app/pages/5_Simulation*.py")).read_text()
+    assert "_STALE_SHAPE_TOLERANCE" in page
+    assert "does not match what" in page
+    assert "re-proposing and re-applying will change it" in page
+
+
+def test_the_implied_mix_is_published_by_the_api():
+    """Derived in the page it would be a second copy of the shape, and a
+    second thing to leave stale."""
+    root = Path(__file__).resolve().parents[1]
+    app = next(c for c in (root / "api_service" / "app", root / "app")
+               if (c / "routers").exists())
+    api = (app / "routers" / "api.py").read_text()
+    assert 'resolved["industry_mix"]' in api
+    assert "db.density_mix.c.industry" in api
+
+
+def test_the_comparison_tolerates_hand_editing():
+    """The analyst is expected to edit rows. Flagging every correction as
+    stale would make the warning noise, so only a whole site type being out
+    by more than a fifth counts."""
+    root = Path(__file__).resolve().parents[1]
+    page = next(root.glob(
+        "analyst_ui/streamlit_app/pages/5_Simulation*.py")).read_text()
+    line = next(x for x in page.splitlines()
+                if x.startswith("_STALE_SHAPE_TOLERANCE"))
+    assert float(line.split("=")[1]) >= 0.15
