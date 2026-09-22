@@ -99,6 +99,34 @@ def _req(method: str, path: str, **kw):
             return {"_error": r.text, "_status": r.status_code}
 
         detail = body.get("detail", r.text)
+        # Flattened to a string here, at the one place `_error` is built.
+        #
+        # This API raises `HTTPException(status, {"error": ..., "detail": ...})`
+        # in 64 places, and FastAPI puts that whole dict in `detail` - so
+        # `_error` was a dict, and a page doing `_r["_error"] + " ..."` raised
+        # TypeError: unsupported operand type(s) for +: 'dict' and 'str'. The
+        # real API message was in there and the analyst saw a traceback
+        # instead.
+        #
+        # Every consumer treats `_error` as text, so the contract is that it is
+        # text. Normalising at the source fixes all of them; normalising at the
+        # call site would fix one and leave the next to be found the same way.
+        if isinstance(detail, dict):
+            _headline = detail.get("error") or detail.get("message")
+            _body = detail.get("detail") or detail.get("reason")
+            _rest = [f"{k}: {v}" for k, v in sorted(detail.items())
+                     if k not in ("error", "message", "detail", "reason")
+                     and not isinstance(v, (dict, list))]
+            detail = " - ".join(str(x) for x in (_headline, _body) if x) \
+                or "; ".join(_rest) or str(detail)
+            if _rest and (_headline or _body):
+                detail += " | " + "; ".join(_rest)
+        elif isinstance(detail, list):
+            # FastAPI's own validation errors arrive as a list of dicts.
+            detail = "; ".join(
+                f"{'.'.join(str(x) for x in (d.get('loc') or []))}: "
+                f"{d.get('msg')}" if isinstance(d, dict) else str(d)
+                for d in detail)
         # The API's 500 handler already reports the exception type, the message
         # and the last frames outside PRODUCTION - and this read only `detail`,
         # which the handler leaves as the bare "Internal Server Error". So the
