@@ -146,6 +146,56 @@ SHAPES = {
         ("WAREHOUSE", "SUBURBAN", "0.0250"),
         ("LARGE_OFFICE", "URBAN", "0.0100"), ("DC", "URBAN", "0.0050"),
     ],
+    "distribution-led": [
+        # Contract logistics, freight forwarding, third-party warehousing.
+        #
+        # These sat on few-large, which is 65% LARGE_OFFICE - so a logistics
+        # company came out two-thirds offices with distribution centres at a
+        # quarter, inverting what the benchmark says the industry is built
+        # around. A swap was tried and made the postal estate 91% sortation
+        # hubs, so the answer is a shape rather than a reordering.
+        #
+        # A distribution estate is warehouses first, a thin branch layer for
+        # local agency and customs offices, and a small office and DC layer.
+        ("WAREHOUSE", "SUBURBAN", "0.3600"),
+        ("WAREHOUSE", "URBAN", "0.2400"),
+        ("WAREHOUSE", "RURAL", "0.0800"),
+        # Freight agency and customs offices at ports and airports.
+        ("BRANCH", "URBAN", "0.1400"),
+        ("BRANCH", "SUBURBAN", "0.0700"),
+        ("LARGE_OFFICE", "URBAN", "0.0600"),
+        ("LARGE_OFFICE", "DENSE_URBAN", "0.0200"),
+        ("DC", "DENSE_URBAN", "0.0200"),
+        ("DC", "URBAN", "0.0100"),
+    ],
+    "parcel-network": [
+        # A postal or parcel estate, which is shaped unlike anything else
+        # here: almost all of its sites are tiny retail collection points and
+        # almost all of its cost and criticality sits in a handful of hubs.
+        #
+        # Modelled as few-large it came out 65% distribution centres with no
+        # retail layer at all, inverting the estate. A packstation is a few
+        # Mbps of consumer access; a sortation hub is multi-gigabit and Tier 1.
+        # Averaging them into one warehouse figure is how a postal baseline
+        # goes wrong by an order of magnitude.
+        #
+        # Proportions are this repository's judgement, and they are the part a
+        # real engagement replaces first. The shape of the distribution -
+        # overwhelming retail count, thin depot layer, tiny hub layer - is the
+        # part that is not in doubt.
+        ("STORE", "URBAN", "0.4840"),
+        ("STORE", "SUBURBAN", "0.3100"),
+        ("STORE", "RURAL", "0.1200"),
+        # Delivery depots and delivery offices - hundreds, not thousands.
+        ("WAREHOUSE", "SUBURBAN", "0.0450"),
+        ("WAREHOUSE", "URBAN", "0.0250"),
+        # Sortation hubs and gateways. A few dozen sites carrying most of the
+        # traffic and all of the criticality.
+        ("TERMINAL", "SUBURBAN", "0.0060"),
+        ("TERMINAL", "URBAN", "0.0040"),
+        ("LARGE_OFFICE", "URBAN", "0.0040"),
+        ("DC", "DENSE_URBAN", "0.0020"),
+    ],
     "campus-centric": [
         # A handful of very large research, engineering or manufacturing
         # campuses, the offices around them, and a data centre.

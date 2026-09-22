@@ -169,6 +169,29 @@ INDUSTRY_WAN_BENCHMARK = [
 # were invented - indefensible next to ArcelorMittal, and wrong: steel is a
 # BICS industry and always was.
 UNBENCHMARKED_BICS_ROWS = [
+    # Postal and parcel networks. The supplied benchmark has no row for them
+    # and LOGISTICS is the wrong answer: a parcel network's site count is
+    # dominated by tens of thousands of retail collection points - parcel
+    # shops, packstations, post offices - against a few hundred depots and a
+    # few dozen sortation hubs.
+    #
+    # Modelled as LOGISTICS it came out 65% distribution centres and no retail
+    # layer at all, which inverts the estate. A packstation is a few Mbps on
+    # consumer access; a sortation hub is multi-gigabit and Tier 1. Averaging
+    # them into one warehouse figure is how a postal baseline goes wrong by an
+    # order of magnitude.
+    #
+    # The representative site is the SORTATION_HUB because that is what the
+    # network is built around operationally - but it is a small minority of
+    # sites, which is exactly why the estate shape matters more here than the
+    # benchmark row.
+    #
+    # "Developed" rather than "National": a sortation hub sits on the
+    # motorway network outside a city, not in one. The loader refused
+    # "National" and named the six contexts it knows, which is how this was
+    # caught rather than shipped as a silently missing industry.
+    ("Industrials", "Postal and Parcel Network", "Sortation Hub",
+     "Developed", "1-10 Gbps", "80-100%", "High", "Required", "Tier 1"),
     # Diversified industrials. Many mid-sized plants plus large engineering
     # campuses; bandwidth driven by design data and plant telemetry rather
     # than by either alone.

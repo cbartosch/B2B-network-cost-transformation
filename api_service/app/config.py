@@ -158,7 +158,12 @@ LLM_SEARCH_TIMEOUT_SECONDS = float(
 # industry sharing a shape produced an identical estate - fourteen
 # plant-centric industries priced the same. Major, because every simulated
 # estate changes.
-SIMULATION_MODEL_VERSION = "sim-2.0.0"
+# sim-2.1.0: postal and distribution estates get shapes of their own. LOGISTICS
+# sat on few-large and came out 65% offices; a parcel network had no retail
+# layer at all, when a parcel network is almost entirely retail collection
+# points. The benchmark names the site an industry is built around, not the
+# site there are most of - so shapes, never reordering.
+SIMULATION_MODEL_VERSION = "sim-2.1.0"
 # calc-1.1.0: the saving band is accumulated with matched pairing rather than
 # derived as current - target. The target is a function of the current, so
 # subtracting the two crossed bounds a second time and produced worlds that

@@ -56,6 +56,10 @@ from decimal import Decimal
 # Investment banking names a trading floor and integrated oil a refinery; those
 # are different estates again and keep what they had.
 SHAPE_OF_BICS = {
+    # A postal or parcel network is not few-large. Almost all of its sites are
+    # tiny retail collection points and almost all of its criticality sits in
+    # a handful of sortation hubs - see the parcel-network shape.
+    "POSTAL_AND_PARCEL_NETWORK": "parcel-network",
     # Industrials: OPERATIONS_CENTER
     "AIRLINES": "network-centric",
     # Industrials: MAJOR_HUB_AIRPORT, REGIONAL_AIRPORT
@@ -105,7 +109,7 @@ SHAPE_OF_BICS = {
     # Energy: EXPORT_TERMINAL
     "LNG": "few-large",
     # Industrials: DISTRIBUTION_CENTER
-    "LOGISTICS": "few-large",
+    "LOGISTICS": "distribution-led",
     # Communication Services: CORE_DC
     "MOBILE_OPERATOR": "network-centric",
     # Financials: PROCESSING_CENTER
@@ -141,7 +145,7 @@ SHAPE_OF_BICS = {
     # Energy: CONTROL_CENTER
     "UTILITIES": "network-centric",
     # Industrials: FULFILLMENT_CENTER
-    "WAREHOUSING": "few-large",
+    "WAREHOUSING": "distribution-led",
     # Materials: PRODUCTION_PLANT. Not derived - the archetype table names
     # PLANT and MANUFACTURING_PLANT and this row says PRODUCTION_PLANT, so it
     # is assigned by reading rather than by matching. A near-miss like that is
@@ -262,6 +266,7 @@ ARCHETYPE_OF_BENCHMARK = {
     # --- passive network infrastructure
     "TOWER_SITE": "NETWORK_SITE",
     # --- transport and health terminals
+    "SORTATION_HUB": "TERMINAL",
     "MAJOR_HUB_AIRPORT": "TERMINAL", "REGIONAL_AIRPORT": "TERMINAL",
     "MEGA_CONTAINER_PORT": "TERMINAL", "MAJOR_HOSPITAL": "TERMINAL",
 }
@@ -312,6 +317,26 @@ def density_mix_rows(industry_codes, shapes: dict,
                     + Decimal(share)
             incumbent = max(totals, key=lambda a: totals[a])
             if lead != incumbent and lead not in totals:
+                # Fill an absence only. Never reorder.
+                #
+                # A swap was tried here so the representative always took the
+                # dominant slot, and it inverted the postal estate: the
+                # benchmark names a SORTATION_HUB and the swap made hubs 91%
+                # of the sites, when a parcel network is 91% retail collection
+                # points and a few dozen hubs.
+                #
+                # The benchmark names the site an industry is BUILT AROUND,
+                # not the site there are most of. For a chemicals company
+                # those coincide. For a postal network they are opposite, and
+                # for a tower company they are opposite too. A rule that
+                # assumes they coincide is wrong wherever the operationally
+                # important site is rare - which is exactly where it matters.
+                #
+                # So where a shape already contains the representative
+                # archetype, its distribution was authored deliberately and is
+                # left alone. Where a generic shape is simply wrong for an
+                # industry, the answer is a better shape, not a reordering -
+                # see parcel-network.
                 pattern = [(lead if archetype == incumbent else archetype,
                             band, share)
                            for archetype, band, share in pattern]
@@ -337,7 +362,9 @@ def density_mix_rows(industry_codes, shapes: dict,
 # seeing.
 LEGACY_TO_BICS = {
     # --- transport and logistics
-    "PARCEL_LOGISTICS": "LOGISTICS",
+    # Not LOGISTICS. A parcel network's estate is retail collection points,
+    # not distribution centres, and LOGISTICS gave it no retail layer at all.
+    "PARCEL_LOGISTICS": "POSTAL_AND_PARCEL_NETWORK",
     "FREIGHT_FORWARDING": "LOGISTICS",
     "DISTRIBUTION": "WAREHOUSING",
     "WHOLESALE_DISTRIBUTION": "WAREHOUSING",
