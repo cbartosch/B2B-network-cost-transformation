@@ -21,11 +21,36 @@ st.subheader("Mandatory intake block")
 
 is_locked = bool(case.get("resolved_entity_id"))
 if is_locked:
-    st.info("Entity confirmed - legal name, identifier, domicile and group "
-           "perimeter are locked so an estimate's provenance can't drift from "
-           "what was actually confirmed. To change any of them, resolve and "
-           "confirm the entity again below; that's what advances the "
-           "perimeter version.")
+    # Six fields are locked, and this named four.
+    #
+    # `disabled=is_locked` is set on the legal name, the identifier, the
+    # domicile, the aliases, the industry and the group perimeter. The message
+    # listed the first three and the last, so an analyst finding the industry
+    # selector greyed out had no way to know why - and the stated reason,
+    # provenance drift from a confirmed entity, does not obviously apply to a
+    # modelling choice.
+    #
+    # Two of the six are also different in kind, and the message now says so
+    # rather than implying one rule covers all six. Aliases and industry are
+    # not attributes of the resolved entity: the aliases decide which sources
+    # a search accepts as being about this company, and the industry decides
+    # which estate shape and resilience posture the model applies. Both were
+    # swept into the lock, which is why a case created before the taxonomy
+    # grew from 28 codes to 47 cannot take one of the new ones without
+    # re-resolving.
+    st.info(
+        "Entity confirmed. Six fields are locked: legal name, identifier, "
+        "country of domicile, aliases, industry and group perimeter. To "
+        "change any of them, resolve and confirm the entity again below - "
+        "that is what advances the perimeter version.\n\n"
+        "The first three and the perimeter are locked so an estimate's "
+        "provenance cannot drift from what was actually confirmed. Aliases "
+        "and industry are locked with them, and arguably should not be: "
+        "aliases govern which sources a search accepts as being about this "
+        "company, and industry selects the estate shape and resilience "
+        "posture the model applies. Neither is an attribute of the confirmed "
+        "entity, so re-resolving is a heavier step than changing them "
+        "warrants.")
 
 # Scope mode lives outside the form: a form batches its own widgets and only
 # reruns the script on submit, so a radio inside it can't reveal or hide the
