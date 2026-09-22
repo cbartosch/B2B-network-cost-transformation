@@ -2930,6 +2930,22 @@ def resolve_footprint(case_id: str):
             resolved["max_sites_per_archetype_row"] = None
             resolved["max_sites_per_cluster_row"] = None
             resolved["max_sites_per_uniform_row"] = None
+
+        # The site types that actually exist, from archetype_prior - the same
+        # source the named-location route validates against.
+        #
+        # The interface held a literal tuple of the original five, so every
+        # site type added since was rejected by the page while the API
+        # accepted it: CAMPUS from 4.219, five more at sim-2.0.0, and three
+        # more at sim-2.3.0. An analyst typing SERVICE_POINT got "is not one
+        # of BRANCH, LARGE_OFFICE, WAREHOUSE, DC, STORE" from a build that
+        # had fourteen.
+        #
+        # Published here rather than as a new endpoint: the page already
+        # reads this response for the row ceilings and the industry mix, and
+        # a second call is a second thing to forget.
+        resolved["archetypes"] = sorted(
+            r.archetype for r in s.execute(select(db.archetype_prior)).all())
         return resolved
 
 

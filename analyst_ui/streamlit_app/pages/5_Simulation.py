@@ -555,14 +555,22 @@ else:
         _l1, _l2, _l3 = st.columns(3)
         _lc = _l1.text_input("Country", max_chars=2, key="sim_loc_c")
         _lcity = _l2.text_input("City", key="sim_loc_city")
-        # Read from the resolver's own list rather than the module constant
-        # below, which is declared after this panel - referencing it here was a
+        # From the API, like the footprint editor below.
+        #
+        # This was its own literal of the original five and drifted the same
+        # way, with help text promising "the same five" while the build had
+        # fourteen. Two copies of one list is one copy too many and it was
+        # the second that went unnoticed.
+        #
+        # Read from `_fp` here rather than the module constant further down,
+        # which is declared after this panel - referencing it here was a
         # NameError at render that compiles clean.
         _lart = _l3.selectbox(
             "Site type",
-            ["BRANCH", "STORE", "WAREHOUSE", "LARGE_OFFICE", "DC"],
+            sorted((_fp or {}).get("archetypes")
+                   or ["BRANCH", "STORE", "WAREHOUSE", "LARGE_OFFICE", "DC"]),
             key="sim_loc_a",
-            help="The same five the footprint uses; the API refuses anything "
+            help="The site types this build has; the API refuses anything "
                  "not in reference.archetype_prior.")
         _l4, _l5 = st.columns(2)
         _lname = _l4.text_input("Name", key="sim_loc_n")
@@ -596,7 +604,19 @@ else:
 
 st.caption("Whatever is in the table below is what runs. Edit it, then Save or "
            "Run - both persist it to the case.")
-ARCHETYPES = ("BRANCH", "LARGE_OFFICE", "WAREHOUSE", "DC", "STORE")
+# The site types the build actually has, from the API.
+#
+# This was a literal tuple of the original five, so every type added since was
+# rejected by the page while the API accepted it - CAMPUS from 4.219, five
+# more at sim-2.0.0, three more at sim-2.3.0. An analyst typing SERVICE_POINT
+# was told it "is not one of BRANCH, LARGE_OFFICE, WAREHOUSE, DC, STORE" by a
+# build that had fourteen.
+#
+# The fallback is the original five and applies only when the API did not
+# answer - which is also when nothing can be run, so a stale list there
+# cannot mislead anyone into a wrong estimate.
+ARCHETYPES = tuple((_fp or {}).get("archetypes")
+                   or ("BRANCH", "LARGE_OFFICE", "WAREHOUSE", "DC", "STORE"))
 DENSITY_BANDS = ["", "DENSE_URBAN", "URBAN", "SUBURBAN", "RURAL"]
 # ------------------------------------------------- the working footprint
 # What the analyst has in front of them, held in session until they save it,
