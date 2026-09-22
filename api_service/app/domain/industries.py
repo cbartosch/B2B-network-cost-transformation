@@ -229,6 +229,20 @@ SHAPES = {
 # The sectors that genuinely need more are exactly the ones flagged POOR, and
 # their caveat already says the archetype is wrong for them. A 100G figure
 # would add a second error rather than fix the first.
+# Every archetype has a figure in every shape.
+#
+# The five site types added with the archetype vocabulary need one too, or an
+# industry whose estate contains them has unpriceable scope - which is what
+# four guards reported the moment the vocabulary grew.
+#
+# These are the fallbacks. A per-industry figure from the benchmark overrides
+# them wherever one exists, and for the representative site of an industry one
+# always does.
+#
+# PLANT 1 Gbps, TERMINAL 10, CONTROL_CENTER 1, REMOTE_SITE and NETWORK_SITE
+# 100 Mbps - a remote extraction site and an unmanned tower carry telemetry
+# and backhaul, not user traffic.
+#
 # CAMPUS sits at 10 Gbps in every shape.
 #
 # The benchmark's own campus rows - R_D_CAMPUS, RESEARCH_CAMPUS,
@@ -237,15 +251,30 @@ SHAPES = {
 # research campus whether the company also runs stores or refineries.
 SHAPE_BANDWIDTH = {
     "many-small":     {"STORE": 50, "BRANCH": 100, "WAREHOUSE": 100,
-                       "LARGE_OFFICE": 500, "CAMPUS": 10000, "DC": 10000},
+                       "LARGE_OFFICE": 500, "CAMPUS": 10000, "DC": 10000,
+                       "PLANT": 1000, "REMOTE_SITE": 100,
+                       "CONTROL_CENTER": 1000,
+                       "NETWORK_SITE": 100, "TERMINAL": 10000},
     "few-large":      {"STORE": 100, "BRANCH": 500, "WAREHOUSE": 1000,
-                       "LARGE_OFFICE": 10000, "CAMPUS": 10000, "DC": 10000},
+                       "LARGE_OFFICE": 10000, "CAMPUS": 10000, "DC": 10000,
+                       "PLANT": 1000, "REMOTE_SITE": 100,
+                       "CONTROL_CENTER": 1000,
+                       "NETWORK_SITE": 100, "TERMINAL": 10000},
     "plant-centric":  {"STORE": 50, "BRANCH": 100, "WAREHOUSE": 500,
-                       "LARGE_OFFICE": 1000, "CAMPUS": 10000, "DC": 10000},
+                       "LARGE_OFFICE": 1000, "CAMPUS": 10000, "DC": 10000,
+                       "PLANT": 1000, "REMOTE_SITE": 100,
+                       "CONTROL_CENTER": 1000,
+                       "NETWORK_SITE": 100, "TERMINAL": 10000},
     "office-centric": {"STORE": 50, "BRANCH": 100, "WAREHOUSE": 100,
-                       "LARGE_OFFICE": 1000, "CAMPUS": 10000, "DC": 10000},
+                       "LARGE_OFFICE": 1000, "CAMPUS": 10000, "DC": 10000,
+                       "PLANT": 1000, "REMOTE_SITE": 100,
+                       "CONTROL_CENTER": 1000,
+                       "NETWORK_SITE": 100, "TERMINAL": 10000},
     "network-centric": {"STORE": 100, "BRANCH": 1000, "WAREHOUSE": 500,
-                        "LARGE_OFFICE": 10000, "CAMPUS": 10000, "DC": 10000},
+                        "LARGE_OFFICE": 10000, "CAMPUS": 10000, "DC": 10000,
+                       "PLANT": 1000, "REMOTE_SITE": 100,
+                       "CONTROL_CENTER": 1000,
+                       "NETWORK_SITE": 100, "TERMINAL": 10000},
 }
 
 # The highest tier the seeded rate card prices. A bandwidth above this is

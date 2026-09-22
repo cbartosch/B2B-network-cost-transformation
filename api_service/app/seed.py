@@ -1086,6 +1086,34 @@ def _fill_country_tiers(rows):
 _CONSUMER_UPLIFT = ((250, "1.35"), (500, "1.70"), (1000, "2.20"))
 
 
+def _fwa_tiers(rows):
+    """A 100 Mbps fixed-wireless tier, where a country quotes 50.
+
+    REMOTE_SITE made this visible: an extraction site's primary access is
+    wireless, at 100 Mbps, and the card quoted MOBILE_5G only at 50 - so every
+    remote site in the estate was unpriced scope. The gap was always there; no
+    archetype had asked for the tier before.
+
+    Scaled from each country's own 50 Mbps figure at 1.55x, the ratio the
+    seeded consumer tiers use between 50 and 100 on a fixed bearer. Grade E:
+    it is an extrapolation above the highest quoted point, and a real
+    engagement replaces it with a carrier quote.
+    """
+    from decimal import Decimal as _D
+
+    present = {(c, p, bw) for c, p, _l, bw, *_r in rows}
+    out = []
+    for country, product, layer, mbps, low, base, high in rows:
+        if product != "MOBILE_5G" or int(mbps) != 50:
+            continue
+        if (country, product, 100) in present:
+            continue
+        f = _D("1.55")
+        out.append((country, product, layer, 100,
+                    int(_D(low) * f), int(_D(base) * f), int(_D(high) * f)))
+    return out
+
+
 def _consumer_tiers(rows):
     """Higher tiers for each country that already prices consumer access.
 
@@ -1328,6 +1356,7 @@ PRIORS = PRIORS + _sourced_priors(SOURCED_RATES)
 PRIORS = _reprice_between_sourced(PRIORS)
 
 PRIORS = PRIORS + _consumer_tiers(PRIORS)
+PRIORS = PRIORS + _fwa_tiers(PRIORS)
 PRIORS = PRIORS + _fill_country_tiers(PRIORS)
 
 # How an estate of a given kind typically distributes. Shares of the whole
@@ -1366,8 +1395,23 @@ INDUSTRY_BENCHMARK = industry_benchmark.seeded()
 # in both taxonomies - the three-code overlap - and appending gave each of them
 # two mixes summing to 2.0000, which the footprint resolver would have read as
 # twice the estate.
+# Each industry's own representative site, from the benchmark, so the mix leads
+# with it rather than with whatever the shape happened to say.
+#
+# Where a benchmark row names two site types for one industry - an airport's
+# hub and regional terminals, an oil major's HQ and refinery - the larger
+# bandwidth is the representative one, because that is the site the estate is
+# built around.
+_REPRESENTATIVE = {}
+for _row in sorted(INDUSTRY_BENCHMARK["rows"],
+                   key=lambda r: int(r["bandwidth_base_mbps"])):
+    _canon = bics.canonical_archetype(_row["archetype_code"])
+    if _canon:
+        _REPRESENTATIVE[_row["industry_code"]] = _canon
+
 _BICS_MIX = bics.density_mix_rows(INDUSTRY_BENCHMARK["industries"],
-                                  industries.SHAPES)
+                                  industries.SHAPES,
+                                  representative=_REPRESENTATIVE)
 _BICS_CODES = {row[0] for row in _BICS_MIX}
 DENSITY_MIX = ([row for row in industries.density_mix_rows()
                 if row[0] not in _BICS_CODES]
@@ -1792,6 +1836,41 @@ ARCHETYPES = [
     # engagement replaces first: a campus is one footprint row carrying a
     # workforce, so the platform layers scale off it.
     ("CAMPUS", 5000, 10000, "1.00", "ETHERNET", "ETHERNET", "0.95"),
+    # Five site types the benchmark names and the simulation could not make.
+    #
+    # Until now a FAB was a WAREHOUSE, a MINE was a WAREHOUSE, a trading floor
+    # was a LARGE_OFFICE and a tower site was nothing at all. Each figure below
+    # is this repository's judgement about the site's network character; the
+    # per-industry bandwidth that overrides it comes from the benchmark, which
+    # is supplied data.
+    #
+    # PLANT: production. Fewer people than an office of the same size and far
+    # more of them unable to stop work, so availability matters more than
+    # capacity. Dual access is high and the committed share is moderate -
+    # machine traffic is steady rather than bursty.
+    # ETHERNET, not DIA. The benchmark puts a food-manufacturing plant at
+    # 2.75 Gbps and a fab at 10.5, and DIA is quoted only to 1 Gbps on this
+    # card - so a DIA primary made every large plant unpriced scope. At
+    # multi-gigabit an industrial site buys an Ethernet tail, which is what
+    # the card prices to 10 Gbps. The guard caught this before it shipped.
+    ("PLANT", 400, 1000, "0.85", "ETHERNET", "BROADBAND_PON", "0.60"),
+    # REMOTE_SITE: extraction and generation. The defining feature is that a
+    # fixed line often does not exist, so the primary is wireless and the
+    # backup is satellite. Modelling these as warehouses assumed a fibre tail
+    # that frequently is not there - and priced it.
+    ("REMOTE_SITE", 60, 100, "0.70", "MOBILE_5G", "BROADBAND_PON", "0.40"),
+    # CONTROL_CENTER: operations, dispatch, trading. Small, and the site whose
+    # loss stops the business - so everything is doubled and nothing is
+    # best-effort. Highest committed share in the vocabulary.
+    ("CONTROL_CENTER", 120, 1000, "1.00", "ETHERNET", "ETHERNET", "1.00"),
+    # NETWORK_SITE: passive infrastructure. Unmanned, a few Mbps of telemetry
+    # and backhaul, and there are thousands of them. No users at all, and the
+    # cost driver is count rather than capacity.
+    ("NETWORK_SITE", 0, 100, "0.30", "BROADBAND_PON", "MOBILE_5G", "0.50"),
+    # TERMINAL: airports, ports, major hospitals. Very large, mixed tenancy,
+    # public-facing and safety-critical at once. Closer to a small city than
+    # to an office.
+    ("TERMINAL", 2000, 10000, "1.00", "ETHERNET", "ETHERNET", "0.85"),
 ]
 
 # Platform unit costs. These were code constants in an earlier revision, which

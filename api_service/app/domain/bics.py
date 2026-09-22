@@ -24,6 +24,8 @@ The shape is this repository's judgement and says so. The benchmark is
 published and says so. Keeping them apart is the point: one is evidence and the
 other is not, and a reader should be able to tell which figure came from where.
 """
+from decimal import Decimal
+
 
 # The estate shape each BICS industry has. The five shapes were already defined
 # for the workbench taxonomy and are reused unchanged - an estate of many small
@@ -198,16 +200,122 @@ def unclassified(industry_codes) -> list:
                   if (code or "").upper() not in SHAPE_OF_BICS)
 
 
-def density_mix_rows(industry_codes, shapes: dict) -> list:
+# The benchmark names 37 site types. The simulation could generate six.
+#
+# So `density_mix_rows` copied the estate shape and dropped the name: every
+# industry sharing a shape produced an identical estate, and the benchmark's
+# representative site - a FAB, a REFINERY, a TOWER_SITE - never appeared in it.
+# Fourteen plant-centric industries priced the same, and chemicals,
+# semiconductors and household products returned byte-identical baselines.
+#
+# Grouped by network character rather than by industry vocabulary, because that
+# is what decides the circuit. A FAB, a REFINERY and a MANUFACTURING_PLANT are
+# the same thing to a network: a large industrial site, moderate headcount,
+# high availability requirement, usually out of town. What separates them is
+# bandwidth and posture, and those are already keyed (industry, archetype) in
+# ARCHETYPE_BANDWIDTH and archetype_resilience.
+#
+# The same name also appears at different bandwidths across industries -
+# MANUFACTURING_PLANT at 10.5 Gbps and at 1.1 Gbps, MINE at 2.6 Gbps and at
+# 1.05 Gbps - which is the proof that the name is not the requirement. The
+# (industry, archetype) pair is.
+#
+# Five new canonical types, chosen where the network character genuinely
+# differs from anything already generatable:
+#
+#   PLANT           industrial production. Moderate users, high availability,
+#                   suburban or rural. Was being modelled as a WAREHOUSE.
+#   REMOTE_SITE     extraction and generation. Few users, often no fixed line
+#                   at all, satellite or FWA. Was a WAREHOUSE too, which
+#                   assumed a fibre tail that frequently does not exist.
+#   CONTROL_CENTER  operations, dispatch, trading. Tiny footprint, Tier 1,
+#                   dual everything. Was a LARGE_OFFICE, which under-specified
+#                   its resilience.
+#   NETWORK_SITE    passive infrastructure. Unmanned, small bandwidth,
+#                   enormous count. Had no representation at all.
+#   TERMINAL        airports, ports, major hospitals. Very large, mixed
+#                   tenancy, high criticality. Was a LARGE_OFFICE.
+ARCHETYPE_OF_BENCHMARK = {
+    # --- large compute (already DC)
+    "DATA_CENTER": "DC", "CORE_DC": "DC", "CORE_BANKING_DC": "DC",
+    "PROCESSING_CENTER": "DC", "CORE_SITE": "DC", "HEADEND": "DC",
+    # --- campus: people and the compute they use (already CAMPUS)
+    "ENGINEERING_CAMPUS": "CAMPUS", "R_D_CAMPUS": "CAMPUS",
+    "RESEARCH_CAMPUS": "CAMPUS", "ENGINEERING_HUB": "CAMPUS",
+    # --- industrial production
+    "FAB": "PLANT", "REFINERY": "PLANT", "MANUFACTURING_PLANT": "PLANT",
+    "PRODUCTION_PLANT": "PLANT", "PLANT": "PLANT", "MILL": "PLANT",
+    "EXPORT_TERMINAL": "PLANT",
+    # --- extraction and generation, remote by nature
+    "MINE": "REMOTE_SITE", "AUTONOMOUS_MINE": "REMOTE_SITE",
+    "PRODUCTION_SITE": "REMOTE_SITE", "WIND_SOLAR_FARM": "REMOTE_SITE",
+    # --- logistics nodes (already WAREHOUSE, at much higher bandwidth)
+    "DISTRIBUTION_CENTER": "WAREHOUSE", "FULFILLMENT_CENTER": "WAREHOUSE",
+    # --- operational control
+    "OPERATIONS_CENTER": "CONTROL_CENTER", "CONTROL_CENTER": "CONTROL_CENTER",
+    "TRADING_FLOOR": "CONTROL_CENTER",
+    # --- offices (already LARGE_OFFICE)
+    "HQ": "LARGE_OFFICE", "OFFICE_BUILDING": "LARGE_OFFICE",
+    "REGIONAL_OFFICE": "LARGE_OFFICE",
+    # --- customer-facing
+    "STORE": "STORE", "RESORT": "STORE", "BRANCH": "BRANCH",
+    # --- passive network infrastructure
+    "TOWER_SITE": "NETWORK_SITE",
+    # --- transport and health terminals
+    "MAJOR_HUB_AIRPORT": "TERMINAL", "REGIONAL_AIRPORT": "TERMINAL",
+    "MEGA_CONTAINER_PORT": "TERMINAL", "MAJOR_HOSPITAL": "TERMINAL",
+}
+
+
+def canonical_archetype(benchmark_archetype: str | None) -> str | None:
+    """The generatable site type this benchmark archetype is an instance of."""
+    if not benchmark_archetype:
+        return None
+    return ARCHETYPE_OF_BENCHMARK.get(
+        str(benchmark_archetype).strip().upper())
+
+
+def density_mix_rows(industry_codes, shapes: dict,
+                     representative=None) -> list:
     """(industry, archetype, density_band, share) for every BICS code.
 
-    Derived from the shape, not from the benchmark: the benchmark names one
-    representative archetype and an estate has several. Every mix sums to
-    exactly 1.0000 because the shapes it copies do, and a test asserts it.
+    The shape supplies the PATTERN - a dominant operating site, the offices
+    around it, a data centre. The benchmark supplies WHICH operating site this
+    industry's dominant one is, and that is the part this used to throw away.
+
+    So a copy of the shape, with the shape's largest-share archetype replaced
+    by the industry's own representative site wherever the benchmark names a
+    different one. Fourteen plant-centric industries stop being identical: a
+    chemicals company leads with PLANT, a miner with REMOTE_SITE, a utility
+    with CONTROL_CENTER, a tower company with NETWORK_SITE.
+
+    Substitution rather than a new distribution, because the shares are the one
+    thing here that is neither supplied nor derivable - nobody published what
+    fraction of a chemicals estate is production sites. Keeping the shape's
+    proportions and changing only what the dominant site IS uses the evidence
+    available and invents nothing further.
+
+    Every mix still sums to exactly 1.0000, because substitution does not touch
+    the shares. A test asserts it.
     """
     rows = []
     for code in sorted(industry_codes):
-        for archetype, band, share in shapes[shape_for(code)]:
+        pattern = list(shapes[shape_for(code)])
+        lead = (representative or {}).get(code)
+        if lead:
+            # The archetype carrying the largest share is the one the shape
+            # thinks the estate is mostly made of. That is the slot the
+            # industry's own site type belongs in.
+            totals = {}
+            for archetype, _band, share in pattern:
+                totals[archetype] = totals.get(archetype, Decimal("0")) \
+                    + Decimal(share)
+            incumbent = max(totals, key=lambda a: totals[a])
+            if lead != incumbent and lead not in totals:
+                pattern = [(lead if archetype == incumbent else archetype,
+                            band, share)
+                           for archetype, band, share in pattern]
+        for archetype, band, share in pattern:
             rows.append((code, archetype, band, share))
     return rows
 
