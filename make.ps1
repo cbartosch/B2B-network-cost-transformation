@@ -178,7 +178,33 @@ switch ($Target) {
             Write-Host "Backing up cases before merging..." -ForegroundColor Cyan
             & $py 'tools/backup_cases.py' 'backup' '--out' './case-backups'
             if ($LASTEXITCODE -ne 0) {
-                Write-Host "  Backup did not complete. Merging anyway - your cases are not saved." -ForegroundColor Yellow
+                <#
+                The case export needs the API, and the API is often down at
+                exactly this moment - a merge before a fix is usually a merge
+                because something is broken. That happened: the backup was
+                refused with WinError 10061 while the database container was
+                healthy the whole time, so the one occasion the backup was
+                most needed was the one occasion it could not run.
+
+                pg_dump needs only the database. It is also the broader
+                backup: the case export covers what a person entered, and the
+                dump covers estimates, runs and everything else.
+                #>
+                Write-Host "  The API is not answering. Falling back to a database dump, which does not need it." -ForegroundColor Yellow
+                if (-not (Test-Path './case-backups')) {
+                    New-Item -ItemType Directory -Path './case-backups' | Out-Null
+                }
+                $stamp = Get-Date -Format 'yyyyMMdd-HHmmss'
+                $dump = "./case-backups/db-$stamp.sql"
+                & docker compose exec -T db pg_dump -U workbench -d workbench > $dump
+                if (($LASTEXITCODE -eq 0) -and (Test-Path $dump) -and ((Get-Item $dump).Length -gt 0)) {
+                    $kb = [math]::Round((Get-Item $dump).Length / 1KB)
+                    Write-Host "  Database dumped to $dump ($kb KB)." -ForegroundColor Green
+                } else {
+                    # An empty file is worse than none: it looks like a backup.
+                    if (Test-Path $dump) { Remove-Item $dump }
+                    Write-Host "  Neither backup worked - the database container is not answering either. Merging anyway; your cases are NOT saved." -ForegroundColor Red
+                }
             }
         } catch {
             Write-Host "  Could not back up ($($_.Exception.Message))." -ForegroundColor Yellow
