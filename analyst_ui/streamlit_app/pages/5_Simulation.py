@@ -682,11 +682,20 @@ if _applied:
     st.success(f"{len(_applied)} proposed row(s) put in the table. Correct "
                f"them, then Save or Run - nothing is stored until you do.")
 
+# `industry` is optional and blank by default.
+#
+# A group is not one industry: DHL's German estate is a parcel network of
+# 30,000 collection points and a contract-logistics estate of a few hundred
+# depots, and pricing both from `case.industry` gets the larger half wrong
+# whichever is chosen. A row that names its own industry is priced from that
+# one; a blank row uses the case's, which is every row that exists today.
 default = pd.DataFrame(
     [{"country": r.get("country"), "archetype": r.get("archetype"),
-      "density": r.get("density") or "", "sites": r.get("sites")}
+      "density": r.get("density") or "", "sites": r.get("sites"),
+      "industry": r.get("industry") or ""}
      for r in _working]
-    or [{"country": "", "archetype": "", "density": "", "sites": 0}])
+    or [{"country": "", "archetype": "", "density": "", "sites": 0,
+         "industry": ""}])
 
 # The key changes only when the data is deliberately replaced - a proposal, a
 # promotion, a different case - and never because a cell was edited.
@@ -785,8 +794,13 @@ def _clean_footprint(frame):
                 f"row {i}: density {density!r} is not one of "
                 f"{', '.join(b for b in DENSITY_BANDS if b)}")
             continue
+        # The row's own industry, where it names one. Blank means "use the
+        # case's", which is every row that exists today - so an untouched
+        # footprint is unchanged by this field existing.
+        industry = _text(raw.get("industry")).upper()
         rows.append({"country": country, "archetype": archetype,
-                     "sites": sites, "density": density or None})
+                     "sites": sites, "density": density or None,
+                     "industry": industry or None})
     return rows, problems
 
 

@@ -97,8 +97,16 @@ def resolve(session, case_id: str) -> dict:
         _use("PROMOTED_RESEARCH", f"{len(promoted)} promoted row(s)")
         return _shaped({
             "origin": "PROMOTED_RESEARCH",
-            "footprint": [{"country": r["country"], "archetype": r["archetype"],
-                           "sites": r["sites"]} for r in promoted],
+            # `industry` carried through where a row names one. A group is
+            # not one industry, and a row that says which it belongs to must
+            # keep saying so - rebuilding the row from three fields dropped
+            # it silently, which is the only way this could have failed.
+            "footprint": [
+                {k: v for k, v in
+                 (("country", r["country"]), ("archetype", r["archetype"]),
+                  ("sites", r["sites"]), ("industry", r.get("industry")))
+                 if v is not None}
+                for r in promoted],
             "detail": f"{len(promoted)} row(s) promoted from research, with "
                       f"sources and as-of dates.",
             "needs_split": False, "provenance": promoted,

@@ -103,8 +103,15 @@ def test_the_simulation_footprint_opens_runnable():
     # it is a line for the analyst to fill, not a default that runs. What must
     # not happen is a *resolved* footprint arriving with a zero count, which is
     # what the original assertion was reaching for and could not express.
-    assert '"sites": 0}])' in text, (
-        "the editor must open with a blank row to fill")
+    # Matched on the blank row's own fields rather than on the closing
+    # bracket. The original ended `"sites": 0}])`, and adding an `industry`
+    # column after `sites` moved the bracket - breaking a test of where the
+    # line ends rather than of what the row contains.
+    import re
+
+    blank = re.search(r'or \[\{"country": "", "archetype": "",[^\]]*\]', text)
+    assert blank, "the editor must open with a blank row to fill"
+    assert '"sites": 0' in blank.group(0)
     assert "unallocated_sites" in text or "register_total" in text, (
         "and a resolved footprint must carry a real count, not a zero that "
         "puts the page behind a guard it cannot pass")

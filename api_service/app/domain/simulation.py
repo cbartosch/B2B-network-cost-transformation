@@ -104,14 +104,49 @@ def one_pass(seed: int, footprint: list[dict], archetypes: dict,
                str(loc.get("archetype") or "").upper())
         by_kind.setdefault(key, []).append(loc)
 
-    for entry in sorted(footprint, key=lambda e: (e["country"], e["archetype"])):
-        prior = archetypes.get(entry["archetype"], {})
+    def _for(table, entry):
+        """A per-archetype override, honouring the row's own industry.
+
+        A group is not one industry. DHL's German estate is a parcel network
+        of 30,000 collection points AND a contract-logistics estate of a few
+        hundred depots, and pricing both from one industry got the larger half
+        wrong whichever was chosen.
+
+        These tables were keyed on archetype alone, resolved once per run from
+        `case.industry`. They are now keyed `(industry, archetype)` where a
+        row names one, and fall back to the archetype-only key so a footprint
+        without industries behaves exactly as it did.
+
+        One resolver rather than four inline lookups: the fallback order is
+        the thing that must not differ between them, and it differed once
+        already.
+        """
+        if not table:
+            return None
+        archetype = entry.get("archetype")
+        row_industry = (entry.get("industry") or "").strip().upper()
+        if row_industry:
+            hit = table.get((row_industry, archetype))
+            if hit is not None:
+                return hit
+        return table.get(archetype)
+
+    for entry in sorted(footprint,
+                        key=lambda e: (e["country"], e["archetype"],
+                                       str(e.get("industry") or ""))):
+        # The archetype prior, per row's industry where it names one. A
+        # PLANT in chemicals and a PLANT in food manufacturing are the same
+        # site type at different bandwidths, and the estate can hold both.
+        prior = (archetypes.get(
+            ((entry.get("industry") or "").strip().upper(),
+             entry["archetype"]))
+            or archetypes.get(entry["archetype"], {}))
         # Published criticality first, then the seeded per-archetype guess.
         # A Tier 1 site is 1.00 rather than 0.95: a tier 1 site without a
         # second path is a finding about that site, and serviceability already
         # reports one it cannot deliver as `single_by_necessity`.
         p_dual = float(
-            (dual_access_by_archetype or {}).get(entry["archetype"])
+            _for(dual_access_by_archetype, entry)
             or prior.get("dual_access_probability", 0.5))
         primary_product = prior.get("primary_product", "DIA")
         backup_product = prior.get("backup_product", "BROADBAND_PON")
@@ -125,7 +160,7 @@ def one_pass(seed: int, footprint: list[dict], archetypes: dict,
         # a store served by PON instead came out as a substitution rather than
         # as the same decision met a different way.
         primary_class = (
-            (service_class_by_archetype or {}).get(entry["archetype"])
+            _for(service_class_by_archetype, entry)
             or prior.get("primary_service_class")
             or access.LEGACY_PRODUCT.get(primary_product, (None,))[0])
         backup_class = (
@@ -223,8 +258,7 @@ def one_pass(seed: int, footprint: list[dict], archetypes: dict,
                 # precedence as the service class, and for the same reason: a
                 # seeded number is a starting position, not a decision.
                 committed_fraction=(
-                    (committed_fraction_by_archetype or {}).get(
-                        entry["archetype"])
+                    _for(committed_fraction_by_archetype, entry)
                     or prior.get("committed_fraction")))
             # Both figures on the key. `bandwidth_mbps` is the priced rate,
             # which is what the rate card keys on; the bearer is what had to be

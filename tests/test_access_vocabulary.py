@@ -892,10 +892,29 @@ def test_the_case_choice_overrides_the_seeded_default():
 
     source = inspect.getsource(simulation.one_pass)
     assert "committed_fraction_by_archetype" in source
-    # the case's choice is tried before the seeded default
-    choice = source.index("committed_fraction_by_archetype or {}")
-    seeded = source.index('prior.get("committed_fraction")')
-    assert choice < seeded, "the case choice must be tried first"
+
+    # The precedence, exercised rather than located.
+    #
+    # This asserted that one string appears before another, and broke the
+    # moment the four inline lookups became one resolver - which changed the
+    # spelling and not the behaviour. A test of where a substring sits is a
+    # test of the spelling.
+    namespace = {}
+    start = source.index("    def _for(table, entry):")
+    end = source.index("    for entry in sorted(footprint", start)
+    exec("\n".join(line[4:] for line in source[start:end].splitlines()),
+         namespace)
+    resolve = namespace["_for"]
+
+    # a case choice wins over nothing at all
+    assert resolve({"STORE": "0.80"}, {"archetype": "STORE"}) == "0.80"
+    # and where the case made no choice, the caller falls through to the
+    # seeded prior - the resolver returns None rather than a value
+    assert resolve({}, {"archetype": "STORE"}) is None
+    assert resolve(None, {"archetype": "STORE"}) is None
+
+    # the seeded default is still the fallback in the expression itself
+    assert 'prior.get("committed_fraction")' in source
 
 
 def test_the_ensemble_forwards_both_analyst_choices():

@@ -1123,12 +1123,33 @@ def run_simulation(case_id: str, payload: SimIn):
         # constants, so a finding about a client's architecture reached
         # nothing. Counts were evidence-driven and topology was not.
         _industry = (case_row.industry or "DEFAULT").strip().upper()
+        # Every industry the estate actually contains, not only the case's.
+        #
+        # A group is not one industry. DHL's German estate is a parcel network
+        # of 30,000 collection points AND a contract-logistics estate of a few
+        # hundred depots, and pricing both from one industry got the larger
+        # half wrong whichever was chosen.
+        #
+        # A footprint row may name its own industry. Where none does, this is
+        # exactly the case's industry and the behaviour is unchanged.
+        _row_industries = sorted({
+            (r.get("industry") or "").strip().upper()
+            for r in (footprint or []) if (r.get("industry") or "").strip()})
+        _industries = [_industry] + [i for i in _row_industries
+                                     if i != _industry]
+
         _bw_rows = s.execute(select(db.archetype_bandwidth).where(
-            db.archetype_bandwidth.c.industry.in_([_industry, "DEFAULT"]))).all()
+            db.archetype_bandwidth.c.industry.in_(
+                _industries + ["DEFAULT"]))).all()
+        # Archetype-only keys for the case's industry, so a row naming no
+        # industry resolves as before; (industry, archetype) keys beside them
+        # for the rows that do.
         _bw = {}
         for r in sorted(_bw_rows, key=lambda r: r.industry == "DEFAULT",
                         reverse=True):
-            _bw[r.archetype] = int(r.bandwidth_mbps)
+            if r.industry in ("DEFAULT", _industry):
+                _bw[r.archetype] = int(r.bandwidth_mbps)
+            _bw[(r.industry, r.archetype)] = int(r.bandwidth_mbps)
         # The supplied BICS L3 benchmark for this industry, where it covers it.
         # Preferred over the seeded bandwidth because it is published data
         # rather than this repository's own judgement - and it names the site
@@ -1186,14 +1207,39 @@ def run_simulation(case_id: str, payload: SimIn):
         # Same mapping as the bandwidth lookup above. Resilience is keyed on
         # the BICS code, so a legacy code has to resolve to one or the whole
         # posture falls back to the archetype default.
+        # Resilience for every industry in the estate, keyed both ways for
+        # the same reason as the bandwidth table above.
+        _bench_codes = {}
+        for _i in _industries:
+            _bench_codes[_i] = bics.benchmark_code(_i) or _i
         _res_rows = s.execute(select(db.archetype_resilience).where(
-            db.archetype_resilience.c.industry == _bench_code)).all()
-        benchmark_committed = {
-            r.archetype: str(r.committed_fraction)
-            for r in _res_rows if r.committed_fraction is not None}
-        benchmark_dual_access = {
-            r.archetype: str(r.dual_access_probability)
-            for r in _res_rows if r.dual_access_probability is not None}
+            db.archetype_resilience.c.industry.in_(
+                sorted(set(_bench_codes.values()))))).all()
+        _res_by_code = {}
+        for _r in _res_rows:
+            _res_by_code.setdefault(_r.industry, []).append(_r)
+
+        benchmark_committed, benchmark_dual_access = {}, {}
+        for _i in _industries:
+            for _r in _res_by_code.get(_bench_codes[_i], []):
+                if _r.committed_fraction is not None:
+                    benchmark_committed[(_i, _r.archetype)] = \
+                        str(_r.committed_fraction)
+                    if _i == _industry:
+                        benchmark_committed[_r.archetype] = \
+                            str(_r.committed_fraction)
+                if _r.dual_access_probability is not None:
+                    benchmark_dual_access[(_i, _r.archetype)] = \
+                        str(_r.dual_access_probability)
+                    if _i == _industry:
+                        benchmark_dual_access[_r.archetype] = \
+                            str(_r.dual_access_probability)
+        _res_rows = _res_by_code.get(_bench_codes[_industry], [])
+        # The single-industry versions of these two dicts were rebuilt here
+        # and would have overwritten the multi-industry keys above with the
+        # case industry's alone - silently, because a dict assignment does
+        # not complain. `_res_rows` is kept only for `_resilience_basis`
+        # below, which reports what the case's own industry resolved to.
         # What the two axes resolved to, for the interface to show. An
         # estate shape and a resilience posture are different claims and the
         # page said neither, which is how 43 inert rows went unnoticed.

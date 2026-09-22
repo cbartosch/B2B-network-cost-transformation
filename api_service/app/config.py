@@ -163,7 +163,12 @@ LLM_SEARCH_TIMEOUT_SECONDS = float(
 # layer at all, when a parcel network is almost entirely retail collection
 # points. The benchmark names the site an industry is built around, not the
 # site there are most of - so shapes, never reordering.
-SIMULATION_MODEL_VERSION = "sim-2.1.0"
+# sim-2.2.0: a footprint row may name its own industry, so a group whose
+# divisions have different estates prices each from the right one. DHL's
+# German estate is a parcel network AND a contract-logistics estate; from one
+# industry the larger half is wrong whichever is chosen. A row naming none
+# uses the case's, which is every row that exists today.
+SIMULATION_MODEL_VERSION = "sim-2.2.0"
 # calc-1.1.0: the saving band is accumulated with matched pairing rather than
 # derived as current - target. The target is a function of the current, so
 # subtracting the two crossed bounds a second time and produced worlds that

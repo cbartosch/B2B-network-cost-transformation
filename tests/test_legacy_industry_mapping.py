@@ -86,6 +86,11 @@ def test_both_lookups_use_the_mapping():
                if (c / "routers").exists())
     api = (app / "routers" / "api.py").read_text()
 
+    # The mapping is applied per industry now, not once for the case: an
+    # estate can hold rows from more than one industry, and each needs its
+    # own benchmark code.
     assert "_bench_code = bics.benchmark_code(_industry)" in api
     assert "db.industry_benchmark.c.industry_code == _bench_code" in api
-    assert "db.archetype_resilience.c.industry == _bench_code" in api
+    assert "bics.benchmark_code(_i) or _i" in api, (
+        "every industry in the estate must be mapped, not only the case's")
+    assert "db.archetype_resilience.c.industry.in_(" in api
