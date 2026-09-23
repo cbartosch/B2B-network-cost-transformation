@@ -300,9 +300,28 @@ def main() -> int:
             print(f"     {first[:180]}")
     if results["errored"]:
         print("\nERRORS")
+        # Grouped by cause, not truncated at ten.
+        #
+        # This printed the first ten and said nothing about the rest, so a
+        # run reporting "errored 38" showed 10 and the other 28 were
+        # invisible. The number appeared in every summary of this session and
+        # nobody - including the person writing the summaries - could say
+        # what it consisted of.
+        from collections import Counter as _C
+
+        _by_cause = _C()
+        for _label, _message in results["errored"]:
+            _line = _message.strip().splitlines()[-1]
+            _by_cause[_line.split(":")[0][:60]] += 1
+        for _cause, _n in _by_cause.most_common():
+            print(f"  {_n:>3}x {_cause}")
+        print()
         for label, message in results["errored"][:10]:
             print(f"  {label}")
             print(f"     {message.strip().splitlines()[-1][:180]}")
+        if len(results["errored"]) > 10:
+            print(f"  ... and {len(results['errored']) - 10} more, "
+                  f"grouped by cause above")
 
     print("\nBLOCKED FILES AND THEIR MISSING DEPENDENCIES")
     from collections import Counter
