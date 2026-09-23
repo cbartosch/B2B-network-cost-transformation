@@ -1197,7 +1197,13 @@ def run_simulation(case_id: str, payload: SimIn):
         # and only where it has a row. A seeded value is not discarded - it is
         # what covers an archetype the benchmark does not name.
         for _row in _bench_rows:
+            # Both key shapes, like the seeded rows above. Writing only the
+            # archetype-only key meant a row naming its own industry never
+            # saw the benchmark's bandwidth - it resolved to the seeded
+            # default instead, silently.
             _bw[_row["archetype_code"]] = int(_row["bandwidth_base_mbps"])
+            _bw[(_industry, _row["archetype_code"])] = int(
+                _row["bandwidth_base_mbps"])
 
         # The benchmark's committed share and criticality, keyed the way the
         # simulation reads them. 4.181 took one fraction per archetype from an
@@ -1269,7 +1275,25 @@ def run_simulation(case_id: str, payload: SimIn):
 
         bandwidth_basis = {"industry": _industry,
                            "matched": _industry in {r.industry for r in _bw_rows},
-                           "by_archetype": dict(sorted(_bw.items())),
+                           # Archetype-only keys. `_bw` holds both shapes
+                           # since 4.252.0 - "STORE" and ("LOGISTICS",
+                           # "STORE") - and sorting a mixed dict raises
+                           # TypeError comparing a tuple to a str. This is a
+                           # display of what the case's own industry
+                           # resolved to, so the tuple keys do not belong in
+                           # it.
+                           "by_archetype": {
+                               k: v for k, v in sorted(
+                                   (k, v) for k, v in _bw.items()
+                                   if isinstance(k, str))},
+                           # And what the other industries in the estate
+                           # resolved to, where any row named one.
+                           "by_industry_archetype": {
+                               f"{k[0]}/{k[1]}": v
+                               for k, v in sorted(
+                                   (k, v) for k, v in _bw.items()
+                                   if isinstance(k, tuple))
+                               if k[0] != _industry},
                            # Which figures came from the published benchmark
                            # and which from this repository's judgement. A
                            # reader should be able to tell them apart.

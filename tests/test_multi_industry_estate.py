@@ -184,3 +184,52 @@ def test_the_industry_is_read_from_the_payload_not_a_later_local():
              and isinstance(n.ctx, ast.Store)]
     assert min(uses) > min(binds), (
         "footprint is read before the line that binds it")
+
+
+def test_a_mixed_key_dict_is_never_sorted_whole():
+    """`_bw` holds both key shapes since 4.252.0 - "STORE" and ("LOGISTICS",
+    "STORE") - and `sorted()` on it raises TypeError comparing a tuple to a
+    str.
+
+    It reached a route because the basis report sorted the whole dict for
+    display. Any iteration over these has to say which shape it wants."""
+    import re
+
+    root = Path(__file__).resolve().parents[1]
+    app = next(c for c in (root / "api_service" / "app", root / "app")
+               if (c / "routers").exists())
+    api = (app / "routers" / "api.py").read_text()
+
+    # Collected and asserted, not raised inside a loop. A test whose only
+    # failure path is a raise inside a loop that never runs passes
+    # vacuously - which the vacuous-test guard caught, correctly.
+    offenders = []
+    for name in ("_bw", "benchmark_committed", "benchmark_dual_access"):
+        for match in re.finditer(rf"sorted\(\s*{name}\.items\(\)", api):
+            offenders.append(
+                f"line {api[:match.start()].count(chr(10)) + 1}: "
+                f"sorted({name}.items())")
+    assert not offenders, (
+        f"{offenders} mix tuple and str keys - filter by isinstance first")
+
+
+def test_the_benchmark_override_writes_both_key_shapes():
+    """It wrote only the archetype-only key, so a row naming its own industry
+    never saw the benchmark's bandwidth - it silently resolved to the seeded
+    default."""
+    root = Path(__file__).resolve().parents[1]
+    app = next(c for c in (root / "api_service" / "app", root / "app")
+               if (c / "routers").exists())
+    api = (app / "routers" / "api.py").read_text()
+    assert '_bw[(_industry, _row["archetype_code"])]' in api
+
+
+def test_the_basis_reports_both_shapes_separately():
+    """A reader needs to see what the case's industry resolved to and what
+    the other industries in the estate did."""
+    root = Path(__file__).resolve().parents[1]
+    app = next(c for c in (root / "api_service" / "app", root / "app")
+               if (c / "routers").exists())
+    api = (app / "routers" / "api.py").read_text()
+    assert '"by_archetype"' in api
+    assert '"by_industry_archetype"' in api
