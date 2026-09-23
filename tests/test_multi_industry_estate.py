@@ -118,3 +118,69 @@ def test_the_industry_survives_the_footprint_reshape():
                if (c / "domain").exists())
     source = (app / "domain" / "footprint.py").read_text()
     assert '("industry", r.get("industry"))' in source
+
+
+def test_the_request_model_declares_industry():
+    """Pydantic drops an undeclared field before the route sees it.
+
+    Without this, the whole of 4.252.0 was silently inert: the resolver would
+    resolve, the tables would be keyed both ways, and no row would ever
+    arrive carrying an industry."""
+    import ast
+
+    root = Path(__file__).resolve().parents[1]
+    app = next(c for c in (root / "api_service" / "app", root / "app")
+               if (c / "routers").exists())
+    api = (app / "routers" / "api.py").read_text()
+    node = next(n for n in ast.parse(api).body
+                if isinstance(n, ast.ClassDef) and n.name == "FootprintRow")
+    fields = [f.target.id for f in node.body if isinstance(f, ast.AnnAssign)]
+    assert "industry" in fields
+
+
+def test_no_request_model_declares_a_field_twice():
+    """FootprintRow declared count_source twice with two different comments.
+    Pydantic accepts that silently: the second wins and the first is dead
+    text that reads as documentation."""
+    import ast
+    from collections import Counter
+
+    root = Path(__file__).resolve().parents[1]
+    app = next(c for c in (root / "api_service" / "app", root / "app")
+               if (c / "routers").exists())
+    api = (app / "routers" / "api.py").read_text()
+
+    duplicated = {}
+    for node in ast.parse(api).body:
+        if not isinstance(node, ast.ClassDef):
+            continue
+        fields = [f.target.id for f in node.body
+                  if isinstance(f, ast.AnnAssign)]
+        repeats = [k for k, n in Counter(fields).items() if n > 1]
+        if repeats:
+            duplicated[node.name] = repeats
+    assert not duplicated, duplicated
+
+
+def test_the_industry_is_read_from_the_payload_not_a_later_local():
+    """`footprint` is built 194 lines below the block that needs it, so
+    reading it there was an unbound local - the same shape as the `scope`
+    shadowing at 4.218.0."""
+    import ast
+
+    root = Path(__file__).resolve().parents[1]
+    app = next(c for c in (root / "api_service" / "app", root / "app")
+               if (c / "routers").exists())
+    api = (app / "routers" / "api.py").read_text()
+    node = next(n for n in ast.parse(api).body
+                if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))
+                and n.name == "run_simulation")
+
+    uses = [n.lineno for n in ast.walk(node)
+            if isinstance(n, ast.Name) and n.id == "footprint"
+            and isinstance(n.ctx, ast.Load)]
+    binds = [n.lineno for n in ast.walk(node)
+             if isinstance(n, ast.Name) and n.id == "footprint"
+             and isinstance(n.ctx, ast.Store)]
+    assert min(uses) > min(binds), (
+        "footprint is read before the line that binds it")

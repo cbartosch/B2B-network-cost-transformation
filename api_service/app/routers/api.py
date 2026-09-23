@@ -1065,17 +1065,26 @@ class FootprintRow(BaseModel):
     country: str = Field(min_length=2, max_length=2)
     archetype: str = Field(min_length=1, max_length=48)
     sites: int = Field(ge=0, le=config.MAX_SIM_SITES)
+    # The row's own industry, where a group's divisions differ.
+    #
+    # Declared here or pydantic drops it before the route sees it, which
+    # would have made the whole of 4.252.0 silently inert - the resolver
+    # would resolve, the tables would be keyed both ways, and no row would
+    # ever arrive carrying one.
+    #
+    # Optional. Absent means "use the case's industry", which is every row
+    # that exists today.
+    industry: str | None = Field(default=None, max_length=64)
     # Where this count came from. A filing, the company's own store locator,
-    # the client, or somebody's judgement - and the evidence grade follows
-    # from it. Optional so an existing caller still works; a row without one
-    # is reported as an analyst estimate rather than silently graded higher.
-    count_source: str | None = None
-    # Where this number came from. A filing, the company's own store locator,
     # the client, or somebody's judgement - and the evidence grade follows
     # from that, exactly as it does for a rate.
     #
     # Optional so an existing caller still works; absent reads as
     # ANALYST_ESTIMATE, which is what an undeclared count has always been.
+    #
+    # Declared once. It was declared twice with two different comments, which
+    # pydantic accepts silently - the second wins and the first is dead text
+    # that reads as documentation.
     count_source: str | None = None
     # Optional. Without it the row is unclustered and prices exactly as it did
     # before serviceability existed - silence is not a constraint. With it, the
@@ -1132,9 +1141,16 @@ def run_simulation(case_id: str, payload: SimIn):
         #
         # A footprint row may name its own industry. Where none does, this is
         # exactly the case's industry and the behaviour is unchanged.
+        # Read from `payload.footprint`, which exists on entry. The local
+        # `footprint` is built 194 lines below this, so reading it here was an
+        # unbound local - the same shape as the `scope` shadowing at 4.218.0,
+        # and caught the same way: by a person running it, not by me.
+        #
+        # A pydantic row, so `getattr` rather than `.get`.
         _row_industries = sorted({
-            (r.get("industry") or "").strip().upper()
-            for r in (footprint or []) if (r.get("industry") or "").strip()})
+            str(getattr(r, "industry", "") or "").strip().upper()
+            for r in (payload.footprint or [])
+            if str(getattr(r, "industry", "") or "").strip()})
         _industries = [_industry] + [i for i in _row_industries
                                      if i != _industry]
 

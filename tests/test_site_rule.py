@@ -202,8 +202,16 @@ def test_a_footprint_row_can_say_where_its_number_came_from():
     app = next(c for c in (root / "api_service" / "app", root / "app")
                if (c / "routers").exists())
     api = (app / "routers" / "api.py").read_text()
-    block = api[api.index("class FootprintRow"):][:900]
-    assert "count_source" in block
+    # The class itself, from the AST. A 900-character window broke when a
+    # field was added above count_source - the fourth guessed window to fail
+    # in this repository, each one a length chosen by eye rather than by the
+    # thing's own bounds.
+    import ast
+
+    node = next(n for n in ast.parse(api).body
+                if isinstance(n, ast.ClassDef) and n.name == "FootprintRow")
+    fields = [f.target.id for f in node.body if isinstance(f, ast.AnnAssign)]
+    assert "count_source" in fields
 
 
 # ------------------- a rule is wider on two axes, not one
