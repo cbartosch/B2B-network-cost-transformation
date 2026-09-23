@@ -42,7 +42,14 @@ from decimal import Decimal
 # postal network has 30,000 service points, a tower company 40,000 cabinets,
 # and a retailer 5,000 stores in one country. Those are real.
 PER_COUNTRY_CEILING = {
-    "DC": 60,
+    # Per country, against an absolute worldwide range in
+    # domain/absolute_counts.py. Most large enterprises run five to ten
+    # worldwide, so 25 in ONE country is already generous and only a
+    # hyperscaler approaches it.
+    #
+    # Was 60, which let a 38,000-site postal estate carry 76 before the
+    # proposer capped the share at all.
+    "DC": 25,
     "TERMINAL": 120,
     "CAMPUS": 150,
     "CONTROL_CENTER": 150,

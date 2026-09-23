@@ -177,7 +177,12 @@ LLM_SEARCH_TIMEOUT_SECONDS = float(
 # A packstation in a Tier 1 postal network went from 0.15 to 0.7025 dual
 # access, because the benchmark's Tier 1 describes the sortation hub - so
 # 12,000 unmanned terminals were given a second circuit.
-SIMULATION_MODEL_VERSION = "sim-2.4.0"
+# sim-2.5.0: a data centre count is absolute, not a share of the estate. As a
+# percentage it scaled with site count and produced 76 for a postal estate,
+# 1,140 for a bank and 9,500 for a cloud provider. Most large enterprises run
+# five to ten. Research first, then the industry peer average, then a generic
+# enterprise range - and the basis is reported either way.
+SIMULATION_MODEL_VERSION = "sim-2.5.0"
 # calc-1.1.0: the saving band is accumulated with matched pairing rather than
 # derived as current - target. The target is a function of the current, so
 # subtracting the two crossed bounds a second time and produced worlds that

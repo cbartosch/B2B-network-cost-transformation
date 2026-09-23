@@ -31,6 +31,8 @@ evenly across seven countries would be inventing six numbers, and putting it
 under a guessed archetype would price it at a bandwidth nobody chose.
 """
 from decimal import Decimal
+
+from . import absolute_counts
 from types import SimpleNamespace
 
 from sqlalchemy import select
@@ -339,6 +341,38 @@ def propose_split(session, *, total: int, country: str, industry: str | None,
                         reverse=True)[:total - sum(counts)]:
         counts[index] += 1
 
+    # Site types that do not scale with the estate, capped in absolute terms.
+    #
+    # A data centre count follows a company's compute strategy, not how many
+    # outlets it has. As a percentage share it scaled with site count and
+    # produced counts nobody has: 76 for a postal estate, 1,140 for a bank,
+    # 9,500 for a cloud provider. Most large enterprises run five to ten.
+    #
+    # The surplus goes back to the largest row rather than being dropped, so
+    # the split still totals the register. Losing it would make the proposal
+    # not add up, which reads as arithmetic.
+    capped_note = None
+    dc_rows = [i for i, r in enumerate(chosen) if r.archetype == "DC"]
+    if dc_rows:
+        implied = sum(counts[i] for i in dc_rows)
+        verdict = absolute_counts.dc_count(
+            industry=sector, estate_derived=implied)
+        allowed = verdict["count"]
+        if implied > allowed:
+            # Reduced proportionally, largest first, and the remainder handed
+            # to whichever row carries most of the estate.
+            surplus = implied - allowed
+            for i in sorted(dc_rows, key=lambda i: counts[i], reverse=True):
+                take = min(counts[i], surplus)
+                counts[i] -= take
+                surplus -= take
+                if not surplus:
+                    break
+            biggest = max(range(len(counts)),
+                          key=lambda i: (i not in dc_rows, counts[i]))
+            counts[biggest] += implied - allowed
+            capped_note = verdict["note"]
+
     # The archetype mix is proposed. The GEOGRAPHY IS NOT.
     #
     # This wrote every row to `country` - the domicile - and ignored the
@@ -394,6 +428,9 @@ def propose_split(session, *, total: int, country: str, industry: str | None,
         "industry": sector if matched else "DEFAULT",
         # Both axes named. The mix is governed; the country is not, and the
         # page said neither.
+        # What was capped, if anything. "We could not establish this, so the
+        # sector norm was used" is a finding, not a detail.
+        "capped": capped_note,
         "axes": {
             "site_mix": {
                 "source": "INDUSTRY_DEFAULT" if matched else "GENERIC_DEFAULT",
