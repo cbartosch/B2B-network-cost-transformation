@@ -22,6 +22,7 @@ is a stronger control than validating it away afterwards.
 """
 from decimal import Decimal
 from enum import Enum
+from typing import Annotated
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
@@ -151,8 +152,14 @@ URL_MAX = 200
 
 class SourceRef(Strict):
     url: str = Field(max_length=URL_MAX)
-    publisher: str | None = None
-    as_of: str | None = None
+    # Bounded. SourceRef is shared by every prompt that cites anything, so
+    # an unbounded field here is counted once per prompt by the format audit
+    # and, more to the point, multiplied by the source cap in every reply.
+    #
+    # A publisher name is a masthead and a date is a date; neither needs a
+    # paragraph, and an agent given no ceiling will occasionally write one.
+    publisher: str | None = Field(None, max_length=LABEL_MAX)
+    as_of: str | None = Field(None, max_length=40)
     # Provenance the agent observed. These are reports about the source, never
     # judgements about the finding: the grade is computed from them by code.
     source_class: SourceClass | None = None
@@ -325,6 +332,71 @@ class ValueQualifier(str, Enum):
     AT_LEAST = "AT_LEAST"          # "over 100", "more than 5,000"
     AT_MOST = "AT_MOST"            # "fewer than", "up to"
     APPROXIMATELY = "APPROXIMATELY"  # "around", "roughly", "circa"
+
+
+class SiteClass(Strict):
+    """One kind of place this company operates, in its own words."""
+
+    # What the company calls it. "Packstation", "Paketshop", "Post Office",
+    # "sortation centre", "forecourt". This is the whole point of asking an
+    # agent rather than reading a table: a static list holds canonical
+    # archetype names, and nobody publishes a "SELF_SERVICE_TERMINAL" count.
+    # The company's own term is what a search has to use.
+    company_term: str = Field(max_length=80)
+    # Which of the model's site types it maps to, so the estate can be built.
+    # The agent picks from the vocabulary it is given; an unmappable class is
+    # returned with archetype null rather than forced into a wrong one.
+    archetype: str | None = Field(None, max_length=48)
+    # Roughly how many, if the agent found a figure. A count without a source
+    # is refused downstream, so this and `source_url` travel together.
+    approximate_count: int | None = Field(None, ge=0)
+    # How the source stated it. "Over 15,000 Packstations" is how these are
+    # actually published, and a bare int throws the "over" away - the audit
+    # caught this on the first run of the new schema.
+    count_qualifier: ValueQualifier = ValueQualifier.EXACTLY
+    count_is_global: bool = True
+    country: str | None = Field(None, max_length=2)
+    source_url: str | None = Field(None, max_length=200)
+    as_of: str | None = Field(None, max_length=20)
+    # Why this class matters to a network estimate: count, cost per site, or
+    # criticality. An agent that cannot say why is guessing.
+    why_it_matters: str | None = Field(None, max_length=200)
+    # The searches that would establish the count. Generated for THIS company
+    # using its own vocabulary - the thing a static brief cannot do.
+    # Capped per item as well as in length. An unbounded string inside a
+    # bounded list is still unbounded output, which the format audit counts
+    # and is right to.
+    suggested_queries: list[
+        Annotated[str, Field(max_length=160)]] = Field(
+        default_factory=list, max_length=4)
+
+
+class LocationStructureResult(Strict):
+    """What kind of estate this company actually has.
+
+    Run before the domains that need a site count, so their queries can be
+    written in the company's own vocabulary rather than in the model's.
+
+    A static table of asks per industry was the first attempt and was the
+    wrong shape: it could not know that DHL says "Packstation" or that a
+    forecourt retailer counts sites its industry peers do not have. If the
+    questions are fixed, no agent is needed.
+    """
+
+    found: bool
+    # In rough order of significance to the estimate: the classes that drive
+    # the number come first, whether by count or by cost per site.
+    site_classes: list[SiteClass] = Field(default_factory=list, max_length=12)
+    classes_omitted: int = 0
+    # The single class that most drives this estate's cost, and why. Usually
+    # not the most numerous one.
+    dominant_class: str | None = Field(None, max_length=80)
+    # What the agent could not determine, named rather than left blank.
+    unresolved: list[
+        Annotated[str, Field(max_length=160)]] = Field(
+        default_factory=list, max_length=6)
+    finding: str | None = Field(None, max_length=1200)
+    sources: list[SourceRef] = Field(default_factory=list, max_length=10)
 
 
 # --------------------------------------------------- known-fact corroboration

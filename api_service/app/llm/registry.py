@@ -37,6 +37,9 @@ AGENTS = {
     "LLM-09": {"name": "benchmark extraction - structuring a heterogeneous "
                        "source into observations; interpretation only, no "
                        "arithmetic", **_LIVE_ONLY},
+    "LLM-10": {"name": "location structure - what kind of estate this "
+                       "company runs, in its own vocabulary, and the "
+                       "searches that would count it", **_LIVE_ONLY},
     "ENTITY-RESOLVE": {"name": "subject-entity candidate generation (0.1A)", **_LIVE_ONLY},
     "KNOWN-FACT-CORROBORATE": {"name": "known-fact corroboration (0.1B.3)", **_LIVE_ONLY},
     "LLM-07": {"name": "savings advisory - scenario, percentile and basis recommendation",

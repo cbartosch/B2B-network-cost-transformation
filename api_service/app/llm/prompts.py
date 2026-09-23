@@ -219,6 +219,48 @@ _DEFS = [
         evaluation_suite="conformance/public_evidence"),
 
     PromptDefinition(
+        prompt_id="llm10.location_structure.assess",
+        prompt_version="1.0.0", agent_id="LLM-10",
+        task=("Work out what kind of ESTATE this company operates, before "
+              "anyone tries to count it.\n"
+              "\n"
+              "Return the kinds of place it runs, IN ITS OWN WORDS. A parcel "
+              "carrier has Packstations and Paketshops; a bank has branches "
+              "and off-premise cash machines; a forecourt retailer has "
+              "filling stations with shops attached. Use the term the "
+              "company itself publishes, because that is the term a search "
+              "has to use - nobody publishes a count of "
+              "'SELF_SERVICE_TERMINAL'.\n"
+              "\n"
+              "For each class, generate the SEARCHES that would establish "
+              "its count for THIS company. Not generic searches: use the "
+              "company's own vocabulary, its brands and the language of the "
+              "market it reports in.\n"
+              "\n"
+              "Order them by how much they drive a NETWORK COST estimate, "
+              "which is not the same as how many there are. A handful of "
+              "sortation hubs can outweigh thirty thousand lockers, and "
+              "`dominant_class` is usually not the most numerous one. Say "
+              "which and say why.\n"
+              "\n"
+              "Map each class to one of the archetypes you are given where "
+              "it fits, and leave `archetype` null where it does not - a "
+              "class forced into the wrong site type is worse than one left "
+              "unmapped, because the wrong one prices.\n"
+              "\n"
+              "Do not count things that are not sites. Equipment inside a "
+              "site already counted - a cash machine in a branch wall, a "
+              "locker in a shop - is not a location. Only a standalone unit "
+              "is.\n"
+              "\n"
+              "Name what you could not determine in `unresolved`. A class "
+              "you know exists but could not count is a finding; omitting it "
+              "makes the estate look complete."),
+        output_model=schemas.LocationStructureResult,
+        tool_policy=ToolPolicy.WEB_SEARCH,
+        evaluation_suite="conformance/location_structure"),
+
+    PromptDefinition(
         prompt_id="llm08.market_data.extract",
         prompt_version="2.4.0", agent_id="LLM-08",
         task=("Source the price and serviceability inputs of an enterprise WAN "

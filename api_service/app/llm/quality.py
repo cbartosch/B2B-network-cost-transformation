@@ -381,7 +381,39 @@ def accept_all(result, context) -> Verdict:
     return Verdict(True)
 
 
+def location_structure(result) -> "Verdict":
+    """A location-structure assessment worth acting on.
+
+    The point of this agent is to replace a static list of asks, so an
+    answer that names no site classes is worse than useless - it reads as
+    "this company has no estate" when it means "nothing was found".
+
+    A class with a count but no source is refused: an unsourced number here
+    propagates into the footprint as though it were researched.
+    """
+    classes = list(getattr(result, "site_classes", None) or [])
+    if getattr(result, "found", False) and not classes:
+        return Verdict(False, "found is true and no site class was returned")
+
+    unsourced = [c.company_term for c in classes
+                 if getattr(c, "approximate_count", None) is not None
+                 and not getattr(c, "source_url", None)]
+    if unsourced:
+        return Verdict(
+            False, f"counted without a source: {', '.join(unsourced[:3])}")
+
+    # The whole purpose is per-company queries. A class with none has been
+    # named and not made actionable, which is the static table again.
+    queryless = [c.company_term for c in classes
+                 if not (getattr(c, "suggested_queries", None) or [])]
+    if queryless and len(queryless) == len(classes):
+        return Verdict(False, "no class carries a search that would count it")
+
+    return Verdict(True)
+
+
 RULES = {
+    "llm10.location_structure.assess": location_structure,
     "llm01.public_evidence.extract": public_evidence,
     "llm08.market_data.extract": public_evidence,
     "known_fact.corroborate": corroboration,
