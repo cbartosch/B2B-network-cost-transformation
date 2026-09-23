@@ -116,3 +116,62 @@ def test_the_route_reads_the_reachable_table():
     assert '_row["archetype_code"]: _row["committed_share_base"]' not in api
     assert "resilience_basis" in api, (
         "the two axes must be named separately in the pin")
+
+
+def test_an_industrys_tier_does_not_lift_an_expendable_site():
+    """A packstation in a Tier 1 postal network went from 0.15 to 0.7025.
+
+    Closure lifts an archetype toward 1.00 in proportion to the industry's
+    criticality tier, and the benchmark's Tier 1 describes the SORTATION HUB.
+    Losing a hub stops the network; losing a packstation costs one parcel a
+    day. Applied uniformly, the lift put a second circuit on 12,000 unmanned
+    terminals.
+
+    Criticality is a property of the site as well as the industry."""
+    from decimal import Decimal
+
+    from app.seed import _archetype_resilience
+
+    dual = {(i, a): Decimal(d) for i, a, d, _c, _t in _archetype_resilience()}
+
+    # the small sites stay small
+    assert dual[("POSTAL_AND_PARCEL_NETWORK",
+                 "SELF_SERVICE_TERMINAL")] <= Decimal("0.25")
+    assert dual[("POSTAL_AND_PARCEL_NETWORK",
+                 "SERVICE_POINT")] <= Decimal("0.30")
+    # and the sites the tier is actually about still reach 1.00
+    assert dual[("POSTAL_AND_PARCEL_NETWORK", "TERMINAL")] == Decimal("1")
+    assert dual[("POSTAL_AND_PARCEL_NETWORK", "DC")] == Decimal("1")
+
+
+def test_a_cash_machine_is_the_exception_among_small_sites():
+    """PCI scope and cash at stake mean a second path is often bought, which
+    a packstation's is not."""
+    from app.domain.resilience import DUAL_ACCESS_CEILING
+
+    assert DUAL_ACCESS_CEILING["ATM"] > \
+        DUAL_ACCESS_CEILING["SELF_SERVICE_TERMINAL"]
+
+
+def test_the_ceiling_never_reduces_an_archetypes_own_posture():
+    """It limits the industry's lift. A site type whose own baseline is above
+    its ceiling keeps the baseline - the ceiling is not a target."""
+    from decimal import Decimal
+
+    from app.domain.resilience import derive
+
+    # Compared as Decimal. The module returns Decimal throughout - money and
+    # probability both - and comparing one to a float is the mixing this
+    # codebase refuses everywhere else.
+    result = derive(archetype_dual="0.90", archetype_committed="0.50",
+                    archetype="STORE", industry_tier="Tier 3")
+    assert result["dual_access_probability"] >= Decimal("0.90")
+
+
+def test_the_types_with_no_ceiling_are_the_critical_ones():
+    """A data centre, a control centre, a campus and a terminal genuinely
+    reach 1.00 in a critical industry - which is what closure is for."""
+    from app.domain.resilience import DUAL_ACCESS_CEILING
+
+    for archetype in ("DC", "CONTROL_CENTER", "CAMPUS", "TERMINAL", "PLANT"):
+        assert archetype not in DUAL_ACCESS_CEILING, archetype

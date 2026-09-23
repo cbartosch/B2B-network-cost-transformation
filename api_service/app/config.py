@@ -173,7 +173,11 @@ LLM_SEARCH_TIMEOUT_SECONDS = float(
 # vending machine and an ATM are one device with nobody there and usually no
 # fixed line. Pricing 30,000 packstations as cable-connected shops overstates
 # the largest row in a postal estate several times over.
-SIMULATION_MODEL_VERSION = "sim-2.3.0"
+# sim-2.4.0: an industry's criticality tier no longer lifts an expendable site.
+# A packstation in a Tier 1 postal network went from 0.15 to 0.7025 dual
+# access, because the benchmark's Tier 1 describes the sortation hub - so
+# 12,000 unmanned terminals were given a second circuit.
+SIMULATION_MODEL_VERSION = "sim-2.4.0"
 # calc-1.1.0: the saving band is accumulated with matched pairing rather than
 # derived as current - target. The target is a function of the current, so
 # subtracting the two crossed bounds a second time and produced worlds that

@@ -82,7 +82,37 @@ def closure_for(tier: str | None) -> D:
                             TIER_CLOSURE[DEFAULT_TIER])
 
 
-def derive(*, archetype_dual, archetype_committed,
+# The most dual access a site type ever reaches, whatever the industry.
+#
+# Closure lifts an archetype toward 1.00 in proportion to the industry's
+# criticality tier, and applied uniformly it inflated the small sites: a
+# packstation in a Tier 1 postal network went from 0.15 to 0.7025, because
+# the benchmark's Tier 1 describes the SORTATION HUB. Losing a hub stops the
+# network; losing a packstation costs one parcel a day.
+#
+# Criticality is a property of the site as well as the industry. A site type
+# that is inherently expendable stays expendable in a critical industry - a
+# supermarket's store does not become dual-fed because its data centre is
+# Tier 1.
+#
+# Types not listed have no ceiling: a data centre, a control centre, a campus
+# and a terminal genuinely reach 1.00 in a critical industry, which is what
+# closure is for.
+DUAL_ACCESS_CEILING = {
+    "SELF_SERVICE_TERMINAL": D("0.25"),
+    "SERVICE_POINT": D("0.30"),
+    # A cash machine is the exception among the small sites: PCI scope and
+    # cash at stake mean a second path is often bought.
+    "ATM": D("0.70"),
+    "NETWORK_SITE": D("0.40"),
+    "STORE": D("0.55"),
+    "BRANCH": D("0.80"),
+    "WAREHOUSE": D("0.85"),
+    "REMOTE_SITE": D("0.75"),
+}
+
+
+def derive(*, archetype_dual, archetype_committed, archetype=None,
            industry_tier=None, industry_committed=None,
            closure=None, blend=None) -> dict:
     """Resilience for one (industry, archetype) pair, with its arithmetic.
@@ -111,6 +141,12 @@ def derive(*, archetype_dual, archetype_committed,
     # Clamped rather than trusted. A closure above 1, from a retuned threshold
     # or a bad row, would otherwise produce a probability above certainty.
     dual = max(D("0"), min(D("1"), dual))
+    # Bounded by what this site type ever reaches. Never below the archetype's
+    # own baseline: the ceiling limits the industry's lift, it does not reduce
+    # the site's own posture.
+    ceiling = DUAL_ACCESS_CEILING.get(archetype)
+    if ceiling is not None:
+        dual = max(base_dual, min(dual, ceiling))
 
     if industry_committed is None:
         committed = base_committed
@@ -169,6 +205,7 @@ def rows_for(archetypes, benchmark_rows, estate_pairs) -> list:
         tier, share = posture.get(industry, (None, None))
         result = derive(archetype_dual=base_dual,
                         archetype_committed=base_committed,
+                        archetype=archetype,
                         industry_tier=tier, industry_committed=share)
         out.append((industry, archetype,
                     str(result["dual_access_probability"]),
