@@ -385,6 +385,32 @@ with st.expander("Show the prompt used for a domain"):
         st.caption("Tick to build and show the prompt for a domain.")
 st.divider()
 current = api.get(f"/v1/outside-in/cases/{case_id}/domain-dispositions")
+
+# The site counts worth researching for THIS industry.
+#
+# A brief was one text per domain, the same for every client, so an analyst
+# disposing a bank was never prompted for the standalone cash machine count
+# and one disposing a parcel network was never prompted for packstations -
+# while those are the largest rows in their estates.
+#
+# Derived from the industry's own estate shape, so a shape that gains a site
+# type gains its question.
+# `api.get` takes query parameters as keyword arguments, not a dict.
+_brief_ctx = api.get("/v1/reference/research-briefs", case_id=case_id) or {}
+_site_asks = _brief_ctx.get("site_count_asks") or []
+_required_counts = _brief_ctx.get("required_counts") or []
+if _site_asks:
+    with st.expander(
+            f"Site counts to establish for this industry "
+            f"({len(_site_asks)}, {len(_required_counts)} needed before V0)",
+            expanded=bool(_required_counts)):
+        for _a in _site_asks:
+            _tag = ("**needed before V0**" if _a["archetype"]
+                    in _required_counts else
+                    "in this estate" if _a.get("in_this_estate") else
+                    "possible for this kind of business")
+            st.markdown(f"**{_a['ask']}**  \n_{_tag}_  \n{_a['why']}")
+            st.caption("Usually found in: " + "; ".join(_a["look_for"]))
 catalogue = current.get("catalogue", [])
 existing = {d["domain_no"]: d for d in current.get("dispositions", [])}
 

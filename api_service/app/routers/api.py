@@ -17,7 +17,7 @@ from .. import config, db, jobs, migrations
 from ..domain.scope import REGION_PARENT as REGION_PARENT
 from ..domain import (access as access_vocab, anchor_estimate,
                       assumptions, bics, calibration, case_rates,
-                      currency, estate_plausibility,
+                      currency, estate_plausibility, industry_asks,
                       site_rule,
                       delta_bridge, industries, industry_benchmark,
                       providers, validation,
@@ -3045,16 +3045,55 @@ class BriefIn(BaseModel):
 
 
 @router.get("/v1/reference/research-briefs")
-def list_research_briefs(domain_no: int | None = None, active_only: bool = True):
+def list_research_briefs(domain_no: int | None = None,
+                         active_only: bool = True,
+                         case_id: str | None = None):
+    """The briefs, and for a named case the site counts worth asking about.
+
+    A brief was one text per domain, the same for every client - so an agent
+    researching a bank was never asked for the standalone cash machine count
+    and one researching a parcel network was never asked how many
+    packstations there are, while those are the largest rows in their
+    estates.
+
+    The asks are derived from the industry's own estate shape rather than
+    written per industry, so a shape that gains a site type gains its ask.
+    """
     with S() as s:
         q = select(db.research_brief)
         if domain_no is not None:
             q = q.where(db.research_brief.c.domain_no == domain_no)
         if active_only:
             q = q.where(db.research_brief.c.active.is_(True))
+        _asks, _required = [], []
+        if case_id:
+            _row = s.execute(select(db.case.c.industry).where(
+                db.case.c.case_id == case_id)).first()
+            _ind = (_row.industry if _row else None) or ""
+            if _ind:
+                _shape = bics.shape_for(_ind)
+                _in_estate = {
+                    r.archetype for r in s.execute(select(db.density_mix)
+                                                   .where(db.density_mix.c
+                                                          .industry == _ind)).all()}
+                _asks = industry_asks.asks_for(
+                    _in_estate, industry=_ind, shape=_shape)
+                _required = industry_asks.required_counts(
+                    _in_estate, shape=_shape)
         rows = s.execute(q.order_by(db.research_brief.c.domain_no,
                                     db.research_brief.c.brief_version)).all()
-        return {"briefs": [dict(r._mapping) for r in rows]}
+        return {
+            "briefs": [dict(r._mapping) for r in rows],
+            # Computed above and returned here. A value derived and then
+            # dropped is the defect this repository has found five times in
+            # one session, and it looks exactly like a working feature.
+            "site_count_asks": _asks,
+            # The counts a V0 should not be published without. A data centre
+            # count derived from a share is wrong by an order of magnitude,
+            # and an unresearched standalone ATM count is silently zero
+            # because the estate shape proposes none by design.
+            "required_counts": _required,
+        }
 
 
 @router.put("/v1/reference/research-briefs/{domain_no}")
