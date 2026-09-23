@@ -81,3 +81,50 @@ def test_no_page_concatenates_error_without_relying_on_the_contract():
     client = _client()
     assert "isinstance(detail, dict)" in client
     assert "isinstance(detail, list)" in client
+
+
+def test_a_list_in_the_error_survives():
+    """A V0 refusal carries `blockers` - twenty lines naming the domains
+    standing in the way - and the flattener dropped every list.
+
+    The analyst saw "V0 cannot publish" and nothing else. A refusal that
+    names no reason is the failure this system exists to avoid, and it was
+    introduced by the code written to make refusals readable."""
+    out = _flatten({"detail": {
+        "error": "V0 cannot publish",
+        "blockers": ["domain 3 has no disposition",
+                     "domain 4 has no disposition"]}})
+    assert "domain 3" in out and "domain 4" in out
+
+
+def test_a_long_list_is_truncated_with_a_count():
+    """Twenty lines in one st.error is unreadable; zero lines is useless."""
+    out = _flatten({"detail": {
+        "error": "V0 cannot publish",
+        "blockers": [f"domain {n} has no disposition" for n in range(3, 23)]}})
+    assert "domain 3" in out
+    assert "more" in out
+    assert len(out) < 600, "a refusal must stay readable"
+
+
+def test_a_coverage_refusal_keeps_its_countries():
+    out = _flatten({"detail": {
+        "error": "V0 publication refused",
+        "detail": "coverage 0.0% is below the floor",
+        "unpriced_countries": ["GB", "DE"]}})
+    assert "GB" in out and "DE" in out
+
+
+def test_a_nested_container_is_still_summarised_not_dropped():
+    """One level down, a dict's own nested containers are skipped - a
+    refusal is a message, not a data dump. But the level that carries the
+    reason must survive, which the three tests above exercise.
+
+    A spelling test lived here and asserted that the substring
+    `not isinstance(v, (dict, list))` appeared nowhere in the client. It is
+    legitimately used one level down, so the test failed on correct code -
+    the same habit this file was written to replace."""
+    out = _flatten({"detail": {
+        "error": "refused",
+        "context": {"stage": "6", "nested": {"ignored": True}}}})
+    assert "stage=6" in out

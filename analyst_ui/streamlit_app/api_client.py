@@ -114,9 +114,32 @@ def _req(method: str, path: str, **kw):
         if isinstance(detail, dict):
             _headline = detail.get("error") or detail.get("message")
             _body = detail.get("detail") or detail.get("reason")
-            _rest = [f"{k}: {v}" for k, v in sorted(detail.items())
+            # Lists are kept, not dropped.
+            #
+            # `not isinstance(v, (dict, list))` threw away exactly the part
+            # that matters: a V0 refusal carries `blockers`, twenty lines
+            # naming the domains standing in the way, and the analyst saw
+            # "V0 cannot publish" and nothing else. A refusal that names no
+            # reason is the failure this system exists to avoid.
+            #
+            # A short list is spelled out; a long one is truncated with a
+            # count, because twenty lines in a single st.error is unreadable
+            # and zero lines is useless.
+            def _flat(value):
+                if isinstance(value, (list, tuple)):
+                    items = [str(x) for x in value if x is not None]
+                    if len(items) > 6:
+                        return ("; ".join(items[:6])
+                                + f"; and {len(items) - 6} more")
+                    return "; ".join(items)
+                if isinstance(value, dict):
+                    return "; ".join(f"{k}={v}" for k, v in sorted(
+                        value.items()) if not isinstance(v, (dict, list)))
+                return str(value)
+
+            _rest = [f"{k}: {_flat(v)}" for k, v in sorted(detail.items())
                      if k not in ("error", "message", "detail", "reason")
-                     and not isinstance(v, (dict, list))]
+                     and _flat(v)]
             detail = " - ".join(str(x) for x in (_headline, _body) if x) \
                 or "; ".join(_rest) or str(detail)
             if _rest and (_headline or _body):
