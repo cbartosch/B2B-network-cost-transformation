@@ -51,7 +51,7 @@ def test_the_shape_follows_the_site_archetype_not_the_industry_name():
     assert bics.shape_for("MOBILE_OPERATOR") == "network-centric"
 
 
-def test_retail_banking_is_a_branch_and_cash_machine_network():
+def test_retail_banking_is_a_branch_network():
     """It sat on network-centric alongside cloud providers and tower
     companies, which gave it 25% data centres and no cash machines at all.
 
@@ -70,8 +70,14 @@ def test_retail_banking_is_a_branch_and_cash_machine_network():
     for industry, archetype, _band, share in DENSITY_MIX:
         if industry == "RETAIL_BANKING":
             mix[archetype] += Decimal(share)
-    assert max(mix, key=lambda a: mix[a]) == "ATM"
-    assert mix["BRANCH"] > 0
+    # Branches, and no derived ATM layer.
+    #
+    # An earlier version of this test asserted ATM was the dominant type,
+    # which is what turned Simmons Bank's 233 registered BRANCHES into 60
+    # branches and 153 cash machines. Most ATMs are inside a branch and are
+    # not sites; a standalone one is entered, never derived.
+    assert max(mix, key=lambda a: mix[a]) == "BRANCH"
+    assert mix["ATM"] == 0, "cash machines are added, never proposed"
     assert mix["DC"] < Decimal("0.10"), "a bank has a handful of data centres"
 
 def test_an_unclassified_code_gets_the_least_wrong_default():

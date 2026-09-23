@@ -333,6 +333,25 @@ def propose_split(session, *, total: int, country: str, industry: str | None,
                 "note": "no governed mix for this sector, so nothing is "
                         "proposed - split it by hand below."}
 
+    # Types that may only ever be entered are dropped from the proposal.
+    #
+    # A shape allocating them reinterprets a registered count as something
+    # else: 233 registered branches became 60 branches and 153 cash machines.
+    # A registered count is evidence; a share is a guess, and a guess must
+    # not overrule what was counted.
+    _additive = [r for r in chosen
+                 if not absolute_counts.may_be_proposed(r.archetype)]
+    if _additive:
+        chosen = [r for r in chosen
+                  if absolute_counts.may_be_proposed(r.archetype)]
+        if chosen:
+            # The shares no longer total one, so they are renormalised over
+            # what remains rather than the register being short.
+            _kept = sum(Decimal(str(r.share)) for r in chosen)
+            if _kept > 0:
+                for r in chosen:
+                    r.share = str(Decimal(str(r.share)) / _kept)
+
     matched = bool([r for r in rows if r.industry == sector])
     chosen.sort(key=lambda r: (r.archetype, r.density_band))
     raw = [Decimal(total) * Decimal(str(r.share)) for r in chosen]

@@ -246,3 +246,49 @@ def absorber_for(shape) -> str | None:
     collection points.
     """
     return ABSORBS_SURPLUS.get(str(shape or "").strip().lower())
+
+
+# Site types that may only ever be ADDED, never derived from a share.
+#
+# Simmons Bank registered 233 BRANCHES and the branch-network shape turned
+# them into 60 branches and 153 cash machines, because ATMs had 66% of the
+# estate. Two errors in one:
+#
+#   * a registered count is evidence and a share is a guess, so a guess must
+#     never reinterpret what was counted
+#   * most cash machines are INSIDE a branch. They are equipment in a site
+#     already counted, not sites. Only a standalone unit - a petrol station,
+#     a station concourse, a shopping centre - is a site of its own, and that
+#     number depends on the bank's off-premise strategy rather than on how
+#     many branches it has. No ratio recovers it.
+#
+# The same holds for a vending estate and for parcel lockers sited inside a
+# host's premises: they exist only where somebody counted them.
+#
+# These types appear in an estate when the analyst enters a row or research
+# establishes a count. They are never proposed, and a shape naming one is a
+# defect - see the guard in tests/test_additive_only.py.
+ADDITIVE_ONLY = frozenset({"ATM"})
+
+
+def may_be_proposed(archetype) -> bool:
+    """Whether a shape may allocate sites of this type.
+
+    False for a type that only exists where somebody counted it. The
+    proposer drops such a row rather than guessing a share of the register.
+    """
+    return str(archetype or "").strip().upper() not in ADDITIVE_ONLY
+
+
+def additive_note(archetype) -> str:
+    """Why this type is absent from a proposal, for the analyst."""
+    code = str(archetype or "").strip().upper()
+    if code == "ATM":
+        return (
+            "Standalone cash machines are not proposed. Most ATMs sit inside "
+            "a branch and are equipment in a site already counted; only an "
+            "off-premise unit is a site of its own, and that number depends "
+            "on the bank's off-premise strategy rather than on its branch "
+            "count. Add a row with the number, or research it - a bank's own "
+            "locator usually distinguishes branch ATMs from standalone ones.")
+    return (f"{code} is only ever entered, never derived from a share.")

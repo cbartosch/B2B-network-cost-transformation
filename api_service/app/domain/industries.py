@@ -159,12 +159,26 @@ SHAPES = {
         # Roughly 3:1 against branches, which is where the large European
         # networks sit. The ratio is this repository's judgement; that the
         # layer exists is not.
-        ("ATM", "URBAN", "0.3400"),
-        ("ATM", "SUBURBAN", "0.2200"),
-        ("ATM", "RURAL", "0.1000"),
-        ("BRANCH", "URBAN", "0.1300"),
-        ("BRANCH", "SUBURBAN", "0.0900"),
-        ("BRANCH", "RURAL", "0.0400"),
+        # NO ATM LAYER, deliberately.
+        #
+        # This shape gave ATMs 66% of the estate, so Simmons Bank's 233
+        # registered BRANCHES became 60 branches and 153 cash machines. The
+        # register said branches; the shape overruled it.
+        #
+        # Two errors in one. A registered count is evidence and a share is a
+        # guess, so a guess must never reinterpret what was counted. And most
+        # cash machines are INSIDE a branch - they are not sites, they are
+        # equipment in a site already counted. Only a STANDALONE ATM in a
+        # petrol station, a station concourse or a shopping centre is a site,
+        # and that number cannot be derived from the branch count at any
+        # ratio: it depends entirely on the bank's off-premise strategy.
+        #
+        # So standalone ATMs are added, never derived - as an explicit count
+        # from the analyst or from research, entered as its own footprint
+        # row. See ADDITIVE_ONLY in domain/absolute_counts.py.
+        ("BRANCH", "URBAN", "0.4500"),
+        ("BRANCH", "SUBURBAN", "0.3000"),
+        ("BRANCH", "RURAL", "0.1700"),
         ("LARGE_OFFICE", "DENSE_URBAN", "0.0300"),
         ("LARGE_OFFICE", "URBAN", "0.0200"),
         ("DC", "DENSE_URBAN", "0.0200"),
