@@ -89,9 +89,33 @@ def resolve(session, *, case_id: str, seeded: dict,
                 basis[f"{archetype}.{field}"] = {"value": fields[field],
                                                  "layer": "SEEDED_PRIOR"}
 
-    # 2 - the industry bandwidth default for this case's sector
-    for archetype, mbps in (industry_bandwidth or {}).items():
-        _set(archetype, "bandwidth_mbps_base", _coerce("bandwidth_mbps_base", mbps),
+    # 2 - the industry bandwidth default, for this case's sector and for any
+    #     other sector a footprint row names.
+    #
+    # `industry_bandwidth` carries two key shapes since 4.252.0: "STORE" for
+    # the case's own industry and ("LOGISTICS", "STORE") for a row that names
+    # its own. `_set` returns early on a key it does not recognise, so every
+    # (industry, archetype) pair was being silently discarded here - the whole
+    # per-row industry feature reached this function and stopped.
+    #
+    # A pair gets its own entry in `resolved`, seeded from the archetype it
+    # refines, so the simulation's resolver finds it. The key stays a tuple
+    # because that is what `one_pass` looks up; only `basis` needs a string,
+    # and it gets "INDUSTRY/ARCHETYPE.field".
+    for key, mbps in (industry_bandwidth or {}).items():
+        if isinstance(key, tuple):
+            _industry, _archetype = key
+            if _archetype not in resolved:
+                continue
+            if key not in resolved:
+                resolved[key] = dict(resolved[_archetype])
+            value = _coerce("bandwidth_mbps_base", mbps)
+            if value is not None:
+                resolved[key]["bandwidth_mbps_base"] = value
+                basis[f"{_industry}/{_archetype}.bandwidth_mbps_base"] = {
+                    "value": value, "layer": "INDUSTRY_DEFAULT"}
+            continue
+        _set(key, "bandwidth_mbps_base", _coerce("bandwidth_mbps_base", mbps),
              "INDUSTRY_DEFAULT")
 
     # 3 and 4 - what this case established. Ordered so research overwrites an

@@ -1160,6 +1160,28 @@ def run_simulation(case_id: str, payload: SimIn):
         # Archetype-only keys for the case's industry, so a row naming no
         # industry resolves as before; (industry, archetype) keys beside them
         # for the rows that do.
+        def _json_keys(table):
+            """A mixed-key table as something JSON can hold.
+
+            These tables carry two key shapes since 4.252.0 - "STORE" and
+            ("LOGISTICS", "STORE") - because the simulation resolves a row's
+            own industry before falling back to the case's. A tuple key is
+            fine in memory and illegal in JSON, and `pinned_priors` is a JSON
+            column.
+
+            This is the fourth place the two shapes have leaked: a sorted
+            display, a benchmark override that wrote only one shape, and now
+            two JSON columns. Normalising at every exit through one function
+            is the only version of this that stays fixed - fixing each site
+            as it surfaces is what produced the first three.
+
+            "INDUSTRY/ARCHETYPE" rather than nesting, so a reader of the pin
+            sees the pair that was used and the simulation's own resolver
+            never reads this back.
+            """
+            return {(f"{k[0]}/{k[1]}" if isinstance(k, tuple) else k): v
+                    for k, v in table.items()}
+
         _bw = {}
         for r in sorted(_bw_rows, key=lambda r: r.industry == "DEFAULT",
                         reverse=True):
@@ -1484,7 +1506,10 @@ def run_simulation(case_id: str, payload: SimIn):
                          "available": bool(v.available),
                          "max_bandwidth_mbps": v.max_bandwidth_mbps}
                         for k, v in service_table.items()]},
-            pinned_priors={"archetype_prior": arch,
+            # `arch` carries (industry, archetype) pairs since 4.252.0, so it
+            # needs the same key normalisation as the tables above. The job
+            # runner reads the pin back and re-keys it - see the runner.
+            pinned_priors={"archetype_prior": _json_keys(arch),
                            "bandwidth_basis": bandwidth_basis,
                            "topology_basis": topology_basis,
                            # Pinned, so a resumed pass prices the same service
@@ -1503,17 +1528,18 @@ def run_simulation(case_id: str, payload: SimIn):
                            # seeded default. An engagement that knows what its
                            # sites commit outranks a published average, and a
                            # published average outranks our judgement.
-                           "committed_fraction_by_archetype": {
+                           "committed_fraction_by_archetype": _json_keys({
                                **benchmark_committed,
                                **(getattr(case_row,
                                           "committed_fraction_by_archetype",
-                                          None) or {})},
+                                          None) or {})}),
                            # Criticality drives dual access. A Tier 1 site has
                            # a second path because losing it stops the
                            # business; a Tier 3 store does not - which is a
                            # property of the site's role rather than a seeded
                            # probability per archetype.
-                           "dual_access_by_archetype": benchmark_dual_access,
+                           "dual_access_by_archetype": _json_keys(
+                               benchmark_dual_access),
                            # The two axes, named separately.
                            #
                            # An estate shape and a resilience posture are

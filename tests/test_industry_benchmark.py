@@ -209,6 +209,23 @@ def test_a_case_choice_outranks_the_published_average():
     app = next(c for c in (root / "api_service" / "app", root / "app")
                if (c / "routers").exists())
     api = (app / "routers" / "api.py").read_text()
-    block = api[api.index('"committed_fraction_by_archetype": {'):][:400]
-    # the benchmark is spread first, the case second - so the case wins
-    assert block.index("benchmark_committed") < block.index("case_row")
+    # The precedence, read from the merge expression rather than from a
+    # 400-character window. `_json_keys(` was inserted between the key and
+    # the brace, so the window's anchor no longer existed - the fifth guessed
+    # window to break today.
+    #
+    # A later key wins in a `{**a, **b}` merge, so the case's own choice must
+    # come second.
+    import ast
+
+    merge = None
+    for node in ast.walk(ast.parse(api)):
+        if not isinstance(node, ast.Dict):
+            continue
+        for key, value in zip(node.keys, node.values):
+            if (isinstance(key, ast.Constant)
+                    and key.value == "committed_fraction_by_archetype"):
+                merge = ast.unparse(value)
+    assert merge, "the merge expression must exist"
+    assert merge.index("benchmark_committed") < merge.index("case_row"), (
+        "the case's own choice must be merged last so it wins")

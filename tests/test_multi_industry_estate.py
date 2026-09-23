@@ -233,3 +233,66 @@ def test_the_basis_reports_both_shapes_separately():
     api = (app / "routers" / "api.py").read_text()
     assert '"by_archetype"' in api
     assert '"by_industry_archetype"' in api
+
+
+def test_every_exit_from_a_tuple_keyed_table_is_normalised():
+    """A tuple key is fine in memory and illegal in JSON.
+
+    This leaked five times, each fixed where it surfaced: a sorted display, a
+    benchmark override that wrote one shape, two JSON columns, and the
+    archetype resolver silently discarding every pair. The fifth was the
+    prompt to trace the whole path instead.
+
+    One function at the route boundary, one inverse in the runner. Those are
+    the only two places either conversion belongs."""
+    root = Path(__file__).resolve().parents[1]
+    app = next(c for c in (root / "api_service" / "app", root / "app")
+               if (c / "routers").exists())
+    api = (app / "routers" / "api.py").read_text()
+    jobs = (app / "jobs.py").read_text()
+
+    assert "def _json_keys(table):" in api
+    # every JSON sink that can hold one of these tables goes through it
+    assert '"archetype_prior": _json_keys(arch)' in api
+    assert '"dual_access_by_archetype": _json_keys(' in api
+    assert '"committed_fraction_by_archetype": _json_keys({' in api
+    # and the runner reverses it, or a pinned pair is never found
+    assert 'tuple(k.split("/", 1))' in jobs
+
+
+def test_the_archetype_resolver_keeps_the_pairs():
+    """`_set` returns early on a key it does not recognise, so every
+    (industry, archetype) pair was silently discarded - the whole per-row
+    feature reached that function and stopped."""
+    import types
+
+    from app.domain import archetype
+
+    class _Session:
+        def execute(self, _q):
+            return types.SimpleNamespace(all=lambda: [], first=lambda: None)
+
+    resolved, basis = archetype.resolve(
+        _Session(), case_id="x",
+        seeded={"STORE": {"bandwidth_mbps_base": 50},
+                "WAREHOUSE": {"bandwidth_mbps_base": 100}},
+        industry_bandwidth={"STORE": 50,
+                            ("LOGISTICS", "WAREHOUSE"): 5250})
+
+    assert ("LOGISTICS", "WAREHOUSE") in resolved
+    assert resolved[("LOGISTICS", "WAREHOUSE")]["bandwidth_mbps_base"] == 5250
+    # the archetype-only entry is untouched
+    assert resolved["WAREHOUSE"]["bandwidth_mbps_base"] == 100
+
+
+def test_the_pin_round_trips_without_loss():
+    """The pin is the boundary where the two representations meet."""
+    import json
+
+    original = {"STORE": {"bandwidth_mbps_base": 50},
+                ("LOGISTICS", "WAREHOUSE"): {"bandwidth_mbps_base": 5250}}
+    pinned = {(f"{k[0]}/{k[1]}" if isinstance(k, tuple) else k): v
+              for k, v in original.items()}
+    back = {(tuple(k.split("/", 1)) if isinstance(k, str) and "/" in k else k): v
+            for k, v in json.loads(json.dumps(pinned)).items()}
+    assert back == original

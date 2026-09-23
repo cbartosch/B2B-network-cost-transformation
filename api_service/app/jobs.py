@@ -104,7 +104,20 @@ def run_job(run_id: str, session=None) -> dict:
 
         params = row.params or {}
         footprint = params.get("footprint", [])
-        archetypes = (row.pinned_priors or {}).get("archetype_prior", {})
+        # Re-keyed on the way back in.
+        #
+        # The pin holds "INDUSTRY/ARCHETYPE" because a tuple cannot be a JSON
+        # key, and `one_pass` looks up (industry, archetype) tuples - so a
+        # pinned pair would never be found and every row naming its own
+        # industry would silently fall back to the case's.
+        #
+        # Symmetric with `_json_keys` in the route that wrote it. The pin is
+        # the boundary where the two representations meet, and it is the only
+        # place either conversion belongs.
+        archetypes = {
+            (tuple(k.split("/", 1)) if isinstance(k, str) and "/" in k else k): v
+            for k, v in ((row.pinned_priors or {})
+                         .get("archetype_prior", {}) or {}).items()}
         # Pinned on the run, so a resumed pass rebuilds the same core
         # rather than one planned from a footprint that may have moved.
         backbone = (row.params or {}).get("backbone") or {}
