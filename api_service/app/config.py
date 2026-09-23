@@ -182,7 +182,13 @@ LLM_SEARCH_TIMEOUT_SECONDS = float(
 # 1,140 for a bank and 9,500 for a cloud provider. Most large enterprises run
 # five to ten. Research first, then the industry peer average, then a generic
 # enterprise range - and the basis is reported either way.
-SIMULATION_MODEL_VERSION = "sim-2.5.0"
+# sim-2.6.0: offices, terminals, campuses and control centres are capped in
+# absolute terms like data centres. On 38,000 German sites the percentage
+# model produced 152 large offices and 380 sortation hubs, against a parcel
+# network that runs tens of offices and about 36 parcel centres. The capped
+# sites become the shape's operating type - a parcel network's offices are
+# depots, not collection points.
+SIMULATION_MODEL_VERSION = "sim-2.6.0"
 # calc-1.1.0: the saving band is accumulated with matched pairing rather than
 # derived as current - target. The target is a function of the current, so
 # subtracting the two crossed bounds a second time and produced worlds that

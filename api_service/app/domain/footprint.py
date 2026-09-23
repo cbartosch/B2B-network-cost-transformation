@@ -32,7 +32,7 @@ under a guessed archetype would price it at a bandwidth nobody chose.
 """
 from decimal import Decimal
 
-from . import absolute_counts
+from . import absolute_counts, bics
 from types import SimpleNamespace
 
 from sqlalchemy import select
@@ -351,27 +351,71 @@ def propose_split(session, *, total: int, country: str, industry: str | None,
     # The surplus goes back to the largest row rather than being dropped, so
     # the split still totals the register. Losing it would make the proposal
     # not add up, which reads as arithmetic.
-    capped_note = None
-    dc_rows = [i for i, r in enumerate(chosen) if r.archetype == "DC"]
-    if dc_rows:
-        implied = sum(counts[i] for i in dc_rows)
-        verdict = absolute_counts.dc_count(
-            industry=sector, estate_derived=implied)
-        allowed = verdict["count"]
-        if implied > allowed:
-            # Reduced proportionally, largest first, and the remainder handed
-            # to whichever row carries most of the estate.
-            surplus = implied - allowed
-            for i in sorted(dc_rows, key=lambda i: counts[i], reverse=True):
-                take = min(counts[i], surplus)
-                counts[i] -= take
-                surplus -= take
-                if not surplus:
-                    break
-            biggest = max(range(len(counts)),
-                          key=lambda i: (i not in dc_rows, counts[i]))
-            counts[biggest] += implied - allowed
-            capped_note = verdict["note"]
+    # Every site type that does not scale with the estate, capped.
+    #
+    # A data centre was the first case and not the only one. On 38,000 German
+    # sites the percentage model also produced 152 large offices and 380
+    # sortation hubs, against a parcel network that runs tens of offices and
+    # about 36 parcel centres.
+    #
+    # The surplus goes to the shape's OPERATING site type, not to its largest
+    # row. A parcel network's capped offices are depots; handing them to the
+    # largest row would have made 148 German offices into collection points,
+    # which is wrong in a different way.
+    capped = []
+    # The estate shape this industry resolves to, for the absorber. Read from
+    # bics rather than inferred: the shape is what decides which site type is
+    # the operating one.
+    shape_name = bics.shape_for(sector) if sector else None
+    absorber = absolute_counts.absorber_for(shape_name)
+    absorb_rows = [i for i, r in enumerate(chosen)
+                   if r.archetype == absorber] if absorber else []
+    for archetype in sorted({r.archetype for r in chosen}):
+        band = absolute_counts.cap_for(archetype, industry=sector)
+        if band is None:
+            continue
+        idx = [i for i, r in enumerate(chosen) if r.archetype == archetype]
+        implied = sum(counts[i] for i in idx)
+        if archetype == "DC":
+            verdict = absolute_counts.dc_count(
+                industry=sector, estate_derived=implied)
+            allowed = verdict["count"]
+            note = verdict["note"]
+        else:
+            allowed = band[1]
+            note = (
+                f"{archetype} capped at {allowed} from {implied}. A company "
+                f"decides to open one of these, so the count follows its "
+                f"organisation rather than the size of its estate - "
+                f"{implied} is what {archetype}'s share of {total:,} sites "
+                f"works out to, not a finding about this client.")
+        if implied <= allowed:
+            continue
+        surplus = implied - allowed
+        for i in sorted(idx, key=lambda i: counts[i], reverse=True):
+            take = min(counts[i], surplus)
+            counts[i] -= take
+            surplus -= take
+            if not surplus:
+                break
+        # Back to the operating sites, or to the largest uncapped row when
+        # the shape names no absorber.
+        targets = absorb_rows or [
+            i for i in range(len(counts))
+            if absolute_counts.cap_for(chosen[i].archetype,
+                                       industry=sector) is None]
+        if targets:
+            counts[max(targets, key=lambda i: counts[i])] += implied - allowed
+        else:
+            # Nothing can absorb it, so the split would not total the
+            # register. Left where it was rather than silently dropped.
+            for i in idx:
+                counts[i] = int(
+                    Decimal(implied) * Decimal(counts[i] or 1)
+                    / Decimal(max(implied, 1)))
+            continue
+        capped.append(note)
+    capped_note = " ".join(capped) if capped else None
 
     # The archetype mix is proposed. The GEOGRAPHY IS NOT.
     #

@@ -93,6 +93,54 @@ DC_GENERIC = (2, 4, 10)
 # rooms as data centres - which are CORE_SITE and NETWORK_SITE here.
 DC_ABSOLUTE_MAX = 120
 
+# The other site types whose count follows organisational structure rather
+# than estate size, per country.
+#
+# A data centre was the clearest case and not the only one. On a 38,000-site
+# German estate the same percentage model produced:
+#
+#     LARGE_OFFICE   0.40%  =   152     a parcel network runs tens
+#     TERMINAL       1.00%  =   380     DHL Germany has ~36 parcel centres
+#
+# All of these are individually significant buildings: a company decides to
+# open one. A collection point, a depot or a cabinet is rolled out in bulk,
+# and those are the types that genuinely scale.
+#
+# Per country, because that is the unit a footprint row is entered in. A
+# multinational has one of each per major market, not one worldwide.
+NON_SCALING_PER_COUNTRY = {
+    # A head office and its regional offices. Tens for a large national
+    # operation, not hundreds.
+    "LARGE_OFFICE": (2, 12, 40),
+    # Airports, ports, sortation hubs, major hospitals. Capital projects,
+    # counted in dozens at most.
+    "TERMINAL": (1, 12, 60),
+    # A research or engineering campus with thousands of staff.
+    "CAMPUS": (1, 3, 12),
+    # An operations, dispatch or trading room.
+    "CONTROL_CENTER": (1, 3, 12),
+}
+
+# Where the sites removed by a cap should go instead.
+#
+# "A parcel services company should not have so many large offices, rather
+# they should be warehouses" - and that is right in general, not only for
+# parcel: the buildings a capped estate actually has are its operating sites.
+# Handing the surplus to the single largest row would have made 148 German
+# offices into collection points, which is wrong in a different way.
+ABSORBS_SURPLUS = {
+    "parcel-network": "WAREHOUSE",
+    "distribution-led": "WAREHOUSE",
+    "plant-centric": "PLANT",
+    "many-small": "STORE",
+    "branch-network": "BRANCH",
+    "network-centric": "NETWORK_SITE",
+    "campus-centric": "LARGE_OFFICE",
+    "few-large": "WAREHOUSE",
+    "office-centric": "BRANCH",
+}
+
+
 RESEARCHED = "RESEARCHED"
 PEER_AVERAGE = "PEER_AVERAGE"
 GENERIC = "GENERIC_ENTERPRISE"
@@ -173,3 +221,28 @@ def share_would_imply(total_sites, share) -> int:
         return int(Decimal(str(total_sites)) * Decimal(str(share)))
     except Exception:
         return 0
+
+
+def cap_for(archetype, *, industry=None) -> tuple:
+    """(low, base, high) for a site type that does not scale, or None.
+
+    `DC` keeps its own per-industry table, because the spread between a
+    software company and a hyperscaler is two orders of magnitude and no
+    single range covers both. The rest use one range per site type: an office
+    is an office.
+    """
+    code = str(archetype or "").strip().upper()
+    if code == "DC":
+        return DC_BY_INDUSTRY.get(
+            str(industry or "").strip().upper(), DC_GENERIC)
+    return NON_SCALING_PER_COUNTRY.get(code)
+
+
+def absorber_for(shape) -> str | None:
+    """The site type that takes sites removed by a cap.
+
+    Its operating sites, not its largest row. A parcel network's capped
+    offices are depots; handing them to the largest row would make them
+    collection points.
+    """
+    return ABSORBS_SURPLUS.get(str(shape or "").strip().lower())
