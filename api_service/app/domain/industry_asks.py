@@ -179,6 +179,21 @@ SITE_TYPE_ASKS = {
         ],
         "unit": "sites",
     },
+    "LEGACY_WAN_SITE": {
+        "ask": ("How many sites are still on private WAN - MPLS or IP VPN - "
+                "rather than internet access?"),
+        "why": ("This is the layer an MPLS exit removes, so the saving is "
+                "proportional to it. A transformation case starts from a "
+                "mixed estate and the split is rarely published."),
+        "look_for": [
+            "carrier contract announcements naming a managed WAN scope",
+            "network transformation press releases stating what is being "
+            "replaced and over how many sites",
+            "network engineering job postings naming MPLS alongside SD-WAN",
+            "the incumbent carrier's own customer case study",
+        ],
+        "unit": "sites",
+    },
     "WAREHOUSE": {
         "ask": ("How many depots, distribution centres or warehouses does it "
                 "operate?"),

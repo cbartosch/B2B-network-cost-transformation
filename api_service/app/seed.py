@@ -1913,6 +1913,19 @@ ARCHETYPES = [
     # where a terminal has none, and the committed share is higher because
     # the session must not degrade mid-transaction.
     ("ATM", 0, 50, "0.55", "MOBILE_5G", "BROADBAND_PON", "0.60"),
+    # A site still on private WAN.
+    #
+    # 89 MPLS rates sit on the card and no archetype could buy one: every
+    # primary and backup product in the vocabulary was DIA, Ethernet,
+    # broadband or 5G. So LEV-MPLS-001 - the 25% MPLS substitution lever,
+    # scoped to service_class IPVPN - had nothing to act on in any estate the
+    # model can build, on any case, ever. It was seeded, displayed, audited
+    # and dead, and `check_lever_reach` found it in its first run.
+    #
+    # The estate a transformation case actually starts from is mixed: some
+    # sites already on internet, some still on MPLS. This archetype is the
+    # second kind, and it is the one the MPLS lever removes.
+    ("LEGACY_WAN_SITE", 40, 100, "0.60", "MPLS", "BROADBAND_PON", "0.80"),
 ]
 
 # Platform unit costs. These were code constants in an earlier revision, which
@@ -1920,6 +1933,20 @@ ARCHETYPES = [
 PLATFORM = [
     ("SDWAN_OVERLAY", "L2", "per site per month", 40, 55, 75),
     ("SSE_LICENCE", "L4", "per user per month", 6, 9, 13),
+    # The places the backbone terminates.
+    #
+    # Backbone LINKS were priced from the first release - the topology planner
+    # names the hubs and the simulation emits their links as role=BACKBONE.
+    # What was never priced is the hub itself: rack space, power,
+    # cross-connects and IP transit at a PoP.
+    #
+    # So a bridge step that exits a PoP had no cost pool to act on, which is
+    # the defect this phase is ordered to avoid. Baseline before lever.
+    #
+    # Per hub per month, and a hub is a region with a data centre in it -
+    # `topology.plan()` already returns `hub_regions`, so the driver exists
+    # and needs nothing new from the analyst.
+    ("POP_COLOCATION", "L1", "per hub per month", 9000, 16000, 28000),
 ]
 
 # earliest_supported_stage: the gate at which the evidence supporting the lever
@@ -1948,31 +1975,73 @@ PLATFORM = [
 # it satisfies every constraint that is declared.
 LEVERS = [
     ("LEV-REPRICE-001", "Same-service repricing", "Re-rate current products to benchmark",
-     ["L0"], "0.06", "0.12", "0.18", None, None, None, "A", "V2"),
+     ["L0"], "0.06", "0.12", "0.18", None, None, None, "A", "V2", None),
     ("LEV-CLEANUP-001", "Billing cleanup", "Cease unused and duplicate services",
-     ["L0"], "0.01", "0.03", "0.06", None, None, None, "A", "V2"),
+     ["L0"], "0.01", "0.03", "0.06", None, None, None, "A", "V2", None),
     # Only a committed VPN service can be substituted for internet plus overlay.
     # Was ["MPLS"], which no longer exists.
     ("LEV-MPLS-001", "MPLS substitution", "Substitute IPVPN with DIA plus overlay where eligible",
-     ["L0"], "0.15", "0.25", "0.35", ["IPVPN"], None, None, "B", "V3"),
+     ["L0"], "0.15", "0.25", "0.35", ["IPVPN"], None, None, "B", "V3", None),
     # Right-sizing needs a committed rate to reduce. Was
     # ["DIA","ETHERNET","MPLS"] - the committed classes listed one by one,
     # which is what "not BEST_EFFORT" says directly: a 100/20 broadband line
     # is not sold at 60/12.
     ("LEV-BANDWIDTH-001", "Right-sizing", "Right-size committed bandwidth against utilisation prior",
      ["L0"], "0.03", "0.07", "0.12", ["DIA", "IPVPN", "ETHERNET"], None, None,
-     "B", "V3"),
+     "B", "V3", None),
     # Platform components, not access circuits. These never were service
     # classes and could not be expressed on that dimension at all.
     ("LEV-SASE-001", "Platform consolidation", "Converge SD-WAN, SSE and remote access",
      ["L2", "L4"], "0.12", "0.22", "0.32", None, None,
-     ["SDWAN_OVERLAY", "SSE_LICENCE"], "C", "V3"),
+     ["SDWAN_OVERLAY", "SSE_LICENCE"], "C", "V3", None),
     ("LEV-SECRETIRE-001", "Security appliance retirement", "Retire on-site firewall estate",
-     ["L4"], "0.05", "0.10", "0.16", None, None, ["SSE_LICENCE"], "C", "V3"),
+     ["L4"], "0.05", "0.10", "0.16", None, None, ["SSE_LICENCE"], "C", "V3", None),
     ("LEV-NAAS-001", "Supplier consolidation", "Single global prime with managed edge",
-     ["L0", "OPS"], "0.08", "0.16", "0.24", None, None, None, "D", "V4"),
+     ["L0", "OPS"], "0.08", "0.16", "0.24", None, None, None, "D", "V4", None),
     ("LEV-OPS-001", "Operating-model optimisation", "Consolidate NOC and vendor management",
-     ["OPS"], "0.10", "0.18", "0.28", None, None, None, "D", "V3"),
+     ["OPS"], "0.10", "0.18", "0.28", None, None, None, "D", "V3", None),
+    # ---------------------------------------------------------------- new
+    # Four levers for steps the bridge could previously only carry as an
+    # analyst estimate. Each has a baseline behind it, because a lever with
+    # no cost pool contributes nothing and looks exactly like working - three
+    # features shipped in that state before `check_lever_reach` existed.
+    #
+    # Every range below is this repository's judgement, graded PEER_AVERAGE
+    # like the rest. They are the first thing a real engagement replaces.
+
+    # Guest wifi, customer browsing, digital signage, vending telemetry.
+    # None of it needs a corporate-grade circuit or the corporate security
+    # stack, and moving it off both is cheaper AND reduces the attack
+    # surface. Scoped to BEST_EFFORT because that is what casual traffic
+    # rides once it is separated; a committed circuit is not the target.
+    ("LEV-RISKTIER-001", "Risk-tiered access",
+     "Move guest, customer and telemetry traffic to segmented low-cost access",
+     ["L0"], "0.04", "0.09", "0.16", ["BEST_EFFORT"], None, None, "B", "V2",
+     None),
+
+    # The national and international core, run on a hyperscaler's backbone
+    # instead of owned or leased PoP-to-PoP transport. Scoped by ROLE, which
+    # is why applies_to_roles had to exist: a backbone link is Ethernet like
+    # every other circuit and differs only in what it is for.
+    ("LEV-BACKBONE-001", "Backbone to hyperscaler",
+     "Replace PoP-to-PoP transport with hyperscaler backbone and on-ramps",
+     ["L0"], "0.20", "0.40", "0.60", None, None, None, "C", "V2",
+     ["BACKBONE"]),
+
+    # Exiting the PoPs themselves: rack, power, cross-connects, transit.
+    # Acts on L1, which nothing priced until POP_COLOCATION was seeded -
+    # baseline before lever, in that order, deliberately.
+    ("LEV-POP-001", "PoP exit",
+     "Retire colocation PoPs in favour of cloud on-ramps",
+     ["L1"], "0.30", "0.55", "0.75", None, None, None, "C", "V2", None),
+
+    # Buying the local tail directly rather than through a global carrier's
+    # markup. Distinct from repricing: it changes WHO you buy from, not what
+    # they charge, so the two are not the same pool and both can apply.
+    ("LEV-LASTMILE-001", "Direct local access",
+     "Source off-net tails locally rather than through a global carrier",
+     ["L0"], "0.06", "0.14", "0.22", None, None, None, "D", "V2", None),
+
 ]
 
 
@@ -2117,9 +2186,12 @@ def _rows():
              "applies_to_service_classes": svc,
              "applies_to_access_technologies": tech,
              "applies_to_platform_products": plat, "scenario": sc,
+             # Roles this lever acts on, where it acts on what a circuit is
+             # FOR rather than what it is. None means every role.
+             "applies_to_roles": rol,
              "evidence_required": "see reference.savings_lever_rule",
              "earliest_supported_stage": st}
-            for i, f, d, cl, lo, ba, hi, svc, tech, plat, sc, st in LEVERS]),
+            for i, f, d, cl, lo, ba, hi, svc, tech, plat, sc, st, rol in LEVERS]),
     ]
 
 

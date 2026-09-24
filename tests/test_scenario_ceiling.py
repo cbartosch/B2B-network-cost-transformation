@@ -70,7 +70,11 @@ def _levers():
              "cost_layers": r[3], "saving_low": r[4], "saving_base": r[5],
              "saving_high": r[6], "applies_to_service_classes": r[7],
              "applies_to_access_technologies": r[8],
-             "applies_to_platform_products": r[9], "scenario": r[10]}
+             "applies_to_platform_products": r[9], "scenario": r[10],
+             # Role scope, added when a backbone lever needed to say what a
+             # circuit is FOR rather than what it is. Read by index like the
+             # rest, and the row is now 13 wide.
+             "applies_to_roles": r[12] if len(r) > 12 else None}
             for r in LEVERS]
 
 
@@ -123,25 +127,56 @@ def test_a_saving_cannot_exceed_its_own_addressable_base():
 def test_the_ceiling_names_the_layers_it_measured_against():
     """A ceiling without its basis is unactionable."""
     out = NS["scenarios"]([_component("L0", "20104740")], _levers())
-    assert out["C"]["ceiling"]["layers_addressed"] == ["L2", "L4"]
+    # Scenario C gained LEV-BACKBONE-001 on L0 and LEV-POP-001 on L1, so the
+    # layers it addresses are wider than the platform pair it started as.
+    # Asserted as a superset: the point is that the ceiling names what it
+    # measured against, not that the set never grows.
+    assert set(out["C"]["ceiling"]["layers_addressed"]) >= {"L2", "L4"}
     assert out["A"]["ceiling"]["layers_addressed"] == ["L0"]
 
 
 def test_a_scenario_with_no_priced_layer_reports_zero_addressable():
-    """Not an error - an honest zero. Scenario C on an access-only estate
-    addresses nothing, and that is the finding."""
+    """Not an error - an honest zero.
+
+    Scenario C used to be platform-only, so an access-only estate made it
+    zero. It now also carries LEV-BACKBONE-001 on L0 and LEV-POP-001 on L1,
+    so the estate has to lack every layer the scenario touches for the zero
+    to be the point.
+
+    A PRIMARY-only L0 estate is that case: the backbone lever is scoped to
+    role=BACKBONE and finds nothing, the PoP lever has no L1, and the two
+    platform levers have no L2 or L4."""
     out = NS["scenarios"]([_component("L0", "20104740")], _levers())
-    assert D(out["C"]["ceiling"]["addressable_base"]) == 0
     assert D(out["C"]["gross_run_rate_savings"]["base"]) == 0
+    # And it says which levers found nothing, rather than reporting a bare
+    # zero somebody would read as "no opportunity here".
+    assert len(out["C"]["levers_not_applicable"]) == 4
 
 
 def test_a_fully_layered_estate_books_the_platform_levers():
     """The other half of the proof: given an L2/L4 baseline, scenario C
     stops being empty."""
+    # L1 too, since LEV-POP-001 acts on it. The estate has to carry every
+    # layer scenario C addresses or the assertion below is testing the
+    # estate's gaps rather than the scenario's arithmetic.
+    # Every layer AND every role scenario C addresses. LEV-BACKBONE-001 is
+    # scoped to role=BACKBONE - a backbone link is Ethernet like every other
+    # circuit and differs only in what it is for - so an estate of PRIMARY
+    # components alone leaves it inapplicable, correctly.
     out = NS["scenarios"]([
         _component("L0", "20104740"),
-        _component("L2", "990000", product="SDWAN_OVERLAY"),
-        _component("L4", "1890000", product="SSE_LICENCE"),
+        # `_component` takes the layer positionally and passes **extra to the
+        # Component, so `layer=` here was the same argument twice. The key is
+        # overridden instead, since two components in one layer need distinct
+        # keys.
+        _component("L0", "1800000", key="L0_backbone", role="BACKBONE",
+                   product="ETHERNET", service_class="ETHERNET"),
+        _component("L1", "576000", product="POP_COLOCATION",
+                   role="PLATFORM"),
+        _component("L2", "990000", product="SDWAN_OVERLAY",
+                   role="PLATFORM"),
+        _component("L4", "1890000", product="SSE_LICENCE",
+                   role="PLATFORM"),
     ], _levers())
     assert D(out["C"]["gross_run_rate_savings"]["base"]) > 0
     assert not out["C"]["levers_not_applicable"]

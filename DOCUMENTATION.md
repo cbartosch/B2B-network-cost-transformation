@@ -1,6 +1,6 @@
 # Enterprise Network Cost Transformation Workbench
 
-**Build 4.235.0** · schema 62 · `calc-1.14.0` · `sim-1.18.0` · 1,358 tests passing
+**Build 4.266.0** · schema 64 · `calc-1.19.0` · `sim-2.7.0` · 1,808 tests passing
 
 An outside-in estimator for enterprise WAN and network cost. It takes a company
 name and produces a defensible baseline, a savings range and a transformation
@@ -33,15 +33,15 @@ follows from that.
 
 ```
   analyst_ui/          Streamlit interface, 10 pages, one per stage
-  api_service/app/     FastAPI service, 70 modules, ~29,400 lines
-    domain/            48 modules - all the reasoning lives here
+  api_service/app/     FastAPI service, ~72 modules
+    domain/            53 modules - all the reasoning lives here
     routers/api.py     110 HTTP endpoints
-    llm/               provider gateway, prompts, response schemas
-    db.py              43 tables across 7 Postgres schemas
-    migrations.py      61 forward migrations, v2 to v62, no gaps
+    llm/               provider gateway, 13 prompts, response schemas
+    db.py              44 tables across 7 Postgres schemas
+    migrations.py      63 forward migrations, v2 to v64, no gaps
     seed.py            every governed default, as data
-  tools/               22 command-line checks and utilities
-  tests/               68 files, 1,358 tests
+  tools/               23 command-line checks and utilities
+  tests/               88 files, 1,808 tests
 ```
 
 Nothing in `domain/` imports from `routers/`. The interface can be replaced
@@ -118,10 +118,13 @@ A footprint row says *80 sites in Germany*. That is not enough to price
 anything: a store and a data centre are not the same circuit. Simulation
 expands a site count into an estate using:
 
-- **6 site archetypes** — `BRANCH`, `LARGE_OFFICE`, `WAREHOUSE`, `DC`,
-  `STORE`, `CAMPUS`
-- **estate shapes** per industry — `many-small`, `few-large`, `plant-centric`,
-  `office-centric`, `network-centric`, `campus-centric`
+- **15 site archetypes** — `BRANCH`, `LARGE_OFFICE`, `WAREHOUSE`, `DC`,
+  `STORE`, `CAMPUS`, `PLANT`, `REMOTE_SITE`, `CONTROL_CENTER`,
+  `NETWORK_SITE`, `TERMINAL`, `SERVICE_POINT`, `SELF_SERVICE_TERMINAL`,
+  `ATM`, `LEGACY_WAN_SITE`
+- **9 estate shapes** per industry — `many-small`, `few-large`,
+  `plant-centric`, `office-centric`, `network-centric`, `campus-centric`,
+  `parcel-network`, `distribution-led`, `branch-network`
 - **density bands** — dense urban through rural, which drive what can actually
   be delivered
 - **dual access probability** and **committed share** from the industry
@@ -168,7 +171,7 @@ completely unpriced major market.
 
 ## 6. The rate card
 
-**1,295 rates. 78 countries with their own card. 11 regional fallbacks.**
+**1,308 rates. 78 countries with their own card. 11 regional fallbacks.**
 
 | source | rows | grade |
 |---|--:|---|
@@ -233,6 +236,8 @@ The distinctions the system refuses to blur:
 ## 8. The research half
 
 **24 input domains. 17 researched by agents, 7 analyst judgement by design.**
+**13 registered prompts**, including LLM-10 (location structure) and
+LLM-11 (advisory estimate review).
 
 Each agent call carries a live web search plus an independent fetch of every
 source it cites, so a domain takes one to three minutes and a full pass is most
@@ -271,7 +276,7 @@ Every call is:
 
 ## 9. Industry model
 
-**49 BICS Level-3 industries**, each with a benchmark row: representative site
+**50 BICS Level-3 industries**, each with a benchmark row: representative site
 archetype, bandwidth, committed share, dual-access probability and criticality
 tier.
 
@@ -324,6 +329,57 @@ company. Roughly six hours for ten companies.
 
 ---
 
+## 10b. The savings bridge
+
+The waterfall from baseline to target, one step per lever, in the order they
+compound. Distinct from `delta_bridge`, which reconciles two *versions* of an
+estimate - why did the number change between runs - rather than why it should
+change if the programme happens.
+
+Three things it makes visible that a flat lever list does not:
+
+**Order.** Each step acts on what the ones before it left. Presented as a list
+the levers read as additive and a reader adds them up. Repricing a circuit and
+then deleting it is the classic double count and it is invisible in a list.
+
+**Basis.** A step is a governed lever, an analyst's estimate, or a lever that
+found nothing. `governed_share` says how much of the answer rests on a lever
+rather than on judgement - a bridge that is mostly estimate is a hypothesis
+with a chart.
+
+**What was not counted.** A lever with no cost pool and a lever that matched
+nothing are reported separately and never folded into the total. An
+opportunity the estimate could not size is not one worth zero.
+
+### The twelve levers
+
+| Scenario | Levers |
+|---|---|
+| A commercial | repricing, billing cleanup |
+| B access | MPLS substitution, right-sizing, risk-tiered access |
+| C platform | SASE, appliance retirement, backbone to hyperscaler, PoP exit |
+| D structural | supplier consolidation, operating model, direct local access |
+
+`LEV-BACKBONE-001` is scoped by **role**, not by product: a backbone link is
+Ethernet like every other circuit and differs only in what it is for.
+
+### Cost layers that carry a baseline
+
+```
+L0   access circuits, including backbone links
+L1   PoP colocation - rack, power, cross-connects, transit, per hub
+L2   SD-WAN overlay, per site
+L4   SSE licences, per user
+OPS  operations, per site, where the analyst supplies a rate
+```
+
+`L3` is declared and nothing prices it. **A lever acting on a layer with no
+baseline contributes nothing and looks exactly like working** - three features
+shipped in that state. `tools/check_lever_reach.py` exists for that: it fails
+if any lever cannot reach a layer a priced estate builds, or a service class
+some estate produces. Its first run found `LEV-MPLS-001` dead - 89 MPLS rates
+on the card and no archetype that could buy one.
+
 ## 11. Standing checks
 
 All green at 4.235.0. Run them before believing anything.
@@ -337,6 +393,7 @@ All green at 4.235.0. Run them before believing anything.
 | `python tools/audit_reachability.py` | 8 dimensions: modules, routes, tables, columns, outputs, pages |
 | `python tools/audit_framework_controls.py` | 16 governance controls |
 | `python tools/audit_agent_formats.py` | prompt and schema agree, replies are bounded |
+| `python tools/check_lever_reach.py` | every lever reaches a layer some estate builds |
 | `python tools/run_end_to_end.py` | one estimate through the whole chain |
 | `python tests/check_build_config.py` | compose keys, COPY paths, undefined names |
 | `make check-identity` | VERSION and `_version.py` agree |
@@ -360,14 +417,25 @@ come from a supplied workbook. The rest are judgement. A German quote
 corroborated the seeded DE rate to within a dollar; the UK card was found
 overstated by about 1.5×. One check each way, on two of 78 countries.
 
-**43 of 49 industry benchmarks are inert.** Each names a representative
-archetype — `PLANT`, `DATA_CENTER`, `AUTONOMOUS_MINE` — that its estate shape
-does not contain, so the criticality and committed share it carries are applied
-to nothing. Two industries sharing a shape currently price identically however
-different their benchmark rows. `campus-centric` was the first fix of this
-class; the rest remain.
+**The industry model rests on unvalidated judgement.** This is now the largest
+risk and it grew as the model improved. 15 site archetypes, 9 estate shapes,
+every per-country ceiling, every peer-average site count and every lever range
+is graded `PEER_AVERAGE` or seeded - which is to say sourced from nothing. Two
+industries on an identical footprint now differ by up to 19x, and that spread
+is a spread between judgements. The grading is honest and separates these from
+researched values; it does not make them right.
+
+*(The inert-benchmark defect recorded here previously - 43 of 47 benchmarks
+naming archetypes no estate contained - was closed at sim-2.0.0. 47 of 48 now
+reach their own estate and all 257 (industry, archetype) pairs carry both
+bandwidth and resilience.)*
 
 **No NPV.** Deliberate. Payback and annual saving only.
+
+**Neither new agent is called yet.** LLM-10 (location structure) and LLM-11
+(advisory estimate review) are registered, gated and schema-bound, and nothing
+invokes either - they need a route and storage. Both are also unexecuted
+against a real model.
 
 **Domain research is synchronous.** Seventeen domains block the interface for
 most of an hour. The simulation already runs as a queued job with polling;
@@ -376,7 +444,9 @@ research does not, and it is the longer of the two.
 **Authorisation is a shared bearer token.** No roles, no row-level security, no
 OIDC. Acceptable on a laptop, wrong anywhere else.
 
-**26 of 110 routes are named by no test.** They need a live database, and the
+**69 of 110 routes are named by no test.** Four are reachable from neither a
+test nor the interface, two of them state-mutating `PUT`s. Most need a live
+database, and the
 offline runner does not have one.
 
 **No transitive dependency lock.** Requires a container to generate.

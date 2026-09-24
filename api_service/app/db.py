@@ -1362,6 +1362,10 @@ lever = Table(
     Column("applies_to_service_classes", JSON),
     Column("applies_to_access_technologies", JSON),
     Column("applies_to_platform_products", JSON),
+    # Roles a lever acts on. A backbone circuit is Ethernet like every other
+    # and is distinguished only by role, so a lever that exits the backbone
+    # had no way to scope itself.
+    Column("applies_to_roles", JSON),
     Column("applies_to_products", JSON),    # Retained so a lever row written before 4.170 is still readable. Not
     # read by the eligibility test: its values cannot match the new
     # vocabulary, so falling back to it would silently disable a lever.

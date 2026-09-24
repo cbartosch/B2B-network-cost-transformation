@@ -3872,6 +3872,12 @@ def run_estimate(case_id: str, payload: EstimateIn):
             driver_refs={"sites": sources["footprint"].get("known_fact_id"),
                          "users": sources["users"].get("known_fact_id")},
             overlay_unit=platform.get("SDWAN_OVERLAY"),
+            # The hubs the topology named for this estate, pinned on the
+            # simulation run rather than recomputed - a resumed pass must
+            # price the same core.
+            pop_unit=platform.get("POP_COLOCATION"),
+            hub_count=len(((sim.params or {}).get("backbone") or {})
+                          .get("hub_regions") or []),
             sse_unit=platform.get("SSE_LICENCE"))
         if not components:
             raise HTTPException(409, {"error": "no priced components", "unpriced": unpriced})

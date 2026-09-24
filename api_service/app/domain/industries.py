@@ -185,6 +185,11 @@ SHAPES = {
         ("DC", "URBAN", "0.0100"),
     ],
     "distribution-led": [
+        # Sites still on private WAN. A transformation case starts from a
+        # mixed estate - some sites already on internet, some not - and this
+        # is the layer LEV-MPLS-001 removes. Without it the MPLS lever had
+        # nothing to act on in any estate, which check_lever_reach caught.
+        ("LEGACY_WAN_SITE", "SUBURBAN", "0.0700"),
         # Contract logistics, freight forwarding, third-party warehousing.
         #
         # These sat on few-large, which is 65% LARGE_OFFICE - so a logistics
@@ -195,16 +200,16 @@ SHAPES = {
         #
         # A distribution estate is warehouses first, a thin branch layer for
         # local agency and customs offices, and a small office and DC layer.
-        ("WAREHOUSE", "SUBURBAN", "0.3600"),
-        ("WAREHOUSE", "URBAN", "0.2400"),
-        ("WAREHOUSE", "RURAL", "0.0800"),
+        ("WAREHOUSE", "SUBURBAN", "0.3348"),
+        ("WAREHOUSE", "URBAN", "0.2232"),
+        ("WAREHOUSE", "RURAL", "0.0744"),
         # Freight agency and customs offices at ports and airports.
-        ("BRANCH", "URBAN", "0.1400"),
-        ("BRANCH", "SUBURBAN", "0.0700"),
-        ("LARGE_OFFICE", "URBAN", "0.0600"),
-        ("LARGE_OFFICE", "DENSE_URBAN", "0.0200"),
-        ("DC", "DENSE_URBAN", "0.0200"),
-        ("DC", "URBAN", "0.0100"),
+        ("BRANCH", "URBAN", "0.1302"),
+        ("BRANCH", "SUBURBAN", "0.0651"),
+        ("LARGE_OFFICE", "URBAN", "0.0558"),
+        ("LARGE_OFFICE", "DENSE_URBAN", "0.0186"),
+        ("DC", "DENSE_URBAN", "0.0186"),
+        ("DC", "URBAN", "0.0093"),
     ],
     "parcel-network": [
         # A postal or parcel estate, which is shaped unlike anything else
@@ -285,18 +290,28 @@ SHAPES = {
         ("DC", "DENSE_URBAN", "0.0600"), ("DC", "URBAN", "0.0400"),
     ],
     "plant-centric": [
-        ("WAREHOUSE", "SUBURBAN", "0.3000"), ("WAREHOUSE", "RURAL", "0.3500"),
-        ("WAREHOUSE", "URBAN", "0.1500"),
-        ("LARGE_OFFICE", "URBAN", "0.1000"),
-        ("BRANCH", "RURAL", "0.0700"),
-        ("DC", "URBAN", "0.0300"),
+        # Sites still on private WAN. A transformation case starts from a
+        # mixed estate - some sites already on internet, some not - and this
+        # is the layer LEV-MPLS-001 removes. Without it the MPLS lever had
+        # nothing to act on in any estate, which check_lever_reach caught.
+        ("LEGACY_WAN_SITE", "SUBURBAN", "0.0400"),
+        ("WAREHOUSE", "SUBURBAN", "0.2880"), ("WAREHOUSE", "RURAL", "0.3360"),
+        ("WAREHOUSE", "URBAN", "0.1440"),
+        ("LARGE_OFFICE", "URBAN", "0.0960"),
+        ("BRANCH", "RURAL", "0.0672"),
+        ("DC", "URBAN", "0.0288"),
     ],
     "office-centric": [
-        ("LARGE_OFFICE", "DENSE_URBAN", "0.1500"),
-        ("LARGE_OFFICE", "URBAN", "0.2500"),
-        ("BRANCH", "URBAN", "0.2500"), ("BRANCH", "SUBURBAN", "0.2000"),
-        ("BRANCH", "RURAL", "0.0800"),
-        ("DC", "DENSE_URBAN", "0.0400"), ("DC", "URBAN", "0.0300"),
+        # Sites still on private WAN. A transformation case starts from a
+        # mixed estate - some sites already on internet, some not - and this
+        # is the layer LEV-MPLS-001 removes. Without it the MPLS lever had
+        # nothing to act on in any estate, which check_lever_reach caught.
+        ("LEGACY_WAN_SITE", "SUBURBAN", "0.1200"),
+        ("LARGE_OFFICE", "DENSE_URBAN", "0.1320"),
+        ("LARGE_OFFICE", "URBAN", "0.2200"),
+        ("BRANCH", "URBAN", "0.2200"), ("BRANCH", "SUBURBAN", "0.1760"),
+        ("BRANCH", "RURAL", "0.0704"),
+        ("DC", "DENSE_URBAN", "0.0352"), ("DC", "URBAN", "0.0264"),
     ],
     "network-centric": [
         # The estate is infrastructure. Many small unstaffed sites and a few
@@ -355,31 +370,31 @@ SHAPE_BANDWIDTH = {
                        "PLANT": 1000, "REMOTE_SITE": 100,
                        "CONTROL_CENTER": 1000,
                        "SERVICE_POINT": 50, "SELF_SERVICE_TERMINAL": 50,
-                       "ATM": 50, "NETWORK_SITE": 100, "TERMINAL": 10000},
+                       "ATM": 50, "LEGACY_WAN_SITE": 100, "NETWORK_SITE": 100, "TERMINAL": 10000},
     "few-large":      {"STORE": 100, "BRANCH": 500, "WAREHOUSE": 1000,
                        "LARGE_OFFICE": 10000, "CAMPUS": 10000, "DC": 10000,
                        "PLANT": 1000, "REMOTE_SITE": 100,
                        "CONTROL_CENTER": 1000,
                        "SERVICE_POINT": 50, "SELF_SERVICE_TERMINAL": 50,
-                       "ATM": 50, "NETWORK_SITE": 100, "TERMINAL": 10000},
+                       "ATM": 50, "LEGACY_WAN_SITE": 100, "NETWORK_SITE": 100, "TERMINAL": 10000},
     "plant-centric":  {"STORE": 50, "BRANCH": 100, "WAREHOUSE": 500,
                        "LARGE_OFFICE": 1000, "CAMPUS": 10000, "DC": 10000,
                        "PLANT": 1000, "REMOTE_SITE": 100,
                        "CONTROL_CENTER": 1000,
                        "SERVICE_POINT": 50, "SELF_SERVICE_TERMINAL": 50,
-                       "ATM": 50, "NETWORK_SITE": 100, "TERMINAL": 10000},
+                       "ATM": 50, "LEGACY_WAN_SITE": 100, "NETWORK_SITE": 100, "TERMINAL": 10000},
     "office-centric": {"STORE": 50, "BRANCH": 100, "WAREHOUSE": 100,
                        "LARGE_OFFICE": 1000, "CAMPUS": 10000, "DC": 10000,
                        "PLANT": 1000, "REMOTE_SITE": 100,
                        "CONTROL_CENTER": 1000,
                        "SERVICE_POINT": 50, "SELF_SERVICE_TERMINAL": 50,
-                       "ATM": 50, "NETWORK_SITE": 100, "TERMINAL": 10000},
+                       "ATM": 50, "LEGACY_WAN_SITE": 100, "NETWORK_SITE": 100, "TERMINAL": 10000},
     "network-centric": {"STORE": 100, "BRANCH": 1000, "WAREHOUSE": 500,
                         "LARGE_OFFICE": 10000, "CAMPUS": 10000, "DC": 10000,
                        "PLANT": 1000, "REMOTE_SITE": 100,
                        "CONTROL_CENTER": 1000,
                        "SERVICE_POINT": 50, "SELF_SERVICE_TERMINAL": 50,
-                       "ATM": 50, "NETWORK_SITE": 100, "TERMINAL": 10000},
+                       "ATM": 50, "LEGACY_WAN_SITE": 100, "NETWORK_SITE": 100, "TERMINAL": 10000},
 }
 
 # The highest tier the seeded rate card prices. A bandwidth above this is

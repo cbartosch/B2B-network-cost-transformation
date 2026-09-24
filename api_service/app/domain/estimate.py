@@ -350,6 +350,11 @@ def build_components(*, sim_output: dict, users: int, ops_cost_per_site: dict,
                      enumeration: dict | None = None,
                      driver_refs: dict | None = None,
                      overlay_unit: dict | None = None,
+                     # The PoP rate and how many hubs the topology named.
+                     # Both or neither: a rate with no count prices nothing
+                     # and a count with no rate is unpriced scope.
+                     pop_unit: dict | None = None,
+                     hub_count: int = 0,
                      sse_unit: dict | None = None) -> tuple[list[Component], list[dict]]:
     """priors keyed by (country, product, bandwidth_mbps) with low/base/high
     monthly recurring charge. See match_prior for how a circuit finds its tier.
@@ -505,6 +510,39 @@ def build_components(*, sim_output: dict, users: int, ops_cost_per_site: dict,
                         overlay_unit["high"]).scale(D(sites) * MONTHS))))
     else:
         unpriced.append({"product": "SDWAN_OVERLAY", "role": "PLATFORM",
+                         "reason": "NO_APPROVED_PRIOR"})
+
+    # The hubs the backbone terminates in.
+    #
+    # Backbone LINKS were priced from the first release; the hubs themselves
+    # never were - rack, power, cross-connects and transit at a PoP. A bridge
+    # step that exits a PoP therefore had no cost pool to act on.
+    #
+    # Quantity is the hub count from `topology.plan()`, which is derived from
+    # the estate rather than entered, so its origin follows the footprint's
+    # like the overlay and the OPS layer.
+    if pop_unit and hub_count:
+        # Split by enumeration like the circuits, the overlay and the OPS
+        # layer. The hub count derives from the estate, so its provenance is
+        # the footprint's - and a component that carries one origin while the
+        # rest are split makes the origin mix only partly enumeration-aware,
+        # which is worse than not at all because it is invisible in the
+        # total. A guard caught this on the first run.
+        components.extend(_estate_components(Component(
+            key="L1_pop", layer="L1", driver="hubs", quantity=int(hub_count),
+            quantity_origin=site_origin, unit_cost_origin="BENCHMARK_PRIOR",
+            product="POP_COLOCATION", role="PLATFORM",
+            source_ref=footprint_ref,
+            value=Range(pop_unit["low"], pop_unit["base"],
+                        pop_unit["high"]).scale(D(int(hub_count)) * MONTHS))))
+    elif pop_unit and not hub_count:
+        # A rate with nothing to apply it to. Reported rather than silently
+        # absent: an estate with no regional hub is a finding about the
+        # topology, not an omission.
+        unpriced.append({"product": "POP_COLOCATION", "role": "PLATFORM",
+                         "reason": "NO_HUB_IN_TOPOLOGY"})
+    elif hub_count:
+        unpriced.append({"product": "POP_COLOCATION", "role": "PLATFORM",
                          "reason": "NO_APPROVED_PRIOR"})
 
     if sse_unit:
@@ -689,6 +727,11 @@ def scenarios(components: list[Component], levers: list[dict],
                 "service_class": lever.get("applies_to_service_classes"),
                 "access_technology": lever.get("applies_to_access_technologies"),
                 "product": lever.get("applies_to_platform_products"),
+                # Role, for a lever that acts on what a circuit is FOR rather
+                # than what it is. A backbone link is Ethernet like every
+                # other and is distinguished only by role=BACKBONE, so a
+                # backbone lever had no way to scope itself.
+                "role": lever.get("applies_to_roles"),
             }
             constraints = {field: set(values)
                            for field, values in constraints.items() if values}

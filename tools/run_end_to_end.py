@@ -220,8 +220,11 @@ levers = [{"lever_id": lid, "family": fam, "description": desc,
            "saving_high": hi, "applies_to_service_classes": svc_c,
            "applies_to_access_technologies": tech,
            "applies_to_platform_products": plat, "scenario": scen}
-          for lid, fam, desc, layers, lo, ba, hi, svc_c, tech, plat, scen, _stage
-          in _seed_list("LEVERS")]
+          # Indexed, not unpacked by name. A positional unpack of twelve
+          # broke the moment the row gained a thirteenth field, and the
+          # failure was in a tool rather than in the thing that changed.
+          for (lid, fam, desc, layers, lo, ba, hi, svc_c, tech, plat, scen,
+               *_rest) in _seed_list("LEVERS")]
 
 out = est["scenarios"]([component], levers)
 check("every scenario produces a target and a saving",
