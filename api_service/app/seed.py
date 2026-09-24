@@ -1975,31 +1975,31 @@ PLATFORM = [
 # it satisfies every constraint that is declared.
 LEVERS = [
     ("LEV-REPRICE-001", "Same-service repricing", "Re-rate current products to benchmark",
-     ["L0"], "0.06", "0.12", "0.18", None, None, None, "A", "V2", None),
+     ["L0"], "0.06", "0.12", "0.18", None, None, None, "A", "V2", None, ["LEV-MPLS-001", "LEV-BACKBONE-001"]),
     ("LEV-CLEANUP-001", "Billing cleanup", "Cease unused and duplicate services",
-     ["L0"], "0.01", "0.03", "0.06", None, None, None, "A", "V2", None),
+     ["L0"], "0.01", "0.03", "0.06", None, None, None, "A", "V2", None, None),
     # Only a committed VPN service can be substituted for internet plus overlay.
     # Was ["MPLS"], which no longer exists.
     ("LEV-MPLS-001", "MPLS substitution", "Substitute IPVPN with DIA plus overlay where eligible",
-     ["L0"], "0.15", "0.25", "0.35", ["IPVPN"], None, None, "B", "V3", None),
+     ["L0"], "0.15", "0.25", "0.35", ["IPVPN"], None, None, "B", "V3", None, ["LEV-REPRICE-001", "LEV-BANDWIDTH-001"]),
     # Right-sizing needs a committed rate to reduce. Was
     # ["DIA","ETHERNET","MPLS"] - the committed classes listed one by one,
     # which is what "not BEST_EFFORT" says directly: a 100/20 broadband line
     # is not sold at 60/12.
     ("LEV-BANDWIDTH-001", "Right-sizing", "Right-size committed bandwidth against utilisation prior",
      ["L0"], "0.03", "0.07", "0.12", ["DIA", "IPVPN", "ETHERNET"], None, None,
-     "B", "V3", None),
+     "B", "V3", None, ["LEV-MPLS-001"]),
     # Platform components, not access circuits. These never were service
     # classes and could not be expressed on that dimension at all.
     ("LEV-SASE-001", "Platform consolidation", "Converge SD-WAN, SSE and remote access",
      ["L2", "L4"], "0.12", "0.22", "0.32", None, None,
-     ["SDWAN_OVERLAY", "SSE_LICENCE"], "C", "V3", None),
+     ["SDWAN_OVERLAY", "SSE_LICENCE"], "C", "V3", None, None),
     ("LEV-SECRETIRE-001", "Security appliance retirement", "Retire on-site firewall estate",
-     ["L4"], "0.05", "0.10", "0.16", None, None, ["SSE_LICENCE"], "C", "V3", None),
+     ["L4"], "0.05", "0.10", "0.16", None, None, ["SSE_LICENCE"], "C", "V3", None, None),
     ("LEV-NAAS-001", "Supplier consolidation", "Single global prime with managed edge",
-     ["L0", "OPS"], "0.08", "0.16", "0.24", None, None, None, "D", "V4", None),
+     ["L0", "OPS"], "0.08", "0.16", "0.24", None, None, None, "D", "V4", None, None),
     ("LEV-OPS-001", "Operating-model optimisation", "Consolidate NOC and vendor management",
-     ["OPS"], "0.10", "0.18", "0.28", None, None, None, "D", "V3", None),
+     ["OPS"], "0.10", "0.18", "0.28", None, None, None, "D", "V3", None, None),
     # ---------------------------------------------------------------- new
     # Four levers for steps the bridge could previously only carry as an
     # analyst estimate. Each has a baseline behind it, because a lever with
@@ -2017,7 +2017,7 @@ LEVERS = [
     ("LEV-RISKTIER-001", "Risk-tiered access",
      "Move guest, customer and telemetry traffic to segmented low-cost access",
      ["L0"], "0.04", "0.09", "0.16", ["BEST_EFFORT"], None, None, "B", "V2",
-     None),
+     None, None),
 
     # The national and international core, run on a hyperscaler's backbone
     # instead of owned or leased PoP-to-PoP transport. Scoped by ROLE, which
@@ -2026,21 +2026,21 @@ LEVERS = [
     ("LEV-BACKBONE-001", "Backbone to hyperscaler",
      "Replace PoP-to-PoP transport with hyperscaler backbone and on-ramps",
      ["L0"], "0.20", "0.40", "0.60", None, None, None, "C", "V2",
-     ["BACKBONE"]),
+     ["BACKBONE"], ["LEV-REPRICE-001"]),
 
     # Exiting the PoPs themselves: rack, power, cross-connects, transit.
     # Acts on L1, which nothing priced until POP_COLOCATION was seeded -
     # baseline before lever, in that order, deliberately.
     ("LEV-POP-001", "PoP exit",
      "Retire colocation PoPs in favour of cloud on-ramps",
-     ["L1"], "0.30", "0.55", "0.75", None, None, None, "C", "V2", None),
+     ["L1"], "0.30", "0.55", "0.75", None, None, None, "C", "V2", None, None),
 
     # Buying the local tail directly rather than through a global carrier's
     # markup. Distinct from repricing: it changes WHO you buy from, not what
     # they charge, so the two are not the same pool and both can apply.
     ("LEV-LASTMILE-001", "Direct local access",
      "Source off-net tails locally rather than through a global carrier",
-     ["L0"], "0.06", "0.14", "0.22", None, None, None, "D", "V2", None),
+     ["L0"], "0.06", "0.14", "0.22", None, None, None, "D", "V2", None, None),
 
 ]
 
@@ -2189,9 +2189,12 @@ def _rows():
              # Roles this lever acts on, where it acts on what a circuit is
              # FOR rather than what it is. None means every role.
              "applies_to_roles": rol,
+             # Levers this one cannot combine with on the same component.
+             "excludes": exc,
              "evidence_required": "see reference.savings_lever_rule",
              "earliest_supported_stage": st}
-            for i, f, d, cl, lo, ba, hi, svc, tech, plat, sc, st, rol in LEVERS]),
+            for i, f, d, cl, lo, ba, hi, svc, tech, plat, sc, st, rol, exc
+             in LEVERS]),
     ]
 
 

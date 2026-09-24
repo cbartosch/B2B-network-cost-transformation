@@ -700,9 +700,24 @@ def scenarios(components: list[Component], levers: list[dict],
                    for c in components}
         by_key = {c.key: c for c in components}
         applied, not_applied = [], []
+        # Which levers have already cut each component, for exclusivity.
+        cut_by = {}
 
+        # Ordered by saving, largest first, then by id.
+        #
+        # `remaining[key]` decrements per lever, so two levers on one
+        # component compound - repricing took 12% and MPLS substitution then
+        # took 25% of the remaining 88%. For that pair the arithmetic is
+        # wrong: you either renegotiate a circuit or you delete it, and if
+        # you delete it the repricing saving never materialises.
+        #
+        # Exclusivity is resolved by which lever runs first, so the order has
+        # to put the better one there. Sorting by lever_id alone made the
+        # winner alphabetical - LEV-MPLS-001 beat LEV-REPRICE-001 by accident
+        # of naming, and would have lost had either been renamed.
         for lever in sorted([l for l in levers if l["scenario"] == code],
-                            key=lambda x: x["lever_id"]):
+                            key=lambda x: (-D(x["saving_base"]),
+                                           x["lever_id"])):
             layers = set(lever.get("cost_layers") or [])
             # What the lever can act on, beyond the layer it sits in.
             #
@@ -748,6 +763,18 @@ def scenarios(components: list[Component], levers: list[dict],
                 # Every declared constraint must be satisfied. An
                 # undeclared dimension is unconstrained, not empty - a lever
                 # that names no service class acts on any circuit.
+                # Already cut by a lever this one cannot combine with.
+                #
+                # Reported per component rather than per lever: the same
+                # lever can be exclusive on one circuit and free to act on
+                # another, and "not applicable" would overstate it.
+                blocked = set(lever.get("excludes") or []) & cut_by.get(
+                    key, set())
+                if blocked:
+                    skipped.append(
+                        f"excluded by {sorted(blocked)[0]} on this component")
+                    continue
+
                 unmet = [field for field, allowed in constraints.items()
                          if getattr(comp, field, None) not in allowed]
                 if unmet:
@@ -795,6 +822,7 @@ def scenarios(components: list[Component], levers: list[dict],
                                                 m_hi * l_hi)
                 matched[key] = [m_lo - saved_lo, m_ba - saved_ba,
                                 m_hi - saved_hi]
+                cut_by.setdefault(key, set()).add(lever["lever_id"])
                 cut_low += saved_lo
                 cut_total += saved_ba
                 cut_high += saved_hi
@@ -854,11 +882,26 @@ def scenarios(components: list[Component], levers: list[dict],
                     "eligibility": {field: sorted(allowed)
                                     for field, allowed in constraints.items()},
                     "products_present": sorted(set(skipped)),
+                    # Two causes, two messages.
+                    #
+                    # The template assumed every skip was a constraint
+                    # mismatch, so an exclusion was spliced into the middle
+                    # of that sentence: "acts on service_class in [...], and
+                    # this estate's excluded by LEV-MPLS-001 on this
+                    # component in L0 contain none of them". Unreadable, and
+                    # it named the wrong reason.
                     "reason": (
+                        f"{lever['family']} is excluded on every component it "
+                        f"would otherwise cut - "
+                        f"{'; '.join(sorted(set(skipped)))}. A circuit being "
+                        f"replaced is not also being re-rated or trimmed."
+                        if all(x.startswith("excluded by")
+                               for x in set(skipped)) and skipped
+                        else
                         f"{lever['family']} acts on "
                         f"{'; '.join(f'{f} in {sorted(a)}' for f, a in constraints.items())}"
                         f", and this estate's "
-                        f"{', '.join(sorted(set(skipped))) or 'components'} in "
+                        f"{', '.join(sorted(x for x in set(skipped) if not x.startswith('excluded by'))) or 'components'} in "
                         f"{'/'.join(sorted(layers))} contain none of them. No "
                         f"saving is booked.")})
 

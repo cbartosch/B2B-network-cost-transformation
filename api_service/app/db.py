@@ -1366,6 +1366,14 @@ lever = Table(
     # and is distinguished only by role, so a lever that exits the backbone
     # had no way to scope itself.
     Column("applies_to_roles", JSON),
+    # Levers this one cannot be combined with on the same component.
+    #
+    # `remaining[key]` decrements per lever, so two levers acting on one
+    # circuit compound: repricing takes 12%, then MPLS substitution takes
+    # 25% of the remaining 88%. For that pair the arithmetic is wrong - you
+    # either renegotiate the circuit or you delete it, and if you delete it
+    # the repricing saving never materialises.
+    Column("excludes", JSON),
     Column("applies_to_products", JSON),    # Retained so a lever row written before 4.170 is still readable. Not
     # read by the eligibility test: its values cannot match the new
     # vocabulary, so falling back to it would silently disable a lever.

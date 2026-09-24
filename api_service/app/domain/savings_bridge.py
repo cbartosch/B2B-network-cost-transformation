@@ -28,6 +28,9 @@ GOVERNED = "GOVERNED_LEVER"          # a seeded lever, applied to a real baselin
 NO_BASELINE = "NO_BASELINE"          # the lever exists; the cost pool does not
 NOT_APPLICABLE = "NOT_APPLICABLE"    # the baseline exists; nothing matched
 ESTIMATE = "ANALYST_ESTIMATE"        # entered by hand, no lever behind it
+# Not taken because a better lever already removed the same cost. Distinct
+# from NOT_APPLICABLE: the opportunity exists and has been counted once.
+EXCLUDED = "EXCLUDED_BY_EARLIER_LEVER"
 
 
 def waterfall(scenarios: dict, *, current_total, order=("A", "B", "C", "D"),
@@ -47,12 +50,48 @@ def waterfall(scenarios: dict, *, current_total, order=("A", "B", "C", "D"),
     running = baseline
     steps, skipped = [], []
 
+    # Levers already booked, so an exclusive peer in a LATER scenario is not
+    # booked again.
+    #
+    # `scenarios()` computes each scenario independently from the full
+    # baseline - A is 14.6% of the whole, B is 25% of the whole - and it
+    # resolves exclusivity WITHIN a scenario only, because that is all it can
+    # see. Repricing sits in A and MPLS substitution in B, so the two never
+    # meet there.
+    #
+    # This walked them in order and subtracted both, which is exactly the
+    # double count the exclusivity work was for: repricing a circuit you then
+    # delete never happens. The waterfall is the only place that sees all
+    # four scenarios at once, so it is the only place this can be caught.
+    booked, excluded_by = set(), {}
     for code in order:
         scenario = scenarios.get(code) or {}
         for lever in (scenario.get("levers") or []):
             value = D(str(lever.get("saving_base") or lever.get("value") or 0))
             if value <= 0:
                 continue
+            lever_id = lever.get("lever_id")
+            clash = set(lever.get("excludes") or []) & booked
+            if clash:
+                # Not silently dropped. A lever the programme cannot take
+                # BECAUSE it took a better one is a different finding from a
+                # lever that found nothing, and a reader needs to see that
+                # the opportunity was counted once rather than missed.
+                excluded_by[lever_id] = sorted(clash)[0]
+                skipped.append({
+                    "step": lever.get("family") or lever_id,
+                    "lever_id": lever_id,
+                    "scenario": code,
+                    "saving": "0",
+                    "basis": EXCLUDED,
+                    "reason": (
+                        f"excluded by {sorted(clash)[0]}, already booked in "
+                        f"an earlier scenario - you either renegotiate a "
+                        f"circuit or you replace it, and booking both counts "
+                        f"the same saving twice"),
+                })
+                continue
+            booked.add(lever_id)
             steps.append({
                 "step": lever.get("family") or lever.get("lever_id"),
                 "lever_id": lever.get("lever_id"),
@@ -140,6 +179,13 @@ def _note(steps, skipped, governed, estimated) -> str:
             f"{len(holes)} lever(s) found no cost pool to act on: "
             f"{', '.join(str(h['step']) for h in holes)}. That is an "
             f"opportunity this estimate could not size, not one worth zero.")
+    excluded = [s for s in skipped if s["basis"] == EXCLUDED]
+    if excluded:
+        parts.append(
+            f"{len(excluded)} lever(s) were not booked because a better one "
+            f"already removed the same cost: "
+            f"{', '.join(str(e['step']) for e in excluded)}. Counted once, "
+            f"not missed.")
     misses = [s for s in skipped if s["basis"] == NOT_APPLICABLE]
     if misses:
         parts.append(

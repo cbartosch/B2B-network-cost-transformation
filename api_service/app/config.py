@@ -276,4 +276,9 @@ SIMULATION_MODEL_VERSION = "sim-2.7.0"
 # order, the basis of each step - governed lever, analyst estimate, or a
 # lever that found nothing - and separately what was NOT counted, because an
 # opportunity the estimate could not size is not one worth zero.
-CALCULATION_VERSION = "calc-1.19.0"
+# calc-1.20.0: levers that remove the same cost are no longer both booked. Two
+# levers on one component compounded - repricing took 12% and MPLS
+# substitution then 25% of the remaining 88% - and across scenarios the
+# waterfall subtracted both from a baseline each had been computed against in
+# full. You either renegotiate a circuit or you replace it.
+CALCULATION_VERSION = "calc-1.20.0"
