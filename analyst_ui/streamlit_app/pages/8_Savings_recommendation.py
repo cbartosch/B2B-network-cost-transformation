@@ -25,6 +25,49 @@ snap_label = {f"{s['estimate_snapshot_id'][:8]} - {s['version_label']} "
 picked = st.selectbox("Estimate snapshot", list(snap_label), key="sr_picked")
 snapshot_id = snap_label[picked]
 
+# The waterfall: baseline, each lever in the order it compounds, target.
+#
+# Presented as a flat list of scenarios the levers read as additive and a
+# reader adds them up. They do not add up - each acts on what the ones before
+# it left - and two of them remove the same cost, so booking both counts one
+# saving twice.
+_snap = next((x for x in snaps
+              if x["estimate_snapshot_id"] == snapshot_id), None) or {}
+_wf = _snap.get("savings_bridge") or {}
+if _wf.get("steps"):
+    st.subheader("How the saving is built")
+    _rows = [{"step": _s["step"],
+              "saving": _s["saving"],
+              "from": _s["from"],
+              "to": _s["to"],
+              "basis": _s["basis"]} for _s in _wf["steps"]]
+    st.dataframe(pd.DataFrame(_rows), use_container_width=True,
+                 hide_index=True)
+    _c1, _c2, _c3 = st.columns(3)
+    _c1.metric("Baseline", _wf["baseline"])
+    _c2.metric("Total saving", _wf["total_saving"],
+               f"{float(_wf['saving_pct']) * 100:.0f}% of baseline")
+    _c3.metric("Target run-rate", _wf["target"])
+    # How much of the answer rests on a governed lever rather than on
+    # somebody's judgement. A bridge that is mostly estimate is a hypothesis
+    # with a chart.
+    if float(_wf.get("governed_share") or 0) < 1:
+        st.caption(
+            f"{float(_wf['governed_share']) * 100:.0f}% of the saving comes "
+            f"from a governed lever; the rest is an analyst estimate with "
+            f"none behind it.")
+    # What was NOT counted, never folded into the total. An opportunity the
+    # estimate could not size is not one worth zero.
+    if _wf.get("not_counted"):
+        with st.expander(f"{len(_wf['not_counted'])} lever(s) not counted, "
+                         f"and why", expanded=True):
+            for _k in _wf["not_counted"]:
+                st.markdown(f"**{_k['step']}** - `{_k['basis']}`  \n"
+                            f"{_k.get('reason', '')}")
+    st.caption(_wf.get("note", ""))
+elif _wf.get("unavailable"):
+    st.caption(f"No bridge for this snapshot: {_wf['unavailable']}")
+
 st.subheader("Generate a recommendation")
 c1, c2 = st.columns(2)
 mode = c1.selectbox("Mode", ["LIVE", "DETERMINISTIC_ONLY"],

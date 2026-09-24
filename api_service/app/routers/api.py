@@ -4127,7 +4127,34 @@ def list_estimates(case_id: str):
         rows = s.execute(select(db.estimate_snapshot).where(
             db.estimate_snapshot.c.case_id == case_id).order_by(
             db.estimate_snapshot.c.created_at.desc())).all()
-        return {"snapshots": [dict(r._mapping) for r in rows]}
+        # The waterfall, derived on read from the scenarios the snapshot
+        # already stores rather than pinned alongside them.
+        #
+        # Derived, because it is a presentation of the scenarios and not a
+        # separate finding: pinning it would create a second copy that goes
+        # stale the first time the ordering or the exclusivity rules change,
+        # and this session has found four stale copies of one thing.
+        #
+        # It was only on the POST :run response, so the bridge was visible
+        # for one page load on page 6 and invisible on the savings page that
+        # exists to discuss it.
+        out = []
+        for row in rows:
+            record = dict(row._mapping)
+            try:
+                record["savings_bridge"] = savings_bridge.waterfall(
+                    record.get("scenarios") or {},
+                    current_total=(record.get("current_tco") or {}).get(
+                        "base") or 0)
+            except Exception as exc:
+                # A snapshot written before the bridge existed, or one whose
+                # scenarios are shaped differently. Named rather than
+                # swallowed: a missing bridge on an old snapshot is expected
+                # and a missing bridge on a new one is a defect.
+                record["savings_bridge"] = {
+                    "unavailable": f"{type(exc).__name__}: {exc}"}
+            out.append(record)
+        return {"snapshots": out}
 
 
 # --------------------------------------------------------------- Tranche 2 (LLM-07, LLM-06)

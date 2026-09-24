@@ -110,3 +110,53 @@ def test_the_bridge_reaches_the_estimate_response():
     api = (app / "routers" / "api.py").read_text()
     assert api.count('"savings_bridge": savings_bridge.waterfall(') == 2, (
         "both the run and the read response must carry it")
+
+
+# ----------------------------------------- the bridge has to be visible
+def test_the_bridge_is_derived_on_read_not_only_on_run():
+    """It was only on the POST :run response, so the waterfall was visible
+    for one page load on page 6 and invisible on the savings page that exists
+    to discuss it.
+
+    Derived from the stored scenarios rather than pinned beside them: it is a
+    presentation of those scenarios, not a separate finding, and a pinned
+    copy goes stale the first time the ordering or the exclusivity rules
+    change. This session has found four stale copies of one thing."""
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1]
+    app = next(c for c in (root / "api_service" / "app", root / "app")
+               if (c / "routers").exists())
+    api = (app / "routers" / "api.py").read_text()
+    listing = api[api.index("def list_estimates("):][:2600]
+    assert "savings_bridge.waterfall(" in listing
+    assert 'record["savings_bridge"]' in listing
+
+
+def test_a_snapshot_written_before_the_bridge_existed_does_not_break_the_page():
+    """An old snapshot has scenarios shaped differently. Named rather than
+    swallowed: a missing bridge on an old snapshot is expected and a missing
+    bridge on a new one is a defect."""
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1]
+    app = next(c for c in (root / "api_service" / "app", root / "app")
+               if (c / "routers").exists())
+    api = (app / "routers" / "api.py").read_text()
+    listing = api[api.index("def list_estimates("):][:2600]
+    assert '"unavailable"' in listing
+
+
+def test_the_savings_page_renders_it():
+    """A bridge in a response nobody reads is the defect validate_flow
+    caught on the module's first run, one layer up."""
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1]
+    page = next(root.glob(
+        "analyst_ui/streamlit_app/pages/8_Savings*.py")).read_text()
+    assert "savings_bridge" in page
+    assert "How the saving is built" in page
+    # and the two things a reader needs beyond the number
+    assert "governed_share" in page
+    assert "not_counted" in page
