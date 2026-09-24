@@ -1,6 +1,6 @@
 # Enterprise Network Cost Transformation Workbench
 
-**Build 4.266.0** · schema 64 · `calc-1.19.0` · `sim-2.7.0` · 1,808 tests passing
+**Build 4.268.0** · schema 64 · `calc-1.19.0` · `sim-2.7.0` · 1,814 tests passing
 
 An outside-in estimator for enterprise WAN and network cost. It takes a company
 name and produces a defensible baseline, a savings range and a transformation
@@ -480,5 +480,5 @@ codebase, and each mistake now has a static check.
 
 ---
 
-*Generated at build 4.235.0. Figures in this document were read from the
+*Generated at build 4.268.0. Figures in this document were read from the
 repository, not recalled.*

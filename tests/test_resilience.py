@@ -84,9 +84,31 @@ def test_two_industries_with_different_postures_now_differ():
     0.650. They shared a shape and produced identical estates."""
     from app.seed import _archetype_resilience
 
+    from collections import defaultdict
+
+    from app.seed import DENSITY_MIX
+
     rows = {(i, a): (d, c) for i, a, d, c, _t in _archetype_resilience()}
-    assert rows[("CHEMICALS", "WAREHOUSE")] != \
-        rows[("HOUSEHOLD_PERSONAL_CARE", "WAREHOUSE")]
+
+    # The archetype is derived from the estates rather than named.
+    #
+    # This asserted on WAREHOUSE, which plant-centric stopped containing when
+    # LEGACY_WAN_SITE was added and the shares rebalanced - so the test
+    # KeyError'd on a change that did not touch what it was testing. Any
+    # archetype both industries have proves the same thing.
+    mix = defaultdict(set)
+    for industry, archetype, _band, _share in DENSITY_MIX:
+        mix[industry].add(archetype)
+    shared = sorted(mix["CHEMICALS"] & mix["HOUSEHOLD_PERSONAL_CARE"])
+    assert shared, "the two industries must share an archetype to compare"
+
+    differ = [a for a in shared
+              if rows.get(("CHEMICALS", a))
+              != rows.get(("HOUSEHOLD_PERSONAL_CARE", a))]
+    assert differ, (
+        f"the two postures are identical on every shared archetype "
+        f"{shared} - chemicals is Tier 1 at 0.900 committed and household "
+        f"care Tier 2 at 0.650, so they must not be")
 
 
 def test_the_most_critical_row_sets_an_industrys_posture():

@@ -316,12 +316,18 @@ def main() -> int:
         for _cause, _n in _by_cause.most_common():
             print(f"  {_n:>3}x {_cause}")
         print()
-        for label, message in results["errored"][:10]:
-            print(f"  {label}")
-            print(f"     {message.strip().splitlines()[-1][:180]}")
-        if len(results["errored"]) > 10:
-            print(f"  ... and {len(results['errored']) - 10} more, "
-                  f"grouped by cause above")
+        # Every one, with its file. The grouping above buckets by the text
+        # before the first colon and truncates at 60 characters, so two
+        # causes can merge and the counts under-report - which they did: the
+        # groups summed to 38 against a header of 39 and the odd one out was
+        # unfindable.
+        #
+        # One line each rather than ten in full: 38 errors at four lines
+        # apiece is a wall, and the file plus the exception type is what
+        # anyone actually needs to decide whether it matters.
+        for label, message in results["errored"]:
+            _last = message.strip().splitlines()[-1]
+            print(f"  {label.split('::')[0]:38} {_last[:96]}")
 
     print("\nBLOCKED FILES AND THEIR MISSING DEPENDENCIES")
     from collections import Counter

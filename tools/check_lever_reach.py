@@ -90,6 +90,10 @@ def _service_classes_by_shape():
     # data centre in more than one region.
     for shape in by_shape:
         by_shape[shape].add(access.ETHERNET)
+    # The "other" bucket holds industries outside the BICS shape map, so it
+    # is not an estate shape. Counting it made this report 10 shapes against
+    # the 9 the model has, and the documentation was right.
+    by_shape.pop("other", None)
     return by_shape
 
 
