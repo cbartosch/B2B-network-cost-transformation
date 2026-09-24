@@ -1,0 +1,160 @@
+"""The savings waterfall: baseline, each lever in turn, target.
+
+Distinct from `delta_bridge`, which reconciles two VERSIONS of an estimate
+across the eight delta drivers - why did the number change between runs. This
+is why the number should change if the programme happens.
+
+Three things it exists to make visible, none of which the scenario output
+shows on its own.
+
+**Order.** Levers compound: each acts on what the ones before it left behind.
+Presented as a flat list they read as additive, and a reader adds them up.
+Repricing a circuit and then deleting it is the classic double-count, and it
+is invisible in a list.
+
+**Basis.** A step is a governed lever, an analyst's estimate, or a lever that
+found nothing to act on. Those look identical in a total and mean entirely
+different things: the third is not a zero, it is a hole.
+
+**What was not counted.** A lever that could not apply, and a cost pool with
+no baseline at all, both contribute nothing - and a bridge that silently omits
+them presents a smaller opportunity as a complete one.
+"""
+from decimal import Decimal as D
+
+
+# What a step's number rests on.
+GOVERNED = "GOVERNED_LEVER"          # a seeded lever, applied to a real baseline
+NO_BASELINE = "NO_BASELINE"          # the lever exists; the cost pool does not
+NOT_APPLICABLE = "NOT_APPLICABLE"    # the baseline exists; nothing matched
+ESTIMATE = "ANALYST_ESTIMATE"        # entered by hand, no lever behind it
+
+
+def waterfall(scenarios: dict, *, current_total, order=("A", "B", "C", "D"),
+              extra_steps=None) -> dict:
+    """Baseline to target, one step per lever, in the order they compound.
+
+    `scenarios` is the mapping `estimate.scenarios()` returns. `extra_steps`
+    are hand-entered steps for cost pools the model has no lever for - they
+    are carried, marked ANALYST_ESTIMATE, and never mixed into the governed
+    total.
+
+    The residual is reported rather than distributed. A waterfall that nearly
+    reconciles has lost something, and the thing it lost is what somebody
+    will ask about.
+    """
+    baseline = D(str(current_total))
+    running = baseline
+    steps, skipped = [], []
+
+    for code in order:
+        scenario = scenarios.get(code) or {}
+        for lever in (scenario.get("levers") or []):
+            value = D(str(lever.get("saving_base") or lever.get("value") or 0))
+            if value <= 0:
+                continue
+            steps.append({
+                "step": lever.get("family") or lever.get("lever_id"),
+                "lever_id": lever.get("lever_id"),
+                "scenario": code,
+                "saving": str(value),
+                "from": str(running),
+                "to": str(running - value),
+                "basis": GOVERNED,
+                "layers": lever.get("cost_layers") or [],
+            })
+            running -= value
+        # A lever that could not apply is a hole, not a zero. Carried so the
+        # bridge shows the opportunity that was NOT counted, with the reason
+        # the scenario gave.
+        for miss in (scenario.get("levers_not_applicable") or []):
+            reason = str(miss.get("reason") or "")
+            skipped.append({
+                "step": miss.get("family") or miss.get("lever_id"),
+                "lever_id": miss.get("lever_id"),
+                "scenario": code,
+                "saving": "0",
+                # "no baseline for this layer" and "nothing in this estate
+                # matched" are different findings and only the first is a
+                # gap in the model.
+                "basis": NO_BASELINE if "no baseline" in reason.lower()
+                         else NOT_APPLICABLE,
+                "reason": reason,
+            })
+
+    for extra in (extra_steps or []):
+        value = D(str(extra.get("saving") or 0))
+        steps.append({
+            "step": extra.get("step"),
+            "lever_id": None,
+            "scenario": extra.get("scenario"),
+            "saving": str(value),
+            "from": str(running),
+            "to": str(running - value),
+            "basis": ESTIMATE,
+            "layers": extra.get("layers") or [],
+            # An estimate without a stated reason is a number somebody will
+            # be asked to defend and cannot.
+            "because": extra.get("because"),
+        })
+        running -= value
+
+    governed = sum((D(s["saving"]) for s in steps if s["basis"] == GOVERNED),
+                   D(0))
+    estimated = sum((D(s["saving"]) for s in steps if s["basis"] == ESTIMATE),
+                    D(0))
+    return {
+        "baseline": str(baseline),
+        "steps": steps,
+        # Never folded into the total. A reader has to be able to see the
+        # opportunity the model could not size.
+        "not_counted": skipped,
+        "target": str(running),
+        "total_saving": str(governed + estimated),
+        "governed_saving": str(governed),
+        "estimated_saving": str(estimated),
+        "saving_pct": (f"{(governed + estimated) / baseline:.3f}"
+                       if baseline else "0.000"),
+        # The share of the answer that rests on a governed lever rather than
+        # on somebody's judgement. A bridge that is mostly estimate is a
+        # hypothesis with a chart.
+        "governed_share": (f"{governed / (governed + estimated):.3f}"
+                           if (governed + estimated) else "0.000"),
+        "note": _note(steps, skipped, governed, estimated),
+    }
+
+
+def _note(steps, skipped, governed, estimated) -> str:
+    """What a reader has to be told before using the number."""
+    parts = [
+        f"{len(steps)} step(s) in the order they compound - each acts on what "
+        f"the ones before it left, so they do not add up to the sum of their "
+        f"percentages."]
+    if estimated:
+        parts.append(
+            f"{estimated} of the saving is an analyst estimate with no lever "
+            f"behind it and is shown separately for that reason.")
+    holes = [s for s in skipped if s["basis"] == NO_BASELINE]
+    if holes:
+        parts.append(
+            f"{len(holes)} lever(s) found no cost pool to act on: "
+            f"{', '.join(str(h['step']) for h in holes)}. That is an "
+            f"opportunity this estimate could not size, not one worth zero.")
+    misses = [s for s in skipped if s["basis"] == NOT_APPLICABLE]
+    if misses:
+        parts.append(
+            f"{len(misses)} lever(s) had a baseline and matched nothing in "
+            f"this estate.")
+    return " ".join(parts)
+
+
+def reconciles(bridge: dict, tolerance="0.01") -> bool:
+    """Does baseline minus every step equal the target?
+
+    Checked rather than assumed. The steps are computed by subtraction so
+    this should hold by construction - which is exactly the kind of invariant
+    that stops holding when somebody inserts a step later.
+    """
+    walked = D(bridge["baseline"]) - sum(
+        (D(s["saving"]) for s in bridge["steps"]), D(0))
+    return abs(walked - D(bridge["target"])) <= D(str(tolerance))

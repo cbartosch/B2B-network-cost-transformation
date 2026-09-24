@@ -40,8 +40,26 @@ LOOSE_TYPES = ("Decimal", "int", "float")
 # Fields whose looseness is already handled, or where a bound makes no sense.
 # A count of what was omitted is arithmetic the agent performs, not a figure it
 # reads from a source - "approximately 3 omitted" is not a thing.
-QUALIFIED = {"value_qualifier", "quantities_omitted", "candidates_omitted",
-             "price_year", "as_of_year"}
+#
+# Named individually and went stale the moment a third counter was added:
+# `concerns_omitted` on a new schema was flagged while `quantities_omitted`
+# and `candidates_omitted` were exempt, for no reason a reader could state.
+# The rule is the suffix, not the three names somebody remembered.
+QUALIFIED = {"value_qualifier", "price_year", "as_of_year"}
+
+# Fields exempt by what they ARE, not by name. A checker with a list of names
+# is a checker that is wrong the next time somebody adds one.
+QUALIFIED_SUFFIXES = ("_omitted", "_count_of_omitted")
+
+
+def _needs_qualifier(field_name: str) -> bool:
+    """Whether a bare int on this field is a finding.
+
+    False for a counter the agent computes about its own reply: how many it
+    left out is exact by construction, and no source states it at all.
+    """
+    return not (field_name in QUALIFIED
+                or field_name.endswith(QUALIFIED_SUFFIXES))
 
 
 def _classes():
@@ -178,7 +196,7 @@ for prompt in sorted(_prompts(), key=lambda p: p["prompt_id"]):
         # "300 to 500" has somewhere to go. A lone number does not.
         band = {f"{stem}_low", f"{stem}_base", f"{stem}_high"} <= set(fields) \
             if (stem := re.sub(r"_(low|base|high)$", "", name)) else False
-        if (base in LOOSE_TYPES and name not in QUALIFIED and not band
+        if (base in LOOSE_TYPES and _needs_qualifier(name) and not band
                 and "qualifier" not in " ".join(fields)):
             findings["loose_without_qualifier"].append(
                 f"{prompt['prompt_id']}: {model}.{name} is a bare {base} "

@@ -271,4 +271,9 @@ SIMULATION_MODEL_VERSION = "sim-2.7.0"
 # calc-1.18.0: only STORE and NETWORK_SITE are unbounded. The first plausibility
 # check exempted five site types and let 25,840 warehouses in one country
 # through - the same error it was written to catch, one site type over.
-CALCULATION_VERSION = "calc-1.18.0"
+# calc-1.19.0: the savings waterfall. Levers compound, so presented as a flat
+# list they read as additive and a reader adds them up. The bridge shows the
+# order, the basis of each step - governed lever, analyst estimate, or a
+# lever that found nothing - and separately what was NOT counted, because an
+# opportunity the estimate could not size is not one worth zero.
+CALCULATION_VERSION = "calc-1.19.0"

@@ -18,6 +18,7 @@ from ..domain.scope import REGION_PARENT as REGION_PARENT
 from ..domain import (access as access_vocab, anchor_estimate,
                       assumptions, bics, calibration, case_rates,
                       currency, estate_plausibility, industry_asks,
+                      savings_bridge,
                       site_rule,
                       delta_bridge, industries, industry_benchmark,
                       providers, validation,
@@ -3466,6 +3467,17 @@ def _run_anchor_estimate(s, *, case_id, case_row, payload,
             "current_tco": cur["total"], "by_layer": cur["by_layer"],
             "origin_breakdown": cur["origin_breakdown"],
             "components": cur["components"],
+            # Baseline to target, one step per lever, in the order they
+            # compound. Presented as a flat list the levers read as additive
+            # and a reader adds them up - repricing a circuit and then
+            # deleting it is the classic double count, and it is invisible
+            # in a list.
+            #
+            # Levers that found nothing to act on are carried separately as
+            # `not_counted`: an opportunity the estimate could not size is
+            # not one worth zero.
+            "savings_bridge": savings_bridge.waterfall(
+                scen, current_total=cur["current_tco"]["base"]),
             "scenarios": scen, "confidence": conf, "coverage": cov,
             "simulated_share": "0",
             "asserted_share": str(estimate.asserted_share(components)),
@@ -3963,6 +3975,8 @@ def run_estimate(case_id: str, payload: EstimateIn):
                 "current_tco": cur["total"], "by_layer": cur["by_layer"],
                 "origin_breakdown": cur["origin_breakdown"],
                 "components": cur["components"], "scenarios": scen,
+                "savings_bridge": savings_bridge.waterfall(
+                    scen, current_total=cur["current_tco"]["base"]),
                 "confidence": conf,
                 "coverage": {**cov, "unpriced_components": unpriced},
                 "simulated_share": str(sim_share),

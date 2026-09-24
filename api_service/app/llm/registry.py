@@ -37,6 +37,10 @@ AGENTS = {
     "LLM-09": {"name": "benchmark extraction - structuring a heterogeneous "
                        "source into observations; interpretation only, no "
                        "arithmetic", **_LIVE_ONLY},
+    "LLM-11": {"name": "estimate review - advisory pressure test of a "
+                       "finished estimate; proposes the checks that would "
+                       "catch its findings next time. Never a gate",
+               **_LIVE_ONLY},
     "LLM-10": {"name": "location structure - what kind of estate this "
                        "company runs, in its own vocabulary, and the "
                        "searches that would count it", **_LIVE_ONLY},

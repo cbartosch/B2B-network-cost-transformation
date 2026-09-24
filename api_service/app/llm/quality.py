@@ -40,6 +40,10 @@ class Rejection(str, Enum):
     QUANTITY_WITHOUT_UNIT = "QUANTITY_WITHOUT_UNIT"
     CANDIDATE_WITHOUT_IDENTITY = "CANDIDATE_WITHOUT_IDENTITY"
     SOURCE_NOT_RESOLVABLE = "SOURCE_NOT_RESOLVABLE"
+    # An answer that neither found anything nor says what it looked at. A
+    # review of nothing reads as approval, and an estate assessment with no
+    # searches is the static table it replaced.
+    ANSWER_NOT_ACTIONABLE = "ANSWER_NOT_ACTIONABLE"
     CONTRADICTS_ITSELF = "CONTRADICTS_ITSELF"
     # A figure the estimate does not contain. Distinct from a contradiction:
     # the answer is internally coherent and states a number nobody computed.
@@ -387,32 +391,67 @@ def location_structure(result) -> "Verdict":
     The point of this agent is to replace a static list of asks, so an
     answer that names no site classes is worse than useless - it reads as
     "this company has no estate" when it means "nothing was found".
-
-    A class with a count but no source is refused: an unsourced number here
-    propagates into the footprint as though it were researched.
     """
+    reasons, detail = [], []
     classes = list(getattr(result, "site_classes", None) or [])
+
     if getattr(result, "found", False) and not classes:
-        return Verdict(False, "found is true and no site class was returned")
+        reasons.append(Rejection.EMPTY_RESULT_WITHOUT_ABSTENTION)
+        detail.append("found is true and no site class was returned")
 
     unsourced = [c.company_term for c in classes
                  if getattr(c, "approximate_count", None) is not None
                  and not getattr(c, "source_url", None)]
     if unsourced:
-        return Verdict(
-            False, f"counted without a source: {', '.join(unsourced[:3])}")
+        reasons.append(Rejection.CLAIMED_FINDING_WITHOUT_SOURCE)
+        detail.append(f"counted without a source: {unsourced[:3]}")
 
-    # The whole purpose is per-company queries. A class with none has been
-    # named and not made actionable, which is the static table again.
-    queryless = [c.company_term for c in classes
-                 if not (getattr(c, "suggested_queries", None) or [])]
-    if queryless and len(queryless) == len(classes):
-        return Verdict(False, "no class carries a search that would count it")
+    # The whole purpose is per-company queries. A class named and not made
+    # actionable is the static table again.
+    if classes and not any(getattr(c, "suggested_queries", None) or []
+                           for c in classes):
+        reasons.append(Rejection.ANSWER_NOT_ACTIONABLE)
+        detail.append("no class carries a search that would count it")
 
-    return Verdict(True)
+    return Verdict(not reasons, reasons, detail)
+
+
+def estimate_review(result) -> "Verdict":
+    """An advisory review worth reading.
+
+    The failure mode is a reviewer that says everything is fine. An agent
+    asked whether something looks right usually does, and a review of
+    nothing manufactures exactly the green light this is meant to prevent -
+    a number that looks reviewed is more dangerous than one nobody believes.
+    """
+    reasons, detail = [], []
+    concerns = list(getattr(result, "concerns", None) or [])
+    checked = list(getattr(result, "checked_and_sound", None) or [])
+
+    if not concerns and not checked:
+        reasons.append(Rejection.ANSWER_NOT_ACTIONABLE)
+        detail.append("neither a concern nor anything checked - a review of "
+                      "nothing reads as approval")
+
+    if not getattr(result, "headline_caveat", None):
+        reasons.append(Rejection.ANSWER_NOT_ACTIONABLE)
+        detail.append("no caveat: the paragraph a partner repeats is the "
+                      "main output")
+
+    # The point of the agent is the rule, not the finding.
+    material = [c for c in concerns if getattr(c, "material", False)]
+    if material and not any(getattr(c, "suggested_rule", None)
+                            for c in material):
+        reasons.append(Rejection.ANSWER_NOT_ACTIONABLE)
+        detail.append("a material concern with no suggested check - a "
+                      "finding fixes one estimate, a rule fixes every "
+                      "future one")
+
+    return Verdict(not reasons, reasons, detail)
 
 
 RULES = {
+    "llm11.estimate.review": estimate_review,
     "llm10.location_structure.assess": location_structure,
     "llm01.public_evidence.extract": public_evidence,
     "llm08.market_data.extract": public_evidence,

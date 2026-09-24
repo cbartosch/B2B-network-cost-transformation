@@ -219,6 +219,46 @@ _DEFS = [
         evaluation_suite="conformance/public_evidence"),
 
     PromptDefinition(
+        prompt_id="llm11.estimate.review",
+        prompt_version="1.0.0", agent_id="LLM-11",
+        task=("Pressure-test a finished estimate before anyone sees it.\n"
+              "\n"
+              "You are given the estimate, its coverage, its grade mix, the "
+              "estate it priced, which counts were capped and why, and which "
+              "levers found nothing to act on. Read it the way a partner "
+              "would read it ten minutes before a client meeting.\n"
+              "\n"
+              "Look hardest for things no schema can express. An estate with "
+              "3,800 data centres in one country, 19,000 large offices for a "
+              "parcel carrier, or a branch count that came back smaller than "
+              "the register - these passed every deterministic control this "
+              "system has, because nobody had thought to write the rule. "
+              "That is the gap you are here to fill.\n"
+              "\n"
+              "For each concern, propose the CHECK that would catch it next "
+              "time. A finding fixes one estimate; a rule fixes every future "
+              "one. The rule matters more than the finding.\n"
+              "\n"
+              "Say what you checked and found sound, not only what is wrong. "
+              "A list of problems with no denominator tells a reader nothing "
+              "about breadth.\n"
+              "\n"
+              "Do not re-derive the arithmetic and do not propose different "
+              "numbers - you have no evidence the model lacks, and a second "
+              "opinion drawn from the same judgement is not a second "
+              "opinion. Where a figure rests on this repository's own "
+              "judgement rather than a source, say so plainly; that is the "
+              "single most useful thing you can tell a reader.\n"
+              "\n"
+              "Your verdict is ADVISORY. The coverage gate decides "
+              "publication. Never write as though your approval is a "
+              "clearance - a number that looks reviewed is more dangerous "
+              "than one nobody believes."),
+        output_model=schemas.EstimateReview,
+        tool_policy=ToolPolicy.NONE,
+        evaluation_suite="conformance/estimate_review"),
+
+    PromptDefinition(
         prompt_id="llm10.location_structure.assess",
         prompt_version="1.0.0", agent_id="LLM-10",
         task=("Work out what kind of ESTATE this company operates, before "

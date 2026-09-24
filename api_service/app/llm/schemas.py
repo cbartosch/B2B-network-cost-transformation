@@ -399,6 +399,79 @@ class LocationStructureResult(Strict):
     sources: list[SourceRef] = Field(default_factory=list, max_length=10)
 
 
+class ConcernKind(str, Enum):
+    IMPLAUSIBLE = "IMPLAUSIBLE"      # no company could have this
+    THIN = "THIN"                    # weaker evidence than the number implies
+    INCONSISTENT = "INCONSISTENT"    # two parts of the output disagree
+    OMITTED = "OMITTED"              # something missing that should be here
+
+
+class EstimateConcern(Strict):
+    """One thing about this estimate that a reader should be told."""
+
+    # What it is about: a site count, a rate, a coverage figure, a lever.
+    subject: str = Field(max_length=120)
+    # Why it is worth raising. The test is whether a partner would want to
+    # know before putting the number in front of a client.
+    concern: str = Field(max_length=400)
+    # IMPLAUSIBLE: no company could have this. THIN: the evidence behind it
+    # is weaker than the number implies. INCONSISTENT: two parts of the
+    # output disagree. OMITTED: something is missing that should be here.
+    kind: ConcernKind
+    # How much of the number it touches, where the agent can say.
+    material: bool = False
+    # A check that would catch this class of thing next time.
+    #
+    # The point of the whole agent. A finding fixes one estimate; a rule
+    # fixes every future one, and this session's defects were found by a
+    # person and then turned into deterministic checks. The agent occupies
+    # that first position.
+    suggested_rule: str | None = Field(None, max_length=300)
+
+
+class EstimateReview(Strict):
+    """An advisory read of a finished estimate.
+
+    ADVISORY, never a gate.
+    ---------------------------
+    Three reasons, and the first is decisive.
+
+    It would break reproducibility. The system's headline property is that
+    the same inputs give the same answer - seeded ensembles, pinned priors, a
+    recorded calculation version. A non-deterministic reviewer in the
+    publication path means the same estimate passes on Tuesday and fails on
+    Wednesday, which is a worse loss than the defects it catches.
+
+    "An AI reviewed it" is the dangerous kind of green light. A number with
+    every control satisfied is more dangerous than one nobody believes, and
+    an agent asked whether something looks right usually says yes.
+
+    And it cannot validate the numbers. It can say that 3,800 data centres in
+    one country is absurd; it cannot say that a rate is 1.5x too high,
+    because that needs a market quote. The largest risk in this model -
+    unvalidated judgement - is untouched by a reviewer who shares the same
+    judgement and no more evidence.
+    """
+
+    # The caveat a partner should repeat. The system already knows its
+    # weaknesses in structured form and states them in fragments across four
+    # screens; assembling them into one paragraph somebody will actually say
+    # out loud is a language task and a good use of an agent.
+    headline_caveat: str = Field(max_length=600)
+    concerns: list[EstimateConcern] = Field(default_factory=list,
+                                            max_length=10)
+    concerns_omitted: int = 0
+    # What the agent checked and found sound. Without this the review reads
+    # as a list of problems and a reader cannot tell breadth from severity.
+    checked_and_sound: list[
+        Annotated[str, Field(max_length=160)]] = Field(
+        default_factory=list, max_length=8)
+    # Whether the agent believes the number is usable for its stated purpose.
+    # Advisory. The coverage gate decides publication, not this.
+    would_show_a_client: bool
+    reasoning: str | None = Field(None, max_length=800)
+
+
 # --------------------------------------------------- known-fact corroboration
 class CorroborationCandidate(Strict):
     url: str
