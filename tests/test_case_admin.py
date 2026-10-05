@@ -7,6 +7,7 @@ try the interface - is not a record of anything, and leaving it in the picker
 is how an analyst ends up working on the wrong one.
 """
 import uuid
+from datetime import date
 
 import pytest
 from sqlalchemy import insert, select
@@ -41,6 +42,7 @@ def test_a_case_with_content_needs_confirmation(session):
         known_fact_id=str(uuid.uuid4()), case_id=case_id,
         fact_class="Location footprint", subject="Acme DE", value_base=340,
         unit="sites", asserted_by="CB", basis="INDUSTRY_KNOWLEDGE",
+        assertion_date=date(2026, 1, 15),
         verifiability="PUBLICLY_VERIFIABLE"))
     session.commit()
 
@@ -137,6 +139,7 @@ def _fact(session, case_id: str) -> str:
         known_fact_id=fact_id, case_id=case_id,
         fact_class="Location footprint", subject="Acme", value_base=340,
         unit="sites", asserted_by="tester", basis="CLIENT_CONVERSATION",
+        assertion_date=date(2026, 1, 15),
         verifiability="PUBLICLY_VERIFIABLE", corroboration_state="PENDING"))
     session.commit()
     return fact_id

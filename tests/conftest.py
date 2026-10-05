@@ -56,3 +56,22 @@ def session():
         yield s
     finally:
         s.close()
+
+
+@pytest.fixture()
+def client():
+    """An HTTP client against the app, with its lifespan run.
+
+    Lives here because six test files ask for it and only three defined it -
+    identically, in three places. The other three errored at setup with
+    "fixture 'client' not found" and never ran, which is not a result anyone
+    reads as a missing fixture when it sits among hundreds of lines of output.
+
+    `with TestClient(app)` rather than a bare construction: the lifespan is
+    what seeds reference data, and several suites depend on it having run.
+    """
+    from fastapi.testclient import TestClient
+
+    from app.main import app
+    with TestClient(app) as c:
+        yield c
