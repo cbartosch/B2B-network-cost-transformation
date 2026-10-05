@@ -4,7 +4,8 @@ Tables live in SQLAlchemy metadata rather than in hand-written DDL so there is
 exactly one definition of each. The init SQL creates schemas only.
 """
 from datetime import datetime, timezone
-from sqlalchemy import (Boolean, Column, Date, DateTime, ForeignKey, Index,
+from sqlalchemy import (Boolean, CheckConstraint, Column, Date, DateTime,
+                        ForeignKey, Index,
                         Integer, MetaData, Numeric, String, Table, Text,
                         UniqueConstraint, create_engine, JSON)
 from sqlalchemy.orm import sessionmaker
@@ -589,6 +590,24 @@ estimate_snapshot = Table(
     # that changed for no reason.
     Column("supersedes_snapshot_id", String(36), index=True),
     Column("pins", JSON), Column("levers", JSON),
+    # A refused estimate is never written, and the database refuses it too.
+    #
+    # Six routes consume a snapshot and none checks whether it was published:
+    # the V1 questionnaire, the savings recommendation, the calibration, the
+    # delta bridge, the ask endpoint and the disposition write. They are safe
+    # because the coverage refusal raises BEFORE the insert, so no REFUSED
+    # snapshot exists to read.
+    #
+    # That was a property of statement order in one function. Three tests now
+    # assert it, and this makes it structural: moving the write above the
+    # refusal fails here rather than silently opening all six.
+    #
+    # PARTIAL is permitted. It is the normal state of an outside-in estimate -
+    # coverage between the floor and the minimum, or an unsizable pair, or an
+    # uncovered material country - and refusing it would block the ordinary
+    # case. What PARTIAL needs is propagation, not prohibition.
+    CheckConstraint("v0_status <> 'REFUSED'",
+                    name="estimate_snapshot_never_refused"),
     schema="analysis",
 )
 

@@ -34,7 +34,7 @@ EXCLUDED = "EXCLUDED_BY_EARLIER_LEVER"
 
 
 def waterfall(scenarios: dict, *, current_total, order=("A", "B", "C", "D"),
-              extra_steps=None) -> dict:
+              extra_steps=None, coverage=None) -> dict:
     """Baseline to target, one step per lever, in the order they compound.
 
     `scenarios` is the mapping `estimate.scenarios()` returns. `extra_steps`
@@ -159,6 +159,19 @@ def waterfall(scenarios: dict, *, current_total, order=("A", "B", "C", "D"),
         # hypothesis with a chart.
         "governed_share": (f"{governed / (governed + estimated):.3f}"
                            if (governed + estimated) else "0.000"),
+        # The coverage the baseline was priced at.
+        #
+        # PARTIAL is the ordinary state of an outside-in estimate - 40-70% of
+        # scope, or an unsizable pair, or an uncovered material country, or a
+        # cost layer in scope with nothing priced in it - and no consumer
+        # distinguished it from COMPLETE. The savings page, the recommendation
+        # and the questionnaire all treated a 45%-covered estimate with an
+        # uncovered material country exactly as they treated a clean one.
+        #
+        # Carried here because this is where the saving gets discussed. A
+        # percentage of a baseline is only as good as the baseline, and the
+        # bridge is the one output that shows both.
+        "coverage": _coverage_note(coverage),
         "note": _note(steps, skipped, governed, estimated),
     }
 
@@ -204,3 +217,52 @@ def reconciles(bridge: dict, tolerance="0.01") -> bool:
     walked = D(bridge["baseline"]) - sum(
         (D(s["saving"]) for s in bridge["steps"]), D(0))
     return abs(walked - D(bridge["target"])) <= D(str(tolerance))
+
+
+def _coverage_note(coverage) -> dict | None:
+    """What the baseline's coverage means for the saving above it.
+
+    Returns None where no coverage was supplied rather than inventing a
+    reassuring default: a bridge that does not know its own coverage must not
+    read as one priced on all of its scope.
+    """
+    if not coverage:
+        return None
+    status = str(coverage.get("status") or "").upper()
+    effective = coverage.get("effective_coverage_pct")
+    qualifications = []
+    if coverage.get("unsizable_pairs"):
+        qualifications.append(
+            f"{len(coverage['unsizable_pairs'])} product/bandwidth pair(s) "
+            f"cannot be sized at any approved rate")
+    if coverage.get("material_country_breaches"):
+        qualifications.append(
+            f"material country(ies) not covered: "
+            f"{', '.join(coverage['material_country_breaches'])}")
+    if coverage.get("unpriced_layers"):
+        qualifications.append(
+            f"cost layer(s) in scope with nothing priced: "
+            f"{', '.join(coverage['unpriced_layers'])}")
+    if coverage.get("unpriced_countries"):
+        qualifications.append(
+            f"{len(coverage['unpriced_countries'])} country(ies) unpriced "
+            f"and excluded from the headline")
+    return {
+        "status": status or None,
+        "effective_coverage_pct": (str(effective) if effective is not None
+                                   else None),
+        "qualifications": qualifications,
+        # A saving is a percentage of a baseline, and the baseline is only as
+        # good as its coverage. Said plainly because the status alone - one
+        # word on another page - has not been carried this far before.
+        "what_it_means": (
+            f"Every saving above is a share of a baseline priced on "
+            f"{effective} of its own scope. "
+            + ("That baseline is complete. "
+               if status == "COMPLETE" else
+               "That baseline is qualified, so the savings inherit the "
+               "qualification: they are a percentage of a partial picture, "
+               "not of the estate. ")
+            + (" ".join(qualifications) if qualifications else "")).strip()
+        if effective is not None else None,
+    }

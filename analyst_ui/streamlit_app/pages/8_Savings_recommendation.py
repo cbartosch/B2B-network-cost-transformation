@@ -36,6 +36,22 @@ _snap = next((x for x in snaps
 _wf = _snap.get("savings_bridge") or {}
 if _wf.get("steps"):
     st.subheader("How the saving is built")
+    # The coverage the baseline was priced at, before the saving.
+    #
+    # PARTIAL is the ordinary state of an outside-in estimate and nothing
+    # downstream distinguished it from COMPLETE, so a 45%-covered estimate
+    # with an uncovered material country was discussed exactly like a clean
+    # one. A saving is a percentage of a baseline; the baseline is only as
+    # good as its coverage.
+    _cv = _wf.get("coverage") or {}
+    if _cv.get("status") and _cv["status"] != "COMPLETE":
+        st.warning(f"**Baseline coverage {_cv['status']}.** "
+                   f"{_cv.get('what_it_means', '')}")
+    elif _cv.get("status") == "COMPLETE":
+        st.caption(_cv.get("what_it_means", ""))
+    elif not _cv:
+        st.caption("This snapshot records no coverage, so the savings below "
+                   "cannot be qualified against the baseline they came from.")
     _rows = [{"step": _s["step"],
               "saving": _s["saving"],
               "from": _s["from"],

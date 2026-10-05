@@ -3477,7 +3477,11 @@ def _run_anchor_estimate(s, *, case_id, case_row, payload,
             # `not_counted`: an opportunity the estimate could not size is
             # not one worth zero.
             "savings_bridge": savings_bridge.waterfall(
-                scen, current_total=cur["current_tco"]["base"]),
+                scen, current_total=cur["current_tco"]["base"],
+                # The coverage the baseline was priced at. PARTIAL is the
+                # ordinary state of an outside-in estimate and no consumer
+                # distinguished it from COMPLETE.
+                coverage=cov),
             "scenarios": scen, "confidence": conf, "coverage": cov,
             "simulated_share": "0",
             "asserted_share": str(estimate.asserted_share(components)),
@@ -3982,7 +3986,8 @@ def run_estimate(case_id: str, payload: EstimateIn):
                 "origin_breakdown": cur["origin_breakdown"],
                 "components": cur["components"], "scenarios": scen,
                 "savings_bridge": savings_bridge.waterfall(
-                    scen, current_total=cur["current_tco"]["base"]),
+                    scen, current_total=cur["current_tco"]["base"],
+                    coverage=cov),
                 "confidence": conf,
                 "coverage": {**cov, "unpriced_components": unpriced},
                 "simulated_share": str(sim_share),
@@ -4145,7 +4150,11 @@ def list_estimates(case_id: str):
                 record["savings_bridge"] = savings_bridge.waterfall(
                     record.get("scenarios") or {},
                     current_total=(record.get("current_tco") or {}).get(
-                        "base") or 0)
+                        "base") or 0,
+                    # From the snapshot's own stored coverage, so a bridge
+                    # read a week later carries the same qualification the
+                    # estimate was published with.
+                    coverage=record.get("coverage"))
             except Exception as exc:
                 # A snapshot written before the bridge existed, or one whose
                 # scenarios are shaped differently. Named rather than

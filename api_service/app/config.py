@@ -281,4 +281,8 @@ SIMULATION_MODEL_VERSION = "sim-2.7.0"
 # substitution then 25% of the remaining 88% - and across scenarios the
 # waterfall subtracted both from a baseline each had been computed against in
 # full. You either renegotiate a circuit or you replace it.
-CALCULATION_VERSION = "calc-1.20.0"
+# calc-1.21.0: a saving carries the coverage of the baseline it came from. PARTIAL
+# is the ordinary state of an outside-in estimate - 40-70% of scope, or an
+# unsizable pair, or an uncovered material country, or an unpriced layer - and
+# no consumer distinguished it from COMPLETE.
+CALCULATION_VERSION = "calc-1.21.0"

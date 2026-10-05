@@ -35,7 +35,7 @@ from . import db
 log = logging.getLogger("workbench.migrations")
 
 # Bump when the physical schema changes, and add a step below.
-SCHEMA_VERSION = 65
+SCHEMA_VERSION = 66
 
 VERSION_TABLE = "schema_version"
 VERSION_SCHEMA = "audit"
@@ -1352,8 +1352,11 @@ def _migrate_v64(conn) -> None:
     lever model carried service class, access technology and platform
     product, and no role.
     """
-    _add_column(conn, "reference", "savings_lever",
-                "applies_to_roles", "JSONB")
+    # `_add_column(conn, table_obj, column_name)` - the type is compiled from
+    # the model definition rather than passed as a string. Written here with
+    # five string arguments, which would have raised at runtime on any
+    # database that reached this step: the signature was guessed, not read.
+    _add_column(conn, db.lever, "applies_to_roles")
 
 
 def _migrate_v65(conn) -> None:
@@ -1365,7 +1368,51 @@ def _migrate_v65(conn) -> None:
     saving never materialises, so the pair is mutually exclusive on any
     circuit both match.
     """
-    _add_column(conn, "reference", "savings_lever", "excludes", "JSONB")
+    _add_column(conn, db.lever, "excludes")
+
+
+def _migrate_v66(conn) -> None:
+    """`estimate_snapshot` may not hold a REFUSED coverage status.
+
+    Six routes consume a snapshot and none checks whether it was published -
+    the V1 questionnaire, the savings recommendation, the calibration, the
+    delta bridge, the ask endpoint and the disposition write. They are safe
+    because the coverage refusal raises BEFORE the insert, so no REFUSED
+    snapshot exists to read.
+
+    That was a property of statement order in one function. This makes it
+    structural: moving the write above the refusal now fails at the database
+    rather than silently opening all six consumers.
+
+    PARTIAL is permitted deliberately. It is the ordinary state of an
+    outside-in estimate and refusing it would block the normal case; what
+    PARTIAL needs is propagation, not prohibition.
+    """
+    if not _has_table(conn, "outside_in", "estimate_snapshot"):
+        log.info("v66: estimate_snapshot not present yet, create_all will "
+                 "build it with the constraint")
+        return
+    # Any pre-existing REFUSED row would make the constraint unaddable, so
+    # it is reported rather than deleted - a snapshot somebody may have acted
+    # on is not something a migration should remove silently.
+    existing = conn.exec_driver_sql(
+        "SELECT count(*) FROM outside_in.estimate_snapshot "
+        "WHERE v0_status = 'REFUSED'").scalar()
+    if existing:
+        log.warning(
+            "v66: %s estimate snapshot(s) hold v0_status REFUSED and the "
+            "constraint cannot be added. These were written by a build that "
+            "allowed them. Review them before re-running: they may have been "
+            "consumed by a recommendation or a questionnaire.", existing)
+        return
+    conn.exec_driver_sql(
+        "ALTER TABLE outside_in.estimate_snapshot "
+        "DROP CONSTRAINT IF EXISTS estimate_snapshot_never_refused")
+    conn.exec_driver_sql(
+        "ALTER TABLE outside_in.estimate_snapshot "
+        "ADD CONSTRAINT estimate_snapshot_never_refused "
+        "CHECK (v0_status <> 'REFUSED')")
+    log.info("v66: estimate_snapshot_never_refused added")
 
 
 MIGRATIONS = {2: _migrate_v2, 3: _migrate_v3, 4: _migrate_v4, 5: _migrate_v5,
@@ -1375,7 +1422,8 @@ MIGRATIONS = {2: _migrate_v2, 3: _migrate_v3, 4: _migrate_v4, 5: _migrate_v5,
               16: _migrate_v16, 17: _migrate_v17, 18: _migrate_v18,
               19: _migrate_v19, 20: _migrate_v20,
               21: _migrate_v21, 22: _migrate_v22, 23: _migrate_v23, 24: _migrate_v24, 25: _migrate_v25, 26: _migrate_v26, 27: _migrate_v27, 28: _migrate_v28, 29: _migrate_v29, 30: _migrate_v30, 31: _migrate_v31, 32: _migrate_v32, 33: _migrate_v33, 34: _migrate_v34, 35: _migrate_v35, 36: _migrate_v36, 37: _migrate_v37, 38: _migrate_v38, 39: _migrate_v39, 40: _migrate_v40, 41: _migrate_v41, 42: _migrate_v42, 43: _migrate_v43, 44: _migrate_v44, 45: _migrate_v45, 46: _migrate_v46, 47: _migrate_v47, 48: _migrate_v48, 49: _migrate_v49, 50: _migrate_v50, 51: _migrate_v51, 52: _migrate_v52, 53: _migrate_v53, 54: _migrate_v54, 55: _migrate_v55, 56: _migrate_v56, 57: _migrate_v57, 58: _migrate_v58, 59: _migrate_v59, 60: _migrate_v60, 61: _migrate_v61, 62: _migrate_v62, 63: _migrate_v63,
-              64: _migrate_v64, 65: _migrate_v65}
+              64: _migrate_v64, 65: _migrate_v65,
+              66: _migrate_v66}
 
 
 class SchemaDrift(RuntimeError):
