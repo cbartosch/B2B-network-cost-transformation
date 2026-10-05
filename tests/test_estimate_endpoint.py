@@ -332,7 +332,6 @@ def test_anchor_does_not_require_a_driver_it_never_uses(session, client):
     request for a driver the calculation would not have used. Two existing
     tests caught it on the first real run."""
     case_id = _ready_case(session, countries=("DE",))
-    _dispose_all(session, case_id)
 
     r = client.post(f"/v1/outside-in/cases/{case_id}/estimates:run",
                     json={"method": "ANCHOR", "anchor_value": 213_000_000})
@@ -344,7 +343,6 @@ def test_build_up_still_refuses_a_missing_ops_cost(session, client):
     """The refusal exists because 900 per site used to be a server-side
     default that reached the baseline whenever a caller omitted the field."""
     case_id = _ready_case(session, countries=("DE",))
-    _dispose_all(session, case_id)
 
     r = client.post(f"/v1/outside-in/cases/{case_id}/estimates:run",
                     json={"method": "BUILD_UP", "users": 500})

@@ -102,7 +102,7 @@ class _FakeAdapter:
     def configured(self):
         return self._configured
 
-    def complete(self, *, system, prompt, max_tokens=1500):
+    def complete(self, *, system, prompt, max_tokens=1500, tools=None):
         now = datetime.now(timezone.utc)
         return ProviderCall(
             provider="anthropic", model="fake-model",
@@ -470,7 +470,7 @@ def test_a_rejected_shape_terminates_the_run_rather_than_leaving_it_queued(
 
 
 # ------------------- C-10: a layer match is not proof that a lever applies
-def _lever(lever_id, family, layers, products, base="0.25"):
+def _product_lever(lever_id, family, layers, products, base="0.25"):
     return {"lever_id": lever_id, "family": family, "description": "",
             "cost_layers": layers, "saving_low": "0.15",
             "saving_base": base, "saving_high": "0.35",
@@ -503,7 +503,7 @@ def test_no_mpls_substitution_savings_in_an_estate_with_no_mpls():
 
     scenarios = estimate.scenarios(
         components=_components(("BROADBAND_HFC", "L0"), ("MOBILE_5G", "L0")),
-        levers=[_lever("LEV-MPLS-001", "MPLS substitution", ["L0"], ["MPLS"])])
+        levers=[_product_lever("LEV-MPLS-001", "MPLS substitution", ["L0"], ["MPLS"])])
     booked = [l for l in scenarios["B"]["levers"]
               if l["lever_id"] == "LEV-MPLS-001"]
     assert not booked, (
@@ -517,7 +517,7 @@ def test_the_same_lever_still_applies_where_mpls_is_present():
 
     scenarios = estimate.scenarios(
         components=_components(("MPLS", "L0")),
-        levers=[_lever("LEV-MPLS-001", "MPLS substitution", ["L0"], ["MPLS"])])
+        levers=[_product_lever("LEV-MPLS-001", "MPLS substitution", ["L0"], ["MPLS"])])
     booked = [l for l in scenarios["B"]["levers"]
               if l["lever_id"] == "LEV-MPLS-001"]
     assert booked, "MPLS substitution must apply to an MPLS circuit"
@@ -531,7 +531,7 @@ def test_an_inapplicable_lever_is_reported_not_silently_dropped():
 
     scenarios = estimate.scenarios(
         components=_components(("BROADBAND_HFC", "L0")),
-        levers=[_lever("LEV-MPLS-001", "MPLS substitution", ["L0"], ["MPLS"])])
+        levers=[_product_lever("LEV-MPLS-001", "MPLS substitution", ["L0"], ["MPLS"])])
     skipped = scenarios["B"]["levers_not_applicable"]
     assert len(skipped) == 1
     assert skipped[0]["lever_id"] == "LEV-MPLS-001"
@@ -547,7 +547,7 @@ def test_an_unconstrained_lever_still_acts_on_any_circuit():
 
     scenarios = estimate.scenarios(
         components=_components(("BROADBAND_HFC", "L0")),
-        levers=[_lever("LEV-REPRICE-001", "Same-service repricing", ["L0"],
+        levers=[_product_lever("LEV-REPRICE-001", "Same-service repricing", ["L0"],
                        None, base="0.12")])
     assert scenarios["B"]["levers"], "an unconstrained lever must still apply"
 
@@ -559,7 +559,7 @@ def test_right_sizing_does_not_apply_to_a_shared_best_effort_service():
 
     scenarios = estimate.scenarios(
         components=_components(("DIA", "L0"), ("BROADBAND_PON", "L0")),
-        levers=[_lever("LEV-BANDWIDTH-001", "Right-sizing", ["L0"],
+        levers=[_product_lever("LEV-BANDWIDTH-001", "Right-sizing", ["L0"],
                        ["DIA", "ETHERNET", "MPLS"], base="0.07")])
     applied = scenarios["B"]["levers"]
     assert applied, "right-sizing must apply to the DIA circuit"

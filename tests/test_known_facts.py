@@ -10,9 +10,16 @@ and every stage after it behaved correctly on that premise. The resolver
 reported 460 million sites to allocate, and the divergence message told the
 analyst that *their* breakdown of the real stores was the thing that was wrong.
 """
+import datetime as _dt
+
 import pytest
 
 from app.domain import known_facts
+
+# register() has required assertion_date since 4.8.1 - an undated assertion is
+# not auditable. Fixed rather than date.today() so the fixture cannot drift with
+# the clock, matching how test_prompt_registry.py dates its facts.
+_ASSERTED_ON = _dt.date(2026, 8, 31)
 
 
 # ----------------------------------- a unit that is not what the class counts
@@ -34,7 +41,8 @@ def test_a_footprint_fact_refuses_a_unit_that_is_not_a_count_of_sites(
         known_facts.register(
             session, case_id="c", fact_class="Location footprint",
             subject="Aldi Sued", value_base=460_000_000, unit=unit,
-            asserted_by="CB", basis="THIRD_PARTY_REPORT",
+            asserted_by="CB", assertion_date=_ASSERTED_ON,
+            basis="THIRD_PARTY_REPORT",
             verifiability="PUBLICLY_VERIFIABLE")
 
 
@@ -48,6 +56,7 @@ def test_a_footprint_fact_accepts_any_reasonable_word_for_a_site(session, unit):
     out = known_facts.register(
         session, case_id="c", fact_class="Location footprint",
         subject="Aldi Sued", value_base=2000, unit=unit, asserted_by="CB",
+        assertion_date=_ASSERTED_ON,
         basis="THIRD_PARTY_REPORT", verifiability="PUBLICLY_VERIFIABLE")
     assert out["known_fact_id"]
 

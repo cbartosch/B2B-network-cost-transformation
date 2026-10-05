@@ -771,9 +771,20 @@ def _migrate_v31(conn) -> None:
     added = _add_column(conn, db.unit_cost_prior, "scope_kind")
     widened = 0
     if _has_table(conn, "reference", "unit_cost_prior"):
-        conn.execute(text(
-            'ALTER TABLE "reference"."unit_cost_prior" '
-            "ALTER COLUMN country TYPE VARCHAR(16)"))
+        # ALTER COLUMN ... TYPE is Postgres-only; SQLite has no such statement
+        # and raises a syntax error, which refuses app startup outright. That
+        # is the same defect v9 carried and the same reason it mattered: the
+        # only place SQLite is exercised is `make test` (DATABASE_URL=sqlite://),
+        # so a Postgres-only statement here is invisible in production and
+        # fatal in the test path.
+        #
+        # Skipping it on SQLite loses nothing. SQLite does not enforce VARCHAR
+        # length, so a 2-to-16 widening has no effect there, and test schemas
+        # are built fresh from db.py with the final width already.
+        if conn.dialect.name == "postgresql":
+            conn.execute(text(
+                'ALTER TABLE "reference"."unit_cost_prior" '
+                "ALTER COLUMN country TYPE VARCHAR(16)"))
         widened = conn.execute(text(
             'UPDATE "reference"."unit_cost_prior" SET scope_kind = \'COUNTRY\' '
             "WHERE scope_kind IS NULL")).rowcount or 0
@@ -885,7 +896,10 @@ def _migrate_v38(conn) -> None:
             ("reference", "benchmark_observation", "metric", 96),
             ("reference", "platform_unit_cost", "unit", 128),
             ("outside_in", "evidenced_anchor", "label", 128)):
-        if _has_table(conn, schema, table):
+        # Postgres-only, same as v31: SQLite has no ALTER COLUMN ... TYPE and
+        # does not enforce VARCHAR length, so the widening is both impossible
+        # and unnecessary there.
+        if _has_table(conn, schema, table) and conn.dialect.name == "postgresql":
             conn.execute(text(
                 f'ALTER TABLE "{schema}"."{table}" '
                 f"ALTER COLUMN {column} TYPE VARCHAR({width})"))
@@ -1404,6 +1418,15 @@ def _migrate_v66(conn) -> None:
             "constraint cannot be added. These were written by a build that "
             "allowed them. Review them before re-running: they may have been "
             "consumed by a recommendation or a questionnaire.", existing)
+        return
+    # Postgres-only, same class as v31 and v38: SQLite cannot DROP or ADD a
+    # constraint on an existing table without rebuilding it. Nothing is lost by
+    # skipping — SQLite is only used for tests, whose schemas are built fresh
+    # from db.py, and the guard the constraint enforces is also asserted in the
+    # application layer.
+    if conn.dialect.name != "postgresql":
+        log.info("v66: constraint skipped on %s; Postgres-only DDL",
+                 conn.dialect.name)
         return
     conn.exec_driver_sql(
         "ALTER TABLE outside_in.estimate_snapshot "

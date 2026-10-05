@@ -87,7 +87,7 @@ class _FakeAdapter:
     def configured(self):
         return self._configured
 
-    def complete(self, *, system, prompt, max_tokens=1500):
+    def complete(self, *, system, prompt, max_tokens=1500, tools=None):
         now = datetime.now(timezone.utc)
         return ProviderCall(
             provider="anthropic", model="fake-model",
