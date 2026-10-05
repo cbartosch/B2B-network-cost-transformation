@@ -1402,7 +1402,18 @@ def _migrate_v66(conn) -> None:
     outside-in estimate and refusing it would block the normal case; what
     PARTIAL needs is propagation, not prohibition.
     """
-    if not _has_table(conn, "outside_in", "estimate_snapshot"):
+    # Read the schema off the model rather than naming it. This said
+    # "outside_in" while db.py has always defined the table in "analysis", so
+    # on any existing database _has_table returned False, the function logged
+    # that create_all would handle it, and returned - stamping v66 applied with
+    # the constraint never added. create_all does not add a CHECK constraint to
+    # a table that already exists, so the reassuring log was also wrong: only
+    # databases created fresh after this migration ever got the guard, which is
+    # the opposite of the set that holds data.
+    schema = db.estimate_snapshot.schema
+    table = f"{schema}.estimate_snapshot"
+
+    if not _has_table(conn, schema, "estimate_snapshot"):
         log.info("v66: estimate_snapshot not present yet, create_all will "
                  "build it with the constraint")
         return
@@ -1410,7 +1421,7 @@ def _migrate_v66(conn) -> None:
     # it is reported rather than deleted - a snapshot somebody may have acted
     # on is not something a migration should remove silently.
     existing = conn.exec_driver_sql(
-        "SELECT count(*) FROM outside_in.estimate_snapshot "
+        f"SELECT count(*) FROM {table} "
         "WHERE v0_status = 'REFUSED'").scalar()
     if existing:
         log.warning(
@@ -1429,10 +1440,10 @@ def _migrate_v66(conn) -> None:
                  conn.dialect.name)
         return
     conn.exec_driver_sql(
-        "ALTER TABLE outside_in.estimate_snapshot "
+        f"ALTER TABLE {table} "
         "DROP CONSTRAINT IF EXISTS estimate_snapshot_never_refused")
     conn.exec_driver_sql(
-        "ALTER TABLE outside_in.estimate_snapshot "
+        f"ALTER TABLE {table} "
         "ADD CONSTRAINT estimate_snapshot_never_refused "
         "CHECK (v0_status <> 'REFUSED')")
     log.info("v66: estimate_snapshot_never_refused added")
