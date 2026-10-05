@@ -8,6 +8,7 @@ correct and none was the last, because the rule was expressed in the one place
 that could not be tested.
 """
 import uuid
+from datetime import date
 
 import pytest
 from sqlalchemy import insert
@@ -34,6 +35,7 @@ def _fact(session, case_id, value, *, subject="Adolf Wuerth GmbH & Co. KG",
         known_fact_id=str(uuid.uuid4()), case_id=case_id,
         fact_class=fact_class, subject=subject, value_base=value, unit="sites",
         asserted_by="CB", basis="THIRD_PARTY_REPORT",
+        assertion_date=date(2026, 1, 15),
         verifiability="PUBLICLY_VERIFIABLE", corroboration_state=state))
     session.commit()
 
@@ -156,6 +158,7 @@ def test_a_valueless_fact_is_ignored(session):
         known_fact_id=str(uuid.uuid4()), case_id=case_id,
         fact_class="Location footprint", subject="Wuerth", value_base=None,
         unit="sites", asserted_by="CB", basis="INDUSTRY_KNOWLEDGE",
+        assertion_date=date(2026, 1, 15),
         verifiability="PUBLICLY_VERIFIABLE"))
     session.commit()
     assert footprint.resolve(session, case_id)["origin"] == "SCOPE_PLACEHOLDER"
@@ -266,6 +269,7 @@ def test_the_reason_distinguishes_a_missing_fact_from_an_unusable_one(session):
         known_fact_id=str(uuid.uuid4()), case_id=case_id,
         fact_class="Remote-user population", subject="Wuerth",
         value_base=5000, unit="users", asserted_by="CB",
+        assertion_date=date(2026, 1, 15),
         basis="INDUSTRY_KNOWLEDGE", verifiability="PUBLICLY_VERIFIABLE"))
     session.commit()
 
@@ -406,6 +410,11 @@ class _Fact:
     def __init__(self, **kw):
         self.__dict__.update({
             "known_fact_id": "f1", "fact_class": "Location footprint",
+            # case_id, because total_candidates also asks for footprint facts
+            # on OTHER cases - "I registered sites, where did they go" has an
+            # answer this page cannot otherwise show. Defaults to the case
+            # _candidates resolves, so these rows belong to it.
+            "case_id": "c",
             "subject": "Boots UK Limited", "value_base": 1840,
             "value_low": None, "value_high": None, "unit": "sites",
             "corroboration_state": "PENDING", "asserted_by": "CB",
@@ -413,13 +422,31 @@ class _Fact:
 
 
 class _FactSession:
-    def __init__(self, rows):
-        self._rows = rows
+    """Two queries, two answers.
 
-    def execute(self, _q):
+    This returned the same rows to every execute(), which was harmless while
+    total_candidates ran one query. It now runs a second for facts on other
+    cases, and answering that with this case's own facts would report them as
+    belonging elsewhere - the stub inventing the exact confusion the feature
+    exists to clear up.
+
+    The queries are told apart by the inequality: the elsewhere query filters
+    `case_id != case_id`, and every row here belongs to the case under test,
+    so the honest answer to it is nothing.
+    """
+
+    def __init__(self, rows, case_id="c"):
+        self._rows = rows
+        self._case_id = case_id
+
+    def execute(self, q):
         import types as _t
-        return _t.SimpleNamespace(all=lambda: self._rows,
-                                  first=lambda: (self._rows or [None])[0])
+        asks_for_other_cases = "!=" in str(
+            q.compile(compile_kwargs={"literal_binds": True})
+            if hasattr(q, "compile") else q)
+        rows = [] if asks_for_other_cases else self._rows
+        return _t.SimpleNamespace(all=lambda: rows,
+                                  first=lambda: (rows or [None])[0])
 
 
 def _candidates(rows):
