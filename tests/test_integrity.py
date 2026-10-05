@@ -1095,7 +1095,11 @@ def test_every_archetype_can_be_priced_at_its_own_bandwidth():
     archetype whose bandwidth no prior quotes is unpriceable everywhere."""
     from app.seed import ARCHETYPES, PRIORS
     tiers = {(p, bw) for _c, p, _l, bw, *_ in PRIORS}
-    missing = [(a, prod, bw) for a, _u, bw, _d, pp, bp in ARCHETYPES
+    # Trailing *_ rather than a fixed arity: ARCHETYPES gained a seventh field
+    # and this was the only place that unpacked six, so the row shape changing
+    # broke the test rather than the thing it tests. Production unpacks seven
+    # (seed.py) or reads by index, which is why nothing else noticed.
+    missing = [(a, prod, bw) for a, _u, bw, _d, pp, bp, *_ in ARCHETYPES
                for prod in (pp, bp) if (prod, bw) not in tiers]
     assert not missing, f"archetype tiers no prior prices: {missing}"
 

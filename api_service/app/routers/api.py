@@ -3476,8 +3476,18 @@ def _run_anchor_estimate(s, *, case_id, case_row, payload,
             # Levers that found nothing to act on are carried separately as
             # `not_counted`: an opportunity the estimate could not size is
             # not one worth zero.
+            # cur["total"], not cur["current_tco"]: `cur` is what
+            # estimate.current_tco() returns, whose keys are by_layer, total,
+            # simulated_share, origin_breakdown and components. `current_tco`
+            # is the name this RESPONSE gives to cur["total"] three lines
+            # above, and the stored snapshot's column name - but it is not a
+            # key of `cur`, so reading it raised KeyError and the whole
+            # estimate returned 500 with {"detail": "'current_tco'"}.
+            #
+            # Same confusion of the response's shape with the function's that
+            # this module's test file records for the ANCHOR path.
             "savings_bridge": savings_bridge.waterfall(
-                scen, current_total=cur["current_tco"]["base"],
+                scen, current_total=cur["total"]["base"],
                 # The coverage the baseline was priced at. PARTIAL is the
                 # ordinary state of an outside-in estimate and no consumer
                 # distinguished it from COMPLETE.
@@ -3985,8 +3995,11 @@ def run_estimate(case_id: str, payload: EstimateIn):
                 "current_tco": cur["total"], "by_layer": cur["by_layer"],
                 "origin_breakdown": cur["origin_breakdown"],
                 "components": cur["components"], "scenarios": scen,
+                # cur["total"], not cur["current_tco"] - see the identical fix
+                # on the other estimate path. The line above names the response
+                # key from cur["total"]; `cur` itself has no current_tco key.
                 "savings_bridge": savings_bridge.waterfall(
-                    scen, current_total=cur["current_tco"]["base"],
+                    scen, current_total=cur["total"]["base"],
                     coverage=cov),
                 "confidence": conf,
                 "coverage": {**cov, "unpriced_components": unpriced},
