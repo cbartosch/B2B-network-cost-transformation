@@ -595,6 +595,10 @@ def test_the_version_stamp_is_earned_not_asserted():
     _drop_everything()
     db.metadata.create_all(db.engine)
     with db.engine.begin() as conn:
+        # audit.schema_version is not in db.metadata - migrations own it, not
+        # the model - so create_all does not build it and _stamp had nothing to
+        # write to. ensure() calls this first for the same reason.
+        migrations._ensure_version_table(conn)
         migrations._stamp(conn, migrations.SCHEMA_VERSION)
         conn.execute(text('ALTER TABLE "engagement"."engagement_case" '
                           'DROP COLUMN "entity_aliases"'))
@@ -614,6 +618,7 @@ def test_reconciliation_is_additive_only():
     could shrink would be worse than one it refuses to touch."""
     import ast
     import inspect
+    import textwrap
 
     # Scans the SQL the reconciler executes, not its prose. The first version
     # searched the whole source and matched "never drops" in the docstring
@@ -623,7 +628,13 @@ def test_reconciliation_is_additive_only():
     # A guard that reads its subject's own explanation as evidence against it
     # is the same defect as the bias probe that found "tax" in the sentence
     # describing the absence of tax.
-    tree = ast.parse(inspect.cleandoc(
+    # dedent, not cleandoc. cleandoc is for docstrings: it strips the indent
+    # common to every line AFTER the first, which on a function's source
+    # de-indents the body while leaving `def` at column 0 - so this parsed
+    # `def f():` followed by an unindented docstring and raised
+    # IndentationError before reaching a single assertion. dedent is a no-op
+    # on source that is already flush, which this is.
+    tree = ast.parse(textwrap.dedent(
         inspect.getsource(migrations.repair_missing_columns)))
     statements = []
     for node in ast.walk(tree):
