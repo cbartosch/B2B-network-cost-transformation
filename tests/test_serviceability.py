@@ -286,7 +286,12 @@ def _bearer_table():
     return {(c, b, t): _Row(a, m) for c, b, t, a, m in SERVICEABILITY}
 
 
-def _resolve(service_class, wanted=100, density="RURAL", country="DE"):
+# Renamed from _resolve: a second helper of that name shadowed the one at the
+# top of this file, so every test above it passed a bearer `table` where this
+# expects a `service_class`. carriers_for() then did a dict-membership test on
+# a dict - "unhashable type" - and the product= argument became unexpected.
+# Named for what it does: resolve by service class, via _by_access.
+def _resolve_by_class(service_class, wanted=100, density="RURAL", country="DE"):
     return serviceability._by_access(
         table=_bearer_table(), country=country, density=density,
         service_class=service_class, wanted_mbps=wanted, asked_for="X")
@@ -302,8 +307,8 @@ def test_a_committed_vpn_is_deliverable_where_a_dedicated_service_is_not():
     reaches."""
     from app.domain import access
 
-    assert _resolve(access.IPVPN)["outcome"] == serviceability.DELIVERED
-    assert _resolve(access.ETHERNET)["outcome"] == serviceability.UNSERVICEABLE
+    assert _resolve_by_class(access.IPVPN)["outcome"] == serviceability.DELIVERED
+    assert _resolve_by_class(access.ETHERNET)["outcome"] == serviceability.UNSERVICEABLE
 
 
 def test_the_outcome_names_the_bearer_that_carries_it():
@@ -311,7 +316,7 @@ def test_the_outcome_names_the_bearer_that_carries_it():
     accept."""
     from app.domain import access
 
-    out = _resolve(access.BEST_EFFORT)
+    out = _resolve_by_class(access.BEST_EFFORT)
     assert out["access_technology"] in access.ACCESS_TECHNOLOGIES
 
 
@@ -319,7 +324,7 @@ def test_a_bearer_that_reaches_but_cannot_carry_the_size_substitutes():
     """A smaller circuit is a real option; a silent downgrade is not."""
     from app.domain import access
 
-    out = _resolve(access.BEST_EFFORT, wanted=500)
+    out = _resolve_by_class(access.BEST_EFFORT, wanted=500)
     assert out["outcome"] == serviceability.SUBSTITUTED
     assert out["bandwidth_mbps"] < 500
     assert "below the 500 Mbps" in out["note"]
@@ -364,9 +369,9 @@ def test_dense_urban_delivers_what_rural_cannot():
     """The band has to matter, or the table is decoration."""
     from app.domain import access
 
-    assert _resolve(access.ETHERNET, density="DENSE_URBAN")["outcome"] == (
+    assert _resolve_by_class(access.ETHERNET, density="DENSE_URBAN")["outcome"] == (
         serviceability.DELIVERED)
-    assert _resolve(access.ETHERNET, density="RURAL")["outcome"] == (
+    assert _resolve_by_class(access.ETHERNET, density="RURAL")["outcome"] == (
         serviceability.UNSERVICEABLE)
 
 
