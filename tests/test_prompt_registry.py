@@ -297,19 +297,46 @@ def test_a_search_service_called_without_a_search_tool_fails_closed():
 
 
 def test_every_search_service_passes_a_tool_at_its_call_site():
+    """The enclosing function, not a character window.
+
+    A window around the prompt id was the old mechanism and it was wrong
+    twice over. research.py passes this id through a ternary, so the literal
+    `prompt_id="..."` never appears and the call site read as missing. And it
+    builds `tools = _web_search_tool(...)` far enough above the call that a
+    1,200-character look-back lands inside a comment, so a call site that
+    does pass a search tool read as one that does not.
+
+    "Its call site" means the function making the call. That is what is
+    checked here, and it does not depend on how far apart two lines happen to
+    sit.
+    """
+    import ast
     import pathlib
     root = pathlib.Path(__file__).resolve().parents[1]
     app = next(c for c in (root / "api_service" / "app", root / "app")
                if (c / "domain").exists())
-    blob = "\n".join(p.read_text() for p in (app / "domain").rglob("*.py"))
+
+    def _enclosing_function(prompt_id):
+        for path in sorted((app / "domain").rglob("*.py")):
+            src = path.read_text()
+            if f'"{prompt_id}"' not in src:
+                continue
+            for node in ast.walk(ast.parse(src)):
+                if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                    continue
+                segment = ast.get_source_segment(src, node) or ""
+                if f'"{prompt_id}"' in segment:
+                    return segment
+        return None
+
     for prompt_id in ("llm01.public_evidence.extract",
                       "known_fact.corroborate",
                       "entity.resolve.candidates"):
-        idx = blob.find(f'prompt_id="{prompt_id}"')
-        assert idx != -1, f"{prompt_id} has no call site"
-        assert "web_search" in blob[idx:idx + 700], (
-            f"{prompt_id} declares a search policy but its call site passes "
-            f"no search tool")
+        enclosing = _enclosing_function(prompt_id)
+        assert enclosing is not None, f"{prompt_id} has no call site"
+        assert "web_search" in enclosing, (
+            f"{prompt_id} declares a search policy but the function calling "
+            f"it passes no search tool")
 
 
 # ------------------------------------------------- entity confirmation profile
