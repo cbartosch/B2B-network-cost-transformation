@@ -190,8 +190,10 @@ def test_succeed_sets_produced_without_llm_for_deterministic_only_not_live(
     _wire_fake_provider(monkeypatch, lambda **kw: "{}")
     live_run = gateway.create_agent_run(session, agent_id="LLM-07", mode="LIVE",
                                         case_id=case_id)
+    # Required since the governed budget moved to structured_call; see the
+    # note on gateway.execute's signature.
     gateway.execute(session, agent_run_id=live_run, provider="anthropic",
-                    system="s", prompt="p")
+                    system="s", prompt="p", max_tokens=1000)
     gateway.succeed(session, live_run, {"ok": True})
     row = session.execute(select(db.agent_run)
                           .where(db.agent_run.c.agent_run_id == live_run)).one()

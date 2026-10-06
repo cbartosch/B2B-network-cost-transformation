@@ -280,8 +280,12 @@ def test_completed_run_cannot_be_re_executed(session):
     run_id = _run(session)
     gateway._fail(session, run_id, "provider down")
     with pytest.raises(errors.ModeNotPermitted):
+        # max_tokens is required: gateway.execute deliberately has no
+        # default, because one there would be a third ceiling nothing
+        # reaches. Without it this raised TypeError before the mode check,
+        # so the test passed its raises() block on the wrong exception.
         gateway.execute(session, agent_run_id=run_id, provider="anthropic",
-                        system="s", prompt="p")
+                        system="s", prompt="p", max_tokens=1000)
 
 
 # --- H-04: seed is non-destructive -----------------------------------------
