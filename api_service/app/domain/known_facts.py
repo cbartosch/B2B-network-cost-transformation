@@ -837,7 +837,18 @@ def _sweep_budget(session) -> int:
         rows = {r.key: r.value for r in session.execute(select(db.threshold)
                 .where(db.threshold.c.set_name == "research_budget_profile")
                 ).all()}
-        return int(policy_module.ResearchBudgetProfile.from_rows(
+        # ResearchPolicy, not ResearchBudgetProfile. No class of that name has
+        # ever existed in this repository, so this raised AttributeError every
+        # time, the except below swallowed it, and the governed budget was the
+        # hardcoded 6000 on every sweep that has ever run. The docstring above
+        # calls it "the governed output budget" and notes that the fallback
+        # matches the seeded value, which is how a constant passed for a
+        # policy: an operator raising the governed number would have seen no
+        # effect at all.
+        #
+        # ResearchPolicy already carries the field, with 6000 as its own
+        # default, so a profile that does not set it behaves exactly as before.
+        return int(policy_module.ResearchPolicy.from_rows(
             rows).max_output_tokens_per_sweep_call)
     except Exception:
         return 6000

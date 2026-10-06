@@ -738,8 +738,63 @@ def test_one_class_failing_does_not_lose_the_others():
 
 
 def test_the_sweep_budget_is_governed():
-    """Discovering the right number should not need a rebuild."""
+    """Discovering the right number should not need a rebuild.
+
+    ResearchPolicy, not ResearchBudgetProfile. No class of the latter name has
+    ever existed here, and both this test and known_facts._sweep_budget named
+    it - the call sat inside `except Exception: return 6000`, so the governed
+    budget was the hardcoded fallback on every sweep ever run, and this test
+    reported the symptom without anyone reading it as one.
+    """
     from app.domain import policy
 
-    assert hasattr(policy.ResearchBudgetProfile,
-                   "max_output_tokens_per_sweep_call")
+    assert hasattr(policy.ResearchPolicy, "max_output_tokens_per_sweep_call")
+
+
+def test_the_sweep_budget_actually_reaches_the_sweep():
+    """hasattr is not enough: the field existed all along, on a class nothing
+    called. What was missing is the path from the governed row to the call."""
+    import inspect
+
+    from app.domain import known_facts
+
+    src = inspect.getsource(known_facts._sweep_budget)
+    assert "policy_module.ResearchPolicy.from_rows" in src
+    assert "policy_module.ResearchBudgetProfile" not in src, (
+        "a name that does not exist, inside `except Exception`, is a governed "
+        "value that silently is not one")
+
+
+def test_a_governed_sweep_budget_overrides_the_default(session):
+    """The property the whole governance claim rests on: change the row,
+    change the budget.
+
+    It could not have held while the lookup named a class that does not
+    exist - every sweep took the hardcoded 6000 from the except branch, and
+    because the seeded value is also 6000 the two were indistinguishable from
+    the outside. Raising it is the only way to tell them apart.
+    """
+    from sqlalchemy import insert, update
+
+    from app import db, seed
+    from app.domain import known_facts
+
+    # The whole profile: ResearchPolicy.from_rows requires every field, so a
+    # partial set raises and falls back - which is the behaviour under test.
+    session.execute(insert(db.threshold).values([
+        {"set_name": s, "key": k, "value": v, "version": 1,
+         "approved_by": "seed", "note": ""}
+        for s, k, v in seed.THRESHOLDS if s == "research_budget_profile"]))
+    session.commit()
+    assert known_facts._sweep_budget(session) == 6000, "the seeded value"
+
+    session.execute(update(db.threshold)
+                    .where(db.threshold.c.set_name == "research_budget_profile")
+                    .where(db.threshold.c.key == "max_output_tokens_per_sweep_call")
+                    .values(value="9000", approved_by="CB"))
+    session.commit()
+
+    assert known_facts._sweep_budget(session) == 9000, (
+        "an approver raising the governed number must change the budget, or "
+        "the row is decoration and the docstring's 'governed output budget' "
+        "is not true")

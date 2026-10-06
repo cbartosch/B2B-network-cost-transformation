@@ -82,7 +82,14 @@ def test_deletion_leaves_no_orphans(session):
     case_id = _case(session)
     session.execute(insert(db.agent_run).values(
         agent_run_id=str(uuid.uuid4()), case_id=case_id, agent_id="LLM-01",
-        mode="LIVE", status="SUCCEEDED"))
+        # execution_mode, not mode: the column was renamed and this insert
+        # kept the old name, so the test raised CompileError before it could
+        # delete anything - the orphan check it exists for never ran.
+        # graph_version is NOT NULL; gateway.create_agent_run takes it from
+        # registry.AGENTS[agent_id]. Any value will do here - the row exists
+        # to be deleted.
+        graph_version="test", execution_mode="LIVE", status="SUCCEEDED",
+        environment="TEST"))
     session.execute(insert(db.domain_disposition).values(
         id=str(uuid.uuid4()), case_id=case_id, domain_no=2,
         domain_name="Location footprint", disposition="BENCHMARK_PRIOR"))
@@ -145,6 +152,24 @@ def _fact(session, case_id: str) -> str:
     return fact_id
 
 
+def _preflight_clear(session, case_id: str) -> None:
+    """A clear, acknowledged pre-flight report for this case.
+
+    estimates:run calls preflight.assert_clear_to_run first, so without this
+    the request is refused with 409 "no pre-flight report" and the C-04 check
+    below is never reached. The test then passes or fails on the wrong guard:
+    the call is still refused, but not by the one it exists to exercise.
+
+    input_digest is left NULL deliberately. assert_clear_to_run only compares
+    a digest when one was stored, and a stored digest would have to be
+    recomputed here every time the case fixture changed.
+    """
+    session.execute(insert(db.preflight_report).values(
+        report_id=str(uuid.uuid4()), case_id=case_id, conditions=[],
+        blocked=False, acknowledged_by="CB"))
+    session.commit()
+
+
 def test_an_estimate_cannot_consume_another_cases_simulation(session, client):
     """Audit finding C-04, demonstrated: case A's path with case B's
     simulation id built A's estimate from B's estate, returned B's topology and
@@ -155,6 +180,7 @@ def test_an_estimate_cannot_consume_another_cases_simulation(session, client):
     case_a = _case(session, subject_entity_legal_name="Alpha Ltd")
     case_b = _case(session, subject_entity_legal_name="Beta GmbH")
     sim_b = _succeeded_simulation(session, case_b)
+    _preflight_clear(session, case_a)
 
     r = client.post(f"/v1/outside-in/cases/{case_a}/estimates:run",
                     json={"method": "BUILD_UP",
