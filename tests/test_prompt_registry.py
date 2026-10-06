@@ -387,7 +387,11 @@ def test_finding_nothing_is_an_acceptable_answer_if_it_says_so():
     analyst where their own knowledge is the only route."""
     from app.llm import quality, schemas
     empty = schemas.PublicFactSweep.model_validate(
-        {"facts": [], "not_found": ["Public cost evidence"]})
+        {"facts": [],
+         # NotFoundClass, not a bare string: the class and what was
+         # searched for are two things one string cannot hold, which is
+         # why the schema changed.
+         "not_found": [{"fact_class": "Public cost evidence"}]})
     assert quality.evaluate("known_fact.prefill_public", empty, {}).accepted
 
     silent = schemas.PublicFactSweep.model_validate({"facts": []})
@@ -593,8 +597,10 @@ def test_the_sweep_must_account_for_every_class_it_was_asked_about():
     Those are different findings and they were indistinguishable."""
     from app.llm import quality, schemas
 
+    # No "subject" here: PublicFactSweep is Strict and carries none - the
+    # subject lives on each fact. The sweep gained that strictness and the
+    # fixtures kept the old shape.
     reply = schemas.PublicFactSweep.model_validate({
-        "subject": "Boots",
         "facts": [],
         # not_found carries the class, what was searched and why. It was
         # list[str] while the prompt asked for the class "with what you
@@ -617,8 +623,10 @@ def test_the_sweep_must_account_for_every_class_it_was_asked_about():
 def test_a_sweep_that_accounts_for_everything_is_accepted():
     from app.llm import quality, schemas
 
+    # No "subject" here: PublicFactSweep is Strict and carries none - the
+    # subject lives on each fact. The sweep gained that strictness and the
+    # fixtures kept the old shape.
     reply = schemas.PublicFactSweep.model_validate({
-        "subject": "Boots",
         "facts": [{"fact_class": "Location footprint", "subject": "Boots",
                    "value_base": "1800", "unit": "sites",
                    "sources": [{"url": "https://boots-uk.example/about",
