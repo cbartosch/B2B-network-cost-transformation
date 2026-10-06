@@ -1,7 +1,9 @@
 # Findings register — test suite remediation
 
 **Build 4.272.0** · branch `fix/test-suite-trustworthy` · PR #4
-Suite: **162 failed / 2408 passed → 47 failed / 2547 passed**, 13 commits, no regressions at any step.
+Suite: **162 failed / 2408 passed → 41 failed / 2555 passed**, 17 commits, no net
+regressions. Updated after the four PRODUCT findings were worked; two of them turned
+out not to be product defects, which is recorded in §2 rather than quietly amended.
 
 `DOCUMENTATION.md` line 3 claims "1,835 tests passing". It was 162 failing when this
 started, and the suite collects ~2,600 tests rather than 1,835.
@@ -20,7 +22,7 @@ that is the only question that decides what to do:
 | **TEST** | the code is right and the test is wrong | fix the test |
 | **UNTRIAGED** | not yet investigated | triage |
 
-Nothing here is a fixture repair. Those are done — 115 of the original 162 were
+Nothing here is a fixture repair. Those are done — 121 of the original 162 were
 mechanical and are fixed in this PR.
 
 ---
@@ -49,68 +51,84 @@ it can be relied on, including the ones that pass.
 
 ---
 
-## 2. PRODUCT — the test is right
+## 2. PRODUCT — worked, and two reclassified
 
-### P-1 · A case delete leaves eleven tables orphaned
-`test_case_admin.py:120`
+All four are closed. Two were product defects and are fixed. **Two were not product
+defects at all**, and I had classified them before confirming which side was wrong.
+That error is left visible here because it is the same mistake this register warns
+about everywhere else: a failing test proves a claim and its subject disagree, not
+which of them is mistaken.
 
-```
-assumption_register, case_rate, data_request, estimate_delta,
-evidenced_anchor, evidenced_archetype, location,
-outside_in_tco_calibration, product, provider, validation_case
-```
+### P-1 · A case delete left eleven tables orphaned — **FIXED**
+`case_admin.py`, `test_case_admin.py` · commit `9ff9280`
 
-The test's own words: *"A table added later that nobody adds here leaves orphans
-behind."* It could not run until the `client` fixture was fixed in this PR, so these
-eleven accumulated unseen.
+I flagged this as needing judgement because `product`, `provider` and `location` read
+like shared reference data. They are not, and the codebase already said so —
+`case_rate`'s comment states the rule: *"outside_in, not reference: the schema is the
+boundary."*
 
-**Not a mechanical fix.** `product`, `provider` and `location` read like reference
-data that merely carries a `case_id`; adding them to a delete list would destroy rows
-other cases depend on. Someone who knows the schema must split case-owned from
-shared.
+Checking the rule holds: **no `reference` table carries a `case_id` at all**, and all
+eleven sit in `outside_in` or `analysis` beside the twelve already listed. There was
+no shared-data exception to weigh — which was the thing that made it look risky.
 
-**Severity: high.** Deleting a case is the control a client exercises when they ask
-for their data to be removed.
+All eleven added, with the schema rule recorded above the tuple so the next table
+does not repeat it.
 
-### P-2 · `ResearchBudgetProfile` has never existed
-`test_prompt_registry.py:744`
+Two fixture defects were hiding the proof. `test_deletion_leaves_no_orphans` — the
+test that shows a delete *removes rows* rather than that the list merely names them —
+inserted `agent_run` with a renamed column and two missing NOT NULLs, and raised
+before deleting anything. Fixed, so the delete is now demonstrated.
 
-`known_facts._sweep_budget` calls `policy_module.ResearchBudgetProfile.from_rows(...)`
-inside `except Exception: return 6000`. The class is defined nowhere, and **no commit
-in this repository ever defined it** (checked with `git log -S`). The seed does not
-carry `max_output_tokens_per_sweep_call` either.
+### P-2 · The governed sweep budget — **FIXED, and my framing was wrong**
+`known_facts.py`, `test_prompt_registry.py` · commit `9ff9280`
 
-So every sweep has always used the hardcoded 6000, the governed
-`research_budget_profile` rows have never been read, and an operator changing that
-value would see no effect. The docstring calls it *"The governed output budget"* and
-adds *"the fallback matches the seeded value"* — which is how a constant passed for a
-policy.
+This register said: *"Decide: write the class and seed the key, or drop the pretence."*
+Neither was needed. **`ResearchPolicy` already carries
+`max_output_tokens_per_sweep_call`**, with 6000 as its own default and a `from_rows`
+keyed on `research_budget_profile`. `_sweep_budget` asked for
+`policy.ResearchBudgetProfile`, a name no commit here has ever defined, inside
+`except Exception: return 6000`.
 
-**Decide:** write the class and seed the key, or drop the pretence and name it a
-constant. Either is defensible; the present state is not.
+So the capability existed and the call named the wrong thing. Because the seeded value
+is *also* 6000, the governed path and the fallback were indistinguishable from
+outside — the only way to tell them apart is to raise the row. A new test does
+exactly that: seed the profile, assert 6000, update to 9000, assert 9000. **That
+assertion could not have passed at any point in this repository's history.**
 
-### P-3 · `llm01.public_evidence.extract` is cut off at its budget
-`test_research.py:698`, `test_prompt_registry.py:309`
+### P-3 · The extract prompt — **NOT a product defect**
+`test_prompt_registry.py`, `gateway.py` · commits `91f64b7`, `9e7ddc5`
 
-> *"was cut off at 16000 tokens, so its reply is incomplete rather than empty. Raise
-> the budget for this call, or ask it for less at a time — retrying an identical
-> request will be cut off in the same place."*
+Filed here as *"has no call site"* and a 16,000-token truncation. Both halves were
+tests looking in the wrong place.
 
-The system's own error text states the fix and the futility of retrying. Related:
-`test_prompt_registry.py:309` reports the same prompt *"has no call site"*.
+**The call site exists** (`research.py:1058`) and passes a search tool. The test
+searched for the literal `prompt_id="..."`, but the id arrives through a ternary; and
+it scanned 700 characters forward for `web_search`, which is declared twenty lines
+*above* as `tools = _web_search_tool(...)`. Both now resolve the enclosing function
+with `ast`, because "its call site" means the function making the call.
 
-### P-4 · A cross-case simulation is refused for the wrong reason
-`test_case_admin.py:163`
+**The truncation test never exercised the budget.** It installs a fake adapter that
+forces `stop_reason: "max_tokens"` on every reply, so it truncates at any ceiling. It
+asserts the *message*, which said "Raise the budget for this call" without naming
+which budget — `research_budget_profile` governs two token settings separately. The
+message now names them.
 
-Audit finding C-04 is that case A must not consume case B's simulation. The test
-expects **404** — *"whether a simulation exists on another case is not something a
-caller without access to that case should be able to learn"* — and now gets **409 no
-pre-flight report**.
+**The 16,000 was not raised.** It was already raised to that from the gateway's 1,500
+default for a documented reason, and no run here shows it binding. Raising a governed
+per-call cost on the strength of a simulated truncation would be changing a number to
+make a test pass. Still open as a margin decision if anyone wants it.
 
-The request is still refused, so there is no data leak today. But it is refused by a
-different guard, and the one that exists for this threat is no longer demonstrably
-reached. A pre-flight that later passes would expose whether the ordering is the only
-thing protecting it.
+### P-4 · The cross-case guard was never reached — **FIXED**
+`test_case_admin.py` · commit `9ff9280`
+
+`estimates:run` calls `preflight.assert_clear_to_run` first, so the request was refused
+with *409 no pre-flight report* and audit finding C-04's ownership check never ran.
+Refused by the wrong guard is not the same as protected.
+
+The test now gives case A a clear acknowledged pre-flight report, reaches the ownership
+check, and gets the **404** it was written for — 404 rather than 403 being the point:
+whether a simulation exists on another case is not something a caller without access
+should be able to learn.
 
 ---
 
@@ -186,7 +204,7 @@ habit of dismissing it is what will hide a real one. Should assert against
 
 ### T-2 · `acknowledge()` gained a required `case_id`
 `test_controls_db.py:731` — signature drift, same class as the `max_tokens` and
-`assertion_date` batches already fixed.
+`assertion_date` batches already fixed. **Still open.**
 
 ### T-3 · Assorted
 `test_location_structure_agent.py:33` (`'tuple' object has no attribute 'name'`),
@@ -196,24 +214,40 @@ Shapes moved; the tests kept the old one.
 
 ---
 
-## 5. UNTRIAGED
+## 5. UNTRIAGED — the remaining 41
 
 | test | reported |
 |---|---|
-| `test_llm_call_audit.py:231` | `[ok] every name a module uses is bound` |
-| `test_llm_call_audit.py:277` | `assert 7431 < 2594` |
-| `test_wiring.py:261` | `assert 6 == 2` |
-| `test_quality_gate.py:97` | `['ANSWER_NOT_ACTIONABLE', 'OPTION_NOT_SUPPLIED']` |
-| `test_reliability.py:204` | prompt text assertion |
-| `test_promotion.py:47, 165` | `'DE'` vs `None`; `0 == 1` |
-| `test_research.py:237, 736` | empty result; archetype definitions |
-| `test_lever_reach.py:34` | bare assertion |
-| `test_logic_audit.py:789` | `_one_or_404` source assertion |
-| `test_end_to_end_flow.py:81` | agent-run payload |
-| `test_prompt_registry.py:73, 418` | prompt text; `basis=` in source |
-| `test_estimate_endpoint.py` ×5 | refusal messages, QUEUED status |
+| `test_savings_advisory.py` ×5 | rejected shape leaves run QUEUED; MPLS booked against an estate with no MPLS; shared best-effort right-sized; `LEV-REPRICE-001 has no applies_to_products slot` |
+| `test_estimate_endpoint.py` ×5 | refusal messages; QUEUED status |
+| `test_serviceability.py` ×3 | D-1, above |
+| `test_prompt_registry.py` ×3 | prompt text (`AUTHORITY`); `basis=` in source; one class per call |
+| `test_promotion.py` ×3 | `'DE'` vs `None`; `0 == 1` |
+| `test_research.py` ×2 | empty result; archetype definitions |
+| `test_llm_call_audit.py` ×2 | `every name a module uses is bound`; `7431 < 2594` |
+| `test_controls_db.py` ×2 | T-2, above |
 | `test_case_export.py` ×2 | — |
-| `test_savings_advisory.py:469, 538` | rejected shape leaves run QUEUED |
+| `test_compose.py` | T-1, above — false alarm |
+| `test_integrity.py` | `KeyError: 'components'` |
+| `test_savings_band.py` | `KeyError: 'low'` |
+| `test_location_structure_agent.py` | `'tuple' object has no attribute 'name'` |
+| `test_progress_reporting.py` | `IndexError` |
+| `test_wiring.py` | `assert 6 == 2` |
+| `test_quality_gate.py` | `['ANSWER_NOT_ACTIONABLE', 'OPTION_NOT_SUPPLIED']` |
+| `test_reliability.py` | prompt text |
+| `test_lever_reach.py` | bare assertion |
+| `test_logic_audit.py` | `_one_or_404` source assertion |
+| `test_policy_construction.py` | — |
+| `test_research_briefs.py` | — |
+| `test_stage_and_questionnaire.py` | — |
+| `test_end_to_end_flow.py` | agent-run payload |
+
+`test_case_admin.py` is **clear** — P-1 and P-4 closed it.
+
+Several of these are the same shapes already met three or four times in this PR:
+source-text assertions on prose that moved, fixtures missing a column that became
+required, and stubs that stopped matching a signature. They are listed rather than
+guessed at.
 
 ---
 
@@ -247,9 +281,14 @@ the locked-down path, dies on Windows at `signal.SIGALRM`.
 
 ## 7. Suggested order
 
-1. **P-1** — a case delete that leaves orphans is a client-facing control.
-2. **T-1** — a false security alarm trains people to ignore security alarms.
-3. **D-1** — decide whether serviceability still does its job, before anyone quotes a
+1. **T-1** — a false security alarm trains people to ignore security alarms, and it
+   is a one-line change to assert against `git ls-files`.
+2. **D-1** — decide whether serviceability still does its job, before anyone quotes a
    density-differentiated estimate.
-4. **P-2, P-3** — governance that cannot bite, and a prompt that cannot complete.
-5. The remaining TEST and UNTRIAGED rows, to reach zero and stay there.
+3. **D-3, D-2** — the lever vocabulary and the CONTRADICTED rule, both modelling
+   calls.
+4. The UNTRIAGED rows, to reach zero and hold it. Most are the shapes already seen
+   here and should go quickly; the value is not in any one of them but in the suite
+   becoming able to report a *new* failure.
+5. **P-3's margin** — raise `max_output_tokens_per_call` above 16,000 if the cost is
+   acceptable. No evidence it binds today; this is a buffer decision, not a defect.
