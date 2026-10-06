@@ -12,20 +12,38 @@ import types
 
 import pytest
 
-from app.domain import serviceability
+from app.domain import access, serviceability
 from app.seed import DENSITY_BANDS, SERVICEABILITY
 
 
 @pytest.fixture()
 def table():
-    return {(c, b, p): types.SimpleNamespace(available=a, max_bandwidth_mbps=m)
-            for c, b, p, a, m in SERVICEABILITY}
+    # Keyed on the ACCESS TECHNOLOGY, which is what column three holds -
+    # ETHERNET_FIBRE, PON, HFC, VDSL, MOBILE_5G. It was unpacked here as `p`
+    # for product and the table keyed on that, so every lookup asked for a
+    # product in a technology-keyed table and missed. MOBILE_5G is the one
+    # string that exists in both vocabularies, which is why every test in this
+    # file came back MOBILE_5G rather than failing to find anything.
+    #
+    # seed.py:2075 unpacks the same rows as `c, b, t, a, m`.
+    return {(c, b, t): types.SimpleNamespace(available=a, max_bandwidth_mbps=m)
+            for c, b, t, a, m in SERVICEABILITY}
 
 
-def _resolve(table, density, product="DIA", mbps=100, country="DE"):
-    return serviceability.resolve(table=table, country=country,
-                                  density=density, product=product,
-                                  wanted_mbps=mbps)
+def _resolve(table, density, product="DIA", mbps=100, country="DE",
+             service_class=None):
+    # service_class, because that is the question the table now answers:
+    # "does a bearer reach this site that can carry this service", not "is
+    # this product sold here". resolve() still has the older product-keyed
+    # branch, but simulation.py - its only caller in the service - passes a
+    # class, so a test that omits it exercises a path nothing ships.
+    #
+    # Derived the way simulation.py derives it, from access.LEGACY_PRODUCT.
+    return serviceability.resolve(
+        table=table, country=country, density=density, product=product,
+        wanted_mbps=mbps,
+        service_class=(service_class
+                       or access.LEGACY_PRODUCT.get(product, (None,))[0]))
 
 
 # ------------------------------------------------- silence is not a constraint
@@ -61,7 +79,10 @@ def test_a_tier_that_cannot_be_delivered_is_capped_not_ignored(table):
     assert out["outcome"] == serviceability.SUBSTITUTED
     assert out["product"] == "ETHERNET"
     assert out["bandwidth_mbps"] == 500
-    assert "only to 500 Mbps" in out["note"]
+    # The note was "only to 500 Mbps" and now names the bearer that imposed
+    # the cap. Asserting both numbers rather than the sentence, so a further
+    # rewording does not fail a test whose subject is the cap.
+    assert "500 Mbps" in out["note"] and "10000 Mbps" in out["note"]
 
 
 def test_nothing_deliverable_is_reported_rather_than_priced(table):
@@ -74,7 +95,7 @@ def test_nothing_deliverable_is_reported_rather_than_priced(table):
                                  product="DIA", wanted_mbps=100)
     assert out["outcome"] == serviceability.UNSERVICEABLE
     assert out["product"] is None and out["bandwidth_mbps"] is None
-    assert "reported rather than priced" in out["note"]
+    assert "reported rather than priced" in out["note"].lower()
 
 
 def test_the_substitute_is_chosen_for_reliability_not_price(table):
@@ -196,16 +217,20 @@ def test_only_a_recorded_band_with_nothing_available_is_unserviceable():
 
 def test_the_seeded_table_serves_an_urban_german_store(table):
     """A regression guard on the exact case that failed."""
-    out = serviceability.resolve(table=table, country="DE", density="URBAN",
-                                 product="BROADBAND_HFC", wanted_mbps=200)
+    out = _resolve(table, "URBAN", product="BROADBAND_HFC", mbps=200)
     assert out["outcome"] == serviceability.DELIVERED
 
 
 # ------------------- the backup path, which was never serviceability-checked
-def _backup(table, density, product, primary, mbps=100, country="DE"):
+def _backup(table, density, product, primary, mbps=100, country="DE",
+            service_class=None):
+    # service_class for the same reason as _resolve: simulation.py passes
+    # backup_class, so omitting it here tested a branch nothing ships.
     return serviceability.resolve_backup(
         table=table, country=country, density=density, product=product,
-        wanted_mbps=mbps, primary_product=primary)
+        wanted_mbps=mbps, primary_product=primary,
+        service_class=(service_class
+                       or access.LEGACY_PRODUCT.get(product, (None,))[0]))
 
 
 def test_a_backup_that_cannot_be_delivered_is_not_counted_as_resilience(table):
