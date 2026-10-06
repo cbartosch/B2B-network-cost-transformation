@@ -472,12 +472,24 @@ def structured_call(session, *, agent_run_id: str, prompt_id: str,
             _fail(session, agent_run_id,
                   f"{definition.prompt_id} reply truncated at "
                   f"{max_tokens} tokens")
+            # Name the setting, not just the remedy. "Raise the budget for
+            # this call" does not say which budget: research_budget_profile
+            # governs max_output_tokens_per_call and
+            # max_output_tokens_per_sweep_call separately, and an operator
+            # reading this has no way to tell which one bound. A message that
+            # states the problem and withholds the lever is a message that
+            # still needs someone who knows the code.
+            # "was cut off at" is load-bearing: test_output_budget anchors on
+            # it to prove the governed budget is resolved before this message
+            # can name a ceiling. Reworded without it, that ordering check
+            # raised ValueError instead of failing a comparison.
             raise errors.StructuredOutputInvalid(
-                f"{definition.prompt_id} was cut off at {max_tokens} tokens, "
-                f"so its reply is incomplete rather than empty. Raise the "
-                f"budget for this call, or ask it for less at a time - "
-                f"retrying an identical request will be cut off in the same "
-                f"place.")
+                f"{definition.prompt_id} reply truncated - it was cut off at "
+                f"{max_tokens} tokens, so it is incomplete rather than empty. "
+                f"Raise research_budget_profile.max_output_tokens_per_call "
+                f"(or max_output_tokens_per_sweep_call, for the public "
+                f"sweep), or ask for less at a time - retrying an identical "
+                f"request will be cut off in the same place.")
 
         # A reply that validated against the schema is worth keeping even when
         # a gate refused it: schema-valid means readable, and the gates judge
