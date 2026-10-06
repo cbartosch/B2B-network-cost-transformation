@@ -1117,11 +1117,34 @@ def run_simulation(case_id: str, payload: SimIn):
         # users_base and bandwidth_mbps_base were seeded and never loaded. Five
         # columns exist on the prior; three were read. The footprint therefore
         # implied a headcount the model discarded in favour of a flat default.
+        #
+        # It happened again, to three more. The prior now has eight columns and
+        # this read five, so committed_fraction and the two service classes
+        # were seeded and dropped here.
+        #
+        # committed_fraction is the one that moved a number. simulation.py
+        # asks for it - `_for(committed_fraction_by_archetype, entry) or
+        # prior.get("committed_fraction")` - and with the key absent the second
+        # branch is always None, so access.pair_for priced on the bearer rather
+        # than on the committed rate. That is the defect the comment five lines
+        # below it already describes: "Pricing on the bearer overstated an IPVPN
+        # by 980 against 420 a month on the GB card." The fix was written and
+        # then starved of its input.
+        #
+        # The two service classes are inert today - seed.py derives them from
+        # access.LEGACY_PRODUCT, which is exactly what simulation.py falls back
+        # to - so loading them changes nothing now. They are loaded anyway,
+        # because the point of the column is to let an archetype declare a
+        # class its product does not imply, and a column nothing reads cannot
+        # ever start doing that.
         arch = {r.archetype: {"dual_access_probability": float(r.dual_access_probability),
                               "primary_product": r.primary_product,
                               "backup_product": r.backup_product,
                               "users_base": r.users_base,
-                              "bandwidth_mbps_base": r.bandwidth_mbps_base}
+                              "bandwidth_mbps_base": r.bandwidth_mbps_base,
+                              "committed_fraction": r.committed_fraction,
+                              "primary_service_class": r.primary_service_class,
+                              "backup_service_class": r.backup_service_class}
                 for r in s.execute(select(db.archetype_prior)).all()}
 
         # Every archetype dimension resolved across four layers - seeded
