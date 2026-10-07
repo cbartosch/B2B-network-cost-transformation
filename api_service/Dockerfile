@@ -88,6 +88,22 @@ COPY analyst_ui ./analyst_ui
 # rather than holding it.
 COPY docker-compose.yml ./docker-compose.yml
 COPY make.ps1 ./make.ps1
+# The bundle layout the tooling resolves against, as one symlink rather
+# than fourteen edits. Every tool in tools/ locates the service the same
+# way - `APP = ROOT / "api_service" / "app"`, or sys.path.insert of
+# ROOT/"api_service" - because that is where the service lives in a
+# checkout. This image flattens it to /app/app so the api process can
+# `import app` from WORKDIR, and every one of those tools then died on
+# FileNotFoundError for /app/api_service/app/... - including
+# verify_domains.py, which is the end-to-end pass over all 17 agent
+# domains and the only one that runs without a network.
+#
+# Pointing api_service/app at the same files satisfies both spellings
+# without moving the package or touching the tools. requirements.txt is
+# placed beside it for check_lockfile.py, which reads the per-service
+# manifests at their repo-relative paths.
+RUN mkdir -p api_service && ln -s /app/app /app/api_service/app
+COPY api_service/requirements.txt ./api_service/requirements.txt
 # Single definition of the API/UI auth contract, shared with the UI image.
 COPY contract ./contract
 # Non-root. An earlier revision ran both containers as root.
