@@ -250,9 +250,10 @@ def ready(response: Response):
       /v1/health              liveness   - is the process up? No dependencies,
                                            because restarting will not fix a
                                            database outage.
-      /v1/ready               readiness  - can it serve? One cheap round-trip,
-                                           never cached, because a cached
-                                           readiness answer is not one.
+      /v1/ready               readiness  - can it serve? A cheap round-trip
+                                           and a policy build, never cached,
+                                           because a cached readiness answer
+                                           is not one.
       /v1/health?deep=true    diagnostics - schema, policy, pins, incidents.
                                            Cached, and for humans.
 
