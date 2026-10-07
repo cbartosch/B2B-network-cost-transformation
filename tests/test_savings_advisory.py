@@ -472,11 +472,33 @@ def test_a_rejected_shape_terminates_the_run_rather_than_leaving_it_queued(
 
 
 # ------------------- C-10: a layer match is not proof that a lever applies
-def _product_lever(lever_id, family, layers, products, base="0.25"):
+def _product_lever(lever_id, family, layers, service_classes, base="0.25"):
+    """A lever constrained by service class.
+
+    This built `applies_to_products`, which the matcher deliberately does not
+    read: estimate.py says so at the call site - "It is deliberately not read:
+    falling back to it would silently disable a lever rather than fail
+    loudly." The field is retained on the table only so a lever row written
+    before 4.170 stays readable.
+
+    Eligibility is three dimensions now - service class, access technology and
+    platform product - because `applies_to_products` held a service level and
+    a delivery technology in one list. A lever declaring ["MPLS"] declared a
+    service class that 4.166 renamed to IPVPN, so the constraint matched
+    nothing and the lever was unconstrained in practice.
+    """
     return {"lever_id": lever_id, "family": family, "description": "",
             "cost_layers": layers, "saving_low": "0.15",
             "saving_base": base, "saving_high": "0.35",
-            "applies_to_products": products, "scenario": "B"}
+            "applies_to_service_classes": service_classes, "scenario": "B"}
+
+
+# The service class each access product delivers, as access.LEGACY_PRODUCT
+# maps it. A component with no service_class satisfies no class constraint,
+# which would make every one of these tests pass for the wrong reason.
+_CLASS_OF = {"BROADBAND_HFC": "BEST_EFFORT", "BROADBAND_PON": "BEST_EFFORT",
+             "MOBILE_5G": "BEST_EFFORT", "DIA": "DIA", "MPLS": "IPVPN",
+             "ETHERNET": "ETHERNET"}
 
 
 def _components(*pairs):
@@ -485,7 +507,7 @@ def _components(*pairs):
     return [Component(key=f"L0_{p.lower()}", layer=layer, driver="circuits",
                       quantity=100, quantity_origin="ANALYST_ENTERED_SCOPE",
                       unit_cost_origin="BENCHMARK_PRIOR", product=p,
-                      role="PRIMARY",
+                      role="PRIMARY", service_class=_CLASS_OF.get(p),
                       value=Range(D("80000"), D("96000"), D("120000")))
             for p, layer in pairs]
 
@@ -505,7 +527,8 @@ def test_no_mpls_substitution_savings_in_an_estate_with_no_mpls():
 
     scenarios = estimate.scenarios(
         components=_components(("BROADBAND_HFC", "L0"), ("MOBILE_5G", "L0")),
-        levers=[_product_lever("LEV-MPLS-001", "MPLS substitution", ["L0"], ["MPLS"])])
+        levers=[_product_lever("LEV-MPLS-001", "MPLS substitution", ["L0"],
+                               ["IPVPN"])])
     booked = [l for l in scenarios["B"]["levers"]
               if l["lever_id"] == "LEV-MPLS-001"]
     assert not booked, (
@@ -519,7 +542,8 @@ def test_the_same_lever_still_applies_where_mpls_is_present():
 
     scenarios = estimate.scenarios(
         components=_components(("MPLS", "L0")),
-        levers=[_product_lever("LEV-MPLS-001", "MPLS substitution", ["L0"], ["MPLS"])])
+        levers=[_product_lever("LEV-MPLS-001", "MPLS substitution", ["L0"],
+                               ["IPVPN"])])
     booked = [l for l in scenarios["B"]["levers"]
               if l["lever_id"] == "LEV-MPLS-001"]
     assert booked, "MPLS substitution must apply to an MPLS circuit"
@@ -533,7 +557,8 @@ def test_an_inapplicable_lever_is_reported_not_silently_dropped():
 
     scenarios = estimate.scenarios(
         components=_components(("BROADBAND_HFC", "L0")),
-        levers=[_product_lever("LEV-MPLS-001", "MPLS substitution", ["L0"], ["MPLS"])])
+        levers=[_product_lever("LEV-MPLS-001", "MPLS substitution", ["L0"],
+                               ["IPVPN"])])
     skipped = scenarios["B"]["levers_not_applicable"]
     assert len(skipped) == 1
     assert skipped[0]["lever_id"] == "LEV-MPLS-001"
@@ -577,8 +602,27 @@ def test_every_seeded_lever_declares_its_eligibility_deliberately():
     oversight. The distinction has to be visible in the seed."""
     from app.seed import LEVERS
 
+    # Three dimensions, not one. applies_to_products held a service level and
+    # a delivery technology in a single list until 4.170, and eligibility was
+    # split into applies_to_service_classes, applies_to_access_technologies
+    # and applies_to_platform_products. The old column is still on the table -
+    # db.py keeps it so a lever row written before the split stays readable -
+    # but nothing seeds it, so asserting a slot for it tested the shape the
+    # split removed.
+    #
+    # The rule this is really about is unchanged: None means unconstrained and
+    # is a decision; an empty list blocks everything and is almost never one.
+    ELIGIBILITY = {7: "applies_to_service_classes",
+                   8: "applies_to_access_technologies",
+                   9: "applies_to_platform_products",
+                   12: "applies_to_roles"}
+
     for row in LEVERS:
-        assert len(row) == 10, f"{row[0]} has no applies_to_products slot"
-        products = row[7]
-        assert products is None or (isinstance(products, list) and products), (
-            f"{row[0]} declares an empty product list, which blocks everything")
+        assert len(row) == 14, (
+            f"{row[0]} has {len(row)} fields; the eligibility dimensions are "
+            f"positional, so a row of the wrong width silently misassigns them")
+        for index, name in ELIGIBILITY.items():
+            value = row[index]
+            assert value is None or (isinstance(value, list) and value), (
+                f"{row[0]} declares an empty {name}, which blocks everything - "
+                f"None is how a lever says it is unconstrained")

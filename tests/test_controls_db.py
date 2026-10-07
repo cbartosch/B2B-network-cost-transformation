@@ -728,7 +728,10 @@ def test_a_run_cannot_begin_without_acknowledgement(session):
     assert not report["blocked"]
     with pytest.raises(PermissionError, match="acknowledged"):
         preflight.assert_clear_to_run(session, case_id)
-    preflight.acknowledge(session, report_id=report["report_id"],
+    # case_id is required: acknowledge is scoped to one case deliberately,
+    # so a report cannot be acknowledged from another case's route.
+    preflight.acknowledge(session, case_id=case_id,
+                          report_id=report["report_id"],
                           acknowledged_by="Priya Raman")
     preflight.assert_clear_to_run(session, case_id)          # must not raise
 

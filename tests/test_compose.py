@@ -178,11 +178,29 @@ def test_the_images_install_corporate_anchors_before_pip():
 
 
 def test_no_corporate_certificate_is_committed():
-    """Trust anchors are environment-specific and not ours to distribute."""
-    certs = COMPOSE.parent / "certs"
-    if not certs.exists():
-        pytest.skip("certs/ not present")
-    leaked = [p.name for p in certs.iterdir() if p.suffix in (".crt", ".pem")]
+    """Trust anchors are environment-specific and not ours to distribute.
+
+    Asked of git, not of the working directory. This listed certs/ on disk and
+    called what it found "committed" - but .gitignore line 2 carries
+    certs/*.crt, and the corporate CA bundle legitimately lives there for
+    building behind a TLS-inspecting proxy. So it reported a leak on every
+    developer machine that had ever built the image, and the habit of
+    dismissing it is exactly what would hide a real one.
+
+    Skips rather than fails where git is unavailable: a test that cannot ask
+    the question should say so, not answer it from somewhere else.
+    """
+    import subprocess
+
+    try:
+        tracked = subprocess.run(
+            ["git", "ls-files", "certs/"], cwd=COMPOSE.parent,
+            capture_output=True, text=True, timeout=30, check=True).stdout
+    except (OSError, subprocess.SubprocessError):
+        pytest.skip("git not available, so committed-ness cannot be checked")
+
+    leaked = [line for line in tracked.splitlines()
+              if line.endswith((".crt", ".pem", ".key", ".der"))]
     assert not leaked, f"certificates committed: {leaked}"
 
 
