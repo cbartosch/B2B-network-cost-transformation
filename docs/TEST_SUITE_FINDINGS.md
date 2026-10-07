@@ -1,9 +1,12 @@
 # Findings register — test suite remediation
 
 **Build 4.272.0** · branch `fix/test-suite-trustworthy` · PR #4
-Suite: **162 failed / 2408 passed → 41 failed / 2555 passed**, 17 commits, no net
-regressions. Updated after the four PRODUCT findings were worked; two of them turned
-out not to be product defects, which is recorded in §2 rather than quietly amended.
+Suite: **162 failed / 2408 passed → 36 failed / 2559 passed**, 19 commits, zero
+regressions — every commit checked by set-difference against the previous complete
+run, not by reading output.
+
+Updated after the four PRODUCT findings were worked; two of them turned out not to be
+product defects, which is recorded in §2 rather than quietly amended.
 
 `DOCUMENTATION.md` line 3 claims "1,835 tests passing". It was 162 failing when this
 started, and the suite collects ~2,600 tests rather than 1,835.
@@ -22,7 +25,7 @@ that is the only question that decides what to do:
 | **TEST** | the code is right and the test is wrong | fix the test |
 | **UNTRIAGED** | not yet investigated | triage |
 
-Nothing here is a fixture repair. Those are done — 121 of the original 162 were
+Nothing here is a fixture repair. Those are done — 126 of the original 162 were
 mechanical and are fixed in this PR.
 
 ---
@@ -189,22 +192,45 @@ or both is a modelling decision.
 
 ## 4. TEST — the code is right
 
-### T-1 · The certificate test checks the wrong thing
-`test_compose.py:186`
+### T-1 · The certificate test checked the wrong thing — **FIXED**
+`test_compose.py` · commit `1327003`
 
-Reports *"certificates committed: [...]"*. **No certificate is committed.**
+Reported *"certificates committed: [...]"*. **No certificate was committed.**
 `git ls-files` returns none, and `.gitignore:2` carries `certs/*.crt`. The test
 inspects the `certs/` directory on disk, where the corporate CA bundle legitimately
 lives for building behind the TLS-inspecting proxy.
 
 A test named `test_no_corporate_certificate_is_committed` that fails on an ignored
 local file is worse than no test: it reports a leak that has not happened, and the
-habit of dismissing it is what will hide a real one. Should assert against
-`git ls-files`.
+habit of dismissing it is what will hide a real one.
 
-### T-2 · `acknowledge()` gained a required `case_id`
-`test_controls_db.py:731` — signature drift, same class as the `max_tokens` and
-`assertion_date` batches already fixed. **Still open.**
+It asks `git ls-files` now, and skips where git is unavailable — a test that cannot
+ask its question should say so rather than answer it from somewhere else.
+
+### T-2 · `acknowledge()` gained a required `case_id` — **FIXED**
+`test_controls_db.py` · commit `1327003`. Signature drift, same class as the
+`max_tokens` and `assertion_date` batches. `acknowledge` is scoped to one case
+deliberately, so a report cannot be acknowledged from another case's route.
+
+### T-4 · Levers were constrained in a retired vocabulary — **FIXED**
+`test_savings_advisory.py` · commit `1327003`
+
+Three tests declared `LEV-MPLS-001` as `["MPLS"]` through a helper that built
+`applies_to_products` — a field `estimate.py` deliberately does not read: *"falling
+back to it would silently disable a lever rather than fail loudly."* The column
+survives only so a pre-4.170 row stays readable.
+
+So the constraint matched nothing and **the lever was unconstrained in practice,
+which is the defect those tests exist to catch** — reported as though the product
+code were at fault. The matcher is correct and the seed is correct
+(`LEV-MPLS-001 → ['IPVPN']`, `LEV-BANDWIDTH-001` excludes `BEST_EFFORT`).
+
+The fixtures also built components with no `service_class` at all, so every one of
+these tests was passing or failing for the wrong reason. Both fixed.
+
+This is the fifth place in this PR where the v44 / 4.166 vocabulary split left a test
+behind — after the serviceability table, the sweep schema, the archetype row width,
+and lever eligibility's row shape.
 
 ### T-3 · Assorted
 `test_location_structure_agent.py:33` (`'tuple' object has no attribute 'name'`),
@@ -214,40 +240,42 @@ Shapes moved; the tests kept the old one.
 
 ---
 
-## 5. UNTRIAGED — the remaining 41
+## 5. UNTRIAGED — the remaining 36
 
-| test | reported |
-|---|---|
-| `test_savings_advisory.py` ×5 | rejected shape leaves run QUEUED; MPLS booked against an estate with no MPLS; shared best-effort right-sized; `LEV-REPRICE-001 has no applies_to_products slot` |
-| `test_estimate_endpoint.py` ×5 | refusal messages; QUEUED status |
-| `test_serviceability.py` ×3 | D-1, above |
-| `test_prompt_registry.py` ×3 | prompt text (`AUTHORITY`); `basis=` in source; one class per call |
-| `test_promotion.py` ×3 | `'DE'` vs `None`; `0 == 1` |
-| `test_research.py` ×2 | empty result; archetype definitions |
-| `test_llm_call_audit.py` ×2 | `every name a module uses is bound`; `7431 < 2594` |
-| `test_controls_db.py` ×2 | T-2, above |
-| `test_case_export.py` ×2 | — |
-| `test_compose.py` | T-1, above — false alarm |
-| `test_integrity.py` | `KeyError: 'components'` |
-| `test_savings_band.py` | `KeyError: 'low'` |
-| `test_location_structure_agent.py` | `'tuple' object has no attribute 'name'` |
-| `test_progress_reporting.py` | `IndexError` |
-| `test_wiring.py` | `assert 6 == 2` |
-| `test_quality_gate.py` | `['ANSWER_NOT_ACTIONABLE', 'OPTION_NOT_SUPPLIED']` |
-| `test_reliability.py` | prompt text |
-| `test_lever_reach.py` | bare assertion |
-| `test_logic_audit.py` | `_one_or_404` source assertion |
-| `test_policy_construction.py` | — |
-| `test_research_briefs.py` | — |
-| `test_stage_and_questionnaire.py` | — |
-| `test_end_to_end_flow.py` | agent-run payload |
+| test | count | reported |
+|---|---|---|
+| `test_estimate_endpoint.py` | 5 | refusal messages; QUEUED status |
+| `test_serviceability.py` | 3 | D-1, above |
+| `test_prompt_registry.py` | 3 | prompt text (`AUTHORITY`); `basis=` in source; one class per call |
+| `test_promotion.py` | 3 | `'DE'` vs `None`; `0 == 1` |
+| `test_savings_advisory.py` | 2 | rejected shape leaves run QUEUED; inapplicable lever not reported |
+| `test_research.py` | 2 | empty result; archetype definitions |
+| `test_llm_call_audit.py` | 2 | `every name a module uses is bound`; `7431 < 2594` |
+| `test_case_export.py` | 2 | — |
+| `test_controls_db.py` | 1 | `known_fact.corroborate` rejected after 3 attempts |
+| `test_integrity.py` | 1 | `KeyError: 'components'` |
+| `test_savings_band.py` | 1 | `KeyError: 'low'` |
+| `test_location_structure_agent.py` | 1 | `'tuple' object has no attribute 'name'` |
+| `test_progress_reporting.py` | 1 | `IndexError` |
+| `test_wiring.py` | 1 | `assert 6 == 2` |
+| `test_quality_gate.py` | 1 | `['ANSWER_NOT_ACTIONABLE', 'OPTION_NOT_SUPPLIED']` |
+| `test_reliability.py` | 1 | prompt text |
+| `test_lever_reach.py` | 1 | bare assertion |
+| `test_logic_audit.py` | 1 | `_one_or_404` source assertion |
+| `test_policy_construction.py` | 1 | — |
+| `test_research_briefs.py` | 1 | — |
+| `test_stage_and_questionnaire.py` | 1 | — |
+| `test_end_to_end_flow.py` | 1 | agent-run payload |
 
-`test_case_admin.py` is **clear** — P-1 and P-4 closed it.
+**Clear:** `test_case_admin.py`, `test_compose.py`, `test_footprint_resolution.py`,
+`test_migrations.py`, `test_known_facts.py`, `test_preflight_freshness.py`,
+`test_transport.py`, `test_case_rates.py`.
 
-Several of these are the same shapes already met three or four times in this PR:
-source-text assertions on prose that moved, fixtures missing a column that became
-required, and stubs that stopped matching a signature. They are listed rather than
-guessed at.
+Several are shapes already met three or four times here: source-text assertions on
+prose that moved, fixtures missing a column that became required, stubs that stopped
+matching a signature, and the v44 vocabulary split. They are listed rather than
+guessed at — classifying before confirming is what produced the two reclassifications
+in §2.
 
 ---
 
@@ -281,14 +309,22 @@ the locked-down path, dies on Windows at `signal.SIGALRM`.
 
 ## 7. Suggested order
 
-1. **T-1** — a false security alarm trains people to ignore security alarms, and it
-   is a one-line change to assert against `git ls-files`.
-2. **D-1** — decide whether serviceability still does its job, before anyone quotes a
-   density-differentiated estimate.
-3. **D-3, D-2** — the lever vocabulary and the CONTRADICTED rule, both modelling
-   calls.
-4. The UNTRIAGED rows, to reach zero and hold it. Most are the shapes already seen
-   here and should go quickly; the value is not in any one of them but in the suite
-   becoming able to report a *new* failure.
-5. **P-3's margin** — raise `max_output_tokens_per_call` above 16,000 if the cost is
-   acceptable. No evidence it binds today; this is a buffer decision, not a defect.
+1. **D-1** — decide whether serviceability still does its job, before anyone quotes a
+   density-differentiated estimate. It is the only open item that could put a wrong
+   number in front of a client.
+2. **D-3, D-2** — the lever vocabulary and the CONTRADICTED rule, both modelling
+   calls rather than repairs.
+3. The 36 UNTRIAGED, to reach zero and hold it. Most should go quickly. The value is
+   not in any one of them: it is that a suite at zero can report a *new* failure,
+   and a suite at 36 cannot. Six guards in this codebase were found silenced rather
+   than absent (§1), and that is the mechanism.
+4. **P-3's margin** — raise `max_output_tokens_per_call` above 16,000 if the cost is
+   acceptable. No evidence it binds today; a buffer decision, not a defect.
+
+### Closed in this PR
+
+C-02's `current_tco` KeyError · v66's schema mismatch · five unguarded migrations ·
+the shared `client` fixture · the eleven orphaned tables · the cross-case guard ·
+the governed sweep budget · the committed-rate seam · the certificate false alarm ·
+lever eligibility · three `cleandoc`-on-source parses · three batches of
+`assertion_date` · two of `max_tokens`.
