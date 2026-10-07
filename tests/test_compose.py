@@ -85,7 +85,13 @@ def test_every_compose_variable_is_read_by_the_code(compose):
     bundle has found repeatedly, in configuration rather than code."""
     root = COMPOSE.parent
     sources = []
-    for folder in ("api_service/app", "analyst_ui", "contract"):
+    # "app" as well as "api_service/app": the image flattens the api package
+    # to /app/app, and test_integrity already probes both spellings for the
+    # same reason. Without it the scan read the UI and the contract but not
+    # the service that consumes these variables, and reported all 22 api keys
+    # as set-and-never-read. It only started reporting at all once analyst_ui
+    # reached the image and made the blob non-empty - before that it skipped.
+    for folder in ("api_service/app", "app", "analyst_ui", "contract"):
         path = root / folder
         if path.exists():
             sources += [p.read_text() for p in path.rglob("*.py")]
@@ -125,6 +131,15 @@ def test_every_dockerfile_copy_source_exists(dockerfile, context):
     path = root / dockerfile
     if not path.exists():
         pytest.skip(f"{dockerfile} not present in this image")
+    # This one checks build *inputs*, and an image is the build's *output*:
+    # COPY sources are resolved against the build context, which only exists
+    # in a checkout. Inside the image `certs/` is genuinely absent - it was
+    # consumed at build time - and reporting that as a missing COPY source
+    # would be false. Unlike the compose fixture's skip above, this is not a
+    # runnable check being quietly dropped; there is nothing here to run.
+    if not (root / context / "api_service" / "Dockerfile").exists():
+        pytest.skip("not a source checkout: COPY sources resolve against "
+                    "the build context, which an image does not carry")
     missing = [src for src in _copy_sources(path)
                if not (root / context / src).exists()]
     assert not missing, f"{dockerfile} copies paths that do not exist: {missing}"
@@ -244,6 +259,13 @@ def test_the_lock_check_refuses_a_lock_that_is_a_copy():
     root = Path(__file__).resolve().parents[1]
     tool = root / "tools" / "check_lockfile.py"
     lock = root / "api_service" / "requirements.lock"
+    # check_lockfile.py reads the per-service requirements files at their
+    # repo-relative paths. The image flattens api_service/requirements.txt to
+    # /app/requirements.txt, so the tool has nothing to compare and the test
+    # died on FileNotFoundError rather than on anything it asserts.
+    if not (root / "api_service" / "requirements.txt").exists():
+        pytest.skip("not a source checkout: check_lockfile.py reads the "
+                    "per-service requirements at their repo-relative paths")
     existing = lock.read_text() if lock.exists() else None
     try:
         lock.write_text((root / "api_service" / "requirements.txt").read_text())

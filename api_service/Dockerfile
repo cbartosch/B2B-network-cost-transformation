@@ -77,6 +77,17 @@ COPY tests ./tests
 #
 # Source only, and read only by the suite: the api process does not import it.
 COPY analyst_ui ./analyst_ui
+# The bundle-root files the suite reads, for the same reason. Without them
+# test_backup_fallback died on FileNotFoundError for make.ps1 - five checks on
+# whether `bundle-in` takes a pg_dump when the API is down, which is the one
+# occasion that backup is most needed. test_compose.py skips itself when
+# docker-compose.yml is absent, which is worse than failing: the guard reported
+# nothing and ran nowhere, because this image is the only place the suite runs.
+#
+# Config and manifests, no secrets: docker-compose.yml names ${POSTGRES_PASSWORD}
+# rather than holding it.
+COPY docker-compose.yml ./docker-compose.yml
+COPY make.ps1 ./make.ps1
 # Single definition of the API/UI auth contract, shared with the UI image.
 COPY contract ./contract
 # Non-root. An earlier revision ran both containers as root.
