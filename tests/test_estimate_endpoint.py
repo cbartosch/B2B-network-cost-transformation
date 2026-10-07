@@ -29,7 +29,7 @@ from datetime import datetime, timezone
 
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import insert
+from sqlalchemy import delete, insert
 
 from app import db
 from app.domain import dispositions
@@ -105,8 +105,16 @@ def _simulation(session, case_id, *, with_bandwidth=True, country="GB") -> str:
 
 def _prior(session, *, country="GB", product="DIA", mbps=100,
            low=380, base=520, high=720):
+    # Pinned, not merely inserted. reference.unit_cost_prior is seeded now
+    # (1,308 rows), so a bare insert collided on the primary key and every
+    # test using this helper errored in setup. Skipping the insert instead
+    # would be worse: the estimate would be computed from whatever the seed
+    # holds, and these tests assert on 380/520/720.
+    prior_id = f"{country}-{product}-{mbps}"
+    session.execute(delete(db.unit_cost_prior).where(
+        db.unit_cost_prior.c.id == prior_id))
     session.execute(insert(db.unit_cost_prior).values(
-        id=f"{country}-{product}-{mbps}", country=country, product=product,
+        id=prior_id, country=country, product=product,
         cost_layer="L0", bandwidth_mbps=mbps, low=low, base=base, high=high,
         currency="USD", price_year=2026, approved=True))
     session.commit()

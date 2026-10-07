@@ -1142,7 +1142,21 @@ def run_simulation(case_id: str, payload: SimIn):
                               "backup_product": r.backup_product,
                               "users_base": r.users_base,
                               "bandwidth_mbps_base": r.bandwidth_mbps_base,
-                              "committed_fraction": r.committed_fraction,
+                              # As a string, like benchmark_committed above
+                              # and like everything else that reaches
+                              # access.pair_for, which does
+                              # Decimal(str(committed_fraction)). The raw
+                              # Numeric is a Decimal, this dict is pinned
+                              # into simulation_run.pinned_priors as JSON,
+                              # and json cannot encode one - so the run
+                              # insert raised TypeError and the endpoint 500'd.
+                              # None stays None: pair_for's "nobody said"
+                              # branch tests `in (None, "")`, and "None" is
+                              # neither.
+                              "committed_fraction": (
+                                  str(r.committed_fraction)
+                                  if r.committed_fraction is not None
+                                  else None),
                               "primary_service_class": r.primary_service_class,
                               "backup_service_class": r.backup_service_class}
                 for r in s.execute(select(db.archetype_prior)).all()}

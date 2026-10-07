@@ -69,6 +69,14 @@ COPY api_service/app ./app
 # Tests live at the bundle root, beside the two services they exercise -
 # test_compose.py and test_wiring.py read files from both.
 COPY tests ./tests
+# The second of those two services. The line above has always said the tests
+# read files from both, and `make test` runs them from inside this image - but
+# only api_service/app was ever copied, so roughly a hundred tests that read
+# the Streamlit source died on FileNotFoundError before asserting anything.
+# The suite's own documented entry point could not run them.
+#
+# Source only, and read only by the suite: the api process does not import it.
+COPY analyst_ui ./analyst_ui
 # Single definition of the API/UI auth contract, shared with the UI image.
 COPY contract ./contract
 # Non-root. An earlier revision ran both containers as root.

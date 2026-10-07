@@ -30,7 +30,11 @@ def test_the_prompt_exists_and_is_bound_to_its_schema():
              if d.prompt_id == "llm10.location_structure.assess"]
     assert found, "the prompt must be registered"
     assert found[0].output_model is schemas.LocationStructureResult
-    assert found[0].tool_policy.name == "WEB_SEARCH", (
+    # tool_policy is a (tool, version) tuple - ("web_search", "1.0.0") - not
+    # an object with .name. The attribute access raised AttributeError, so the
+    # search requirement this test exists for was never actually checked.
+    tool, _version = found[0].tool_policy
+    assert tool == "web_search", (
         "an assessment of a company's estate has to search")
 
 

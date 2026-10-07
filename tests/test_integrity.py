@@ -945,9 +945,22 @@ def test_every_archetype_prior_column_is_loaded_by_the_route():
             declared = {a.args[0].value for a in node.value.args[2:]
                         if isinstance(a, ast.Call)
                         and getattr(a.func, "id", "") == "Column"}
+    # The loader expression itself, found by AST rather than by taking the
+    # 900 characters before the first "db.archetype_prior". That window was
+    # measured against the code as it stood: adding a comment above the dict
+    # pushed the r.<column> reads out of it, and every column read as unread.
+    # A guard that a comment can switch off is not a guard, and this is the
+    # one that caught committed_fraction being seeded and never loaded.
     loader = (app_dir / "routers" / "api.py").read_text()
-    block = loader.split("db.archetype_prior")[0][-900:]
-    unread = {c for c in declared - {"archetype"} if f"r.{c}" not in block}
+    read = set()
+    for node in ast.walk(ast.parse(loader)):
+        if (isinstance(node, ast.Assign) and len(node.targets) == 1
+                and getattr(node.targets[0], "id", None) == "arch"
+                and isinstance(node.value, ast.DictComp)):
+            read |= {n.attr for n in ast.walk(node.value)
+                     if isinstance(n, ast.Attribute)}
+    assert read, "the archetype_prior loader was not found in api.py"
+    unread = declared - {"archetype"} - read
     assert not unread, f"seeded archetype_prior columns nothing reads: {sorted(unread)}"
 
 
@@ -1167,8 +1180,10 @@ def test_a_baseline_priced_from_assumptions_is_capped():
         policy=policy, current_baseline="0.55", target_cost="0.60",
         realization="0.30", simulated_share="0.10", asserted_share="0.00",
         v0_status="COMPLETE", unsourced_price_share="1.000")
-    assert (D(capped["components"]["current_baseline"])
-            <= policy.unsourced_price_ceiling)
+    # compute() returns the drivers at the top level; there is no "components"
+    # wrapper, and the other thirty readers of its result know that. The
+    # KeyError fired before the ceiling was ever checked.
+    assert D(capped["current_baseline"]) <= policy.unsourced_price_ceiling
     assert any("unsourced_price_ceiling" in c
                for c in capped["ceilings_applied"])
 
