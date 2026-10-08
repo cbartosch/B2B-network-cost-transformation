@@ -24,6 +24,7 @@ import uuid
 from datetime import date, datetime
 from decimal import Decimal
 
+import sqlalchemy as sa
 from sqlalchemy import insert, select
 
 from .. import db
@@ -45,6 +46,30 @@ def _plain(value):
         return str(value)
     if isinstance(value, (datetime, date)):
         return value.isoformat()
+    return value
+
+
+def _typed(value, column):
+    """The inverse of _plain, driven by the column rather than the value.
+
+    _plain writes a date as an ISO string so the export stays readable JSON.
+    import_case put that string straight back into the insert, and the driver
+    refused it - "SQLite Date type only accepts Python date objects" - so a
+    restore died on the first known_fact carrying an assertion_date.
+
+    An export that cannot be imported is not a backup, and this is the path
+    that exists for recovery after a partial loss. Driven by the column type
+    because the value arrives as a string either way: a string in a text
+    column must stay a string.
+    """
+    if not isinstance(value, str):
+        return value
+    if isinstance(column.type, sa.DateTime):
+        return datetime.fromisoformat(value)
+    if isinstance(column.type, sa.Date):
+        return date.fromisoformat(value)
+    if isinstance(column.type, sa.Numeric):
+        return Decimal(value)
     return value
 
 
@@ -104,7 +129,8 @@ def import_case(session, payload: dict, *, new_case: bool = True) -> dict:
         # a restored case is a new record of the same content.
         case.pop("created_at", None)
         session.execute(insert(db.case).values(
-            **{k: v for k, v in case.items() if k in db.case.columns}))
+            **{k: _typed(v, db.case.columns[k])
+               for k, v in case.items() if k in db.case.columns}))
         restored["case_created"] = True
 
     for label, table_name in TABLES:
@@ -125,7 +151,8 @@ def import_case(session, payload: dict, *, new_case: bool = True) -> dict:
                 continue
             row.pop("created_at", None)
             session.execute(insert(table).values(
-                **{k: v for k, v in row.items() if k in table.columns}))
+                **{k: _typed(v, table.columns[k])
+                   for k, v in row.items() if k in table.columns}))
             added += 1
         restored[label] = {"restored": added, "skipped_existing": skipped}
 

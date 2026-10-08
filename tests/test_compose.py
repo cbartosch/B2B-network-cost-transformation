@@ -137,7 +137,12 @@ def test_every_dockerfile_copy_source_exists(dockerfile, context):
     # consumed at build time - and reporting that as a missing COPY source
     # would be false. Unlike the compose fixture's skip above, this is not a
     # runnable check being quietly dropped; there is nothing here to run.
-    if not (root / context / "api_service" / "Dockerfile").exists():
+    # Keyed on the Makefile, not on the Dockerfile. The Dockerfile is now
+    # shipped - test_readiness reads the HEALTHCHECK out of it - and keying on
+    # its presence would have declared the image a checkout and failed on
+    # certs/, which is absent because the build consumed it. The Makefile is
+    # the bundle root as checked out and is deliberately not copied in.
+    if not (root / context / "Makefile").exists():
         pytest.skip("not a source checkout: COPY sources resolve against "
                     "the build context, which an image does not carry")
     missing = [src for src in _copy_sources(path)

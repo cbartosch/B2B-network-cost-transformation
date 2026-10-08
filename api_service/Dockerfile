@@ -88,6 +88,11 @@ COPY analyst_ui ./analyst_ui
 # rather than holding it.
 COPY docker-compose.yml ./docker-compose.yml
 COPY make.ps1 ./make.ps1
+# test_readiness reads the HEALTHCHECK out of this file to check it
+# still polls /v1/ready rather than /v1/health - "if the healthcheck
+# moved to /v1/health this file would be guarding nothing". Both
+# checks died on FileNotFoundError instead.
+COPY api_service/Dockerfile ./api_service/Dockerfile
 # The bundle layout the tooling resolves against, as one symlink rather
 # than fourteen edits. Every tool in tools/ locates the service the same
 # way - `APP = ROOT / "api_service" / "app"`, or sys.path.insert of
