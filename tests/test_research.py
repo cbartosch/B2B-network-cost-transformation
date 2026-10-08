@@ -76,8 +76,19 @@ def _found_text(n_sources=2, subject="Acme Global Logistics"):
 
 
 def _not_found_text():
+    # With an abstention_reason, because without one this is not a negative
+    # finding - it is an empty answer, and the gate refuses it as
+    # EMPTY_RESULT_WITHOUT_ABSTENTION after three attempts. All seven LLM-08
+    # domains came back FAILED with no disposition written, so the test that
+    # asks whether a negative finding becomes DECLARED_UNKNOWN /
+    # NO_PUBLIC_EVIDENCE never reached the behaviour it is named for.
+    #
+    # The gate is right and the fixture was stale: "You returned nothing and
+    # gave no abstention_reason. If the searches turned up nothing
+    # attributable, say so with a reason from the enumeration."
     return json.dumps({"found": False, "subject": "", "finding": "",
-                       "sources": [], "confidence_note": "n/a"})
+                       "sources": [], "confidence_note": "n/a",
+                       "abstention_reason": "NO_SEARCH_RESULTS"})
 
 
 def _verified_fetch(url, timeout=10.0):
@@ -723,6 +734,16 @@ def test_the_prompt_states_the_evidence_bar_the_answer_must_clear(session, monke
 def test_the_prompt_states_what_the_model_currently_assumes(session, monkeypatch):
     """An open question against a large group returns a group-level summary.
     Stating the working assumption makes it falsifiable instead."""
+    # The `session` fixture resets the schema and seeds nothing; only `client`
+    # seeds, through the app lifespan. So archetype_prior was empty, the
+    # archetype block renders only `if ctx.get("archetypes")`, and the
+    # assertion below was testing an empty table rather than the prompt.
+    # Seeded through the real path rather than by restating the values here -
+    # the block's own comment is that the agent must be told what the
+    # simulation will use, "instead of the two drifting apart".
+    from app import seed as seed_module
+    seed_module.seed()
+
     case_id = _case(session)
     seen = {}
     _wire_fake_provider(monkeypatch, text_fn=lambda **kw: seen.update(kw) or _found_text())

@@ -44,9 +44,16 @@ def test_a_site_count_reaches_the_footprint_the_simulation_reads(session):
                       promoted_by="Priya Raman")
 
     fp = promotion.evidenced_footprint(session, case_id)
+    # Exact equality kept deliberately - it catches a field being dropped as
+    # well as a value changing. The row has since grown its provenance
+    # (domain_no, the band, the source count and the URLs) and the literal was
+    # never extended, so the only thing this asserted was that the shape had
+    # not moved. Every value it did name was already correct.
     assert fp == [{"country": "DE", "archetype": "WAREHOUSE", "sites": 340,
                    "as_of": "2024-12-31", "agent_run_id": run_id,
-                   "promoted_by": "Priya Raman"}]
+                   "promoted_by": "Priya Raman", "domain_no": 2,
+                   "band_low": None, "band_high": None, "source_count": None,
+                   "source_urls": ["https://example.com/ar"]}]
 
 
 def test_promotion_requires_a_named_person(session):
@@ -62,8 +69,15 @@ def test_a_promoted_price_is_unapproved_and_carries_its_provenance(session):
     """18.1: research proposes a governed value, it does not set one. An
     approved row would put a model's answer straight into every estimate with
     no steward in between."""
+    # bandwidth_mbps as a field, not only inside the label. promote() reads
+    # q["bandwidth_mbps"] and declines a rate with no tier - "a circuit rate
+    # without a tier cannot be matched to any circuit" - which is deliberate:
+    # a null-bandwidth row would sit in unit_cost_prior pricing nothing while
+    # counting as coverage, the exact condition migration v17 deletes rows
+    # for. So the candidate was declined and no row was ever written, and
+    # this test failed on NoResultFound without reaching what it asserts.
     q = {"label": "DIA 100Mbps MRC", "value": 520, "unit": "USD/month",
-         "country": "DE", "as_of": "2025"}
+         "country": "DE", "as_of": "2025", "bandwidth_mbps": 100}
     case_id, run_id = _case_with_finding(session, q)
     cid = promotion.candidates(session, case_id)["price_candidates"][0]["candidate_id"]
 
@@ -102,11 +116,18 @@ def test_promoting_the_same_finding_twice_replaces_rather_than_duplicates(sessio
 
 
 # --- researched price vs the benchmark it would displace --------------------
-def _benchmark(session, country="DE", product="DIA", low=420, base=580, high=800):
+def _benchmark(session, country="DE", product="DIA", low=420, base=580,
+               high=800, bandwidth_mbps=None):
+    # bandwidth_mbps defaults to None so the compare_to_benchmark tests keep
+    # the untiered row they were written against. Only the promotion test
+    # needs a tier, and it needs one because promote() will not compare a
+    # 100 Mbps observation against a benchmark at no stated tier: that would
+    # be a comparison of different products, so it reports
+    # NO_BENCHMARK_AT_BANDWIDTH rather than judging it.
     session.execute(insert(db.unit_cost_prior).values(
         id=f"{country}-{product}", country=country, product=product,
         cost_layer="L0", low=low, base=base, high=high, currency="USD",
-        price_year=2026, approved=True))
+        price_year=2026, approved=True, bandwidth_mbps=bandwidth_mbps))
     session.commit()
 
 
@@ -152,9 +173,11 @@ def test_a_country_with_no_benchmark_is_new_coverage_not_silence(session):
 
 
 def test_promotion_records_the_comparison_where_a_steward_will_see_it(session):
-    _benchmark(session)
+    _benchmark(session, bandwidth_mbps=100)
+    # Same missing tier as above: declined before any comparison was made,
+    # so material_divergences was empty rather than disagreeing.
     q = {"label": "DIA 100Mbps MRC", "value": 1280, "unit": "USD/month",
-         "country": "DE", "as_of": "2025"}
+         "country": "DE", "as_of": "2025", "bandwidth_mbps": 100}
     case_id, _ = _case_with_finding(session, q)
     cid = promotion.candidates(session, case_id)["price_candidates"][0]["candidate_id"]
 
@@ -164,7 +187,11 @@ def test_promotion_records_the_comparison_where_a_steward_will_see_it(session):
 
     assert len(out["material_divergences"]) == 1
     row = session.execute(select(db.unit_cost_prior).where(
-        db.unit_cost_prior.c.id == "DE-DIA-researched")).one()
+        # The tier is part of the key: row_id is
+        # f"{country}-{product}-{mbps}-researched", because a promoted price
+        # reachable only through the legacy fallback was the defect fixed in
+        # 4.177. The literal here predates that.
+        db.unit_cost_prior.c.id == "DE-DIA-100-researched")).one()
     assert row.approved is False
     assert "OUTSIDE_BAND" in row.source_note
 
