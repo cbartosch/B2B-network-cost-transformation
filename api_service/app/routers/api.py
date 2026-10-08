@@ -3588,6 +3588,17 @@ def run_estimate(case_id: str, payload: EstimateIn):
                     f"footprint_policy.min_plausible_ops_cost_per_site if the "
                     f"figure really is this low.")})
 
+        # The method is checked first because the check below branches on it.
+        # In the other order, `payload.method != METHOD_ANCHOR` was asked of a
+        # value nobody had validated, so a typo answered "not ANCHOR", took
+        # the ops-cost path, and a request naming method "ANCOHR" came back
+        # asking for a per-site operating cost. The caller's actual mistake
+        # was never mentioned.
+        if payload.method not in anchor_estimate.METHODS:
+            raise HTTPException(422, {
+                "error": f"unknown method {payload.method!r}",
+                "methods": list(anchor_estimate.METHODS)})
+
         if _ops is None and payload.method != anchor_estimate.METHOD_ANCHOR:
             raise HTTPException(422, {
                 "error": "no ops cost per site",
@@ -3596,11 +3607,6 @@ def run_estimate(case_id: str, payload: EstimateIn):
                           "request - it is not defaulted, because a per-site "
                           "operating cost nobody stated would be costed as "
                           "though somebody had."})
-
-        if payload.method not in anchor_estimate.METHODS:
-            raise HTTPException(422, {
-                "error": f"unknown method {payload.method!r}",
-                "methods": list(anchor_estimate.METHODS)})
 
         # ---------------------------------------------------------- ANCHOR
         if payload.method == anchor_estimate.METHOD_ANCHOR:

@@ -70,11 +70,30 @@ def test_an_unregistered_prompt_id_is_refused():
 
 def test_the_base_contract_reaches_every_service():
     for d in prompts.PROMPTS.values():
-        assert "AUTHORITY" in d.system_template
-        assert "Abstaining on a fact the source does carry" in d.system_template, (
+        # "WHAT YOU MUST NOT DO", not "AUTHORITY". 4.108.0 rewrote the base
+        # contract and renamed that section; the prohibition it anchors on is
+        # unchanged and still there word for word - "Compute or alter
+        # coverage, prices, confidence, savings ... Your output is a proposal;
+        # approval is a named person's act." The heading has not existed
+        # anywhere in the codebase since, so this half of the assertion has
+        # been false for every prompt ever since, and the sibling assertion
+        # below - which does pass - was carrying the whole test.
+        assert "WHAT YOU MUST NOT DO" in d.system_template
+        assert "approval is a named person's act" in d.system_template
+        # Both anchors were stale, so this test has never passed - the
+        # rewrite in 4.108.0 deleted the ABSTENTION section along with
+        # AUTHORITY, and the sentence it quoted ("Abstaining on a fact the
+        # source does carry is an error of the same weight as inventing one")
+        # went with it. The property survived the rewrite and reads harder
+        # than it did: withholding a finding because it is not certain "is
+        # the one clearly wrong answer: it destroys the judgement you were
+        # asked for and leaves the reader with nothing."
+        assert "the one clearly wrong answer" in d.system_template, (
             "the contract must say a false abstention is an error too - "
             "without it, a mostly-prohibition prompt reads as an instruction "
             "to say nothing whenever nothing is safe")
+        assert ("Return an empty result only when you genuinely found "
+                "nothing") in d.system_template
 
 
 # -------------------------------------------------------------- authority
@@ -434,16 +453,42 @@ def test_a_proposal_can_carry_a_band_so_disagreement_is_not_hidden():
     assert banded.value_low < banded.value_base < banded.value_high
 
 
-def test_an_accepted_proposal_enters_as_a_third_party_report():
+def test_an_accepted_proposal_enters_as_a_third_party_report(session):
     """Not INDUSTRY_KNOWLEDGE. The analyst is attesting that a public source
     says this, which is a weaker and different claim from attesting that they
     know it - and conflating them lets a search result borrow their
     authority."""
-    import inspect
+    # Asserted on the stored row rather than on the source text. This read
+    # `assert 'basis="THIRD_PARTY_REPORT"' in src`, and the code stopped
+    # spelling it that way when it learned to distinguish an edited figure:
+    # once the analyst changes the number, THIRD_PARTY_REPORT is a false
+    # attestation and the basis becomes INDUSTRY_KNOWLEDGE. The scan went red
+    # for a refinement that strengthened exactly the thing it guards, and
+    # could not have told the difference between that and the conflation this
+    # test is named for. Both branches are checked now.
+    import uuid
+
+    from sqlalchemy import select
+
+    from app import db
     from app.domain import known_facts
-    src = inspect.getsource(known_facts.accept_public_proposal)
-    assert 'basis="THIRD_PARTY_REPORT"' in src
-    assert "accepting a proposal is an attribution" in src
+
+    case_id = str(uuid.uuid4())
+    base = {"fact_class": "Location footprint", "subject": "Acme GmbH",
+            "value_base": 120, "unit": "sites"}
+
+    def _basis(proposal):
+        out = known_facts.accept_public_proposal(
+            session, case_id=case_id, proposal=proposal,
+            accepted_by="Priya Raman")
+        return session.execute(select(db.known_fact.c.basis).where(
+            db.known_fact.c.known_fact_id == out["known_fact_id"])).scalar()
+
+    assert _basis(dict(base)) == "THIRD_PARTY_REPORT"
+    assert _basis(dict(base, subject="Acme SARL", edited=True)) == (
+        "INDUSTRY_KNOWLEDGE"), (
+        "an edited figure is the analyst's judgement informed by a source, "
+        "and must not borrow the source's standing")
 
 
 def test_the_sweep_covers_the_classes_that_bind_a_driver():
@@ -735,11 +780,18 @@ def test_the_sweep_asks_about_one_class_per_call():
     trivially satisfiable because each call is asked about exactly one thing."""
     import ast
     import inspect
+    import textwrap
 
     from app.domain import known_facts
 
     src = inspect.getsource(known_facts.prefill_from_public)
-    tree = ast.parse(inspect.cleandoc(src))
+    # dedent, not cleandoc - the third instance of this, after test_migrations
+    # and test_footprint_resolution, both of which carry the same note.
+    # cleandoc strips the indent common to every line AFTER the first, so a
+    # function's source comes back with `def` at column 0 and its body
+    # de-indented to meet it: an IndentationError before a single call site is
+    # examined. dedent is a no-op on source that is already flush.
+    tree = ast.parse(textwrap.dedent(src))
     calls = [n for n in ast.walk(tree)
              if isinstance(n, ast.Call)
              and getattr(n.func, "attr", "") == "structured_call"]

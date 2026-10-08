@@ -29,7 +29,7 @@ from datetime import datetime, timezone
 
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import delete, insert
+from sqlalchemy import delete, insert, select
 
 from app import db
 from app.domain import dispositions
@@ -294,27 +294,52 @@ def test_a_footprint_of_all_zeros_is_refused_by_name(session, client):
         "the refusal should name the route to evidence, not just the mistake")
 
 
-def test_a_single_row_carrying_hundreds_of_sites_is_refused(session, client):
-    """100 sites are never identical.
+def test_a_single_row_carrying_a_whole_estate_is_disclosed(session, client):
+    """A bulk row is priced and the assumption is disclosed, not refused.
 
     A row asserts that every site in it shares one bandwidth, one primary and
-    backup product and one dual-access probability, and the whole row is costed
-    at that archetype's tier - so a bulk total in one row puts a wrong number
-    into the baseline and looks deliberate. Enforced at the API rather than
-    only in the interface, so no caller can route around it."""
+    backup product and one dual-access probability, and the whole row is
+    costed at that archetype's tier, so a bulk total in one row puts a claim
+    into the baseline that nobody stated out loud.
+
+    This used to be a 422 at 100 sites, and it was withdrawn deliberately -
+    "it made it unusable on the estates that most need it, and the analyst's
+    only route through was to mis-type the rows". It was replaced by pricing
+    the row and pinning what was assumed: homogeneity_report's own basis line
+    says "nothing is refused for this - the row prices and the claim is
+    disclosed".
+
+    So the old premise is gone twice over. The limit is not 100 and there is
+    no limit: rows are reported above a band of 2,000 (25,000 where the
+    archetype is mass-deployed to one specification and a density is given).
+    This exercises 3,000 un-banded STORE sites, which is above the band it is
+    actually judged against.
+
+    The share is the point. One row means something different at 3% of an
+    estate than at 100% of it, so what is pinned is the share, not the
+    count."""
     case_id = _ready_case(session, countries=("DE",))
 
     r = client.post(f"/v1/outside-in/cases/{case_id}/simulations:run",
                     json={"seed": 42, "ensemble_size": 1,
                           "footprint": [{"country": "DE",
                                          "archetype": "STORE",
-                                         "sites": 1000}]})
+                                         "sites": 3000}]})
 
-    assert r.status_code == 422, r.text
-    detail = r.json()["detail"]
-    assert detail["error"] == "a single archetype row carries too many sites"
-    assert detail["limit"] == 100
-    assert "STORE" in detail["detail"] or detail["rows"][0]["sites"] == 1000
+    assert r.status_code == 202, r.text
+    run_id = r.json()["simulation_run_id"]
+
+    params = session.execute(select(db.simulation_run.c.params).where(
+        db.simulation_run.c.simulation_run_id == run_id)).scalar()
+    hom = params["homogeneity"]
+    assert hom["sites_in_large_rows"] == 3000
+    assert hom["share_in_large_rows"] == "1.000", (
+        "the whole estate is priced as one block; a reader has to be able to "
+        "see that from the pinned run")
+    assert hom["share_asserted_alike"] == "1.000", (
+        "with no density band the row is not uniform by construction - it is "
+        "an assertion the analyst made, not a property of the archetype")
+    assert any(row["archetype"] == "STORE" for row in hom["rows"])
 
 
 def test_an_allocated_footprint_of_the_same_total_is_accepted(session, client):
