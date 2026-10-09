@@ -4243,8 +4243,20 @@ def list_estimates(case_id: str):
             try:
                 record["savings_bridge"] = savings_bridge.waterfall(
                     record.get("scenarios") or {},
-                    current_total=(record.get("current_tco") or {}).get(
-                        "base") or 0,
+                    # current_tco["total"]["base"], the way the other two
+                    # call sites read it. This read current_tco["base"],
+                    # which does not exist - the dict is keyed by cost layer
+                    # with the total under "total" - so it was always None,
+                    # and `or 0` turned that into a baseline of zero.
+                    #
+                    # Page 8's "How the saving is built" therefore showed
+                    # Baseline 0, "0% of baseline", and a target run-rate
+                    # equal to minus the saving. The `or 0` is what hid it:
+                    # without it the None reaches D(str(...)), raises, and
+                    # the handler below reports the bridge as unavailable,
+                    # which is the honest outcome and says so.
+                    current_total=((record.get("current_tco") or {})
+                                   .get("total") or {}).get("base"),
                     # From the snapshot's own stored coverage, so a bridge
                     # read a week later carries the same qualification the
                     # estimate was published with.
@@ -4325,10 +4337,13 @@ def run_recommendation(case_id: str, estimate_snapshot_id: str, payload: Recomme
                                      f"found for case {case_id!r}")
         rp = _recommendation_policy(s)
         try:
-            return savings_advisory.recommend(
+            # _with_transition on every path that returns a recommendation,
+            # not only the two GETs. A caller that creates one and reads the
+            # response should see the same record the list endpoint shows.
+            return _with_transition(s, savings_advisory.recommend(
                 s, estimate_snapshot_id=estimate_snapshot_id, mode=payload.mode,
                 provider=payload.provider, recommendation_policy=rp,
-                idempotency_key=payload.idempotency_key)
+                idempotency_key=payload.idempotency_key))
         except LookupError as exc:
             raise HTTPException(404, str(exc))
         except ValueError as exc:
@@ -4346,8 +4361,9 @@ def approve_recommendation(case_id: str, recommendation_id: str, payload: Approv
     with S() as s:
         _recommendation_or_404(s, case_id, recommendation_id)
         try:
-            return savings_advisory.approve(
-                s, recommendation_id=recommendation_id, approved_by=payload.approved_by)
+            return _with_transition(s, savings_advisory.approve(
+                s, recommendation_id=recommendation_id,
+                approved_by=payload.approved_by))
         except ValueError as exc:
             raise HTTPException(422, str(exc))
 
@@ -4358,10 +4374,10 @@ def run_narrative(case_id: str, recommendation_id: str, payload: NarrateIn):
     with S() as s:
         _recommendation_or_404(s, case_id, recommendation_id)
         try:
-            return savings_advisory.narrate(
+            return _with_transition(s, savings_advisory.narrate(
                 s, recommendation_id=recommendation_id, mode=payload.mode,
                 provider=payload.provider, final=payload.final,
-                idempotency_key=payload.idempotency_key)
+                idempotency_key=payload.idempotency_key))
         except PermissionError as exc:
             raise HTTPException(409, str(exc))
         except ValueError as exc:

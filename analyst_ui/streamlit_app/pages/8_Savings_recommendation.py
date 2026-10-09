@@ -132,10 +132,19 @@ for rec in recs:
                 f"{_t['programme_months']} month(s). "
                 + _t["note"])
             st.warning(_t["payback_basis"])
-            with st.expander(f"{len(_t['not_modelled'])} cost categories this "
-                             f"model has no basis for"):
-                for _n in _t["not_modelled"]:
-                    st.caption(f"   {_n}")
+            # Flat, not an expander. This block already sits inside the
+            # per-recommendation expander above, and Streamlit refuses to
+            # nest one - "Expanders may not be nested inside other
+            # expanders", which takes the whole page down with a traceback.
+            #
+            # It never fired because it could not be reached: nothing built a
+            # TransitionPolicy, so `_t` was always None and this branch was
+            # dead from the day it was written in 4.165. Wiring the policy up
+            # is what ran it for the first time.
+            st.caption(f"**{len(_t['not_modelled'])} cost categories this "
+                       f"model has no basis for**")
+            for _n in _t["not_modelled"]:
+                st.caption(f"   {_n}")
         else:
             st.caption(
                 "No transition cost is modelled for this recommendation, so "
