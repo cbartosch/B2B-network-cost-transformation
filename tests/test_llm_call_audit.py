@@ -269,12 +269,24 @@ def test_truncation_is_never_reported_as_an_empty_answer():
 
     from app.llm import gateway
 
+    # Comment lines dropped before measuring. The 900-character window is
+    # meant to say "in this branch, not fifty lines away", and it was counting
+    # prose: explaining the truncation message pushed the raise to 985
+    # characters from the anchor and the check failed on a comment. Measured
+    # as code it is 203. A guard a comment can switch off is not a guard.
     src = inspect.getsource(gateway.structured_call)
-    assert 'stop_reason") == "max_tokens"' in src
-    truncation = src.index('stop_reason") == "max_tokens"')
-    assert "StructuredOutputInvalid" in src[truncation:truncation + 900]
-    # and before the reply is kept as a salvageable best attempt
-    assert truncation < src.index("best_payload, best_result")
+    code = chr(10).join(line for line in src.splitlines()
+                     if not line.strip().startswith("#"))
+    assert 'stop_reason") == "max_tokens"' in code
+    truncation = code.index('stop_reason") == "max_tokens"')
+    assert "StructuredOutputInvalid" in code[truncation:truncation + 900]
+    # and before the reply is kept as a salvageable best attempt.
+    # The full assignment, not the bare name: the name first appears
+    # 2,800 characters earlier as `best_payload, best_result = None,
+    # None`, the initialiser, and no truncation check can precede a
+    # variable being declared. The ordering it means to pin does hold.
+    assert truncation < code.index(
+        "best_payload, best_result = payload, result")
 
 
 def test_no_call_site_keeps_its_own_truncation_check():

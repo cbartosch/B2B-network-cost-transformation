@@ -10,9 +10,16 @@ and every stage after it behaved correctly on that premise. The resolver
 reported 460 million sites to allocate, and the divergence message told the
 analyst that *their* breakdown of the real stores was the thing that was wrong.
 """
+import datetime as _dt
+
 import pytest
 
 from app.domain import known_facts
+
+# register() has required assertion_date since 4.8.1 - an undated assertion is
+# not auditable. Fixed rather than date.today() so the fixture cannot drift with
+# the clock, matching how test_prompt_registry.py dates its facts.
+_ASSERTED_ON = _dt.date(2026, 8, 31)
 
 
 # ----------------------------------- a unit that is not what the class counts
@@ -34,7 +41,8 @@ def test_a_footprint_fact_refuses_a_unit_that_is_not_a_count_of_sites(
         known_facts.register(
             session, case_id="c", fact_class="Location footprint",
             subject="Aldi Sued", value_base=460_000_000, unit=unit,
-            asserted_by="CB", basis="THIRD_PARTY_REPORT",
+            asserted_by="CB", assertion_date=_ASSERTED_ON,
+            basis="THIRD_PARTY_REPORT",
             verifiability="PUBLICLY_VERIFIABLE")
 
 
@@ -48,6 +56,7 @@ def test_a_footprint_fact_accepts_any_reasonable_word_for_a_site(session, unit):
     out = known_facts.register(
         session, case_id="c", fact_class="Location footprint",
         subject="Aldi Sued", value_base=2000, unit=unit, asserted_by="CB",
+        assertion_date=_ASSERTED_ON,
         basis="THIRD_PARTY_REPORT", verifiability="PUBLICLY_VERIFIABLE")
     assert out["known_fact_id"]
 
@@ -81,7 +90,15 @@ def test_the_resolver_defends_against_a_row_written_before_the_check():
 
     src = inspect.getsource(footprint._best_footprint_fact)
     assert "unit_conflicts_with_class" in src
-    assert "ignored rather than read as site counts" in src
+
+    # The reason text moved into the guard, which is where it belongs - the
+    # resolver calls it rather than restating it. Asserted on what the guard
+    # returns rather than on a comment in the caller, so a reworded comment
+    # cannot fail a test about a message, and a lost message cannot pass one.
+    from app.domain import known_facts
+    why = known_facts.unit_conflicts_with_class("Location footprint", "users")
+    assert why and "not a unit of sites" in why
+    assert "refused rather than stored" in why
 
 
 # ------------------------------- a value too large to be a count of anything
@@ -156,7 +173,16 @@ def test_the_resolver_applies_both_checks_to_stored_rows():
     src = inspect.getsource(footprint._best_footprint_fact)
     assert "unit_conflicts_with_class" in src
     assert "value_implausible_for_class" in src
-    assert "cannot be a count of sites" in src
+
+    # As above: the analyst-facing sentence is the guard's return value, not a
+    # comment. "cannot be a count of sites" became "is too many sites to be a
+    # count of sites", which says the same thing about the same number.
+    from app.domain import known_facts
+    why = known_facts.value_implausible_for_class("Location footprint", 9_000_000)
+    assert why and "to be a count of sites" in why
+    assert "max_plausible_sites" in why, (
+        "the message must say which governed limit to raise, or an analyst "
+        "with a genuinely large estate has no route forward")
 
 
 # ------------------------------------ a unit is a measure, not a qualification

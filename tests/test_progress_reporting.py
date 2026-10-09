@@ -10,6 +10,7 @@ synchronous request is in flight. A frozen clock reads as a hung run, which is
 the one thing a progress line exists to disprove.
 """
 import ast
+import re
 from pathlib import Path
 
 
@@ -54,8 +55,16 @@ def test_the_search_timeout_allows_the_work_it_describes():
                if (c / "config.py").exists())
     config = (app / "config.py").read_text()
 
-    search = float(ast.literal_eval(
-        config.split('LLM_SEARCH_TIMEOUT_SECONDS = float(\n        os.getenv("LLM_SEARCH_TIMEOUT_SECONDS", ')[1].split(")")[0]))
+    # Matched, not split on an exact spelling. The old split embedded the line
+    # break and eight spaces of indentation; the declaration is indented four,
+    # so the split found nothing and [1] raised IndexError before the
+    # assertion ran. The value was 480 all along and would have passed.
+    match = re.search(
+        r'LLM_SEARCH_TIMEOUT_SECONDS\s*=\s*float\(\s*'
+        r'os\.getenv\(\s*"LLM_SEARCH_TIMEOUT_SECONDS"\s*,\s*"([0-9.]+)"',
+        config)
+    assert match, "LLM_SEARCH_TIMEOUT_SECONDS is not declared as expected"
+    search = float(match.group(1))
     assert search >= 300, (
         f"a search-carrying call is minutes; {search}s does not allow it")
 

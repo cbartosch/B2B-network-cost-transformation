@@ -24,13 +24,36 @@ from collections import defaultdict
 from decimal import Decimal as D
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
-for _lib in ("sqlalchemy", "sqlalchemy.orm", "sqlalchemy.exc",
+
+
+def _stub_attr(name):
+    """Answer any attribute with a self-returning placeholder - except the
+    dunders.
+
+    A module-level __getattr__ that answers everything also answers
+    __path__, and the import machinery then takes the stub for a package and
+    tries to iterate what it got back: "TypeError: 'A' object is not
+    iterable", raised from importlib with nothing in the message naming the
+    stub or the module that wanted it. Raising AttributeError for dunders
+    leaves the machinery to report an honest ModuleNotFoundError for the
+    submodule that is genuinely missing from the list below.
+    """
+    if name.startswith("__") and name.endswith("__"):
+        raise AttributeError(name)
+    return type("A", (), {"__getattr__": lambda s, _x: s,
+                          "__call__": lambda s, *a, **k: s})()
+
+
+# sqlalchemy.pool is in the list because db.make_engine imports StaticPool
+# from it. It was missing, so `from sqlalchemy.pool import StaticPool` asked
+# the sqlalchemy stub for __path__, got an "A" back, and the tool died on
+# "TypeError: 'A' object is not iterable" from inside importlib - a message
+# that names neither the stub nor the import that wanted it.
+for _lib in ("sqlalchemy", "sqlalchemy.orm", "sqlalchemy.exc", "sqlalchemy.pool",
              "sqlalchemy.engine", "sqlalchemy.dialects",
              "sqlalchemy.dialects.postgresql", "psycopg"):
     _stub = types.ModuleType(_lib)
-    _stub.__getattr__ = lambda _n: type(
-        "A", (), {"__getattr__": lambda s, _x: s,
-                  "__call__": lambda s, *a, **k: s})()
+    _stub.__getattr__ = lambda _n: _stub_attr(_n)
     _stub.__spec__ = importlib.machinery.ModuleSpec(_lib, loader=None)
     sys.modules.setdefault(_lib, _stub)
 sys.path[:0] = [str(ROOT), str(ROOT / "api_service")]

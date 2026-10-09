@@ -110,7 +110,8 @@ def test_a_saving_band_is_always_ordered(levers):
 def test_a_zero_lever_saves_nothing_on_every_bound():
     """A degenerate case the crossing got wrong too: with a 0% share the
     crossed low was 80,000 - 130,000 = -50,000."""
-    saving = _scenario([_lever("A", "0.00", "0.00", "0.00")])
+    saving = _scenario([_lever("A", "0.00", "0.00", "0.00")])[
+        "gross_run_rate_savings"]
     assert D(saving["low"]) == 0
     assert D(saving["high"]) == 0
 

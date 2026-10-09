@@ -85,7 +85,13 @@ def test_every_compose_variable_is_read_by_the_code(compose):
     bundle has found repeatedly, in configuration rather than code."""
     root = COMPOSE.parent
     sources = []
-    for folder in ("api_service/app", "analyst_ui", "contract"):
+    # "app" as well as "api_service/app": the image flattens the api package
+    # to /app/app, and test_integrity already probes both spellings for the
+    # same reason. Without it the scan read the UI and the contract but not
+    # the service that consumes these variables, and reported all 22 api keys
+    # as set-and-never-read. It only started reporting at all once analyst_ui
+    # reached the image and made the blob non-empty - before that it skipped.
+    for folder in ("api_service/app", "app", "analyst_ui", "contract"):
         path = root / folder
         if path.exists():
             sources += [p.read_text() for p in path.rglob("*.py")]
@@ -125,6 +131,20 @@ def test_every_dockerfile_copy_source_exists(dockerfile, context):
     path = root / dockerfile
     if not path.exists():
         pytest.skip(f"{dockerfile} not present in this image")
+    # This one checks build *inputs*, and an image is the build's *output*:
+    # COPY sources are resolved against the build context, which only exists
+    # in a checkout. Inside the image `certs/` is genuinely absent - it was
+    # consumed at build time - and reporting that as a missing COPY source
+    # would be false. Unlike the compose fixture's skip above, this is not a
+    # runnable check being quietly dropped; there is nothing here to run.
+    # Keyed on the Makefile, not on the Dockerfile. The Dockerfile is now
+    # shipped - test_readiness reads the HEALTHCHECK out of it - and keying on
+    # its presence would have declared the image a checkout and failed on
+    # certs/, which is absent because the build consumed it. The Makefile is
+    # the bundle root as checked out and is deliberately not copied in.
+    if not (root / context / "Makefile").exists():
+        pytest.skip("not a source checkout: COPY sources resolve against "
+                    "the build context, which an image does not carry")
     missing = [src for src in _copy_sources(path)
                if not (root / context / src).exists()]
     assert not missing, f"{dockerfile} copies paths that do not exist: {missing}"
@@ -178,11 +198,29 @@ def test_the_images_install_corporate_anchors_before_pip():
 
 
 def test_no_corporate_certificate_is_committed():
-    """Trust anchors are environment-specific and not ours to distribute."""
-    certs = COMPOSE.parent / "certs"
-    if not certs.exists():
-        pytest.skip("certs/ not present")
-    leaked = [p.name for p in certs.iterdir() if p.suffix in (".crt", ".pem")]
+    """Trust anchors are environment-specific and not ours to distribute.
+
+    Asked of git, not of the working directory. This listed certs/ on disk and
+    called what it found "committed" - but .gitignore line 2 carries
+    certs/*.crt, and the corporate CA bundle legitimately lives there for
+    building behind a TLS-inspecting proxy. So it reported a leak on every
+    developer machine that had ever built the image, and the habit of
+    dismissing it is exactly what would hide a real one.
+
+    Skips rather than fails where git is unavailable: a test that cannot ask
+    the question should say so, not answer it from somewhere else.
+    """
+    import subprocess
+
+    try:
+        tracked = subprocess.run(
+            ["git", "ls-files", "certs/"], cwd=COMPOSE.parent,
+            capture_output=True, text=True, timeout=30, check=True).stdout
+    except (OSError, subprocess.SubprocessError):
+        pytest.skip("git not available, so committed-ness cannot be checked")
+
+    leaked = [line for line in tracked.splitlines()
+              if line.endswith((".crt", ".pem", ".key", ".der"))]
     assert not leaked, f"certificates committed: {leaked}"
 
 
@@ -226,6 +264,13 @@ def test_the_lock_check_refuses_a_lock_that_is_a_copy():
     root = Path(__file__).resolve().parents[1]
     tool = root / "tools" / "check_lockfile.py"
     lock = root / "api_service" / "requirements.lock"
+    # check_lockfile.py reads the per-service requirements files at their
+    # repo-relative paths. The image flattens api_service/requirements.txt to
+    # /app/requirements.txt, so the tool has nothing to compare and the test
+    # died on FileNotFoundError rather than on anything it asserts.
+    if not (root / "api_service" / "requirements.txt").exists():
+        pytest.skip("not a source checkout: check_lockfile.py reads the "
+                    "per-service requirements at their repo-relative paths")
     existing = lock.read_text() if lock.exists() else None
     try:
         lock.write_text((root / "api_service" / "requirements.txt").read_text())

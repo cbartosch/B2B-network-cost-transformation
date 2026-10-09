@@ -87,7 +87,7 @@ class _FakeAdapter:
     def configured(self):
         return self._configured
 
-    def complete(self, *, system, prompt, max_tokens=1500):
+    def complete(self, *, system, prompt, max_tokens=1500, tools=None):
         now = datetime.now(timezone.utc)
         return ProviderCall(
             provider="anthropic", model="fake-model",
@@ -170,14 +170,39 @@ def test_a_bare_case_is_blocked_on_every_substantive_condition(session):
 
 
 def test_a_refused_v0_estimate_blocks_advancement(session):
+    """It blocks by never existing, which is the stronger guarantee.
+
+    This used to write a snapshot with v0_status="REFUSED" and check that
+    assess() blocked on it. v66 added a CHECK constraint,
+    estimate_snapshot_never_refused, so that row can no longer be written at
+    all - and db.py says why: the rule had been "a property of statement
+    order in one function", and the constraint "makes it structural: moving
+    the write above the refusal fails here rather than silently opening all
+    six".
+
+    So the test set up a state the database now forbids, and died on the
+    constraint instead of asserting anything. Both halves are checked here:
+    the row is refused, and with no snapshot to refine, advancement is
+    blocked on the V0 estimate.
+    """
+    import sqlalchemy.exc
+
     case_id = _case(session)
     _dispose_all(session, case_id)
-    _snapshot(session, case_id, v0_status="REFUSED")
     _answer_everything(session, case_id)
+
+    with pytest.raises(sqlalchemy.exc.IntegrityError):
+        _snapshot(session, case_id, v0_status="REFUSED")
+    session.rollback()
+
+    assert session.execute(select(db.estimate_snapshot.c.estimate_snapshot_id)
+                           .where(db.estimate_snapshot.c.case_id == case_id)
+                           ).first() is None
 
     report = stage.assess(session, case_id=case_id)
     assert report["blocked"] is True
-    assert any(c["item"] == "V0 estimate" for c in report["blocks"])
+    v0 = [c for c in report["blocks"] if c["item"] == "V0 estimate"]
+    assert v0 and "none to refine" in v0[0]["detail"]
 
 
 def test_an_unanswered_questionnaire_blocks_advancement(session):

@@ -8,6 +8,7 @@ correct and none was the last, because the rule was expressed in the one place
 that could not be tested.
 """
 import uuid
+from datetime import date
 
 import pytest
 from sqlalchemy import insert
@@ -34,6 +35,7 @@ def _fact(session, case_id, value, *, subject="Adolf Wuerth GmbH & Co. KG",
         known_fact_id=str(uuid.uuid4()), case_id=case_id,
         fact_class=fact_class, subject=subject, value_base=value, unit="sites",
         asserted_by="CB", basis="THIRD_PARTY_REPORT",
+        assertion_date=date(2026, 1, 15),
         verifiability="PUBLICLY_VERIFIABLE", corroboration_state=state))
     session.commit()
 
@@ -75,21 +77,54 @@ def test_a_bulk_total_is_never_emitted_as_one_row(session):
     assert out["suggested_country"] == "DE"
 
 
-def test_a_corroborated_fact_beats_an_uncorroborated_one(session):
+def test_two_unchosen_totals_are_refused_rather_than_ranked(session):
+    """Standing no longer decides, and that is deliberate.
+
+    The rule was standing, then largest value. On a Boots UK case that picks
+    12,028 - the Walgreens Boots Alliance group figure - over 1,840 GB stores,
+    and _best_footprint_fact says why it was removed: "Silently modelling the
+    largest number available is worse than modelling nothing: it produces an
+    estimate that looks finished and is about a different company."
+
+    So two registered totals with no analyst choice resolve to nothing, and
+    the reason names both ends of the range."""
     case_id = _case(session)
     _fact(session, case_id, 500, subject="Wuerth", state="UNCORROBORATED")
     _fact(session, case_id, 2900, state="CORROBORATED")
+
     out = footprint.resolve(session, case_id)
-    assert out["unallocated_sites"] == 2900
-    assert "not used" in out["detail"], (
-        "the competing count must be reported, not silently dropped")
+
+    assert out["origin"] == "SCOPE_PLACEHOLDER", (
+        "a corroborated fact no longer outranks an uncorroborated one - "
+        "ranking them is what modelled the wrong company")
+    reason = next(c["reason"] for c in out["considered"]
+                  if c["source"] == "KNOWN_FACT")
+    assert "none has been chosen" in reason
+    assert "500" in reason and "2,900" in reason, (
+        "the range must name both ends, or the analyst cannot see which "
+        "scopes are competing")
 
 
-def test_a_contradicted_fact_loses_to_a_pending_one(session):
+def test_a_contradicted_fact_still_blocks_resolution(session):
+    """Pinned as a question, not as an endorsement.
+
+    CONTRADICTED carries standing 0 in _STANDING and means somebody disputed
+    the figure. It is still counted as a competing total, so one disputed fact
+    beside one good one resolves to a placeholder - the same outcome as two
+    equally credible rivals.
+
+    Whether that is right is a judgement for whoever owns the rule: refusing is
+    safe, but a disputed number suppressing an undisputed one is a different
+    thing from two scopes competing. Asserted here so the behaviour is visible
+    and cannot change unnoticed."""
     case_id = _case(session)
     _fact(session, case_id, 9999, state="CONTRADICTED")
     _fact(session, case_id, 1000, state="PENDING")
-    assert footprint.resolve(session, case_id)["unallocated_sites"] == 1000
+
+    out = footprint.resolve(session, case_id)
+
+    assert out["origin"] == "SCOPE_PLACEHOLDER"
+    assert out["unallocated_sites"] is None
 
 
 def test_the_register_fixes_the_total_and_the_table_only_splits_it(session):
@@ -156,6 +191,7 @@ def test_a_valueless_fact_is_ignored(session):
         known_fact_id=str(uuid.uuid4()), case_id=case_id,
         fact_class="Location footprint", subject="Wuerth", value_base=None,
         unit="sites", asserted_by="CB", basis="INDUSTRY_KNOWLEDGE",
+        assertion_date=date(2026, 1, 15),
         verifiability="PUBLICLY_VERIFIABLE"))
     session.commit()
     assert footprint.resolve(session, case_id)["origin"] == "SCOPE_PLACEHOLDER"
@@ -240,7 +276,12 @@ def test_an_edited_placeholder_is_not_a_placeholder(session):
 def test_clearing_the_saved_footprint_falls_back_to_the_register(session):
     case_id = _case(session, analyst_footprint=[])
     _fact(session, case_id, 1000)
-    assert footprint.resolve(session, case_id)["origin"] == "KNOWN_FACT"
+    # KNOWN_FACT_UNALLOCATED, not KNOWN_FACT: a register total is no longer
+    # emitted as a footprint row. The register is still what is fallen back
+    # to, which is what this test is about.
+    out = footprint.resolve(session, case_id)
+    assert out["origin"] == "KNOWN_FACT_UNALLOCATED"
+    assert out["unallocated_sites"] == 1000
 
 
 def test_the_resolver_says_why_each_source_was_not_used(session):
@@ -266,6 +307,7 @@ def test_the_reason_distinguishes_a_missing_fact_from_an_unusable_one(session):
         known_fact_id=str(uuid.uuid4()), case_id=case_id,
         fact_class="Remote-user population", subject="Wuerth",
         value_base=5000, unit="users", asserted_by="CB",
+        assertion_date=date(2026, 1, 15),
         basis="INDUSTRY_KNOWLEDGE", verifiability="PUBLICLY_VERIFIABLE"))
     session.commit()
 
@@ -283,7 +325,7 @@ def test_a_placeholder_save_says_so_in_the_trace(session):
         for c in ["DE", "FR", "GB", "US", "NL", "SG", "AE"]])
     _fact(session, case_id, 1000)
     out = footprint.resolve(session, case_id)
-    assert out["origin"] == "KNOWN_FACT"
+    assert out["origin"] == "KNOWN_FACT_UNALLOCATED"
     reason = next(c["reason"] for c in out["considered"]
                   if c["source"] == "ANALYST_SAVED")
     assert "placeholder" in reason
@@ -406,6 +448,11 @@ class _Fact:
     def __init__(self, **kw):
         self.__dict__.update({
             "known_fact_id": "f1", "fact_class": "Location footprint",
+            # case_id, because total_candidates also asks for footprint facts
+            # on OTHER cases - "I registered sites, where did they go" has an
+            # answer this page cannot otherwise show. Defaults to the case
+            # _candidates resolves, so these rows belong to it.
+            "case_id": "c",
             "subject": "Boots UK Limited", "value_base": 1840,
             "value_low": None, "value_high": None, "unit": "sites",
             "corroboration_state": "PENDING", "asserted_by": "CB",
@@ -413,13 +460,31 @@ class _Fact:
 
 
 class _FactSession:
-    def __init__(self, rows):
-        self._rows = rows
+    """Two queries, two answers.
 
-    def execute(self, _q):
+    This returned the same rows to every execute(), which was harmless while
+    total_candidates ran one query. It now runs a second for facts on other
+    cases, and answering that with this case's own facts would report them as
+    belonging elsewhere - the stub inventing the exact confusion the feature
+    exists to clear up.
+
+    The queries are told apart by the inequality: the elsewhere query filters
+    `case_id != case_id`, and every row here belongs to the case under test,
+    so the honest answer to it is nothing.
+    """
+
+    def __init__(self, rows, case_id="c"):
+        self._rows = rows
+        self._case_id = case_id
+
+    def execute(self, q):
         import types as _t
-        return _t.SimpleNamespace(all=lambda: self._rows,
-                                  first=lambda: (self._rows or [None])[0])
+        asks_for_other_cases = "!=" in str(
+            q.compile(compile_kwargs={"literal_binds": True})
+            if hasattr(q, "compile") else q)
+        rows = [] if asks_for_other_cases else self._rows
+        return _t.SimpleNamespace(all=lambda: rows,
+                                  first=lambda: (rows or [None])[0])
 
 
 def _candidates(rows):
@@ -511,13 +576,19 @@ def test_every_resolver_branch_returns_the_same_keys():
     than omitting it."""
     import ast
     import inspect
+    import textwrap
 
     from app.domain import footprint
 
     contract = set(footprint.RESOLVED_SHAPE)
     assert "register_total" in contract and "origin" in contract
 
-    tree = ast.parse(inspect.cleandoc(inspect.getsource(footprint.resolve)))
+    # dedent, not cleandoc - the same defect this fixed in test_migrations.
+    # cleandoc strips the indent common to every line AFTER the first, so a
+    # function's source comes back with `def` at column 0 and its body
+    # de-indented to meet it: an IndentationError before a single branch is
+    # examined. dedent is a no-op on source that is already flush.
+    tree = ast.parse(textwrap.dedent(inspect.getsource(footprint.resolve)))
     branches = 0
     for node in ast.walk(tree):
         if not (isinstance(node, ast.Return) and node.value is not None):

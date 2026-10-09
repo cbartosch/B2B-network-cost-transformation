@@ -10,6 +10,7 @@ Someone typing what they know into a register and losing it to a maintenance
 instruction is a failure of this system whichever layer removed the row.
 """
 import uuid
+from datetime import date
 
 import pytest
 from sqlalchemy import insert, select
@@ -30,6 +31,7 @@ def _populated_case(session):
             known_fact_id=str(uuid.uuid4()), case_id=case_id,
             fact_class="Location footprint", subject=subject,
             value_base=value, unit="sites", asserted_by="CB",
+            assertion_date=date(2026, 1, 15),
             basis="THIRD_PARTY_REPORT", verifiability="PUBLICLY_VERIFIABLE"))
     session.execute(insert(db.domain_disposition).values(
         id=str(uuid.uuid4()), case_id=case_id, domain_no=2,

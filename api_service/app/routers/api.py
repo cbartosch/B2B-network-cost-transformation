@@ -140,6 +140,27 @@ def _research_policy(s):
                                   "detail": str(exc)})
 
 
+def _transition_policy(s):
+    """What it costs to get to the target estate.
+
+    A 503 like every other governed policy, rather than None. scenarios()
+    treats the policy as optional - "a missing payback is honest, and one
+    computed from no assumptions is not" - and that is the right contract for
+    the domain function, which other callers use. It is not the right
+    contract here: the rows are seeded, this route is the one that publishes
+    a number, and silently omitting the payback is how it came to be missing
+    from every estimate ever produced without anyone noticing.
+
+    transition_policy.evidence_grade is deliberately unseeded and from_rows
+    reads it with .get(..., "E"); the five numeric fields are required.
+    """
+    try:
+        return policy.TransitionPolicy.from_rows(_thresholds(s, "transition_policy"))
+    except (policy.PolicyIncomplete, policy.PolicyInvalid) as exc:
+        raise HTTPException(503, {"error": "governed transition policy unusable",
+                                  "detail": str(exc)})
+
+
 def _recommendation_policy(s):
     try:
         return policy.RecommendationPolicy.from_rows(_thresholds(s, "recommendation_policy"))
@@ -250,9 +271,10 @@ def ready(response: Response):
       /v1/health              liveness   - is the process up? No dependencies,
                                            because restarting will not fix a
                                            database outage.
-      /v1/ready               readiness  - can it serve? One cheap round-trip,
-                                           never cached, because a cached
-                                           readiness answer is not one.
+      /v1/ready               readiness  - can it serve? A cheap round-trip
+                                           and a policy build, never cached,
+                                           because a cached readiness answer
+                                           is not one.
       /v1/health?deep=true    diagnostics - schema, policy, pins, incidents.
                                            Cached, and for humans.
 
@@ -1117,11 +1139,48 @@ def run_simulation(case_id: str, payload: SimIn):
         # users_base and bandwidth_mbps_base were seeded and never loaded. Five
         # columns exist on the prior; three were read. The footprint therefore
         # implied a headcount the model discarded in favour of a flat default.
+        #
+        # It happened again, to three more. The prior now has eight columns and
+        # this read five, so committed_fraction and the two service classes
+        # were seeded and dropped here.
+        #
+        # committed_fraction is the one that moved a number. simulation.py
+        # asks for it - `_for(committed_fraction_by_archetype, entry) or
+        # prior.get("committed_fraction")` - and with the key absent the second
+        # branch is always None, so access.pair_for priced on the bearer rather
+        # than on the committed rate. That is the defect the comment five lines
+        # below it already describes: "Pricing on the bearer overstated an IPVPN
+        # by 980 against 420 a month on the GB card." The fix was written and
+        # then starved of its input.
+        #
+        # The two service classes are inert today - seed.py derives them from
+        # access.LEGACY_PRODUCT, which is exactly what simulation.py falls back
+        # to - so loading them changes nothing now. They are loaded anyway,
+        # because the point of the column is to let an archetype declare a
+        # class its product does not imply, and a column nothing reads cannot
+        # ever start doing that.
         arch = {r.archetype: {"dual_access_probability": float(r.dual_access_probability),
                               "primary_product": r.primary_product,
                               "backup_product": r.backup_product,
                               "users_base": r.users_base,
-                              "bandwidth_mbps_base": r.bandwidth_mbps_base}
+                              "bandwidth_mbps_base": r.bandwidth_mbps_base,
+                              # As a string, like benchmark_committed above
+                              # and like everything else that reaches
+                              # access.pair_for, which does
+                              # Decimal(str(committed_fraction)). The raw
+                              # Numeric is a Decimal, this dict is pinned
+                              # into simulation_run.pinned_priors as JSON,
+                              # and json cannot encode one - so the run
+                              # insert raised TypeError and the endpoint 500'd.
+                              # None stays None: pair_for's "nobody said"
+                              # branch tests `in (None, "")`, and "None" is
+                              # neither.
+                              "committed_fraction": (
+                                  str(r.committed_fraction)
+                                  if r.committed_fraction is not None
+                                  else None),
+                              "primary_service_class": r.primary_service_class,
+                              "backup_service_class": r.backup_service_class}
                 for r in s.execute(select(db.archetype_prior)).all()}
 
         # Every archetype dimension resolved across four layers - seeded
@@ -3384,7 +3443,15 @@ def _run_anchor_estimate(s, *, case_id, case_row, payload,
     cur = estimate.current_tco(components)
     lv = [dict(r._mapping) for r in s.execute(select(db.lever)).all()]
     levers_by_id = {l["lever_id"]: l for l in lv}
-    scen = estimate.scenarios(components, lv)
+    # With the transition policy, so each scenario carries what it
+    # costs to get there. Site count and run rate are read back from
+    # the components rather than passed alongside them - a number
+    # passed beside the components could disagree with them.
+    scen = estimate.scenarios(
+        components, lv,
+        transition_policy=_transition_policy(s),
+        sites=estimate.site_count(components),
+        monthly_run_rate=estimate.monthly_run_rate(components))
 
     disp_summary = dispositions.summarise(disp)
     completeness = (D(disp_summary["total_domains"] - disp_summary["declared_unknown"])
@@ -3476,8 +3543,18 @@ def _run_anchor_estimate(s, *, case_id, case_row, payload,
             # Levers that found nothing to act on are carried separately as
             # `not_counted`: an opportunity the estimate could not size is
             # not one worth zero.
+            # cur["total"], not cur["current_tco"]: `cur` is what
+            # estimate.current_tco() returns, whose keys are by_layer, total,
+            # simulated_share, origin_breakdown and components. `current_tco`
+            # is the name this RESPONSE gives to cur["total"] three lines
+            # above, and the stored snapshot's column name - but it is not a
+            # key of `cur`, so reading it raised KeyError and the whole
+            # estimate returned 500 with {"detail": "'current_tco'"}.
+            #
+            # Same confusion of the response's shape with the function's that
+            # this module's test file records for the ANCHOR path.
             "savings_bridge": savings_bridge.waterfall(
-                scen, current_total=cur["current_tco"]["base"],
+                scen, current_total=cur["total"]["base"],
                 # The coverage the baseline was priced at. PARTIAL is the
                 # ordinary state of an outside-in estimate and no consumer
                 # distinguished it from COMPLETE.
@@ -3540,6 +3617,17 @@ def run_estimate(case_id: str, payload: EstimateIn):
                     f"footprint_policy.min_plausible_ops_cost_per_site if the "
                     f"figure really is this low.")})
 
+        # The method is checked first because the check below branches on it.
+        # In the other order, `payload.method != METHOD_ANCHOR` was asked of a
+        # value nobody had validated, so a typo answered "not ANCHOR", took
+        # the ops-cost path, and a request naming method "ANCOHR" came back
+        # asking for a per-site operating cost. The caller's actual mistake
+        # was never mentioned.
+        if payload.method not in anchor_estimate.METHODS:
+            raise HTTPException(422, {
+                "error": f"unknown method {payload.method!r}",
+                "methods": list(anchor_estimate.METHODS)})
+
         if _ops is None and payload.method != anchor_estimate.METHOD_ANCHOR:
             raise HTTPException(422, {
                 "error": "no ops cost per site",
@@ -3548,11 +3636,6 @@ def run_estimate(case_id: str, payload: EstimateIn):
                           "request - it is not defaulted, because a per-site "
                           "operating cost nobody stated would be costed as "
                           "though somebody had."})
-
-        if payload.method not in anchor_estimate.METHODS:
-            raise HTTPException(422, {
-                "error": f"unknown method {payload.method!r}",
-                "methods": list(anchor_estimate.METHODS)})
 
         # ---------------------------------------------------------- ANCHOR
         if payload.method == anchor_estimate.METHOD_ANCHOR:
@@ -3900,7 +3983,15 @@ def run_estimate(case_id: str, payload: EstimateIn):
         cur = estimate.current_tco(components)
         lv = [dict(r._mapping) for r in s.execute(select(db.lever)).all()]
         levers_by_id = {l["lever_id"]: l for l in lv}
-        scen = estimate.scenarios(components, lv)
+        # With the transition policy, so each scenario carries what it
+        # costs to get there. Site count and run rate are read back from
+        # the components rather than passed alongside them - a number
+        # passed beside the components could disagree with them.
+        scen = estimate.scenarios(
+            components, lv,
+            transition_policy=_transition_policy(s),
+            sites=estimate.site_count(components),
+            monthly_run_rate=estimate.monthly_run_rate(components))
 
         scenario_shares = {k: D(v["simulated_share"]) for k, v in scen.items()}
         sim_share = max(scenario_shares.values()) if scenario_shares else D(0)
@@ -3985,8 +4076,11 @@ def run_estimate(case_id: str, payload: EstimateIn):
                 "current_tco": cur["total"], "by_layer": cur["by_layer"],
                 "origin_breakdown": cur["origin_breakdown"],
                 "components": cur["components"], "scenarios": scen,
+                # cur["total"], not cur["current_tco"] - see the identical fix
+                # on the other estimate path. The line above names the response
+                # key from cur["total"]; `cur` itself has no current_tco key.
                 "savings_bridge": savings_bridge.waterfall(
-                    scen, current_total=cur["current_tco"]["base"],
+                    scen, current_total=cur["total"]["base"],
                     coverage=cov),
                 "confidence": conf,
                 "coverage": {**cov, "unpriced_components": unpriced},
@@ -4149,8 +4243,20 @@ def list_estimates(case_id: str):
             try:
                 record["savings_bridge"] = savings_bridge.waterfall(
                     record.get("scenarios") or {},
-                    current_total=(record.get("current_tco") or {}).get(
-                        "base") or 0,
+                    # current_tco["total"]["base"], the way the other two
+                    # call sites read it. This read current_tco["base"],
+                    # which does not exist - the dict is keyed by cost layer
+                    # with the total under "total" - so it was always None,
+                    # and `or 0` turned that into a baseline of zero.
+                    #
+                    # Page 8's "How the saving is built" therefore showed
+                    # Baseline 0, "0% of baseline", and a target run-rate
+                    # equal to minus the saving. The `or 0` is what hid it:
+                    # without it the None reaches D(str(...)), raises, and
+                    # the handler below reports the bridge as unavailable,
+                    # which is the honest outcome and says so.
+                    current_total=((record.get("current_tco") or {})
+                                   .get("total") or {}).get("base"),
                     # From the snapshot's own stored coverage, so a bridge
                     # read a week later carries the same qualification the
                     # estimate was published with.
@@ -4184,13 +4290,37 @@ class NarrateIn(BaseModel):
     idempotency_key: str | None = None
 
 
+def _with_transition(session, record: dict) -> dict:
+    """Attach what the recommended scenario costs to reach.
+
+    Read from the snapshot rather than stored on the recommendation. The
+    block is a property of (snapshot, scenario_code) and the recommendation
+    already names both, so a copy on the row would be denormalised and free
+    to drift from the snapshot it describes - and validation_capture reads it
+    off the scenario for exactly that reason: "one-time cost lives on the
+    scenario rather than the snapshot header, because it belongs to a plan
+    rather than to a baseline."
+
+    Page 8 has rendered this since 4.165 and has been showing its fallback -
+    "No transition cost is modelled for this recommendation" - to every
+    reader, because nothing put the block on the scenario and nothing put the
+    scenario on the recommendation.
+    """
+    scenarios = session.execute(select(db.estimate_snapshot.c.scenarios).where(
+        db.estimate_snapshot.c.estimate_snapshot_id
+        == record.get("estimate_snapshot_id"))).scalar()
+    scenario = (scenarios or {}).get(record.get("scenario_code")) or {}
+    transition = scenario.get("transition")
+    return {**record, "transition": transition} if transition else record
+
+
 def _recommendation_or_404(session, case_id: str, recommendation_id: str) -> dict:
     row = session.execute(select(db.recommendation).where(
         db.recommendation.c.recommendation_id == recommendation_id)).one_or_none()
     if row is None or row.case_id != case_id:
         raise HTTPException(404, f"recommendation {recommendation_id!r} not found for "
                                  f"case {case_id!r}")
-    return dict(row._mapping)
+    return _with_transition(session, dict(row._mapping))
 
 
 @router.post("/v1/outside-in/cases/{case_id}/estimates/{estimate_snapshot_id}"
@@ -4207,10 +4337,13 @@ def run_recommendation(case_id: str, estimate_snapshot_id: str, payload: Recomme
                                      f"found for case {case_id!r}")
         rp = _recommendation_policy(s)
         try:
-            return savings_advisory.recommend(
+            # _with_transition on every path that returns a recommendation,
+            # not only the two GETs. A caller that creates one and reads the
+            # response should see the same record the list endpoint shows.
+            return _with_transition(s, savings_advisory.recommend(
                 s, estimate_snapshot_id=estimate_snapshot_id, mode=payload.mode,
                 provider=payload.provider, recommendation_policy=rp,
-                idempotency_key=payload.idempotency_key)
+                idempotency_key=payload.idempotency_key))
         except LookupError as exc:
             raise HTTPException(404, str(exc))
         except ValueError as exc:
@@ -4228,8 +4361,9 @@ def approve_recommendation(case_id: str, recommendation_id: str, payload: Approv
     with S() as s:
         _recommendation_or_404(s, case_id, recommendation_id)
         try:
-            return savings_advisory.approve(
-                s, recommendation_id=recommendation_id, approved_by=payload.approved_by)
+            return _with_transition(s, savings_advisory.approve(
+                s, recommendation_id=recommendation_id,
+                approved_by=payload.approved_by))
         except ValueError as exc:
             raise HTTPException(422, str(exc))
 
@@ -4240,10 +4374,10 @@ def run_narrative(case_id: str, recommendation_id: str, payload: NarrateIn):
     with S() as s:
         _recommendation_or_404(s, case_id, recommendation_id)
         try:
-            return savings_advisory.narrate(
+            return _with_transition(s, savings_advisory.narrate(
                 s, recommendation_id=recommendation_id, mode=payload.mode,
                 provider=payload.provider, final=payload.final,
-                idempotency_key=payload.idempotency_key)
+                idempotency_key=payload.idempotency_key))
         except PermissionError as exc:
             raise HTTPException(409, str(exc))
         except ValueError as exc:
@@ -4264,7 +4398,8 @@ def list_recommendations(case_id: str):
         rows = s.execute(select(db.recommendation).where(
             db.recommendation.c.case_id == case_id).order_by(
             db.recommendation.c.created_at.desc())).all()
-        return {"recommendations": [dict(r._mapping) for r in rows]}
+        return {"recommendations": [_with_transition(s, dict(r._mapping))
+                                    for r in rows]}
 
 
 @router.get("/v1/outside-in/cases/{case_id}/recommendations/{recommendation_id}")

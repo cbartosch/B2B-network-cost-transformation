@@ -117,3 +117,65 @@ def test_every_money_figure_is_a_band(field):
     """A point estimate for anything here would be false precision."""
     out = _net()
     assert set(out[field]) == {"low", "base", "high"}
+
+# ----------------------------------------------- what the estimate feeds it
+# The transition model was complete, tested and unreachable: TransitionPolicy
+# could not be constructed, and no call site built one. These pin the two
+# numbers the estimate has to supply, because getting either wrong is silent -
+# a wrong site count produces a plausible payback rather than an error.
+
+def _component(key, layer, driver, quantity, base):
+    from app.domain.estimate import Component
+    return Component(
+        key=key, layer=layer, driver=driver, quantity=quantity,
+        quantity_origin="ANALYST_ENTERED_SCOPE",
+        unit_cost_origin="BENCHMARK_PRIOR", product="X", role="PRIMARY",
+        service_class="IPVPN", access_technology="ETHERNET_FIBRE",
+        value=Range(D(base) * D("0.8"), D(base), D(base) * D("1.3")))
+
+
+def test_the_site_count_is_read_back_from_the_components():
+    """Rather than passed alongside them, where it could disagree."""
+    from app.domain import estimate
+    assert estimate.site_count([
+        _component("L0_circuits", "L0", "circuits", 9999, "1000"),
+        _component("OPS_operations", "OPS", "sites", 4000, "2000")]) == 4000
+
+
+def test_a_split_site_line_is_summed_not_counted_twice():
+    """_split() divides a site-driven line across origins, so the OPS layer
+    arrives as several components that together describe one estate."""
+    from app.domain import estimate
+    assert estimate.site_count([
+        _component("OPS_a", "OPS", "sites", 2400, "1200"),
+        _component("OPS_b", "OPS", "sites", 1600, "800")]) == 4000
+
+
+def test_two_site_driven_layers_describe_one_estate_not_two():
+    """Both the OPS line and the L2 overlay are driven by the site count. A
+    flat sum over driver=="sites" would report 8,000 sites for a 4,000-site
+    estate, double every one-time cost and halve every payback."""
+    from app.domain import estimate
+    assert estimate.site_count([
+        _component("OPS_a", "OPS", "sites", 2400, "1200"),
+        _component("OPS_b", "OPS", "sites", 1600, "800"),
+        _component("L2_overlay", "L2", "sites", 4000, "500")]) == 4000
+
+
+def test_an_estate_with_no_site_line_reports_no_sites():
+    """And so gets no transition block, which is the honest outcome rather
+    than a payback computed from a site count nobody has."""
+    from app.domain import estimate
+    assert estimate.site_count([
+        _component("L0_circuits", "L0", "circuits", 120, "1000")]) == 0
+
+
+def test_the_run_rate_handed_over_is_monthly():
+    """Component values are annual - every rate is scaled by MONTHS where it
+    is built - and dual_running works in months, because a month is how long
+    a site spends paying for two circuits. Handing it the annual figure would
+    overstate dual running twelvefold."""
+    from app.domain import estimate
+    comps = [_component("OPS_operations", "OPS", "sites", 10, "1200")]
+    assert estimate.monthly_run_rate(comps) == D("100")
+    assert estimate.total(comps).base == D("1200")

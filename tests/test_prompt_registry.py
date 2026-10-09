@@ -70,11 +70,30 @@ def test_an_unregistered_prompt_id_is_refused():
 
 def test_the_base_contract_reaches_every_service():
     for d in prompts.PROMPTS.values():
-        assert "AUTHORITY" in d.system_template
-        assert "Abstaining on a fact the source does carry" in d.system_template, (
+        # "WHAT YOU MUST NOT DO", not "AUTHORITY". 4.108.0 rewrote the base
+        # contract and renamed that section; the prohibition it anchors on is
+        # unchanged and still there word for word - "Compute or alter
+        # coverage, prices, confidence, savings ... Your output is a proposal;
+        # approval is a named person's act." The heading has not existed
+        # anywhere in the codebase since, so this half of the assertion has
+        # been false for every prompt ever since, and the sibling assertion
+        # below - which does pass - was carrying the whole test.
+        assert "WHAT YOU MUST NOT DO" in d.system_template
+        assert "approval is a named person's act" in d.system_template
+        # Both anchors were stale, so this test has never passed - the
+        # rewrite in 4.108.0 deleted the ABSTENTION section along with
+        # AUTHORITY, and the sentence it quoted ("Abstaining on a fact the
+        # source does carry is an error of the same weight as inventing one")
+        # went with it. The property survived the rewrite and reads harder
+        # than it did: withholding a finding because it is not certain "is
+        # the one clearly wrong answer: it destroys the judgement you were
+        # asked for and leaves the reader with nothing."
+        assert "the one clearly wrong answer" in d.system_template, (
             "the contract must say a false abstention is an error too - "
             "without it, a mostly-prohibition prompt reads as an instruction "
             "to say nothing whenever nothing is safe")
+        assert ("Return an empty result only when you genuinely found "
+                "nothing") in d.system_template
 
 
 # -------------------------------------------------------------- authority
@@ -297,19 +316,46 @@ def test_a_search_service_called_without_a_search_tool_fails_closed():
 
 
 def test_every_search_service_passes_a_tool_at_its_call_site():
+    """The enclosing function, not a character window.
+
+    A window around the prompt id was the old mechanism and it was wrong
+    twice over. research.py passes this id through a ternary, so the literal
+    `prompt_id="..."` never appears and the call site read as missing. And it
+    builds `tools = _web_search_tool(...)` far enough above the call that a
+    1,200-character look-back lands inside a comment, so a call site that
+    does pass a search tool read as one that does not.
+
+    "Its call site" means the function making the call. That is what is
+    checked here, and it does not depend on how far apart two lines happen to
+    sit.
+    """
+    import ast
     import pathlib
     root = pathlib.Path(__file__).resolve().parents[1]
     app = next(c for c in (root / "api_service" / "app", root / "app")
                if (c / "domain").exists())
-    blob = "\n".join(p.read_text() for p in (app / "domain").rglob("*.py"))
+
+    def _enclosing_function(prompt_id):
+        for path in sorted((app / "domain").rglob("*.py")):
+            src = path.read_text()
+            if f'"{prompt_id}"' not in src:
+                continue
+            for node in ast.walk(ast.parse(src)):
+                if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                    continue
+                segment = ast.get_source_segment(src, node) or ""
+                if f'"{prompt_id}"' in segment:
+                    return segment
+        return None
+
     for prompt_id in ("llm01.public_evidence.extract",
                       "known_fact.corroborate",
                       "entity.resolve.candidates"):
-        idx = blob.find(f'prompt_id="{prompt_id}"')
-        assert idx != -1, f"{prompt_id} has no call site"
-        assert "web_search" in blob[idx:idx + 700], (
-            f"{prompt_id} declares a search policy but its call site passes "
-            f"no search tool")
+        enclosing = _enclosing_function(prompt_id)
+        assert enclosing is not None, f"{prompt_id} has no call site"
+        assert "web_search" in enclosing, (
+            f"{prompt_id} declares a search policy but the function calling "
+            f"it passes no search tool")
 
 
 # ------------------------------------------------- entity confirmation profile
@@ -387,7 +433,11 @@ def test_finding_nothing_is_an_acceptable_answer_if_it_says_so():
     analyst where their own knowledge is the only route."""
     from app.llm import quality, schemas
     empty = schemas.PublicFactSweep.model_validate(
-        {"facts": [], "not_found": ["Public cost evidence"]})
+        {"facts": [],
+         # NotFoundClass, not a bare string: the class and what was
+         # searched for are two things one string cannot hold, which is
+         # why the schema changed.
+         "not_found": [{"fact_class": "Public cost evidence"}]})
     assert quality.evaluate("known_fact.prefill_public", empty, {}).accepted
 
     silent = schemas.PublicFactSweep.model_validate({"facts": []})
@@ -403,16 +453,42 @@ def test_a_proposal_can_carry_a_band_so_disagreement_is_not_hidden():
     assert banded.value_low < banded.value_base < banded.value_high
 
 
-def test_an_accepted_proposal_enters_as_a_third_party_report():
+def test_an_accepted_proposal_enters_as_a_third_party_report(session):
     """Not INDUSTRY_KNOWLEDGE. The analyst is attesting that a public source
     says this, which is a weaker and different claim from attesting that they
     know it - and conflating them lets a search result borrow their
     authority."""
-    import inspect
+    # Asserted on the stored row rather than on the source text. This read
+    # `assert 'basis="THIRD_PARTY_REPORT"' in src`, and the code stopped
+    # spelling it that way when it learned to distinguish an edited figure:
+    # once the analyst changes the number, THIRD_PARTY_REPORT is a false
+    # attestation and the basis becomes INDUSTRY_KNOWLEDGE. The scan went red
+    # for a refinement that strengthened exactly the thing it guards, and
+    # could not have told the difference between that and the conflation this
+    # test is named for. Both branches are checked now.
+    import uuid
+
+    from sqlalchemy import select
+
+    from app import db
     from app.domain import known_facts
-    src = inspect.getsource(known_facts.accept_public_proposal)
-    assert 'basis="THIRD_PARTY_REPORT"' in src
-    assert "accepting a proposal is an attribution" in src
+
+    case_id = str(uuid.uuid4())
+    base = {"fact_class": "Location footprint", "subject": "Acme GmbH",
+            "value_base": 120, "unit": "sites"}
+
+    def _basis(proposal):
+        out = known_facts.accept_public_proposal(
+            session, case_id=case_id, proposal=proposal,
+            accepted_by="Priya Raman")
+        return session.execute(select(db.known_fact.c.basis).where(
+            db.known_fact.c.known_fact_id == out["known_fact_id"])).scalar()
+
+    assert _basis(dict(base)) == "THIRD_PARTY_REPORT"
+    assert _basis(dict(base, subject="Acme SARL", edited=True)) == (
+        "INDUSTRY_KNOWLEDGE"), (
+        "an edited figure is the analyst's judgement informed by a source, "
+        "and must not borrow the source's standing")
 
 
 def test_the_sweep_covers_the_classes_that_bind_a_driver():
@@ -593,8 +669,10 @@ def test_the_sweep_must_account_for_every_class_it_was_asked_about():
     Those are different findings and they were indistinguishable."""
     from app.llm import quality, schemas
 
+    # No "subject" here: PublicFactSweep is Strict and carries none - the
+    # subject lives on each fact. The sweep gained that strictness and the
+    # fixtures kept the old shape.
     reply = schemas.PublicFactSweep.model_validate({
-        "subject": "Boots",
         "facts": [],
         # not_found carries the class, what was searched and why. It was
         # list[str] while the prompt asked for the class "with what you
@@ -617,8 +695,10 @@ def test_the_sweep_must_account_for_every_class_it_was_asked_about():
 def test_a_sweep_that_accounts_for_everything_is_accepted():
     from app.llm import quality, schemas
 
+    # No "subject" here: PublicFactSweep is Strict and carries none - the
+    # subject lives on each fact. The sweep gained that strictness and the
+    # fixtures kept the old shape.
     reply = schemas.PublicFactSweep.model_validate({
-        "subject": "Boots",
         "facts": [{"fact_class": "Location footprint", "subject": "Boots",
                    "value_base": "1800", "unit": "sites",
                    "sources": [{"url": "https://boots-uk.example/about",
@@ -700,11 +780,18 @@ def test_the_sweep_asks_about_one_class_per_call():
     trivially satisfiable because each call is asked about exactly one thing."""
     import ast
     import inspect
+    import textwrap
 
     from app.domain import known_facts
 
     src = inspect.getsource(known_facts.prefill_from_public)
-    tree = ast.parse(inspect.cleandoc(src))
+    # dedent, not cleandoc - the third instance of this, after test_migrations
+    # and test_footprint_resolution, both of which carry the same note.
+    # cleandoc strips the indent common to every line AFTER the first, so a
+    # function's source comes back with `def` at column 0 and its body
+    # de-indented to meet it: an IndentationError before a single call site is
+    # examined. dedent is a no-op on source that is already flush.
+    tree = ast.parse(textwrap.dedent(src))
     calls = [n for n in ast.walk(tree)
              if isinstance(n, ast.Call)
              and getattr(n.func, "attr", "") == "structured_call"]
@@ -730,8 +817,63 @@ def test_one_class_failing_does_not_lose_the_others():
 
 
 def test_the_sweep_budget_is_governed():
-    """Discovering the right number should not need a rebuild."""
+    """Discovering the right number should not need a rebuild.
+
+    ResearchPolicy, not ResearchBudgetProfile. No class of the latter name has
+    ever existed here, and both this test and known_facts._sweep_budget named
+    it - the call sat inside `except Exception: return 6000`, so the governed
+    budget was the hardcoded fallback on every sweep ever run, and this test
+    reported the symptom without anyone reading it as one.
+    """
     from app.domain import policy
 
-    assert hasattr(policy.ResearchBudgetProfile,
-                   "max_output_tokens_per_sweep_call")
+    assert hasattr(policy.ResearchPolicy, "max_output_tokens_per_sweep_call")
+
+
+def test_the_sweep_budget_actually_reaches_the_sweep():
+    """hasattr is not enough: the field existed all along, on a class nothing
+    called. What was missing is the path from the governed row to the call."""
+    import inspect
+
+    from app.domain import known_facts
+
+    src = inspect.getsource(known_facts._sweep_budget)
+    assert "policy_module.ResearchPolicy.from_rows" in src
+    assert "policy_module.ResearchBudgetProfile" not in src, (
+        "a name that does not exist, inside `except Exception`, is a governed "
+        "value that silently is not one")
+
+
+def test_a_governed_sweep_budget_overrides_the_default(session):
+    """The property the whole governance claim rests on: change the row,
+    change the budget.
+
+    It could not have held while the lookup named a class that does not
+    exist - every sweep took the hardcoded 6000 from the except branch, and
+    because the seeded value is also 6000 the two were indistinguishable from
+    the outside. Raising it is the only way to tell them apart.
+    """
+    from sqlalchemy import insert, update
+
+    from app import db, seed
+    from app.domain import known_facts
+
+    # The whole profile: ResearchPolicy.from_rows requires every field, so a
+    # partial set raises and falls back - which is the behaviour under test.
+    session.execute(insert(db.threshold).values([
+        {"set_name": s, "key": k, "value": v, "version": 1,
+         "approved_by": "seed", "note": ""}
+        for s, k, v in seed.THRESHOLDS if s == "research_budget_profile"]))
+    session.commit()
+    assert known_facts._sweep_budget(session) == 6000, "the seeded value"
+
+    session.execute(update(db.threshold)
+                    .where(db.threshold.c.set_name == "research_budget_profile")
+                    .where(db.threshold.c.key == "max_output_tokens_per_sweep_call")
+                    .values(value="9000", approved_by="CB"))
+    session.commit()
+
+    assert known_facts._sweep_budget(session) == 9000, (
+        "an approver raising the governed number must change the budget, or "
+        "the row is decoration and the docstring's 'governed output budget' "
+        "is not true")

@@ -280,8 +280,12 @@ def test_completed_run_cannot_be_re_executed(session):
     run_id = _run(session)
     gateway._fail(session, run_id, "provider down")
     with pytest.raises(errors.ModeNotPermitted):
+        # max_tokens is required: gateway.execute deliberately has no
+        # default, because one there would be a third ceiling nothing
+        # reaches. Without it this raised TypeError before the mode check,
+        # so the test passed its raises() block on the wrong exception.
         gateway.execute(session, agent_run_id=run_id, provider="anthropic",
-                        system="s", prompt="p")
+                        system="s", prompt="p", max_tokens=1000)
 
 
 # --- H-04: seed is non-destructive -----------------------------------------
@@ -500,11 +504,36 @@ def test_corroboration_records_what_superseded_the_fact(session, monkeypatch):
         rights_cleared=True))
     session.commit()
 
+    # Two things changed under this test and it was patching neither.
+    #
+    # corroborate() goes through gateway.structured_call now, not
+    # gateway.execute, so the patch below missed and the real path ran and
+    # found no provider.
+    #
+    # And the reply it faked - {"state": "CORROBORATED"} - is the exact thing
+    # the system was changed to make impossible. The register's P0 was "the
+    # model returned CORROBORATED and the system wrote it";
+    # schemas.CorroborationResult has no state field at all, "which is a
+    # stronger control than validating it away". The model reports what it
+    # found and _compare_candidates decides the state deterministically.
+    #
+    # So the fake returns candidates, and the assertion that the state is
+    # CORROBORATED now means the comparison reached that conclusion rather
+    # than the model having been believed.
+    from app.llm import schemas
+
     monkeypatch.setattr(gateway, "create_agent_run",
                         lambda *a, **k: "agent-run-1")
-    monkeypatch.setattr(gateway, "execute", lambda *a, **k: {
-        "text": '{"state": "CORROBORATED", "note": "matches filings"}',
-        "provider_response_id": "msg_1"})
+    monkeypatch.setattr(gateway, "structured_call", lambda *a, **k: (
+        schemas.CorroborationResult(
+            search_attempted=True,
+            unresolved_reasons=[],
+            candidates=[schemas.CorroborationCandidate(
+                url="https://example.com/annual-report",
+                source_class="PRIMARY_FILING", how_read="FULL_PAGE",
+                figure_basis="STATED", public_value=120, unit="sites",
+                as_of="2026-05-01", exact_excerpt="120 sites in GB")]),
+        {"provider_response_id": "msg_1"}))
     monkeypatch.setattr(gateway, "succeed", lambda *a, **k: None)
 
     known_facts.corroborate(session, known_fact_id=fid, provider="anthropic")
@@ -724,7 +753,10 @@ def test_a_run_cannot_begin_without_acknowledgement(session):
     assert not report["blocked"]
     with pytest.raises(PermissionError, match="acknowledged"):
         preflight.assert_clear_to_run(session, case_id)
-    preflight.acknowledge(session, report_id=report["report_id"],
+    # case_id is required: acknowledge is scoped to one case deliberately,
+    # so a report cannot be acknowledged from another case's route.
+    preflight.acknowledge(session, case_id=case_id,
+                          report_id=report["report_id"],
                           acknowledged_by="Priya Raman")
     preflight.assert_clear_to_run(session, case_id)          # must not raise
 

@@ -572,8 +572,13 @@ class TriangulationPolicy:
             raise PolicyInvalid("stale_after_years must be at least 1")
 
 
+# One decorator. Stacked, the inner @dataclass installs an __init__ that
+# assigns with `self.set_name = ...`, and the outer frozen=True then installs
+# the raising __setattr__ but will not replace an __init__ already present in
+# the class __dict__. The result was a class that could not be constructed at
+# all: every TransitionPolicy(...) raised FrozenInstanceError on the first
+# field. Frozen is the intent and is kept.
 @dataclass(frozen=True)
-@dataclass
 class TransitionPolicy:
     """What it costs to get to the target estate. P3: none of this existed, so
     every scenario reported a gross saving as though it were the answer."""
