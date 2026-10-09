@@ -562,7 +562,18 @@ def test_an_inapplicable_lever_is_reported_not_silently_dropped():
     skipped = scenarios["B"]["levers_not_applicable"]
     assert len(skipped) == 1
     assert skipped[0]["lever_id"] == "LEV-MPLS-001"
-    assert "BROADBAND_HFC" in skipped[0]["products_present"]
+    # "service_class=BEST_EFFORT", not "BROADBAND_HFC". The entries are
+    # dimension-matched since the v44 vocabulary split: each one names the
+    # constraint field the lever declared and the value this estate has, so a
+    # lever constrained on service_class is answered in service classes. That
+    # is the more useful answer - it is in the same vocabulary as the
+    # constraint that failed - and this assertion was still in products.
+    #
+    # The key is called products_present and now holds field=value pairs
+    # across whatever dimensions were constrained, which is a misnomer.
+    # Renaming it is a response-contract change; nothing in analyst_ui reads
+    # it today. Left alone and recorded.
+    assert skipped[0]["products_present"] == ["service_class=BEST_EFFORT"]
     assert "contain none of them" in skipped[0]["reason"]
 
 

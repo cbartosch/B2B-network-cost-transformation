@@ -558,6 +558,18 @@ def structured_call(session, *, agent_run_id: str, prompt_id: str,
     error.rejected_result = best_result
     error.reasons = reasons
     error.attempts = attempts
+    # The run is over, so the row has to say so. The truncation branch above
+    # already calls _fail before raising; this path - the ordinary one, where
+    # the gate rejects every attempt - did not, so an agent_run whose reply
+    # was refused three times was left QUEUED for good. Every caller of
+    # structured_call was affected, not just the advisory.
+    #
+    # Two things that both read wrong: a queue showing work still to do that
+    # nothing will ever pick up, and an audit trail recording "queued" for a
+    # call that definitively ended. A caller that salvages the rejected reply
+    # and finishes successfully calls succeed() afterwards, which overwrites
+    # this - a terminal state is the correct default, not the final word.
+    _fail(session, agent_run_id, str(error))
     raise error
 
 
