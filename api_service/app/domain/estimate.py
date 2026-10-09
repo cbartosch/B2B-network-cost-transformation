@@ -997,6 +997,39 @@ def scenarios(components: list[Component], levers: list[dict],
     return out
 
 
+def site_count(components: list[Component]) -> int:
+    """How many sites the estate has, read back from its components.
+
+    The transition model is driven by site count - one-time cost per site,
+    sites migrated per month, sites in flight paying for two circuits - and
+    the components already carry it, so it is read from them rather than
+    threaded separately from the simulation. A number passed alongside the
+    components could disagree with them; one read from them cannot.
+
+    Summed within a layer and maxed across layers, not summed across all of
+    them. Two layers are driven by the site count - the OPS line and the L2
+    overlay - and each is split across origins by _split(), so a flat sum
+    over every driver=="sites" component counts the estate once per
+    site-driven layer. The OPS line is unconditional; the overlay is not.
+    """
+    by_layer: dict[str, int] = {}
+    for c in components:
+        if c.driver == "sites":
+            by_layer[c.layer] = by_layer.get(c.layer, 0) + int(c.quantity)
+    return max(by_layer.values(), default=0)
+
+
+def monthly_run_rate(components: list[Component]):
+    """The estate's current cost per month.
+
+    Component values are annual - every rate is scaled by MONTHS where it is
+    built - and transition.dual_running works in months, because that is the
+    period a site spends paying for two circuits. Dividing here keeps the one
+    place that knows the values are annualised next to MONTHS itself.
+    """
+    return total(components).base / MONTHS
+
+
 def current_tco(components: list[Component]) -> dict:
     by_layer: dict[str, Range] = {}
     for c in components:

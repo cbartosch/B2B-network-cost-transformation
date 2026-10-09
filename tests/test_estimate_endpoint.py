@@ -32,6 +32,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy import delete, insert, select
 
 from app import db
+from app.domain.money import D
 from app.domain import dispositions
 from app.main import app
 
@@ -165,6 +166,131 @@ def test_anchor_runs_end_to_end_and_returns_the_same_contract(session, client):
     basis = body["anchor_basis"]
     assert float(basis["addressable_pool"]["base"]) < 213_000_000, (
         "the pool must be a share of the anchor, not the anchor itself")
+
+
+def test_every_scenario_carries_what_it_costs_to_get_there(session, client):
+    """The wiring, which is the part that was missing.
+
+    transition.net, TransitionPolicy, the page 8 renderer and
+    validation_capture's one-time-cost extraction were all written and all
+    correct. Nothing built a policy and passed it to scenarios(), so
+    estimate.py's `if transition_policy is not None` was never true and every
+    scenario ever published reported a gross run-rate saving with no payback
+    and no one-time cost - the exact defect the module was written for: "P3:
+    none of this existed, so every scenario reported a gross saving as though
+    it were the answer."
+
+    Nothing failed while that was true. The domain tests passed, because they
+    call transition.net directly; the endpoint tests passed, because none of
+    them looked for the block. This asserts at the seam the two met at.
+    """
+    case_id = _ready_case(session)
+    sim_id = _simulation(session, case_id)
+    _prior(session)
+
+    r = client.post(f"/v1/outside-in/cases/{case_id}/estimates:run",
+                    json={"method": "BUILD_UP", "simulation_run_id": sim_id,
+                          "users": 500, "ops_cost_per_site_base": 900})
+    assert r.status_code == 200, r.text
+    scenarios = r.json()["scenarios"]
+    assert scenarios, "no scenarios to check"
+
+    for code, scenario in scenarios.items():
+        transition = scenario.get("transition")
+        assert transition, (
+            f"scenario {code} reports a saving with no cost of getting there")
+        # The figures a business case turns on, each a band.
+        for field in ("one_time_cost", "dual_running_cost",
+                      "total_transition_cost"):
+            assert set(transition[field]) >= {"low", "base", "high"}
+        assert set(transition["payback_months"]) == {
+            "optimistic", "base", "pessimistic"}
+        assert transition["programme_months"] >= 1
+        # Says what it is. A modelled payback presented as a business case is
+        # worse than no payback.
+        assert "modelled payback" in transition["payback_basis"]
+
+    # And it survives being stored: the scenarios go into a JSON column, which
+    # is where a stray Decimal last took out this route.
+    stored = session.execute(select(db.estimate_snapshot.c.scenarios).where(
+        db.estimate_snapshot.c.estimate_snapshot_id
+        == r.json()["estimate_snapshot_id"])).scalar()
+    assert all(s.get("transition") for s in stored.values())
+
+
+def test_the_transition_is_costed_for_the_estate_that_was_simulated(session,
+                                                                    client):
+    """Not for some other number of sites.
+
+    site_count() reads the estate back from the components rather than taking
+    it as an argument, so this checks the two agree. A site count that is
+    wrong in either direction is silent - it produces a plausible payback,
+    not an error - and the one-time cost is linear in it.
+    """
+    case_id = _ready_case(session)
+    sim_id = _simulation(session, case_id)
+    _prior(session)
+
+    r = client.post(f"/v1/outside-in/cases/{case_id}/estimates:run",
+                    json={"method": "BUILD_UP", "simulation_run_id": sim_id,
+                          "users": 500, "ops_cost_per_site_base": 900})
+    assert r.status_code == 200, r.text
+    body = r.json()
+
+    # _simulation() publishes output {"sites": 100, ...}, so the estate the
+    # estimate priced is 100 sites and the transition has to be costed for
+    # 100 - not for the circuit count, which is also 100 here only by
+    # coincidence of the fixture, and not for twice that, which is what a
+    # flat sum over every site-driven layer would give.
+    sites = 100
+
+    transition = next(iter(body["scenarios"].values()))["transition"]
+    # The seeded band is 400 / 900 / 1800 per site.
+    assert D(transition["one_time_cost"]["base"]) == D(900) * sites
+    assert D(transition["one_time_cost"]["low"]) == D(400) * sites
+    assert D(transition["one_time_cost"]["high"]) == D(1800) * sites
+    # ceil(100 / 120 sites a month) = 1
+    assert transition["programme_months"] == 1
+
+
+def test_a_recommendation_carries_the_payback_of_the_scenario_it_names(
+        session, client):
+    """Page 8 renders this and has been showing its fallback instead.
+
+    The block is read from the snapshot rather than stored on the
+    recommendation row: it belongs to (snapshot, scenario_code), which the
+    recommendation already names, so a copy would be free to drift.
+    """
+    case_id = _ready_case(session)
+    sim_id = _simulation(session, case_id)
+    _prior(session)
+    r = client.post(f"/v1/outside-in/cases/{case_id}/estimates:run",
+                    json={"method": "BUILD_UP", "simulation_run_id": sim_id,
+                          "users": 500, "ops_cost_per_site_base": 900})
+    assert r.status_code == 200, r.text
+    snapshot_id = r.json()["estimate_snapshot_id"]
+    code = sorted(r.json()["scenarios"])[0]
+
+    rec_id = str(uuid.uuid4())
+    session.execute(insert(db.recommendation).values(
+        recommendation_id=rec_id, estimate_snapshot_id=snapshot_id,
+        case_id=case_id, scenario_code=code, percentile="base",
+        basis="t", label="DETERMINISTIC_PROPOSED",
+        gross_run_rate_savings={"base": "1"}, material_levers=[]))
+    session.commit()
+
+    listed = client.get(f"/v1/outside-in/cases/{case_id}/recommendations")
+    assert listed.status_code == 200, listed.text
+    found = [x for x in listed.json()["recommendations"]
+             if x["recommendation_id"] == rec_id]
+    assert found and found[0].get("transition"), (
+        "the recommendation names a scenario whose payback is known, and the "
+        "page that renders it was told there was none")
+
+    one = client.get(
+        f"/v1/outside-in/cases/{case_id}/recommendations/{rec_id}")
+    assert one.status_code == 200, one.text
+    assert one.json()["transition"] == found[0]["transition"]
 
 
 def test_a_simulation_without_bandwidth_is_refused_by_name(session, client):

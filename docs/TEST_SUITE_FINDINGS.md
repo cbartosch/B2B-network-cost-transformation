@@ -3,7 +3,7 @@
 **Build 4.272.0** · branch `fix/test-suite-trustworthy`
 
 Under `make test`, the project's own entry point:
-**138 failed / 2,315 passed → 0 failed / 2,594 passed.**
+**138 failed / 2,315 passed → 0 failed / 2,602 passed.**
 Zero regressions. Every commit checked by set-difference against the previous
 complete run, not by reading output.
 
@@ -104,10 +104,10 @@ will not replace an `__init__` already in the class `__dict__`. Every
 construction raised `FrozenInstanceError`.
 
 `estimate.py` emits the transition block only `if transition_policy is not
-None`, so **every scenario has been reporting a gross run-rate saving with no
+None`, so **every scenario had been reporting a gross run-rate saving with no
 payback and no one-time cost** — word for word the defect the class was written
 for: *"P3: none of this existed, so every scenario reported a gross saving as
-though it were the answer."* See §4 for what is still needed.
+though it were the answer."* Now wired — see P-13.
 
 ### P-6 · A case export could not be imported — **FIXED**
 `_plain()` writes dates as ISO strings so the export stays readable JSON;
@@ -164,6 +164,55 @@ environment of every container this work ran in.
 
 ---
 
+### P-13 · The transition model was complete and unreachable — **WIRED**
+Every piece existed and was correct: `transition.net`, `TransitionPolicy`, the
+seeded thresholds, page 8's renderer, and `validation_capture`'s extraction of
+`scenario["transition"]["one_time_cost"]["base"]`. Nothing built a policy and
+handed it to `scenarios()`, so the feature was absent end to end and **nothing
+failed** — the domain tests call `transition.net` directly, and no endpoint
+test looked for the block.
+
+Three gaps, all at seams:
+
+1. no call site constructed a `TransitionPolicy` (P-5 made that impossible
+   anyway);
+2. `scenarios()` needs a site count and a *monthly* run rate, and neither was
+   available at the call sites as such;
+3. the recommendation row has no `transition` column, so page 8 could never
+   have rendered one even with the scenarios fixed. It has shown its fallback
+   — *"No transition cost is modelled for this recommendation"* — to every
+   reader since 4.165.
+
+What was added: `_transition_policy(s)` beside its eight sibling loaders;
+`estimate.site_count()` and `estimate.monthly_run_rate()`, both reading back
+from the components rather than taking a number that could disagree with them;
+and `_with_transition()`, which attaches the block to a recommendation from its
+snapshot at read time rather than copying it onto the row, where it would be
+free to drift.
+
+**This changes what every estimate reports.** A scenario now carries its
+one-time cost, dual running, first-year net, payback band and programme
+duration. On a 4,000-site estate at the seeded 400/900/1800 band: £3.6m
+one-time, 19-month payback at base against a 34-month programme, and a
+first-year net of −£1.3m against a £2.4m gross saving. That is the number the
+gross figure was standing in for.
+
+Two things worth knowing about the shape:
+
+- **It is a 503 if the policy will not build**, like every other governed
+  policy, rather than silently omitting the block. `scenarios()` keeps its
+  optional contract for other callers — *"a missing payback is honest, and one
+  computed from no assumptions is not"* — but omitting it silently on the
+  publishing route is how it went missing in the first place.
+- **The site count is maxed across site-driven layers, not summed.** Both the
+  OPS line and the L2 overlay are driven by it and each is split across origins
+  by `_split()`, so a flat sum would report 8,000 sites for a 4,000-site estate
+  — doubling every one-time cost and halving every payback. Pinned by a test.
+
+Eight tests added, at the seam the domain and the endpoint met at.
+
+---
+
 ## 3. DECISION — answered
 
 ### D-1 · Is a degraded or undeliverable second path a second path? · **ANSWERED: no**
@@ -199,27 +248,23 @@ satisfied by a resolver that simply refuses every rural backup.
 
 ## 4. Not failures, but worth the owner's attention
 
-1. **Nothing constructs a `TransitionPolicy`.** The thresholds are seeded,
-   `from_rows` works and is tested, `estimate.py` is wired to use it — and no
-   call site builds one. So the payback block stays absent even with P-5 fixed.
-   Wiring it changes what every scenario reports, so it is a decision.
-2. **Both `requirements.lock` files are missing.** `check_lockfile.py`:
+1. **Both `requirements.lock` files are missing.** `check_lockfile.py`:
    *"9 direct pin(s) and no record of the transitive versions that ran"*, and 3
    for the UI. Producing them is a `pip freeze` against a chosen environment and
    a call about reproducibility policy.
-3. **`DOCUMENTATION.md` line 3 claims "1,835 tests passing."** The suite
+2. **`DOCUMENTATION.md` line 3 claims "1,835 tests passing."** The suite
    collects ~2,600, and 138 were failing when this started.
-4. **`products_present` is a misnomer.** It now holds `field=value` pairs across
+3. **`products_present` is a misnomer.** It now holds `field=value` pairs across
    whatever dimensions a lever constrained. Renaming it is a response-contract
    change; nothing in `analyst_ui` reads it today.
-5. **`FALLBACK_ORDER` is live only on a path nothing ships.** It is used in
+4. **`FALLBACK_ORDER` is live only on a path nothing ships.** It is used in
    `resolve()`'s product-keyed branch, reached when `service_class is None`;
    `simulation.py` always passes a class. It is still covered by
    `test_the_substitute_is_chosen_for_reliability_not_price`, which therefore
    tests a path the service does not take. Harmless today, and it is the
    cross-class substitution that D-1 just confirmed should not happen — so it
    reads as a live rule and is not one.
-6. **A runtime image carries its own test suite, the UI source and the
+5. **A runtime image carries its own test suite, the UI source and the
    bundle-root files.** That is the established choice here and I have extended
    it rather than reversed it, because it is the only way these guards run at
    all. Whether that is the right shape for a production image is a separate

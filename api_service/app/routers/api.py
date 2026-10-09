@@ -140,6 +140,27 @@ def _research_policy(s):
                                   "detail": str(exc)})
 
 
+def _transition_policy(s):
+    """What it costs to get to the target estate.
+
+    A 503 like every other governed policy, rather than None. scenarios()
+    treats the policy as optional - "a missing payback is honest, and one
+    computed from no assumptions is not" - and that is the right contract for
+    the domain function, which other callers use. It is not the right
+    contract here: the rows are seeded, this route is the one that publishes
+    a number, and silently omitting the payback is how it came to be missing
+    from every estimate ever produced without anyone noticing.
+
+    transition_policy.evidence_grade is deliberately unseeded and from_rows
+    reads it with .get(..., "E"); the five numeric fields are required.
+    """
+    try:
+        return policy.TransitionPolicy.from_rows(_thresholds(s, "transition_policy"))
+    except (policy.PolicyIncomplete, policy.PolicyInvalid) as exc:
+        raise HTTPException(503, {"error": "governed transition policy unusable",
+                                  "detail": str(exc)})
+
+
 def _recommendation_policy(s):
     try:
         return policy.RecommendationPolicy.from_rows(_thresholds(s, "recommendation_policy"))
@@ -3422,7 +3443,15 @@ def _run_anchor_estimate(s, *, case_id, case_row, payload,
     cur = estimate.current_tco(components)
     lv = [dict(r._mapping) for r in s.execute(select(db.lever)).all()]
     levers_by_id = {l["lever_id"]: l for l in lv}
-    scen = estimate.scenarios(components, lv)
+    # With the transition policy, so each scenario carries what it
+    # costs to get there. Site count and run rate are read back from
+    # the components rather than passed alongside them - a number
+    # passed beside the components could disagree with them.
+    scen = estimate.scenarios(
+        components, lv,
+        transition_policy=_transition_policy(s),
+        sites=estimate.site_count(components),
+        monthly_run_rate=estimate.monthly_run_rate(components))
 
     disp_summary = dispositions.summarise(disp)
     completeness = (D(disp_summary["total_domains"] - disp_summary["declared_unknown"])
@@ -3954,7 +3983,15 @@ def run_estimate(case_id: str, payload: EstimateIn):
         cur = estimate.current_tco(components)
         lv = [dict(r._mapping) for r in s.execute(select(db.lever)).all()]
         levers_by_id = {l["lever_id"]: l for l in lv}
-        scen = estimate.scenarios(components, lv)
+        # With the transition policy, so each scenario carries what it
+        # costs to get there. Site count and run rate are read back from
+        # the components rather than passed alongside them - a number
+        # passed beside the components could disagree with them.
+        scen = estimate.scenarios(
+            components, lv,
+            transition_policy=_transition_policy(s),
+            sites=estimate.site_count(components),
+            monthly_run_rate=estimate.monthly_run_rate(components))
 
         scenario_shares = {k: D(v["simulated_share"]) for k, v in scen.items()}
         sim_share = max(scenario_shares.values()) if scenario_shares else D(0)
@@ -4241,13 +4278,37 @@ class NarrateIn(BaseModel):
     idempotency_key: str | None = None
 
 
+def _with_transition(session, record: dict) -> dict:
+    """Attach what the recommended scenario costs to reach.
+
+    Read from the snapshot rather than stored on the recommendation. The
+    block is a property of (snapshot, scenario_code) and the recommendation
+    already names both, so a copy on the row would be denormalised and free
+    to drift from the snapshot it describes - and validation_capture reads it
+    off the scenario for exactly that reason: "one-time cost lives on the
+    scenario rather than the snapshot header, because it belongs to a plan
+    rather than to a baseline."
+
+    Page 8 has rendered this since 4.165 and has been showing its fallback -
+    "No transition cost is modelled for this recommendation" - to every
+    reader, because nothing put the block on the scenario and nothing put the
+    scenario on the recommendation.
+    """
+    scenarios = session.execute(select(db.estimate_snapshot.c.scenarios).where(
+        db.estimate_snapshot.c.estimate_snapshot_id
+        == record.get("estimate_snapshot_id"))).scalar()
+    scenario = (scenarios or {}).get(record.get("scenario_code")) or {}
+    transition = scenario.get("transition")
+    return {**record, "transition": transition} if transition else record
+
+
 def _recommendation_or_404(session, case_id: str, recommendation_id: str) -> dict:
     row = session.execute(select(db.recommendation).where(
         db.recommendation.c.recommendation_id == recommendation_id)).one_or_none()
     if row is None or row.case_id != case_id:
         raise HTTPException(404, f"recommendation {recommendation_id!r} not found for "
                                  f"case {case_id!r}")
-    return dict(row._mapping)
+    return _with_transition(session, dict(row._mapping))
 
 
 @router.post("/v1/outside-in/cases/{case_id}/estimates/{estimate_snapshot_id}"
@@ -4321,7 +4382,8 @@ def list_recommendations(case_id: str):
         rows = s.execute(select(db.recommendation).where(
             db.recommendation.c.case_id == case_id).order_by(
             db.recommendation.c.created_at.desc())).all()
-        return {"recommendations": [dict(r._mapping) for r in rows]}
+        return {"recommendations": [_with_transition(s, dict(r._mapping))
+                                    for r in rows]}
 
 
 @router.get("/v1/outside-in/cases/{case_id}/recommendations/{recommendation_id}")
