@@ -287,12 +287,51 @@ def test_two_circuits_of_the_same_product_are_not_a_second_path(table):
     assert "not a second path" in out["note"]
 
 
-def test_a_substitution_onto_a_genuinely_different_product_is_resilient(table):
-    """The rule must not block a real second path. A rural DC asking for an
-    ETHERNET backup gets broadband, which is a different failure domain."""
+def test_a_backup_whose_bearer_does_not_reach_is_not_a_second_path(table):
+    """An ETHERNET backup in a rural town is not a second path, because the
+    bearer it needs is not there.
+
+    carriers_for("ETHERNET") is (ETHERNET_FIBRE, DARK_FIBRE) and the seed
+    marks both unavailable in DE RURAL, so there is no path at any speed.
+
+    This test used to expect the opposite - "a rural DC asking for an
+    ETHERNET backup gets broadband, which is a different failure domain" -
+    and that is the real change, not the bandwidth. The old product-keyed
+    resolver walked FALLBACK_ORDER and substituted across product classes;
+    the bearer resolver only considers carriers of the class that was asked
+    for, so it never quietly turns a dedicated backup into a broadband one.
+
+    Confirmed as intended rather than assumed: counting a circuit the site
+    cannot actually be given would overstate resilience on exactly the rural
+    estates where the question decides the answer. The companion rules are
+    the test above - two circuits of the same product are not a second path -
+    and the test below, so a backup has to be diverse AND deliverable.
+    """
     out = _backup(table, "RURAL", "ETHERNET", "ETHERNET", mbps=10_000)
+    assert out["resilient"] is False
+    assert out["outcome"] == serviceability.UNSERVICEABLE
+    assert out["product"] is None
+    assert "no second access path is deliverable" in out["note"]
+
+    # Not a bandwidth question. The same ask at a hundredth of the speed is
+    # refused for the same reason, which is what makes this about the bearer.
+    assert _backup(table, "RURAL", "ETHERNET", "ETHERNET",
+                   mbps=100)["resilient"] is False
+
+
+def test_a_diverse_backup_that_is_deliverable_is_a_second_path(table):
+    """The other side, so the rule above cannot be satisfied by a resolver
+    that simply refuses every rural backup.
+
+    A rural site with an ETHERNET primary and a BROADBAND_HFC backup gets
+    one: BEST_EFFORT rides on PON among others, and PON reaches DE RURAL.
+    Different product, different bearer, so it counts.
+    """
+    out = _backup(table, "RURAL", "BROADBAND_HFC", "ETHERNET", mbps=100)
     assert out["resilient"] is True
-    assert out["product"] != "ETHERNET"
+    assert out["outcome"] == serviceability.DELIVERED
+    assert out["product"] == "BROADBAND_HFC"
+    assert out["access_technology"] == "PON"
 
 
 def test_an_ordinary_urban_backup_is_unaffected(table):

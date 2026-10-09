@@ -3,11 +3,12 @@
 **Build 4.272.0** · branch `fix/test-suite-trustworthy`
 
 Under `make test`, the project's own entry point:
-**138 failed / 2,315 passed → 1 failed / 2,592 passed.**
+**138 failed / 2,315 passed → 0 failed / 2,594 passed.**
 Zero regressions. Every commit checked by set-difference against the previous
 complete run, not by reading output.
 
-One test remains, and it is a decision rather than a defect. It is §3.
+The suite is green. The one remaining question was a decision rather than a
+defect and has been answered by the owner — see §3.
 
 ---
 
@@ -163,29 +164,38 @@ environment of every container this work ran in.
 
 ---
 
-## 3. DECISION — the one remaining failure
+## 3. DECISION — answered
 
-### D-1 · Is a degraded second path a second path?
+### D-1 · Is a degraded or undeliverable second path a second path? · **ANSWERED: no**
 
-`test_a_substitution_onto_a_genuinely_different_product_is_resilient` asks a
-rural DC with a **10 Gbps** ETHERNET primary for a backup. Nothing in DE RURAL
-reaches 10 Gbps — PON 100, HFC 200, VDSL 40, FWA 100, 5G 100, SATELLITE 50 — so
-the resolver returns `UNSERVICEABLE` and the site is modelled with **one path**.
+`test_a_substitution_onto_a_genuinely_different_product_is_resilient` asked a
+rural DC with an ETHERNET primary for a backup and expected broadband,
+`resilient=True`. The resolver reports no second path and models the site with
+one.
 
-The test expects a broadband backup and `resilient=True`, on the grounds that a
-different failure domain is a real second path.
+**Owner's decision: a backup must carry the primary's load. The resolver
+stands.** The tests now assert the single-path outcome.
 
-| if you answer | then |
-|---|---|
-| a backup must carry the primary's bandwidth | the resolver is right; the test asserts a rule the model does not hold, and should assert the single-path outcome |
-| a degraded second path still counts | the resolver is over-strict; backups should substitute down in capacity, and rural resilience is currently understated |
+Investigating it to write those tests corrected my own framing, which is worth
+recording because the register had it wrong:
 
-Both are defensible and they produce **different resilience numbers for
-clients**, so this is not mine to pick.
+- I filed this as a *bandwidth* question — nothing in DE RURAL reaches the
+  10 Gbps the test asked for. That was a red herring. `carriers_for("ETHERNET")`
+  is `(ETHERNET_FIBRE, DARK_FIBRE)` and the seed marks **both unavailable in DE
+  RURAL**, so the ask is refused at 100 Mbps for the same reason it is refused
+  at 10,000. It is a bearer question, not a capacity one.
+- **The real behavioural change is that the backup resolver no longer
+  substitutes across service classes.** The product-keyed resolver walked
+  `FALLBACK_ORDER` and would hand a dedicated backup a broadband circuit; the
+  bearer resolver only considers carriers of the class asked for. A rural site
+  whose archetype names an ETHERNET backup now gets none, where before it got
+  broadband.
 
-*The rest of what was filed here as D-1 is resolved and closed — see §6.*
-
----
+That is the decision as taken, and it is the conservative reading: a circuit
+the site cannot be given is not resilience. Both rules are now pinned, with the
+converse — a `BROADBAND_HFC` backup behind an ETHERNET primary in the same
+rural town **is** a second path, delivered on PON — so the rule cannot be
+satisfied by a resolver that simply refuses every rural backup.
 
 ## 4. Not failures, but worth the owner's attention
 
@@ -202,7 +212,14 @@ clients**, so this is not mine to pick.
 4. **`products_present` is a misnomer.** It now holds `field=value` pairs across
    whatever dimensions a lever constrained. Renaming it is a response-contract
    change; nothing in `analyst_ui` reads it today.
-5. **A runtime image carries its own test suite, the UI source and the
+5. **`FALLBACK_ORDER` is live only on a path nothing ships.** It is used in
+   `resolve()`'s product-keyed branch, reached when `service_class is None`;
+   `simulation.py` always passes a class. It is still covered by
+   `test_the_substitute_is_chosen_for_reliability_not_price`, which therefore
+   tests a path the service does not take. Harmless today, and it is the
+   cross-class substitution that D-1 just confirmed should not happen — so it
+   reads as a live rule and is not one.
+6. **A runtime image carries its own test suite, the UI source and the
    bundle-root files.** That is the established choice here and I have extended
    it rather than reversed it, because it is the only way these guards run at
    all. Whether that is the right shape for a production image is a separate
@@ -238,6 +255,7 @@ Two cautions, both learned the hard way here:
   vocabulary split was for — and it is still priced differently, because
   `unit_cost_prior` is keyed on `access_technology` as well as `service_class`.
   What *was* broken is P-9, the read-out.
+- **A degraded second path** — closed by the owner's decision, §3.
 - A CONTRADICTED fact suppressing a good one — no longer failing.
 - Lever eligibility and right-sizing — no longer failing.
 - The certificate test, `acknowledge()`'s `case_id`, the retired lever
