@@ -64,12 +64,25 @@ def test_an_urban_store_gets_what_it_asks_for(table):
 
 def test_a_rural_store_takes_a_different_circuit(table):
     """The finding for a large chain: same country, same format, a different
-    product - so a rural store is not a cheaper urban one."""
+    circuit - so a rural store is not a cheaper urban one.
+
+    The difference is the bearer now, not the product name. The resolver
+    asks "does a bearer reach this site that can carry this service" rather
+    than "is this product sold here", so the rural store still gets DIA -
+    over PON, because neither ETHERNET_FIBRE nor DARK_FIBRE reaches it. The
+    urban and suburban stores get ETHERNET_FIBRE.
+
+    That is the same finding, and it is still priced differently:
+    unit_cost_prior is keyed on access_technology as well as service_class,
+    and simulation.py passes the technology the resolver chose. This test
+    asserted the pre-split vocabulary - SUBSTITUTED onto a BROADBAND_HFC
+    product - which the model stopped speaking."""
     out = _resolve(table, "RURAL")
-    assert out["outcome"] == serviceability.SUBSTITUTED
+    assert out["outcome"] == serviceability.DELIVERED
     assert out["asked_for"] == "DIA"
-    assert out["product"] == "BROADBAND_HFC"
-    assert "cannot be delivered in RURAL" in out["note"]
+    assert out["access_technology"] == "PON"
+    assert _resolve(table, "URBAN")["access_technology"] == "ETHERNET_FIBRE", (
+        "if the urban store took the same bearer there would be no finding")
 
 
 def test_a_tier_that_cannot_be_delivered_is_capped_not_ignored(table):
@@ -116,11 +129,23 @@ def test_a_four_thousand_store_estate_reports_what_its_density_did(table):
         outcomes.extend([_resolve(table, band)] * count)
 
     summary = serviceability.summarise(outcomes)
-    assert summary["counts"][serviceability.DELIVERED] == 3400
-    assert summary["counts"][serviceability.SUBSTITUTED] == 600
-    swap = summary["substitutions"][0]
-    assert swap["asked_for"] == "DIA" and swap["delivered"] == "BROADBAND_HFC"
-    assert swap["sites"] == 600
+
+    # Every site is served; 600 of them are served over a different bearer.
+    # Under the product-keyed model those 600 were SUBSTITUTED onto
+    # BROADBAND_HFC, and the count carried the finding. Under the bearer
+    # model they are DELIVERED on PON, so the substitution count went to zero
+    # and summarise() - which looked only at substitutions - reported a
+    # 4,000-store estate as uniform. The read-out had lost the one thing this
+    # function exists to say.
+    assert summary["counts"][serviceability.DELIVERED] == 4000
+    assert summary["counts"][serviceability.SUBSTITUTED] == 0
+    assert summary["by_access_technology"] == [
+        {"access_technology": "ETHERNET_FIBRE", "sites": 3400},
+        {"access_technology": "PON", "sites": 600}]
+    # Counted and named, because "600 on PON" is actionable and "15% on a
+    # secondary bearer" is not.
+    assert "600 on PON" in summary["note"]
+    assert "different circuit at a different rate" in summary["note"]
 
 
 def test_the_summary_of_an_empty_estate_says_so():
