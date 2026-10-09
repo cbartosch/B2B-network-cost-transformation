@@ -504,11 +504,36 @@ def test_corroboration_records_what_superseded_the_fact(session, monkeypatch):
         rights_cleared=True))
     session.commit()
 
+    # Two things changed under this test and it was patching neither.
+    #
+    # corroborate() goes through gateway.structured_call now, not
+    # gateway.execute, so the patch below missed and the real path ran and
+    # found no provider.
+    #
+    # And the reply it faked - {"state": "CORROBORATED"} - is the exact thing
+    # the system was changed to make impossible. The register's P0 was "the
+    # model returned CORROBORATED and the system wrote it";
+    # schemas.CorroborationResult has no state field at all, "which is a
+    # stronger control than validating it away". The model reports what it
+    # found and _compare_candidates decides the state deterministically.
+    #
+    # So the fake returns candidates, and the assertion that the state is
+    # CORROBORATED now means the comparison reached that conclusion rather
+    # than the model having been believed.
+    from app.llm import schemas
+
     monkeypatch.setattr(gateway, "create_agent_run",
                         lambda *a, **k: "agent-run-1")
-    monkeypatch.setattr(gateway, "execute", lambda *a, **k: {
-        "text": '{"state": "CORROBORATED", "note": "matches filings"}',
-        "provider_response_id": "msg_1"})
+    monkeypatch.setattr(gateway, "structured_call", lambda *a, **k: (
+        schemas.CorroborationResult(
+            search_attempted=True,
+            unresolved_reasons=[],
+            candidates=[schemas.CorroborationCandidate(
+                url="https://example.com/annual-report",
+                source_class="PRIMARY_FILING", how_read="FULL_PAGE",
+                figure_basis="STATED", public_value=120, unit="sites",
+                as_of="2026-05-01", exact_excerpt="120 sites in GB")]),
+        {"provider_response_id": "msg_1"}))
     monkeypatch.setattr(gateway, "succeed", lambda *a, **k: None)
 
     known_facts.corroborate(session, known_fact_id=fid, provider="anthropic")
