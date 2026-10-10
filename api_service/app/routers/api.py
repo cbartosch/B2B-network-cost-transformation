@@ -1715,11 +1715,26 @@ def set_dispositions(case_id: str, records: list[DispositionIn]):
                 db.domain_disposition.c.case_id == case_id)).all()}
         incoming = {r["domain_no"] for r in records}
 
-        # Domains absent from the payload are removed, preserving the previous
-        # whole-case-replacement semantics the interface relies on.
-        for domain_no in set(existing) - incoming:
-            s.execute(delete(db.domain_disposition).where(
-                db.domain_disposition.c.id == existing[domain_no].id))
+        # A domain absent from the payload is left alone.
+        #
+        # It used to be deleted, under a comment saying that preserved "the
+        # previous whole-case-replacement semantics the interface relies on".
+        # The interface does not rely on it: page 4 sends every row of its
+        # table, all 24, on every save, so the branch could never fire for the
+        # UI. It fired only for a partial payload - where deletion is the
+        # opposite of what the caller means by sending a subset.
+        #
+        # And it was silent. `provenance_dropped` below reports a domain
+        # re-dispositioned *in* the payload; a domain dropped by omission was
+        # reported nowhere, so a seven-record PUT destroyed seventeen research
+        # dispositions - evidence blobs, agent_run_ids, the provenance for
+        # seventeen paid LIVE provider calls - and returned a success with an
+        # empty provenance_dropped. That is how this was found: by doing it.
+        #
+        # DOMAINS is a fixed list of 24 and validate() requires all 24, so a
+        # disposition that exists is never surplus to a case. There is no
+        # state this deletion was reaching that anyone wants.
+        untouched = sorted(set(existing) - incoming)
 
         provenance_dropped = []
         for r in records:
@@ -1746,9 +1761,32 @@ def set_dispositions(case_id: str, records: list[DispositionIn]):
                       .where(db.domain_disposition.c.id == prev.id)
                       .values(**values))
         s.commit()
-    return {"stored": len(records), "publication_blockers": problems,
-            "summary": dispositions.summarise(records),
-            "provenance_dropped": provenance_dropped}
+
+        # Validated against the case, not against the payload.
+        #
+        # `problems` above is dispositions.validate(records), which answers
+        # "could a case made only of these records publish?". For the UI,
+        # which sends all 24, that is the same question. For anything else it
+        # is not: a seven-record PUT reported the other seventeen as missing
+        # while the case held them, and a caller reading publication_blockers
+        # to decide whether to run an estimate was told the wrong thing.
+        #
+        # The case is what publishes, so the case is what gets validated.
+        final = [dict(r._mapping) for r in s.execute(
+            select(db.domain_disposition).where(
+                db.domain_disposition.c.case_id == case_id)).all()]
+
+    return {"stored": len(records),
+            "publication_blockers": dispositions.validate(final),
+            # Kept, and named for what it is, because it is a different
+            # question and a caller may want it: whether the payload alone
+            # would have been publishable.
+            "payload_blockers": problems,
+            "summary": dispositions.summarise(final),
+            "provenance_dropped": provenance_dropped,
+            # Named rather than implied. A caller sending a subset should be
+            # able to see that this was not a whole-case replacement.
+            "left_untouched": untouched}
 
 
 @router.get("/v1/outside-in/cases/{case_id}/domain-dispositions")

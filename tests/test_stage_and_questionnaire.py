@@ -795,3 +795,91 @@ def test_deliberately_redispositioning_drops_provenance_and_says_so(session):
     assert result["provenance_dropped"] and \
         result["provenance_dropped"][0]["domain_no"] == 1, (
         "dropping provenance must be reported, not silent")
+
+def test_a_partial_save_does_not_delete_the_domains_it_does_not_mention(session):
+    """Both tests above send all 24 domains, which is what page 4 does - and
+    that is why this went unseen.
+
+    A payload that omits a domain used to delete it. The comment said that
+    preserved "the previous whole-case-replacement semantics the interface
+    relies on"; the interface sends every row of its table on every save, so
+    the branch only ever fired for a partial caller, where deletion is the
+    opposite of what sending a subset means.
+
+    Found by doing it: a seven-record PUT destroyed seventeen researched
+    dispositions and returned success.
+    """
+    from app.routers.api import DispositionIn, set_dispositions
+
+    case_id = _case(session)
+    run_id = str(uuid.uuid4())
+    session.execute(insert(db.domain_disposition), [
+        {"id": str(uuid.uuid4()), "case_id": case_id,
+         "estimate_snapshot_id": None, "domain_no": no, "domain_name": name,
+         "disposition": "EVIDENCED_PUBLIC" if no in (1, 2) else "BENCHMARK_PRIOR",
+         "reason": None,
+         "agent_run_id": run_id if no in (1, 2) else None,
+         "evidence": ({"sources": [{"url": "https://example.com/1"}]}
+                      if no in (1, 2) else None)}
+        for no, name in dispositions.DOMAINS])
+    session.commit()
+
+    names = dict(dispositions.DOMAINS)
+    subset = [3, 4, 5]
+    result = set_dispositions(case_id, [
+        DispositionIn(domain_no=n, domain_name=names[n],
+                      disposition="ANALYST_ASSERTED_PRIOR", reason=None)
+        for n in subset])
+
+    rows = {r.domain_no: r for r in session.execute(select(
+        db.domain_disposition).where(
+            db.domain_disposition.c.case_id == case_id)).all()}
+    assert len(rows) == 24, (
+        f"a 3-record save left {len(rows)} of 24 domains; the ones it did "
+        f"not mention were deleted")
+    for n in (1, 2):
+        assert rows[n].evidence is not None, (
+            "a domain the payload never mentioned lost its sources")
+        assert rows[n].agent_run_id == run_id
+        assert rows[n].disposition == "EVIDENCED_PUBLIC"
+    for n in subset:
+        assert rows[n].disposition == "ANALYST_ASSERTED_PRIOR"
+
+    assert result["left_untouched"] == [
+        n for n, _ in dispositions.DOMAINS if n not in subset], (
+        "a partial save must say which domains it did not touch, so a caller "
+        "can see it was not a whole-case replacement")
+
+
+def test_the_blockers_reported_are_the_case_s_not_the_payload_s(session):
+    """publication_blockers answered the wrong question.
+
+    It was dispositions.validate(records) - "could a case made only of these
+    records publish?" - so a three-record save reported the other twenty-one
+    as missing while the case held every one of them. A caller reading it to
+    decide whether to run an estimate was told the wrong thing.
+    """
+    from app.routers.api import DispositionIn, set_dispositions
+
+    case_id = _case(session)
+    session.execute(insert(db.domain_disposition), [
+        {"id": str(uuid.uuid4()), "case_id": case_id,
+         "estimate_snapshot_id": None, "domain_no": no, "domain_name": name,
+         "disposition": "BENCHMARK_PRIOR", "reason": None,
+         "agent_run_id": None, "evidence": None}
+        for no, name in dispositions.DOMAINS])
+    session.commit()
+
+    names = dict(dispositions.DOMAINS)
+    result = set_dispositions(case_id, [
+        DispositionIn(domain_no=1, domain_name=names[1],
+                      disposition="BENCHMARK_PRIOR", reason=None)])
+
+    assert result["publication_blockers"] == [], (
+        f"the case holds all 24 dispositions and can publish; the endpoint "
+        f"reported {result['publication_blockers']}")
+    # The payload's own answer is still available, named for what it is.
+    assert result["payload_blockers"], (
+        "one record alone could not publish, and that remains reportable")
+    assert result["summary"]["total_domains"] == 24
+
