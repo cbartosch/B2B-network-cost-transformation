@@ -1,0 +1,540 @@
+"""Run the outside-in workflow end to end for each company in
+samples/outside_in/companies.json, and store what it produced.
+
+LIVE throughout. Entity resolution and all seventeen agent-routed domains
+make real provider calls with hosted web search, so one company is tens of
+minutes and the set is hours. Nothing here is cached between companies: each
+is its own case, and the schema makes that structural rather than a promise -
+outside_in, analysis and agent_runtime are keyed by case_id and reference is
+not, so twenty cases cannot contaminate each other.
+
+Resumable. A company whose directory already holds a complete estimate is
+skipped unless --force, because a provider spend that has already happened
+should not happen twice for a re-run of the loop.
+
+Usage, from the bundle root with the stack up:
+
+    docker compose exec api sh -c 'cd /app && PYTHONPATH=/app \\
+        python tools/run_samples.py --out /src/samples/outside_in'
+
+    --only tesco,basf     run a subset
+    --force               re-run companies that already have results
+    --domains 1,2,6,7,8   research only these domains (a cheaper pilot)
+"""
+import argparse
+import json
+import pathlib
+import time
+import urllib.error
+import urllib.request
+from datetime import datetime, timezone
+
+from sqlalchemy import select
+
+from app import _version, db
+from app.domain import dispositions, research
+
+API = "http://127.0.0.1:8000"
+
+# The seventeen domains a research agent is routed to. The other seven are
+# analyst or policy domains with no agent behind them, so asking for them
+# would be a call that cannot answer.
+AGENT_DOMAINS = sorted(n for n, a in research.DOMAIN_AGENT_MAP.items() if a)
+
+# The other seven: 3, 4, 5, 11, 17, 23, 24. No agent is routed to them, so
+# nothing researches them and V0 refuses to publish while any of the 24 has
+# no disposition - correctly, because an undisposed domain is one nobody has
+# said anything about. They are disposed BENCHMARK_PRIOR: this estimate rests
+# on the seeded priors for archetypes, bandwidth, remote users, operating
+# model, resilience, the northstar set and the confidence metadata, and
+# saying so is what keeps the confidence model honest about them.
+ANALYST_DOMAINS = sorted(n for n, a in research.DOMAIN_AGENT_MAP.items()
+                         if not a)
+
+# One seed for the whole set, so a re-run reproduces every estate and a
+# difference between two companies is the company rather than the draw.
+SEED = 20260101
+ENSEMBLE = 25
+ANALYST = "sample-run"
+
+# The domains whose findings the summary leads on. The rest are kept in full
+# in research.json; these are the ones a reader asks about first.
+HIGHLIGHT_DOMAINS = {
+    1: "profile", 2: "locations", 6: "data_centres", 7: "architecture",
+    8: "vendors", 12: "contracts", 14: "transformation", 18: "serviceability",
+}
+
+
+def call(method, path, body=None, timeout=2400):
+    data = json.dumps(body).encode() if body is not None else None
+    req = urllib.request.Request(
+        API + path, data=data, method=method,
+        headers={"Content-Type": "application/json"})
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as r:
+            return r.status, json.loads(r.read() or b"null")
+    except urllib.error.HTTPError as e:
+        try:
+            return e.code, json.loads(e.read() or b"null")
+        except Exception:                                    # noqa: BLE001
+            return e.code, None
+    except Exception as e:                                   # noqa: BLE001
+        return 0, {"transport_error": f"{type(e).__name__}: {e}"}
+
+
+def log(slug, msg):
+    print(f"  [{slug}] {msg}", flush=True)
+
+
+# ----------------------------------------------------------------- the steps
+def intake(spec):
+    st, case = call("POST", "/v1/outside-in/cases", {
+        "created_by": ANALYST,
+        "subject_entity_legal_name": spec["legal_name"],
+        "entity_aliases": spec.get("aliases") or [],
+        "country_of_domicile": spec["domicile"],
+        "group_perimeter": "GROUP_CONSOLIDATED",
+        "in_scope_countries": spec["countries"],
+        "in_scope_cost_layers": ["L0", "L1", "L2", "L4", "OPS"],
+        "in_scope_service_families": ["WAN", "INTERNET"],
+        "base_currency": spec["currency"],
+        "price_year": 2026,
+        "fx_convention": "SPOT",
+        "analysis_horizon_years": 3,
+        "discount_rate_set_id": "default",
+        "engagement_purpose": "COST_TRANSFORMATION",
+        # No contact: this is an outside-in estimate about a public company,
+        # built only from public evidence. Saying so here is what keeps
+        # CLIENT_CONFIRMED off every disposition downstream.
+        "client_contact_status": "NO_CONTACT",
+        "baseline_reference_period": "FY2025"})
+    if st != 200:
+        raise RuntimeError(f"intake {st}: {case}")
+    return case["case_id"]
+
+
+def resolve_and_confirm(case_id, spec):
+    """Real resolution, not a direct write.
+
+    The candidate carries the industry, and the industry keys
+    archetype_bandwidth and archetype_resilience - so an entity confirmed
+    without one is an estate priced off DEFAULT. Falls back to the spec's
+    industry only if resolution produces nothing, and says which was used.
+    """
+    st, out = call("POST", f"/v1/outside-in/cases/{case_id}/entities:resolve",
+                   {"name_hint": spec["legal_name"], "mode": "LIVE"},
+                   timeout=900)
+    if st != 200:
+        return {"resolved": False, "detail": f"{st}: {out}"}
+
+    cands = (out or {}).get("candidates") or []
+    if not cands:
+        return {"resolved": False, "detail": "no candidates proposed"}
+
+    pick = cands[0]
+    st, conf = call("POST", f"/v1/outside-in/cases/{case_id}:confirm-entity", {
+        "candidate_id": pick["candidate_id"], "confirmed_by": ANALYST,
+        "group_perimeter": "GROUP_CONSOLIDATED"}, timeout=300)
+    if st != 200:
+        return {"resolved": False, "detail": f"confirm {st}: {conf}"}
+    return {"resolved": True, "candidate": pick,
+            "candidates_considered": len(cands)}
+
+
+def set_industry_if_absent(case_id, spec):
+    """The seeded industry code, if resolution did not supply one.
+
+    Recorded in the manifest either way. An industry the seed does not know
+    silently falls back to DEFAULT and the estate stops differentiating, so
+    this is not a cosmetic field.
+    """
+    from sqlalchemy import update
+    with db.SessionLocal() as s:
+        row = s.execute(select(db.case.c.industry).where(
+            db.case.c.case_id == case_id)).scalar()
+        known = {r[0] for r in s.execute(
+            select(db.archetype_bandwidth.c.industry)).all()}
+        if row and row.upper() in known:
+            return {"industry": row, "origin": "ENTITY_RESOLUTION"}
+        s.execute(update(db.case).where(db.case.c.case_id == case_id)
+                  .values(industry=spec["industry"]))
+        s.commit()
+        return {"industry": spec["industry"],
+                "origin": "SPEC_FALLBACK",
+                "resolution_said": row}
+
+
+def preflight(case_id):
+    st, report = call("POST", f"/v1/outside-in/cases/{case_id}/preflight:run",
+                      {}, timeout=300)
+    if st != 200:
+        raise RuntimeError(f"preflight {st}: {report}")
+    st, ack = call("POST",
+                   f"/v1/outside-in/cases/{case_id}/preflight:acknowledge",
+                   {"report_id": report["report_id"],
+                    "acknowledged_by": ANALYST}, timeout=300)
+    if st != 200:
+        raise RuntimeError(f"acknowledge {st}: {ack}")
+    return report
+
+
+def do_research(case_id, slug, domains):
+    """One domain per call.
+
+    The endpoint's own note: a full seventeen-domain run is minutes of LIVE
+    provider calls and source fetches, which no HTTP client will wait for.
+    Walking them one at a time also means a domain that fails costs that
+    domain rather than the run.
+    """
+    out = {}
+    for n in domains:
+        t0 = time.time()
+        st, res = call("POST",
+                       f"/v1/outside-in/cases/{case_id}/domain-research:run",
+                       {"domain_nos": [n], "provider": "anthropic"},
+                       timeout=2400)
+        took = round(time.time() - t0, 1)
+        out[n] = {"status": st, "seconds": took, "result": res}
+        name = dict(dispositions.DOMAINS).get(n, "?")
+        if st == 200:
+            got = (res or {}).get("results") or []
+            disp = got[0].get("disposition") if got else "-"
+            log(slug, f"domain {n:>2} {name[:34]:<34} {disp:<18} {took}s")
+        else:
+            log(slug, f"domain {n:>2} {name[:34]:<34} FAILED {st} ({took}s)")
+    return out
+
+
+def dispose_analyst_domains(case_id, slug, researching):
+    """The seven domains no agent covers.
+
+    BEFORE research, and the ordering is load-bearing. PUT
+    /domain-dispositions is a whole-case replacement: its own code deletes
+    every domain absent from the payload -
+
+        # Domains absent from the payload are removed, preserving the
+        # previous whole-case-replacement semantics the interface relies on.
+        for domain_no in set(existing) - incoming:
+
+    - so sending these seven after research deletes the seventeen the agents
+    disposed, with their evidence blobs and their agent_run_ids. That is the
+    provenance for seventeen paid LIVE calls, and `provenance_dropped` in the
+    response does not mention it: that list covers domains re-dispositioned
+    in the payload, not domains dropped by omission. The first run of this
+    script did exactly that and lost two researched domains silently.
+
+    Research upserts on top of these afterwards, which is safe in that
+    direction.
+    """
+    names = dict(dispositions.DOMAINS)
+    # Everything this run will not research - the seven with no agent, plus
+    # any agent domain left out of --domains. V0 refuses to publish while any
+    # of the 24 is undisposed, and a domain nobody researched resting on the
+    # seeded prior is exactly what BENCHMARK_PRIOR means. The manifest records
+    # which domains were researched, so the two are never confused.
+    todo = [n for n, _ in dispositions.DOMAINS if n not in set(researching)]
+    st, out = call("PUT",
+                   f"/v1/outside-in/cases/{case_id}/domain-dispositions",
+                   [{"domain_no": n, "domain_name": names[n],
+                     "disposition": "BENCHMARK_PRIOR"}
+                    for n in todo], timeout=300)
+    if st != 200:
+        raise RuntimeError(f"dispositions {st}: {out}")
+    # Not logging publication_blockers from this response: the endpoint
+    # computes them with dispositions.validate(records) over the *payload*,
+    # so a seven-record PUT reports the other seventeen as missing whatever
+    # the case actually holds. The estimate call is what tells us.
+    log(slug, f"disposed {len(todo)} domain(s) BENCHMARK_PRIOR "
+              f"ahead of research")
+    return out
+
+
+def promote(case_id, slug):
+    st, cands = call("GET",
+                     f"/v1/outside-in/cases/{case_id}/research-findings",
+                     timeout=300)
+    if st != 200:
+        return {"promoted": False, "detail": f"{st}: {cands}"}
+    # footprint_candidates, and candidate_id - the bucket names and the id
+    # field are promotion.candidates()' own, not guesses.
+    ids = [c.get("candidate_id")
+           for c in (cands or {}).get("footprint_candidates") or []]
+    ids = [i for i in ids if i]
+    if not ids:
+        return {"promoted": False, "detail": "no footprint candidates",
+                "candidates": cands}
+    st, res = call("POST",
+                   f"/v1/outside-in/cases/{case_id}/research-findings:promote",
+                   {"candidate_ids": ids, "promoted_by": ANALYST},
+                   timeout=600)
+    log(slug, f"promote {len(ids)} footprint finding(s): {st}")
+    return {"promoted": st == 200, "ids": ids, "result": res}
+
+
+def footprint_for_simulation(case_id, spec):
+    """Researched counts where research spoke, disclosed counts where it did
+    not, merged on (country, archetype).
+
+    Not one or the other, because both alone are wrong in a different
+    direction. The pilot run made the case: for Unilever the agents returned
+    seven rows totalling seventeen sites - five GB plants, four DE plants, a
+    couple of offices - every one of them a real sourced fact, and together
+    not an estate. It had no data centre and almost no offices, because
+    nobody publishes a list of them. Priced on its own it produced a baseline
+    an order of magnitude under the disclosed footprint, and next to a
+    3,900-site grocery estate it would read as "Unilever has a small
+    network", which is not what the research found. It is what the research
+    could see.
+
+    Taking only the disclosed footprint is the opposite error: it throws away
+    the one part of the estate that was actually evidenced.
+
+    So: a researched (country, archetype) replaces the disclosed row for that
+    pair, and pairs research did not reach keep theirs. The manifest records
+    every row's origin, and the confidence model is unaffected - it reads
+    evidence from the dispositions, not from this merge.
+    """
+    with db.SessionLocal() as s:
+        rows = s.execute(select(db.evidenced_footprint).where(
+            db.evidenced_footprint.c.case_id == case_id)).all()
+    promoted = [r for r in rows if r.promoted_at is not None and r.sites]
+
+    researched = {}
+    for r in promoted:
+        key = (r.country, r.archetype)
+        researched[key] = researched.get(key, 0) + int(r.sites)
+
+    merged, provenance = [], []
+    for key, sites in sorted(researched.items()):
+        country, archetype = key
+        merged.append({"country": country, "archetype": archetype,
+                       "sites": sites})
+        provenance.append({"country": country, "archetype": archetype,
+                           "sites": sites, "origin": "RESEARCHED"})
+
+    for row in spec["declared_footprint"]:
+        key = (row["country"], row["archetype"])
+        if key in researched:
+            provenance.append(
+                {**row, "origin": "SUPERSEDED_BY_RESEARCH",
+                 "research_said": researched[key]})
+            continue
+        merged.append(dict(row))
+        provenance.append({**row, "origin": "PUBLIC_DISCLOSURE"})
+
+    if not merged:
+        return list(spec["declared_footprint"]), "PUBLIC_DISCLOSURE_ONLY", []
+    origin = ("RESEARCH_MERGED_WITH_DISCLOSURE" if researched
+              else "PUBLIC_DISCLOSURE_ONLY")
+    return merged, origin, provenance
+
+
+def simulate(case_id, slug, footprint):
+    st, sim = call("POST", f"/v1/outside-in/cases/{case_id}/simulations:run",
+                   {"seed": SEED, "ensemble_size": ENSEMBLE,
+                    "footprint": footprint}, timeout=600)
+    if st not in (200, 202):
+        raise RuntimeError(f"simulation {st}: {sim}")
+    sim_id = sim["simulation_run_id"]
+    for _ in range(900):
+        st, poll = call("GET", f"/v1/outside-in/simulations/{sim_id}",
+                        timeout=120)
+        if (poll or {}).get("status") in ("SUCCEEDED", "FAILED", "CANCELLED"):
+            break
+        time.sleep(2)
+    if poll.get("status") != "SUCCEEDED":
+        raise RuntimeError(f"simulation ended {poll.get('status')}")
+    log(slug, f"simulation {poll.get('status')}")
+    return sim_id, poll
+
+
+def estimate(case_id, slug, sim_id, footprint):
+    total_sites = sum(int(r["sites"]) for r in footprint)
+    st, est = call("POST", f"/v1/outside-in/cases/{case_id}/estimates:run", {
+        "method": "BUILD_UP", "simulation_run_id": sim_id,
+        # Both are inputs the model will not invent. Stated here, recorded in
+        # the manifest, and deliberately crude: a per-site operating cost and
+        # a user population nobody has researched are assumptions, and the
+        # confidence model is what carries that.
+        "users": max(1, total_sites * 12),
+        "ops_cost_per_site_base": 900}, timeout=900)
+    if st != 200:
+        raise RuntimeError(f"estimate {st}: {est}")
+    log(slug, f"V0 {est.get('v0_status')}, "
+              f"baseline {(est.get('current_tco') or {}).get('base')}")
+    return est
+
+
+# ------------------------------------------------------------- what we store
+def harvest(case_id, research_raw):
+    """The research, as findings rather than as agent runs."""
+    with db.SessionLocal() as s:
+        disp = [dict(r._mapping) for r in s.execute(
+            select(db.domain_disposition).where(
+                db.domain_disposition.c.case_id == case_id)).all()]
+        facts = [dict(r._mapping) for r in s.execute(
+            select(db.known_fact).where(
+                db.known_fact.c.case_id == case_id)).all()]
+        foot = [dict(r._mapping) for r in s.execute(
+            select(db.evidenced_footprint).where(
+                db.evidenced_footprint.c.case_id == case_id)).all()]
+
+    by_no = {d["domain_no"]: d for d in disp}
+    highlights = {}
+    for n, key in HIGHLIGHT_DOMAINS.items():
+        d = by_no.get(n) or {}
+        ev = d.get("evidence") or {}
+        highlights[key] = {
+            "domain_no": n,
+            "domain": dict(dispositions.DOMAINS).get(n),
+            "disposition": d.get("disposition"),
+            "reason": d.get("reason"),
+            "finding": ev.get("finding") if isinstance(ev, dict) else None,
+            "quantities": ev.get("quantities") if isinstance(ev, dict) else None,
+            "sources": ([sc.get("url") for sc in (ev.get("sources") or [])]
+                        if isinstance(ev, dict) else None),
+        }
+    return {
+        "highlights": highlights,
+        "dispositions": disp,
+        "known_facts": facts,
+        "evidenced_footprint": foot,
+        "timings_seconds": {str(k): v["seconds"]
+                            for k, v in research_raw.items()},
+    }
+
+
+def write(outdir, slug, payload):
+    d = outdir / slug
+    d.mkdir(parents=True, exist_ok=True)
+    for name, body in payload.items():
+        (d / f"{name}.json").write_text(
+            json.dumps(body, indent=2, default=str, ensure_ascii=False),
+            encoding="utf-8")
+    return d
+
+
+def run_one(spec, outdir, domains, force):
+    slug = spec["slug"]
+    done = outdir / slug / "estimate_v0.json"
+    if done.exists() and not force:
+        print(f"[skip] {slug}: already has results")
+        return json.loads((outdir / slug / "manifest.json").read_text("utf-8"))
+
+    print(f"\n=== {spec['legal_name']} ({spec['industry']}) ===", flush=True)
+    t0 = time.time()
+    case_id = intake(spec)
+    log(slug, f"case {case_id}")
+
+    ent = resolve_and_confirm(case_id, spec)
+    log(slug, f"entity resolved={ent['resolved']}")
+    ind = set_industry_if_absent(case_id, spec)
+    log(slug, f"industry {ind['industry']} ({ind['origin']})")
+
+    pf = preflight(case_id)
+    disp_out = dispose_analyst_domains(case_id, slug, domains)
+    raw = do_research(case_id, slug, domains)
+    prom = promote(case_id, slug)
+
+    foot, foot_origin, foot_prov = footprint_for_simulation(case_id, spec)
+    n_res = sum(1 for p in foot_prov if p["origin"] == "RESEARCHED")
+    log(slug, f"footprint: {foot_origin}, {sum(r['sites'] for r in foot)} "
+              f"sites, {n_res} row(s) from research")
+
+    sim_id, sim = simulate(case_id, slug, foot)
+    est = estimate(case_id, slug, sim_id, foot)
+    res = harvest(case_id, raw)
+
+    manifest = {
+        "slug": slug,
+        "legal_name": spec["legal_name"],
+        "industry": ind,
+        "domicile": spec["domicile"],
+        "in_scope_countries": spec["countries"],
+        "base_currency": spec["currency"],
+        "case_id": case_id,
+        "entity_resolution": ent,
+        "footprint_origin": foot_origin,
+        "footprint_used": foot,
+        # Row by row: what research found, what it superseded, and what rests
+        # on disclosure alone. The single largest driver of the baseline, so
+        # it is recorded at the level someone can argue with.
+        "footprint_provenance": foot_prov,
+        "seed": SEED,
+        "ensemble_size": ENSEMBLE,
+        "domains_researched": domains,
+        "estimate_inputs": {
+            "method": "BUILD_UP",
+            "users": max(1, sum(int(r["sites"]) for r in foot) * 12),
+            "ops_cost_per_site_base": 900,
+            "note": ("users and ops_cost_per_site are assumptions, not "
+                     "research. They are stated here because an estimate "
+                     "that hides its inputs cannot be checked."),
+        },
+        # _version.BUILD, the single source of release identity. This read
+        # config.VERSION, which does not exist, so every manifest in the
+        # first run recorded build: null - a run that cannot say which code
+        # produced it is not reproducible, which is most of the point of
+        # writing a manifest at all.
+        "build": _version.BUILD,
+        "run_started": datetime.fromtimestamp(t0, timezone.utc).isoformat(),
+        "run_seconds": round(time.time() - t0, 1),
+        "preflight_conditions": len(pf.get("conditions") or []),
+        "promotion": {"promoted": prom.get("promoted"),
+                      "detail": prom.get("detail")},
+        "domains_benchmark_disposed": [n for n, _ in dispositions.DOMAINS
+                                       if n not in set(domains)],
+        "domains_with_no_agent": ANALYST_DOMAINS,
+        "analyst_disposition_response": {
+            "stored": disp_out.get("stored"),
+            "provenance_dropped": disp_out.get("provenance_dropped"),
+        },
+    }
+
+    write(outdir, slug, {
+        "manifest": manifest,
+        "simulation": sim,
+        "estimate_v0": est,
+        "research": res,
+    })
+    log(slug, f"done in {manifest['run_seconds']}s")
+    return manifest
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--out", required=True)
+    ap.add_argument("--only", default="")
+    ap.add_argument("--domains", default="")
+    ap.add_argument("--force", action="store_true")
+    args = ap.parse_args()
+
+    outdir = pathlib.Path(args.out)
+    specs = json.loads((outdir / "companies.json").read_text("utf-8"))["companies"]
+    if args.only:
+        want = {x.strip() for x in args.only.split(",") if x.strip()}
+        specs = [s for s in specs if s["slug"] in want]
+    domains = ([int(x) for x in args.domains.split(",") if x.strip()]
+               if args.domains else AGENT_DOMAINS)
+
+    print(f"{len(specs)} company(ies), domains {domains}", flush=True)
+    results, failures = [], []
+    for spec in specs:
+        try:
+            results.append(run_one(spec, outdir, domains, args.force))
+        except Exception as exc:                             # noqa: BLE001
+            # One company failing is one company, not the run. Named and
+            # carried so the set can be completed and the gap is visible.
+            print(f"[FAIL] {spec['slug']}: {type(exc).__name__}: {exc}",
+                  flush=True)
+            failures.append({"slug": spec["slug"], "error": str(exc)})
+
+    (outdir / "_run_log.json").write_text(json.dumps(
+        {"completed": [r["slug"] for r in results], "failures": failures,
+         "finished": datetime.now(timezone.utc).isoformat()},
+        indent=2), encoding="utf-8")
+    print(f"\ncompleted {len(results)}, failed {len(failures)}")
+
+
+if __name__ == "__main__":
+    main()
