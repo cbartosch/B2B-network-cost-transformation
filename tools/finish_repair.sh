@@ -10,16 +10,21 @@ set -u
 cd "$(dirname "$0")/.."
 export MSYS_NO_PATHCONV=1
 
+# Which repair run to watch. Each pass writes its own log prefix so a later
+# attempt cannot be mistaken for the one already read - the first version
+# hardcoded "fix_" and would have waited forever on a run writing "fix2_".
+PREFIX="${1:-fix}"
+
 say() { printf '\n== %s == %s\n' "$(date +%H:%M:%S)" "$*"; }
 
 say "waiting for both repairs"
 while :; do
   n=$(docker compose exec -T api sh -c \
-      'grep -lE "completed [0-9]+, failed" /tmp/logs/fix_*.log 2>/dev/null | wc -l' \
+      "grep -lE \"completed [0-9]+, failed\" /tmp/logs/${PREFIX}_*.log 2>/dev/null | wc -l" \
       2>/dev/null | tr -d '\r ')
   [ "${n:-0}" = "2" ] && break
   d=$(docker compose exec -T api sh -c \
-      'grep -hcE "domain +[0-9]+ " /tmp/logs/fix_*.log 2>/dev/null | paste -sd+ -' \
+      "grep -hcE \"domain +[0-9]+ \" /tmp/logs/${PREFIX}_*.log 2>/dev/null | paste -sd+ -" \
       2>/dev/null | tr -d '\r ')
   printf '  %s of 34 domains\n' "${d:-?}"
   sleep 180
@@ -27,7 +32,7 @@ done
 
 say "repair output"
 docker compose exec -T api sh -c \
-  'grep -hE "repair:|footprint:|done in|\[FAIL\]|completed" /tmp/logs/fix_*.log' \
+  "grep -hE \"repair:|footprint:|done in|\[FAIL\]|completed\" /tmp/logs/${PREFIX}_*.log" \
   | sed 's/^ *//'
 
 say "pulling artifacts"
