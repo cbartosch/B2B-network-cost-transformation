@@ -1110,7 +1110,7 @@ Sources: [Telecom Review Europe](https://www.telecomrevieweurope.com/articles/te
 ## Deutsche Lufthansa AG
 
 - **Industry** AIRLINES (entity resolution)
-- **Scope** DE, CH, AT, EUR, 213 sites (public disclosure only)
+- **Scope** DE, CH, AT, EUR, 223 sites (research merged with disclosure)
 - **Confidence** 0.272 (D - Indicative), coverage PARTIAL
 
 **Profile** - EVIDENCED_PUBLIC, 9 source(s)
@@ -1152,7 +1152,23 @@ Sources: [Lufthansa Group (official online Annual Report 2](https://report.lufth
 
 Sources: [Lufthansa Technik](https://cdn0.scrvt.com/fcc1c913dc63063c259fa05200249ccd/e3c48f8eaf179dd6/8c09887a8f1a/Lufthansa-Technik_Annual-Report-2025_EN.pdf); [Lufthansa Systems (company website)](https://www.lhsystems.com/our-locations); [Aviation Week](https://aviationweek.com/mro/workforce-training/lufthansa-technik-adds-287-apprentices-across-five-german-facilities); [Lufthansa Group (official corporate website)](https://www.lufthansagroup.com/de/unternehmen.html)
 
-**Data centres and cloud** - BENCHMARK_PRIOR: research returned no verdict
+**Data centres and cloud** - EVIDENCED_PUBLIC, 5 source(s)
+
+- IT infrastructure outsourcing — IBM/Kyndryl DC management start date: 2015-04-01
+- Cloud provider — primary cloud standardisation (data analytics / data warehouse): Microsoft Azure
+- Cloud provider — Google Cloud (Global Aviation Cloud, Frankfurt European region): Google Cloud
+- Lufthansa Systems Global Aviation Cloud — cloud platform type: multi-cloud (Azure + Google Cloud)
+- On-premises to cloud migration — workloads being migrated: Teradata DW + Oracle DW → Azure Synapse
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| DC FOOTPRINT DE — SITES IN LUFTHANSA SYSTEMS COMMERCIAL DC N | DE | 1 | 1 | 1 | 2014 |
+| DC HALLS AT KELSTERBACH (DE) — HISTORICAL LUFTHANSA SYSTEMS  | DE | 1 | 1 | 1 | 2025 |
+| KELSTERBACH DC BUILDING — SOLD/EXITED, LEASE EXPIRY | DE | None | None | None |  |
+
+*1 conflict(s) flagged: DC HALLS AT KELSTERBACH (DE) — HISTORICAL LUFTHANSA SYSTEMS PRIMARY DC*
+
+Sources: [Data Center Dynamics](https://www.datacenterdynamics.com/en/news/keppel-sells-data-center-in-frankfurt-germany-for-50m/); [PR Newswire (Lufthansa/IBM press release)](https://www.prnewswire.com/news-releases/lufthansa-accelerates-digital-transformation-with-ibm-283013391.html); [Airport Technology](https://www.airport-technology.com/contractors/baggage/lufthansa-systems/); [Austrianwings.info](https://www.austrianwings.info/2013/10/lufthansa-rechenzentrum-unter-der-erde/) and 1 more
 
 **Current architecture** - EVIDENCED_PUBLIC, 2 source(s)
 
@@ -1184,11 +1200,58 @@ Sources: [nocware AG](https://www.nocware.com/en/case-studies/lufthansa); [Erics
 
 Sources: [nocware AG](https://www.nocware.com/en/case-studies/lufthansa); [Bechtle AG](https://www.bechtle.com/ch-en/about-bechtle/news/coporate-news/press-releases/2022/bechtle-provisions-it-workstations-for-the-lufthansa-group); [Runway Girl Network](https://runwaygirlnetwork.com/2026/01/lufthansa-group-hands-massive-fleet-wide-ifc-contract-to-starlink/)
 
-**Contract and sourcing events** - BENCHMARK_PRIOR: research returned no verdict
+**Contract and sourcing events** - EVIDENCED_PUBLIC, 6 source(s)
 
-**Transformation announcements** - BENCHMARK_PRIOR: research returned no verdict
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| EAN EXISTING FLEET ALREADY EQUIPPED (KA-BAND SATELLITE, SINC |  | 240 | 240 | 240 | 2024 |
+| EAN IN-FLIGHT BROADBAND — AIRCRAFT TO BE EQUIPPED (LUFTHANSA |  | 150 | 150 | 150 | 2024 |
+| IBM CONTRACT — EXPECTED ANNUAL SAVINGS FOR LUFTHANSA | DE | 70000000 | 70000000 | 70000000 | 2014 |
+| IBM CONTRACT — ONE-OFF CHARGE TO LUFTHANSA P&L (2014) | DE | 240000000 | 240000000 | 240000000 | 2014 |
+| IBM CONTRACT — TERM (YEARS) | DE | 7 | 7 | 7 | 2014 |
+| IBM IT INFRASTRUCTURE CONTRACT — ANNUAL RUN RATE (IMPLIED) | DE | 178571429 | 178571429 | 178571429 | 2014 |
+| IBM IT INFRASTRUCTURE OUTSOURCING CONTRACT VALUE (IBM PRESS  | DE | 1000000000 | 1000000000 | 1250000000 | 2014 |
 
-**Market serviceability** - BENCHMARK_PRIOR: research returned no verdict
+*1 conflict(s) flagged: IBM IT INFRASTRUCTURE OUTSOURCING CONTRACT VALUE (IBM PRESS RELEASE FIGURE)*
+
+Sources: [PR Newswire / IBM](https://www.prnewswire.com/news-releases/lufthansa-accelerates-digital-transformation-with-ibm-283013391.html); [Computer Weekly](https://www.computerweekly.com/news/2240234917/Lufthansa-confirms-1bn-mega-outsourcing-deal-with-IBM); [iTnews](https://www.itnews.com.au/news/lufthansa-outsources-it-to-ibm-for-14bn-397983); [phys.org](https://phys.org/news/2014-10-lufthansa-outsources-infrastructure-ops-ibm.html) and 2 more
+
+**Transformation announcements** - EVIDENCED_PUBLIC, 5 source(s)
+
+- IT centralisation / CTO consolidation — implementation date (effective January 1 2026): 2026-01-01
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| ADMINISTRATIVE HEADCOUNT REDUCTION TARGET BY 2030 VIA DIGITA |  | 4000 | 4000 | 4000 | 2025 |
+| GROUP CAPEX 2026 — COVERING FLEET, IT CONSOLIDATION (ONEIT)  |  | 2500000000 | 2600000000 | 2700000000 | 2026 |
+| GROUP MID-TERM ADJUSTED FREE CASH FLOW TARGET (2028-2030) —  | DE | 2500000000 | 2500000000 | 2500000000 | 2028 |
+| IBM IT INFRASTRUCTURE OUTSOURCING CONTRACT VALUE (2014–2021, | DE | 1000000000 | 1000000000 | 1000000000 | 2014 |
+| IBM IT OUTSOURCING DEAL — STATED ANNUAL IT INFRASTRUCTURE SA | DE | 70000000 | 70000000 | 70000000 | 2014 |
+| LHA TURNAROUND PROGRAMME — GROSS ADJUSTED EBIT IMPACT TARGET | DE | 1500000000 | 1500000000 | 1500000000 | 2026 |
+| LHA TURNAROUND PROGRAMME — GROSS ADJUSTED EBIT IMPACT TARGET | DE | 2500000000 | 2500000000 | 2500000000 | 2028 |
+| LHA TURNAROUND PROGRAMME — GROSS EBIT EFFECT ACHIEVED IN 202 | DE | 500000000 | 500000000 | 500000000 | 2025 |
+| ONEIT PROGRAMME — IT PLATFORM UNIFICATION TARGET DATE (GROUP |  | None | None | None |  |
+
+Sources: [Lufthansa Group Investor Relations](https://investor-relations.lufthansagroup.com/en/events/capital-markets-day-2025.html); [Lufthansa Group Investor Relations (August 2026)](https://investor-relations.lufthansagroup.com/fileadmin/downloads/en/presentations/2026-08_Lufthansa_Group_Presentation_Investor_Relations.pdf); [Lufthansa Group newsroom](https://newsroom.lufthansagroup.com/en/lufthansa-group-is-consistently-pursuing-its-strategy-and-aims-to-significantly-increase-profitability/); [PR Newswire (IBM/Lufthansa)](https://www.prnewswire.com/news-releases/lufthansa-accelerates-digital-transformation-with-ibm-283013391.html) and 1 more
+
+**Market serviceability** - EVIDENCED_PUBLIC, 5 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| AUSTRIA LEASED LINE STANDARD PROVISIONING LEAD TIME (REGULAT | AT | 31 | 31 | 31 | 2015 |
+| CREDIBLE ENTERPRISE CARRIERS (FACILITIES-BASED MNOS + FIXED) | CH | 3 | 3 | 3 | 2025 |
+| CREDIBLE ENTERPRISE CARRIERS (FACILITIES-BASED) | AT | None | None | None |  |
+| CREDIBLE ENTERPRISE CARRIERS (FACILITIES-BASED) | DE | 4 | 4 | 4 | 2025 |
+| DEUTSCHE TELEKOM RETAIL BROADBAND MARKET SHARE | DE | 40.6 | 45.4 | 50.2 | 2024 |
+| DEUTSCHE TELEKOM T-WHOLESALE FTTH PREMISES REACHABLE | DE | 12 | 12 | 12 | 2025 |
+| GERMANY LEASED LINE SLA PENALTY ONSET (DELAY BEYOND COMMITTE | DE | 15 | 15 | 15 | 2015 |
+| GERMANY LEASED LINE STANDARD PROVISIONING TARGET — STANDARD  | DE | 30 | 30 | 30 | 2015 |
+| GERMANY TELECOM MARKET TOTAL REVENUE | DE | 78 | 78 | 78 | 2023 |
+| SWISSCOM FTTH INVESTMENT RATE | CH | 1.6 | 1.6 | 1.6 | 2025 |
+
+*3 conflict(s) flagged: CREDIBLE ENTERPRISE CARRIERS (FACILITIES-BASED MNOS + FIXED), CREDIBLE ENTERPRISE CARRIERS (FACILITIES-BASED), DEUTSCHE TELEKOM RETAIL BROADBAND MARKET SHARE*
+
+Sources: [germancompanyformation.com](https://germancompanyformation.com/guides/telecommunication-companies-in-germany); [VATM / Dialog Consult — 26th Telecoms Market Ana](https://www.vatm.de/wp-content/uploads/2025/06/VATM-Market-Analysis-Germany-2025.pdf); [Val Index (Swiss commercial-register and BAKOM d](https://valindex.ch/en/industry/telecom-connectivity-services/); [Swisscom (company-published product page)](https://www.swisscom.ch/en/business/enterprise/offer/wireline/cloud-access.html) and 1 more
 
 ---
 
@@ -2312,17 +2375,92 @@ Sources: [Unilever PLC — Form 20-F FY2024 XBRL financial t](https://www.sec.go
 
 Sources: [Unilever Deutschland GmbH](https://www.unilever.de/our-company/unilever-in-deutschland/); [Unilever Deutschland GmbH](https://www.unilever.de/our-company/unsere-standorte/); [Unilever UK](https://www.unilever.co.uk/unilever-in-the-uk/); [Unilever PLC (Annual Report 2024 – Group Subsidi](https://www.unilever.com/files/unilever-group-subsidiaries-2024.pdf) and 3 more
 
-**Data centres and cloud** - BENCHMARK_PRIOR: research returned no verdict
+**Data centres and cloud** - EVIDENCED_PUBLIC, 7 source(s)
 
-**Current architecture** - BENCHMARK_PRIOR: research returned no verdict
+- DC sites in NL – model assumption (not confirmed by evidence): unknown
 
-**Current providers and products** - BENCHMARK_PRIOR: research returned no verdict
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| CLOUD-ONLY WORKLOAD MIGRATION COMPLETION – ALL WORKLOADS TO  |  | 100 | 100 | 100 | 2023 |
+| MULTI-CLOUD POSTURE – TERADATA VANTAGECLOUD ON MICROSOFT AZU |  | 1 | 1 | 1 | 2023 |
+| OWNED/CO-LOCATED DC SITES EXITED – STATED OBJECTIVE OF CLOUD |  | 0 | 0 | 0 | 2023 |
+| PEOPLE DATA CENTRES (PDC) – ANALYTICS CONSTRUCTS ACROSS GLOB |  | 30 | 30 | 30 | 2022 |
+| PREVIOUS PRIMARY CLOUD PLATFORM – MICROSOFT AZURE (2023-2026 |  | None | None | None |  |
+| PRIMARY CLOUD PLATFORM – GOOGLE CLOUD (GCP), FIVE-YEAR DEAL |  | 5 | 5 | 5 | 2026 |
 
-**Contract and sourcing events** - BENCHMARK_PRIOR: research returned no verdict
+*1 conflict(s) flagged: MULTI-CLOUD POSTURE – TERADATA VANTAGECLOUD ON MICROSOFT AZURE (ANALYTICS WORKLOAD, POST-MIGRATION)*
+
+Sources: [Data Center Dynamics](https://www.datacenterdynamics.com/en/news/unilever-moves-100-percent-of-workloads-to-the-cloud-mostly-microsoft-azure/); [Data Center Dynamics](https://www.datacenterdynamics.com/en/news/unilever-signs-five-year-cloud-and-ai-agreement-with-google-cloud/); [The Stack Technology](https://www.thestack.technology/unilever-google-cloud-deal-azure-migration-ai/); [Computer Weekly](https://www.computerweekly.com/news/366639143/Google-Cloud-supplants-Azure-as-Unilever-cloud-of-choice) and 3 more
+
+**Current architecture** - EVIDENCED_PUBLIC, 3 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| APPLICATIONS MANAGED WITH 'JUST ENOUGH' ZERO TRUST ACCESS (Z |  | None | None | None |  |
+| CLOUD WORKLOAD MIGRATION – UNILEVER 100% CLOUD-ONLY (AZURE P |  | 100 | 100 | 100 | 2023 |
+| EMPLOYEES SECURED VIA ZSCALER ZERO TRUST EXCHANGE (INTERNET  |  | None | None | None |  |
+| NETWORK WEEKLY DATA THROUGHPUT (UNILEVER CORPORATE NETWORK) |  | 240 | 240 | 240 | 2025 |
+| UNILEVER ZSCALER ZTE – UPTIME SLA |  | 99.99 | 99.99 | 99.99 | 2023 |
+| WAN COST REDUCTION FROM MPLS-TO-INTERNET+SD-WAN TRANSFORMATI |  | 60 | 60 | 60 | 2022 |
+
+Sources: [Zscaler (German domain)](https://www.zscaler.de/customers/unilever); [Zscaler (English)](https://www.zscaler.com/customers/unilever); [Unilever (unilever.com)](https://www.unilever.com/news/news-search/2025/how-unilevers-digital-transformation-is-driving-operational-excellence/)
+
+**Current providers and products** - EVIDENCED_PUBLIC, 7 source(s)
+
+- Global WAN/IT managed network services provider: BT Global Services
+- SSE / Zero Trust internet security platform: Zscaler Zero Trust Exchange
+- WAN architecture transition: MPLS to internet + SD-WAN: internet + SD-WAN (replacing MPLS)
+- Global managed mobile services provider: Vodafone Global Enterprise
+- Managed firewall service provider (historical): BT (managed firewall)
+- Cloud systems integrator / transformation partner: Accenture + Microsoft (Azure primary)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| GLOBAL NETWORK SCOPE – EMPLOYEES COVERED (BT CONTRACT, 2013) |  | None | None | None |  |
+| NETWORK DATA VOLUME (WAN THROUGHPUT SIGNAL) |  | None | None | None |  |
+| NETWORK SITES COVERED (BT MANAGED NETWORK, 2013 RENEWAL) |  | None | None | None |  |
+| ZSCALER – APPLICATIONS MANAGED UNDER ZERO TRUST ACCESS |  | None | None | None |  |
+
+Sources: [Zscaler (DE)](https://www.zscaler.de/customers/unilever); [Telecompaper](https://www.telecompaper.com/news/unilever-signs-3-year-it-extension-contract-with-bt--960123); [Light Reading](https://www.lightreading.com/cable-technology/unilever-extends-bt-deal); [Light Reading](https://www.lightreading.com/security/unilever-secures-with-bt) and 3 more
+
+**Contract and sourcing events** - EVIDENCED_PUBLIC, 3 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| BT–UNILEVER CONTRACT TERM (ORIGINAL) |  | 7 | 7 | 7 | 2002 |
+| BT–UNILEVER FIRST EXTENSION CONTRACT VALUE |  | 270000000 | 270000000 | 270000000 | 2006 |
+| BT–UNILEVER GLOBAL NETWORK SITES COVERED |  | 1000 | 1000 | 1000 | 2009 |
+| BT–UNILEVER MANAGED FIREWALL CONTRACT VALUE |  | 10500000 | 10500000 | 10500000 | 2009 |
+| BT–UNILEVER ORIGINAL GLOBAL NETWORK OUTSOURCING CONTRACT VAL |  | 1000000000 | 1285000000 | 1570000000 | 2002 |
+| BT–UNILEVER SECOND EXTENSION CONTRACT VALUE |  | 173000000 | 173000000 | 173000000 | 2009 |
+| BT–UNILEVER SECOND EXTENSION TERM |  | 4 | 4 | 4 | 2009 |
+| BT–UNILEVER THIRD EXTENSION TERM |  | 3 | 3 | 3 | 2013 |
+| UNISYS–UNILEVER IT OUTSOURCING CONTRACT TERM (INITIAL, EUROP |  | 4 | 4 | 4 | 2009 |
+| UNISYS–UNILEVER MSP CONTRACT (ONGOING, ENDPOINT AND SUPPORT, |  | 88000 | 88000 | 88000 | 2025 |
+
+*2 conflict(s) flagged: BT–UNILEVER ORIGINAL GLOBAL NETWORK OUTSOURCING CONTRACT VALUE, BT–UNILEVER SECOND EXTENSION CONTRACT VALUE*
+
+Sources: [Telecompaper](https://www.telecompaper.com/news/bt-wins-unilever-outsourcing-contract-extension--745480); [Workplace Insight](https://workplaceinsight.net/unilever-extends-bt-partnership-to-further-more-sustainable-ways-of-working/); [Tech Monitor](https://www.techmonitor.ai/technology/unisys_wins_it_outsourcing_contract_with_unilever_111109)
 
 **Transformation announcements** - BENCHMARK_PRIOR: research returned no verdict
 
-**Market serviceability** - BENCHMARK_PRIOR: research returned no verdict
+**Market serviceability** - EVIDENCED_PUBLIC, 6 source(s)
+
+- Credible enterprise WAN/Internet carriers: 6+
+- UK leased line installation lead time: 45–90
+- UK leased line monthly price (100 Mbps): 150–450
+- UK MPLS monthly circuit cost: 350–800+
+- Credible enterprise WAN/Internet carriers: 5+
+- NL DIA market rate — 1 Gbps: 1000–1500
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| NL DIA PRICE — 200 MBPS VIA EUROFIBER | NL | 348 | 348 | 348 | 2025 |
+| UK FULL-FIBRE PREMISES COVERAGE | GB | 72 | 72 | 72 | 2026 |
+
+*1 conflict(s) flagged: UK FULL-FIBRE PREMISES COVERAGE*
+
+Sources: [servnetuk.com](https://www.servnetuk.com/insights/sd-wan-vs-mpls-uk-2026); [connection-technologies.co.uk](https://connection-technologies.co.uk/blog/multi-site-business-connectivity-uk-2026-sd-wan-leased-lines-mpls); [comparenet.co.uk](https://comparenet.co.uk/dedicated-fibre-leased-lines); [TeleGeography](https://resources.telegeography.com/the-rise-of-dia-over-mpls) and 2 more
 
 ---
 
