@@ -3,7 +3,7 @@
 **Build 4.272.0** · branch `fix/test-suite-trustworthy`
 
 Under `make test`, the project's own entry point:
-**138 failed / 2,315 passed → 0 failed / 2,610 passed.**
+**138 failed / 2,315 passed → 0 failed / 2,614 passed.**
 Zero regressions. Every commit checked by set-difference against the previous
 complete run, not by reading output.
 
@@ -273,6 +273,47 @@ domain undisposed so a retry is possible at all. Note `__slots__` on
 `DomainResult` meant the new fields had to be declared there too — the
 assignment raised `AttributeError` rather than silently creating an
 attribute, which is the class doing its job.
+
+---
+
+### P-15 · The promotion classifier only worked when the agent ignored its instructions — **FIXED**
+
+Also found by running the sample set, and it is why research was not reaching
+the estimates.
+
+`promotion._classify` routed a researched quantity to the footprint with:
+
+```python
+if label in ARCHETYPES and len(country) == 2 and "site" in unit:
+```
+
+`label in ARCHETYPES` requires the label to be *nothing but* the archetype
+name. The research prompt asks for the opposite — the archetype block tells
+the agent to *"say in `finding` which mapping you chose and why"* — so a
+well-behaved agent returns `SERVICE_POINT - Iberdrola customer service and
+sales points`, which fell through to `unclassified` every time.
+
+Two branches of the same function, the same shape of input, different rules:
+the price branch three lines below already read the leading token
+(`head = label.split()[0]`), which handles exactly this convention.
+
+**The evidence is the sample set.** Iberdrola's agent described its mappings:
+**103 findings, 0 classified**, estimate priced entirely from public
+disclosure. Unilever's happened to emit bare labels — `PLANT`, `WAREHOUSE`,
+`LARGE_OFFICE` — and promoted 7 rows. The classifier was working only when
+the agent omitted what it had been asked for.
+
+**Fixed** by reading the leading token in the footprint branch too, sharing
+one `head` with the price branch. Still conservative, and deliberately so:
+`WAREHOUSE/BRANCH - ...` names two archetypes and stays unclassified;
+`NETWORK_SITE - ... substations` fails the `"site" in unit` gate and stays
+unclassified — 30,000 distribution substations is a real finding and not a
+WAN site count, and that judgement belongs with a person. Classification only
+decides what is *offered*; `candidates()` proposes and a named person
+disposes, so widening it cannot put a number into an estimate by itself.
+
+Four tests, including the two declines above so the widening cannot drift
+into guessing.
 
 ---
 

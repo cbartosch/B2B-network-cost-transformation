@@ -216,7 +216,30 @@ def _classify(q: dict) -> str:
     if triangulate.parse_value(q.get("value")) is None and \
             str(q.get("value") or "").strip().upper() not in PRODUCTS:
         return "unclassified"
-    if label in ARCHETYPES and len(country) == 2 and "site" in unit:
+    # The leading token, the way the price branch below already reads a
+    # product name - not the whole label.
+    #
+    # `label in ARCHETYPES` demanded the label be nothing but the archetype,
+    # and the research prompt asks for the opposite: the archetype block
+    # tells the agent to "say in `finding` which mapping you chose and why",
+    # so a well-behaved agent returns "SERVICE_POINT - Iberdrola customer
+    # service and sales points". That is the convention, and it fell through
+    # to unclassified every time.
+    #
+    # The sample set is the evidence. Iberdrola's agent described its
+    # mappings and produced 103 findings, 0 of them classified; Unilever's
+    # happened to emit bare labels - PLANT, WAREHOUSE, LARGE_OFFICE - and
+    # promoted 7 rows. The classifier was working only when the agent
+    # omitted what it had been asked for.
+    #
+    # Still conservative, and deliberately: "WAREHOUSE/BRANCH - ..." names
+    # two archetypes and stays unclassified, "NETWORK_SITE - ... substations"
+    # fails `"site" in unit` and stays unclassified. And classification only
+    # decides what is *offered*; promotion.candidates proposes and a named
+    # person disposes, so widening this cannot put a number into an estimate
+    # on its own.
+    head = label.split()[0] if label else ""
+    if head in ARCHETYPES and len(country) == 2 and "site" in unit:
         return "footprint"
     # How a site type is built rather than how many there are. Country-
     # independent, because an architecture standard usually is.
@@ -227,8 +250,7 @@ def _classify(q: dict) -> str:
     # EUR/year" is a total and not a unit rate.
     if anchor_candidate(q):
         return "anchor"
-    # "DIA 100Mbps MRC" -> product is the first token.
-    head = label.split()[0] if label else ""
+    # "DIA 100Mbps MRC" -> product is the first token. Same `head` as above.
     if head in PRODUCTS and len(country) == 2 and (
             "month" in unit or "mrc" in unit or "/mo" in unit):
         return "price"

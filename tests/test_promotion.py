@@ -296,3 +296,64 @@ def test_the_review_panel_offers_every_target():
         assert key in page, key
     assert "feeds the simulation" in page, (
         "an analyst has to be told what promoting a topology field changes")
+
+# ------------------------------- the label the prompt actually asks agents for
+
+def test_an_archetype_named_with_its_mapping_still_reaches_the_footprint(session):
+    """`label in ARCHETYPES` required the label to be nothing but the
+    archetype, and the research prompt asks for the opposite.
+
+    The archetype block tells the agent to "say in `finding` which mapping
+    you chose and why", so a well-behaved agent returns
+    "SERVICE_POINT - Iberdrola customer service and sales points". That fell
+    through to unclassified every time, while an agent that ignored the
+    instruction and emitted a bare "PLANT" classified fine.
+
+    The sample set is the evidence: one company's agent described its
+    mappings and produced 103 findings with 0 classified; another emitted
+    bare labels and promoted 7 rows. The classifier worked only when the
+    agent omitted what it had been asked for.
+    """
+    q = {"label": "SERVICE_POINT - Iberdrola customer service and sales points",
+         "value": 650, "unit": "sites", "country": "ES", "as_of": "2025-06-30"}
+    case_id, _ = _case_with_finding(session, q)
+    cands = promotion.candidates(session, case_id)
+    assert len(cands["footprint_candidates"]) == 1, (
+        f"a described mapping was not offered: {cands['unclassified']}")
+    assert not cands["unclassified"]
+
+
+def test_the_leading_token_is_read_the_way_a_product_name_already_was(session):
+    """Two branches of one classifier, the same shape of input, and only one
+    of them read the leading token. This pins them together."""
+    import inspect
+
+    src = inspect.getsource(promotion._classify)
+    assert src.count("head = label.split()[0]") == 1, (
+        "the archetype and product branches should share one leading token")
+    assert "head in ARCHETYPES" in src
+    assert "head in PRODUCTS" in src
+
+
+def test_a_label_naming_two_archetypes_is_still_declined(session):
+    """Widening the match must not make it a guess. "WAREHOUSE/BRANCH" names
+    two, and a wrong promotion is silent where a declined one is visible."""
+    q = {"label": "WAREHOUSE/BRANCH - operational offices and depots",
+         "value": 34, "unit": "sites", "country": "GB", "as_of": "2024-12-31"}
+    case_id, _ = _case_with_finding(session, q)
+    cands = promotion.candidates(session, case_id)
+    assert not cands["footprint_candidates"]
+    assert len(cands["unclassified"]) == 1
+
+
+def test_a_count_whose_unit_is_not_sites_is_still_declined(session):
+    """30,000 distribution substations is a real finding and not a WAN site
+    count. The unit gate is what keeps that judgement with a person."""
+    q = {"label": "NETWORK_SITE - SP Energy Networks distribution substations",
+         "value": 30000, "unit": "substations", "country": "GB",
+         "as_of": "2024-12-31"}
+    case_id, _ = _case_with_finding(session, q)
+    cands = promotion.candidates(session, case_id)
+    assert not cands["footprint_candidates"]
+    assert len(cands["unclassified"]) == 1
+
