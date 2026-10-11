@@ -46,6 +46,11 @@ say "restoring artifacts"
 docker compose exec -T api sh -c 'mkdir -p /tmp/samples /tmp/logs'
 docker compose cp ./_samples_backup/. api:/tmp/samples/ || exit 1
 docker compose cp tools/run_samples.py api:/tmp/run_samples.py || exit 1
+# `docker compose cp` writes as root; the container runs as workbench
+# (uid 10001). Without this the re-promote cannot overwrite the very files
+# it just restored, and fails per company on EACCES after the restart - at
+# the one point in the chain where nobody is watching.
+docker compose exec -T --user root api     chown -R workbench:workbench /tmp/samples /tmp/run_samples.py || exit 1
 docker compose exec -T api sh -c 'ls /tmp/samples | wc -l'
 
 # -------------------------------------------------------- 3. the repromote
