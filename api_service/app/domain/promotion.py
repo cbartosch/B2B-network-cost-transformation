@@ -195,6 +195,16 @@ def anchor_candidate(q: dict) -> bool:
     return triangulate.parse_value(q.get("value")) is not None
 
 
+def archetype_of(label) -> str:
+    """The archetype a finding's label names: its leading token.
+
+    The one place that decides this, because _classify matching on one thing
+    and promote() storing another is how a 56-character description ended up
+    being written into archetype varchar(48).
+    """
+    return (str(label or "").strip().upper().split() or [""])[0]
+
+
 def _classify(q: dict) -> str:
     """footprint | price | unclassified.
 
@@ -238,7 +248,7 @@ def _classify(q: dict) -> str:
     # decides what is *offered*; promotion.candidates proposes and a named
     # person disposes, so widening this cannot put a number into an estimate
     # on its own.
-    head = label.split()[0] if label else ""
+    head = archetype_of(label)
     if head in ARCHETYPES and len(country) == 2 and "site" in unit:
         return "footprint"
     # How a site type is built rather than how many there are. Country-
@@ -485,7 +495,24 @@ def promote(session, *, case_id: str, candidate_ids: list[str],
 
         if target == "footprint":
             country = str(q["country"]).upper()
-            archetype = str(q["label"]).upper()
+            # The leading token, the same one _classify matched on - not the
+            # whole label.
+            #
+            # These were the same string for as long as the classifier only
+            # accepted a bare archetype name. Widening it to accept the
+            # described form the research prompt asks for - "SERVICE_POINT -
+            # Iberdrola customer service and sales points" - made them
+            # different, and this wrote 56 characters into archetype
+            # varchar(48): every promotion 500'd with
+            # StringDataRightTruncation.
+            #
+            # Length is the lesser half. The simulation keys archetypes by
+            # name, so storing the description would have produced a
+            # footprint row for an archetype that does not exist - priced at
+            # the DEFAULT prior, silently, with the estate looking enumerated.
+            # A column being too short is the only reason that was ever
+            # visible.
+            archetype = archetype_of(q["label"])
             session.execute(delete(db.evidenced_footprint).where(
                 db.evidenced_footprint.c.case_id == case_id,
                 db.evidenced_footprint.c.country == country,

@@ -329,10 +329,14 @@ def test_the_leading_token_is_read_the_way_a_product_name_already_was(session):
     import inspect
 
     src = inspect.getsource(promotion._classify)
-    assert src.count("head = label.split()[0]") == 1, (
+    assert src.count("head = ") == 1, (
         "the archetype and product branches should share one leading token")
     assert "head in ARCHETYPES" in src
     assert "head in PRODUCTS" in src
+    # And the writer takes it from the same helper, so a label the classifier
+    # accepted cannot be stored as something else.
+    assert "archetype_of" in inspect.getsource(promotion.promote)
+    assert promotion.archetype_of("SERVICE_POINT - a long description here")         == "SERVICE_POINT"
 
 
 def test_a_label_naming_two_archetypes_is_still_declined(session):
@@ -356,4 +360,33 @@ def test_a_count_whose_unit_is_not_sites_is_still_declined(session):
     cands = promotion.candidates(session, case_id)
     assert not cands["footprint_candidates"]
     assert len(cands["unclassified"]) == 1
+
+def test_the_archetype_stored_is_the_one_the_classifier_matched(session):
+    """_classify matched the leading token and promote() stored the whole
+    label. They were the same string only while the classifier demanded a
+    bare archetype name; widening it made them differ, and 56 characters went
+    into archetype varchar(48) - every promotion 500'd.
+
+    The length was the lesser half. The simulation keys archetypes by name,
+    so a stored description would be a footprint row for an archetype that
+    does not exist, priced at the DEFAULT prior, with the estate looking
+    enumerated. The column being too short is the only reason it was visible.
+    """
+    q = {"label": "SERVICE_POINT - Iberdrola customer service and sales points",
+         "value": 650, "unit": "sites", "country": "ES", "as_of": "2025-06-30"}
+    case_id, _ = _case_with_finding(session, q)
+    cands = promotion.candidates(session, case_id)
+    ids = [c["candidate_id"] for c in cands["footprint_candidates"]]
+    assert ids
+
+    promotion.promote(session, case_id=case_id, candidate_ids=ids,
+                      promoted_by="tester")
+    rows = session.execute(select(db.evidenced_footprint).where(
+        db.evidenced_footprint.c.case_id == case_id)).all()
+    assert len(rows) == 1
+    assert rows[0].archetype == "SERVICE_POINT", (
+        f"stored {rows[0].archetype!r}, which is not an archetype the "
+        f"simulation knows")
+    assert rows[0].sites == 650
+    assert len(rows[0].archetype) <= 48
 
