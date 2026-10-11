@@ -36,7 +36,54 @@ FIELDS = [
     # The number that says how much to trust the rest of the row.
     ("confidence_overall", lambda m, s, e, r: _g(e, "confidence", "overall")),
     ("confidence_band", lambda m, s, e, r: _g(e, "confidence", "band")),
-    ("coverage_status", lambda m, s, e, r: _g(e, "coverage", "status")),
+    # Renamed, not redefined. It measures how much of the declared scope was
+    # priced - 27 published fields' worth - and says nothing about evidence.
+    # Beside a domain count in one row, "coverage COMPLETE" read as "we know
+    # a lot about this company". The evidence columns below are the other
+    # axis, and they are the ones that were missing.
+    ("priced_scope_status", lambda m, s, e, r: _g(e, "coverage", "status")),
+    ("priced_spend_pct", lambda m, s, e, r: _g(e, "coverage", "priced_spend_pct")),
+    ("unsourced_price_share",
+     lambda m, s, e, r: _g(e, "coverage", "unsourced_price_share")),
+    # CR-01: where the baseline's value actually comes from.
+    ("evidenced_share", lambda m, s, e, r: evidence_shares(e)[0]["evidenced_share"]),
+    ("derived_share", lambda m, s, e, r: evidence_shares(e)[0]["derived_share"]),
+    ("client_confirmed_share",
+     lambda m, s, e, r: evidence_shares(e)[0]["client_confirmed_share"]),
+    ("assumed_share", lambda m, s, e, r: evidence_shares(e)[0]["assumed_share"]),
+    ("simulated_value_share",
+     lambda m, s, e, r: evidence_shares(e)[0]["simulated_share"]),
+    ("unknown_share", lambda m, s, e, r: evidence_shares(e)[0]["unknown_share"]),
+    ("shares_sum", lambda m, s, e, r: f"{evidence_shares(e)[1]:.4f}"),
+    # CR-02a: what the baseline covers.
+    ("scope_status", lambda m, s, e, r: m.get("scope_status")),
+    ("scope_countries_modelled",
+     lambda m, s, e, r: "|".join(m.get("scope_countries_modelled") or [])),
+    ("scope_countries_company_total",
+     lambda m, s, e, r: m.get("scope_countries_company_total")),
+    # CR-08: the components confidence is built from, which already existed.
+    ("conf_current_baseline",
+     lambda m, s, e, r: _g(e, "confidence", "current_baseline")),
+    ("conf_target_cost", lambda m, s, e, r: _g(e, "confidence", "target_cost")),
+    ("conf_realization", lambda m, s, e, r: _g(e, "confidence", "realization")),
+    ("conf_weighted", lambda m, s, e, r: _g(e, "confidence", "weighted")),
+    ("conf_ceilings_applied",
+     lambda m, s, e, r: "|".join(_g(e, "confidence", "ceilings_applied") or [])),
+    ("conf_evidenced_value_share",
+     lambda m, s, e, r: _g(e, "confidence", "drivers", "evidenced_value_share")),
+    ("conf_domain_completeness",
+     lambda m, s, e, r: _g(e, "confidence", "drivers", "domain_completeness")),
+    ("conf_prior_recency",
+     lambda m, s, e, r: _g(e, "confidence", "drivers", "prior_recency")),
+    # CR-09: local currency stays the source of truth.
+    ("fx_rate_to_eur", lambda m, s, e, r: (m.get("fx_to_eur") or {}).get("rate")),
+    ("fx_date", lambda m, s, e, r: (m.get("fx_to_eur") or {}).get("as_of")),
+    ("fx_evidence_grade",
+     lambda m, s, e, r: (m.get("fx_to_eur") or {}).get("evidence_grade")),
+    ("baseline_base_eur", lambda m, s, e, r: _eur(m, _g(e, "current_tco", "base"))),
+    ("best_saving_base_eur", lambda m, s, e, r: _eur(m, _best(e)[1])),
+    ("one_time_cost_base_eur",
+     lambda m, s, e, r: _eur(m, _trans(e, "one_time_cost"))),
     ("simulated_share", lambda m, s, e, r: e.get("simulated_share")),
     ("asserted_share", lambda m, s, e, r: e.get("asserted_share")),
     # The research, counted rather than quoted.
@@ -45,13 +92,66 @@ FIELDS = [
     ("domains_researched", lambda m, s, e, r: len(m["domains_researched"])),
     ("resumed", lambda m, s, e, r: m.get("resumed_existing_case")),
     ("domains_evidenced", lambda m, s, e, r: _count(r, "EVIDENCED_PUBLIC")),
-    ("domains_declared_unknown", lambda m, s, e, r: _count(r,
-                                                           "DECLARED_UNKNOWN")),
+    # Two different things, both worth having: a domain the agent answered
+    # with "nothing found" is a result; a domain with no evidence at all is
+    # a gap. The summary reported only the first and called it the second.
+    ("domains_agent_declared_unknown",
+     lambda m, s, e, r: _count(r, "DECLARED_UNKNOWN")),
+    ("domains_no_evidence",
+     lambda m, s, e, r: len(m.get("domains_declared_unknown") or [])),
+    ("domains_no_evidence_list",
+     lambda m, s, e, r: "|".join(
+         str(x) for x in (m.get("domains_declared_unknown") or []))),
     ("research_sources", lambda m, s, e, r: _sources(r)),
     ("research_minutes", lambda m, s, e, r: round(
         sum(r.get("timings_seconds", {}).values()) / 60, 1)),
 ]
 
+
+
+
+# --------------------------------------------------------------- CR-01 shares
+# A component is only as evidenced as its weakest axis.
+#
+# Two origins govern each component: where its quantity came from and where
+# its unit cost came from. A sourced site count priced from a seeded
+# benchmark is not evidenced - it is an evidenced count carrying an assumed
+# price, and reporting it as evidenced is how an estimate comes to look
+# better sourced than it is. So the class is the weaker of the two.
+_QUANTITY_CLASS = {
+    "EVIDENCED_PUBLIC": "evidenced",
+    "DERIVED_PUBLIC": "derived",
+    "CLIENT_CONFIRMED": "client_confirmed",
+    "ANALYST_ENTERED_SCOPE": "assumed",
+    "ANALYST_ASSERTED_PRIOR": "assumed",
+    "SIMULATED": "simulated",
+}
+_PRICE_CLASS = {
+    "EVIDENCED_PUBLIC": "evidenced",
+    "DERIVED_PUBLIC": "derived",
+    "CLIENT_CONFIRMED": "client_confirmed",
+    "BENCHMARK_PRIOR": "assumed",
+    "SIMULATED": "simulated",
+}
+# Weakest first: the class a component lands in is the lowest of its two.
+_RANK = ["unknown", "simulated", "assumed", "derived", "client_confirmed",
+         "evidenced"]
+
+
+def evidence_shares(e):
+    """Baseline value by evidence class, summing to 1.0."""
+    comps = e.get("components") or []
+    tot = sum(float(_g(c, "value", "base") or 0) for c in comps)
+    agg = {k: 0.0 for k in _RANK}
+    for c in comps:
+        q = _QUANTITY_CLASS.get(c.get("quantity_origin"), "unknown")
+        u = _PRICE_CLASS.get(c.get("unit_cost_origin"), "unknown")
+        cls = min(q, u, key=_RANK.index)
+        agg[cls] += float(_g(c, "value", "base") or 0)
+    if tot <= 0:
+        return {f"{k}_share": "0.0000" for k in _RANK}, 0.0
+    out = {f"{k}_share": f"{agg[k] / tot:.4f}" for k in _RANK}
+    return out, sum(agg.values()) / tot
 
 def _g(d, *path):
     cur = d
@@ -60,6 +160,15 @@ def _g(d, *path):
             return None
         cur = cur.get(p)
     return cur
+
+
+def _eur(m, value):
+    """Derived, and only where a dated rate exists. A missing rate yields
+    DECLARED_UNKNOWN rather than the local figure relabelled."""
+    fx = (m.get("fx_to_eur") or {}).get("rate")
+    if value in (None, "") or not fx:
+        return "DECLARED_UNKNOWN"
+    return f"{float(value) * float(fx):.2f}"
 
 
 def _best(e):

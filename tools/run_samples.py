@@ -28,6 +28,7 @@ import time
 import urllib.error
 import urllib.request
 from datetime import datetime, timezone
+from decimal import Decimal as D
 
 from sqlalchemy import select
 
@@ -604,6 +605,87 @@ def estimate(case_id, slug, sim_id, footprint):
 
 
 # ------------------------------------------------------------- what we store
+def fx_to_eur(currency):
+    """The rate used to make a figure comparable, and the date it is from.
+
+    CR-09. Captured at run time from reference.fx_rate rather than computed
+    in the summary, because a rate without the date it was read on is not a
+    rate. Local currency stays the source of truth; the EUR column is
+    derived and says so.
+    """
+    cur = (currency or "").upper()
+    if cur == "EUR":
+        return {"rate": "1.0", "as_of": None, "basis": "base currency",
+                "evidence_grade": None, "source": "identity"}
+    with db.SessionLocal() as s:
+        row = s.execute(select(db.fx_rate).where(
+            db.fx_rate.c.from_currency == cur,
+            db.fx_rate.c.to_currency == "EUR")).first()
+        if row is None:
+            row = s.execute(select(db.fx_rate).where(
+                db.fx_rate.c.from_currency == "EUR",
+                db.fx_rate.c.to_currency == cur)).first()
+            if row is not None:
+                r = D(str(row.rate))
+                return {"rate": str(D(1) / r) if r else None,
+                        "as_of": str(getattr(row, "as_of", "") or ""),
+                        "basis": f"inverted EUR->{cur}",
+                        "evidence_grade": getattr(row, "evidence_grade", None),
+                        "source": getattr(row, "source", None),
+                        "convention": getattr(row, "convention", None)}
+    if row is None:
+        # Declared, not guessed. A missing rate makes the EUR column unknown,
+        # not approximate.
+        return {"rate": None, "as_of": None, "basis": "DECLARED_UNKNOWN",
+                "evidence_grade": None, "source": None}
+    return {"rate": str(row.rate),
+            "as_of": str(getattr(row, "as_of", "") or ""),
+            "basis": f"{cur}->EUR",
+            # The seeded rates say of themselves: "indicative: nobody looked
+            # this up, and an estimate converted at it should say so."
+            # Carrying grade and source is how it says so.
+            "evidence_grade": getattr(row, "evidence_grade", None),
+            "source": getattr(row, "source", None),
+            "convention": getattr(row, "convention", None)}
+
+
+def scope_report(spec, foot, foot_prov):
+    """What the modelled estate covers, and what it does not.
+
+    CR-02a. The output used to present a three-country baseline exactly as it
+    presents a group one. Nothing in it said which, and a reader could not
+    tell a deliberate partial scope from a failed enumeration.
+
+    The company's full country count is not sourced here, so it is reported
+    DECLARED_UNKNOWN rather than estimated. Scaling an in-scope baseline to a
+    group figure by an unsourced factor is the thing principle 1 forbids.
+    """
+    modelled = sorted({r["country"] for r in foot})
+    by_type = {}
+    for p in foot_prov:
+        a = p.get("archetype")
+        if not a or p.get("origin") == "DROPPED_UNKNOWN_ARCHETYPE":
+            continue
+        by_type.setdefault(a, set()).add(p.get("origin"))
+    sites_origin = {
+        a: ("RESEARCHED" if o & {"RESEARCHED", "SUPERSEDED_BY_RESEARCH"}
+            else "ASSUMED_PUBLIC_DISCLOSURE")
+        for a, o in sorted(by_type.items())}
+    return {
+        "scope_countries_modelled": modelled,
+        "scope_countries_company_total": "DECLARED_UNKNOWN",
+        "scope_status": ("PARTIAL_COUNTRIES" if modelled else "UNKNOWN"),
+        "scope_note": (
+            f"Baseline covers {len(modelled)} country(ies) "
+            f"({', '.join(modelled)}) and the site types listed in "
+            f"sites_origin. The group's full country and site-type count is "
+            f"not sourced, so the share of the group this represents is "
+            f"DECLARED_UNKNOWN. This is baseline_in_scope, not a group "
+            f"baseline."),
+        "sites_origin": sites_origin,
+    }
+
+
 def harvest(case_id, research_raw):
     """The research, as findings rather than as agent runs."""
     with db.SessionLocal() as s:
@@ -776,12 +858,23 @@ def run_one(spec, outdir, domains, force, repair=False, repromote=False):
         # on disclosure alone. The single largest driver of the baseline, so
         # it is recorded at the level someone can argue with.
         "footprint_provenance": foot_prov,
+        # CR-02a: what this baseline covers, stated rather than implied.
+        **scope_report(spec, foot, foot_prov),
+        # CR-09: local currency is the source of truth; this makes the
+        # EUR column derivable and dated.
+        "fx_to_eur": fx_to_eur(spec["currency"]),
         "seed": SEED,
         "ensemble_size": ENSEMBLE,
         # What was asked for, and what came back with an agent verdict.
         # The first overstates coverage whenever a call fails, and a manifest
         # that overstates its own research is the thing this set is least
         # allowed to do.
+        # CR-01. A domain the agent never answered is not researched, and a
+        # domain disposed BENCHMARK_PRIOR is not evidenced. The summary used
+        # to report domains_declared_unknown as 0 for almost every company
+        # while most of their domains had no evidence behind them.
+        "domains_declared_unknown": sorted(
+            set(domains) - set(researched_domains(case_id))),
         "domains_requested": domains,
         "domains_fell_back_unanswered": fell_back["fell_back"],
         "domains_researched": sorted(researched_domains(case_id)),
