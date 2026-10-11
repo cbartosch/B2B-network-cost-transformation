@@ -573,9 +573,26 @@ def harvest(case_id, research_raw):
             "domain": dict(dispositions.DOMAINS).get(n),
             "disposition": d.get("disposition"),
             "reason": d.get("reason"),
-            "finding": ev.get("finding") if isinstance(ev, dict) else None,
+            # There is no "finding" key on the evidence and there never was
+            # - a disposition stores sources, quantities, triangulated bands,
+            # qualitative findings, reliability and conflicts. Reading a key
+            # that does not exist gave every highlight a None finding, and
+            # the summary then printed the disposition and nothing else for
+            # companies holding seven sources and eight quantities.
+            #
+            # `triangulated` is the one worth leading on: it carries the band
+            # and the vintage, which is the difference between "Allianz has
+            # 34 branches in FR" and a figure somebody can argue with.
             "quantities": ev.get("quantities") if isinstance(ev, dict) else None,
-            "sources": ([sc.get("url") for sc in (ev.get("sources") or [])]
+            "triangulated": ev.get("triangulated") if isinstance(ev, dict) else None,
+            "qualitative": ev.get("qualitative") if isinstance(ev, dict) else None,
+            "conflicts": ev.get("conflicts") if isinstance(ev, dict) else None,
+            "reliability": ev.get("reliability") if isinstance(ev, dict) else None,
+            "sources": ([{"url": sc.get("url"),
+                          "publisher": sc.get("publisher"),
+                          "as_of": sc.get("as_of"),
+                          "source_class": sc.get("source_class")}
+                         for sc in (ev.get("sources") or [])]
                         if isinstance(ev, dict) else None),
         }
     return {

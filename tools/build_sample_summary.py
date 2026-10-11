@@ -99,11 +99,18 @@ def _count(r, disposition):
 
 
 def _sources(r):
+    """Distinct source URLs across every researched domain.
+
+    sources became a list of dicts when the harvest started keeping the
+    publisher and the vintage alongside the URL; adding a dict to a set
+    raises, and counting one would have been wrong anyway.
+    """
     seen = set()
     for h in (r.get("highlights") or {}).values():
-        for u in h.get("sources") or []:
-            if u:
-                seen.add(u)
+        for sc in h.get("sources") or []:
+            url = sc.get("url") if isinstance(sc, dict) else sc
+            if url:
+                seen.add(url)
     return len(seen)
 
 
@@ -146,26 +153,90 @@ def highlights_md(rows):
                            ("transformation", "Transformation announcements"),
                            ("serviceability", "Market serviceability")):
             d = h.get(key) or {}
-            finding = d.get("finding")
-            if not finding:
-                out.append(f"**{label}** - {d.get('disposition') or 'not researched'}"
-                           + (f": {d.get('reason')}" if d.get("reason") else ""))
-                out.append("")
+            disp = d.get("disposition")
+            srcs = d.get("sources") or []
+            tri = d.get("triangulated") or []
+            qty = d.get("quantities") or []
+            qual = d.get("qualitative") or []
+
+            if not disp:
+                out += [f"**{label}** - not researched", ""]
                 continue
-            out += [f"**{label}** ({d.get('disposition')}, "
-                    f"{len(d.get('sources') or [])} source(s))",
-                    "",
-                    str(finding).strip(),
-                    ""]
-            qs = d.get("quantities") or []
-            if qs:
-                out.append("| value | unit | label | country |")
-                out.append("| --- | --- | --- | --- |")
-                for q in qs[:12]:
-                    out.append(
-                        f"| {q.get('value')} | {q.get('unit') or ''} "
-                        f"| {q.get('label') or ''} | {q.get('country') or ''} |")
+            if not (tri or qty or qual or srcs):
+                # A real outcome: the agent looked and reported nothing.
+                out += [f"**{label}** - {disp}"
+                        + (f": {d['reason']}" if d.get("reason") else ""), ""]
+                continue
+
+            out += [f"**{label}** - {disp}, {len(srcs)} source(s)", ""]
+
+            # Prose first where there is any. It is the half of a finding
+            # that is not a number, and it is where an architecture or a
+            # vendor relationship actually gets described.
+            for item in qual[:6]:
+                lab = str(item.get("label") or "").strip()
+                val = str(item.get("value") or "").strip()
+                if lab or val:
+                    out.append(f"- {lab}{': ' if lab and val else ''}{val}")
+            if qual[:6]:
                 out.append("")
+
+            # Then the numbers, as bands where triangulation produced one -
+            # a band with a vintage is a figure someone can argue with, a
+            # bare value is not.
+            rows = tri or qty
+            if rows:
+                banded = bool(tri)
+                # The separator must have as many cells as the header or
+                # the table renders as a paragraph.
+                cols = (["what", "country", "low", "base", "high", "as of"]
+                        if banded else
+                        ["what", "country", "value", "unit", "as of"])
+                out.append("| " + " | ".join(cols) + " |")
+                out.append("| " + " | ".join(["---"] * len(cols)) + " |")
+                for r in rows[:14]:
+                    lab = str(r.get("label") or "")[:60]
+                    ctry = r.get("country") or ""
+                    if banded:
+                        out.append(
+                            f"| {lab} | {ctry} | {r.get('low')} | "
+                            f"{r.get('base')} | {r.get('high')} | "
+                            f"{r.get('newest_year') or ''} |")
+                    else:
+                        out.append(
+                            f"| {lab} | {ctry} | {r.get('value')} | "
+                            f"{r.get('unit') or ''} | {r.get('as_of') or ''} |")
+                if len(rows) > 14:
+                    out.append("| " + f"... {len(rows) - 14} more"
+                               + " |" * len(cols))
+                out.append("")
+
+            # Conflicts are a result, not noise: two sources disagreeing is
+            # information, and the model says so rather than averaging.
+            conf = d.get("conflicts") or []
+            if conf:
+                out.append(f"*{len(conf)} conflict(s) flagged: "
+                           + ", ".join(sorted({str(c.get('label') or '?')
+                                               for c in conf})[:6]) + "*")
+                out.append("")
+
+            if srcs:
+                # Both shapes. A source was a bare URL string before the
+                # harvest started keeping the publisher and the vintage with
+                # it, and a set written by an older run should still render.
+                pairs = []
+                for c in srcs:
+                    if isinstance(c, dict) and c.get("url"):
+                        pairs.append((c.get("publisher") or c["url"], c["url"]))
+                    elif isinstance(c, str) and c:
+                        pairs.append((c, c))
+                shown = pairs[:4]
+                if shown:
+                    out.append("Sources: " + "; ".join(
+                        f"[{name[:48]}]({url})" for name, url in shown)
+                        + (f" and {len(pairs) - len(shown)} more"
+                           if len(pairs) > len(shown) else ""))
+                    out.append("")
         out.append("---")
         out.append("")
     return "\n".join(out)
