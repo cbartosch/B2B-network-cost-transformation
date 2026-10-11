@@ -314,6 +314,23 @@ def _grading_policy(research_policy, triangulation_policy):
     return _Composed
 
 
+# What kind of thing went wrong, and whether the same call could succeed.
+#
+# Retryable means "the estate was never actually researched": nothing about
+# the subject, the prompt or the model produced this, so the domain should be
+# left for another attempt rather than settled. Not-retryable means the call
+# reached the model and the answer was unusable - trying again unchanged is
+# resampling, which is the distinction quality.GUIDANCE already draws for
+# rejections.
+FAILURE_KINDS = {
+    "PROVIDER_UNAVAILABLE": True,    # transport, DNS, timeout, provider 5xx
+    "LIVENESS_PROOF_FAILED": True,   # the call cannot be proven to have run
+    "SOURCES_UNREACHABLE": True,     # egress blocked the fetch, not research
+    "OUTPUT_INVALID": False,         # the model answered, in the wrong shape
+    "MODE_NOT_PERMITTED": False,     # governance refused the execution mode
+}
+
+
 class DomainResult:
     """One domain's outcome for one research call to run_domain_research.
     disposition is None exactly when failed is True - a failure means no row
@@ -321,7 +338,8 @@ class DomainResult:
 
     __slots__ = ("domain_no", "domain_name", "agent_id", "disposition",
                  "reason", "agent_run_id", "queries_used", "captures_used",
-                 "verified_sources", "failed", "failure_detail", "budget_note",
+                 "verified_sources", "failed", "failure_detail",
+                 "failure_kind", "retryable", "budget_note",
                  "quantities", "triangulated", "qualitative",
                  "reliability")
 
@@ -337,6 +355,26 @@ class DomainResult:
         self.verified_sources: list[dict] = []
         self.failed = False
         self.failure_detail: str | None = None
+        # Why it failed, as a value rather than as a sentence, and whether
+        # trying again could produce a different answer.
+        #
+        # The distinction was always here and only ever in English: the
+        # egress handler below says "This is an egress failure, not a
+        # research outcome - the domain is left undisposed for a retry",
+        # which is exactly right and which no caller can act on without
+        # matching on prose. A provider that could not be reached and a model
+        # that answered badly arrived identically - `failed: true` and a
+        # string - so an orchestrator deciding whether to retry had to guess.
+        #
+        # It cost a twenty-company sample run most of its research. DNS in
+        # the container stopped resolving the provider partway through; every
+        # call raised ProviderUnavailable; the driver could not tell that from
+        # an agent with nothing to say, disposed all seventeen domains
+        # BENCHMARK_PRIOR as a safety net, and because any disposition
+        # suppresses re-research the outage was baked in permanently for
+        # seven companies.
+        self.failure_kind: str | None = None
+        self.retryable: bool | None = None
         # Which budget ran out, when one did. "BUDGET_EXHAUSTED" alone does not
         # say whether the limit was time, captures for this domain, or captures
         # for the run - three different remedies.
@@ -364,6 +402,8 @@ class DomainResult:
                 "captures_used": self.captures_used,
                 "verified_source_count": len(self.verified_sources),
                 "failed": self.failed, "failure_detail": self.failure_detail,
+                "failure_kind": self.failure_kind,
+                "retryable": self.retryable,
                 "budget_note": self.budget_note,
                 "quantities": self.quantities,
                 "triangulated": self.triangulated,
@@ -1081,6 +1121,16 @@ def _research_one_domain(session, *, case_row, domain_no: int, domain_name: str,
                 gateway.fail(session, run_id, f"{type(exc).__name__}: {exc}")
             result.failed = True
             result.failure_detail = f"{type(exc).__name__}: {exc}"
+            # Four different causes reach this one handler and they are not
+            # the same kind of problem, so the kind is recorded rather than
+            # left to be inferred from the detail string.
+            result.failure_kind = {
+                errors.ProviderUnavailable: "PROVIDER_UNAVAILABLE",
+                errors.LivenessProofFailed: "LIVENESS_PROOF_FAILED",
+                errors.StructuredOutputInvalid: "OUTPUT_INVALID",
+                errors.ModeNotPermitted: "MODE_NOT_PERMITTED",
+            }.get(type(exc), "OUTPUT_INVALID")
+            result.retryable = FAILURE_KINDS[result.failure_kind]
             result.agent_run_id = run_id
 
             # A gate rejection carries the best schema-valid reply the loop
@@ -1126,6 +1176,8 @@ def _research_one_domain(session, *, case_row, domain_no: int, domain_name: str,
                         "model output was valid JSON but not the agreed shape")
             result.failed = True
             result.failure_detail = "model output was valid JSON but not the agreed shape"
+            result.failure_kind = "OUTPUT_INVALID"
+            result.retryable = FAILURE_KINDS["OUTPUT_INVALID"]
             result.agent_run_id = run_id
             return result
 
@@ -1220,6 +1272,9 @@ def _research_one_domain(session, *, case_row, domain_no: int, domain_name: str,
                 "note": "no claimed source could be fetched from this container"})
             result.agent_run_id = run_id
             result.failed = True
+            # The handler that already said this in prose.
+            result.failure_kind = "SOURCES_UNREACHABLE"
+            result.retryable = FAILURE_KINDS["SOURCES_UNREACHABLE"]
             result.failure_detail = (
                 f"none of the {unreachable} claimed source(s) could be fetched: "
                 f"{unreachable_detail}. This is an egress failure, not a research "
@@ -1475,6 +1530,13 @@ def run_domain_research(session, *, case_id: str, agent_ids: list[str] | None = 
         "resolved": sum(1 for r in results if r.disposition == "EVIDENCED_PUBLIC"),
         "declared_unknown": sum(1 for r in results if r.disposition == "DECLARED_UNKNOWN"),
         "failed": sum(1 for r in results if r.failed),
+        # Split out, because the remedy differs: retryable means the estate
+        # was never researched and the run should be repeated, not settled.
+        "failed_retryable": sum(1 for r in results if r.failed and r.retryable),
+        "failed_terminal": sum(1 for r in results
+                               if r.failed and r.retryable is False),
+        "failure_kinds": sorted({r.failure_kind for r in results
+                                 if r.failure_kind}),
         "captures_used_this_run": captures_this_run,
         "publication_blockers": dispositions.validate(current),
         "summary": dispositions.summarise(current),

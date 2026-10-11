@@ -3,7 +3,7 @@
 **Build 4.272.0** · branch `fix/test-suite-trustworthy`
 
 Under `make test`, the project's own entry point:
-**138 failed / 2,315 passed → 0 failed / 2,602 passed.**
+**138 failed / 2,315 passed → 0 failed / 2,610 passed.**
 Zero regressions. Every commit checked by set-difference against the previous
 complete run, not by reading output.
 
@@ -210,6 +210,69 @@ Two things worth knowing about the shape:
   — doubling every one-time cost and halving every payback. Pinned by a test.
 
 Eight tests added, at the seam the domain and the endpoint met at.
+
+---
+
+### P-14 · A failed research call could not say whether retrying would help — **FIXED**
+
+Found by running the twenty-company sample set, not by reading the code.
+
+`run_domain_research` reports a failed domain as `failed: true` plus a
+free-text `failure_detail`. Four different causes reach one handler —
+`ProviderUnavailable`, `LivenessProofFailed`, `StructuredOutputInvalid`,
+`ModeNotPermitted` — and they are not the same problem:
+
+- the first two mean **the estate was never researched**. Nothing about the
+  subject, the prompt or the model produced the failure, and the same call
+  could succeed later.
+- the last two mean **it was researched and the answer is unusable**. Trying
+  again unchanged is resampling — exactly the distinction
+  `quality.GUIDANCE` already draws for rejections.
+
+A caller could only tell them apart by matching on the prefix of a sentence.
+Worse, the code already knew the difference and said so only in prose: the
+egress handler's own message reads *"This is an egress failure, not a
+research outcome - the domain is left undisposed for a retry."* Correct, and
+unactionable.
+
+**What it cost.** During the sample run, DNS inside the api container stopped
+resolving `api.anthropic.com`:
+
+```
+ProviderUnavailable: anthropic transport error:
+  [Errno -2] Name or service not known
+```
+
+Every call in that window raised it. The sample driver could not distinguish
+an unreachable provider from an agent with nothing to say, so its safety net
+disposed all seventeen domains `BENCHMARK_PRIOR` to keep the company
+publishable. Because `_existing_domain_nos` counts *any* disposition,
+research then skipped those domains permanently — a transient network fault
+became fixed benchmark data for **seven of twenty companies**, and the set
+averaged 6.7 of 17 domains researched. Recovering it needed a purpose-built
+repair mode that re-researches only the domains the net had disposed.
+
+The driver's handling was mine to get wrong. That it *could* be got wrong
+this way is the finding.
+
+**Fixed.** `DomainResult` now carries a typed `failure_kind` and a boolean
+`retryable`, set at all three failure sites and surfaced in `as_dict()` and
+in the run summary as `failed_retryable`, `failed_terminal` and
+`failure_kinds`:
+
+| kind | retryable |
+| --- | --- |
+| `PROVIDER_UNAVAILABLE` | yes |
+| `LIVENESS_PROOF_FAILED` | yes |
+| `SOURCES_UNREACHABLE` | yes |
+| `OUTPUT_INVALID` | no |
+| `MODE_NOT_PERMITTED` | no |
+
+Four tests, including one asserting that an unreachable provider leaves the
+domain undisposed so a retry is possible at all. Note `__slots__` on
+`DomainResult` meant the new fields had to be declared there too — the
+assignment raised `AttributeError` rather than silently creating an
+attribute, which is the class doing its job.
 
 ---
 

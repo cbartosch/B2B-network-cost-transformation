@@ -254,7 +254,32 @@ def preflight(case_id):
     return report
 
 
-def do_research(case_id, slug, domains):
+def fell_back_domains(case_id, agent_domains):
+    """Domains disposed by the safety net rather than by an agent.
+
+    A domain the fallback disposed carries BENCHMARK_PRIOR and no
+    agent_run_id, and research then skips it forever - _existing_domain_nos
+    counts any disposition, so the net that keeps a company publishable also
+    locks the domain out of a later attempt. That is fine when the agent
+    genuinely had nothing to say and wrong when the provider was unreachable,
+    which is what happened here: DNS inside the container stopped resolving
+    api.anthropic.com partway through the run, every call returned
+    ProviderUnavailable, and seven companies had all seventeen domains
+    disposed by the net.
+    """
+    with db.SessionLocal() as s:
+        rows = s.execute(select(
+            db.domain_disposition.c.domain_no,
+            db.domain_disposition.c.agent_run_id,
+            db.domain_disposition.c.reason).where(
+                db.domain_disposition.c.case_id == case_id)).all()
+    return sorted(r.domain_no for r in rows
+                  if r.domain_no in set(agent_domains)
+                  and not r.agent_run_id
+                  and (r.reason or "").startswith("research returned no"))
+
+
+def do_research(case_id, slug, domains, overwrite=False):
     """One domain per call.
 
     The endpoint's own note: a full seventeen-domain run is minutes of LIVE
@@ -267,7 +292,8 @@ def do_research(case_id, slug, domains):
         t0 = time.time()
         st, res = call("POST",
                        f"/v1/outside-in/cases/{case_id}/domain-research:run",
-                       {"domain_nos": [n], "provider": "anthropic"},
+                       {"domain_nos": [n], "provider": "anthropic",
+                        "overwrite": overwrite},
                        timeout=2400)
         took = round(time.time() - t0, 1)
         out[n] = {"status": st, "seconds": took, "result": res}
@@ -572,10 +598,10 @@ def write(outdir, slug, payload):
     return d
 
 
-def run_one(spec, outdir, domains, force):
+def run_one(spec, outdir, domains, force, repair=False):
     slug = spec["slug"]
     done = outdir / slug / "estimate_v0.json"
-    if done.exists() and not force:
+    if done.exists() and not force and not repair:
         print(f"[skip] {slug}: already has results")
         return json.loads((outdir / slug / "manifest.json").read_text("utf-8"))
 
@@ -589,7 +615,15 @@ def run_one(spec, outdir, domains, force):
         log(slug, f"resuming case {case_id}: "
                   f"{len(done_before)} domain(s) already researched")
         ent = {"resolved": None, "resumed": True}
-        pf = {"conditions": []}
+        # Pre-flight is re-run on a resumed case, not skipped.
+        #
+        # The simulation gates on the stored report, not on live case state,
+        # so skipping this left whatever report the first attempt wrote. For
+        # inditex, mcdonalds and rio-tinto that was a report raising BLOCK on
+        # "Entity resolution, Mandatory intake" - conditions since repaired
+        # on the case itself, and still refusing the simulation three runs
+        # later because nothing had asked the question again.
+        pf = preflight(case_id)
     else:
         done_before = set()
         case_id = intake(spec)
@@ -607,11 +641,20 @@ def run_one(spec, outdir, domains, force):
     disp_out = dispose_analyst_domains(case_id, slug, domains)
     # Research skips these itself, but asking for them anyway would still
     # cost a round trip each and muddy the log.
-    todo = [n for n in domains if n not in done_before]
-    if len(todo) != len(domains):
-        log(slug, f"skipping {len(domains) - len(todo)} domain(s) already "
-                  f"researched on this case")
-    raw = do_research(case_id, slug, todo)
+    if repair:
+        # Only the domains the net disposed, and overwrite so research does
+        # not skip them. Targeted rather than a blanket overwrite: a company
+        # with twelve good domains and five fallbacks should re-buy five.
+        todo = fell_back_domains(case_id, domains)
+        log(slug, f"repair: re-researching {len(todo)} domain(s) the "
+                  f"fallback disposed, keeping {len(done_before)} researched")
+        raw = do_research(case_id, slug, todo, overwrite=True)
+    else:
+        todo = [n for n in domains if n not in done_before]
+        if len(todo) != len(domains):
+            log(slug, f"skipping {len(domains) - len(todo)} domain(s) "
+                      f"already researched on this case")
+        raw = do_research(case_id, slug, todo)
     fell_back = dispose_unanswered(case_id, slug)
     prom = promote(case_id, slug)
 
@@ -693,6 +736,8 @@ def main():
     ap.add_argument("--out", required=True)
     ap.add_argument("--only", default="")
     ap.add_argument("--domains", default="")
+    ap.add_argument("--repair", action="store_true",
+                    help="re-research only domains the fallback disposed")
     ap.add_argument("--force", action="store_true")
     args = ap.parse_args()
 
@@ -708,7 +753,7 @@ def main():
     results, failures = [], []
     for spec in specs:
         try:
-            results.append(run_one(spec, outdir, domains, args.force))
+            results.append(run_one(spec, outdir, domains, args.force, repair=args.repair))
         except Exception as exc:                             # noqa: BLE001
             # One company failing is one company, not the run. Named and
             # carried so the set can be completed and the gap is visible.
