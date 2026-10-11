@@ -419,3 +419,45 @@ def test_the_archetype_names_agree_with_themselves(session):
     assert "NOT_AN_ARCHETYPE" not in promotion.ARCHETYPES
     assert "NOT_AN_ARCHETYPE" not in set(promotion.ARCHETYPES)
 
+def test_a_value_the_classifier_accepts_is_a_value_promotion_can_write(session):
+    """The classifier admits a quantity when triangulate.parse_value can read
+    it - "1,250", "2.75", "3 million", "~10". The writer called int() on the
+    raw string, so a candidate this module offered, and a person chose to
+    promote, returned 500:
+
+        ValueError: invalid literal for int() with base 10: '~10'
+
+    Lufthansa lost all seven of its footprint rows to it and was priced from
+    public disclosure alone, with nothing in the response saying which
+    finding was at fault.
+    """
+    from sqlalchemy import select
+
+    from app import db
+
+    for raw, expected in (("~10", 10), ("1,250", 1250), ("341.0", 341),
+                          (12, 12)):
+        q = {"label": "LARGE_OFFICE - named operating sites", "value": raw,
+             "unit": "sites", "country": "DE", "as_of": "2025-12-31"}
+        case_id, _ = _case_with_finding(session, q)
+        cands = promotion.candidates(session, case_id)
+        assert cands["footprint_candidates"], f"{raw!r} was not offered"
+        promotion.promote(
+            session, case_id=case_id,
+            candidate_ids=[c["candidate_id"]
+                           for c in cands["footprint_candidates"]],
+            promoted_by="tester")
+        sites = session.execute(select(db.evidenced_footprint.c.sites).where(
+            db.evidenced_footprint.c.case_id == case_id)).scalar()
+        assert sites == expected, f"{raw!r} promoted as {sites}, want {expected}"
+
+
+def test_a_value_nothing_can_read_is_refused_not_defaulted(session):
+    """Unreachable through _classify, which declines it first. Guarded
+    anyway: a site count nobody could parse must not quietly become 0 or 1.
+    """
+    import pytest
+
+    with pytest.raises(ValueError, match="no readable value"):
+        promotion._sites_from({"label": "LARGE_OFFICE", "value": "a handful"})
+

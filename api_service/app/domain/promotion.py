@@ -113,6 +113,24 @@ def _as_int(value):
         return None
 
 
+def _sites_from(q: dict) -> int:
+    """A site count from a quantity the classifier already accepted.
+
+    Via triangulate.parse_value, so the number the writer stores is the
+    number the matcher saw. Rounded, because these columns hold site counts
+    and a source saying "about 10" means ten sites.
+    """
+    parsed = triangulate.parse_value(q.get("value"))
+    if parsed is None:
+        # Unreachable through _classify, which refuses a quantity this
+        # cannot read. Raised rather than defaulted: a site count nobody
+        # could parse must not become a zero or a one.
+        raise ValueError(
+            f"quantity {q.get('label')!r} has no readable value: "
+            f"{q.get('value')!r}")
+    return int(round(float(parsed)))
+
+
 def _triangulated_index(evidence: dict) -> dict:
     """Bands by (label, country), so a promotion can carry the range and the
     conflict state rather than only the point the agent happened to state."""
@@ -538,7 +556,27 @@ def promote(session, *, case_id: str, candidate_ids: list[str],
                 db.evidenced_footprint.c.archetype == archetype))
             session.execute(insert(db.evidenced_footprint).values(
                 id=str(uuid.uuid4()), case_id=case_id, country=country,
-                archetype=archetype, sites=int(q["value"]),
+                # Parsed the way _classify parsed it, not int().
+                #
+                # The classifier admits a quantity when
+                # triangulate.parse_value() can read it, and that function
+                # deliberately reads a source's wording - "1,250", "2.75",
+                # "3 million", "~10". int() reads none of those. So a
+                # candidate this module offered, and a named person chose to
+                # promote, took the whole request down with
+                #
+                #   ValueError: invalid literal for int() with base 10: '~10'
+                #
+                # and the caller saw a 500 with no indication which finding
+                # caused it. Lufthansa lost all seven of its footprint rows
+                # that way and was priced from public disclosure alone.
+                #
+                # The fix for exactly this already existed two lines below,
+                # on the band columns, with a comment saying "crashing on a
+                # decimal string is not [right]". The site count never got
+                # it. A matcher and a writer disagreeing about what a field
+                # means is the same defect P-15 was, one field across.
+                archetype=archetype, sites=_sites_from(q),
                 as_of=str(q.get("as_of") or ""), domain_no=e["domain_no"],
                 # The band is stored as strings, and a price band's low is
                 # "477.5" - int() on that raises rather than truncating. These
@@ -552,7 +590,9 @@ def promote(session, *, case_id: str, candidate_ids: list[str],
                 promoted_at=now))
             promoted_footprint.append(
                 {"country": country, "archetype": archetype,
-                 "sites": int(q["value"]), "as_of": q.get("as_of")})
+                 # Same reading as the row that was just written, so the
+                 # receipt cannot disagree with the record it describes.
+                 "sites": _sites_from(q), "as_of": q.get("as_of")})
         elif target == "price":
             country = str(q["country"]).upper()
             product = str(q["label"]).split()[0].upper()

@@ -3,7 +3,7 @@
 **Build 4.272.0** · branch `fix/test-suite-trustworthy`
 
 Under `make test`, the project's own entry point:
-**138 failed / 2,315 passed → 0 failed / 2,616 passed.**
+**138 failed / 2,315 passed → 0 failed / 2,618 passed.**
 Zero regressions. Every commit checked by set-difference against the previous
 complete run, not by reading output.
 
@@ -356,6 +356,42 @@ dispositions behind them survived and promotion could rebuild them.
 implements, and `set()` over it goes through `__iter__` like anything else.
 No call site relied on it being a frozenset. A test now asserts the two
 spellings agree, in both directions, for a known and an unknown name.
+
+---
+
+### P-17 · A 500 on a candidate the system itself offered — **FIXED**
+
+`promotion._classify` admits a quantity when `triangulate.parse_value` can
+read it, and that function deliberately reads a source's wording: `"1,250"`,
+`"2.75"`, `"3 million"`, `"~10"`. `promote()` then wrote the site count with
+a bare `int(q["value"])`, which reads none of those.
+
+So a candidate this module offered, and a named person chose to promote,
+took the whole request down:
+
+```
+ValueError: invalid literal for int() with base 10: '~10'
+```
+
+The caller got a 500 with nothing saying which finding caused it, and —
+because promotion is all-or-nothing per request — **lost every other
+candidate in the batch with it.** Lufthansa's seven footprint rows went that
+way and it was priced from public disclosure alone.
+
+**The fix for exactly this already existed two lines below**, on the band
+columns, with a comment reading *"These columns hold site counts, so
+rounding is right and crashing on a decimal string is not."* The site count
+itself never got it.
+
+This is P-15 one field across: a matcher and a writer disagreeing about what
+a field means. P-15 was the label — classifier read the leading token, writer
+stored the whole string. P-17 is the value. Both are now routed through one
+function so there is one answer rather than two that happen to agree.
+
+Both call sites fixed — the row written and the receipt returned, which
+could otherwise have disagreed with each other. A value nothing can parse
+raises rather than defaulting: unreachable through `_classify`, guarded
+anyway, because a site count nobody could read must not quietly become 0.
 
 ---
 
