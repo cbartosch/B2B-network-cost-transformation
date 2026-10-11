@@ -121,19 +121,84 @@ samples/outside_in/
   companies.json     the twenty specs: industry, scope, disclosed footprint
   summary.csv        one row per company - baseline, saving, payback,
                      confidence, coverage, research counts
-  HIGHLIGHTS.md      what the research found, per company, in prose
+  HIGHLIGHTS.md      what the research found, per company
+  _cases.json        slug -> case_id, so a re-run resumes the same case
+                     instead of re-buying research already paid for
   _run_log.json      which companies completed and which failed
   <slug>/
-    manifest.json      inputs, footprint provenance, seed, build, timings
+    manifest.json      inputs, footprint provenance, seed, build, mode
     simulation.json    the ensemble run and its pins
     estimate_v0.json   the published snapshot: current_tco, by_layer,
                        scenarios with transition, confidence, coverage
-    research.json      per-domain dispositions, findings, quantities,
-                       source URLs, known facts, evidenced footprint
+    research.json      per-domain dispositions, quantities, triangulated
+                       bands, qualitative findings, conflicts, sources,
+                       known facts, evidenced footprint
 ```
+
+The manifest fields worth knowing:
+
+| field | meaning |
+| --- | --- |
+| `domains_requested` | what the run asked for |
+| `domains_researched` | what came back with an agent verdict — **the honest count** |
+| `domains_fell_back_unanswered` | asked for, no verdict, disposed `BENCHMARK_PRIOR` so the case stays publishable |
+| `footprint_provenance` | every footprint row, tagged `RESEARCHED` / `SUPERSEDED_BY_RESEARCH` / `PUBLIC_DISCLOSURE` |
+| `mode` | `run`, `repair` or `repromote` — see below |
+
+`domains_requested` and `domains_researched` are both recorded because the
+first overstates coverage whenever a call fails, and a manifest that
+overstates its own research is the thing this set is least allowed to do.
 
 `estimate_v0.json` carries its own `pins`, so each snapshot is provenance for
 itself rather than relying on this directory staying tidy.
+
+---
+
+## How this set was actually produced
+
+Not in one pass, and the detours are part of what the artifacts mean.
+
+**The provider went unreachable mid-run.** DNS inside the api container
+stopped resolving `api.anthropic.com` for a stretch:
+
+```
+ProviderUnavailable: anthropic transport error:
+  [Errno -2] Name or service not known
+```
+
+Every call in that window failed. The driver could not tell an unreachable
+provider from an agent with nothing to say, so its safety net disposed the
+affected domains `BENCHMARK_PRIOR` to keep each company publishable — and
+because research skips any domain already carrying a disposition, that made
+a transient fault permanent. Seven of twenty companies finished with zero
+researched domains and the set averaged 6.7 of 17.
+
+That became finding **P-14** and a fix: a failure now carries a typed
+`failure_kind` and a boolean `retryable`, so a caller can tell
+`PROVIDER_UNAVAILABLE` from `OUTPUT_INVALID` without parsing prose.
+
+**A `--repair` pass recovered it**, re-researching only the domains the net
+had disposed and keeping every domain an agent had actually answered.
+
+**Research was reaching the estimates and being discarded.** The promotion
+classifier routed a finding to the footprint only when its label was
+*nothing but* an archetype name — while the research prompt asks the agent to
+"say which mapping you chose and why". A well-behaved agent returning
+`SERVICE_POINT - Iberdrola customer service and sales points` was classified
+`unclassified` every time. Iberdrola: 103 findings, 0 classified, priced
+entirely from public disclosure despite seventeen researched domains.
+
+That became finding **P-15**. A `--repromote` pass then re-offered every
+company's existing findings to the fixed classifier — no provider calls —
+and re-ran the footprint merge, the simulation and the estimate.
+
+**What this means for reading the set.** Coverage is uneven and each manifest
+says exactly what its own is. A company with a low `domains_researched`
+count is not a company with less to find; it is one whose run caught the
+outage. The confidence score does not know that — it reads evidence from
+dispositions, and a benchmark disposition is honestly weighted as a
+benchmark — so a thin company reads as *indicative*, which is correct, for a
+reason the score cannot state.
 
 ---
 
@@ -158,6 +223,23 @@ python tools/build_sample_summary.py --out samples/outside_in
 (everything else is disposed `BENCHMARK_PRIOR`), `--force` re-runs a company
 that already has results. A company that fails is logged and skipped; the set
 continues.
+
+Three modes, and the difference is what they spend:
+
+| mode | spends |
+| --- | --- |
+| *(default)* | researches domains with no disposition |
+| `--repair` | re-researches **only** domains the fallback disposed, keeping every domain an agent answered |
+| `--repromote` | **nothing** — re-offers findings already paid for, then re-merges the footprint, re-simulates, re-estimates |
+
+`--repromote` refuses a company with no confirmed case in `_cases.json`
+rather than quietly starting a fresh one, which would spend exactly the money
+the mode exists to avoid.
+
+`tools/finish_samples.sh` chains a full recovery: wait out a repair pass,
+copy the artifacts to the host, restart the api to deploy a fix, copy them
+back, re-promote. The copies are not optional — `/tmp` inside the container
+does not survive a restart, and that is where the artifacts live.
 
 **Determinism.** Seed `20260101`, ensemble 25, for every company - so a
 difference between two of them is the company and not the draw. The
@@ -187,3 +269,8 @@ casually.
 - **`count_source` is accepted by the footprint API and never read** by the
   domain layer, so per-row provenance could not be carried into the
   simulation and is recorded in the manifest instead.
+- **A research call that fails for an environmental reason still settles the
+  domain** unless the caller handles it. P-14 makes the reason legible
+  (`failure_kind`, `retryable`); it does not change that a disposition, once
+  written, suppresses re-research. That is what `--repair` is for, and a
+  caller without one will quietly bake an outage into its results.
