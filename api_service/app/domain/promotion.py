@@ -54,10 +54,26 @@ def _archetype_names() -> frozenset:
     return frozenset(row[0] for row in SEEDED)
 
 
-class _ArchetypeNames(frozenset):
+class _ArchetypeNames:
     """Late-bound so the seed stays the single source.
 
     `label not in ARCHETYPES` reads the same as before and now asks the seed.
+
+    Not a frozenset subclass, which is what this was. It inherited the set
+    API, was constructed empty, and the C-level fast paths behind `set(x)`,
+    `list(x)`, `sorted(x)` and the set operators read the empty underlying
+    storage directly - a Python-level `__iter__` override does not reach
+    them. So `"LARGE_OFFICE" in ARCHETYPES` was True while
+    `set(ARCHETYPES)` was empty, at the same moment, for the same object.
+
+    Product code only ever asks `in`, so nothing here was wrong. A caller
+    outside it reasonably did `known = set(ARCHETYPES)`, got an empty set,
+    concluded every archetype was unknown and deleted 75 rows of promoted
+    footprint evidence. A type that answers one question correctly and the
+    neighbouring one silently wrongly should not be offering the second.
+
+    A plain class offers only what it implements, and `set()` on it goes
+    through `__iter__` like anything else.
     """
 
     def __contains__(self, item):
@@ -68,6 +84,9 @@ class _ArchetypeNames(frozenset):
 
     def __len__(self):
         return len(_archetype_names())
+
+    def __repr__(self):
+        return f"ARCHETYPES({sorted(_archetype_names())!r})"
 
 
 ARCHETYPES = _ArchetypeNames()

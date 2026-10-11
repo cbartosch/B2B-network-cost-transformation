@@ -449,12 +449,40 @@ def footprint_for_simulation(case_id, spec):
             db.evidenced_footprint.c.case_id == case_id)).all()
     promoted = [r for r in rows if r.promoted_at is not None and r.sites]
 
+    # Only archetypes the simulation knows.
+    #
+    # It refuses an unknown one with 422 and names it, which is right - a
+    # footprint row for an archetype that does not exist would otherwise be
+    # priced at the DEFAULT prior and look enumerated. But the refusal lands
+    # on the whole company, after its research is paid for, so this driver
+    # checks before asking rather than discovering it in a stack trace.
+    #
+    # Needed because an earlier promotion stored the whole descriptive label
+    # as the archetype. Those rows are short enough to fit the column, so
+    # they were written rather than rejected, and the fix that stopped
+    # producing them could not retract them: promote() deletes by
+    # (case_id, country, archetype), and the archetype had changed.
+    # Asked per item, not via set(ARCHETYPES). That spelling returned an
+    # empty set while `in` answered correctly - see P-16 - and this driver
+    # deleted 75 rows of promoted evidence on the strength of it. The type
+    # is fixed; asking the question the way the product code asks it is
+    # still the safer habit.
+    from app.domain.promotion import ARCHETYPES
+    unknown = sorted({r.archetype for r in promoted
+                      if r.archetype not in ARCHETYPES})
+    if unknown:
+        log(slug, f"dropping {len(unknown)} footprint row(s) naming an "
+                  f"archetype the simulation does not know: "
+                  f"{', '.join(repr(u) for u in unknown[:3])}")
+    promoted = [r for r in promoted if r.archetype in ARCHETYPES]
+
     researched = {}
     for r in promoted:
         key = (r.country, r.archetype)
         researched[key] = researched.get(key, 0) + int(r.sites)
 
     merged, provenance = [], []
+    dropped_unknown = unknown
     for key, sites in sorted(researched.items()):
         country, archetype = key
         merged.append({"country": country, "archetype": archetype,
@@ -476,6 +504,8 @@ def footprint_for_simulation(case_id, spec):
         return list(spec["declared_footprint"]), "PUBLIC_DISCLOSURE_ONLY", []
     origin = ("RESEARCH_MERGED_WITH_DISCLOSURE" if researched
               else "PUBLIC_DISCLOSURE_ONLY")
+    for u in dropped_unknown:
+        provenance.append({"archetype": u, "origin": "DROPPED_UNKNOWN_ARCHETYPE"})
     return merged, origin, provenance
 
 

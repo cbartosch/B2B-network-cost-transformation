@@ -3,7 +3,7 @@
 **Build 4.272.0** · branch `fix/test-suite-trustworthy`
 
 Under `make test`, the project's own entry point:
-**138 failed / 2,315 passed → 0 failed / 2,614 passed.**
+**138 failed / 2,315 passed → 0 failed / 2,616 passed.**
 Zero regressions. Every commit checked by set-difference against the previous
 complete run, not by reading output.
 
@@ -314,6 +314,48 @@ disposes, so widening it cannot put a number into an estimate by itself.
 
 Four tests, including the two declines above so the widening cannot drift
 into guessing.
+
+---
+
+### P-16 · A type that answered `in` correctly and `set()` silently wrong — **FIXED**
+
+`promotion.ARCHETYPES` was an instance of:
+
+```python
+class _ArchetypeNames(frozenset):
+    def __contains__(self, item): return item in _archetype_names()
+    def __iter__(self):           return iter(_archetype_names())
+    def __len__(self):            return len(_archetype_names())
+```
+
+constructed empty, so the names are late-bound to the seed. The overrides
+work for `in` and `len`. They do not work for `set(x)`, `list(x)`,
+`sorted(x)` or the set operators: CPython takes a fast path for a `frozenset`
+subclass and reads the underlying storage directly, never calling
+`__iter__`. So, at the same moment, for the same object:
+
+```
+'LARGE_OFFICE' in ARCHETYPES   ->  True
+'LARGE_OFFICE' in set(ARCHETYPES) ->  False
+len(ARCHETYPES)                ->  15
+len(set(ARCHETYPES))           ->  0
+```
+
+**Nothing in the service was wrong.** Every product call site asks `in`,
+which is what the class docstring promised to support. The hazard is that
+inheriting `frozenset` advertises an API the class does not honour, and the
+wrong answer is empty rather than an error.
+
+**It cost 75 rows.** The sample driver needed to filter footprint rows to
+archetypes the simulation knows, wrote the obvious `known = set(ARCHETYPES)`,
+got an empty set, concluded every archetype was unknown, and deleted 75 rows
+of promoted footprint evidence across 20 cases. Recoverable only because the
+dispositions behind them survived and promotion could rebuild them.
+
+**Fixed** by not subclassing `frozenset`. A plain class offers only what it
+implements, and `set()` over it goes through `__iter__` like anything else.
+No call site relied on it being a frozenset. A test now asserts the two
+spellings agree, in both directions, for a known and an unknown name.
 
 ---
 

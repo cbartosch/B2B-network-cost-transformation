@@ -390,3 +390,32 @@ def test_the_archetype_stored_is_the_one_the_classifier_matched(session):
     assert rows[0].sites == 650
     assert len(rows[0].archetype) <= 48
 
+def test_the_archetype_names_agree_with_themselves(session):
+    """`in` and `set()` must answer the same question.
+
+    ARCHETYPES was a frozenset subclass constructed empty, with Python-level
+    __contains__ and __iter__ overrides. The C fast paths behind set(),
+    list(), sorted() and the set operators read the empty underlying storage
+    and never call __iter__, so "LARGE_OFFICE" in ARCHETYPES was True while
+    set(ARCHETYPES) was empty - the same object answering two forms of one
+    question differently.
+
+    Product code only ever asks `in`, so nothing in the service was wrong.
+    A caller outside it did `known = set(ARCHETYPES)`, concluded every
+    archetype was unknown, and deleted 75 rows of promoted footprint
+    evidence before anyone noticed.
+    """
+    from app.domain import promotion
+
+    names = set(promotion.ARCHETYPES)
+    assert names, "set() over the archetype names came back empty"
+    assert len(names) == len(promotion.ARCHETYPES)
+    assert sorted(names) == sorted(promotion.ARCHETYPES)
+    for n in names:
+        assert n in promotion.ARCHETYPES
+    # The two spellings a caller might reach for, agreeing.
+    assert "LARGE_OFFICE" in promotion.ARCHETYPES
+    assert "LARGE_OFFICE" in set(promotion.ARCHETYPES)
+    assert "NOT_AN_ARCHETYPE" not in promotion.ARCHETYPES
+    assert "NOT_AN_ARCHETYPE" not in set(promotion.ARCHETYPES)
+
