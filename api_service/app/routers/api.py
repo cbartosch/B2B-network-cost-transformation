@@ -3489,7 +3489,14 @@ def _run_anchor_estimate(s, *, case_id, case_row, payload,
         components, lv,
         transition_policy=_transition_policy(s),
         sites=estimate.site_count(components),
-        monthly_run_rate=estimate.monthly_run_rate(components))
+        monthly_run_rate=estimate.monthly_run_rate(components),
+        # No site_mix, deliberately. The ANCHOR method derives a baseline
+        # from a disclosed cost line and never simulates an estate, so there
+        # is no circuit count to build a cost over. transition.net falls back
+        # to the flat reference and records in one_time_cost_build that no
+        # mix was supplied - which is the reason, stated, rather than a
+        # number that looks the same as BUILD_UP's for no visible cause.
+        site_mix=None)
 
     disp_summary = dispositions.summarise(disp)
     completeness = (D(disp_summary["total_domains"] - disp_summary["declared_unknown"])
@@ -4029,7 +4036,18 @@ def run_estimate(case_id: str, payload: EstimateIn):
             components, lv,
             transition_policy=_transition_policy(s),
             sites=estimate.site_count(components),
-            monthly_run_rate=estimate.monthly_run_rate(components))
+            monthly_run_rate=estimate.monthly_run_rate(components),
+            # CR-04: sites and circuits per archetype, from the estate the
+            # simulation drew. Cost per site then follows the estate rather
+            # than a flat charge - a site that drew a second access carries
+            # two circuits' worth of hardware and cutover.
+            # The footprint as well as the estate: the estate is truncated
+            # above 5,000 rows, so its row count is a sample and not the
+            # site count. Counting it understated a 16,406-site one-time
+            # cost by two thirds.
+            site_mix=estimate.site_mix_from_estate(
+                (sim.output or {}).get("estate"),
+                (sim.params or {}).get("footprint")))
 
         scenario_shares = {k: D(v["simulated_share"]) for k, v in scen.items()}
         sim_share = max(scenario_shares.values()) if scenario_shares else D(0)

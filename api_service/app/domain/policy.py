@@ -588,6 +588,14 @@ class TransitionPolicy:
     one_time_cost_per_site_high: Decimal
     dual_running_months: int
     sites_migrated_per_month: int
+    # CR-04: how the reference per-site cost decomposes. Hardware and
+    # migration scale with circuits; integration and project management
+    # scale with sites.
+    one_time_share_hardware: Decimal = Decimal("0")
+    one_time_share_migration: Decimal = Decimal("0")
+    one_time_share_integration: Decimal = Decimal("0")
+    one_time_share_project_management: Decimal = Decimal("0")
+    one_time_reference_circuits_per_site: Decimal = Decimal("1")
     evidence_grade: str = "E"
 
     @classmethod
@@ -600,6 +608,13 @@ class TransitionPolicy:
             one_time_cost_per_site_high=r("one_time_cost_per_site_high"),
             dual_running_months=int(r("dual_running_months")),
             sites_migrated_per_month=int(r("sites_migrated_per_month")),
+            one_time_share_hardware=r("one_time_share_hardware"),
+            one_time_share_migration=r("one_time_share_migration"),
+            one_time_share_integration=r("one_time_share_integration"),
+            one_time_share_project_management=r(
+                "one_time_share_project_management"),
+            one_time_reference_circuits_per_site=r(
+                "one_time_reference_circuits_per_site"),
             evidence_grade=str(rows.get("evidence_grade", "E")))
         policy.validate()
         return policy
@@ -608,6 +623,24 @@ class TransitionPolicy:
         lo, ba, hi = (Decimal(self.one_time_cost_per_site_low),
                       Decimal(self.one_time_cost_per_site_base),
                       Decimal(self.one_time_cost_per_site_high))
+        shares = (Decimal(self.one_time_share_hardware)
+                  + Decimal(self.one_time_share_migration)
+                  + Decimal(self.one_time_share_integration)
+                  + Decimal(self.one_time_share_project_management))
+        if shares != Decimal(1):
+            # Not a rounding tolerance. These four shares are how a reference
+            # cost is divided, and a set that does not divide it is either
+            # losing money or inventing it.
+            raise PolicyInvalid(
+                f"{self.set_name}: the one-time cost shares sum to {shares}, "
+                f"not 1 - hardware {self.one_time_share_hardware}, migration "
+                f"{self.one_time_share_migration}, integration "
+                f"{self.one_time_share_integration}, project management "
+                f"{self.one_time_share_project_management}")
+        if Decimal(self.one_time_reference_circuits_per_site) <= 0:
+            raise PolicyInvalid(
+                f"{self.set_name}: reference circuits per site must be "
+                f"positive, not {self.one_time_reference_circuits_per_site}")
         if not lo <= ba <= hi:
             raise PolicyInvalid(
                 f"{self.set_name}: one-time cost band {lo}/{ba}/{hi} is not "

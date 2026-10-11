@@ -685,7 +685,7 @@ def scenarios(components: list[Component], levers: list[dict],
               # always got - a missing payback is honest, a payback computed
               # from no assumptions is not.
               *, transition_policy=None, sites: int = 0,
-              monthly_run_rate=None) -> dict:
+              monthly_run_rate=None, site_mix=None) -> dict:
     """Apply each lever only to the cost layers it names, compounding on each
     component's remaining value. Layer composition is preserved into the target,
     which is what makes the target-side simulated share meaningful."""
@@ -980,7 +980,7 @@ def scenarios(components: list[Component], levers: list[dict],
             # policy is supplied: a missing payback is honest, and one computed
             # from no assumptions is not.
             **({"transition": transition.net(
-                    gross_annual=saving, sites=sites,
+                    gross_annual=saving, sites=sites, site_mix=site_mix,
                     monthly_run_rate=monthly_run_rate or D(0),
                     policy=transition_policy)}
                if transition_policy is not None and sites else {}),
@@ -994,6 +994,72 @@ def scenarios(components: list[Component], levers: list[dict],
             "origin_breakdown": origin_breakdown(target_components),
             "target_components": [c.to_dict() for c in target_components],
         }
+    return out
+
+
+def site_mix_from_estate(estate, footprint=None) -> list[dict]:
+    """Sites and circuits per archetype.
+
+    Site counts come from the footprint, which is authoritative. Circuit
+    density comes from the estate, which is a **sample**: the simulation
+    truncates the published estate - McDonald's 16,406 sites arrive as 5,000
+    rows with estate_truncated: 11406 - so counting its rows counts a third
+    of the estate.
+
+    Reading sites off the estate understated McDonald's one-time cost to
+    287.80 per site against a formula whose floor is 792. The error is
+    silent and proportional: it scales the cost by the truncation ratio and
+    leaves a number that looks like a number.
+
+    So: sites per archetype from the footprint, circuits per site from
+    whatever sample of that archetype the estate carries, and the product of
+    the two. An archetype absent from the sample takes the estate-wide
+    density and is marked, rather than being dropped or assumed single-
+    circuit.
+
+    Falls back to counting the estate when no footprint is supplied, which
+    is correct whenever the estate is complete.
+    """
+    sampled: dict[str, dict] = {}
+    for site in estate or []:
+        if not isinstance(site, dict):
+            continue
+        a = site.get("archetype") or "UNKNOWN"
+        row = sampled.setdefault(a, {"sites": 0, "circuits": 0})
+        row["sites"] += 1
+        row["circuits"] += 2 if site.get("backup_product") else 1
+
+    overall = (sum(r["circuits"] for r in sampled.values())
+               / sum(r["sites"] for r in sampled.values())
+               if sampled else 1.0)
+
+    if not footprint:
+        return [{"archetype": a, "sites": r["sites"], "circuits": r["circuits"]}
+                for a, r in sorted(sampled.items())]
+
+    sites_by_type: dict[str, int] = {}
+    for row in footprint:
+        if not isinstance(row, dict):
+            continue
+        a = row.get("archetype") or "UNKNOWN"
+        sites_by_type[a] = sites_by_type.get(a, 0) + int(row.get("sites") or 0)
+
+    out = []
+    for a, n in sorted(sites_by_type.items()):
+        if n <= 0:
+            continue
+        s = sampled.get(a)
+        density = (s["circuits"] / s["sites"]) if s and s["sites"] else overall
+        out.append({
+            "archetype": a,
+            "sites": n,
+            "circuits": int(round(n * density)),
+            # How much of this archetype the density was measured on. A
+            # density from 40 of 9,000 stores is a different claim from one
+            # measured on all of them.
+            "circuit_density_sampled_sites": (s or {}).get("sites", 0),
+            "circuit_density_origin": (
+                "SIMULATED" if s else "SIMULATED_ESTATE_AVERAGE")})
     return out
 
 

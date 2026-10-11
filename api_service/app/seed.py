@@ -205,6 +205,28 @@ THRESHOLDS = [
     # no transaction behind them. They make the model more conservative, not
     # less, which is the right direction for an unevidenced addition - but a
     # payback computed from them is a modelled payback and the output says so.
+    # CR-04. The per-site figures below are a *reference* cost at a reference
+    # circuit density, decomposed into work that scales with circuits and
+    # work that scales with sites. A site with a second access circuit costs
+    # more to migrate than one without, and the flat per-site charge said
+    # otherwise: every company in the twenty-company sample set reported
+    # exactly 900.00 per site, in four currencies.
+    #
+    # The four shares are ASSUMED and registered in
+    # docs/CR-NCT-001-ASSUMPTIONS.md with a rationale each. They are not
+    # sourced from transaction data, and transition_policy.evidence_grade
+    # stays at E to say so.
+    #
+    # They sum to 1.0, and at the reference density the build reproduces the
+    # reference cost exactly - so this adds structure without moving the
+    # governed level. What moves is the spread across estates.
+    ("transition_policy", "one_time_share_hardware", "0.35"),
+    ("transition_policy", "one_time_share_migration", "0.25"),
+    ("transition_policy", "one_time_share_integration", "0.20"),
+    ("transition_policy", "one_time_share_project_management", "0.20"),
+    # Circuits per site the reference cost assumes. A seeded estate runs
+    # about 1.3; 1.25 is the round reference the shares were set against.
+    ("transition_policy", "one_time_reference_circuits_per_site", "1.25"),
     ("transition_policy", "one_time_cost_per_site_low", "400"),
     ("transition_policy", "one_time_cost_per_site_base", "900"),
     ("transition_policy", "one_time_cost_per_site_high", "1800"),

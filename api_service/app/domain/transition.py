@@ -43,6 +43,93 @@ NOT_MODELLED = (
 )
 
 
+def _per_site_cost(unit, circuits_per_site, policy):
+    """One site's one-time cost at a given circuit density.
+
+    Work that scales with circuits - a CPE and a port per access, the
+    cutover of each - and work that scales with the site - configuring and
+    testing it once, and the programme overhead of touching it at all.
+
+    At the reference density the two halves reproduce `unit` exactly, so the
+    decomposition adds structure without moving the governed level.
+    """
+    per_circuit = (D(policy.one_time_share_hardware)
+                   + D(policy.one_time_share_migration))
+    per_site = (D(policy.one_time_share_integration)
+                + D(policy.one_time_share_project_management))
+    ref = D(policy.one_time_reference_circuits_per_site)
+    return D(unit) * (per_circuit * (D(circuits_per_site) / ref) + per_site)
+
+
+def one_time_build(*, site_mix, policy) -> dict:
+    """The one-time cost built by component, over a real estate mix.
+
+    `site_mix` is [{"archetype", "sites", "circuits"}], aggregated from the
+    simulated estate, so circuits are the ones the simulation actually drew
+    rather than a multiplier anyone chose.
+
+    Replaces a flat charge per site. Every company in the twenty-company
+    sample reported exactly 900.00 per site - in four currencies, across
+    estates from 43 sites to 16,406, a retail store costing the same as a
+    data centre. That number was the governed reference cost and nothing
+    about any particular estate.
+
+    Not varied by country or target architecture. Neither is sourced, and
+    inventing a country factor to make the output look richer is the thing
+    principle 1 of CR-NCT-001 forbids. Both are reported DECLARED_UNKNOWN in
+    `not_varied_by`.
+    """
+    rows, totals = [], {"low": D(0), "base": D(0), "high": D(0)}
+    comps = {k: D(0) for k in
+             ("hardware", "migration", "integration", "project_management")}
+    ref = D(policy.one_time_reference_circuits_per_site)
+
+    for m in site_mix:
+        n = int(m.get("sites") or 0)
+        if n <= 0:
+            continue
+        circuits = D(str(m.get("circuits") or n))
+        cps = circuits / D(n)
+        band = {}
+        for k, unit in (("low", policy.one_time_cost_per_site_low),
+                        ("base", policy.one_time_cost_per_site_base),
+                        ("high", policy.one_time_cost_per_site_high)):
+            per_site = _per_site_cost(unit, cps, policy)
+            band[k] = per_site * D(n)
+            totals[k] += band[k]
+        base_unit = D(policy.one_time_cost_per_site_base)
+        comps["hardware"] += (circuits * (base_unit / ref)
+                              * D(policy.one_time_share_hardware))
+        comps["migration"] += (circuits * (base_unit / ref)
+                               * D(policy.one_time_share_migration))
+        comps["integration"] += (D(n) * base_unit
+                                 * D(policy.one_time_share_integration))
+        comps["project_management"] += (
+            D(n) * base_unit * D(policy.one_time_share_project_management))
+        rows.append({
+            "archetype": m.get("archetype"),
+            "sites": n,
+            "circuits": as_str(circuits),
+            "circuits_per_site": str(cps.quantize(D("0.001"))),
+            "cost_per_site_base": as_str(band["base"] / D(n)),
+            "cost_base": as_str(band["base"])})
+
+    return {
+        "total": Range(totals["low"], totals["base"], totals["high"]),
+        "by_component": {k: as_str(v) for k, v in comps.items()},
+        "by_site_type": rows,
+        # Every component here is an assumed share of a governed reference
+        # cost. None of it is a quoted transaction.
+        "origin": {"shares": "ASSUMED", "reference_cost": "ASSUMED",
+                   "circuits": "SIMULATED"},
+        "not_varied_by": {
+            "country": "DECLARED_UNKNOWN - no sourced per-country transition "
+                       "cost, and a factor invented to vary it would read as "
+                       "evidence",
+            "target_architecture": "DECLARED_UNKNOWN - same reason"},
+    }
+
+
 def one_time(*, sites: int, policy) -> Range:
     """The one-time cost of changing `sites` sites, as a band.
 
@@ -83,7 +170,8 @@ def programme_months(*, sites: int, policy) -> int:
     return -(-sites // rate)          # ceiling division
 
 
-def net(*, gross_annual: Range, sites: int, monthly_run_rate, policy) -> dict:
+def net(*, gross_annual: Range, sites: int, monthly_run_rate, policy,
+        site_mix=None) -> dict:
     """Net savings and payback, with what they rest on.
 
     `gross_annual` is the run-rate saving once the estate is fully migrated.
@@ -96,7 +184,12 @@ def net(*, gross_annual: Range, sites: int, monthly_run_rate, policy) -> dict:
     all. Returning a very large number there would read as a long payback
     rather than as no payback.
     """
-    otc = one_time(sites=sites, policy=policy)
+    # The component build where the estate mix is known, the flat reference
+    # where it is not. A caller without a mix gets what it always got, and
+    # the origin says which it was.
+    build = (one_time_build(site_mix=site_mix, policy=policy)
+             if site_mix else None)
+    otc = build["total"] if build else one_time(sites=sites, policy=policy)
     dual = dual_running(sites=sites, monthly_run_rate=monthly_run_rate,
                         policy=policy)
     total_cost = Range(otc.low + dual.low, otc.base + dual.base,
@@ -112,6 +205,17 @@ def net(*, gross_annual: Range, sites: int, monthly_run_rate, policy) -> dict:
     # would report a payback nobody could have.
     return {
         "one_time_cost": otc.to_dict(),
+        # CR-04: what the one-time cost is made of, and what it does not vary
+        # by. Absent when the caller supplied no estate mix, which is itself
+        # the answer to "why is this flat?".
+        "one_time_cost_build": (
+            {k: v for k, v in build.items() if k != "total"} if build
+            else {"origin": {"shares": "ASSUMED",
+                             "reference_cost": "ASSUMED",
+                             "circuits": "NOT_SUPPLIED"},
+                  "note": "flat per-site reference cost: no estate mix was "
+                          "supplied, so cost per site is identical for every "
+                          "site type"}),
         "dual_running_cost": dual.to_dict(),
         "total_transition_cost": total_cost.to_dict(),
         "gross_run_rate_savings": gross_annual.to_dict(),
