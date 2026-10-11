@@ -38,44 +38,9 @@ say "rebuilding summary"
 python tools/build_sample_summary.py --out ./_samples_backup --build 4.272.0 || exit 1
 
 say "sanity gate"
-python - <<'PY' || { echo "GATE FAILED - not committing"; exit 1; }
-import csv, json, pathlib, sys
-
-rows = {r["slug"]: r for r in csv.DictReader(
-    open("_samples_backup/summary.csv", encoding="utf-8"))}
-bad = []
-for slug in ("lufthansa", "unilever"):
-    r = rows.get(slug)
-    if not r:
-        bad.append(f"{slug}: missing from summary")
-        continue
-    researched = int(r["domains_researched"])
-    sites = int(r["sites"])
-    baseline = float(r["baseline_base"])
-    print(f"  {slug}: {researched} researched, {sites} sites, "
-          f"baseline {baseline:,.0f}, {r['footprint_origin']}")
-    if researched == 0:
-        bad.append(f"{slug}: still 0 researched domains")
-    if sites <= 0 or baseline <= 0:
-        bad.append(f"{slug}: empty estate or baseline")
-
-# The whole set, not just the two: a merge change touches every company.
-for slug, r in rows.items():
-    if int(r["sites"]) <= 0 or float(r["baseline_base"]) <= 0:
-        bad.append(f"{slug}: empty estate or baseline")
-    m = json.loads(pathlib.Path(
-        f"_samples_backup/{slug}/manifest.json").read_text(encoding="utf-8"))
-    used = sum(int(x["sites"]) for x in m["footprint_used"])
-    if used != int(r["sites"]):
-        bad.append(f"{slug}: summary {r['sites']} != manifest {used}")
-
-print(f"  {len(rows)} companies checked")
-if bad:
-    for b in bad:
-        print("  FAIL:", b)
-    sys.exit(1)
-print("  gate passed")
-PY
+# The committed set is the baseline: nothing may land worse than what is
+# already in, and a company claimed as repaired must clear the floor.
+python tools/check_samples.py     --out ./_samples_backup     --baseline samples/outside_in     --repaired lufthansa,unilever   || { echo "GATE FAILED - not committing"; exit 1; }
 
 say "copying into the repo"
 cp -r ./_samples_backup/. samples/outside_in/ || exit 1
