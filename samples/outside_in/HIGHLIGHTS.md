@@ -1113,15 +1113,76 @@ Sources: [Telecom Review Europe](https://www.telecomrevieweurope.com/articles/te
 - **Scope** DE, CH, AT, EUR, 213 sites (public disclosure only)
 - **Confidence** 0.272 (D - Indicative), coverage PARTIAL
 
-**Profile** - BENCHMARK_PRIOR: research returned no verdict
+**Profile** - EVIDENCED_PUBLIC, 9 source(s)
 
-**Locations** - BENCHMARK_PRIOR: research returned no verdict
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| EMPLOYEES AT END OF PERIOD (LUFTHANSA GROUP CONSOLIDATED, WO |  | 101709 | 102482 | 103255 | 2025 |
+| EMPLOYEES FTE (LUFTHANSA GROUP CONSOLIDATED, WORLDWIDE) |  | 84215 | 85412.5 | 86610 | 2025 |
+| EMPLOYEES IN GERMANY (LUFTHANSA GROUP, DE) | DE | 67091 | 67091 | 67091 | 2025 |
+| LOGISTICS SEGMENT REVENUE (LUFTHANSA CARGO AG) |  | 3263 | 3333 | 3403 | 2025 |
+| MRO SEGMENT REVENUE (LUFTHANSA TECHNIK GROUP) |  | 7441 | 7745 | 8049 | 2025 |
+| NUMBER OF COUNTRIES IN AIRLINE NETWORK (LUFTHANSA GROUP) |  | 100 | 100 | 100 | 2024 |
+| NUMBER OF DESTINATIONS IN AIRLINE NETWORK (LUFTHANSA GROUP) |  | None | None | None |  |
+| PASSENGER AIRLINES SEGMENT REVENUE (LUFTHANSA GROUP) |  | 29690 | 30133 | 30576 | 2025 |
+| SWISS INTERNATIONAL AIR LINES — EMPLOYEES (CH SUBSIDIARY) | CH | 11217 | 11217 | 11217 | 2025 |
+| TOTAL REVENUE (LUFTHANSA GROUP CONSOLIDATED) | DE | 37581 | 38589 | 39597 | 2025 |
+
+*1 conflict(s) flagged: TOTAL REVENUE (LUFTHANSA GROUP CONSOLIDATED)*
+
+Sources: [Lufthansa Group (official online Annual Report 2](https://report.lufthansagroup.com/2025/annual-report/en/combined-management-report/economic-report/financial-performance/earnings-position/); [Lufthansa Group (official online Annual Report 2](https://report.lufthansagroup.com/2025/annual-report/en/combined-management-report/principles-of-the-group/employees/); [Lufthansa Group (official online Annual Report 2](https://report.lufthansagroup.com/2025/annual-report/en/company/key-figures-business-segments/); [Deutsche Lufthansa AG — Annual Report 2025 PDF](https://investor-relations.lufthansagroup.com/fileadmin/downloads/en/financial-reports/annual-reports/LH-AR-2025-e.pdf) and 5 more
+
+**Locations** - EVIDENCED_PUBLIC, 4 source(s)
+
+- STORE — Germany (Lufthansa lounges, customer-facing, named airports): ~30+
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| DC — GERMANY (LUFTHANSA SYSTEMS DATA CENTRE, KELSTERBACH) | DE | 1 | 1 | 1 | 2023 |
+| GLOBAL OFFICE LOCATIONS — LUFTHANSA GROUP (AGGREGATOR COUNT) |  | 34 | 43 | 52 | 2024 |
+| LARGE_OFFICE — AUSTRIA (NAMED SITES) | AT | 2 | 2 | 2 | 2024 |
+| LARGE_OFFICE — GERMANY (LUFTHANSA AVIATION TRAINING SITES) | DE | 6 | 6 | 6 | 2024 |
+| LARGE_OFFICE — GERMANY (LUFTHANSA SYSTEMS NAMED OFFICES) | DE | 3 | 3 | 3 | 2025 |
+| LARGE_OFFICE — GERMANY (NAMED HQ/OPERATIONAL SITES IDENTIFIA | DE | 10 | 10 | 10 | 2025 |
+| LARGE_OFFICE — SWITZERLAND (NAMED SITES) | CH | 3 | 3 | 3 | 2024 |
+| WAREHOUSE / PLANT — GERMANY (MRO AND CARGO FACILITIES) | DE | None | None | None |  |
+| WAREHOUSE/PLANT — GERMANY (LUFTHANSA TECHNIK NAMED GERMAN FA | DE | None | None | None |  |
+
+*2 conflict(s) flagged: DC — GERMANY (LUFTHANSA SYSTEMS DATA CENTRE, KELSTERBACH), GLOBAL OFFICE LOCATIONS — LUFTHANSA GROUP (AGGREGATOR COUNT)*
+
+Sources: [Lufthansa Technik](https://cdn0.scrvt.com/fcc1c913dc63063c259fa05200249ccd/e3c48f8eaf179dd6/8c09887a8f1a/Lufthansa-Technik_Annual-Report-2025_EN.pdf); [Lufthansa Systems (company website)](https://www.lhsystems.com/our-locations); [Aviation Week](https://aviationweek.com/mro/workforce-training/lufthansa-technik-adds-287-apprentices-across-five-german-facilities); [Lufthansa Group (official corporate website)](https://www.lufthansagroup.com/de/unternehmen.html)
 
 **Data centres and cloud** - BENCHMARK_PRIOR: research returned no verdict
 
-**Current architecture** - BENCHMARK_PRIOR: research returned no verdict
+**Current architecture** - EVIDENCED_PUBLIC, 2 source(s)
 
-**Current providers and products** - BENCHMARK_PRIOR: research returned no verdict
+- Private 5G deployment — Lufthansa Industry Solutions (LHIND), logistics/MRO use cases: operational since ~2019 (pilot), production 2025
+- Prior-generation WAN — Lufthansa Systems SkyConnect (MPLS + Cisco IWAN), sites connected: 1800+
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| COUNTRIES COVERED BY SD-WAN DEPLOYMENT (GLOBAL) |  | 72 | 72 | 72 | 2024 |
+| SITES MIGRATED TO SD-WAN (JUNIPER SSR, GLOBAL) |  | 349 | 349 | 350 | 2024 |
+
+Sources: [nocware AG](https://www.nocware.com/en/case-studies/lufthansa); [Ericsson](https://www.ericsson.com/en/blog/2025/8/how-lufthansa-industry-solutions-ericsson-transform-logistics-with-private-5g)
+
+**Current providers and products** - EVIDENCED_PUBLIC, 3 source(s)
+
+- SD-WAN platform: Juniper SSR (Session Smart Router)
+- SD-WAN managed service partners: Deutsche Telekom AG and nocware AG
+- WAN carrier (global SD-WAN, including DE): Deutsche Telekom AG
+- Internet access architecture: Decentralised SASE breakouts (cloud-based), replacing central proxy
+- Inflight connectivity provider (fleet-wide, announced 2026): SpaceX Starlink (LEO satellite, Ku-band)
+- European Aviation Network (EAN) — hybrid air-to-ground connectivity, single-aisle: Viasat / Deutsche Telekom (EAN joint venture)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| COUNTRIES COVERED BY SD-WAN DEPLOYMENT |  | 72 | 72 | 72 | 2023 |
+| IT INFRASTRUCTURE OUTSOURCING CONTRACT VALUE (IBM, HISTORICA | DE | 1000 | 1000 | 1000 | 2014 |
+| IT WORKSTATION HARDWARE MANAGEMENT (BECHTLE) |  | None | None | None |  |
+| SITES MIGRATED TO SD-WAN (JUNIPER SSR) |  | 349 | 349 | 349 | 2023 |
+
+Sources: [nocware AG](https://www.nocware.com/en/case-studies/lufthansa); [Bechtle AG](https://www.bechtle.com/ch-en/about-bechtle/news/coporate-news/press-releases/2022/bechtle-provisions-it-workstations-for-the-lufthansa-group); [Runway Girl Network](https://runwaygirlnetwork.com/2026/01/lufthansa-group-hands-massive-fleet-wide-ifc-contract-to-starlink/)
 
 **Contract and sourcing events** - BENCHMARK_PRIOR: research returned no verdict
 
@@ -2211,12 +2272,45 @@ Sources: [ComReg (Commission for Communications Regulation](https://comreg.ie/me
 ## Unilever PLC
 
 - **Industry** HOUSEHOLD_PERSONAL_CARE (entity resolution)
-- **Scope** GB, NL, DE, EUR, 43 sites (public disclosure only)
+- **Scope** GB, NL, DE, EUR, 48 sites (research merged with disclosure)
 - **Confidence** 0.346 (D - Indicative), coverage COMPLETE
 
-**Profile** - BENCHMARK_PRIOR: research returned no verdict
+**Profile** - EVIDENCED_PUBLIC, 6 source(s)
 
-**Locations** - BENCHMARK_PRIOR: research returned no verdict
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| BEAUTY & WELLBEING SEGMENT TURNOVER |  | 13200000000 | 13200000000 | 13200000000 | 2024 |
+| COUNTRIES WITH LEGAL SUBSIDIARIES |  | 95 | 95 | 95 | 2026 |
+| COUNTRIES WITH PRODUCT SALES |  | 190 | 190 | 190 | 2024 |
+| EMPLOYEES IN EUROPE (YEAR-END HEADCOUNT) | EU/GB | 24710 | 25355 | 26000 | 2024 |
+| EUROPE TURNOVER | EU/GB | 12300000000 | 12300000000 | 12300000000 | 2024 |
+| GROUP TURNOVER (REVENUE) |  | 60761000000 | 60800000000 | 60800000000 | 2024 |
+| ICE CREAM SEGMENT TURNOVER |  | 8300000000 | 8300000000 | 8300000000 | 2024 |
+| NUMBER OF BUSINESS GROUP-LED MARKETS (POST-2025 STRUCTURE) |  | 24 | 24 | 24 | 2025 |
+| NUMBER OF BUSINESS SEGMENTS (REPORTABLE) |  | 5 | 5 | 5 | 2024 |
+| TOTAL EMPLOYEES (YEAR-END HEADCOUNT) |  | 115964 | 120020 | 125000 | 2024 |
+
+Sources: [Unilever PLC — Form 20-F FY2024 XBRL financial t](https://www.sec.gov/Archives/edgar/data/217410/000021741025000015/Financial_Report.xlsx); [Unilever PLC — Investor Relations (Full Year 202](https://www.unilever.com/investors/results-events/results-events-webcasts/overview-q4-2024/); [Unilever PLC — SEC Form 6-K, ULE Organisational ](https://www.sec.gov/Archives/edgar/data/217410/000021741025000003/a991-uleorganisationalch.htm); [Unilever PLC — Full Year 2024 Results PDF (unile](https://www.unilever.com/files/92ui5egz/production/e6b5cde434e49e67b8aa59810ba1fa379ecc12ad.pdf) and 2 more
+
+**Locations** - EVIDENCED_PUBLIC, 7 source(s)
+
+- PLANT – global manufacturing sites total: 190+
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| LARGE_OFFICE – GLOBAL OFFICE LOCATIONS TOTAL |  | 116 | 193 | 270 | 2023 |
+| LARGE_OFFICE – HQ AND R&D OFFICES, GB (UNITED KINGDOM) | GB | 4 | 4 | 4 | 2026 |
+| LARGE_OFFICE – HQ AND R&D/INNOVATION OFFICES, NL (NETHERLAND | NL | 3 | 3 | 3 | 2024 |
+| LARGE_OFFICE – HQ/OFFICE, DE (GERMANY) | DE | 1 | 1 | 1 | 2026 |
+| PLANT – MANUFACTURING SITES (FACTORIES), GB (UNITED KINGDOM) | GB | 5 | 5 | 5 | 2026 |
+| PLANT – MANUFACTURING SITES, DE (GERMANY) | DE | 4 | 4.5 | 5 | 2026 |
+| PLANT – MANUFACTURING SITES, NL (NETHERLANDS) | NL | 1 | 1 | 1 | 2024 |
+| WAREHOUSE – DISTRIBUTION CENTRE, DE (GERMANY) | DE | 1 | 1 | 1 | 2026 |
+| WAREHOUSE – LOGISTICS WAREHOUSES TOTAL (GLOBAL) |  | 450 | 450 | 450 | 2023 |
+
+*2 conflict(s) flagged: LARGE_OFFICE – GLOBAL OFFICE LOCATIONS TOTAL, PLANT – MANUFACTURING SITES, DE (GERMANY)*
+
+Sources: [Unilever Deutschland GmbH](https://www.unilever.de/our-company/unilever-in-deutschland/); [Unilever Deutschland GmbH](https://www.unilever.de/our-company/unsere-standorte/); [Unilever UK](https://www.unilever.co.uk/unilever-in-the-uk/); [Unilever PLC (Annual Report 2024 – Group Subsidi](https://www.unilever.com/files/unilever-group-subsidiaries-2024.pdf) and 3 more
 
 **Data centres and cloud** - BENCHMARK_PRIOR: research returned no verdict
 

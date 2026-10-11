@@ -1,19 +1,35 @@
 {
-  "simulation_run_id": "66596cc2-0da5-4e45-97ca-d0f351f33003",
+  "simulation_run_id": "281f0f9f-1a7d-4f44-a8a0-cbafca5455ec",
   "case_id": "13a3f769-2b31-4a51-acde-9940dcf70ee0",
   "model_version": "sim-2.7.0",
   "seed": 20260101,
   "ensemble_size": 25,
   "status": "SUCCEEDED",
-  "output_hash": "6278b12ee4903a63832b1acf94828360562104c60cccc55679f9ee1d0a122b93",
-  "started_at": "2026-10-11 12:13:42.291192+00:00",
-  "ended_at": "2026-10-11 12:13:42.730994+00:00",
+  "output_hash": "9a61730a2c6dca9ea87e075377949faadda0a8d6c9272f6a80f9b13e133aed39",
+  "started_at": "2026-10-11 12:47:41.101264+00:00",
+  "ended_at": "2026-10-11 12:47:41.181518+00:00",
   "params": {
     "footprint": [
       {
         "country": "DE",
+        "archetype": "LARGE_OFFICE",
+        "sites": 1,
+        "industry": null,
+        "count_source": null,
+        "density": null
+      },
+      {
+        "country": "DE",
         "archetype": "PLANT",
         "sites": 10,
+        "industry": null,
+        "count_source": null,
+        "density": null
+      },
+      {
+        "country": "DE",
+        "archetype": "WAREHOUSE",
+        "sites": 1,
         "industry": null,
         "count_source": null,
         "density": null
@@ -37,6 +53,14 @@
       {
         "country": "NL",
         "archetype": "DC",
+        "sites": 3,
+        "industry": null,
+        "count_source": null,
+        "density": null
+      },
+      {
+        "country": "NL",
+        "archetype": "LARGE_OFFICE",
         "sites": 3,
         "industry": null,
         "count_source": null,
@@ -1872,17 +1896,17 @@
     "model_version": "sim-2.7.0",
     "seed": 20260101,
     "ensemble_size": 25,
-    "sites": 43,
+    "sites": 48,
     "serviceability": {
       "counts": {
-        "DELIVERED": 43,
+        "DELIVERED": 48,
         "SUBSTITUTED": 0,
         "UNSERVICEABLE": 0
       },
       "substitutions": [],
       "by_access_technology": [],
       "unserviceable": 0,
-      "note": "0 of 43 site(s) take a different product or tier from the one their type asks for, and 0 can be served by nothing at all. A uniform estate is an assumption; this is what the density bands say about it.",
+      "note": "0 of 48 site(s) take a different product or tier from the one their type asks for, and 0 can be served by nothing at all. A uniform estate is an assumption; this is what the density bands say about it.",
       "table_rows": 102,
       "table_basis": "GOVERNED"
     },
@@ -1915,21 +1939,21 @@
     ],
     "estate_truncated": 0,
     "sites_named": 0,
-    "sites_generated": 43,
+    "sites_generated": 48,
     "circuits": {
-      "low": 82,
-      "base": 85,
-      "high": 88
+      "low": 91,
+      "base": 94,
+      "high": 96
     },
     "circuits_primary": {
-      "low": 43,
-      "base": 43,
-      "high": 43
+      "low": 48,
+      "base": 48,
+      "high": 48
     },
     "circuits_backup": {
-      "low": 33,
-      "base": 36,
-      "high": 39
+      "low": 37,
+      "base": 40,
+      "high": 42
     },
     "products": [
       {
@@ -1937,10 +1961,20 @@
         "product": "BROADBAND_PON",
         "role": "BACKUP",
         "bandwidth_mbps": 550,
-        "count": 9,
+        "count": 6,
         "service_class": "BEST_EFFORT",
         "bearer_mbps": 550,
         "access_technology": "PON"
+      },
+      {
+        "country": "DE",
+        "product": "DIA",
+        "role": "PRIMARY",
+        "bandwidth_mbps": 100,
+        "count": 1,
+        "service_class": "DIA",
+        "bearer_mbps": 100,
+        "access_technology": null
       },
       {
         "country": "DE",
@@ -1950,6 +1984,16 @@
         "count": 10,
         "service_class": "ETHERNET",
         "bearer_mbps": 550,
+        "access_technology": "ETHERNET_FIBRE"
+      },
+      {
+        "country": "DE",
+        "product": "ETHERNET",
+        "role": "PRIMARY",
+        "bandwidth_mbps": 500,
+        "count": 1,
+        "service_class": "ETHERNET",
+        "bearer_mbps": 1000,
         "access_technology": "ETHERNET_FIBRE"
       },
       {
@@ -1967,7 +2011,7 @@
         "product": "BROADBAND_PON",
         "role": "BACKUP",
         "bandwidth_mbps": 550,
-        "count": 10,
+        "count": 12,
         "service_class": "BEST_EFFORT",
         "bearer_mbps": 550,
         "access_technology": "PON"
@@ -1977,7 +2021,7 @@
         "product": "DIA",
         "role": "BACKUP",
         "bandwidth_mbps": 1000,
-        "count": 8,
+        "count": 9,
         "service_class": "DIA",
         "bearer_mbps": 1000,
         "access_technology": null
@@ -2014,6 +2058,16 @@
       },
       {
         "country": "NL",
+        "product": "DIA",
+        "role": "BACKUP",
+        "bandwidth_mbps": 1000,
+        "count": 3,
+        "service_class": "DIA",
+        "bearer_mbps": 1000,
+        "access_technology": null
+      },
+      {
+        "country": "NL",
         "product": "ETHERNET",
         "role": "PRIMARY",
         "bandwidth_mbps": 3000,
@@ -2031,26 +2085,41 @@
         "service_class": "ETHERNET",
         "bearer_mbps": 550,
         "access_technology": "ETHERNET_FIBRE"
+      },
+      {
+        "country": "NL",
+        "product": "ETHERNET",
+        "role": "PRIMARY",
+        "bandwidth_mbps": 500,
+        "count": 3,
+        "service_class": "ETHERNET",
+        "bearer_mbps": 1000,
+        "access_technology": "ETHERNET_FIBRE"
       }
     ],
     "dual_access_sites": {
-      "low": 33,
-      "base": 36,
-      "high": 39
+      "low": 37,
+      "base": 40,
+      "high": 42
     },
     "circuits_backbone": 6,
-    "circuits_per_site_base": 1.9302,
-    "implied_users": 14500,
+    "circuits_per_site_base": 1.8958,
+    "implied_users": 15560,
     "bandwidth_profile": {
+      "LARGE_OFFICE": {
+        "sites": 14,
+        "mbps_per_site": 1000,
+        "mbps_total": 14000
+      },
       "PLANT": {
         "sites": 30,
         "mbps_per_site": 550,
         "mbps_total": 16500
       },
-      "LARGE_OFFICE": {
-        "sites": 10,
-        "mbps_per_site": 1000,
-        "mbps_total": 10000
+      "WAREHOUSE": {
+        "sites": 1,
+        "mbps_per_site": 100,
+        "mbps_total": 100
       },
       "DC": {
         "sites": 3,
@@ -2058,7 +2127,7 @@
         "mbps_total": 30000
       }
     },
-    "bandwidth_mbps_total": 56500,
+    "bandwidth_mbps_total": 60600,
     "diversity_state": "SIMULATED",
     "backbone": {
       "template_version": "1.0.0",
@@ -2089,12 +2158,12 @@
       "backbone_circuits": 6,
       "note": "One region with data centres (EUROPE_WEST), so there is no global core tier - a hub has nothing to reach across."
     },
-    "node_count": 43,
-    "edge_count": 83
+    "node_count": 48,
+    "edge_count": 91
   },
   "output_omitted": {
     "fields": [
-      "estate (43 rows)",
+      "estate (48 rows)",
       "sample_topology (2 rows)"
     ],
     "why": "per-site arrays, the same information the aggregates carry; tools/backfill_simulation.py --full keeps them"

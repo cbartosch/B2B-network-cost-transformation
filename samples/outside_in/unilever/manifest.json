@@ -18,14 +18,24 @@
     "resumed": true
   },
   "resumed_existing_case": true,
-  "mode": "repromote",
+  "mode": "repair",
   "domains_already_researched_on_resume": [],
-  "footprint_origin": "PUBLIC_DISCLOSURE_ONLY",
+  "footprint_origin": "RESEARCH_MERGED_WITH_DISCLOSURE",
   "footprint_used": [
+    {
+      "country": "DE",
+      "archetype": "LARGE_OFFICE",
+      "sites": 1
+    },
     {
       "country": "DE",
       "archetype": "PLANT",
       "sites": 10
+    },
+    {
+      "country": "DE",
+      "archetype": "WAREHOUSE",
+      "sites": 1
     },
     {
       "country": "GB",
@@ -44,6 +54,11 @@
     },
     {
       "country": "NL",
+      "archetype": "LARGE_OFFICE",
+      "sites": 3
+    },
+    {
+      "country": "NL",
       "archetype": "PLANT",
       "sites": 8
     }
@@ -51,21 +66,37 @@
   "footprint_provenance": [
     {
       "country": "DE",
+      "archetype": "LARGE_OFFICE",
+      "sites": 1,
+      "origin": "RESEARCHED"
+    },
+    {
+      "country": "DE",
       "archetype": "PLANT",
       "sites": 10,
       "origin": "PUBLIC_DISCLOSURE"
+    },
+    {
+      "country": "DE",
+      "archetype": "WAREHOUSE",
+      "sites": 1,
+      "origin": "RESEARCHED"
     },
     {
       "country": "GB",
       "archetype": "LARGE_OFFICE",
       "sites": 10,
-      "origin": "PUBLIC_DISCLOSURE"
+      "origin": "DISCLOSURE_KEPT_RESEARCH_FOUND_FEWER",
+      "research_said": 4,
+      "disclosure_said": 10
     },
     {
       "country": "GB",
       "archetype": "PLANT",
       "sites": 12,
-      "origin": "PUBLIC_DISCLOSURE"
+      "origin": "DISCLOSURE_KEPT_RESEARCH_FOUND_FEWER",
+      "research_said": 5,
+      "disclosure_said": 12
     },
     {
       "country": "NL",
@@ -75,9 +106,17 @@
     },
     {
       "country": "NL",
+      "archetype": "LARGE_OFFICE",
+      "sites": 3,
+      "origin": "RESEARCHED"
+    },
+    {
+      "country": "NL",
       "archetype": "PLANT",
       "sites": 8,
-      "origin": "PUBLIC_DISCLOSURE"
+      "origin": "DISCLOSURE_KEPT_RESEARCH_FOUND_FEWER",
+      "research_said": 1,
+      "disclosure_said": 8
     }
   ],
   "seed": 20260101,
@@ -102,20 +141,23 @@
     22
   ],
   "domains_fell_back_unanswered": [],
-  "domains_researched": [],
+  "domains_researched": [
+    1,
+    2
+  ],
   "estimate_inputs": {
     "method": "BUILD_UP",
-    "users": 516,
+    "users": 576,
     "ops_cost_per_site_base": 900,
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-11T12:13:37.454208+00:00",
-  "run_seconds": 6.9,
+  "run_started": "2026-10-11T12:22:27.228024+00:00",
+  "run_seconds": 1516.0,
   "preflight_conditions": 8,
   "promotion": {
-    "promoted": false,
-    "detail": "no footprint candidates"
+    "promoted": true,
+    "detail": null
   },
   "domains_benchmark_disposed": [
     3,
