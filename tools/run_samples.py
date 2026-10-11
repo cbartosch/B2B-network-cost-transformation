@@ -598,10 +598,10 @@ def write(outdir, slug, payload):
     return d
 
 
-def run_one(spec, outdir, domains, force, repair=False):
+def run_one(spec, outdir, domains, force, repair=False, repromote=False):
     slug = spec["slug"]
     done = outdir / slug / "estimate_v0.json"
-    if done.exists() and not force and not repair:
+    if done.exists() and not force and not repair and not repromote:
         print(f"[skip] {slug}: already has results")
         return json.loads((outdir / slug / "manifest.json").read_text("utf-8"))
 
@@ -610,6 +610,12 @@ def run_one(spec, outdir, domains, force, repair=False):
 
     prior = ledger_read(outdir).get(slug)
     resumed = bool(prior and case_is_usable(prior))
+    if repromote and not resumed:
+        # Nothing to re-offer. Refused rather than quietly starting a fresh
+        # case, which would spend money this mode exists to avoid.
+        raise RuntimeError(
+            f"{slug}: --repromote needs an existing confirmed case and the "
+            f"ledger has none")
     if resumed:
         case_id, done_before = prior, researched_domains(prior)
         log(slug, f"resuming case {case_id}: "
@@ -641,7 +647,21 @@ def run_one(spec, outdir, domains, force, repair=False):
     disp_out = dispose_analyst_domains(case_id, slug, domains)
     # Research skips these itself, but asking for them anyway would still
     # cost a round trip each and muddy the log.
-    if repair:
+    if repromote:
+        # No provider calls at all. Re-runs promotion, the footprint merge,
+        # the simulation and the estimate against research already paid for.
+        #
+        # Needed because the classifier that decides which findings the
+        # estimate may consume was reading a whole label where it should have
+        # read the leading token, so an agent that described its mapping -
+        # which the prompt asks it to do - produced findings the estimate
+        # never saw. Fixing that changes what promotion offers, and the only
+        # way to apply it to work already done is to ask again.
+        todo = []
+        log(slug, f"re-promote: no research, re-offering findings from "
+                  f"{len(done_before)} researched domain(s)")
+        raw = {}
+    elif repair:
         # Only the domains the net disposed, and overwrite so research does
         # not skip them. Targeted rather than a blanket overwrite: a company
         # with twelve good domains and five fallbacks should re-buy five.
@@ -677,6 +697,7 @@ def run_one(spec, outdir, domains, force, repair=False):
         "case_id": case_id,
         "entity_resolution": ent,
         "resumed_existing_case": resumed,
+        "mode": ("repromote" if repromote else "repair" if repair else "run"),
         "domains_already_researched_on_resume": sorted(done_before),
         "footprint_origin": foot_origin,
         "footprint_used": foot,
@@ -738,6 +759,9 @@ def main():
     ap.add_argument("--domains", default="")
     ap.add_argument("--repair", action="store_true",
                     help="re-research only domains the fallback disposed")
+    ap.add_argument("--repromote", action="store_true",
+                    help="no provider calls: re-offer findings already paid "
+                         "for, then re-simulate and re-estimate")
     ap.add_argument("--force", action="store_true")
     args = ap.parse_args()
 
@@ -753,7 +777,7 @@ def main():
     results, failures = [], []
     for spec in specs:
         try:
-            results.append(run_one(spec, outdir, domains, args.force, repair=args.repair))
+            results.append(run_one(spec, outdir, domains, args.force, repair=args.repair, repromote=args.repromote))
         except Exception as exc:                             # noqa: BLE001
             # One company failing is one company, not the run. Named and
             # carried so the set can be completed and the gap is visible.
