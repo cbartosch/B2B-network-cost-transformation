@@ -40,7 +40,10 @@ FIELDS = [
     ("simulated_share", lambda m, s, e, r: e.get("simulated_share")),
     ("asserted_share", lambda m, s, e, r: e.get("asserted_share")),
     # The research, counted rather than quoted.
+    ("domains_requested", lambda m, s, e, r: len(m.get("domains_requested")
+                                                or m.get("domains_researched") or [])),
     ("domains_researched", lambda m, s, e, r: len(m["domains_researched"])),
+    ("resumed", lambda m, s, e, r: m.get("resumed_existing_case")),
     ("domains_evidenced", lambda m, s, e, r: _count(r, "EVIDENCED_PUBLIC")),
     ("domains_declared_unknown", lambda m, s, e, r: _count(r,
                                                            "DECLARED_UNKNOWN")),

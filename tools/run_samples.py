@@ -86,11 +86,66 @@ def log(slug, msg):
     print(f"  [{slug}] {msg}", flush=True)
 
 
+# slug -> case_id, written the moment a case is created.
+#
+# Research skips a domain that already carries a disposition - that is what
+# _existing_domain_nos is for, and the endpoint's own comment says "a walk
+# that stops halfway resumes rather than restarts". But only within one case,
+# and this driver used to create a new one on every attempt, so a company
+# that failed late threw away every domain it had paid for. Seven did,
+# together holding 118 researched domains.
+#
+# Kept as a file rather than inferred from the database: two companies can
+# share a legal name prefix, and guessing which case belongs to which slug is
+# exactly the kind of inference that should not sit between a re-run and real
+# money.
+def ledger_path(outdir):
+    return outdir / "_cases.json"
+
+
+def ledger_read(outdir):
+    f = ledger_path(outdir)
+    return json.loads(f.read_text("utf-8")) if f.exists() else {}
+
+
+def ledger_write(outdir, slug, case_id):
+    f = ledger_path(outdir)
+    data = ledger_read(outdir)
+    data[slug] = case_id
+    f.write_text(json.dumps(data, indent=2, sort_keys=True), encoding="utf-8")
+
+
+def case_is_usable(case_id):
+    """Exists, and carries the confirmation pre-flight insists on."""
+    with db.SessionLocal() as s:
+        row = s.execute(select(
+            db.case.c.case_id, db.case.c.entity_confirmed_at).where(
+                db.case.c.case_id == case_id)).first()
+    return bool(row and row.entity_confirmed_at)
+
+
+def researched_domains(case_id):
+    """Domains already carrying an agent's verdict, so already paid for."""
+    with db.SessionLocal() as s:
+        rows = s.execute(select(db.domain_disposition.c.domain_no).where(
+            db.domain_disposition.c.case_id == case_id,
+            db.domain_disposition.c.agent_run_id.isnot(None))).all()
+    return {r.domain_no for r in rows}
+
+
 # ----------------------------------------------------------------- the steps
 def intake(spec):
     st, case = call("POST", "/v1/outside-in/cases", {
         "created_by": ANALYST,
         "subject_entity_legal_name": spec["legal_name"],
+        # Mandatory intake requires an identifier, and a successful
+        # resolution overwrites this with the real one. Deliberately not a
+        # plausible-looking LEI: inventing an identifier that reads as real
+        # is worse than carrying one that cannot be mistaken for anything.
+        # Three companies failed pre-flight on "Mandatory intake, Entity
+        # resolution" because this field was never sent and resolution did
+        # not fill it in.
+        "entity_identifier": f"SAMPLE-NOT-A-REAL-IDENTIFIER-{spec['slug']}",
         "entity_aliases": spec.get("aliases") or [],
         "country_of_domicile": spec["domicile"],
         "group_perimeter": "GROUP_CONSOLIDATED",
@@ -121,22 +176,43 @@ def resolve_and_confirm(case_id, spec):
     without one is an estate priced off DEFAULT. Falls back to the spec's
     industry only if resolution produces nothing, and says which was used.
     """
+    def _fallback(why):
+        """Confirm directly, the way the flow test does when no provider is
+        configured - the same state a real resolution would leave behind.
+
+        Without it a failed resolution left the case unconfirmed, pre-flight
+        raised a BLOCK on "Entity resolution", acknowledge does not clear a
+        BLOCK, and the simulation refused with 409 - after the research had
+        already been paid for. Three companies died that way. The fallback is
+        recorded, so a case confirmed this way is never mistaken for one the
+        resolver actually identified.
+        """
+        from sqlalchemy import update
+        with db.SessionLocal() as s:
+            s.execute(update(db.case).where(db.case.c.case_id == case_id)
+                      .values(resolved_entity_id=f"SAMPLE-{spec['slug']}",
+                              entity_confirmed_by=ANALYST,
+                              entity_confirmed_at=datetime.now(timezone.utc)))
+            s.commit()
+        return {"resolved": False, "confirmed_by_fallback": True,
+                "detail": why}
+
     st, out = call("POST", f"/v1/outside-in/cases/{case_id}/entities:resolve",
                    {"name_hint": spec["legal_name"], "mode": "LIVE"},
                    timeout=900)
     if st != 200:
-        return {"resolved": False, "detail": f"{st}: {out}"}
+        return _fallback(f"resolve {st}: {out}")
 
     cands = (out or {}).get("candidates") or []
     if not cands:
-        return {"resolved": False, "detail": "no candidates proposed"}
+        return _fallback("no candidates proposed")
 
     pick = cands[0]
     st, conf = call("POST", f"/v1/outside-in/cases/{case_id}:confirm-entity", {
         "candidate_id": pick["candidate_id"], "confirmed_by": ANALYST,
         "group_perimeter": "GROUP_CONSOLIDATED"}, timeout=300)
     if st != 200:
-        return {"resolved": False, "detail": f"confirm {st}: {conf}"}
+        return _fallback(f"confirm {st}: {conf}")
     return {"resolved": True, "candidate": pick,
             "candidates_considered": len(cands)}
 
@@ -198,7 +274,13 @@ def do_research(case_id, slug, domains):
         name = dict(dispositions.DOMAINS).get(n, "?")
         if st == 200:
             got = (res or {}).get("results") or []
-            disp = got[0].get("disposition") if got else "-"
+            # str(), because disposition comes back None when the agent run
+            # produced no verdict, and `{None:<18}` raises TypeError. That
+            # killed four companies outright - tesco, allianz, shell and
+            # saint-gobain - each after an hour of paid research, on a
+            # logging format string. A progress line must never be able to
+            # end a run.
+            disp = str((got[0] or {}).get("disposition") or "-") if got else "-"
             log(slug, f"domain {n:>2} {name[:34]:<34} {disp:<18} {took}s")
         else:
             log(slug, f"domain {n:>2} {name[:34]:<34} FAILED {st} ({took}s)")
@@ -423,17 +505,37 @@ def run_one(spec, outdir, domains, force):
 
     print(f"\n=== {spec['legal_name']} ({spec['industry']}) ===", flush=True)
     t0 = time.time()
-    case_id = intake(spec)
-    log(slug, f"case {case_id}")
 
-    ent = resolve_and_confirm(case_id, spec)
-    log(slug, f"entity resolved={ent['resolved']}")
+    prior = ledger_read(outdir).get(slug)
+    resumed = bool(prior and case_is_usable(prior))
+    if resumed:
+        case_id, done_before = prior, researched_domains(prior)
+        log(slug, f"resuming case {case_id}: "
+                  f"{len(done_before)} domain(s) already researched")
+        ent = {"resolved": None, "resumed": True}
+        pf = {"conditions": []}
+    else:
+        done_before = set()
+        case_id = intake(spec)
+        ledger_write(outdir, slug, case_id)
+        log(slug, f"case {case_id}")
+        ent = resolve_and_confirm(case_id, spec)
+        log(slug, f"entity resolved={ent['resolved']}"
+                  + (" (fallback confirmation)"
+                     if ent.get("confirmed_by_fallback") else ""))
+        pf = preflight(case_id)
+
     ind = set_industry_if_absent(case_id, spec)
     log(slug, f"industry {ind['industry']} ({ind['origin']})")
 
-    pf = preflight(case_id)
     disp_out = dispose_analyst_domains(case_id, slug, domains)
-    raw = do_research(case_id, slug, domains)
+    # Research skips these itself, but asking for them anyway would still
+    # cost a round trip each and muddy the log.
+    todo = [n for n in domains if n not in done_before]
+    if len(todo) != len(domains):
+        log(slug, f"skipping {len(domains) - len(todo)} domain(s) already "
+                  f"researched on this case")
+    raw = do_research(case_id, slug, todo)
     prom = promote(case_id, slug)
 
     foot, foot_origin, foot_prov = footprint_for_simulation(case_id, spec)
@@ -454,6 +556,8 @@ def run_one(spec, outdir, domains, force):
         "base_currency": spec["currency"],
         "case_id": case_id,
         "entity_resolution": ent,
+        "resumed_existing_case": resumed,
+        "domains_already_researched_on_resume": sorted(done_before),
         "footprint_origin": foot_origin,
         "footprint_used": foot,
         # Row by row: what research found, what it superseded, and what rests
@@ -462,7 +566,12 @@ def run_one(spec, outdir, domains, force):
         "footprint_provenance": foot_prov,
         "seed": SEED,
         "ensemble_size": ENSEMBLE,
-        "domains_researched": domains,
+        # What was asked for, and what came back with an agent verdict.
+        # The first overstates coverage whenever a call fails, and a manifest
+        # that overstates its own research is the thing this set is least
+        # allowed to do.
+        "domains_requested": domains,
+        "domains_researched": sorted(researched_domains(case_id)),
         "estimate_inputs": {
             "method": "BUILD_UP",
             "users": max(1, sum(int(r["sites"]) for r in foot) * 12),
