@@ -331,6 +331,48 @@ def dispose_analyst_domains(case_id, slug, researching):
     return out
 
 
+def dispose_unanswered(case_id, slug):
+    """Whatever research could not answer falls back to the seeded prior.
+
+    A research call can return 200 and no verdict - the agent ran, the
+    quality gate refused every attempt, and _upsert_disposition is only
+    reached when the result did not fail. The domain is then left with no
+    disposition at all, and V0 refuses to publish because an undisposed
+    domain is one nobody has said anything about. That is the right refusal
+    and the wrong outcome here: tesco spent 1,309s on domain 20 and 1,318s
+    on 21, got no verdict for either, and lost the whole estimate at the
+    final step.
+
+    BENCHMARK_PRIOR is the honest fallback - this domain rests on the seeded
+    prior because nothing else could be established - and the manifest
+    records which domains it covers, so one that fell back is never counted
+    as one that was researched.
+
+    Safe only because PUT /domain-dispositions no longer deletes the domains
+    absent from its payload. Before that fix this call would have wiped every
+    researched disposition on the case.
+    """
+    with db.SessionLocal() as s:
+        have = {r.domain_no for r in s.execute(
+            select(db.domain_disposition.c.domain_no).where(
+                db.domain_disposition.c.case_id == case_id)).all()}
+    names = dict(dispositions.DOMAINS)
+    missing = [n for n, _ in dispositions.DOMAINS if n not in have]
+    if not missing:
+        return {"fell_back": []}
+    st, out = call("PUT",
+                   f"/v1/outside-in/cases/{case_id}/domain-dispositions",
+                   [{"domain_no": n, "domain_name": names[n],
+                     "disposition": "BENCHMARK_PRIOR",
+                     "reason": "research returned no verdict"}
+                    for n in missing], timeout=300)
+    if st != 200:
+        raise RuntimeError(f"fallback dispositions {st}: {out}")
+    log(slug, f"{len(missing)} domain(s) research could not answer fell back "
+              f"to BENCHMARK_PRIOR: {missing}")
+    return {"fell_back": missing}
+
+
 def promote(case_id, slug):
     st, cands = call("GET",
                      f"/v1/outside-in/cases/{case_id}/research-findings",
@@ -426,8 +468,42 @@ def simulate(case_id, slug, footprint):
         time.sleep(2)
     if poll.get("status") != "SUCCEEDED":
         raise RuntimeError(f"simulation ended {poll.get('status')}")
-    log(slug, f"simulation {poll.get('status')}")
-    return sim_id, poll
+
+    # The row, not the poll. The poll endpoint answers "is it finished?" -
+    # status, percent, output_hash, cancel_requested - and carries none of
+    # the simulation: not the sites it generated, not the circuits, not the
+    # serviceability table, and not the pins saying what it was generated
+    # from. A file called simulation.json holding none of that looks like the
+    # thing it is missing. tools/backfill_simulation.py repairs runs written
+    # before this.
+    with db.SessionLocal() as s:
+        row = s.execute(select(db.simulation_run).where(
+            db.simulation_run.c.simulation_run_id == sim_id)).first()
+    out = dict(row.output or {})
+    # Per-site arrays: tens of thousands of rows on a large estate, and the
+    # same information the aggregates already carry.
+    omitted = [f"{k} ({len(out[k])} rows)" for k in ("estate", "sample_topology")
+               if k in out]
+    for k in ("estate", "sample_topology"):
+        out.pop(k, None)
+
+    record = {
+        "simulation_run_id": row.simulation_run_id, "case_id": row.case_id,
+        "model_version": row.model_version, "seed": row.seed,
+        "ensemble_size": row.ensemble_size, "status": row.status,
+        "output_hash": row.output_hash, "started_at": row.started_at,
+        "ended_at": row.ended_at, "params": row.params,
+        "pinned_priors": row.pinned_priors, "output": out,
+    }
+    if omitted:
+        record["output_omitted"] = {
+            "fields": omitted,
+            "why": ("per-site arrays, the same information the aggregates "
+                    "carry; tools/backfill_simulation.py --full keeps them"),
+        }
+    log(slug, f"simulation {row.status}, {out.get('sites')} sites, "
+              f"{(out.get('circuits') or {}).get('base')} circuits")
+    return sim_id, record
 
 
 def estimate(case_id, slug, sim_id, footprint):
@@ -536,6 +612,7 @@ def run_one(spec, outdir, domains, force):
         log(slug, f"skipping {len(domains) - len(todo)} domain(s) already "
                   f"researched on this case")
     raw = do_research(case_id, slug, todo)
+    fell_back = dispose_unanswered(case_id, slug)
     prom = promote(case_id, slug)
 
     foot, foot_origin, foot_prov = footprint_for_simulation(case_id, spec)
@@ -571,6 +648,7 @@ def run_one(spec, outdir, domains, force):
         # that overstates its own research is the thing this set is least
         # allowed to do.
         "domains_requested": domains,
+        "domains_fell_back_unanswered": fell_back["fell_back"],
         "domains_researched": sorted(researched_domains(case_id)),
         "estimate_inputs": {
             "method": "BUILD_UP",
