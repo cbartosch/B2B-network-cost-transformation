@@ -481,31 +481,55 @@ def footprint_for_simulation(case_id, spec):
         key = (r.country, r.archetype)
         researched[key] = researched.get(key, 0) + int(r.sites)
 
-    merged, provenance = [], []
-    dropped_unknown = unknown
-    for key, sites in sorted(researched.items()):
-        country, archetype = key
-        merged.append({"country": country, "archetype": archetype,
-                       "sites": sites})
-        provenance.append({"country": country, "archetype": archetype,
-                           "sites": sites, "origin": "RESEARCHED"})
+    # One pass over the union of the two key sets, so every (country,
+    # archetype) is decided once and lands in exactly one place.
+    disclosed = {(r["country"], r["archetype"]): int(r["sites"])
+                 for r in spec["declared_footprint"]}
 
-    for row in spec["declared_footprint"]:
-        key = (row["country"], row["archetype"])
-        if key in researched:
-            provenance.append(
-                {**row, "origin": "SUPERSEDED_BY_RESEARCH",
-                 "research_said": researched[key]})
-            continue
-        merged.append(dict(row))
-        provenance.append({**row, "origin": "PUBLIC_DISCLOSURE"})
+    merged, provenance = [], []
+    for key in sorted(set(researched) | set(disclosed)):
+        country, archetype = key
+        found = researched.get(key)
+        said = disclosed.get(key)
+
+        if found is not None and said is None:
+            sites, origin = found, "RESEARCHED"
+        elif found is None:
+            sites, origin = said, "PUBLIC_DISCLOSURE"
+        elif found >= said:
+            sites, origin = found, "SUPERSEDED_BY_RESEARCH"
+        else:
+            # Research found fewer than the company discloses, so it saw
+            # part of the estate rather than a smaller estate.
+            #
+            # This used to be "researched always wins", and it produced a
+            # 20-site BASF: the agent returned one DE PLANT - Ludwigshafen,
+            # named as a single location - and that replaced forty disclosed
+            # German plants. Volkswagen came out at 25 sites, Novartis 35,
+            # Siemens 44, all the same way. An agent naming an example is
+            # not an agent counting an estate, and nothing in the quantity
+            # distinguishes the two.
+            sites, origin = said, "DISCLOSURE_KEPT_RESEARCH_FOUND_FEWER"
+
+        merged.append({"country": country, "archetype": archetype,
+                       "sites": int(sites)})
+        row = {"country": country, "archetype": archetype,
+               "sites": int(sites), "origin": origin}
+        # Both numbers, wherever they differ, so the choice is arguable
+        # rather than silent.
+        if found is not None and said is not None and found != said:
+            row["research_said"] = found
+            row["disclosure_said"] = said
+        provenance.append(row)
+
+    for u in unknown:
+        provenance.append({"archetype": u,
+                           "origin": "DROPPED_UNKNOWN_ARCHETYPE"})
 
     if not merged:
-        return list(spec["declared_footprint"]), "PUBLIC_DISCLOSURE_ONLY", []
+        return list(spec["declared_footprint"]), "PUBLIC_DISCLOSURE_ONLY", provenance
     origin = ("RESEARCH_MERGED_WITH_DISCLOSURE" if researched
               else "PUBLIC_DISCLOSURE_ONLY")
-    for u in dropped_unknown:
-        provenance.append({"archetype": u, "origin": "DROPPED_UNKNOWN_ARCHETYPE"})
     return merged, origin, provenance
 
 

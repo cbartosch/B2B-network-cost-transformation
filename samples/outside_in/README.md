@@ -69,9 +69,19 @@ with an origin:
 
 | origin | meaning |
 | --- | --- |
-| `RESEARCHED` | the agents found and sourced this count, and it was promoted |
-| `SUPERSEDED_BY_RESEARCH` | a disclosed row research replaced; the research figure is recorded beside it |
-| `PUBLIC_DISCLOSURE` | research did not reach this (country, archetype); the count is from public disclosure |
+| `RESEARCHED` | the agents found and sourced this count; no disclosed row for the pair |
+| `SUPERSEDED_BY_RESEARCH` | research found **at least as many** as disclosure, so it won |
+| `DISCLOSURE_KEPT_RESEARCH_FOUND_FEWER` | research found fewer, so it saw part of the estate rather than a smaller one; both figures recorded |
+| `PUBLIC_DISCLOSURE` | research did not reach this (country, archetype) |
+| `DROPPED_UNKNOWN_ARCHETYPE` | a promoted row naming an archetype the simulation does not know |
+
+**A researched count only wins when it is at least as large.** The first rule
+was "researched always wins", and it produced a 20-site BASF: the agent
+returned one DE `PLANT` — Ludwigshafen, named as a single location — which
+replaced forty disclosed German plants. Volkswagen came out at 25 sites,
+Novartis 35, Siemens 44, all the same way. An agent naming an example is not
+an agent counting an estate, and nothing in the quantity distinguishes the
+two. Under the corrected rule those became 102, 86, 67 and 197.
 
 **Why not research alone.** The pilot run settled it. For Unilever the agents
 returned seven rows totalling seventeen sites - five GB plants, four DE
@@ -151,6 +161,12 @@ overstates its own research is the thing this set is least allowed to do.
 
 `estimate_v0.json` carries its own `pins`, so each snapshot is provenance for
 itself rather than relying on this directory staying tidy.
+
+`research.json` is the bulk of this directory — about 13 MB of its 16 MB —
+because every cited source carries the `fragment` and `excerpt` the system
+re-fetched to verify the claim. That is deliberate: a URL that has since
+changed or gone is still checkable against what was actually read, which is
+the whole basis on which these findings are evidence rather than assertion.
 
 ---
 
