@@ -1,5 +1,5 @@
 {
-  "estimate_snapshot_id": "eecfdc69-26f1-473e-9654-fe0d7af9ab34",
+  "estimate_snapshot_id": "e899b3a8-15da-4f84-a118-6c9f70601666",
   "v0_status": "COMPLETE",
   "current_tco": {
     "low": "7423974.04",
@@ -3046,6 +3046,67 @@
         "realization": "0.3500"
       }
     }
+  },
+  "baseline_plausibility": {
+    "flag": "OK",
+    "scope_status": "PARTIAL_COUNTRIES",
+    "metrics": {
+      "BASELINE_PER_EMPLOYEE": {
+        "value": "269.96",
+        "flag": "NOT_ASSESSABLE",
+        "note": "scope is PARTIAL_COUNTRIES: this baseline covers part of the group and the denominator is group-wide, so the ratio measures the scope gap rather than the estimate",
+        "benchmark": null
+      },
+      "BASELINE_PCT_OF_REVENUE": {
+        "value": "0.03",
+        "flag": "NOT_ASSESSABLE",
+        "note": "scope is PARTIAL_COUNTRIES: this baseline covers part of the group and the denominator is group-wide, so the ratio measures the scope gap rather than the estimate",
+        "benchmark": null
+      },
+      "BASELINE_PER_SITE": {
+        "value": "4411.82",
+        "flag": "OK",
+        "note": "4411.824416846652267818574514 is within 1500.000000-20000.000000",
+        "benchmark": {
+          "low": "1500.00",
+          "high": "20000.00",
+          "unit": "base currency per site per year",
+          "source": "UNSOURCED TRIPWIRE set by the workbench, not a published benchmark. Wide enough to catch only an order-of-magnitude error. Replace with a sourced range before any external use - see docs/CR-NCT-001-ASSUMPTIONS.md.",
+          "as_of": "2026-10-12",
+          "evidence_grade": "F"
+        }
+      }
+    },
+    "inputs": {
+      "employees": "45400.00",
+      "revenue": "44739000000.00",
+      "sites": "2778.00",
+      "provenance": {
+        "employees": {
+          "value": "45400",
+          "label": "Iberdrola group total employee headcount (worldwide, 2025)",
+          "as_of": "2025",
+          "unit": "employees",
+          "currency": null,
+          "as_stated": "45400"
+        },
+        "revenue": {
+          "value": "4.4739E+10",
+          "label": "Iberdrola Group consolidated revenue",
+          "as_of": "FY2024",
+          "unit": "EUR million",
+          "currency": "EUR",
+          "as_stated": "44739"
+        }
+      }
+    },
+    "notes": [
+      "BASELINE_PER_EMPLOYEE: scope is PARTIAL_COUNTRIES: this baseline covers part of the group and the denominator is group-wide, so the ratio measures the scope gap rather than the estimate",
+      "BASELINE_PCT_OF_REVENUE: scope is PARTIAL_COUNTRIES: this baseline covers part of the group and the denominator is group-wide, so the ratio measures the scope gap rather than the estimate",
+      "BASELINE_PER_SITE: 4411.824416846652267818574514 is within 1500.000000-20000.000000",
+      "scope is PARTIAL_COUNTRIES, so only BASELINE_PER_SITE is judged. Per-site divides the cost of the estate by the size of the same estate and is unaffected by how much of the group that estate is."
+    ],
+    "benchmark_rows": 21
   },
   "coverage": {
     "status": "COMPLETE",

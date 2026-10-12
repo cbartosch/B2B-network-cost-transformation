@@ -1,5 +1,5 @@
 {
-  "estimate_snapshot_id": "40c965ad-ddea-4fc3-9030-0ba64f948cf8",
+  "estimate_snapshot_id": "45a58ba4-9191-4414-9c97-0ec2e34e40df",
   "v0_status": "COMPLETE",
   "current_tco": {
     "low": "14082227.01",
@@ -3428,6 +3428,67 @@
         "realization": "0.3500"
       }
     }
+  },
+  "baseline_plausibility": {
+    "flag": "OK",
+    "scope_status": "PARTIAL_COUNTRIES",
+    "metrics": {
+      "BASELINE_PER_EMPLOYEE": {
+        "value": "111.78",
+        "flag": "NOT_ASSESSABLE",
+        "note": "scope is PARTIAL_COUNTRIES: this baseline covers part of the group and the denominator is group-wide, so the ratio measures the scope gap rather than the estimate",
+        "benchmark": null
+      },
+      "BASELINE_PCT_OF_REVENUE": {
+        "value": "0.09",
+        "flag": "NOT_ASSESSABLE",
+        "note": "scope is PARTIAL_COUNTRIES: this baseline covers part of the group and the denominator is group-wide, so the ratio measures the scope gap rather than the estimate",
+        "benchmark": null
+      },
+      "BASELINE_PER_SITE": {
+        "value": "4449.84",
+        "flag": "OK",
+        "note": "4449.835261367704976727533119 is within 1500.000000-20000.000000",
+        "benchmark": {
+          "low": "1500.00",
+          "high": "20000.00",
+          "unit": "base currency per site per year",
+          "source": "UNSOURCED TRIPWIRE set by the workbench, not a published benchmark. Wide enough to catch only an order-of-magnitude error. Replace with a sourced range before any external use - see docs/CR-NCT-001-ASSUMPTIONS.md.",
+          "as_of": "2026-10-12",
+          "evidence_grade": "F"
+        }
+      }
+    },
+    "inputs": {
+      "employees": "222367.00",
+      "revenue": "26985000000.00",
+      "sites": "5586.00",
+      "provenance": {
+        "employees": {
+          "value": "222367",
+          "label": "DB Group employees — annual average FTE",
+          "as_of": "FY2025",
+          "unit": "FTE (annual average)",
+          "currency": "FTE",
+          "as_stated": "222367"
+        },
+        "revenue": {
+          "value": "2.6985E+10",
+          "label": "DB Group consolidated revenue (continuing operations)",
+          "as_of": "FY2025",
+          "unit": "EUR million",
+          "currency": "EUR",
+          "as_stated": "26985"
+        }
+      }
+    },
+    "notes": [
+      "BASELINE_PER_EMPLOYEE: scope is PARTIAL_COUNTRIES: this baseline covers part of the group and the denominator is group-wide, so the ratio measures the scope gap rather than the estimate",
+      "BASELINE_PCT_OF_REVENUE: scope is PARTIAL_COUNTRIES: this baseline covers part of the group and the denominator is group-wide, so the ratio measures the scope gap rather than the estimate",
+      "BASELINE_PER_SITE: 4449.835261367704976727533119 is within 1500.000000-20000.000000",
+      "scope is PARTIAL_COUNTRIES, so only BASELINE_PER_SITE is judged. Per-site divides the cost of the estate by the size of the same estate and is unaffected by how much of the group that estate is."
+    ],
+    "benchmark_rows": 21
   },
   "coverage": {
     "status": "COMPLETE",

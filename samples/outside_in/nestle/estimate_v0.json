@@ -1,5 +1,5 @@
 {
-  "estimate_snapshot_id": "cf1d5235-942e-4b72-9d4e-6803fd077a0a",
+  "estimate_snapshot_id": "cd66135c-d351-4955-9901-1ec1bcc0c2de",
   "v0_status": "PARTIAL",
   "current_tco": {
     "low": "8078735.10",
@@ -5100,7 +5100,7 @@
     }
   },
   "baseline_plausibility": {
-    "flag": "NOT_ASSESSABLE",
+    "flag": "OK",
     "scope_status": "PARTIAL_COUNTRIES",
     "metrics": {
       "BASELINE_PER_EMPLOYEE": {
@@ -5117,9 +5117,16 @@
       },
       "BASELINE_PER_SITE": {
         "value": "42861.43",
-        "flag": "NOT_ASSESSABLE",
-        "note": "no benchmark row for this metric",
-        "benchmark": null
+        "flag": "OK",
+        "note": "42861.42967741935483870967742 is within 4000.000000-120000.000000",
+        "benchmark": {
+          "low": "4000.00",
+          "high": "120000.00",
+          "unit": "base currency per site per year",
+          "source": "UNSOURCED TRIPWIRE set by the workbench, not a published benchmark. Wide enough to catch only an order-of-magnitude error. Replace with a sourced range before any external use - see docs/CR-NCT-001-ASSUMPTIONS.md.",
+          "as_of": "2026-10-12",
+          "evidence_grade": "F"
+        }
       }
     },
     "inputs": {
@@ -5148,11 +5155,10 @@
     "notes": [
       "BASELINE_PER_EMPLOYEE: scope is PARTIAL_COUNTRIES: this baseline covers part of the group and the denominator is group-wide, so the ratio measures the scope gap rather than the estimate",
       "BASELINE_PCT_OF_REVENUE: scope is PARTIAL_COUNTRIES: this baseline covers part of the group and the denominator is group-wide, so the ratio measures the scope gap rather than the estimate",
-      "BASELINE_PER_SITE: no benchmark row for this metric",
-      "reference.plausibility_benchmark has no rows. The thresholds are the owner's under CR-NCT-001 section 9 and are not invented here, so the ratios above are reported and not judged.",
+      "BASELINE_PER_SITE: 42861.42967741935483870967742 is within 4000.000000-120000.000000",
       "scope is PARTIAL_COUNTRIES, so only BASELINE_PER_SITE is judged. Per-site divides the cost of the estate by the size of the same estate and is unaffected by how much of the group that estate is."
     ],
-    "benchmark_rows": 0
+    "benchmark_rows": 21
   },
   "coverage": {
     "status": "PARTIAL",

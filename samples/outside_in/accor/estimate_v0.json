@@ -1,5 +1,5 @@
 {
-  "estimate_snapshot_id": "3fb2f3ce-ce50-4307-9479-887e3050b6cb",
+  "estimate_snapshot_id": "fd852c2e-0de5-4631-afef-bbaf7ed806ae",
   "v0_status": "COMPLETE",
   "current_tco": {
     "low": "4595847.93",
@@ -2549,6 +2549,67 @@
         "realization": "0.3500"
       }
     }
+  },
+  "baseline_plausibility": {
+    "flag": "OK",
+    "scope_status": "PARTIAL_COUNTRIES",
+    "metrics": {
+      "BASELINE_PER_EMPLOYEE": {
+        "value": "414.62",
+        "flag": "NOT_ASSESSABLE",
+        "note": "scope is PARTIAL_COUNTRIES: this baseline covers part of the group and the denominator is group-wide, so the ratio measures the scope gap rather than the estimate",
+        "benchmark": null
+      },
+      "BASELINE_PCT_OF_REVENUE": {
+        "value": "0.15",
+        "flag": "NOT_ASSESSABLE",
+        "note": "scope is PARTIAL_COUNTRIES: this baseline covers part of the group and the denominator is group-wide, so the ratio measures the scope gap rather than the estimate",
+        "benchmark": null
+      },
+      "BASELINE_PER_SITE": {
+        "value": "3756.44",
+        "flag": "OK",
+        "note": "3756.435401330376940133037694 is within 1500.000000-20000.000000",
+        "benchmark": {
+          "low": "1500.00",
+          "high": "20000.00",
+          "unit": "base currency per site per year",
+          "source": "UNSOURCED TRIPWIRE set by the workbench, not a published benchmark. Wide enough to catch only an order-of-magnitude error. Replace with a sourced range before any external use - see docs/CR-NCT-001-ASSUMPTIONS.md.",
+          "as_of": "2026-10-12",
+          "evidence_grade": "F"
+        }
+      }
+    },
+    "inputs": {
+      "employees": "20430.00",
+      "revenue": "5639000000.00",
+      "sites": "2255.00",
+      "provenance": {
+        "employees": {
+          "value": "20430",
+          "label": "Employees — direct (Accor SA consolidated payroll, average)",
+          "as_of": "FY2025",
+          "unit": "people",
+          "currency": null,
+          "as_stated": "20430"
+        },
+        "revenue": {
+          "value": "5.639E+9",
+          "label": "Group consolidated revenue",
+          "as_of": "FY2025",
+          "unit": "EUR million",
+          "currency": "EUR",
+          "as_stated": "5639"
+        }
+      }
+    },
+    "notes": [
+      "BASELINE_PER_EMPLOYEE: scope is PARTIAL_COUNTRIES: this baseline covers part of the group and the denominator is group-wide, so the ratio measures the scope gap rather than the estimate",
+      "BASELINE_PCT_OF_REVENUE: scope is PARTIAL_COUNTRIES: this baseline covers part of the group and the denominator is group-wide, so the ratio measures the scope gap rather than the estimate",
+      "BASELINE_PER_SITE: 3756.435401330376940133037694 is within 1500.000000-20000.000000",
+      "scope is PARTIAL_COUNTRIES, so only BASELINE_PER_SITE is judged. Per-site divides the cost of the estate by the size of the same estate and is unaffected by how much of the group that estate is."
+    ],
+    "benchmark_rows": 21
   },
   "coverage": {
     "status": "COMPLETE",

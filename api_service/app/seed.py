@@ -16,6 +16,7 @@ DOMAIN_AGENT_MAP_SEED = {
     21: 'LLM-08', 22: 'LLM-08',
 }
 from .db import (SessionLocal, archetype_bandwidth, archetype_prior,
+                 plausibility_benchmark,
                  archetype_resilience,
                  fx_rate,
                  density_mix,
@@ -2092,6 +2093,53 @@ LEVERS = [
 ]
 
 
+# CR-03 per-site tripwires. Requested by the owner after the table shipped
+# empty, and they are tripwires rather than a benchmark - the difference
+# matters and is recorded on every row.
+#
+# NOT SOURCED. There is no published figure here for network cost per site
+# by industry, so `source` says so in words rather than naming something
+# that does not exist, `evidence_grade` is F and `approved_by` is null. A
+# flag from one of these is a prompt to look, not a verdict, and the
+# assessment publishes the source and grade next to the flag so a reader
+# sees which it is.
+#
+# Set WIDE, deliberately. estate_plausibility's own note is the right
+# standard: "a ceiling that fires on a real estate is worse than no
+# ceiling, so each is set where a plausible enterprise is nowhere near it."
+# These brackets span five to thirty times and can only catch an
+# order-of-magnitude error - a store estate priced like a refinery, or a
+# chemical group priced like a kiosk.
+#
+# They are grouped by what the estate is made of, not by sector economics:
+# a branch, a restaurant and a hotel room all take one modest circuit, and
+# a plant, a refinery and an R&D campus all take dual access and real
+# bandwidth. Picking the band is therefore a question about site types.
+#
+# On the twenty-company sample every one of them passes. That is the
+# intended state for a tripwire and not evidence that it works; the thing
+# it exists to catch has not happened yet.
+_BRANCH = ("GROCERY_RETAIL", "QSR_RESTAURANTS", "SPECIALTY_RETAIL", "HOTELS",
+           "INSURANCE", "UNIVERSAL_BANKING", "PARCEL_LOGISTICS", "RAILWAYS",
+           "UTILITIES", "INTEGRATED_OIL_GAS", "BUILDING_MATERIALS")
+_MIXED = ("HOSPITAL", "AIRLINES")
+_INDUSTRIAL = ("CHEMICALS", "PHARMACEUTICALS", "AUTOMOTIVE_OEM",
+               "FOOD_MANUFACTURING", "INDUSTRIAL_CONGLOMERATE",
+               "HOUSEHOLD_PERSONAL_CARE", "DIVERSIFIED_MINING")
+
+_UNSOURCED = ("UNSOURCED TRIPWIRE set by the workbench, not a published "
+              "benchmark. Wide enough to catch only an order-of-magnitude "
+              "error. Replace with a sourced range before any external use "
+              "- see docs/CR-NCT-001-ASSUMPTIONS.md.")
+
+PLAUSIBILITY_BENCHMARKS = (
+    [("BASELINE_PER_SITE", "DEFAULT", 1000, 150000)]
+    + [("BASELINE_PER_SITE", i, 1500, 20000) for i in _BRANCH]
+    + [("BASELINE_PER_SITE", i, 2500, 35000) for i in _MIXED]
+    + [("BASELINE_PER_SITE", i, 4000, 120000) for i in _INDUSTRIAL]
+)
+
+
 def _rows():
     """Table -> row builder. Kept together so a new reference table cannot be
     added to the model without also being given seed content."""
@@ -2219,6 +2267,14 @@ def _rows():
              "high": hi, "currency": "USD", "price_year": 2026,
              "approved": True}
             for p, l, u, lo, ba, hi in PLATFORM]),
+        (plausibility_benchmark, lambda: [
+            {"metric": m, "industry": ind, "low": lo, "high": hi,
+             "unit": "base currency per site per year",
+             "source": _UNSOURCED, "as_of": "2026-10-12",
+             "evidence_grade": "F", "approved_by": None,
+             "note": "CR-03 tripwire; per-site is the one plausibility "
+                     "metric that survives a partial scope"}
+            for m, ind, lo, hi in PLAUSIBILITY_BENCHMARKS]),
         (archetype_prior, lambda: [
             {"archetype": a, "users_base": u, "bandwidth_mbps_base": b,
              "dual_access_probability": d, "primary_product": pp, "backup_product": bp,

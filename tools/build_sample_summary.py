@@ -57,6 +57,21 @@ FIELDS = [
     # and confidence_ceilings_applied beside identical conf_* columns. Two
     # names for one number in one row is how a reader ends up asking which
     # is authoritative.
+    # CR-03. The flag, what drove it, and the grade of the benchmark behind
+    # it - a reader seeing OK is entitled to know whether that came from a
+    # sourced range or from an unsourced tripwire.
+    ("plausibility_flag", lambda m, s, e, r: _g(e, "baseline_plausibility",
+                                                "flag")),
+    ("plausibility_per_site",
+     lambda m, s, e, r: _g(e, "baseline_plausibility", "metrics",
+                           "BASELINE_PER_SITE", "value")),
+    ("plausibility_per_site_flag",
+     lambda m, s, e, r: _g(e, "baseline_plausibility", "metrics",
+                           "BASELINE_PER_SITE", "flag")),
+    ("plausibility_benchmark_grade",
+     lambda m, s, e, r: _g(e, "baseline_plausibility", "metrics",
+                           "BASELINE_PER_SITE", "benchmark",
+                           "evidence_grade")),
     ("confidence_weights", lambda m, s, e, r: _pipe(
         f"{k}={v}" for k, v in sorted(
             (_g(e, "confidence", "weights") or {}).items()))),

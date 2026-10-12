@@ -1,5 +1,5 @@
 {
-  "estimate_snapshot_id": "f1dbf06a-baf3-4df0-9240-039776616324",
+  "estimate_snapshot_id": "0f82e2c8-fa00-4309-96dc-1cd7ca2ec983",
   "v0_status": "PARTIAL",
   "current_tco": {
     "low": "1300311.70",
@@ -2978,6 +2978,67 @@
         "realization": "0.3500"
       }
     }
+  },
+  "baseline_plausibility": {
+    "flag": "OK",
+    "scope_status": "PARTIAL_COUNTRIES",
+    "metrics": {
+      "BASELINE_PER_EMPLOYEE": {
+        "value": "21.51",
+        "flag": "NOT_ASSESSABLE",
+        "note": "scope is PARTIAL_COUNTRIES: this baseline covers part of the group and the denominator is group-wide, so the ratio measures the scope gap rather than the estimate",
+        "benchmark": null
+      },
+      "BASELINE_PCT_OF_REVENUE": {
+        "value": "0.01",
+        "flag": "NOT_ASSESSABLE",
+        "note": "scope is PARTIAL_COUNTRIES: this baseline covers part of the group and the denominator is group-wide, so the ratio measures the scope gap rather than the estimate",
+        "benchmark": null
+      },
+      "BASELINE_PER_SITE": {
+        "value": "9958.30",
+        "flag": "OK",
+        "note": "9958.296950672645739910313901 is within 2500.000000-35000.000000",
+        "benchmark": {
+          "low": "2500.00",
+          "high": "35000.00",
+          "unit": "base currency per site per year",
+          "source": "UNSOURCED TRIPWIRE set by the workbench, not a published benchmark. Wide enough to catch only an order-of-magnitude error. Replace with a sourced range before any external use - see docs/CR-NCT-001-ASSUMPTIONS.md.",
+          "as_of": "2026-10-12",
+          "evidence_grade": "F"
+        }
+      }
+    },
+    "inputs": {
+      "employees": "103255.00",
+      "revenue": "39597000000.00",
+      "sites": "223.00",
+      "provenance": {
+        "employees": {
+          "value": "103255",
+          "label": "Employees at end of period (Lufthansa Group consolidated, worldwide)",
+          "as_of": "FY2025 (31 Dec 2025)",
+          "unit": "people (headcount)",
+          "currency": null,
+          "as_stated": "103255"
+        },
+        "revenue": {
+          "value": "3.9597E+10",
+          "label": "Total revenue (Lufthansa Group consolidated)",
+          "as_of": "FY2025",
+          "unit": "EUR million",
+          "currency": "EUR",
+          "as_stated": "39597"
+        }
+      }
+    },
+    "notes": [
+      "BASELINE_PER_EMPLOYEE: scope is PARTIAL_COUNTRIES: this baseline covers part of the group and the denominator is group-wide, so the ratio measures the scope gap rather than the estimate",
+      "BASELINE_PCT_OF_REVENUE: scope is PARTIAL_COUNTRIES: this baseline covers part of the group and the denominator is group-wide, so the ratio measures the scope gap rather than the estimate",
+      "BASELINE_PER_SITE: 9958.296950672645739910313901 is within 2500.000000-35000.000000",
+      "scope is PARTIAL_COUNTRIES, so only BASELINE_PER_SITE is judged. Per-site divides the cost of the estate by the size of the same estate and is unaffected by how much of the group that estate is."
+    ],
+    "benchmark_rows": 21
   },
   "coverage": {
     "status": "PARTIAL",

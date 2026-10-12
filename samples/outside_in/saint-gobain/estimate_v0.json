@@ -1,5 +1,5 @@
 {
-  "estimate_snapshot_id": "aa9513c5-2754-4623-91c8-663c534baf39",
+  "estimate_snapshot_id": "c7ec5424-1c21-4f01-a5b4-2299a6142c3a",
   "v0_status": "COMPLETE",
   "current_tco": {
     "low": "15963621.29",
@@ -4426,6 +4426,67 @@
         "realization": "0.3500"
       }
     }
+  },
+  "baseline_plausibility": {
+    "flag": "OK",
+    "scope_status": "PARTIAL_COUNTRIES",
+    "metrics": {
+      "BASELINE_PER_EMPLOYEE": {
+        "value": "169.06",
+        "flag": "NOT_ASSESSABLE",
+        "note": "scope is PARTIAL_COUNTRIES: this baseline covers part of the group and the denominator is group-wide, so the ratio measures the scope gap rather than the estimate",
+        "benchmark": null
+      },
+      "BASELINE_PCT_OF_REVENUE": {
+        "value": "0.06",
+        "flag": "NOT_ASSESSABLE",
+        "note": "scope is PARTIAL_COUNTRIES: this baseline covers part of the group and the denominator is group-wide, so the ratio measures the scope gap rather than the estimate",
+        "benchmark": null
+      },
+      "BASELINE_PER_SITE": {
+        "value": "5845.72",
+        "flag": "OK",
+        "note": "5845.718198505869797225186766 is within 1500.000000-20000.000000",
+        "benchmark": {
+          "low": "1500.00",
+          "high": "20000.00",
+          "unit": "base currency per site per year",
+          "source": "UNSOURCED TRIPWIRE set by the workbench, not a published benchmark. Wide enough to catch only an order-of-magnitude error. Replace with a sourced range before any external use - see docs/CR-NCT-001-ASSUMPTIONS.md.",
+          "as_of": "2026-10-12",
+          "evidence_grade": "F"
+        }
+      }
+    },
+    "inputs": {
+      "employees": "162000.00",
+      "revenue": "46571000000.00",
+      "sites": "4685.00",
+      "provenance": {
+        "employees": {
+          "value": "162000",
+          "label": "Group employees (headcount)",
+          "as_of": "FY2025",
+          "unit": "people",
+          "currency": null,
+          "as_stated": "162000"
+        },
+        "revenue": {
+          "value": "4.6571E+10",
+          "label": "Saint-Gobain Group revenue (sales) FY2024",
+          "as_of": "FY2024",
+          "unit": "EUR million",
+          "currency": "EUR",
+          "as_stated": "46571"
+        }
+      }
+    },
+    "notes": [
+      "BASELINE_PER_EMPLOYEE: scope is PARTIAL_COUNTRIES: this baseline covers part of the group and the denominator is group-wide, so the ratio measures the scope gap rather than the estimate",
+      "BASELINE_PCT_OF_REVENUE: scope is PARTIAL_COUNTRIES: this baseline covers part of the group and the denominator is group-wide, so the ratio measures the scope gap rather than the estimate",
+      "BASELINE_PER_SITE: 5845.718198505869797225186766 is within 1500.000000-20000.000000",
+      "scope is PARTIAL_COUNTRIES, so only BASELINE_PER_SITE is judged. Per-site divides the cost of the estate by the size of the same estate and is unaffected by how much of the group that estate is."
+    ],
+    "benchmark_rows": 21
   },
   "coverage": {
     "status": "COMPLETE",

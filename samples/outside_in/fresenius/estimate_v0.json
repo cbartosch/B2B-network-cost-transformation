@@ -1,5 +1,5 @@
 {
-  "estimate_snapshot_id": "e130a983-f0d6-414b-a5d8-440b7733b335",
+  "estimate_snapshot_id": "6e7578a6-2f18-4234-9c77-6a4e647cfa46",
   "v0_status": "COMPLETE",
   "current_tco": {
     "low": "22773592.87",
@@ -3834,6 +3834,67 @@
         "realization": "0.3500"
       }
     }
+  },
+  "baseline_plausibility": {
+    "flag": "OK",
+    "scope_status": "PARTIAL_COUNTRIES",
+    "metrics": {
+      "BASELINE_PER_EMPLOYEE": {
+        "value": "218.40",
+        "flag": "NOT_ASSESSABLE",
+        "note": "scope is PARTIAL_COUNTRIES: this baseline covers part of the group and the denominator is group-wide, so the ratio measures the scope gap rather than the estimate",
+        "benchmark": null
+      },
+      "BASELINE_PCT_OF_REVENUE": {
+        "value": "0.18",
+        "flag": "NOT_ASSESSABLE",
+        "note": "scope is PARTIAL_COUNTRIES: this baseline covers part of the group and the denominator is group-wide, so the ratio measures the scope gap rather than the estimate",
+        "benchmark": null
+      },
+      "BASELINE_PER_SITE": {
+        "value": "6731.45",
+        "flag": "OK",
+        "note": "6731.445548375829549423681453 is within 2500.000000-35000.000000",
+        "benchmark": {
+          "low": "2500.00",
+          "high": "35000.00",
+          "unit": "base currency per site per year",
+          "source": "UNSOURCED TRIPWIRE set by the workbench, not a published benchmark. Wide enough to catch only an order-of-magnitude error. Replace with a sourced range before any external use - see docs/CR-NCT-001-ASSUMPTIONS.md.",
+          "as_of": "2026-10-12",
+          "evidence_grade": "F"
+        }
+      }
+    },
+    "inputs": {
+      "employees": "176486.00",
+      "revenue": "21526000000.00",
+      "sites": "5726.00",
+      "provenance": {
+        "employees": {
+          "value": "176486",
+          "label": "Fresenius Group total employees",
+          "as_of": "FY2024",
+          "unit": "people",
+          "currency": null,
+          "as_stated": "176486"
+        },
+        "revenue": {
+          "value": "2.1526E+10",
+          "label": "Fresenius Group consolidated revenue (before special items)",
+          "as_of": "FY2024",
+          "unit": "EUR millions",
+          "currency": "EUR",
+          "as_stated": "21526"
+        }
+      }
+    },
+    "notes": [
+      "BASELINE_PER_EMPLOYEE: scope is PARTIAL_COUNTRIES: this baseline covers part of the group and the denominator is group-wide, so the ratio measures the scope gap rather than the estimate",
+      "BASELINE_PCT_OF_REVENUE: scope is PARTIAL_COUNTRIES: this baseline covers part of the group and the denominator is group-wide, so the ratio measures the scope gap rather than the estimate",
+      "BASELINE_PER_SITE: 6731.445548375829549423681453 is within 2500.000000-35000.000000",
+      "scope is PARTIAL_COUNTRIES, so only BASELINE_PER_SITE is judged. Per-site divides the cost of the estate by the size of the same estate and is unaffected by how much of the group that estate is."
+    ],
+    "benchmark_rows": 21
   },
   "coverage": {
     "status": "COMPLETE",
