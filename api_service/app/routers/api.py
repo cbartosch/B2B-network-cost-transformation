@@ -178,6 +178,33 @@ _REVENUE_LABEL = _re.compile(r"revenue|turnover|business volume|net sales",
 _GROUP_HINT = _re.compile(r"group|consolidated", _re.I)
 
 
+# Research states a figure in whatever unit its source used: "324700000000
+# EUR", "5639 EUR million", "78 EUR billion". Taking the number and ignoring
+# the unit makes a company reporting in millions look a million times
+# cheaper - and because the largest raw number wins, it also picks the
+# wrong row whenever the scales are mixed.
+_SCALE = (("trillion", D("1e12")), ("billion", D("1e9")),
+          ("million", D("1e6")), ("thousand", D("1e3")))
+
+
+def _scaled(value, unit):
+    """The figure in its base unit, or None where the scale is unreadable."""
+    v = triangulate.parse_value(value)
+    if v is None:
+        return None
+    u = str(unit or "").lower()
+    for word, mult in _SCALE:
+        if word in u:
+            return v * mult
+    return v
+
+
+def _currency_of(unit):
+    """The three-letter code in a unit string, if it carries one."""
+    m = _re.search(r"\b([A-Z]{3})\b", str(unit or ""))
+    return m.group(1) if m else None
+
+
 def _largest_quantity(session, case_id, pattern):
     """The biggest matching figure, with where it came from.
 
@@ -195,11 +222,13 @@ def _largest_quantity(session, case_id, pattern):
             label = str(q.get("label") or "")
             if not pattern.search(label):
                 continue
-            value = triangulate.parse_value(q.get("value"))
+            value = _scaled(q.get("value"), q.get("unit"))
             if value is None or value <= 0:
                 continue
             cand = {"value": str(value), "label": label,
-                    "as_of": q.get("as_of"), "unit": q.get("unit")}
+                    "as_of": q.get("as_of"), "unit": q.get("unit"),
+                    "currency": _currency_of(q.get("unit")),
+                    "as_stated": str(q.get("value"))}
             if _GROUP_HINT.search(label):
                 if best_hint is None or value > D(best_hint["value"]):
                     best_hint = cand
@@ -208,10 +237,20 @@ def _largest_quantity(session, case_id, pattern):
     return best_hint or best
 
 
-def _baseline_plausibility(session, case_id, *, baseline, sites,
-                           industry):
+def _baseline_plausibility(session, case_id, *, baseline, sites, industry,
+                           base_currency=None):
     emp = _largest_quantity(session, case_id, _EMPLOYEE_LABEL)
     rev = _largest_quantity(session, case_id, _REVENUE_LABEL)
+    # A revenue in another currency cannot be divided into a baseline in
+    # this one. Dropped rather than converted: the ratio would otherwise be
+    # out by the FX rate with nothing on the output to say so, and
+    # NOT_ASSESSABLE is the honest answer to a comparison that cannot be
+    # made from what is here.
+    if (rev and base_currency and rev.get("currency")
+            and rev["currency"].upper() != str(base_currency).upper()):
+        rev = {**rev, "value": None,
+               "dropped": f"stated in {rev['currency']}, baseline is in "
+                          f"{base_currency}"}
     return baseline_plausibility.assess(
         baseline=baseline,
         employees=(emp or {}).get("value"),
@@ -3592,7 +3631,8 @@ def _run_anchor_estimate(s, *, case_id, case_row, payload,
     _plaus = _baseline_plausibility(
         s, case_id, baseline=cur['total']['base'],
         sites=estimate.site_count(components),
-        industry=getattr(case_row, 'industry', None))
+        industry=getattr(case_row, 'industry', None),
+        base_currency=getattr(case_row, 'base_currency', None))
     lv = [dict(r._mapping) for r in s.execute(select(db.lever)).all()]
     levers_by_id = {l["lever_id"]: l for l in lv}
     # With the transition policy, so each scenario carries what it
@@ -4171,7 +4211,8 @@ def run_estimate(case_id: str, payload: EstimateIn):
         _plaus = _baseline_plausibility(
             s, case_id, baseline=cur['total']['base'],
             sites=estimate.site_count(components),
-            industry=getattr(case_row, 'industry', None))
+            industry=getattr(case_row, 'industry', None),
+        base_currency=getattr(case_row, 'base_currency', None))
         lv = [dict(r._mapping) for r in s.execute(select(db.lever)).all()]
         levers_by_id = {l["lever_id"]: l for l in lv}
         # With the transition policy, so each scenario carries what it

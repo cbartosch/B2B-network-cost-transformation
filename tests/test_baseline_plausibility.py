@@ -131,3 +131,40 @@ def test_the_provenance_of_each_input_is_carried():
             "revenue": {"source": "AR 2025 p.9", "as_of": "2025-12-31"}}
     out = plausibility.assess(**BASE, benchmarks={}, inputs_provenance=prov)
     assert out["inputs"]["provenance"]["employees"]["as_of"] == "2025-12-31"
+
+
+# --------------------------------------------- units, found the hard way
+
+def test_a_figure_stated_in_millions_is_not_read_as_units():
+    """Research states a figure in whatever unit its source used: "324700000000
+    EUR", "5639 EUR million", "78 EUR billion". The first version of the
+    extractor took the number and ignored the unit, so a company reporting in
+    millions looked a million times cheaper - and because the largest raw
+    number won, it also picked the wrong row wherever scales were mixed.
+
+    Caught by computing the ratios across the twenty-company set and finding
+    baseline-as-percent-of-revenue spanning 0.0009 to 179,059."""
+    from app.routers.api import _scaled
+    from app.domain.money import D
+
+    assert _scaled("5639", "EUR million") == D("5639000000")
+    assert _scaled("78", "EUR billion") == D("78000000000")
+    assert _scaled("324700000000", "EUR") == D("324700000000")
+    assert _scaled("12", "thousand sites") == D("12000")
+
+
+def test_a_unit_with_no_scale_word_is_taken_as_stated():
+    from app.routers.api import _scaled
+    from app.domain.money import D
+
+    assert _scaled("150", "sites") == D("150")
+    assert _scaled("150", None) == D("150")
+
+
+def test_a_currency_code_is_read_out_of_the_unit():
+    from app.routers.api import _currency_of
+
+    assert _currency_of("EUR million") == "EUR"
+    assert _currency_of("USD") == "USD"
+    assert _currency_of("sites") is None
+
