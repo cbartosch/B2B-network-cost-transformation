@@ -46,6 +46,23 @@ FIELDS = [
     # The number that says how much to trust the rest of the row.
     ("confidence_overall", lambda m, s, e, r: _g(e, "confidence", "overall")),
     ("confidence_band", lambda m, s, e, r: _g(e, "confidence", "band")),
+    # CR-08 / F10. The breakdown was never missing from the engine - it was
+    # missing from here, so a reader comparing two companies saw two scores
+    # and no way to tell which part of one was weaker. These are the three
+    # components the score is the weighted minimum of, their weights, and
+    # the ceilings that moved them.
+    ("confidence_current_baseline",
+     lambda m, s, e, r: _g(e, "confidence", "current_baseline")),
+    ("confidence_target_cost",
+     lambda m, s, e, r: _g(e, "confidence", "target_cost")),
+    ("confidence_realization",
+     lambda m, s, e, r: _g(e, "confidence", "realization")),
+    ("confidence_weighted", lambda m, s, e, r: _g(e, "confidence", "weighted")),
+    ("confidence_weights", lambda m, s, e, r: _pipe(
+        f"{k}={v}" for k, v in sorted(
+            (_g(e, "confidence", "weights") or {}).items()))),
+    ("confidence_ceilings_applied", lambda m, s, e, r: _pipe(
+        _g(e, "confidence", "ceilings_applied") or [])),
     # Renamed, not redefined. It measures how much of the declared scope was
     # priced - 27 published fields' worth - and says nothing about evidence.
     # Beside a domain count in one row, "coverage COMPLETE" read as "we know
@@ -191,6 +208,12 @@ def _best(e):
         if val is None or float(v) > float(val):
             best, val = code, v
     return best, val
+
+
+def _pipe(items):
+    """Pipe-delimited, because a CSV cell cannot hold a list and a comma
+    would split the column."""
+    return "|".join(str(x) for x in items) or None
 
 
 def _scen(e, key):

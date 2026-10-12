@@ -175,6 +175,38 @@ its own output, which §4 principle 2 forbids.
 
 ---
 
+## CR-08 · confidence breakdown
+
+**No new assumed parameters.** F10 says the breakdown is missing; it is not.
+`confidence.compute` has always published the three components, the ceilings
+it applied and the weighted figure. Two real gaps remained:
+
+| gap | fix |
+| --- | --- |
+| The **weights** were not published, so `overall` could be read but not reproduced | `weights`, `component_cap_headroom`, `band_floors` and a one-line `arithmetic` string are now in the output. A reader holding the JSON and nothing else can check the score. |
+| `summary.csv` carried only `overall` and `band` | The three components, the weighted figure, the weights and the ceilings applied are now columns. |
+
+**What the breakdown immediately shows.** `realization` is the binding weak
+component on every company in the set (0.174–0.196), not the baseline
+(0.346–0.358). A reader comparing two companies previously saw two scores
+and no way to tell which part of either was weak — and the part that is weak
+is the same part every time, which is a fact about the model rather than
+about any company.
+
+**Process is not evidence**, and that is now pinned rather than assumed:
+neither `research_minutes`, `research_sources`, `queries_used` nor
+`captures_used` appears anywhere in the confidence module, and
+`compute`'s signature is asserted to take only evidence and scope. An agent
+that searched for an hour and found nothing has not made an estimate more
+certain, and a model that rewarded effort would reward the wrong thing.
+
+Reproduction is tested across 54 parameterised cases — three baselines,
+three target costs, three realizations, two simulated shares — recomputed
+from the output dict rather than by calling the engine's own helper, which
+would pass whatever the helper did.
+
+---
+
 ## Open, and blocking
 
 | item | needed from the owner |

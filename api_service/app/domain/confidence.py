@@ -219,6 +219,27 @@ def compute(*, policy: ConfidencePolicy, current_baseline, target_cost, realizat
         "band": band(overall, policy),
         "policy_set": policy.set_name,
         "ceilings_applied": applied,
+        # CR-08: the arithmetic, so the score can be checked rather than
+        # taken. The three components were already published; the weights
+        # that combine them were not, so `overall` could be read but not
+        # reproduced - a reader could see 0.344 and the parts it came from
+        # and still not get from one to the other.
+        #
+        # Published from the policy rather than restated, so a steward
+        # retuning a weight changes what every estimate reports it used.
+        "weights": {k: str(D(v).quantize(D("0.0001")))
+                    for k, v in sorted(policy.weights.items())},
+        "component_cap_headroom": str(
+            D(policy.component_cap_headroom).quantize(D("0.0001"))),
+        "band_floors": {k: str(D(v).quantize(D("0.0001")))
+                        for k, v in sorted(policy.band_floors.items())},
+        # How to get from the parts to the whole, in one line, for a reader
+        # holding the output and nothing else.
+        "arithmetic": (
+            "overall = clamp(min(sum(component x weight), "
+            "min(component) + component_cap_headroom)); a PARTIAL v0 is then "
+            "lowered one band. Ceilings in `ceilings_applied` have already "
+            "been applied to the components above."),
         "simulated_share": str(D(simulated_share)),
         "asserted_share": str(D(asserted_share)),
     }
