@@ -91,6 +91,12 @@ class Component:
     # has neither.
     service_class: str | None = None
     access_technology: str | None = None
+    # Where this group of circuits sits, and what that did to the rate.
+    # `density_multiplier` is the base factor applied, or None when the rate
+    # was taken as published - so a rural circuit costing double the card is
+    # self-explaining rather than a discrepancy a reader has to chase.
+    density_band: str | None = None
+    density_multiplier: str | None = None
     # What was installed and what is committed on it. A lever acting on this
     # component knew what kind of service it was and not how big - so
     # LEV-BANDWIDTH-001, whose whole job is to reduce a committed rate, applied
@@ -110,6 +116,12 @@ class Component:
                 "access_technology": self.access_technology,
                 "bearer_mbps": self.bearer_mbps,
                 "committed_mbps": self.committed_mbps,
+                # Where these circuits are and what that did to the rate. A
+                # rural tail costing twice the published card has to say so
+                # on the row, or it reads as a discrepancy somebody has to
+                # chase. None means the rate was taken as published.
+                "density_band": self.density_band,
+                "density_multiplier": self.density_multiplier,
                 "source_ref": self.source_ref, "value": self.value.to_dict()}
 
 
@@ -336,6 +348,37 @@ def match_prior(priors: dict, country: str, product: str, mbps,
     return None, None
 
 
+def _by_density(rate: "Range", *, product, band, prior_band, multipliers):
+    """Scale a national rate into a density band.
+
+    Returns (range, multiplier_applied_or_None). The second value is carried
+    onto the component so a reader can see that a figure was adjusted and by
+    how much, rather than finding a rural circuit quietly costing double the
+    rate card and having to work out why.
+
+    Three ways to get back the rate unchanged, all of them deliberate:
+    no band on the circuit (backbone transport, or a site whose band nobody
+    established), no multiplier row for the product, or a prior that is
+    already band-specific. The last matters most - a rate observed FOR this
+    band is evidence, and multiplying it by a default guess would apply the
+    adjustment twice and bury the observation under it.
+
+    low, base and high scale by their own factors, so the range widens with
+    distance rather than sliding. That is the point: a rural tail is not
+    merely dearer, it is quoted per site after a survey, and a range that
+    only moved would assert a precision nobody has.
+    """
+    if not band or not multipliers or prior_band:
+        return rate, None
+    m = multipliers.get((product, band))
+    if not m:
+        return rate, None
+    return (Range(rate.low * D(str(m["low"])),
+                  rate.base * D(str(m["base"])),
+                  rate.high * D(str(m["high"]))),
+            m)
+
+
 def build_components(*, sim_output: dict, users: int, ops_cost_per_site: dict,
                      priors: dict,
                      # This client's own rates. The same set the coverage gate
@@ -355,7 +398,18 @@ def build_components(*, sim_output: dict, users: int, ops_cost_per_site: dict,
                      # and a count with no rate is unpriced scope.
                      pop_unit: dict | None = None,
                      hub_count: int = 0,
-                     sse_unit: dict | None = None) -> tuple[list[Component], list[dict]]:
+                     sse_unit: dict | None = None,
+                     # (product, density_band) -> low/base/high multipliers on
+                     # the rate card. Optional: without it every circuit
+                     # prices at the national rate, which is what happened
+                     # before density reached the price at all.
+                     density_multipliers: dict | None = None,
+                     # Rates observed FOR a density band, keyed
+                     # (country, product, bandwidth, band). Kept apart from
+                     # `priors` because both would key on the same triple and
+                     # one would silently shadow the other.
+                     band_priors: dict | None = None,
+                     ) -> tuple[list[Component], list[dict]]:
     """priors keyed by (country, product, bandwidth_mbps) with low/base/high
     monthly recurring charge. See match_prior for how a circuit finds its tier.
 
@@ -460,11 +514,20 @@ def build_components(*, sim_output: dict, users: int, ops_cost_per_site: dict,
         # Same two dimensions the coverage gate uses. Two different notions of
         # "priced" between the gate and the calculation would mean the gate was
         # measuring something the total did not contain.
-        prior, substituted = match_prior(
-            priors, row["country"], row["product"], mbps,
-            service_class=row.get("service_class"),
-            access_technology=row.get("access_technology"),
-            case_rates=case_rates)
+        band = (row.get("density") or "").upper() or None
+        # A rate observed for this band outranks the national rate and the
+        # multiplier both: it is evidence about exactly this question, and
+        # the default exists only because such evidence is usually absent.
+        prior, substituted = None, None
+        if band and band_priors:
+            prior = band_priors.get(
+                (row["country"], row["product"], mbps, band))
+        if prior is None:
+            prior, substituted = match_prior(
+                priors, row["country"], row["product"], mbps,
+                service_class=row.get("service_class"),
+                access_technology=row.get("access_technology"),
+                case_rates=case_rates)
         if not prior:
             unpriced.append({**row, "reason": "NO_APPROVED_PRIOR_AT_BANDWIDTH"
                              if mbps else "NO_APPROVED_PRIOR"})
@@ -472,10 +535,31 @@ def build_components(*, sim_output: dict, users: int, ops_cost_per_site: dict,
         # A backup circuit exists only because the seeded draw put it there.
         origin = SIMULATED if row["role"] == "BACKUP" else site_origin
         qty = int(row["count"])
-        value = Range(prior["low"], prior["base"], prior["high"]).scale(D(qty) * MONTHS)
+        # What the band does to the price.
+        #
+        # Applied after match_prior, not inside it, so the coverage gate's
+        # notion of "priced" stays exactly the prior's existence - a
+        # multiplier changes what a circuit costs, never whether it can be
+        # costed, and the gate measuring one thing while the total contained
+        # another is the failure the comment above guards against.
+        #
+        # Skipped entirely when the prior already carries this band: a
+        # band-specific rate is an observation, and scaling an observation by
+        # a default would price it twice.
+        scaled, multiplier = _by_density(
+            Range(prior["low"], prior["base"], prior["high"]),
+            product=row["product"], band=band,
+            prior_band=prior.get("density_band"),
+            multipliers=density_multipliers)
+        value = scaled.scale(D(qty) * MONTHS)
         _base = Component(
+            # The band is in the key. Without it two bands of the same
+            # country, product and tier produce one key for two different
+            # unit costs, and anything downstream keyed on it reads them as
+            # a duplicate rather than as two groups priced differently.
             key=(f"L0_{row['role'].lower()}_{row['country']}_{row['product']}"
                  + (f"_{mbps}M" if mbps else "")
+                 + (f"_{band.lower()}" if band else "")
                  + (f"_priced_at_{substituted}M" if substituted else "")),
             layer="L0", driver="circuits", quantity=qty,
             quantity_origin=origin, unit_cost_origin="BENCHMARK_PRIOR",
@@ -488,6 +572,9 @@ def build_components(*, sim_output: dict, users: int, ops_cost_per_site: dict,
             # and the bearer is what had to be installed to carry it.
             bearer_mbps=row.get("bearer_mbps") or row.get("bandwidth_mbps"),
             committed_mbps=row.get("bandwidth_mbps"),
+            density_band=band,
+            density_multiplier=(str(multiplier["base"]) if multiplier
+                                else None),
             value=value,
             source_ref=None if row["role"] == "BACKUP" else footprint_ref)
         # A backup circuit is SIMULATED whatever the enumeration says, so it is

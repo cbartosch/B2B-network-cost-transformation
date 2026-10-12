@@ -264,9 +264,14 @@ def one_pass(seed: int, footprint: list[dict], archetypes: dict,
             # which is what the rate card keys on; the bearer is what had to be
             # installed to carry it, and a lever that right-sizes a committed
             # service needs the difference.
+            # Density on the key, because the rate card is now keyed on it.
+            # Without it the aggregation collapsed every band into one row
+            # before pricing, so a rural leased line and an urban one were
+            # indistinguishable by the time a price was looked up - which is
+            # why adding bands to the estate moved the baseline 0.1%.
             pkey = (entry["country"], primary_product, "PRIMARY",
                     access.priced_rate(pair), primary_class,
-                    access.sizing_rate(pair))
+                    access.sizing_rate(pair), density)
             products[pkey] = products.get(pkey, 0) + 1
 
             # The stochastic draw. Whether a site has a second access path is the
@@ -326,7 +331,7 @@ def one_pass(seed: int, footprint: list[dict], archetypes: dict,
                     # sized on the same figure - there is no committed-rate
                     # distinction on a second path this model expresses.
                     bkey = (entry["country"], b_product, "BACKUP", b_mbps,
-                            backup_class, b_mbps)
+                            backup_class, b_mbps, density)
                     products[bkey] = products.get(bkey, 0) + 1
 
     # The backbone becomes priceable circuits.
@@ -354,8 +359,11 @@ def one_pass(seed: int, footprint: list[dict], archetypes: dict,
         # link record where a reader can find it.
         # A backbone link is Ethernet transport by definition: it carries the
         # WAN between hubs rather than a site's internet access.
+        # No density: a backbone link runs between hubs rather than sitting
+        # at a site, so there is no band to price it in. It takes the national
+        # rate, which is what it did before and what it should keep doing.
         key = (str(link["region"]), str(link["product"]), "BACKBONE", mbps,
-               access.ETHERNET, mbps)
+               access.ETHERNET, mbps, None)
         products[key] = products.get(key, 0) + circuits_here
         backbone_circuits += circuits_here
 
@@ -430,6 +438,12 @@ def one_pass(seed: int, footprint: list[dict], archetypes: dict,
             "products": [{"country": c, "product": p, "role": r,
                           "bandwidth_mbps": bw, "count": n,
                           "service_class": sc,
+                          # The band this group of circuits sits in, or None
+                          # for backbone transport and for sites whose band
+                          # nobody established. The rate card prefers a
+                          # band-specific row and falls back to the national
+                          # one, so None prices exactly as it always did.
+                          "density": d,
                           # What had to be installed. Equal to bandwidth_mbps
                           # on a symmetric or best-effort service, larger on a
                           # committed one - and the gap is the headroom.
@@ -438,7 +452,7 @@ def one_pass(seed: int, footprint: list[dict], archetypes: dict,
                           # rather than the analyst choosing.
                           "access_technology": access.LEGACY_PRODUCT.get(
                               p, (None, None))[1]}
-                         for (c, p, r, bw, sc, bearer), n in sorted(
+                         for (c, p, r, bw, sc, bearer, d), n in sorted(
                              products.items(), key=lambda kv: str(kv[0]))],
             "nodes": nodes, "edges": edges,        # bounded display sample
             "node_count": sites, "edge_count": circuits}

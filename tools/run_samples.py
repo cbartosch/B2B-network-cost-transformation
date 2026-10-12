@@ -1,5 +1,8 @@
 """Run the outside-in workflow end to end for each company in
-samples/outside_in/companies.json, and store what it produced.
+samples/companies.json, and store what it produced under samples/outside_in/.
+
+The spec and the output are in different directories on purpose - see
+SPEC_RELATIVE.
 
 LIVE throughout. Entity resolution and all seventeen agent-routed domains
 make real provider calls with hosted web search, so one company is tens of
@@ -425,7 +428,15 @@ def promote(case_id, slug):
 
 #: Where the committed spec lives, relative to the repository root and to the
 #: image root. Both are checked because this script runs from either.
-SPEC_RELATIVE = pathlib.Path("samples") / "outside_in" / "companies.json"
+#:
+#: Deliberately OUTSIDE samples/outside_in/, which is the published output.
+#: It sat inside it, and publishing a run copies that whole directory back
+#: over the repository - so the output overwrote the input. That is how the
+#: commit which stopped the driver READING from its output directory also
+#: replaced the committed spec with a stale one it had just been handed.
+#: Separate directories make the collision unrepresentable rather than
+#: merely discouraged.
+SPEC_RELATIVE = pathlib.Path("samples") / "companies.json"
 
 #: Filled in by main() once the spec is resolved, and written into every
 #: manifest. Module-level because every company in a run reads the same

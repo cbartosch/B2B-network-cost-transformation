@@ -84,6 +84,13 @@ def table_flow() -> list[str]:
                 # Governed reference data: filled by the seed and retuned by a
                 # steward, never written by the application.
                 "serviceability", "density_mix",
+                # What a density band does to a circuit price. Seed-only for
+                # the same reason as the rate card it scales: the application
+                # deriving its own multipliers from the estates it has priced
+                # would make every estimate a function of the ones before it,
+                # and an engagement that retunes these needs them to stay
+                # retuned.
+                "density_cost_multiplier",
                 # Exchange rates. Seed-only on purpose: a rate a steward
                 # approved on a date is reproducible, and a case re-run next
                 # week prices the same way. The application writing its own

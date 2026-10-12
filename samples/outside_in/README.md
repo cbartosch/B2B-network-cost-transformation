@@ -228,7 +228,7 @@ are LIVE provider calls with hosted web search.
 docker compose up -d
 docker compose exec api python -m app.seed
 
-docker compose cp samples/outside_in/companies.json api:/tmp/samples/companies.json
+docker compose cp samples/companies.json api:/tmp/samples/companies.json
 docker compose cp tools/run_samples.py api:/tmp/run_samples.py
 docker compose exec api sh -c 'cd /app && PYTHONPATH=/app \
     python -u /tmp/run_samples.py --out /tmp/samples'

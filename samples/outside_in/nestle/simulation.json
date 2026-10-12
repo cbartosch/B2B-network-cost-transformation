@@ -1,13 +1,13 @@
 {
-  "simulation_run_id": "319e4d0d-3b84-4af5-a654-7d585183140c",
+  "simulation_run_id": "d8e72bf0-a124-4131-860e-eb715d621758",
   "case_id": "c06346b4-5fad-4862-8004-16e63cb1e199",
   "model_version": "sim-2.7.0",
   "seed": 20260101,
   "ensemble_size": 25,
   "status": "SUCCEEDED",
-  "output_hash": "ea40fe2a3ec19121863fb4ac55b243addc6e9317625d8590ccfff9d7290c729b",
-  "started_at": "2026-10-12 16:01:44.865071+00:00",
-  "ended_at": "2026-10-12 16:01:47.119663+00:00",
+  "output_hash": "179d9b50f59a0d249ea22f9806b765bc757639a2dda7d102e78b0cd1bf99ec78",
+  "started_at": "2026-10-12 17:29:31.737982+00:00",
+  "ended_at": "2026-10-12 17:29:33.397440+00:00",
   "params": {
     "footprint": [
       {
@@ -1371,16 +1371,6 @@
   },
   "pinned_priors": {
     "archetype_prior": {
-      "LEGACY_WAN_SITE": {
-        "dual_access_probability": 0.6,
-        "primary_product": "MPLS",
-        "backup_product": "BROADBAND_PON",
-        "users_base": 40,
-        "bandwidth_mbps_base": 100,
-        "committed_fraction": "0.800",
-        "primary_service_class": "IPVPN",
-        "backup_service_class": "BEST_EFFORT"
-      },
       "BRANCH": {
         "dual_access_probability": 0.55,
         "primary_product": "DIA",
@@ -1519,6 +1509,16 @@
         "bandwidth_mbps_base": 50,
         "committed_fraction": "0.600",
         "primary_service_class": "BEST_EFFORT",
+        "backup_service_class": "BEST_EFFORT"
+      },
+      "LEGACY_WAN_SITE": {
+        "dual_access_probability": 0.6,
+        "primary_product": "MPLS",
+        "backup_product": "BROADBAND_PON",
+        "users_base": 40,
+        "bandwidth_mbps_base": 100,
+        "committed_fraction": "0.800",
+        "primary_service_class": "IPVPN",
         "backup_service_class": "BEST_EFFORT"
       },
       "DEFAULT/BRANCH": {
@@ -2512,6 +2512,7 @@
         "bandwidth_mbps": 10000,
         "count": 6,
         "service_class": "ETHERNET",
+        "density": null,
         "bearer_mbps": 10000,
         "access_technology": "ETHERNET_FIBRE"
       },
@@ -2522,6 +2523,7 @@
         "bandwidth_mbps": 2750,
         "count": 23,
         "service_class": "BEST_EFFORT",
+        "density": "RURAL",
         "bearer_mbps": 2750,
         "access_technology": "PON"
       },
@@ -2532,6 +2534,7 @@
         "bandwidth_mbps": 1000,
         "count": 7,
         "service_class": "DIA",
+        "density": "URBAN",
         "bearer_mbps": 1000,
         "access_technology": null
       },
@@ -2542,6 +2545,7 @@
         "bandwidth_mbps": 1650,
         "count": 28,
         "service_class": "ETHERNET",
+        "density": "RURAL",
         "bearer_mbps": 2750,
         "access_technology": "ETHERNET_FIBRE"
       },
@@ -2552,6 +2556,7 @@
         "bandwidth_mbps": 500,
         "count": 8,
         "service_class": "ETHERNET",
+        "density": "URBAN",
         "bearer_mbps": 1000,
         "access_technology": "ETHERNET_FIBRE"
       },
@@ -2562,6 +2567,7 @@
         "bandwidth_mbps": 100,
         "count": 2,
         "service_class": "BEST_EFFORT",
+        "density": null,
         "bearer_mbps": 100,
         "access_technology": "HFC"
       },
@@ -2572,6 +2578,7 @@
         "bandwidth_mbps": 2750,
         "count": 9,
         "service_class": "BEST_EFFORT",
+        "density": "RURAL",
         "bearer_mbps": 2750,
         "access_technology": "PON"
       },
@@ -2582,6 +2589,7 @@
         "bandwidth_mbps": 1000,
         "count": 12,
         "service_class": "DIA",
+        "density": "URBAN",
         "bearer_mbps": 1000,
         "access_technology": null
       },
@@ -2592,6 +2600,7 @@
         "bandwidth_mbps": 100,
         "count": 4,
         "service_class": "DIA",
+        "density": null,
         "bearer_mbps": 100,
         "access_technology": null
       },
@@ -2602,6 +2611,7 @@
         "bandwidth_mbps": 1650,
         "count": 10,
         "service_class": "ETHERNET",
+        "density": "RURAL",
         "bearer_mbps": 2750,
         "access_technology": "ETHERNET_FIBRE"
       },
@@ -2612,6 +2622,7 @@
         "bandwidth_mbps": 3000,
         "count": 3,
         "service_class": "ETHERNET",
+        "density": "SUBURBAN",
         "bearer_mbps": 10000,
         "access_technology": "ETHERNET_FIBRE"
       },
@@ -2622,6 +2633,7 @@
         "bandwidth_mbps": 500,
         "count": 12,
         "service_class": "ETHERNET",
+        "density": "URBAN",
         "bearer_mbps": 1000,
         "access_technology": "ETHERNET_FIBRE"
       },
@@ -2632,6 +2644,7 @@
         "bandwidth_mbps": 2750,
         "count": 24,
         "service_class": "BEST_EFFORT",
+        "density": "RURAL",
         "bearer_mbps": 2750,
         "access_technology": "PON"
       },
@@ -2642,6 +2655,7 @@
         "bandwidth_mbps": 1000,
         "count": 8,
         "service_class": "DIA",
+        "density": "URBAN",
         "bearer_mbps": 1000,
         "access_technology": null
       },
@@ -2652,6 +2666,7 @@
         "bandwidth_mbps": 1650,
         "count": 31,
         "service_class": "ETHERNET",
+        "density": "RURAL",
         "bearer_mbps": 2750,
         "access_technology": "ETHERNET_FIBRE"
       },
@@ -2662,6 +2677,7 @@
         "bandwidth_mbps": 500,
         "count": 10,
         "service_class": "ETHERNET",
+        "density": "URBAN",
         "bearer_mbps": 1000,
         "access_technology": "ETHERNET_FIBRE"
       },
@@ -2672,6 +2688,7 @@
         "bandwidth_mbps": 1000,
         "count": 1,
         "service_class": "DIA",
+        "density": "URBAN",
         "bearer_mbps": 1000,
         "access_technology": null
       },
@@ -2682,6 +2699,7 @@
         "bandwidth_mbps": 300,
         "count": 1,
         "service_class": "ETHERNET",
+        "density": "URBAN",
         "bearer_mbps": 1000,
         "access_technology": "ETHERNET_FIBRE"
       },
@@ -2692,6 +2710,7 @@
         "bandwidth_mbps": 500,
         "count": 1,
         "service_class": "ETHERNET",
+        "density": "URBAN",
         "bearer_mbps": 1000,
         "access_technology": "ETHERNET_FIBRE"
       },
@@ -2702,6 +2721,7 @@
         "bandwidth_mbps": 2750,
         "count": 9,
         "service_class": "BEST_EFFORT",
+        "density": "RURAL",
         "bearer_mbps": 2750,
         "access_technology": "PON"
       },
@@ -2712,6 +2732,7 @@
         "bandwidth_mbps": 1650,
         "count": 11,
         "service_class": "ETHERNET",
+        "density": "RURAL",
         "bearer_mbps": 2750,
         "access_technology": "ETHERNET_FIBRE"
       },
@@ -2722,6 +2743,7 @@
         "bandwidth_mbps": 10000,
         "count": 10,
         "service_class": "ETHERNET",
+        "density": null,
         "bearer_mbps": 10000,
         "access_technology": "ETHERNET_FIBRE"
       },
@@ -2732,6 +2754,7 @@
         "bandwidth_mbps": 100,
         "count": 6,
         "service_class": "BEST_EFFORT",
+        "density": null,
         "bearer_mbps": 100,
         "access_technology": "HFC"
       },
@@ -2742,6 +2765,7 @@
         "bandwidth_mbps": 1000,
         "count": 4,
         "service_class": "DIA",
+        "density": "URBAN",
         "bearer_mbps": 1000,
         "access_technology": null
       },
@@ -2752,6 +2776,7 @@
         "bandwidth_mbps": 100,
         "count": 12,
         "service_class": "DIA",
+        "density": null,
         "bearer_mbps": 100,
         "access_technology": null
       },
@@ -2762,6 +2787,7 @@
         "bandwidth_mbps": 500,
         "count": 4,
         "service_class": "ETHERNET",
+        "density": "URBAN",
         "bearer_mbps": 1000,
         "access_technology": "ETHERNET_FIBRE"
       },
@@ -2772,6 +2798,7 @@
         "bandwidth_mbps": 1000,
         "count": 4,
         "service_class": "DIA",
+        "density": "URBAN",
         "bearer_mbps": 1000,
         "access_technology": null
       },
@@ -2782,6 +2809,7 @@
         "bandwidth_mbps": 500,
         "count": 5,
         "service_class": "ETHERNET",
+        "density": "URBAN",
         "bearer_mbps": 1000,
         "access_technology": "ETHERNET_FIBRE"
       },
@@ -2792,6 +2820,7 @@
         "bandwidth_mbps": 2750,
         "count": 10,
         "service_class": "BEST_EFFORT",
+        "density": "RURAL",
         "bearer_mbps": 2750,
         "access_technology": "PON"
       },
@@ -2802,6 +2831,7 @@
         "bandwidth_mbps": 1650,
         "count": 10,
         "service_class": "ETHERNET",
+        "density": "RURAL",
         "bearer_mbps": 2750,
         "access_technology": "ETHERNET_FIBRE"
       },
@@ -2812,6 +2842,7 @@
         "bandwidth_mbps": 2750,
         "count": 14,
         "service_class": "BEST_EFFORT",
+        "density": "RURAL",
         "bearer_mbps": 2750,
         "access_technology": "PON"
       },
@@ -2822,6 +2853,7 @@
         "bandwidth_mbps": 1000,
         "count": 6,
         "service_class": "DIA",
+        "density": "URBAN",
         "bearer_mbps": 1000,
         "access_technology": null
       },
@@ -2832,6 +2864,7 @@
         "bandwidth_mbps": 1650,
         "count": 17,
         "service_class": "ETHERNET",
+        "density": "RURAL",
         "bearer_mbps": 2750,
         "access_technology": "ETHERNET_FIBRE"
       },
@@ -2842,6 +2875,7 @@
         "bandwidth_mbps": 500,
         "count": 6,
         "service_class": "ETHERNET",
+        "density": "URBAN",
         "bearer_mbps": 1000,
         "access_technology": "ETHERNET_FIBRE"
       },
@@ -2852,6 +2886,7 @@
         "bandwidth_mbps": 1000,
         "count": 16,
         "service_class": "DIA",
+        "density": "URBAN",
         "bearer_mbps": 1000,
         "access_technology": null
       },
@@ -2862,6 +2897,7 @@
         "bandwidth_mbps": 150,
         "count": 2,
         "service_class": "ETHERNET",
+        "density": "SUBURBAN",
         "bearer_mbps": 500,
         "access_technology": "ETHERNET_FIBRE"
       },
@@ -2872,6 +2908,7 @@
         "bandwidth_mbps": 500,
         "count": 18,
         "service_class": "ETHERNET",
+        "density": "URBAN",
         "bearer_mbps": 1000,
         "access_technology": "ETHERNET_FIBRE"
       }

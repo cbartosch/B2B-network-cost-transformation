@@ -914,6 +914,38 @@ research_brief = Table(
 # INDUSTRY_DEFAULT wherever it lands, and never applied without the analyst
 # saving or running - which is the same accept-or-edit act the public
 # known-fact sweep uses.
+# What a density band does to the price of a circuit.
+#
+# The rate card is keyed (country, product, bandwidth) and nothing in it knew
+# where a site was, so a rural leased line and a city-centre one cost the
+# same. Moving 2,315 sites into RURAL across the twenty-company sample moved
+# the baseline 0.1%, which is the signature of a dimension the model records
+# and does not price.
+#
+# A multiplier rather than four times as many rate rows. 1,308 priors times
+# four bands is 5,232 numbers nobody has evidence for, and it would bury the
+# rate card's own provenance under derived rows. This keeps the two apart:
+# the prior says what a circuit costs, this says what density does to it, and
+# each carries its own grade. Twenty-four rows a reviewer can read in one
+# screen and argue with.
+#
+# low/base/high are separate multipliers, so the range WIDENS with distance
+# from the exchange rather than sliding. A rural quote is not just higher, it
+# is less knowable - excess construction charges are quoted per site - and a
+# band that only shifted would claim a precision nobody has.
+density_cost_multiplier = Table(
+    "density_cost_multiplier", metadata,
+    Column("id", String(64), primary_key=True),       # {product}-{band}
+    Column("product", String(32), index=True),
+    Column("density_band", String(16)),
+    Column("low", Numeric(6, 3)),
+    Column("base", Numeric(6, 3)),
+    Column("high", Numeric(6, 3)),
+    Column("note", Text),
+    Column("approved_by", String(120)),
+    schema="reference",
+)
+
 density_mix = Table(
     "density_mix", metadata,
     Column("id", String(96), primary_key=True),   # {industry}-{archetype}-{band}
@@ -1164,6 +1196,17 @@ unit_cost_prior = Table(
     # reference estate's MPLS spans 7x within one country - so country was
     # never a fine enough scope to price on.
     Column("geography_area", String(24)),       # National | Area 2 | Area 3 | HNR
+    # The density band this rate applies in, or null for a national rate.
+    #
+    # Distinct from geography_area, which is a regulator's own partition -
+    # Openreach Area 2 and Area 3 - and so is carrier-specific and not
+    # comparable across countries. This is the band the estate and
+    # serviceability are already keyed on, so a rate can be matched to a site
+    # without a translation table.
+    #
+    # Null means national, which is what every seeded row is. A band-specific
+    # row wins over it; see estimate.match_prior.
+    Column("density_band", String(16)),
     Column("premises_type", String(16)),        # Residential | Business | All
     Column("distance_from", Numeric(8, 2)), Column("distance_to", Numeric(8, 2)),
     Column("distance_unit", String(8)),

@@ -19,6 +19,7 @@ from .db import (SessionLocal, archetype_bandwidth, archetype_prior,
                  plausibility_benchmark,
                  archetype_resilience,
                  fx_rate,
+                 density_cost_multiplier,
                  density_mix,
                  # Aliased: the table and the domain module that parses it
                  # share a name, and importing both unaliased would let Python
@@ -1475,6 +1476,70 @@ _BICS_MIX = bics.density_mix_rows(INDUSTRY_BENCHMARK["industries"],
                                   industries.SHAPES,
                                   representative=_REPRESENTATIVE)
 _BICS_CODES = {row[0] for row in _BICS_MIX}
+# What a density band does to the price of a circuit, per product.
+#
+# (product, band, low, base, high) multipliers on the rate card's own
+# low/base/high. URBAN is 1.0 by construction: the seeded national rate is an
+# urban-weighted average, so urban is the anchor and the other bands say how
+# far they sit from it.
+#
+# THE ONE CLAIM WORTH ARGUING WITH, and the reason the table is shaped per
+# product rather than as four global numbers: cost follows the LOCAL LOOP, so
+# products that need a dedicated one vary sharply with density and products
+# that ride shared or national infrastructure barely do. A rural Ethernet
+# tail can carry excess construction charges that dwarf the rental; a rural
+# mobile SIM is the same tariff as an urban one.
+#
+# That interacts with serviceability in the way it should. A rural site that
+# cannot get Ethernet is substituted to broadband or mobile, which these
+# multipliers leave nearly flat - so the rural premium lands on the sites
+# that actually keep a dedicated circuit, which is where it belongs.
+#
+# The ranges WIDEN rather than slide, because a rural quote is less knowable
+# as well as higher: construction is quoted per site after a survey. A
+# multiplier that only moved the base would claim a precision nobody has.
+#
+# The directions are defensible; the magnitudes are this repository's
+# judgement and the first thing an engagement should replace.
+DENSITY_COST_MULTIPLIER = [
+    # Consumer-grade fibre. Nationally tariffed, so mostly flat; rural pays
+    # for thinner competition and lower available tiers where it reaches.
+    ("BROADBAND_PON", "DENSE_URBAN", "0.95", "0.98", "1.00"),
+    ("BROADBAND_PON", "URBAN", "1.00", "1.00", "1.00"),
+    ("BROADBAND_PON", "SUBURBAN", "1.00", "1.03", "1.06"),
+    ("BROADBAND_PON", "RURAL", "1.02", "1.12", "1.30"),
+    # Cable. Its footprint is urban and suburban by construction, so a rural
+    # HFC price is an outlier rather than a tariff.
+    ("BROADBAND_HFC", "DENSE_URBAN", "0.95", "0.98", "1.00"),
+    ("BROADBAND_HFC", "URBAN", "1.00", "1.00", "1.00"),
+    ("BROADBAND_HFC", "SUBURBAN", "1.00", "1.04", "1.08"),
+    ("BROADBAND_HFC", "RURAL", "1.05", "1.18", "1.40"),
+    # No local loop at all, so the flattest row here. Rural moves only for
+    # coverage-driven kit - external antenna, fixed-wireless CPE.
+    ("MOBILE_5G", "DENSE_URBAN", "1.00", "1.00", "1.00"),
+    ("MOBILE_5G", "URBAN", "1.00", "1.00", "1.00"),
+    ("MOBILE_5G", "SUBURBAN", "1.00", "1.00", "1.02"),
+    ("MOBILE_5G", "RURAL", "1.00", "1.05", "1.15"),
+    # Dedicated internet over a fibre tail. Dense urban is cheaper for a real
+    # reason - an on-net building needs no civils - and rural is dominated by
+    # excess construction, which is why its range is the widest on the card.
+    ("DIA", "DENSE_URBAN", "0.85", "0.92", "1.00"),
+    ("DIA", "URBAN", "1.00", "1.00", "1.00"),
+    ("DIA", "SUBURBAN", "1.05", "1.25", "1.50"),
+    ("DIA", "RURAL", "1.20", "1.80", "2.80"),
+    # Point to point, the steepest distance sensitivity of anything here.
+    ("ETHERNET", "DENSE_URBAN", "0.82", "0.90", "1.00"),
+    ("ETHERNET", "URBAN", "1.00", "1.00", "1.00"),
+    ("ETHERNET", "SUBURBAN", "1.08", "1.30", "1.60"),
+    ("ETHERNET", "RURAL", "1.25", "2.00", "3.20"),
+    # Carrier IPVPN: a loop plus a port, with more national-tariff smoothing
+    # than a bespoke Ethernet tail, so steep but less so.
+    ("MPLS", "DENSE_URBAN", "0.88", "0.94", "1.00"),
+    ("MPLS", "URBAN", "1.00", "1.00", "1.00"),
+    ("MPLS", "SUBURBAN", "1.05", "1.22", "1.45"),
+    ("MPLS", "RURAL", "1.15", "1.70", "2.50"),
+]
+
 DENSITY_MIX = ([row for row in industries.density_mix_rows()
                 if row[0] not in _BICS_CODES]
                + _BICS_MIX)
@@ -2158,6 +2223,12 @@ def _rows():
              "density_band": b, "share": share, "approved_by": "seed",
              "note": "seed starting position; retune per engagement"}
             for i, a, b, share in DENSITY_MIX]),
+        (density_cost_multiplier, lambda: [
+            {"id": f"{pr}-{b}", "product": pr, "density_band": b,
+             "low": lo, "base": ba, "high": hi, "approved_by": "seed",
+             "note": "direction is defensible, magnitude is a seed "
+                     "judgement; retune per engagement"}
+            for pr, b, lo, ba, hi in DENSITY_COST_MULTIPLIER]),
         (serviceability, lambda: [
             {"id": f"{c}-{b}-{t}", "country": c, "density_band": b,
              # Both, so a resolver reading either still works. `product` is

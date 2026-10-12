@@ -72,7 +72,11 @@ COPY api_service/app ./app
 # the image, rather than arriving in the output directory the driver restores
 # from a backup - which is how six companies once ran at a three-commit-old
 # scope without any error. Only the spec, not the 16MB of sample output.
-COPY samples/outside_in/companies.json ./samples/outside_in/companies.json
+#
+# samples/companies.json, NOT samples/outside_in/. The output directory is
+# copied back over the repository when a run is published, so a spec inside
+# it gets overwritten by whatever the container happened to hold.
+COPY samples/companies.json ./samples/companies.json
 COPY tests ./tests
 # The second of those two services. The line above has always said the tests
 # read files from both, and `make test` runs them from inside this image - but

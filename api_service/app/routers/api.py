@@ -4036,6 +4036,34 @@ def run_estimate(case_id: str, payload: EstimateIn):
             raise HTTPException(422, {"error": "currencies do not reconcile",
                                       "detail": str(exc)})
 
+        # A band-specific rate is kept OUT of the national dict and indexed
+        # separately. Both are keyed (country, product, bandwidth), so a row
+        # for RURAL DIA and the national DIA row collide on one key and
+        # whichever the query returned last would win - silently, and
+        # differently between runs. Splitting them means a band row prices
+        # only the band it describes.
+        band_priors = {
+            (r.country, r.product, r.bandwidth_mbps,
+             (r.density_band or "").upper()): {
+                "low": r.low, "base": r.base, "high": r.high,
+                "price_year": r.price_year,
+                "expires": getattr(r, "expires", None),
+                "evidence_grade": getattr(r, "evidence_grade", None),
+                "scope": r.country, "density_band": r.density_band,
+                "service_class": getattr(r, "service_class", None),
+                "access_technology": getattr(r, "access_technology", None),
+                "bandwidth_mbps": r.bandwidth_mbps}
+            for r in prior_rows if getattr(r, "density_band", None)}
+        prior_rows = [r for r in prior_rows
+                      if not getattr(r, "density_band", None)]
+
+        # How much a band moves a national rate, where no band-specific rate
+        # exists. See reference.density_cost_multiplier.
+        density_multipliers = {
+            (m.product, m.density_band): {"low": m.low, "base": m.base,
+                                          "high": m.high}
+            for m in s.execute(select(db.density_cost_multiplier)).all()}
+
         priors = {(r.country, r.product, r.bandwidth_mbps): {
                       "low": r.low, "base": r.base, "high": r.high,
                       "price_year": r.price_year,
@@ -4201,7 +4229,9 @@ def run_estimate(case_id: str, payload: EstimateIn):
             pop_unit=platform.get("POP_COLOCATION"),
             hub_count=len(((sim.params or {}).get("backbone") or {})
                           .get("hub_regions") or []),
-            sse_unit=platform.get("SSE_LICENCE"))
+            sse_unit=platform.get("SSE_LICENCE"),
+            band_priors=band_priors,
+            density_multipliers=density_multipliers)
         if not components:
             raise HTTPException(409, {"error": "no priced components", "unpriced": unpriced})
 

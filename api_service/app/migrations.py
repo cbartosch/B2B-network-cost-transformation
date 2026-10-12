@@ -35,7 +35,7 @@ from . import db
 log = logging.getLogger("workbench.migrations")
 
 # Bump when the physical schema changes, and add a step below.
-SCHEMA_VERSION = 67
+SCHEMA_VERSION = 68
 
 VERSION_TABLE = "schema_version"
 VERSION_SCHEMA = "audit"
@@ -1523,6 +1523,30 @@ def _migrate_v67(conn) -> None:
     log.info("v67: plausibility_benchmark created by create_all, no rows")
 
 
+def _migrate_v68(conn) -> None:
+    """Density reaches the price.
+
+    unit_cost_prior is keyed (country, product, bandwidth) and knew nothing
+    about where a site is, so a rural leased line and a city-centre one cost
+    the same figure. Four releases of work on density bands - carrying them
+    through the footprint merge, filling them from the governed mix, authoring
+    four sector shapes - moved 2,315 sites into RURAL and the baseline by
+    0.1%, because the dimension was recorded everywhere and priced nowhere.
+
+    Two parts. `density_band` on the rate card, null meaning national, so an
+    observed band-specific rate from a benchmark or a client's invoice has
+    somewhere to live and wins over the national row. And
+    reference.density_cost_multiplier, created by create_all and seeded,
+    which supplies the default variation where no band-specific row exists.
+
+    Additive. Every existing row keeps a null band and prices exactly as it
+    did; a product with no multiplier row is unscaled.
+    """
+    added = _add_column(conn, db.unit_cost_prior, "density_band")
+    log.info("v68: %d column(s) added; density_cost_multiplier created by "
+             "create_all and seeded", added)
+
+
 MIGRATIONS = {2: _migrate_v2, 3: _migrate_v3, 4: _migrate_v4, 5: _migrate_v5,
               6: _migrate_v6, 7: _migrate_v7, 8: _migrate_v8, 9: _migrate_v9,
               10: _migrate_v10, 11: _migrate_v11, 12: _migrate_v12,
@@ -1531,7 +1555,8 @@ MIGRATIONS = {2: _migrate_v2, 3: _migrate_v3, 4: _migrate_v4, 5: _migrate_v5,
               19: _migrate_v19, 20: _migrate_v20,
               21: _migrate_v21, 22: _migrate_v22, 23: _migrate_v23, 24: _migrate_v24, 25: _migrate_v25, 26: _migrate_v26, 27: _migrate_v27, 28: _migrate_v28, 29: _migrate_v29, 30: _migrate_v30, 31: _migrate_v31, 32: _migrate_v32, 33: _migrate_v33, 34: _migrate_v34, 35: _migrate_v35, 36: _migrate_v36, 37: _migrate_v37, 38: _migrate_v38, 39: _migrate_v39, 40: _migrate_v40, 41: _migrate_v41, 42: _migrate_v42, 43: _migrate_v43, 44: _migrate_v44, 45: _migrate_v45, 46: _migrate_v46, 47: _migrate_v47, 48: _migrate_v48, 49: _migrate_v49, 50: _migrate_v50, 51: _migrate_v51, 52: _migrate_v52, 53: _migrate_v53, 54: _migrate_v54, 55: _migrate_v55, 56: _migrate_v56, 57: _migrate_v57, 58: _migrate_v58, 59: _migrate_v59, 60: _migrate_v60, 61: _migrate_v61, 62: _migrate_v62, 63: _migrate_v63,
               64: _migrate_v64, 65: _migrate_v65,
-              66: _migrate_v66, 67: _migrate_v67}
+              66: _migrate_v66, 67: _migrate_v67,
+              68: _migrate_v68}
 
 
 class SchemaDrift(RuntimeError):

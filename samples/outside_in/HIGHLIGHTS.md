@@ -255,7 +255,7 @@ Sources: [germancompanyformation.com](https://germancompanyformation.com/guides/
 
 - **Industry** CHEMICALS (entity resolution)
 - **Scope** DE, BE, US, CN, FR, ES, IT, BR, IN, EUR, 219 sites (research merged with disclosure)
-- **Confidence** 0.345 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.346 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 6 source(s)
 
@@ -533,7 +533,7 @@ Sources: [Selectra](https://en.selectra.info/broadband-phone-france/guides/mobil
 
 - **Industry** RAILWAYS (entity resolution)
 - **Scope** DE, EUR, 5,586 sites (public disclosure only)
-- **Confidence** 0.325 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.326 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 10 source(s)
 
@@ -635,7 +635,7 @@ Sources: [Deutsche Bahn AG (Investor Relations)](https://ir.deutschebahn.com/en/
 
 - **Industry** PARCEL_LOGISTICS (entity resolution)
 - **Scope** DE, NL, GB, EUR, 3,961 sites (research merged with disclosure)
-- **Confidence** 0.323 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.324 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 6 source(s)
 
@@ -777,7 +777,7 @@ Sources: [germancompanyformation.com](https://germancompanyformation.com/guides/
 
 - **Industry** HOSPITAL (entity resolution)
 - **Scope** DE, ES, US, EUR, 5,726 sites (research merged with disclosure)
-- **Confidence** 0.336 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.338 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 7 source(s)
 
@@ -913,7 +913,7 @@ Sources: [germancompanyformation.com](https://germancompanyformation.com/guides/
 
 - **Industry** UTILITIES (entity resolution)
 - **Scope** ES, GB, EUR, 2,778 sites (research merged with disclosure)
-- **Confidence** 0.324 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.325 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 8 source(s)
 
@@ -1326,7 +1326,7 @@ Sources: [germancompanyformation.com](https://germancompanyformation.com/guides/
 
 - **Industry** QSR_RESTAURANTS (entity resolution)
 - **Scope** US, GB, DE, USD, 16,407 sites (research merged with disclosure)
-- **Confidence** 0.330 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.331 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 10 source(s)
 
@@ -1887,7 +1887,7 @@ Sources: [leasedlineandmpls.co.uk](https://www.leasedlineandmpls.co.uk/top-100gb
 
 - **Industry** BUILDING_MATERIALS (entity resolution)
 - **Scope** FR, DE, GB, EUR, 4,685 sites (research merged with disclosure)
-- **Confidence** 0.332 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.334 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 9 source(s)
 
@@ -2584,7 +2584,7 @@ Sources: [servnetuk.com](https://www.servnetuk.com/insights/sd-wan-vs-mpls-uk-20
 
 - **Industry** AUTOMOTIVE_OEM (entity resolution)
 - **Scope** DE, ES, CZ, CN, MX, BR, SK, PT, PL, US, EUR, 183 sites (research merged with disclosure)
-- **Confidence** 0.346 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.347 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 9 source(s)
 

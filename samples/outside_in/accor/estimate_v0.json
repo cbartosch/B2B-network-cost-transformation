@@ -1,5 +1,5 @@
 {
-  "estimate_snapshot_id": "5ca9739a-3e52-4807-8439-df929f351189",
+  "estimate_snapshot_id": "35d1b4d9-d838-4f53-b7ac-96eecb19199e",
   "v0_status": "COMPLETE",
   "current_tco": {
     "low": "4595847.93",
@@ -40,7 +40,7 @@
   },
   "components": [
     {
-      "key": "L0_primary_DE_BROADBAND_HFC_50M",
+      "key": "L0_primary_DE_BROADBAND_HFC_50M_urban",
       "layer": "L0",
       "driver": "circuits",
       "quantity": 400,
@@ -52,6 +52,8 @@
       "access_technology": "HFC",
       "bearer_mbps": 50,
       "committed_mbps": 50,
+      "density_band": "URBAN",
+      "density_multiplier": "1.000",
       "source_ref": null,
       "value": {
         "low": "192338.88",
@@ -60,7 +62,7 @@
       }
     },
     {
-      "key": "L0_backup_DE_MOBILE_5G_50M",
+      "key": "L0_backup_DE_MOBILE_5G_50M_urban",
       "layer": "L0",
       "driver": "circuits",
       "quantity": 139,
@@ -72,6 +74,8 @@
       "access_technology": "MOBILE_5G",
       "bearer_mbps": 50,
       "committed_mbps": 50,
+      "density_band": "URBAN",
+      "density_multiplier": "1.000",
       "source_ref": null,
       "value": {
         "low": "40683.85",
@@ -80,7 +84,7 @@
       }
     },
     {
-      "key": "L0_primary_FR_BROADBAND_HFC_50M",
+      "key": "L0_primary_FR_BROADBAND_HFC_50M_urban",
       "layer": "L0",
       "driver": "circuits",
       "quantity": 1600,
@@ -92,6 +96,8 @@
       "access_technology": "HFC",
       "bearer_mbps": 50,
       "committed_mbps": 50,
+      "density_band": "URBAN",
+      "density_multiplier": "1.000",
       "source_ref": null,
       "value": {
         "low": "669004.80",
@@ -100,7 +106,7 @@
       }
     },
     {
-      "key": "L0_backup_FR_DIA_1000M",
+      "key": "L0_backup_FR_DIA_1000M_urban",
       "layer": "L0",
       "driver": "circuits",
       "quantity": 5,
@@ -112,6 +118,8 @@
       "access_technology": null,
       "bearer_mbps": 1000,
       "committed_mbps": 1000,
+      "density_band": "URBAN",
+      "density_multiplier": "1.000",
       "source_ref": null,
       "value": {
         "low": "59583.24",
@@ -120,7 +128,7 @@
       }
     },
     {
-      "key": "L0_primary_FR_ETHERNET_500M",
+      "key": "L0_primary_FR_ETHERNET_500M_urban",
       "layer": "L0",
       "driver": "circuits",
       "quantity": 5,
@@ -132,6 +140,8 @@
       "access_technology": "ETHERNET_FIBRE",
       "bearer_mbps": 1000,
       "committed_mbps": 500,
+      "density_band": "URBAN",
+      "density_multiplier": "1.000",
       "source_ref": null,
       "value": {
         "low": "43798.91",
@@ -140,7 +150,7 @@
       }
     },
     {
-      "key": "L0_backup_FR_MOBILE_5G_50M",
+      "key": "L0_backup_FR_MOBILE_5G_50M_urban",
       "layer": "L0",
       "driver": "circuits",
       "quantity": 550,
@@ -152,6 +162,8 @@
       "access_technology": "MOBILE_5G",
       "bearer_mbps": 50,
       "committed_mbps": 50,
+      "density_band": "URBAN",
+      "density_multiplier": "1.000",
       "source_ref": null,
       "value": {
         "low": "149480.76",
@@ -160,7 +172,7 @@
       }
     },
     {
-      "key": "L0_primary_GB_BROADBAND_HFC_50M",
+      "key": "L0_primary_GB_BROADBAND_HFC_50M_urban",
       "layer": "L0",
       "driver": "circuits",
       "quantity": 250,
@@ -172,6 +184,8 @@
       "access_technology": "HFC",
       "bearer_mbps": 50,
       "committed_mbps": 50,
+      "density_band": "URBAN",
+      "density_multiplier": "1.000",
       "source_ref": null,
       "value": {
         "low": "109758.60",
@@ -180,7 +194,7 @@
       }
     },
     {
-      "key": "L0_backup_GB_MOBILE_5G_50M",
+      "key": "L0_backup_GB_MOBILE_5G_50M_urban",
       "layer": "L0",
       "driver": "circuits",
       "quantity": 89,
@@ -192,6 +206,8 @@
       "access_technology": "MOBILE_5G",
       "bearer_mbps": 50,
       "committed_mbps": 50,
+      "density_band": "URBAN",
+      "density_multiplier": "1.000",
       "source_ref": null,
       "value": {
         "low": "23258.37",
@@ -212,6 +228,8 @@
       "access_technology": null,
       "bearer_mbps": null,
       "committed_mbps": null,
+      "density_band": null,
+      "density_multiplier": null,
       "source_ref": null,
       "value": {
         "low": "1082400.00",
@@ -232,6 +250,8 @@
       "access_technology": null,
       "bearer_mbps": null,
       "committed_mbps": null,
+      "density_band": null,
+      "density_multiplier": null,
       "source_ref": null,
       "value": {
         "low": "1948320.00",
@@ -252,6 +272,8 @@
       "access_technology": null,
       "bearer_mbps": null,
       "committed_mbps": null,
+      "density_band": null,
+      "density_multiplier": null,
       "source_ref": null,
       "value": {
         "low": "1623600.00",
@@ -541,7 +563,7 @@
       },
       "target_components": [
         {
-          "key": "L0_primary_DE_BROADBAND_HFC_50M",
+          "key": "L0_primary_DE_BROADBAND_HFC_50M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 400,
@@ -553,6 +575,8 @@
           "access_technology": "HFC",
           "bearer_mbps": 50,
           "committed_mbps": 50,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "148254.81",
@@ -561,7 +585,7 @@
           }
         },
         {
-          "key": "L0_backup_DE_MOBILE_5G_50M",
+          "key": "L0_backup_DE_MOBILE_5G_50M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 139,
@@ -573,6 +597,8 @@
           "access_technology": "MOBILE_5G",
           "bearer_mbps": 50,
           "committed_mbps": 50,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "31359.11",
@@ -581,7 +607,7 @@
           }
         },
         {
-          "key": "L0_primary_FR_BROADBAND_HFC_50M",
+          "key": "L0_primary_FR_BROADBAND_HFC_50M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 1600,
@@ -593,6 +619,8 @@
           "access_technology": "HFC",
           "bearer_mbps": 50,
           "committed_mbps": 50,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "515668.90",
@@ -601,7 +629,7 @@
           }
         },
         {
-          "key": "L0_backup_FR_DIA_1000M",
+          "key": "L0_backup_FR_DIA_1000M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 5,
@@ -613,6 +641,8 @@
           "access_technology": null,
           "bearer_mbps": 1000,
           "committed_mbps": 1000,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "45926.76",
@@ -621,7 +651,7 @@
           }
         },
         {
-          "key": "L0_primary_FR_ETHERNET_500M",
+          "key": "L0_primary_FR_ETHERNET_500M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 5,
@@ -633,6 +663,8 @@
           "access_technology": "ETHERNET_FIBRE",
           "bearer_mbps": 1000,
           "committed_mbps": 500,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "33760.20",
@@ -641,7 +673,7 @@
           }
         },
         {
-          "key": "L0_backup_FR_MOBILE_5G_50M",
+          "key": "L0_backup_FR_MOBILE_5G_50M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 550,
@@ -653,6 +685,8 @@
           "access_technology": "MOBILE_5G",
           "bearer_mbps": 50,
           "committed_mbps": 50,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "115219.77",
@@ -661,7 +695,7 @@
           }
         },
         {
-          "key": "L0_primary_GB_BROADBAND_HFC_50M",
+          "key": "L0_primary_GB_BROADBAND_HFC_50M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 250,
@@ -673,6 +707,8 @@
           "access_technology": "HFC",
           "bearer_mbps": 50,
           "committed_mbps": 50,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "84601.93",
@@ -681,7 +717,7 @@
           }
         },
         {
-          "key": "L0_backup_GB_MOBILE_5G_50M",
+          "key": "L0_backup_GB_MOBILE_5G_50M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 89,
@@ -693,6 +729,8 @@
           "access_technology": "MOBILE_5G",
           "bearer_mbps": 50,
           "committed_mbps": 50,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "17927.55",
@@ -713,6 +751,8 @@
           "access_technology": null,
           "bearer_mbps": null,
           "committed_mbps": null,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "1082400.00",
@@ -733,6 +773,8 @@
           "access_technology": null,
           "bearer_mbps": null,
           "committed_mbps": null,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "1948320.00",
@@ -753,6 +795,8 @@
           "access_technology": null,
           "bearer_mbps": null,
           "committed_mbps": null,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "1623600.00",
@@ -1068,7 +1112,7 @@
       },
       "target_components": [
         {
-          "key": "L0_primary_DE_BROADBAND_HFC_50M",
+          "key": "L0_primary_DE_BROADBAND_HFC_50M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 400,
@@ -1080,6 +1124,8 @@
           "access_technology": "HFC",
           "bearer_mbps": 50,
           "committed_mbps": 50,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "161564.66",
@@ -1088,7 +1134,7 @@
           }
         },
         {
-          "key": "L0_backup_DE_MOBILE_5G_50M",
+          "key": "L0_backup_DE_MOBILE_5G_50M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 139,
@@ -1100,6 +1146,8 @@
           "access_technology": "MOBILE_5G",
           "bearer_mbps": 50,
           "committed_mbps": 50,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "34174.44",
@@ -1108,7 +1156,7 @@
           }
         },
         {
-          "key": "L0_primary_FR_BROADBAND_HFC_50M",
+          "key": "L0_primary_FR_BROADBAND_HFC_50M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 1600,
@@ -1120,6 +1168,8 @@
           "access_technology": "HFC",
           "bearer_mbps": 50,
           "committed_mbps": 50,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "561964.03",
@@ -1128,7 +1178,7 @@
           }
         },
         {
-          "key": "L0_backup_FR_DIA_1000M",
+          "key": "L0_backup_FR_DIA_1000M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 5,
@@ -1140,6 +1190,8 @@
           "access_technology": null,
           "bearer_mbps": 1000,
           "committed_mbps": 1000,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "52433.25",
@@ -1148,7 +1200,7 @@
           }
         },
         {
-          "key": "L0_primary_FR_ETHERNET_500M",
+          "key": "L0_primary_FR_ETHERNET_500M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 5,
@@ -1160,6 +1212,8 @@
           "access_technology": "ETHERNET_FIBRE",
           "bearer_mbps": 1000,
           "committed_mbps": 500,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "38543.04",
@@ -1168,7 +1222,7 @@
           }
         },
         {
-          "key": "L0_backup_FR_MOBILE_5G_50M",
+          "key": "L0_backup_FR_MOBILE_5G_50M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 550,
@@ -1180,6 +1234,8 @@
           "access_technology": "MOBILE_5G",
           "bearer_mbps": 50,
           "committed_mbps": 50,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "125563.84",
@@ -1188,7 +1244,7 @@
           }
         },
         {
-          "key": "L0_primary_GB_BROADBAND_HFC_50M",
+          "key": "L0_primary_GB_BROADBAND_HFC_50M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 250,
@@ -1200,6 +1256,8 @@
           "access_technology": "HFC",
           "bearer_mbps": 50,
           "committed_mbps": 50,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "92197.22",
@@ -1208,7 +1266,7 @@
           }
         },
         {
-          "key": "L0_backup_GB_MOBILE_5G_50M",
+          "key": "L0_backup_GB_MOBILE_5G_50M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 89,
@@ -1220,6 +1278,8 @@
           "access_technology": "MOBILE_5G",
           "bearer_mbps": 50,
           "committed_mbps": 50,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "19537.03",
@@ -1240,6 +1300,8 @@
           "access_technology": null,
           "bearer_mbps": null,
           "committed_mbps": null,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "1082400.00",
@@ -1260,6 +1322,8 @@
           "access_technology": null,
           "bearer_mbps": null,
           "committed_mbps": null,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "1948320.00",
@@ -1280,6 +1344,8 @@
           "access_technology": null,
           "bearer_mbps": null,
           "committed_mbps": null,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "1623600.00",
@@ -1606,7 +1672,7 @@
       },
       "target_components": [
         {
-          "key": "L0_primary_DE_BROADBAND_HFC_50M",
+          "key": "L0_primary_DE_BROADBAND_HFC_50M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 400,
@@ -1618,6 +1684,8 @@
           "access_technology": "HFC",
           "bearer_mbps": 50,
           "committed_mbps": 50,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "192338.88",
@@ -1626,7 +1694,7 @@
           }
         },
         {
-          "key": "L0_backup_DE_MOBILE_5G_50M",
+          "key": "L0_backup_DE_MOBILE_5G_50M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 139,
@@ -1638,6 +1706,8 @@
           "access_technology": "MOBILE_5G",
           "bearer_mbps": 50,
           "committed_mbps": 50,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "40683.85",
@@ -1646,7 +1716,7 @@
           }
         },
         {
-          "key": "L0_primary_FR_BROADBAND_HFC_50M",
+          "key": "L0_primary_FR_BROADBAND_HFC_50M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 1600,
@@ -1658,6 +1728,8 @@
           "access_technology": "HFC",
           "bearer_mbps": 50,
           "committed_mbps": 50,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "669004.80",
@@ -1666,7 +1738,7 @@
           }
         },
         {
-          "key": "L0_backup_FR_DIA_1000M",
+          "key": "L0_backup_FR_DIA_1000M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 5,
@@ -1678,6 +1750,8 @@
           "access_technology": null,
           "bearer_mbps": 1000,
           "committed_mbps": 1000,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "59583.24",
@@ -1686,7 +1760,7 @@
           }
         },
         {
-          "key": "L0_primary_FR_ETHERNET_500M",
+          "key": "L0_primary_FR_ETHERNET_500M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 5,
@@ -1698,6 +1772,8 @@
           "access_technology": "ETHERNET_FIBRE",
           "bearer_mbps": 1000,
           "committed_mbps": 500,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "43798.91",
@@ -1706,7 +1782,7 @@
           }
         },
         {
-          "key": "L0_backup_FR_MOBILE_5G_50M",
+          "key": "L0_backup_FR_MOBILE_5G_50M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 550,
@@ -1718,6 +1794,8 @@
           "access_technology": "MOBILE_5G",
           "bearer_mbps": 50,
           "committed_mbps": 50,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "149480.76",
@@ -1726,7 +1804,7 @@
           }
         },
         {
-          "key": "L0_primary_GB_BROADBAND_HFC_50M",
+          "key": "L0_primary_GB_BROADBAND_HFC_50M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 250,
@@ -1738,6 +1816,8 @@
           "access_technology": "HFC",
           "bearer_mbps": 50,
           "committed_mbps": 50,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "109758.60",
@@ -1746,7 +1826,7 @@
           }
         },
         {
-          "key": "L0_backup_GB_MOBILE_5G_50M",
+          "key": "L0_backup_GB_MOBILE_5G_50M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 89,
@@ -1758,6 +1838,8 @@
           "access_technology": "MOBILE_5G",
           "bearer_mbps": 50,
           "committed_mbps": 50,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "23258.37",
@@ -1778,6 +1860,8 @@
           "access_technology": null,
           "bearer_mbps": null,
           "committed_mbps": null,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "736032.00",
@@ -1798,6 +1882,8 @@
           "access_technology": null,
           "bearer_mbps": null,
           "committed_mbps": null,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "1112880.38",
@@ -1818,6 +1904,8 @@
           "access_technology": null,
           "bearer_mbps": null,
           "committed_mbps": null,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "1623600.00",
@@ -2123,7 +2211,7 @@
       },
       "target_components": [
         {
-          "key": "L0_primary_DE_BROADBAND_HFC_50M",
+          "key": "L0_primary_DE_BROADBAND_HFC_50M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 400,
@@ -2135,6 +2223,8 @@
           "access_technology": "HFC",
           "bearer_mbps": 50,
           "committed_mbps": 50,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "114018.49",
@@ -2143,7 +2233,7 @@
           }
         },
         {
-          "key": "L0_backup_DE_MOBILE_5G_50M",
+          "key": "L0_backup_DE_MOBILE_5G_50M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 139,
@@ -2155,6 +2245,8 @@
           "access_technology": "MOBILE_5G",
           "bearer_mbps": 50,
           "committed_mbps": 50,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "24117.39",
@@ -2163,7 +2255,7 @@
           }
         },
         {
-          "key": "L0_primary_FR_BROADBAND_HFC_50M",
+          "key": "L0_primary_FR_BROADBAND_HFC_50M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 1600,
@@ -2175,6 +2267,8 @@
           "access_technology": "HFC",
           "bearer_mbps": 50,
           "committed_mbps": 50,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "396586.05",
@@ -2183,7 +2277,7 @@
           }
         },
         {
-          "key": "L0_backup_FR_DIA_1000M",
+          "key": "L0_backup_FR_DIA_1000M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 5,
@@ -2195,6 +2289,8 @@
           "access_technology": null,
           "bearer_mbps": 1000,
           "committed_mbps": 1000,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "35320.94",
@@ -2203,7 +2299,7 @@
           }
         },
         {
-          "key": "L0_primary_FR_ETHERNET_500M",
+          "key": "L0_primary_FR_ETHERNET_500M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 5,
@@ -2215,6 +2311,8 @@
           "access_technology": "ETHERNET_FIBRE",
           "bearer_mbps": 1000,
           "committed_mbps": 500,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "25963.99",
@@ -2223,7 +2321,7 @@
           }
         },
         {
-          "key": "L0_backup_FR_MOBILE_5G_50M",
+          "key": "L0_backup_FR_MOBILE_5G_50M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 550,
@@ -2235,6 +2333,8 @@
           "access_technology": "MOBILE_5G",
           "bearer_mbps": 50,
           "committed_mbps": 50,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "88612.19",
@@ -2243,7 +2343,7 @@
           }
         },
         {
-          "key": "L0_primary_GB_BROADBAND_HFC_50M",
+          "key": "L0_primary_GB_BROADBAND_HFC_50M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 250,
@@ -2255,6 +2355,8 @@
           "access_technology": "HFC",
           "bearer_mbps": 50,
           "committed_mbps": 50,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "65064.90",
@@ -2263,7 +2365,7 @@
           }
         },
         {
-          "key": "L0_backup_GB_MOBILE_5G_50M",
+          "key": "L0_backup_GB_MOBILE_5G_50M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 89,
@@ -2275,6 +2377,8 @@
           "access_technology": "MOBILE_5G",
           "bearer_mbps": 50,
           "committed_mbps": 50,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "13787.56",
@@ -2295,6 +2399,8 @@
           "access_technology": null,
           "bearer_mbps": null,
           "committed_mbps": null,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "1082400.00",
@@ -2315,6 +2421,8 @@
           "access_technology": null,
           "bearer_mbps": null,
           "committed_mbps": null,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "1948320.00",
@@ -2335,6 +2443,8 @@
           "access_technology": null,
           "bearer_mbps": null,
           "committed_mbps": null,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "888433.92",

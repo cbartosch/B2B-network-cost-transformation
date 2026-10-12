@@ -1,13 +1,13 @@
 {
-  "simulation_run_id": "3723c5f6-3867-4844-b842-59894d04cb16",
+  "simulation_run_id": "7fe4ce26-a5e5-4a7c-861e-84f4cb531b33",
   "case_id": "e7b1b7bd-01fa-4804-a671-efa023ca8d21",
   "model_version": "sim-2.7.0",
   "seed": 20260101,
   "ensemble_size": 25,
   "status": "SUCCEEDED",
-  "output_hash": "66ab09ce90588fd43014d6102151e0b4c3f5c693d7335940b2e189982dbd197c",
-  "started_at": "2026-10-12 16:02:55.362458+00:00",
-  "ended_at": "2026-10-12 16:03:02.120744+00:00",
+  "output_hash": "cfadd83b4ea9291cfb9a986ced279d07d5f5b4112d1e7db01129c45559d9f11d",
+  "started_at": "2026-10-12 17:30:01.432488+00:00",
+  "ended_at": "2026-10-12 17:30:07.027336+00:00",
   "params": {
     "footprint": [
       {
@@ -894,16 +894,6 @@
   },
   "pinned_priors": {
     "archetype_prior": {
-      "LEGACY_WAN_SITE": {
-        "dual_access_probability": 0.6,
-        "primary_product": "MPLS",
-        "backup_product": "BROADBAND_PON",
-        "users_base": 40,
-        "bandwidth_mbps_base": 100,
-        "committed_fraction": "0.800",
-        "primary_service_class": "IPVPN",
-        "backup_service_class": "BEST_EFFORT"
-      },
       "BRANCH": {
         "dual_access_probability": 0.55,
         "primary_product": "DIA",
@@ -1042,6 +1032,16 @@
         "bandwidth_mbps_base": 50,
         "committed_fraction": "0.600",
         "primary_service_class": "BEST_EFFORT",
+        "backup_service_class": "BEST_EFFORT"
+      },
+      "LEGACY_WAN_SITE": {
+        "dual_access_probability": 0.6,
+        "primary_product": "MPLS",
+        "backup_product": "BROADBAND_PON",
+        "users_base": 40,
+        "bandwidth_mbps_base": 100,
+        "committed_fraction": "0.800",
+        "primary_service_class": "IPVPN",
         "backup_service_class": "BEST_EFFORT"
       },
       "DEFAULT/BRANCH": {
@@ -1873,6 +1873,7 @@
         "bandwidth_mbps": 50,
         "count": 400,
         "service_class": "BEST_EFFORT",
+        "density": "URBAN",
         "bearer_mbps": 50,
         "access_technology": "HFC"
       },
@@ -1883,6 +1884,7 @@
         "bandwidth_mbps": 50,
         "count": 139,
         "service_class": "BEST_EFFORT",
+        "density": "URBAN",
         "bearer_mbps": 50,
         "access_technology": "MOBILE_5G"
       },
@@ -1893,6 +1895,7 @@
         "bandwidth_mbps": 50,
         "count": 1600,
         "service_class": "BEST_EFFORT",
+        "density": "URBAN",
         "bearer_mbps": 50,
         "access_technology": "HFC"
       },
@@ -1903,6 +1906,7 @@
         "bandwidth_mbps": 1000,
         "count": 5,
         "service_class": "DIA",
+        "density": "URBAN",
         "bearer_mbps": 1000,
         "access_technology": null
       },
@@ -1913,6 +1917,7 @@
         "bandwidth_mbps": 500,
         "count": 5,
         "service_class": "ETHERNET",
+        "density": "URBAN",
         "bearer_mbps": 1000,
         "access_technology": "ETHERNET_FIBRE"
       },
@@ -1923,6 +1928,7 @@
         "bandwidth_mbps": 50,
         "count": 550,
         "service_class": "BEST_EFFORT",
+        "density": "URBAN",
         "bearer_mbps": 50,
         "access_technology": "MOBILE_5G"
       },
@@ -1933,6 +1939,7 @@
         "bandwidth_mbps": 50,
         "count": 250,
         "service_class": "BEST_EFFORT",
+        "density": "URBAN",
         "bearer_mbps": 50,
         "access_technology": "HFC"
       },
@@ -1943,6 +1950,7 @@
         "bandwidth_mbps": 50,
         "count": 89,
         "service_class": "BEST_EFFORT",
+        "density": "URBAN",
         "bearer_mbps": 50,
         "access_technology": "MOBILE_5G"
       }

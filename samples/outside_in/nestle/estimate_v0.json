@@ -1,46 +1,46 @@
 {
-  "estimate_snapshot_id": "fba7191b-2fff-4fe2-a16e-cf4bf1fe1827",
+  "estimate_snapshot_id": "61db15cc-37fe-487f-a181-b7fcb9af46d3",
   "v0_status": "PARTIAL",
   "current_tco": {
-    "low": "5389507.60",
-    "base": "8672731.20",
-    "high": "12375899.83"
+    "low": "4638802.49",
+    "base": "13958198.40",
+    "high": "30659432.08"
   },
   "by_layer": {
     "L0": {
-      "low": "4827740.98",
-      "base": "7585891.20",
-      "high": "10490295.14"
+      "low": "4075099.62",
+      "base": "12871358.40",
+      "high": "28776772.90"
     },
     "L1": {
-      "low": "146487.00",
+      "low": "147362.85",
       "base": "384000.00",
-      "high": "791165.14"
+      "high": "789663.68"
     },
     "L2": {
-      "low": "78265.71",
+      "low": "78446.82",
       "base": "127380.00",
-      "high": "192865.73"
+      "high": "192624.24"
     },
     "L4": {
-      "low": "212428.21",
+      "low": "213126.39",
       "base": "401760.00",
-      "high": "654202.39"
+      "high": "653271.48"
     },
     "OPS": {
-      "low": "124585.71",
+      "low": "124766.82",
       "base": "173700.00",
-      "high": "247371.44"
+      "high": "247099.77"
     }
   },
   "origin_breakdown": {
     "ANALYST_ENTERED_SCOPE": {
-      "value": "7876699.20",
-      "share": "0.9082"
+      "value": "13162166.40",
+      "share": "0.9430"
     },
     "SIMULATED": {
       "value": "796032.00",
-      "share": "0.0918"
+      "share": "0.0570"
     }
   },
   "components": [
@@ -57,6 +57,8 @@
       "access_technology": "ETHERNET_FIBRE",
       "bearer_mbps": 10000,
       "committed_mbps": 10000,
+      "density_band": null,
+      "density_multiplier": null,
       "source_ref": null,
       "value": {
         "low": "230400.00",
@@ -65,7 +67,7 @@
       }
     },
     {
-      "key": "L0_backup_BR_DIA_1000M",
+      "key": "L0_backup_BR_DIA_1000M_urban",
       "layer": "L0",
       "driver": "circuits",
       "quantity": 7,
@@ -77,6 +79,8 @@
       "access_technology": null,
       "bearer_mbps": 1000,
       "committed_mbps": 1000,
+      "density_band": "URBAN",
+      "density_multiplier": "1.000",
       "source_ref": null,
       "value": {
         "low": "80640.00",
@@ -85,7 +89,7 @@
       }
     },
     {
-      "key": "L0_primary_BR_ETHERNET_1650M_priced_at_10000M",
+      "key": "L0_primary_BR_ETHERNET_1650M_rural_priced_at_10000M",
       "layer": "L0",
       "driver": "circuits",
       "quantity": 28,
@@ -97,15 +101,17 @@
       "access_technology": "ETHERNET_FIBRE",
       "bearer_mbps": 2750,
       "committed_mbps": 1650,
+      "density_band": "RURAL",
+      "density_multiplier": "2.000",
       "source_ref": null,
       "value": {
-        "low": "1127616.00",
-        "base": "1503398.40",
-        "high": "1879449.60"
+        "low": "1409520.00",
+        "base": "3006796.80",
+        "high": "6014238.72"
       }
     },
     {
-      "key": "L0_primary_BR_ETHERNET_500M",
+      "key": "L0_primary_BR_ETHERNET_500M_urban",
       "layer": "L0",
       "driver": "circuits",
       "quantity": 8,
@@ -117,6 +123,8 @@
       "access_technology": "ETHERNET_FIBRE",
       "bearer_mbps": 1000,
       "committed_mbps": 500,
+      "density_band": "URBAN",
+      "density_multiplier": "1.000",
       "source_ref": null,
       "value": {
         "low": "67814.40",
@@ -137,6 +145,8 @@
       "access_technology": "HFC",
       "bearer_mbps": 100,
       "committed_mbps": 100,
+      "density_band": null,
+      "density_multiplier": null,
       "source_ref": null,
       "value": {
         "low": "1056.00",
@@ -145,7 +155,7 @@
       }
     },
     {
-      "key": "L0_backup_CH_DIA_1000M",
+      "key": "L0_backup_CH_DIA_1000M_urban",
       "layer": "L0",
       "driver": "circuits",
       "quantity": 12,
@@ -157,6 +167,8 @@
       "access_technology": null,
       "bearer_mbps": 1000,
       "committed_mbps": 1000,
+      "density_band": "URBAN",
+      "density_multiplier": "1.000",
       "source_ref": null,
       "value": {
         "low": "136512.00",
@@ -177,6 +189,8 @@
       "access_technology": null,
       "bearer_mbps": 100,
       "committed_mbps": 100,
+      "density_band": null,
+      "density_multiplier": null,
       "source_ref": null,
       "value": {
         "low": "36403.20",
@@ -185,7 +199,7 @@
       }
     },
     {
-      "key": "L0_primary_CH_ETHERNET_1650M_priced_at_10000M",
+      "key": "L0_primary_CH_ETHERNET_1650M_rural_priced_at_10000M",
       "layer": "L0",
       "driver": "circuits",
       "quantity": 10,
@@ -197,15 +211,17 @@
       "access_technology": "ETHERNET_FIBRE",
       "bearer_mbps": 2750,
       "committed_mbps": 1650,
+      "density_band": "RURAL",
+      "density_multiplier": "2.000",
       "source_ref": null,
       "value": {
-        "low": "397632.00",
-        "base": "530400.00",
-        "high": "662784.00"
+        "low": "497040.00",
+        "base": "1060800.00",
+        "high": "2120908.80"
       }
     },
     {
-      "key": "L0_primary_CH_ETHERNET_3000M_priced_at_10000M",
+      "key": "L0_primary_CH_ETHERNET_3000M_suburban_priced_at_10000M",
       "layer": "L0",
       "driver": "circuits",
       "quantity": 3,
@@ -217,15 +233,17 @@
       "access_technology": "ETHERNET_FIBRE",
       "bearer_mbps": 10000,
       "committed_mbps": 3000,
+      "density_band": "SUBURBAN",
+      "density_multiplier": "1.300",
       "source_ref": null,
       "value": {
-        "low": "119289.60",
-        "base": "159120.00",
-        "high": "198835.20"
+        "low": "128832.77",
+        "base": "206856.00",
+        "high": "318136.32"
       }
     },
     {
-      "key": "L0_primary_CH_ETHERNET_500M",
+      "key": "L0_primary_CH_ETHERNET_500M_urban",
       "layer": "L0",
       "driver": "circuits",
       "quantity": 12,
@@ -237,6 +255,8 @@
       "access_technology": "ETHERNET_FIBRE",
       "bearer_mbps": 1000,
       "committed_mbps": 500,
+      "density_band": "URBAN",
+      "density_multiplier": "1.000",
       "source_ref": null,
       "value": {
         "low": "100454.40",
@@ -245,7 +265,7 @@
       }
     },
     {
-      "key": "L0_backup_CN_DIA_1000M",
+      "key": "L0_backup_CN_DIA_1000M_urban",
       "layer": "L0",
       "driver": "circuits",
       "quantity": 8,
@@ -257,6 +277,8 @@
       "access_technology": null,
       "bearer_mbps": 1000,
       "committed_mbps": 1000,
+      "density_band": "URBAN",
+      "density_multiplier": "1.000",
       "source_ref": null,
       "value": {
         "low": "80640.00",
@@ -265,7 +287,7 @@
       }
     },
     {
-      "key": "L0_primary_CN_ETHERNET_1650M_priced_at_10000M",
+      "key": "L0_primary_CN_ETHERNET_1650M_rural_priced_at_10000M",
       "layer": "L0",
       "driver": "circuits",
       "quantity": 31,
@@ -277,15 +299,17 @@
       "access_technology": "ETHERNET_FIBRE",
       "bearer_mbps": 2750,
       "committed_mbps": 1650,
+      "density_band": "RURAL",
+      "density_multiplier": "2.000",
       "source_ref": null,
       "value": {
-        "low": "1092192.00",
-        "base": "1456454.40",
-        "high": "1820716.80"
+        "low": "1365240.00",
+        "base": "2912908.80",
+        "high": "5826293.76"
       }
     },
     {
-      "key": "L0_primary_CN_ETHERNET_500M",
+      "key": "L0_primary_CN_ETHERNET_500M_urban",
       "layer": "L0",
       "driver": "circuits",
       "quantity": 10,
@@ -297,6 +321,8 @@
       "access_technology": "ETHERNET_FIBRE",
       "bearer_mbps": 1000,
       "committed_mbps": 500,
+      "density_band": "URBAN",
+      "density_multiplier": "1.000",
       "source_ref": null,
       "value": {
         "low": "74112.00",
@@ -305,7 +331,7 @@
       }
     },
     {
-      "key": "L0_backup_DE_DIA_1000M",
+      "key": "L0_backup_DE_DIA_1000M_urban",
       "layer": "L0",
       "driver": "circuits",
       "quantity": 1,
@@ -317,6 +343,8 @@
       "access_technology": null,
       "bearer_mbps": 1000,
       "committed_mbps": 1000,
+      "density_band": "URBAN",
+      "density_multiplier": "1.000",
       "source_ref": null,
       "value": {
         "low": "11376.00",
@@ -325,7 +353,7 @@
       }
     },
     {
-      "key": "L0_primary_DE_ETHERNET_300M_priced_at_500M",
+      "key": "L0_primary_DE_ETHERNET_300M_urban_priced_at_500M",
       "layer": "L0",
       "driver": "circuits",
       "quantity": 1,
@@ -337,6 +365,8 @@
       "access_technology": "ETHERNET_FIBRE",
       "bearer_mbps": 1000,
       "committed_mbps": 300,
+      "density_band": "URBAN",
+      "density_multiplier": "1.000",
       "source_ref": null,
       "value": {
         "low": "5760.00",
@@ -345,7 +375,7 @@
       }
     },
     {
-      "key": "L0_primary_DE_ETHERNET_500M",
+      "key": "L0_primary_DE_ETHERNET_500M_urban",
       "layer": "L0",
       "driver": "circuits",
       "quantity": 1,
@@ -357,6 +387,8 @@
       "access_technology": "ETHERNET_FIBRE",
       "bearer_mbps": 1000,
       "committed_mbps": 500,
+      "density_band": "URBAN",
+      "density_multiplier": "1.000",
       "source_ref": null,
       "value": {
         "low": "5760.00",
@@ -365,7 +397,7 @@
       }
     },
     {
-      "key": "L0_primary_ES_ETHERNET_1650M_priced_at_10000M",
+      "key": "L0_primary_ES_ETHERNET_1650M_rural_priced_at_10000M",
       "layer": "L0",
       "driver": "circuits",
       "quantity": 11,
@@ -377,11 +409,13 @@
       "access_technology": "ETHERNET_FIBRE",
       "bearer_mbps": 2750,
       "committed_mbps": 1650,
+      "density_band": "RURAL",
+      "density_multiplier": "2.000",
       "source_ref": null,
       "value": {
-        "low": "359884.80",
-        "base": "479846.40",
-        "high": "599913.60"
+        "low": "449856.00",
+        "base": "959692.80",
+        "high": "1919723.52"
       }
     },
     {
@@ -397,6 +431,8 @@
       "access_technology": "ETHERNET_FIBRE",
       "bearer_mbps": 10000,
       "committed_mbps": 10000,
+      "density_band": null,
+      "density_multiplier": null,
       "source_ref": null,
       "value": {
         "low": "238944.00",
@@ -417,6 +453,8 @@
       "access_technology": "HFC",
       "bearer_mbps": 100,
       "committed_mbps": 100,
+      "density_band": null,
+      "density_multiplier": null,
       "source_ref": null,
       "value": {
         "low": "3628.80",
@@ -425,7 +463,7 @@
       }
     },
     {
-      "key": "L0_backup_FR_DIA_1000M",
+      "key": "L0_backup_FR_DIA_1000M_urban",
       "layer": "L0",
       "driver": "circuits",
       "quantity": 4,
@@ -437,6 +475,8 @@
       "access_technology": null,
       "bearer_mbps": 1000,
       "committed_mbps": 1000,
+      "density_band": "URBAN",
+      "density_multiplier": "1.000",
       "source_ref": null,
       "value": {
         "low": "43776.00",
@@ -457,6 +497,8 @@
       "access_technology": null,
       "bearer_mbps": 100,
       "committed_mbps": 100,
+      "density_band": null,
+      "density_multiplier": null,
       "source_ref": null,
       "value": {
         "low": "46080.00",
@@ -465,7 +507,7 @@
       }
     },
     {
-      "key": "L0_primary_FR_ETHERNET_500M",
+      "key": "L0_primary_FR_ETHERNET_500M_urban",
       "layer": "L0",
       "driver": "circuits",
       "quantity": 4,
@@ -477,6 +519,8 @@
       "access_technology": "ETHERNET_FIBRE",
       "bearer_mbps": 1000,
       "committed_mbps": 500,
+      "density_band": "URBAN",
+      "density_multiplier": "1.000",
       "source_ref": null,
       "value": {
         "low": "32179.20",
@@ -485,7 +529,7 @@
       }
     },
     {
-      "key": "L0_backup_GB_DIA_1000M",
+      "key": "L0_backup_GB_DIA_1000M_urban",
       "layer": "L0",
       "driver": "circuits",
       "quantity": 4,
@@ -497,6 +541,8 @@
       "access_technology": null,
       "bearer_mbps": 1000,
       "committed_mbps": 1000,
+      "density_band": "URBAN",
+      "density_multiplier": "1.000",
       "source_ref": null,
       "value": {
         "low": "15436.80",
@@ -505,7 +551,7 @@
       }
     },
     {
-      "key": "L0_primary_GB_ETHERNET_500M",
+      "key": "L0_primary_GB_ETHERNET_500M_urban",
       "layer": "L0",
       "driver": "circuits",
       "quantity": 5,
@@ -517,6 +563,8 @@
       "access_technology": "ETHERNET_FIBRE",
       "bearer_mbps": 1000,
       "committed_mbps": 500,
+      "density_band": "URBAN",
+      "density_multiplier": "1.000",
       "source_ref": null,
       "value": {
         "low": "16080.00",
@@ -525,7 +573,7 @@
       }
     },
     {
-      "key": "L0_primary_IT_ETHERNET_1650M_priced_at_10000M",
+      "key": "L0_primary_IT_ETHERNET_1650M_rural_priced_at_10000M",
       "layer": "L0",
       "driver": "circuits",
       "quantity": 10,
@@ -537,15 +585,17 @@
       "access_technology": "ETHERNET_FIBRE",
       "bearer_mbps": 2750,
       "committed_mbps": 1650,
+      "density_band": "RURAL",
+      "density_multiplier": "2.000",
       "source_ref": null,
       "value": {
-        "low": "327168.00",
-        "base": "436224.00",
-        "high": "545376.00"
+        "low": "408960.00",
+        "base": "872448.00",
+        "high": "1745203.20"
       }
     },
     {
-      "key": "L0_backup_MX_DIA_1000M",
+      "key": "L0_backup_MX_DIA_1000M_urban",
       "layer": "L0",
       "driver": "circuits",
       "quantity": 6,
@@ -557,6 +607,8 @@
       "access_technology": null,
       "bearer_mbps": 1000,
       "committed_mbps": 1000,
+      "density_band": "URBAN",
+      "density_multiplier": "1.000",
       "source_ref": null,
       "value": {
         "low": "62611.20",
@@ -565,7 +617,7 @@
       }
     },
     {
-      "key": "L0_primary_MX_ETHERNET_1650M_priced_at_10000M",
+      "key": "L0_primary_MX_ETHERNET_1650M_rural_priced_at_10000M",
       "layer": "L0",
       "driver": "circuits",
       "quantity": 17,
@@ -577,15 +629,17 @@
       "access_technology": "ETHERNET_FIBRE",
       "bearer_mbps": 2750,
       "committed_mbps": 1650,
+      "density_band": "RURAL",
+      "density_multiplier": "2.000",
       "source_ref": null,
       "value": {
-        "low": "620160.00",
-        "base": "827260.80",
-        "high": "1033708.80"
+        "low": "775200.00",
+        "base": "1654521.60",
+        "high": "3307868.16"
       }
     },
     {
-      "key": "L0_primary_MX_ETHERNET_500M",
+      "key": "L0_primary_MX_ETHERNET_500M_urban",
       "layer": "L0",
       "driver": "circuits",
       "quantity": 6,
@@ -597,6 +651,8 @@
       "access_technology": "ETHERNET_FIBRE",
       "bearer_mbps": 1000,
       "committed_mbps": 500,
+      "density_band": "URBAN",
+      "density_multiplier": "1.000",
       "source_ref": null,
       "value": {
         "low": "46080.00",
@@ -605,7 +661,7 @@
       }
     },
     {
-      "key": "L0_backup_US_DIA_1000M",
+      "key": "L0_backup_US_DIA_1000M_urban",
       "layer": "L0",
       "driver": "circuits",
       "quantity": 16,
@@ -617,6 +673,8 @@
       "access_technology": null,
       "bearer_mbps": 1000,
       "committed_mbps": 1000,
+      "density_band": "URBAN",
+      "density_multiplier": "1.000",
       "source_ref": null,
       "value": {
         "low": "155443.20",
@@ -625,7 +683,7 @@
       }
     },
     {
-      "key": "L0_primary_US_ETHERNET_150M_priced_at_500M",
+      "key": "L0_primary_US_ETHERNET_150M_suburban_priced_at_500M",
       "layer": "L0",
       "driver": "circuits",
       "quantity": 2,
@@ -637,15 +695,17 @@
       "access_technology": "ETHERNET_FIBRE",
       "bearer_mbps": 500,
       "committed_mbps": 150,
+      "density_band": "SUBURBAN",
+      "density_multiplier": "1.300",
       "source_ref": null,
       "value": {
-        "low": "9984.00",
-        "base": "13824.00",
-        "high": "19200.00"
+        "low": "10782.72",
+        "base": "17971.20",
+        "high": "30720.00"
       }
     },
     {
-      "key": "L0_primary_US_ETHERNET_500M",
+      "key": "L0_primary_US_ETHERNET_500M_urban",
       "layer": "L0",
       "driver": "circuits",
       "quantity": 18,
@@ -657,6 +717,8 @@
       "access_technology": "ETHERNET_FIBRE",
       "bearer_mbps": 1000,
       "committed_mbps": 500,
+      "density_band": "URBAN",
+      "density_multiplier": "1.000",
       "source_ref": null,
       "value": {
         "low": "89856.00",
@@ -677,6 +739,8 @@
       "access_technology": null,
       "bearer_mbps": null,
       "committed_mbps": null,
+      "density_band": null,
+      "density_multiplier": null,
       "source_ref": null,
       "value": {
         "low": "92640.00",
@@ -697,6 +761,8 @@
       "access_technology": null,
       "bearer_mbps": null,
       "committed_mbps": null,
+      "density_band": null,
+      "density_multiplier": null,
       "source_ref": null,
       "value": {
         "low": "216000.00",
@@ -717,6 +783,8 @@
       "access_technology": null,
       "bearer_mbps": null,
       "committed_mbps": null,
+      "density_band": null,
+      "density_multiplier": null,
       "source_ref": null,
       "value": {
         "low": "267840.00",
@@ -737,6 +805,8 @@
       "access_technology": null,
       "bearer_mbps": null,
       "committed_mbps": null,
+      "density_band": null,
+      "density_multiplier": null,
       "source_ref": null,
       "value": {
         "low": "138960.00",
@@ -751,30 +821,30 @@
         "layers_addressed": [
           "L0"
         ],
-        "addressable_base": "7585891.20",
-        "saving_base": "1110574.47",
+        "addressable_base": "12871358.40",
+        "saving_base": "1884366.87",
         "within_ceiling": true,
         "note": null
       },
       "label": "Reprice current state",
       "target_tco": {
-        "low": "5058874.57",
-        "base": "7562156.73",
-        "high": "10623058.19"
+        "low": "5823126.69",
+        "base": "12073831.53",
+        "high": "24138262.94"
       },
       "gross_run_rate_savings": {
-        "low": "93357.79",
-        "base": "1110574.47",
-        "high": "2664268.11"
+        "low": "0.00",
+        "base": "1884366.87",
+        "high": "7031052.64"
       },
       "gross_run_rate_savings_unwidened": {
-        "low": "391066.89",
-        "base": "1110574.47",
-        "high": "2209548.14"
+        "low": "459877.34",
+        "base": "1884366.87",
+        "high": "5538244.61"
       },
-      "saving_on_evidenced_baseline": "994035.38",
+      "saving_on_evidenced_baseline": "1767827.79",
       "saving_on_unevidenced_baseline": "116539.08",
-      "savings_pct_base": "0.128",
+      "savings_pct_base": "0.135",
       "levers": [
         {
           "lever_id": "LEV-REPRICE-001",
@@ -784,11 +854,11 @@
             "L0"
           ],
           "eligibility": {},
-          "saving_low": "338098.18",
-          "saving_base": "910306.94",
-          "saving_high": "1735247.23",
+          "saving_low": "397588.48",
+          "saving_base": "1544563.01",
+          "saving_high": "4349406.76",
           "saving_on_unevidenced_baseline": "95523.84",
-          "saving_on_evidenced_baseline": "814783.10"
+          "saving_on_evidenced_baseline": "1449039.17"
         },
         {
           "lever_id": "LEV-CLEANUP-001",
@@ -798,11 +868,11 @@
             "L0"
           ],
           "eligibility": {},
-          "saving_low": "52968.71",
-          "saving_base": "200267.53",
-          "saving_high": "474300.91",
+          "saving_low": "62288.86",
+          "saving_base": "339803.86",
+          "saving_high": "1188837.85",
           "saving_on_unevidenced_baseline": "21015.24",
-          "saving_on_evidenced_baseline": "179252.28"
+          "saving_on_evidenced_baseline": "318788.62"
         }
       ],
       "transition": {
@@ -863,33 +933,33 @@
           }
         },
         "dual_running_cost": {
-          "low": "808855.76",
-          "base": "1348092.93",
-          "high": "2696185.87"
+          "low": "1301800.89",
+          "base": "2169668.15",
+          "high": "4339336.29"
         },
         "total_transition_cost": {
-          "low": "966359.76",
-          "base": "1702476.93",
-          "high": "3404953.87"
+          "low": "1459304.89",
+          "base": "2524052.15",
+          "high": "5048104.29"
         },
         "gross_run_rate_savings": {
-          "low": "391066.89",
-          "base": "1110574.47",
-          "high": "2209548.14"
+          "low": "459877.34",
+          "base": "1884366.87",
+          "high": "5538244.61"
         },
-        "first_year_net": "-591902.46",
+        "first_year_net": "-639685.28",
         "payback_months": {
-          "optimistic": 8,
-          "base": 21,
-          "pessimistic": 107
+          "optimistic": 5,
+          "base": 19,
+          "pessimistic": 134
         },
         "payback_definition": "first month in which cumulative net benefit turns positive, with savings accruing as circuits are cut over",
-        "payback_simple_months": 19,
+        "payback_simple_months": 17,
         "payback_reconciliation_note": null,
         "run_rate_saving": {
-          "low": "391066.89",
-          "base": "1110574.47",
-          "high": "2209548.14"
+          "low": "459877.34",
+          "base": "1884366.87",
+          "high": "5538244.61"
         },
         "programme_months": 4,
         "programme_months_band": {
@@ -944,15 +1014,15 @@
         "note": "Savings accrue as circuits are cut over. This programme runs 4 month(s) at 150.00 circuit(s) a month, and the payback above is the first month cumulative net benefit turns positive against that rollout."
       },
       "levers_not_applicable": [],
-      "simulated_share": "0.0899",
+      "simulated_share": "0.0563",
       "origin_breakdown": {
         "ANALYST_ENTERED_SCOPE": {
-          "value": "6882663.81",
-          "share": "0.9101"
+          "value": "11394338.62",
+          "share": "0.9437"
         },
         "SIMULATED": {
           "value": "679492.92",
-          "share": "0.0899"
+          "share": "0.0563"
         }
       },
       "target_components": [
@@ -969,6 +1039,8 @@
           "access_technology": "ETHERNET_FIBRE",
           "bearer_mbps": 10000,
           "committed_mbps": 10000,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "177592.32",
@@ -977,7 +1049,7 @@
           }
         },
         {
-          "key": "L0_backup_BR_DIA_1000M",
+          "key": "L0_backup_BR_DIA_1000M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 7,
@@ -989,6 +1061,8 @@
           "access_technology": null,
           "bearer_mbps": 1000,
           "committed_mbps": 1000,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "62157.31",
@@ -997,7 +1071,7 @@
           }
         },
         {
-          "key": "L0_primary_BR_ETHERNET_1650M_priced_at_10000M",
+          "key": "L0_primary_BR_ETHERNET_1650M_rural_priced_at_10000M",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 28,
@@ -1009,15 +1083,17 @@
           "access_technology": "ETHERNET_FIBRE",
           "bearer_mbps": 2750,
           "committed_mbps": 1650,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
-            "low": "869166.41",
-            "base": "1283300.87",
-            "high": "1749015.80"
+            "low": "1086458.02",
+            "base": "2566601.75",
+            "high": "5596850.55"
           }
         },
         {
-          "key": "L0_primary_BR_ETHERNET_500M",
+          "key": "L0_primary_BR_ETHERNET_500M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 8,
@@ -1029,6 +1105,8 @@
           "access_technology": "ETHERNET_FIBRE",
           "bearer_mbps": 1000,
           "committed_mbps": 500,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "52271.34",
@@ -1049,6 +1127,8 @@
           "access_technology": "HFC",
           "bearer_mbps": 100,
           "committed_mbps": 100,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "813.96",
@@ -1057,7 +1137,7 @@
           }
         },
         {
-          "key": "L0_backup_CH_DIA_1000M",
+          "key": "L0_backup_CH_DIA_1000M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 12,
@@ -1069,6 +1149,8 @@
           "access_technology": null,
           "bearer_mbps": 1000,
           "committed_mbps": 1000,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "105223.45",
@@ -1089,6 +1171,8 @@
           "access_technology": null,
           "bearer_mbps": 100,
           "committed_mbps": 100,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "28059.59",
@@ -1097,7 +1181,7 @@
           }
         },
         {
-          "key": "L0_primary_CH_ETHERNET_1650M_priced_at_10000M",
+          "key": "L0_primary_CH_ETHERNET_1650M_rural_priced_at_10000M",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 10,
@@ -1109,15 +1193,17 @@
           "access_technology": "ETHERNET_FIBRE",
           "bearer_mbps": 2750,
           "committed_mbps": 1650,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
-            "low": "306494.75",
-            "base": "452749.44",
-            "high": "616786.79"
+            "low": "383118.43",
+            "base": "905498.88",
+            "high": "1973717.73"
           }
         },
         {
-          "key": "L0_primary_CH_ETHERNET_3000M_priced_at_10000M",
+          "key": "L0_primary_CH_ETHERNET_3000M_suburban_priced_at_10000M",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 3,
@@ -1129,15 +1215,17 @@
           "access_technology": "ETHERNET_FIBRE",
           "bearer_mbps": 10000,
           "committed_mbps": 3000,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
-            "low": "91948.42",
-            "base": "135824.83",
-            "high": "185036.04"
+            "low": "99304.30",
+            "base": "176572.28",
+            "high": "296057.66"
           }
         },
         {
-          "key": "L0_primary_CH_ETHERNET_500M",
+          "key": "L0_primary_CH_ETHERNET_500M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 12,
@@ -1149,6 +1237,8 @@
           "access_technology": "ETHERNET_FIBRE",
           "bearer_mbps": 1000,
           "committed_mbps": 500,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "77430.25",
@@ -1157,7 +1247,7 @@
           }
         },
         {
-          "key": "L0_backup_CN_DIA_1000M",
+          "key": "L0_backup_CN_DIA_1000M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 8,
@@ -1169,6 +1259,8 @@
           "access_technology": null,
           "bearer_mbps": 1000,
           "committed_mbps": 1000,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "62157.31",
@@ -1177,7 +1269,7 @@
           }
         },
         {
-          "key": "L0_primary_CN_ETHERNET_1650M_priced_at_10000M",
+          "key": "L0_primary_CN_ETHERNET_1650M_rural_priced_at_10000M",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 31,
@@ -1189,15 +1281,17 @@
           "access_technology": "ETHERNET_FIBRE",
           "bearer_mbps": 2750,
           "committed_mbps": 1650,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
-            "low": "841861.59",
-            "base": "1243229.48",
-            "high": "1694359.05"
+            "low": "1052326.99",
+            "base": "2486458.95",
+            "high": "5421948.97"
           }
         },
         {
-          "key": "L0_primary_CN_ETHERNET_500M",
+          "key": "L0_primary_CN_ETHERNET_500M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 10,
@@ -1209,6 +1303,8 @@
           "access_technology": "ETHERNET_FIBRE",
           "bearer_mbps": 1000,
           "committed_mbps": 500,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "57125.53",
@@ -1217,7 +1313,7 @@
           }
         },
         {
-          "key": "L0_backup_DE_DIA_1000M",
+          "key": "L0_backup_DE_DIA_1000M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 1,
@@ -1229,6 +1325,8 @@
           "access_technology": null,
           "bearer_mbps": 1000,
           "committed_mbps": 1000,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "8768.62",
@@ -1237,7 +1335,7 @@
           }
         },
         {
-          "key": "L0_primary_DE_ETHERNET_300M_priced_at_500M",
+          "key": "L0_primary_DE_ETHERNET_300M_urban_priced_at_500M",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 1,
@@ -1249,6 +1347,8 @@
           "access_technology": "ETHERNET_FIBRE",
           "bearer_mbps": 1000,
           "committed_mbps": 300,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "4439.81",
@@ -1257,7 +1357,7 @@
           }
         },
         {
-          "key": "L0_primary_DE_ETHERNET_500M",
+          "key": "L0_primary_DE_ETHERNET_500M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 1,
@@ -1269,6 +1369,8 @@
           "access_technology": "ETHERNET_FIBRE",
           "bearer_mbps": 1000,
           "committed_mbps": 500,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "4439.81",
@@ -1277,7 +1379,7 @@
           }
         },
         {
-          "key": "L0_primary_ES_ETHERNET_1650M_priced_at_10000M",
+          "key": "L0_primary_ES_ETHERNET_1650M_rural_priced_at_10000M",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 11,
@@ -1289,11 +1391,13 @@
           "access_technology": "ETHERNET_FIBRE",
           "bearer_mbps": 2750,
           "committed_mbps": 1650,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
-            "low": "277399.20",
-            "base": "409596.89",
-            "high": "558279.60"
+            "low": "346749.00",
+            "base": "819193.77",
+            "high": "1786494.71"
           }
         },
         {
@@ -1309,6 +1413,8 @@
           "access_technology": "ETHERNET_FIBRE",
           "bearer_mbps": 10000,
           "committed_mbps": 10000,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "184178.04",
@@ -1329,6 +1435,8 @@
           "access_technology": "HFC",
           "bearer_mbps": 100,
           "committed_mbps": 100,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "2797.08",
@@ -1337,7 +1445,7 @@
           }
         },
         {
-          "key": "L0_backup_FR_DIA_1000M",
+          "key": "L0_backup_FR_DIA_1000M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 4,
@@ -1349,6 +1457,8 @@
           "access_technology": null,
           "bearer_mbps": 1000,
           "committed_mbps": 1000,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "33742.54",
@@ -1369,6 +1479,8 @@
           "access_technology": null,
           "bearer_mbps": 100,
           "committed_mbps": 100,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "35518.46",
@@ -1377,7 +1489,7 @@
           }
         },
         {
-          "key": "L0_primary_FR_ETHERNET_500M",
+          "key": "L0_primary_FR_ETHERNET_500M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 4,
@@ -1389,6 +1501,8 @@
           "access_technology": "ETHERNET_FIBRE",
           "bearer_mbps": 1000,
           "committed_mbps": 500,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "24803.73",
@@ -1397,7 +1511,7 @@
           }
         },
         {
-          "key": "L0_backup_GB_DIA_1000M",
+          "key": "L0_backup_GB_DIA_1000M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 4,
@@ -1409,6 +1523,8 @@
           "access_technology": null,
           "bearer_mbps": 1000,
           "committed_mbps": 1000,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "11898.69",
@@ -1417,7 +1533,7 @@
           }
         },
         {
-          "key": "L0_primary_GB_ETHERNET_500M",
+          "key": "L0_primary_GB_ETHERNET_500M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 5,
@@ -1429,6 +1545,8 @@
           "access_technology": "ETHERNET_FIBRE",
           "bearer_mbps": 1000,
           "committed_mbps": 500,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "12394.46",
@@ -1437,7 +1555,7 @@
           }
         },
         {
-          "key": "L0_primary_IT_ETHERNET_1650M_priced_at_10000M",
+          "key": "L0_primary_IT_ETHERNET_1650M_rural_priced_at_10000M",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 10,
@@ -1449,15 +1567,17 @@
           "access_technology": "ETHERNET_FIBRE",
           "bearer_mbps": 2750,
           "committed_mbps": 1650,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
-            "low": "252181.09",
-            "base": "372360.81",
-            "high": "507526.91"
+            "low": "315226.37",
+            "base": "744721.61",
+            "high": "1624086.10"
           }
         },
         {
-          "key": "L0_backup_MX_DIA_1000M",
+          "key": "L0_backup_MX_DIA_1000M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 6,
@@ -1469,6 +1589,8 @@
           "access_technology": null,
           "bearer_mbps": 1000,
           "committed_mbps": 1000,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "48260.71",
@@ -1477,7 +1599,7 @@
           }
         },
         {
-          "key": "L0_primary_MX_ETHERNET_1650M_priced_at_10000M",
+          "key": "L0_primary_MX_ETHERNET_1650M_rural_priced_at_10000M",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 17,
@@ -1489,15 +1611,17 @@
           "access_technology": "ETHERNET_FIBRE",
           "bearer_mbps": 2750,
           "committed_mbps": 1650,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
-            "low": "478019.33",
-            "base": "706149.82",
-            "high": "961969.41"
+            "low": "597524.16",
+            "base": "1412299.64",
+            "high": "3078302.11"
           }
         },
         {
-          "key": "L0_primary_MX_ETHERNET_500M",
+          "key": "L0_primary_MX_ETHERNET_500M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 6,
@@ -1509,6 +1633,8 @@
           "access_technology": "ETHERNET_FIBRE",
           "bearer_mbps": 1000,
           "committed_mbps": 500,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "35518.46",
@@ -1517,7 +1643,7 @@
           }
         },
         {
-          "key": "L0_backup_US_DIA_1000M",
+          "key": "L0_backup_US_DIA_1000M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 16,
@@ -1529,6 +1655,8 @@
           "access_technology": null,
           "bearer_mbps": 1000,
           "committed_mbps": 1000,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "119815.62",
@@ -1537,7 +1665,7 @@
           }
         },
         {
-          "key": "L0_primary_US_ETHERNET_150M_priced_at_500M",
+          "key": "L0_primary_US_ETHERNET_150M_suburban_priced_at_500M",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 2,
@@ -1549,15 +1677,17 @@
           "access_technology": "ETHERNET_FIBRE",
           "bearer_mbps": 500,
           "committed_mbps": 150,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
-            "low": "7695.67",
-            "base": "11800.17",
-            "high": "17867.52"
+            "low": "8311.32",
+            "base": "15340.22",
+            "high": "28588.03"
           }
         },
         {
-          "key": "L0_primary_US_ETHERNET_500M",
+          "key": "L0_primary_US_ETHERNET_500M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 18,
@@ -1569,6 +1699,8 @@
           "access_technology": "ETHERNET_FIBRE",
           "bearer_mbps": 1000,
           "committed_mbps": 500,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "69261.00",
@@ -1589,6 +1721,8 @@
           "access_technology": null,
           "bearer_mbps": null,
           "committed_mbps": null,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "92640.00",
@@ -1609,6 +1743,8 @@
           "access_technology": null,
           "bearer_mbps": null,
           "committed_mbps": null,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "216000.00",
@@ -1629,6 +1765,8 @@
           "access_technology": null,
           "bearer_mbps": null,
           "committed_mbps": null,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "267840.00",
@@ -1649,6 +1787,8 @@
           "access_technology": null,
           "bearer_mbps": null,
           "committed_mbps": null,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "138960.00",
@@ -1663,30 +1803,30 @@
         "layers_addressed": [
           "L0"
         ],
-        "addressable_base": "7585891.20",
-        "saving_base": "531137.57",
+        "addressable_base": "12871358.40",
+        "saving_base": "901120.27",
         "within_ceiling": true,
         "note": null
       },
       "label": "Optimized SD-WAN",
       "target_tco": {
-        "low": "5674025.86",
-        "base": "8141593.63",
-        "high": "11002806.38"
+        "low": "6546550.33",
+        "base": "13057078.13",
+        "high": "25090221.61"
       },
       "gross_run_rate_savings": {
-        "low": "19294.75",
-        "base": "531137.57",
-        "high": "1416165.42"
+        "low": "0.00",
+        "base": "901120.27",
+        "high": "3716534.43"
       },
       "gross_run_rate_savings_unwidened": {
-        "low": "169095.94",
-        "base": "531137.57",
-        "high": "1157144.06"
+        "low": "198841.09",
+        "base": "901120.27",
+        "high": "2899917.08"
       },
-      "saving_on_evidenced_baseline": "475290.14",
+      "saving_on_evidenced_baseline": "845272.85",
       "saving_on_unevidenced_baseline": "55847.43",
-      "savings_pct_base": "0.061",
+      "savings_pct_base": "0.065",
       "levers": [
         {
           "lever_id": "LEV-RISKTIER-001",
@@ -1720,11 +1860,11 @@
               "IPVPN"
             ]
           },
-          "saving_low": "168908.54",
-          "saving_base": "530574.24",
-          "saving_high": "1155893.76",
+          "saving_low": "198653.70",
+          "saving_base": "900556.94",
+          "saving_high": "2898666.78",
           "saving_on_unevidenced_baseline": "55284.10",
-          "saving_on_evidenced_baseline": "475290.14"
+          "saving_on_evidenced_baseline": "845272.85"
         }
       ],
       "transition": {
@@ -1785,33 +1925,33 @@
           }
         },
         "dual_running_cost": {
-          "low": "808855.76",
-          "base": "1348092.93",
-          "high": "2696185.87"
+          "low": "1301800.89",
+          "base": "2169668.15",
+          "high": "4339336.29"
         },
         "total_transition_cost": {
-          "low": "966359.76",
-          "base": "1702476.93",
-          "high": "3404953.87"
+          "low": "1459304.89",
+          "base": "2524052.15",
+          "high": "5048104.29"
         },
         "gross_run_rate_savings": {
-          "low": "169095.94",
-          "base": "531137.57",
-          "high": "1157144.06"
+          "low": "198841.09",
+          "base": "901120.27",
+          "high": "2899917.08"
         },
-        "first_year_net": "-1171339.36",
+        "first_year_net": "-1622931.87",
         "payback_months": {
-          "optimistic": 12,
-          "base": 41,
-          "pessimistic": 244
+          "optimistic": 8,
+          "base": 37,
+          "pessimistic": 307
         },
         "payback_definition": "first month in which cumulative net benefit turns positive, with savings accruing as circuits are cut over",
-        "payback_simple_months": 39,
+        "payback_simple_months": 34,
         "payback_reconciliation_note": null,
         "run_rate_saving": {
-          "low": "169095.94",
-          "base": "531137.57",
-          "high": "1157144.06"
+          "low": "198841.09",
+          "base": "901120.27",
+          "high": "2899917.08"
         },
         "programme_months": 4,
         "programme_months_band": {
@@ -1882,15 +2022,15 @@
           "reason": "MPLS substitution acts on service_class in ['IPVPN'], and this estate's service_class=BEST_EFFORT, service_class=DIA, service_class=ETHERNET in L0 contain none of them. No saving is booked."
         }
       ],
-      "simulated_share": "0.0909",
+      "simulated_share": "0.0567",
       "origin_breakdown": {
         "ANALYST_ENTERED_SCOPE": {
-          "value": "7401409.06",
-          "share": "0.9091"
+          "value": "12316893.55",
+          "share": "0.9433"
         },
         "SIMULATED": {
           "value": "740184.58",
-          "share": "0.0909"
+          "share": "0.0567"
         }
       },
       "target_components": [
@@ -1907,6 +2047,8 @@
           "access_technology": "ETHERNET_FIBRE",
           "bearer_mbps": 10000,
           "committed_mbps": 10000,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "202752.00",
@@ -1915,7 +2057,7 @@
           }
         },
         {
-          "key": "L0_backup_BR_DIA_1000M",
+          "key": "L0_backup_BR_DIA_1000M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 7,
@@ -1927,6 +2069,8 @@
           "access_technology": null,
           "bearer_mbps": 1000,
           "committed_mbps": 1000,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "70963.20",
@@ -1935,7 +2079,7 @@
           }
         },
         {
-          "key": "L0_primary_BR_ETHERNET_1650M_priced_at_10000M",
+          "key": "L0_primary_BR_ETHERNET_1650M_rural_priced_at_10000M",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 28,
@@ -1947,15 +2091,17 @@
           "access_technology": "ETHERNET_FIBRE",
           "bearer_mbps": 2750,
           "committed_mbps": 1650,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
-            "low": "992302.08",
-            "base": "1398160.51",
-            "high": "1823066.11"
+            "low": "1240377.60",
+            "base": "2796321.02",
+            "high": "5833811.56"
           }
         },
         {
-          "key": "L0_primary_BR_ETHERNET_500M",
+          "key": "L0_primary_BR_ETHERNET_500M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 8,
@@ -1967,6 +2113,8 @@
           "access_technology": "ETHERNET_FIBRE",
           "bearer_mbps": 1000,
           "committed_mbps": 500,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "59676.67",
@@ -1987,6 +2135,8 @@
           "access_technology": "HFC",
           "bearer_mbps": 100,
           "committed_mbps": 100,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "887.04",
@@ -1995,7 +2145,7 @@
           }
         },
         {
-          "key": "L0_backup_CH_DIA_1000M",
+          "key": "L0_backup_CH_DIA_1000M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 12,
@@ -2007,6 +2157,8 @@
           "access_technology": null,
           "bearer_mbps": 1000,
           "committed_mbps": 1000,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "120130.56",
@@ -2027,6 +2179,8 @@
           "access_technology": null,
           "bearer_mbps": 100,
           "committed_mbps": 100,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "32034.82",
@@ -2035,7 +2189,7 @@
           }
         },
         {
-          "key": "L0_primary_CH_ETHERNET_1650M_priced_at_10000M",
+          "key": "L0_primary_CH_ETHERNET_1650M_rural_priced_at_10000M",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 10,
@@ -2047,15 +2201,17 @@
           "access_technology": "ETHERNET_FIBRE",
           "bearer_mbps": 2750,
           "committed_mbps": 1650,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
-            "low": "349916.16",
-            "base": "493272.00",
-            "high": "642900.48"
+            "low": "437395.20",
+            "base": "986544.00",
+            "high": "2057281.54"
           }
         },
         {
-          "key": "L0_primary_CH_ETHERNET_3000M_priced_at_10000M",
+          "key": "L0_primary_CH_ETHERNET_3000M_suburban_priced_at_10000M",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 3,
@@ -2067,15 +2223,17 @@
           "access_technology": "ETHERNET_FIBRE",
           "bearer_mbps": 10000,
           "committed_mbps": 3000,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
-            "low": "104974.85",
-            "base": "147981.60",
-            "high": "192870.14"
+            "low": "113372.84",
+            "base": "192376.08",
+            "high": "308592.23"
           }
         },
         {
-          "key": "L0_primary_CH_ETHERNET_500M",
+          "key": "L0_primary_CH_ETHERNET_500M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 12,
@@ -2087,6 +2245,8 @@
           "access_technology": "ETHERNET_FIBRE",
           "bearer_mbps": 1000,
           "committed_mbps": 500,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "88399.87",
@@ -2095,7 +2255,7 @@
           }
         },
         {
-          "key": "L0_backup_CN_DIA_1000M",
+          "key": "L0_backup_CN_DIA_1000M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 8,
@@ -2107,6 +2267,8 @@
           "access_technology": null,
           "bearer_mbps": 1000,
           "committed_mbps": 1000,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "70963.20",
@@ -2115,7 +2277,7 @@
           }
         },
         {
-          "key": "L0_primary_CN_ETHERNET_1650M_priced_at_10000M",
+          "key": "L0_primary_CN_ETHERNET_1650M_rural_priced_at_10000M",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 31,
@@ -2127,15 +2289,17 @@
           "access_technology": "ETHERNET_FIBRE",
           "bearer_mbps": 2750,
           "committed_mbps": 1650,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
-            "low": "961128.96",
-            "base": "1354502.59",
-            "high": "1766095.30"
+            "low": "1201411.20",
+            "base": "2709005.18",
+            "high": "5651504.95"
           }
         },
         {
-          "key": "L0_primary_CN_ETHERNET_500M",
+          "key": "L0_primary_CN_ETHERNET_500M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 10,
@@ -2147,6 +2311,8 @@
           "access_technology": "ETHERNET_FIBRE",
           "bearer_mbps": 1000,
           "committed_mbps": 500,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "65218.56",
@@ -2155,7 +2321,7 @@
           }
         },
         {
-          "key": "L0_backup_DE_DIA_1000M",
+          "key": "L0_backup_DE_DIA_1000M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 1,
@@ -2167,6 +2333,8 @@
           "access_technology": null,
           "bearer_mbps": 1000,
           "committed_mbps": 1000,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "10010.88",
@@ -2175,7 +2343,7 @@
           }
         },
         {
-          "key": "L0_primary_DE_ETHERNET_300M_priced_at_500M",
+          "key": "L0_primary_DE_ETHERNET_300M_urban_priced_at_500M",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 1,
@@ -2187,6 +2355,8 @@
           "access_technology": "ETHERNET_FIBRE",
           "bearer_mbps": 1000,
           "committed_mbps": 300,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "5068.80",
@@ -2195,7 +2365,7 @@
           }
         },
         {
-          "key": "L0_primary_DE_ETHERNET_500M",
+          "key": "L0_primary_DE_ETHERNET_500M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 1,
@@ -2207,6 +2377,8 @@
           "access_technology": "ETHERNET_FIBRE",
           "bearer_mbps": 1000,
           "committed_mbps": 500,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "5068.80",
@@ -2215,7 +2387,7 @@
           }
         },
         {
-          "key": "L0_primary_ES_ETHERNET_1650M_priced_at_10000M",
+          "key": "L0_primary_ES_ETHERNET_1650M_rural_priced_at_10000M",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 11,
@@ -2227,11 +2399,13 @@
           "access_technology": "ETHERNET_FIBRE",
           "bearer_mbps": 2750,
           "committed_mbps": 1650,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
-            "low": "316698.62",
-            "base": "446257.15",
-            "high": "581916.19"
+            "low": "395873.28",
+            "base": "892514.30",
+            "high": "1862131.81"
           }
         },
         {
@@ -2247,6 +2421,8 @@
           "access_technology": "ETHERNET_FIBRE",
           "bearer_mbps": 10000,
           "committed_mbps": 10000,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "210270.72",
@@ -2267,6 +2443,8 @@
           "access_technology": "HFC",
           "bearer_mbps": 100,
           "committed_mbps": 100,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "3048.19",
@@ -2275,7 +2453,7 @@
           }
         },
         {
-          "key": "L0_backup_FR_DIA_1000M",
+          "key": "L0_backup_FR_DIA_1000M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 4,
@@ -2287,6 +2465,8 @@
           "access_technology": null,
           "bearer_mbps": 1000,
           "committed_mbps": 1000,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "38522.88",
@@ -2307,6 +2487,8 @@
           "access_technology": null,
           "bearer_mbps": 100,
           "committed_mbps": 100,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "40550.40",
@@ -2315,7 +2497,7 @@
           }
         },
         {
-          "key": "L0_primary_FR_ETHERNET_500M",
+          "key": "L0_primary_FR_ETHERNET_500M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 4,
@@ -2327,6 +2509,8 @@
           "access_technology": "ETHERNET_FIBRE",
           "bearer_mbps": 1000,
           "committed_mbps": 500,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "28317.70",
@@ -2335,7 +2519,7 @@
           }
         },
         {
-          "key": "L0_backup_GB_DIA_1000M",
+          "key": "L0_backup_GB_DIA_1000M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 4,
@@ -2347,6 +2531,8 @@
           "access_technology": null,
           "bearer_mbps": 1000,
           "committed_mbps": 1000,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "13584.38",
@@ -2355,7 +2541,7 @@
           }
         },
         {
-          "key": "L0_primary_GB_ETHERNET_500M",
+          "key": "L0_primary_GB_ETHERNET_500M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 5,
@@ -2367,6 +2553,8 @@
           "access_technology": "ETHERNET_FIBRE",
           "bearer_mbps": 1000,
           "committed_mbps": 500,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "14150.40",
@@ -2375,7 +2563,7 @@
           }
         },
         {
-          "key": "L0_primary_IT_ETHERNET_1650M_priced_at_10000M",
+          "key": "L0_primary_IT_ETHERNET_1650M_rural_priced_at_10000M",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 10,
@@ -2387,15 +2575,17 @@
           "access_technology": "ETHERNET_FIBRE",
           "bearer_mbps": 2750,
           "committed_mbps": 1650,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
-            "low": "287907.84",
-            "base": "405688.32",
-            "high": "529014.72"
+            "low": "359884.80",
+            "base": "811376.64",
+            "high": "1692847.10"
           }
         },
         {
-          "key": "L0_backup_MX_DIA_1000M",
+          "key": "L0_backup_MX_DIA_1000M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 6,
@@ -2407,6 +2597,8 @@
           "access_technology": null,
           "bearer_mbps": 1000,
           "committed_mbps": 1000,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "55097.86",
@@ -2415,7 +2607,7 @@
           }
         },
         {
-          "key": "L0_primary_MX_ETHERNET_1650M_priced_at_10000M",
+          "key": "L0_primary_MX_ETHERNET_1650M_rural_priced_at_10000M",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 17,
@@ -2427,15 +2619,17 @@
           "access_technology": "ETHERNET_FIBRE",
           "bearer_mbps": 2750,
           "committed_mbps": 1650,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
-            "low": "545740.80",
-            "base": "769352.54",
-            "high": "1002697.54"
+            "low": "682176.00",
+            "base": "1538705.09",
+            "high": "3208632.12"
           }
         },
         {
-          "key": "L0_primary_MX_ETHERNET_500M",
+          "key": "L0_primary_MX_ETHERNET_500M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 6,
@@ -2447,6 +2641,8 @@
           "access_technology": "ETHERNET_FIBRE",
           "bearer_mbps": 1000,
           "committed_mbps": 500,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "40550.40",
@@ -2455,7 +2651,7 @@
           }
         },
         {
-          "key": "L0_backup_US_DIA_1000M",
+          "key": "L0_backup_US_DIA_1000M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 16,
@@ -2467,6 +2663,8 @@
           "access_technology": null,
           "bearer_mbps": 1000,
           "committed_mbps": 1000,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "136790.02",
@@ -2475,7 +2673,7 @@
           }
         },
         {
-          "key": "L0_primary_US_ETHERNET_150M_priced_at_500M",
+          "key": "L0_primary_US_ETHERNET_150M_suburban_priced_at_500M",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 2,
@@ -2487,15 +2685,17 @@
           "access_technology": "ETHERNET_FIBRE",
           "bearer_mbps": 500,
           "committed_mbps": 150,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
-            "low": "8785.92",
-            "base": "12856.32",
-            "high": "18624.00"
+            "low": "9488.79",
+            "base": "16713.22",
+            "high": "29798.40"
           }
         },
         {
-          "key": "L0_primary_US_ETHERNET_500M",
+          "key": "L0_primary_US_ETHERNET_500M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 18,
@@ -2507,6 +2707,8 @@
           "access_technology": "ETHERNET_FIBRE",
           "bearer_mbps": 1000,
           "committed_mbps": 500,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "79073.28",
@@ -2527,6 +2729,8 @@
           "access_technology": null,
           "bearer_mbps": null,
           "committed_mbps": null,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "92640.00",
@@ -2547,6 +2751,8 @@
           "access_technology": null,
           "bearer_mbps": null,
           "committed_mbps": null,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "216000.00",
@@ -2567,6 +2773,8 @@
           "access_technology": null,
           "bearer_mbps": null,
           "committed_mbps": null,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "267840.00",
@@ -2587,6 +2795,8 @@
           "access_technology": null,
           "bearer_mbps": null,
           "committed_mbps": null,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "138960.00",
@@ -2604,21 +2814,21 @@
           "L2",
           "L4"
         ],
-        "addressable_base": "8499031.20",
+        "addressable_base": "13784498.40",
         "saving_base": "629322.48",
         "within_ceiling": true,
         "note": null
       },
       "label": "SASE northstar",
       "target_tco": {
-        "low": "5762308.61",
-        "base": "8043408.72",
-        "high": "10781919.12"
+        "low": "6753813.70",
+        "base": "13328875.92",
+        "high": "25305027.60"
       },
       "gross_run_rate_savings": {
-        "low": "41744.84",
+        "low": "43911.58",
         "base": "629322.48",
-        "high": "1699224.00"
+        "high": "1695278.65"
       },
       "gross_run_rate_savings_unwidened": {
         "low": "213711.36",
@@ -2627,7 +2837,7 @@
       },
       "saving_on_evidenced_baseline": "629322.48",
       "saving_on_unevidenced_baseline": "0.00",
-      "savings_pct_base": "0.073",
+      "savings_pct_base": "0.045",
       "levers": [
         {
           "lever_id": "LEV-POP-001",
@@ -2758,28 +2968,28 @@
           }
         },
         "dual_running_cost": {
-          "low": "808855.76",
-          "base": "1348092.93",
-          "high": "2696185.87"
+          "low": "1301800.89",
+          "base": "2169668.15",
+          "high": "4339336.29"
         },
         "total_transition_cost": {
-          "low": "966359.76",
-          "base": "1702476.93",
-          "high": "3404953.87"
+          "low": "1459304.89",
+          "base": "2524052.15",
+          "high": "5048104.29"
         },
         "gross_run_rate_savings": {
           "low": "213711.36",
           "base": "629322.48",
           "high": "1386095.62"
         },
-        "first_year_net": "-1073154.45",
+        "first_year_net": "-1894729.67",
         "payback_months": {
-          "optimistic": 11,
-          "base": 35,
-          "pessimistic": 193
+          "optimistic": 15,
+          "base": 51,
+          "pessimistic": 286
         },
         "payback_definition": "first month in which cumulative net benefit turns positive, with savings accruing as circuits are cut over",
-        "payback_simple_months": 33,
+        "payback_simple_months": 49,
         "payback_reconciliation_note": null,
         "run_rate_saving": {
           "low": "213711.36",
@@ -2839,15 +3049,15 @@
         "note": "Savings accrue as circuits are cut over. This programme runs 4 month(s) at 150.00 circuit(s) a month, and the payback above is the first month cumulative net benefit turns positive against that rollout."
       },
       "levers_not_applicable": [],
-      "simulated_share": "0.0990",
+      "simulated_share": "0.0597",
       "origin_breakdown": {
         "ANALYST_ENTERED_SCOPE": {
-          "value": "7247376.72",
-          "share": "0.9010"
+          "value": "12532843.92",
+          "share": "0.9403"
         },
         "SIMULATED": {
           "value": "796032.00",
-          "share": "0.0990"
+          "share": "0.0597"
         }
       },
       "target_components": [
@@ -2864,6 +3074,8 @@
           "access_technology": "ETHERNET_FIBRE",
           "bearer_mbps": 10000,
           "committed_mbps": 10000,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "92160.00",
@@ -2872,7 +3084,7 @@
           }
         },
         {
-          "key": "L0_backup_BR_DIA_1000M",
+          "key": "L0_backup_BR_DIA_1000M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 7,
@@ -2884,6 +3096,8 @@
           "access_technology": null,
           "bearer_mbps": 1000,
           "committed_mbps": 1000,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "80640.00",
@@ -2892,7 +3106,7 @@
           }
         },
         {
-          "key": "L0_primary_BR_ETHERNET_1650M_priced_at_10000M",
+          "key": "L0_primary_BR_ETHERNET_1650M_rural_priced_at_10000M",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 28,
@@ -2904,15 +3118,17 @@
           "access_technology": "ETHERNET_FIBRE",
           "bearer_mbps": 2750,
           "committed_mbps": 1650,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
-            "low": "1127616.00",
-            "base": "1503398.40",
-            "high": "1879449.60"
+            "low": "1409520.00",
+            "base": "3006796.80",
+            "high": "6014238.72"
           }
         },
         {
-          "key": "L0_primary_BR_ETHERNET_500M",
+          "key": "L0_primary_BR_ETHERNET_500M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 8,
@@ -2924,6 +3140,8 @@
           "access_technology": "ETHERNET_FIBRE",
           "bearer_mbps": 1000,
           "committed_mbps": 500,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "67814.40",
@@ -2944,6 +3162,8 @@
           "access_technology": "HFC",
           "bearer_mbps": 100,
           "committed_mbps": 100,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "1056.00",
@@ -2952,7 +3172,7 @@
           }
         },
         {
-          "key": "L0_backup_CH_DIA_1000M",
+          "key": "L0_backup_CH_DIA_1000M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 12,
@@ -2964,6 +3184,8 @@
           "access_technology": null,
           "bearer_mbps": 1000,
           "committed_mbps": 1000,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "136512.00",
@@ -2984,6 +3206,8 @@
           "access_technology": null,
           "bearer_mbps": 100,
           "committed_mbps": 100,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "36403.20",
@@ -2992,7 +3216,7 @@
           }
         },
         {
-          "key": "L0_primary_CH_ETHERNET_1650M_priced_at_10000M",
+          "key": "L0_primary_CH_ETHERNET_1650M_rural_priced_at_10000M",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 10,
@@ -3004,15 +3228,17 @@
           "access_technology": "ETHERNET_FIBRE",
           "bearer_mbps": 2750,
           "committed_mbps": 1650,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
-            "low": "397632.00",
-            "base": "530400.00",
-            "high": "662784.00"
+            "low": "497040.00",
+            "base": "1060800.00",
+            "high": "2120908.80"
           }
         },
         {
-          "key": "L0_primary_CH_ETHERNET_3000M_priced_at_10000M",
+          "key": "L0_primary_CH_ETHERNET_3000M_suburban_priced_at_10000M",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 3,
@@ -3024,15 +3250,17 @@
           "access_technology": "ETHERNET_FIBRE",
           "bearer_mbps": 10000,
           "committed_mbps": 3000,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
-            "low": "119289.60",
-            "base": "159120.00",
-            "high": "198835.20"
+            "low": "128832.77",
+            "base": "206856.00",
+            "high": "318136.32"
           }
         },
         {
-          "key": "L0_primary_CH_ETHERNET_500M",
+          "key": "L0_primary_CH_ETHERNET_500M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 12,
@@ -3044,6 +3272,8 @@
           "access_technology": "ETHERNET_FIBRE",
           "bearer_mbps": 1000,
           "committed_mbps": 500,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "100454.40",
@@ -3052,7 +3282,7 @@
           }
         },
         {
-          "key": "L0_backup_CN_DIA_1000M",
+          "key": "L0_backup_CN_DIA_1000M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 8,
@@ -3064,6 +3294,8 @@
           "access_technology": null,
           "bearer_mbps": 1000,
           "committed_mbps": 1000,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "80640.00",
@@ -3072,7 +3304,7 @@
           }
         },
         {
-          "key": "L0_primary_CN_ETHERNET_1650M_priced_at_10000M",
+          "key": "L0_primary_CN_ETHERNET_1650M_rural_priced_at_10000M",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 31,
@@ -3084,15 +3316,17 @@
           "access_technology": "ETHERNET_FIBRE",
           "bearer_mbps": 2750,
           "committed_mbps": 1650,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
-            "low": "1092192.00",
-            "base": "1456454.40",
-            "high": "1820716.80"
+            "low": "1365240.00",
+            "base": "2912908.80",
+            "high": "5826293.76"
           }
         },
         {
-          "key": "L0_primary_CN_ETHERNET_500M",
+          "key": "L0_primary_CN_ETHERNET_500M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 10,
@@ -3104,6 +3338,8 @@
           "access_technology": "ETHERNET_FIBRE",
           "bearer_mbps": 1000,
           "committed_mbps": 500,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "74112.00",
@@ -3112,7 +3348,7 @@
           }
         },
         {
-          "key": "L0_backup_DE_DIA_1000M",
+          "key": "L0_backup_DE_DIA_1000M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 1,
@@ -3124,6 +3360,8 @@
           "access_technology": null,
           "bearer_mbps": 1000,
           "committed_mbps": 1000,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "11376.00",
@@ -3132,7 +3370,7 @@
           }
         },
         {
-          "key": "L0_primary_DE_ETHERNET_300M_priced_at_500M",
+          "key": "L0_primary_DE_ETHERNET_300M_urban_priced_at_500M",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 1,
@@ -3144,6 +3382,8 @@
           "access_technology": "ETHERNET_FIBRE",
           "bearer_mbps": 1000,
           "committed_mbps": 300,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "5760.00",
@@ -3152,7 +3392,7 @@
           }
         },
         {
-          "key": "L0_primary_DE_ETHERNET_500M",
+          "key": "L0_primary_DE_ETHERNET_500M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 1,
@@ -3164,6 +3404,8 @@
           "access_technology": "ETHERNET_FIBRE",
           "bearer_mbps": 1000,
           "committed_mbps": 500,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "5760.00",
@@ -3172,7 +3414,7 @@
           }
         },
         {
-          "key": "L0_primary_ES_ETHERNET_1650M_priced_at_10000M",
+          "key": "L0_primary_ES_ETHERNET_1650M_rural_priced_at_10000M",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 11,
@@ -3184,11 +3426,13 @@
           "access_technology": "ETHERNET_FIBRE",
           "bearer_mbps": 2750,
           "committed_mbps": 1650,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
-            "low": "359884.80",
-            "base": "479846.40",
-            "high": "599913.60"
+            "low": "449856.00",
+            "base": "959692.80",
+            "high": "1919723.52"
           }
         },
         {
@@ -3204,6 +3448,8 @@
           "access_technology": "ETHERNET_FIBRE",
           "bearer_mbps": 10000,
           "committed_mbps": 10000,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "95577.60",
@@ -3224,6 +3470,8 @@
           "access_technology": "HFC",
           "bearer_mbps": 100,
           "committed_mbps": 100,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "3628.80",
@@ -3232,7 +3480,7 @@
           }
         },
         {
-          "key": "L0_backup_FR_DIA_1000M",
+          "key": "L0_backup_FR_DIA_1000M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 4,
@@ -3244,6 +3492,8 @@
           "access_technology": null,
           "bearer_mbps": 1000,
           "committed_mbps": 1000,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "43776.00",
@@ -3264,6 +3514,8 @@
           "access_technology": null,
           "bearer_mbps": 100,
           "committed_mbps": 100,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "46080.00",
@@ -3272,7 +3524,7 @@
           }
         },
         {
-          "key": "L0_primary_FR_ETHERNET_500M",
+          "key": "L0_primary_FR_ETHERNET_500M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 4,
@@ -3284,6 +3536,8 @@
           "access_technology": "ETHERNET_FIBRE",
           "bearer_mbps": 1000,
           "committed_mbps": 500,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "32179.20",
@@ -3292,7 +3546,7 @@
           }
         },
         {
-          "key": "L0_backup_GB_DIA_1000M",
+          "key": "L0_backup_GB_DIA_1000M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 4,
@@ -3304,6 +3558,8 @@
           "access_technology": null,
           "bearer_mbps": 1000,
           "committed_mbps": 1000,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "15436.80",
@@ -3312,7 +3568,7 @@
           }
         },
         {
-          "key": "L0_primary_GB_ETHERNET_500M",
+          "key": "L0_primary_GB_ETHERNET_500M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 5,
@@ -3324,6 +3580,8 @@
           "access_technology": "ETHERNET_FIBRE",
           "bearer_mbps": 1000,
           "committed_mbps": 500,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "16080.00",
@@ -3332,7 +3590,7 @@
           }
         },
         {
-          "key": "L0_primary_IT_ETHERNET_1650M_priced_at_10000M",
+          "key": "L0_primary_IT_ETHERNET_1650M_rural_priced_at_10000M",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 10,
@@ -3344,15 +3602,17 @@
           "access_technology": "ETHERNET_FIBRE",
           "bearer_mbps": 2750,
           "committed_mbps": 1650,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
-            "low": "327168.00",
-            "base": "436224.00",
-            "high": "545376.00"
+            "low": "408960.00",
+            "base": "872448.00",
+            "high": "1745203.20"
           }
         },
         {
-          "key": "L0_backup_MX_DIA_1000M",
+          "key": "L0_backup_MX_DIA_1000M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 6,
@@ -3364,6 +3624,8 @@
           "access_technology": null,
           "bearer_mbps": 1000,
           "committed_mbps": 1000,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "62611.20",
@@ -3372,7 +3634,7 @@
           }
         },
         {
-          "key": "L0_primary_MX_ETHERNET_1650M_priced_at_10000M",
+          "key": "L0_primary_MX_ETHERNET_1650M_rural_priced_at_10000M",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 17,
@@ -3384,15 +3646,17 @@
           "access_technology": "ETHERNET_FIBRE",
           "bearer_mbps": 2750,
           "committed_mbps": 1650,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
-            "low": "620160.00",
-            "base": "827260.80",
-            "high": "1033708.80"
+            "low": "775200.00",
+            "base": "1654521.60",
+            "high": "3307868.16"
           }
         },
         {
-          "key": "L0_primary_MX_ETHERNET_500M",
+          "key": "L0_primary_MX_ETHERNET_500M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 6,
@@ -3404,6 +3668,8 @@
           "access_technology": "ETHERNET_FIBRE",
           "bearer_mbps": 1000,
           "committed_mbps": 500,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "46080.00",
@@ -3412,7 +3678,7 @@
           }
         },
         {
-          "key": "L0_backup_US_DIA_1000M",
+          "key": "L0_backup_US_DIA_1000M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 16,
@@ -3424,6 +3690,8 @@
           "access_technology": null,
           "bearer_mbps": 1000,
           "committed_mbps": 1000,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "155443.20",
@@ -3432,7 +3700,7 @@
           }
         },
         {
-          "key": "L0_primary_US_ETHERNET_150M_priced_at_500M",
+          "key": "L0_primary_US_ETHERNET_150M_suburban_priced_at_500M",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 2,
@@ -3444,15 +3712,17 @@
           "access_technology": "ETHERNET_FIBRE",
           "bearer_mbps": 500,
           "committed_mbps": 150,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
-            "low": "9984.00",
-            "base": "13824.00",
-            "high": "19200.00"
+            "low": "10782.72",
+            "base": "17971.20",
+            "high": "30720.00"
           }
         },
         {
-          "key": "L0_primary_US_ETHERNET_500M",
+          "key": "L0_primary_US_ETHERNET_500M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 18,
@@ -3464,6 +3734,8 @@
           "access_technology": "ETHERNET_FIBRE",
           "bearer_mbps": 1000,
           "committed_mbps": 500,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "89856.00",
@@ -3484,6 +3756,8 @@
           "access_technology": null,
           "bearer_mbps": null,
           "committed_mbps": null,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "62995.20",
@@ -3504,6 +3778,8 @@
           "access_technology": null,
           "bearer_mbps": null,
           "committed_mbps": null,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "54000.00",
@@ -3524,6 +3800,8 @@
           "access_technology": null,
           "bearer_mbps": null,
           "committed_mbps": null,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "152990.21",
@@ -3544,6 +3822,8 @@
           "access_technology": null,
           "bearer_mbps": null,
           "committed_mbps": null,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "138960.00",
@@ -3559,30 +3839,30 @@
           "L0",
           "OPS"
         ],
-        "addressable_base": "7759591.20",
-        "saving_base": "2159898.84",
+        "addressable_base": "13045058.40",
+        "saving_base": "3627144.53",
         "within_ceiling": true,
         "note": null
       },
       "label": "Carrier-managed NaaS",
       "target_tco": {
-        "low": "3992928.89",
-        "base": "6512832.36",
-        "high": "9949889.60"
+        "low": "4580693.11",
+        "base": "10331053.87",
+        "high": "22509473.82"
       },
       "gross_run_rate_savings": {
-        "low": "217170.00",
-        "base": "2159898.84",
-        "high": "4800623.17"
+        "low": "0.00",
+        "base": "3627144.53",
+        "high": "12521358.62"
       },
       "gross_run_rate_savings_unwidened": {
-        "low": "785749.01",
-        "base": "2159898.84",
-        "high": "4027761.62"
+        "low": "919800.50",
+        "base": "3627144.53",
+        "high": "9941571.39"
       },
-      "saving_on_evidenced_baseline": "1938920.35",
+      "saving_on_evidenced_baseline": "3406166.04",
       "saving_on_unevidenced_baseline": "220978.48",
-      "savings_pct_base": "0.249",
+      "savings_pct_base": "0.260",
       "levers": [
         {
           "lever_id": "LEV-OPS-001",
@@ -3607,11 +3887,11 @@
             "OPS"
           ],
           "eligibility": {},
-          "saving_low": "460802.69",
-          "saving_base": "1236532.03",
-          "saving_high": "2352682.94",
+          "saving_low": "540123.10",
+          "saving_base": "2082206.78",
+          "saving_high": "5838228.98",
           "saving_on_unevidenced_baseline": "127365.12",
-          "saving_on_evidenced_baseline": "1109166.91"
+          "saving_on_evidenced_baseline": "1954841.66"
         },
         {
           "lever_id": "LEV-LASTMILE-001",
@@ -3621,11 +3901,11 @@
             "L0"
           ],
           "eligibility": {},
-          "saving_low": "311050.32",
-          "saving_base": "892100.81",
-          "saving_high": "1611851.87",
+          "saving_low": "365781.40",
+          "saving_base": "1513671.75",
+          "saving_high": "4040115.61",
           "saving_on_unevidenced_baseline": "93613.36",
-          "saving_on_evidenced_baseline": "798487.44"
+          "saving_on_evidenced_baseline": "1420058.38"
         }
       ],
       "transition": {
@@ -3686,33 +3966,33 @@
           }
         },
         "dual_running_cost": {
-          "low": "808855.76",
-          "base": "1348092.93",
-          "high": "2696185.87"
+          "low": "1301800.89",
+          "base": "2169668.15",
+          "high": "4339336.29"
         },
         "total_transition_cost": {
-          "low": "966359.76",
-          "base": "1702476.93",
-          "high": "3404953.87"
+          "low": "1459304.89",
+          "base": "2524052.15",
+          "high": "5048104.29"
         },
         "gross_run_rate_savings": {
-          "low": "785749.01",
-          "base": "2159898.84",
-          "high": "4027761.62"
+          "low": "919800.50",
+          "base": "3627144.53",
+          "high": "9941571.39"
         },
-        "first_year_net": "457421.90",
+        "first_year_net": "1103092.39",
         "payback_months": {
-          "optimistic": 5,
-          "base": 12,
-          "pessimistic": 54
+          "optimistic": 4,
+          "base": 11,
+          "pessimistic": 68
         },
         "payback_definition": "first month in which cumulative net benefit turns positive, with savings accruing as circuits are cut over",
-        "payback_simple_months": 10,
+        "payback_simple_months": 9,
         "payback_reconciliation_note": null,
         "run_rate_saving": {
-          "low": "785749.01",
-          "base": "2159898.84",
-          "high": "4027761.62"
+          "low": "919800.50",
+          "base": "3627144.53",
+          "high": "9941571.39"
         },
         "programme_months": 4,
         "programme_months_band": {
@@ -3767,15 +4047,15 @@
         "note": "Savings accrue as circuits are cut over. This programme runs 4 month(s) at 150.00 circuit(s) a month, and the payback above is the first month cumulative net benefit turns positive against that rollout."
       },
       "levers_not_applicable": [],
-      "simulated_share": "0.0883",
+      "simulated_share": "0.0557",
       "origin_breakdown": {
         "ANALYST_ENTERED_SCOPE": {
-          "value": "5937778.85",
-          "share": "0.9117"
+          "value": "9756000.35",
+          "share": "0.9443"
         },
         "SIMULATED": {
           "value": "575053.52",
-          "share": "0.0883"
+          "share": "0.0557"
         }
       },
       "target_components": [
@@ -3792,6 +4072,8 @@
           "access_technology": "ETHERNET_FIBRE",
           "bearer_mbps": 10000,
           "committed_mbps": 10000,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "136581.12",
@@ -3800,7 +4082,7 @@
           }
         },
         {
-          "key": "L0_backup_BR_DIA_1000M",
+          "key": "L0_backup_BR_DIA_1000M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 7,
@@ -3812,6 +4094,8 @@
           "access_technology": null,
           "bearer_mbps": 1000,
           "committed_mbps": 1000,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "47803.39",
@@ -3820,7 +4104,7 @@
           }
         },
         {
-          "key": "L0_primary_BR_ETHERNET_1650M_priced_at_10000M",
+          "key": "L0_primary_BR_ETHERNET_1650M_rural_priced_at_10000M",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 28,
@@ -3832,15 +4116,17 @@
           "access_technology": "ETHERNET_FIBRE",
           "bearer_mbps": 2750,
           "committed_mbps": 1650,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
-            "low": "668450.76",
-            "base": "1086055.00",
-            "high": "1625348.01"
+            "low": "835563.46",
+            "base": "2172110.01",
+            "high": "5201113.65"
           }
         },
         {
-          "key": "L0_primary_BR_ETHERNET_500M",
+          "key": "L0_primary_BR_ETHERNET_500M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 8,
@@ -3852,6 +4138,8 @@
           "access_technology": "ETHERNET_FIBRE",
           "bearer_mbps": 1000,
           "committed_mbps": 500,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "40200.38",
@@ -3872,6 +4160,8 @@
           "access_technology": "HFC",
           "bearer_mbps": 100,
           "committed_mbps": 100,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "626.00",
@@ -3880,7 +4170,7 @@
           }
         },
         {
-          "key": "L0_backup_CH_DIA_1000M",
+          "key": "L0_backup_CH_DIA_1000M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 12,
@@ -3892,6 +4182,8 @@
           "access_technology": null,
           "bearer_mbps": 1000,
           "committed_mbps": 1000,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "80924.31",
@@ -3912,6 +4204,8 @@
           "access_technology": null,
           "bearer_mbps": 100,
           "committed_mbps": 100,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "21579.82",
@@ -3920,7 +4214,7 @@
           }
         },
         {
-          "key": "L0_primary_CH_ETHERNET_1650M_priced_at_10000M",
+          "key": "L0_primary_CH_ETHERNET_1650M_rural_priced_at_10000M",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 10,
@@ -3932,15 +4226,17 @@
           "access_technology": "ETHERNET_FIBRE",
           "bearer_mbps": 2750,
           "committed_mbps": 1650,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
-            "low": "235716.25",
-            "base": "383160.96",
-            "high": "573175.60"
+            "low": "294645.31",
+            "base": "766321.92",
+            "high": "1834161.93"
           }
         },
         {
-          "key": "L0_primary_CH_ETHERNET_3000M_priced_at_10000M",
+          "key": "L0_primary_CH_ETHERNET_3000M_suburban_priced_at_10000M",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 3,
@@ -3952,15 +4248,17 @@
           "access_technology": "ETHERNET_FIBRE",
           "bearer_mbps": 10000,
           "committed_mbps": 3000,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
-            "low": "70714.87",
-            "base": "114948.29",
-            "high": "171952.68"
+            "low": "76372.06",
+            "base": "149432.77",
+            "high": "275124.29"
           }
         },
         {
-          "key": "L0_primary_CH_ETHERNET_500M",
+          "key": "L0_primary_CH_ETHERNET_500M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 12,
@@ -3972,6 +4270,8 @@
           "access_technology": "ETHERNET_FIBRE",
           "bearer_mbps": 1000,
           "committed_mbps": 500,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "59549.37",
@@ -3980,7 +4280,7 @@
           }
         },
         {
-          "key": "L0_backup_CN_DIA_1000M",
+          "key": "L0_backup_CN_DIA_1000M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 8,
@@ -3992,6 +4292,8 @@
           "access_technology": null,
           "bearer_mbps": 1000,
           "committed_mbps": 1000,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "47803.39",
@@ -4000,7 +4302,7 @@
           }
         },
         {
-          "key": "L0_primary_CN_ETHERNET_1650M_priced_at_10000M",
+          "key": "L0_primary_CN_ETHERNET_1650M_rural_priced_at_10000M",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 31,
@@ -4012,15 +4314,17 @@
           "access_technology": "ETHERNET_FIBRE",
           "bearer_mbps": 2750,
           "committed_mbps": 1650,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
-            "low": "647451.42",
-            "base": "1052142.66",
-            "high": "1574555.89"
+            "low": "809314.27",
+            "base": "2104285.32",
+            "high": "5038578.84"
           }
         },
         {
-          "key": "L0_primary_CN_ETHERNET_500M",
+          "key": "L0_primary_CN_ETHERNET_500M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 10,
@@ -4032,6 +4336,8 @@
           "access_technology": "ETHERNET_FIBRE",
           "bearer_mbps": 1000,
           "committed_mbps": 500,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "43933.59",
@@ -4040,7 +4346,7 @@
           }
         },
         {
-          "key": "L0_backup_DE_DIA_1000M",
+          "key": "L0_backup_DE_DIA_1000M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 1,
@@ -4052,6 +4358,8 @@
           "access_technology": null,
           "bearer_mbps": 1000,
           "committed_mbps": 1000,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "6743.69",
@@ -4060,7 +4368,7 @@
           }
         },
         {
-          "key": "L0_primary_DE_ETHERNET_300M_priced_at_500M",
+          "key": "L0_primary_DE_ETHERNET_300M_urban_priced_at_500M",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 1,
@@ -4072,6 +4380,8 @@
           "access_technology": "ETHERNET_FIBRE",
           "bearer_mbps": 1000,
           "committed_mbps": 300,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "3414.53",
@@ -4080,7 +4390,7 @@
           }
         },
         {
-          "key": "L0_primary_DE_ETHERNET_500M",
+          "key": "L0_primary_DE_ETHERNET_500M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 1,
@@ -4092,6 +4402,8 @@
           "access_technology": "ETHERNET_FIBRE",
           "bearer_mbps": 1000,
           "committed_mbps": 500,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "3414.53",
@@ -4100,7 +4412,7 @@
           }
         },
         {
-          "key": "L0_primary_ES_ETHERNET_1650M_priced_at_10000M",
+          "key": "L0_primary_ES_ETHERNET_1650M_rural_priced_at_10000M",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 11,
@@ -4112,11 +4424,13 @@
           "access_technology": "ETHERNET_FIBRE",
           "bearer_mbps": 2750,
           "committed_mbps": 1650,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
-            "low": "213339.71",
-            "base": "346641.04",
-            "high": "518805.28"
+            "low": "266674.64",
+            "base": "693282.08",
+            "high": "1660176.90"
           }
         },
         {
@@ -4132,6 +4446,8 @@
           "access_technology": "ETHERNET_FIBRE",
           "bearer_mbps": 10000,
           "committed_mbps": 10000,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "141646.00",
@@ -4152,6 +4468,8 @@
           "access_technology": "HFC",
           "bearer_mbps": 100,
           "committed_mbps": 100,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "2151.15",
@@ -4160,7 +4478,7 @@
           }
         },
         {
-          "key": "L0_backup_FR_DIA_1000M",
+          "key": "L0_backup_FR_DIA_1000M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 4,
@@ -4172,6 +4490,8 @@
           "access_technology": null,
           "bearer_mbps": 1000,
           "committed_mbps": 1000,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "25950.41",
@@ -4192,6 +4512,8 @@
           "access_technology": null,
           "bearer_mbps": 100,
           "committed_mbps": 100,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "27316.22",
@@ -4200,7 +4522,7 @@
           }
         },
         {
-          "key": "L0_primary_FR_ETHERNET_500M",
+          "key": "L0_primary_FR_ETHERNET_500M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 4,
@@ -4212,6 +4534,8 @@
           "access_technology": "ETHERNET_FIBRE",
           "bearer_mbps": 1000,
           "committed_mbps": 500,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "19075.83",
@@ -4220,7 +4544,7 @@
           }
         },
         {
-          "key": "L0_backup_GB_DIA_1000M",
+          "key": "L0_backup_GB_DIA_1000M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 4,
@@ -4232,6 +4556,8 @@
           "access_technology": null,
           "bearer_mbps": 1000,
           "committed_mbps": 1000,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "9150.94",
@@ -4240,7 +4566,7 @@
           }
         },
         {
-          "key": "L0_primary_GB_ETHERNET_500M",
+          "key": "L0_primary_GB_ETHERNET_500M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 5,
@@ -4252,6 +4578,8 @@
           "access_technology": "ETHERNET_FIBRE",
           "bearer_mbps": 1000,
           "committed_mbps": 500,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "9532.22",
@@ -4260,7 +4588,7 @@
           }
         },
         {
-          "key": "L0_primary_IT_ETHERNET_1650M_priced_at_10000M",
+          "key": "L0_primary_IT_ETHERNET_1650M_rural_priced_at_10000M",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 10,
@@ -4272,15 +4600,17 @@
           "access_technology": "ETHERNET_FIBRE",
           "bearer_mbps": 2750,
           "committed_mbps": 1650,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
-            "low": "193945.19",
-            "base": "315128.22",
-            "high": "471641.16"
+            "low": "242431.49",
+            "base": "630256.44",
+            "high": "1509251.73"
           }
         },
         {
-          "key": "L0_backup_MX_DIA_1000M",
+          "key": "L0_backup_MX_DIA_1000M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 6,
@@ -4292,6 +4622,8 @@
           "access_technology": null,
           "bearer_mbps": 1000,
           "committed_mbps": 1000,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "37115.92",
@@ -4300,7 +4632,7 @@
           }
         },
         {
-          "key": "L0_primary_MX_ETHERNET_1650M_priced_at_10000M",
+          "key": "L0_primary_MX_ETHERNET_1650M_rural_priced_at_10000M",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 17,
@@ -4312,15 +4644,17 @@
           "access_technology": "ETHERNET_FIBRE",
           "bearer_mbps": 2750,
           "committed_mbps": 1650,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
-            "low": "367630.85",
-            "base": "597613.20",
-            "high": "893951.37"
+            "low": "459538.56",
+            "base": "1195226.40",
+            "high": "2860644.38"
           }
         },
         {
-          "key": "L0_primary_MX_ETHERNET_500M",
+          "key": "L0_primary_MX_ETHERNET_500M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 6,
@@ -4332,6 +4666,8 @@
           "access_technology": "ETHERNET_FIBRE",
           "bearer_mbps": 1000,
           "committed_mbps": 500,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "27316.22",
@@ -4340,7 +4676,7 @@
           }
         },
         {
-          "key": "L0_backup_US_DIA_1000M",
+          "key": "L0_backup_US_DIA_1000M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 16,
@@ -4352,6 +4688,8 @@
           "access_technology": null,
           "bearer_mbps": 1000,
           "committed_mbps": 1000,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "92146.73",
@@ -4360,7 +4698,7 @@
           }
         },
         {
-          "key": "L0_primary_US_ETHERNET_150M_priced_at_500M",
+          "key": "L0_primary_US_ETHERNET_150M_suburban_priced_at_500M",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 2,
@@ -4372,15 +4710,17 @@
           "access_technology": "ETHERNET_FIBRE",
           "bearer_mbps": 500,
           "committed_mbps": 150,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
-            "low": "5918.52",
-            "base": "9986.46",
-            "high": "16604.16"
+            "low": "6392.00",
+            "base": "12982.39",
+            "high": "26566.66"
           }
         },
         {
-          "key": "L0_primary_US_ETHERNET_500M",
+          "key": "L0_primary_US_ETHERNET_500M_urban",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 18,
@@ -4392,6 +4732,8 @@
           "access_technology": "ETHERNET_FIBRE",
           "bearer_mbps": 1000,
           "committed_mbps": 500,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "53266.64",
@@ -4412,6 +4754,8 @@
           "access_technology": null,
           "bearer_mbps": null,
           "committed_mbps": null,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "92640.00",
@@ -4432,6 +4776,8 @@
           "access_technology": null,
           "bearer_mbps": null,
           "committed_mbps": null,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "216000.00",
@@ -4452,6 +4798,8 @@
           "access_technology": null,
           "bearer_mbps": null,
           "committed_mbps": null,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "267840.00",
@@ -4472,6 +4820,8 @@
           "access_technology": null,
           "bearer_mbps": null,
           "committed_mbps": null,
+          "density_band": null,
+          "density_multiplier": null,
           "source_ref": null,
           "value": {
             "low": "76038.91",
@@ -4483,15 +4833,15 @@
     }
   },
   "savings_bridge": {
-    "baseline": "8672731.20",
+    "baseline": "13958198.40",
     "steps": [
       {
         "step": "Same-service repricing",
         "lever_id": "LEV-REPRICE-001",
         "scenario": "A",
-        "saving": "910306.94",
-        "from": "8672731.20",
-        "to": "7762424.26",
+        "saving": "1544563.01",
+        "from": "13958198.40",
+        "to": "12413635.39",
         "basis": "GOVERNED_LEVER",
         "layers": [
           "L0"
@@ -4501,9 +4851,9 @@
         "step": "Billing cleanup",
         "lever_id": "LEV-CLEANUP-001",
         "scenario": "A",
-        "saving": "200267.53",
-        "from": "7762424.26",
-        "to": "7562156.73",
+        "saving": "339803.86",
+        "from": "12413635.39",
+        "to": "12073831.53",
         "basis": "GOVERNED_LEVER",
         "layers": [
           "L0"
@@ -4514,8 +4864,8 @@
         "lever_id": "LEV-RISKTIER-001",
         "scenario": "B",
         "saving": "563.33",
-        "from": "7562156.73",
-        "to": "7561593.40",
+        "from": "12073831.53",
+        "to": "12073268.20",
         "basis": "GOVERNED_LEVER",
         "layers": [
           "L0"
@@ -4525,9 +4875,9 @@
         "step": "Right-sizing",
         "lever_id": "LEV-BANDWIDTH-001",
         "scenario": "B",
-        "saving": "530574.24",
-        "from": "7561593.40",
-        "to": "7031019.16",
+        "saving": "900556.94",
+        "from": "12073268.20",
+        "to": "11172711.26",
         "basis": "GOVERNED_LEVER",
         "layers": [
           "L0"
@@ -4538,8 +4888,8 @@
         "lever_id": "LEV-POP-001",
         "scenario": "C",
         "saving": "211200.00",
-        "from": "7031019.16",
-        "to": "6819819.16",
+        "from": "11172711.26",
+        "to": "10961511.26",
         "basis": "GOVERNED_LEVER",
         "layers": [
           "L1"
@@ -4550,8 +4900,8 @@
         "lever_id": "LEV-BACKBONE-001",
         "scenario": "C",
         "saving": "270374.40",
-        "from": "6819819.16",
-        "to": "6549444.76",
+        "from": "10961511.26",
+        "to": "10691136.86",
         "basis": "GOVERNED_LEVER",
         "layers": [
           "L0"
@@ -4562,8 +4912,8 @@
         "lever_id": "LEV-SASE-001",
         "scenario": "C",
         "saving": "116410.80",
-        "from": "6549444.76",
-        "to": "6433033.96",
+        "from": "10691136.86",
+        "to": "10574726.06",
         "basis": "GOVERNED_LEVER",
         "layers": [
           "L2",
@@ -4575,8 +4925,8 @@
         "lever_id": "LEV-SECRETIRE-001",
         "scenario": "C",
         "saving": "31337.28",
-        "from": "6433033.96",
-        "to": "6401696.68",
+        "from": "10574726.06",
+        "to": "10543388.78",
         "basis": "GOVERNED_LEVER",
         "layers": [
           "L4"
@@ -4587,8 +4937,8 @@
         "lever_id": "LEV-OPS-001",
         "scenario": "D",
         "saving": "31266.00",
-        "from": "6401696.68",
-        "to": "6370430.68",
+        "from": "10543388.78",
+        "to": "10512122.78",
         "basis": "GOVERNED_LEVER",
         "layers": [
           "OPS"
@@ -4598,9 +4948,9 @@
         "step": "Supplier consolidation",
         "lever_id": "LEV-NAAS-001",
         "scenario": "D",
-        "saving": "1236532.03",
-        "from": "6370430.68",
-        "to": "5133898.65",
+        "saving": "2082206.78",
+        "from": "10512122.78",
+        "to": "8429916.00",
         "basis": "GOVERNED_LEVER",
         "layers": [
           "L0",
@@ -4611,9 +4961,9 @@
         "step": "Direct local access",
         "lever_id": "LEV-LASTMILE-001",
         "scenario": "D",
-        "saving": "892100.81",
-        "from": "5133898.65",
-        "to": "4241797.84",
+        "saving": "1513671.75",
+        "from": "8429916.00",
+        "to": "6916244.25",
         "basis": "GOVERNED_LEVER",
         "layers": [
           "L0"
@@ -4630,11 +4980,11 @@
         "reason": "MPLS substitution acts on service_class in ['IPVPN'], and this estate's service_class=BEST_EFFORT, service_class=DIA, service_class=ETHERNET in L0 contain none of them. No saving is booked."
       }
     ],
-    "target": "4241797.84",
-    "total_saving": "4430933.36",
-    "governed_saving": "4430933.36",
+    "target": "6916244.25",
+    "total_saving": "7041954.15",
+    "governed_saving": "7041954.15",
     "estimated_saving": "0",
-    "saving_pct": "0.511",
+    "saving_pct": "0.505",
     "governed_share": "1.000",
     "coverage": {
       "status": "PARTIAL",
@@ -4649,7 +4999,7 @@
   "confidence": {
     "current_baseline": "0.304",
     "target_cost": "0.683",
-    "realization": "0.197",
+    "realization": "0.198",
     "weighted": "0.405",
     "overall": "0.278",
     "band": "D - Indicative",
@@ -4671,7 +5021,7 @@
     "v0_status": "PARTIAL",
     "partial_penalty_factor": "0.8000",
     "arithmetic": "capped = min(sum(component x weight), min(component) + component_cap_headroom). If v0_status is PARTIAL, capped is lowered one band: to (next lower band floor - 0.01) where the score is at or above a floor, otherwise to capped x partial_penalty_factor. overall = clamp of the result. Ceilings in `ceilings_applied` have already been applied to the components above.",
-    "simulated_share": "0.0990",
+    "simulated_share": "0.0597",
     "asserted_share": "0.0000",
     "drivers": {
       "priced_spend_pct": "0.755",
@@ -4683,14 +5033,14 @@
       "prior_recency": "1",
       "lever_stage_mix": {
         "V3": "31266.00",
-        "V4": "1236532.03",
-        "V2": "892100.81"
+        "V4": "2082206.78",
+        "V2": "1513671.75"
       },
       "policy_set": "confidence_policy",
       "raw_before_stage_scaling": {
         "current_baseline": "0.552",
         "target_cost": "0.911",
-        "realization": "0.563"
+        "realization": "0.565"
       },
       "stage_ceilings": {
         "current_baseline": "0.5500",
@@ -4704,21 +5054,21 @@
     "scope_status": "PARTIAL_COUNTRIES",
     "metrics": {
       "BASELINE_PER_EMPLOYEE": {
-        "value": "31.31",
+        "value": "50.39",
         "flag": "NOT_ASSESSABLE",
         "note": "scope is PARTIAL_COUNTRIES: this baseline covers part of the group and the denominator is group-wide, so the ratio measures the scope gap rather than the estimate",
         "benchmark": null
       },
       "BASELINE_PCT_OF_REVENUE": {
-        "value": "0.01",
+        "value": "0.02",
         "flag": "NOT_ASSESSABLE",
         "note": "scope is PARTIAL_COUNTRIES: this baseline covers part of the group and the denominator is group-wide, so the ratio measures the scope gap rather than the estimate",
         "benchmark": null
       },
       "BASELINE_PER_SITE": {
-        "value": "44936.43",
+        "value": "72322.27",
         "flag": "OK",
-        "note": "44936.43108808290155440414508 is within 4000.000000-120000.000000",
+        "note": "72322.27150259067357512953368 is within 4000.000000-120000.000000",
         "benchmark": {
           "low": "4000.00",
           "high": "120000.00",
@@ -4755,7 +5105,7 @@
     "notes": [
       "BASELINE_PER_EMPLOYEE: scope is PARTIAL_COUNTRIES: this baseline covers part of the group and the denominator is group-wide, so the ratio measures the scope gap rather than the estimate",
       "BASELINE_PCT_OF_REVENUE: scope is PARTIAL_COUNTRIES: this baseline covers part of the group and the denominator is group-wide, so the ratio measures the scope gap rather than the estimate",
-      "BASELINE_PER_SITE: 44936.43108808290155440414508 is within 4000.000000-120000.000000",
+      "BASELINE_PER_SITE: 72322.27150259067357512953368 is within 4000.000000-120000.000000",
       "scope is PARTIAL_COUNTRIES, so only BASELINE_PER_SITE is judged. Per-site divides the cost of the estate by the size of the same estate and is unaffected by how much of the group that estate is."
     ],
     "benchmark_rows": 21
@@ -5333,6 +5683,7 @@
         "bandwidth_mbps": 2750,
         "count": 23,
         "service_class": "BEST_EFFORT",
+        "density": "RURAL",
         "bearer_mbps": 2750,
         "access_technology": "PON",
         "reason": "NO_APPROVED_PRIOR_AT_BANDWIDTH"
@@ -5344,6 +5695,7 @@
         "bandwidth_mbps": 2750,
         "count": 9,
         "service_class": "BEST_EFFORT",
+        "density": "RURAL",
         "bearer_mbps": 2750,
         "access_technology": "PON",
         "reason": "NO_APPROVED_PRIOR_AT_BANDWIDTH"
@@ -5355,6 +5707,7 @@
         "bandwidth_mbps": 2750,
         "count": 24,
         "service_class": "BEST_EFFORT",
+        "density": "RURAL",
         "bearer_mbps": 2750,
         "access_technology": "PON",
         "reason": "NO_APPROVED_PRIOR_AT_BANDWIDTH"
@@ -5366,6 +5719,7 @@
         "bandwidth_mbps": 2750,
         "count": 9,
         "service_class": "BEST_EFFORT",
+        "density": "RURAL",
         "bearer_mbps": 2750,
         "access_technology": "PON",
         "reason": "NO_APPROVED_PRIOR_AT_BANDWIDTH"
@@ -5377,6 +5731,7 @@
         "bandwidth_mbps": 2750,
         "count": 10,
         "service_class": "BEST_EFFORT",
+        "density": "RURAL",
         "bearer_mbps": 2750,
         "access_technology": "PON",
         "reason": "NO_APPROVED_PRIOR_AT_BANDWIDTH"
@@ -5388,21 +5743,22 @@
         "bandwidth_mbps": 2750,
         "count": 14,
         "service_class": "BEST_EFFORT",
+        "density": "RURAL",
         "bearer_mbps": 2750,
         "access_technology": "PON",
         "reason": "NO_APPROVED_PRIOR_AT_BANDWIDTH"
       }
     ]
   },
-  "simulated_share": "0.0990",
+  "simulated_share": "0.0597",
   "simulated_share_by_scenario": {
-    "A": "0.0899",
-    "B": "0.0909",
-    "C": "0.0990",
-    "D": "0.0883"
+    "A": "0.0563",
+    "B": "0.0567",
+    "C": "0.0597",
+    "D": "0.0557"
   },
   "asserted_share": "0.0000",
-  "entered_share": "0.9082",
+  "entered_share": "0.9430",
   "quantity_sources": {
     "footprint": {
       "origin": "ANALYST_ENTERED_SCOPE",

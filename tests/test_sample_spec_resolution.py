@@ -96,3 +96,21 @@ def test_the_spec_identity_is_recorded_for_the_manifest(driver):
     any artifact said which file had been read, which is why the scope
     reversion was invisible until estates moved in unrelated industries."""
     assert set(driver.SPEC_IDENTITY) == {"path", "digest"}
+
+
+def test_the_spec_does_not_live_in_the_published_output_directory(driver):
+    """The other half of the same defect, and the one that bit second.
+
+    Stopping the driver READING from its output directory did not stop
+    publishing a run from WRITING over its input: a publish copies the whole
+    output directory back into the repository, so a spec sitting inside it is
+    replaced by whatever the container happened to hold. The commit that
+    fixed the read direction overwrote the committed 174-row spec with the
+    stale 97-row one it had just been handed to prove the fix worked.
+
+    Separate directories make it unrepresentable. This asserts they stay
+    separate.
+    """
+    assert "outside_in" not in driver.SPEC_RELATIVE.parts, (
+        "the spec must not live under samples/outside_in/ - that directory "
+        "is the published output and is copied back over the repository")
