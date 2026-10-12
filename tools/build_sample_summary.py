@@ -10,6 +10,7 @@ import argparse
 import csv
 import json
 import pathlib
+import sys
 
 # What the estimate carries, and where. Kept as a table rather than inline
 # so a key that moves is changed in one place.
@@ -46,23 +47,21 @@ FIELDS = [
     # The number that says how much to trust the rest of the row.
     ("confidence_overall", lambda m, s, e, r: _g(e, "confidence", "overall")),
     ("confidence_band", lambda m, s, e, r: _g(e, "confidence", "band")),
-    # CR-08 / F10. The breakdown was never missing from the engine - it was
-    # missing from here, so a reader comparing two companies saw two scores
-    # and no way to tell which part of one was weaker. These are the three
-    # components the score is the weighted minimum of, their weights, and
-    # the ceilings that moved them.
-    ("confidence_current_baseline",
-     lambda m, s, e, r: _g(e, "confidence", "current_baseline")),
-    ("confidence_target_cost",
-     lambda m, s, e, r: _g(e, "confidence", "target_cost")),
-    ("confidence_realization",
-     lambda m, s, e, r: _g(e, "confidence", "realization")),
-    ("confidence_weighted", lambda m, s, e, r: _g(e, "confidence", "weighted")),
+    # CR-08 / F10. The three components, the weighted figure and the
+    # ceilings are already published below as conf_* - CR-01 surfaced them.
+    # Only the weights were genuinely missing, and without them the score
+    # could be read but not reproduced, which is the acceptance criterion.
+    #
+    # The first version of this added confidence_current_baseline,
+    # confidence_target_cost, confidence_realization, confidence_weighted
+    # and confidence_ceilings_applied beside identical conf_* columns. Two
+    # names for one number in one row is how a reader ends up asking which
+    # is authoritative.
     ("confidence_weights", lambda m, s, e, r: _pipe(
         f"{k}={v}" for k, v in sorted(
             (_g(e, "confidence", "weights") or {}).items()))),
-    ("confidence_ceilings_applied", lambda m, s, e, r: _pipe(
-        _g(e, "confidence", "ceilings_applied") or [])),
+    ("confidence_cap_headroom",
+     lambda m, s, e, r: _g(e, "confidence", "component_cap_headroom")),
     # Renamed, not redefined. It measures how much of the declared scope was
     # priced - 27 published fields' worth - and says nothing about evidence.
     # Beside a domain count in one row, "coverage COMPLETE" read as "we know
@@ -478,6 +477,8 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", required=True)
     ap.add_argument("--build", default="", help="stamp manifests missing one")
+    ap.add_argument("--no-gate", action="store_true",
+                    help="publish without running the validation gate")
     ap.add_argument("--fx", default="",
                     help="JSON of currency -> fx_to_eur, to fill in a rate a "
                          "manifest could not find when it ran")
@@ -504,15 +505,51 @@ def main():
             json.loads((d / f"{n}.json").read_text("utf-8"))
             for n in ("manifest", "simulation", "estimate_v0", "research")))
 
-    with (root / "summary.csv").open("w", newline="", encoding="utf-8") as f:
+    # CR-NCT-001 section 6: the gate runs before the summary is published.
+    #
+    # Written to a staging name, gated, and only then promoted. The gate
+    # reads a summary - most of its checks are on the rolled-up row - so
+    # "before it is written" has to mean "before the published one is",
+    # not "before any file exists". A set that fails leaves summary.csv as
+    # it was and the staging file on disk to look at, which is more use
+    # than no file and a stack trace.
+    staged = root / "summary.staged.csv"
+    with staged.open("w", newline="", encoding="utf-8") as f:
         w = csv.writer(f)
         w.writerow([n for n, _ in FIELDS])
         for m, s, e, r in rows:
             w.writerow([fn(m, s, e, r) for _, fn in FIELDS])
 
+    if not args.no_gate:
+        import shutil
+        import subprocess
+        import tempfile
+        with tempfile.TemporaryDirectory() as td:
+            # The gate wants a directory shaped like a sample set. Linking
+            # the company folders rather than copying keeps a 16MB set from
+            # being duplicated on every build.
+            stage_dir = pathlib.Path(td) / "staged"
+            stage_dir.mkdir()
+            shutil.copy(staged, stage_dir / "summary.csv")
+            for d in root.iterdir():
+                if d.is_dir():
+                    (stage_dir / d.name).symlink_to(d.resolve(),
+                                                    target_is_directory=True)
+            gate = subprocess.run(
+                [sys.executable,
+                 str(pathlib.Path(__file__).with_name("validation_gate.py")),
+                 "--out", str(stage_dir)])
+        if gate.returncode != 0:
+            print()
+            print(f"summary NOT published. The staged rows are at "
+                  f"{staged} if you want to look at what failed.")
+            return 1
+
+    staged.replace(root / "summary.csv")
     (root / "HIGHLIGHTS.md").write_text(highlights_md(rows), encoding="utf-8")
     print(f"{len(rows)} company(ies) -> summary.csv, HIGHLIGHTS.md")
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main() or 0)
