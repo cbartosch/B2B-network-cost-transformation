@@ -159,10 +159,19 @@ def test_the_backbone_row_is_not_reused_as_site_access():
     assert len(backbone) == 1, "the backbone row must survive the fill"
 
     # and a 10 Gbps site in an unlisted EMEA country is not priced from it at
-    # a lower tier's expense - the derived tiers stop below it
+    # a lower tier's expense - the derived tiers stop below it.
+    #
+    # Stated as a bound rather than an exact list. The list was pinned, and
+    # that failed the moment the 1-10 Gbps gap was filled with 2,000 and
+    # 5,000 - tiers that do exactly what this test wants, sitting below the
+    # backbone row without touching it. A literal list turns every legitimate
+    # addition into a failure and says nothing about why 10,000 is special.
     derived = sorted(r[3] for r in PRIORS
                      if r[0] == "EMEA" and r[1] == "ETHERNET")
-    assert derived == [500, 1000, 10000], derived
+    assert derived[:2] == [500, 1000], derived
+    assert derived[-1] == 10000, derived
+    assert sum(1 for bw in derived if bw >= 10000) == 1, (
+        f"nothing may be added at or above the backbone tier: {derived}")
 
     # Albania, not Poland: Poland is in the Eastern Europe cluster and has its
     # own Ethernet rows since the workbook loaded.

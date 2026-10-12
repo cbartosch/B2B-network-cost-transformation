@@ -1422,6 +1422,80 @@ PRIORS = PRIORS + _consumer_tiers(PRIORS)
 PRIORS = PRIORS + _fwa_tiers(PRIORS)
 PRIORS = PRIORS + _fill_country_tiers(PRIORS)
 
+
+#: Tiers to interpolate, and the pair each sits between.
+#:
+#: The card jumped 1,000 straight to 10,000 and nothing in between, so
+#: match_prior - which takes the cheapest tier AT OR ABOVE the requirement,
+#: correctly, because substituting downward understates - priced a 1,650 Mbps
+#: circuit at the 10 Gbps rate. Six times the bandwidth bought and charged
+#: for. 161 circuits in the twenty-company sample land in that gap, and once
+#: the rural multiplier arrived the overshoot was doubled on top.
+#:
+#: 2 Gbps and 5 Gbps because those are the commercial steps carriers actually
+#: sell between 1 and 10, and because together they bracket the requirements
+#: the sample produces: 1,650 and 3,000 stop overshooting to 10 Gbps.
+_INTERPOLATED_TIERS = ((2000, 1000, 10000), (5000, 1000, 10000))
+
+
+def _interpolated_tiers(rows):
+    """Fill the gap between two priced tiers, on the curve the card already has.
+
+    DERIVED, NOT INVENTED, and the difference is checkable. Bandwidth pricing
+    is sublinear - this card's own 10x step from 1,000 to 10,000 costs a
+    median 4.24x - so the interpolation is geometric in both axes: a tier at
+    log-distance f between two anchors sits at the same log-distance between
+    their prices.
+
+    The method was validated against tiers the card already holds, by
+    predicting each from its neighbours and comparing: the seeded 250 comes
+    back within 0.7% median (0.9 percentile 1.9%) and the 500 within 1.3%.
+    So this reproduces how the rate card was authored rather than imposing a
+    curve on it. The one tier it predicts badly is DIA's 300, at 14%, which
+    is a real kink in that product rather than a failure of the method - and
+    no tier is interpolated there.
+
+    low, base and high are each interpolated on their own curve, so the band
+    keeps the shape its anchors have instead of being recentred.
+
+    Only where BOTH anchors exist for that country and product. A tier
+    extrapolated past the top of a product's card would have nothing holding
+    it down, which is a different and much weaker claim than this one - so
+    those are left absent, and a circuit needing one stays visibly unpriced.
+    """
+    import math
+
+    have = {(c, p, int(bw)) for c, p, _l, bw, _lo, _ba, _hi in rows}
+    priced = {(c, p, int(bw)): (lo, ba, hi)
+              for c, p, _l, bw, lo, ba, hi in rows}
+    layer = {(c, p): l for c, p, l, _bw, _lo, _ba, _hi in rows}
+    out = []
+    for country, product, bw in sorted({(c, p, int(b)) for c, p, b in have}):
+        if bw != 1000:                      # one pass per (country, product)
+            continue
+        for target, low_t, high_t in _INTERPOLATED_TIERS:
+            if (country, product, target) in have:
+                continue
+            lo_anchor = priced.get((country, product, low_t))
+            hi_anchor = priced.get((country, product, high_t))
+            if not lo_anchor or not hi_anchor:
+                continue
+            f = math.log(target / low_t) / math.log(high_t / low_t)
+            band = []
+            for a, b in zip(lo_anchor, hi_anchor):
+                a, b = float(a), float(b)
+                band.append(round(a * ((b / a) ** f), 2) if a > 0 else b)
+            out.append((country, product, layer[(country, product)], target,
+                        *band))
+    return out
+
+
+#: Every key priced before interpolation, so a row at one of the new tiers
+#: can be told from one that was always there.
+_PRE_INTERPOLATION_KEYS = {(c, p, int(bw)) for c, p, _l, bw, _lo, _ba, _hi
+                           in PRIORS}
+PRIORS = PRIORS + _interpolated_tiers(PRIORS)
+
 # How an estate of a given kind typically distributes. Shares of the whole
 # estate, so each industry's rows sum to 1.
 #
@@ -1811,6 +1885,24 @@ PRIORS = PRIORS + _regional_tiers(
 # median of countries whose own 50 came from elsewhere, so the inversion
 # reappeared one level up. The check that caught it is the same one.
 PRIORS = _rescale_lowest_tier(PRIORS, _WORKBOOK_KEYS)
+
+#: Which rows are interpolated, settled against the FINISHED pipeline.
+#:
+#: Computed at the point of interpolation first, and that was wrong by 22
+#: rows: `_regional_tiers` runs later and derives EMEA, APAC and the rest
+#: from the country rows, so the regions legitimately inherited the new
+#: tiers and were then labelled SEED - a row derived twice over, presenting
+#: as a position somebody set. A key set captured mid-pipeline describes a
+#: PRIORS that no longer exists by the time anything reads it.
+#:
+#: A tier is interpolated if it is one of the targets and nothing priced that
+#: key before the fill. The second half matters: a sourced 2 Gbps rate added
+#: later supersedes by key and must keep its own basis rather than inherit
+#: this one.
+_DERIVED_TIER_KEYS = {
+    (c, p, int(bw)) for c, p, _l, bw, _lo, _ba, _hi in PRIORS
+    if int(bw) in {target for target, _lo_t, _hi_t in _INTERPOLATED_TIERS}
+    and (c, p, int(bw)) not in _PRE_INTERPOLATION_KEYS}
 
 # The backbone. ETHERNET at 10 Gbps between a data centre and its regional hub,
 # and between a regional hub and the global core - which is the shape and the
@@ -2317,7 +2409,14 @@ def _rows():
              "access_technology": access.LEGACY_PRODUCT[p][1],
              "bandwidth_mbps": bw, "low": lo, "base": ba, "high": hi,
              "currency": "USD", "price_year": 2026, "approved": True,
-             "price_basis": "SEED",
+             # A tier filled in between two priced anchors says so, rather
+             # than passing as a position somebody set. Same evidence grade
+             # as the anchors it came from - a derivation is not worth more
+             # than its inputs - but a different basis, so a reader can tell
+             # an interpolation from an assumption and retune the right one.
+             "price_basis": ("INTERPOLATED"
+                             if (c, p, int(bw)) in _DERIVED_TIER_KEYS
+                             else "SEED"),
              # Graded E - expert assumption - not F. F implies a claim to a
              # source that cannot be produced; these claim none. The commercial
              # basis is stated because a rate without it is not comparable to a
@@ -2325,8 +2424,15 @@ def _rows():
              # number from a 12-month price without, and an audit cannot
              # normalise what was never declared.
              "evidence_grade": "E",
-             "source": "indicative starting position set at seed time; "
-                       "no transaction, quote or published benchmark behind it",
+             "source": (
+                 "interpolated between this country and product's own 1 Gbps "
+                 "and 10 Gbps rows, geometric in bandwidth and price; the "
+                 "method reproduces tiers the card already holds to within "
+                 "about 1%. No transaction or quote behind it, and no more "
+                 "evidence than the two anchors it sits between."
+                 if (c, p, int(bw)) in _DERIVED_TIER_KEYS else
+                 "indicative starting position set at seed time; "
+                 "no transaction, quote or published benchmark behind it"),
              "source_date": "2026-01-01", "sample_size": None,
              "term_months": 36, "sla": "STANDARD_BUSINESS",
              "taxes_included": False, "equipment_included": False,
