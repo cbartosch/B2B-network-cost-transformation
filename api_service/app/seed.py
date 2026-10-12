@@ -1432,10 +1432,16 @@ PRIORS = PRIORS + _fill_country_tiers(PRIORS)
 #: for. 161 circuits in the twenty-company sample land in that gap, and once
 #: the rural multiplier arrived the overshoot was doubled on top.
 #:
-#: 2 Gbps and 5 Gbps because those are the commercial steps carriers actually
-#: sell between 1 and 10, and because together they bracket the requirements
-#: the sample produces: 1,650 and 3,000 stop overshooting to 10 Gbps.
-_INTERPOLATED_TIERS = ((2000, 1000, 10000), (5000, 1000, 10000))
+#: 2 Gbps only. It is the commercial step directly above 1 Gbps and it covers
+#: the requirement that prompted this - 107 of the sample's 161 gap circuits
+#: sit at 1,650 Mbps and now overshoot by 1.2x instead of 6x.
+#:
+#: A 5 Gbps tier was added alongside and removed on review. It priced the 31
+#: circuits at 3,000 Mbps, which now round up to 10 Gbps again; that is a
+#: 3.3x overshoot on 31 circuits against carrying a tier nobody asked for.
+#: Add back by appending (5000, 1000, 10000) - everything downstream, the
+#: labelling and the tests included, reads this tuple rather than a literal.
+_INTERPOLATED_TIERS = ((2000, 1000, 10000),)
 
 
 def _interpolated_tiers(rows):

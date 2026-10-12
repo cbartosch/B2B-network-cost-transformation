@@ -1,13 +1,13 @@
 {
-  "simulation_run_id": "f183c851-b016-443e-8712-d703a28de2e1",
+  "simulation_run_id": "afc6d1ba-287c-46cd-9d4b-543a9d5b08dd",
   "case_id": "4ceb19bd-c331-45c1-8220-87db66ff9103",
   "model_version": "sim-2.7.0",
   "seed": 20260101,
   "ensemble_size": 25,
   "status": "SUCCEEDED",
   "output_hash": "d96fca22dc7fd0a8df216a775dffa2e2258c6886ec70e8bb18f7fdb3d9a008b3",
-  "started_at": "2026-10-12 17:52:06.793364+00:00",
-  "ended_at": "2026-10-12 17:52:23.521626+00:00",
+  "started_at": "2026-10-12 18:02:18.413706+00:00",
+  "ended_at": "2026-10-12 18:02:22.465801+00:00",
   "params": {
     "footprint": [
       {
@@ -1057,36 +1057,6 @@
   },
   "pinned_priors": {
     "archetype_prior": {
-      "SELF_SERVICE_TERMINAL": {
-        "dual_access_probability": 0.15,
-        "primary_product": "MOBILE_5G",
-        "backup_product": "BROADBAND_PON",
-        "users_base": 0,
-        "bandwidth_mbps_base": 50,
-        "committed_fraction": "0.250",
-        "primary_service_class": "BEST_EFFORT",
-        "backup_service_class": "BEST_EFFORT"
-      },
-      "ATM": {
-        "dual_access_probability": 0.55,
-        "primary_product": "MOBILE_5G",
-        "backup_product": "BROADBAND_PON",
-        "users_base": 0,
-        "bandwidth_mbps_base": 50,
-        "committed_fraction": "0.600",
-        "primary_service_class": "BEST_EFFORT",
-        "backup_service_class": "BEST_EFFORT"
-      },
-      "LEGACY_WAN_SITE": {
-        "dual_access_probability": 0.6,
-        "primary_product": "MPLS",
-        "backup_product": "BROADBAND_PON",
-        "users_base": 40,
-        "bandwidth_mbps_base": 100,
-        "committed_fraction": "0.800",
-        "primary_service_class": "IPVPN",
-        "backup_service_class": "BEST_EFFORT"
-      },
       "BRANCH": {
         "dual_access_probability": 0.55,
         "primary_product": "DIA",
@@ -1205,6 +1175,36 @@
         "bandwidth_mbps_base": 50,
         "committed_fraction": "0.300",
         "primary_service_class": "BEST_EFFORT",
+        "backup_service_class": "BEST_EFFORT"
+      },
+      "SELF_SERVICE_TERMINAL": {
+        "dual_access_probability": 0.15,
+        "primary_product": "MOBILE_5G",
+        "backup_product": "BROADBAND_PON",
+        "users_base": 0,
+        "bandwidth_mbps_base": 50,
+        "committed_fraction": "0.250",
+        "primary_service_class": "BEST_EFFORT",
+        "backup_service_class": "BEST_EFFORT"
+      },
+      "ATM": {
+        "dual_access_probability": 0.55,
+        "primary_product": "MOBILE_5G",
+        "backup_product": "BROADBAND_PON",
+        "users_base": 0,
+        "bandwidth_mbps_base": 50,
+        "committed_fraction": "0.600",
+        "primary_service_class": "BEST_EFFORT",
+        "backup_service_class": "BEST_EFFORT"
+      },
+      "LEGACY_WAN_SITE": {
+        "dual_access_probability": 0.6,
+        "primary_product": "MPLS",
+        "backup_product": "BROADBAND_PON",
+        "users_base": 40,
+        "bandwidth_mbps_base": 100,
+        "committed_fraction": "0.800",
+        "primary_service_class": "IPVPN",
         "backup_service_class": "BEST_EFFORT"
       },
       "DEFAULT/BRANCH": {
@@ -1999,32 +1999,32 @@
       "PLANT": "0.8000",
       "INTEGRATED_OIL_GAS/WAREHOUSE": "0.7500",
       "WAREHOUSE": "0.7500",
-      "INTEGRATED_OIL_GAS/CAMPUS": "0.9750",
-      "CAMPUS": "0.9750",
-      "INTEGRATED_OIL_GAS/STORE": "0.7500",
-      "STORE": "0.7500",
       "INTEGRATED_OIL_GAS/LEGACY_WAN_SITE": "0.9000",
       "LEGACY_WAN_SITE": "0.9000",
       "INTEGRATED_OIL_GAS/LARGE_OFFICE": "0.7500",
       "LARGE_OFFICE": "0.7500",
+      "INTEGRATED_OIL_GAS/CAMPUS": "0.9750",
+      "CAMPUS": "0.9750",
       "INTEGRATED_OIL_GAS/DC": "0.6500",
-      "DC": "0.6500"
+      "DC": "0.6500",
+      "INTEGRATED_OIL_GAS/STORE": "0.7500",
+      "STORE": "0.7500"
     },
     "dual_access_by_archetype": {
       "INTEGRATED_OIL_GAS/PLANT": "0.9475",
       "PLANT": "0.9475",
       "INTEGRATED_OIL_GAS/WAREHOUSE": "0.8075",
       "WAREHOUSE": "0.8075",
-      "INTEGRATED_OIL_GAS/CAMPUS": "1.0000",
-      "CAMPUS": "1.0000",
-      "INTEGRATED_OIL_GAS/STORE": "0.5500",
-      "STORE": "0.5500",
       "INTEGRATED_OIL_GAS/LEGACY_WAN_SITE": "0.8600",
       "LEGACY_WAN_SITE": "0.8600",
       "INTEGRATED_OIL_GAS/LARGE_OFFICE": "0.9650",
       "LARGE_OFFICE": "0.9650",
+      "INTEGRATED_OIL_GAS/CAMPUS": "1.0000",
+      "CAMPUS": "1.0000",
       "INTEGRATED_OIL_GAS/DC": "1.0000",
-      "DC": "1.0000"
+      "DC": "1.0000",
+      "INTEGRATED_OIL_GAS/STORE": "0.5500",
+      "STORE": "0.5500"
     },
     "resilience_basis": {
       "industry": "INTEGRATED_OIL_GAS",

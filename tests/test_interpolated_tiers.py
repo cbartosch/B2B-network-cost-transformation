@@ -14,6 +14,14 @@ import pytest
 from app import seed
 
 
+#: The tiers under test, read from the configuration rather than restated.
+#: A hardcoded list breaks on every legitimate change to the tier set and
+#: says nothing about why a tier is there - which is how the EMEA assertion
+#: in test_regional_fallback failed the moment this gap was filled.
+TARGETS = {target for target, _lo, _hi in seed._INTERPOLATED_TIERS}
+ANCHORS = {target: (lo, hi) for target, lo, hi in seed._INTERPOLATED_TIERS}
+
+
 def _by_key(rows):
     return {(c, p, int(bw)): (float(lo), float(ba), float(hi))
             for c, p, _l, bw, lo, ba, hi in rows}
@@ -57,9 +65,9 @@ def test_the_interpolation_reproduces_tiers_the_card_already_holds(
 
 # ------------------------------------------------------- what was added
 
-def test_the_gap_between_one_and_ten_gigabit_is_filled(priced):
-    added = {bw for (_c, _p, bw) in priced if bw in (2000, 5000)}
-    assert added == {2000, 5000}
+def test_every_configured_tier_is_present(priced):
+    added = {bw for (_c, _p, bw) in priced if bw in TARGETS}
+    assert added == TARGETS, f"configured {TARGETS}, found {added}"
 
 
 def test_a_derived_tier_sits_between_its_anchors(priced):
@@ -67,10 +75,11 @@ def test_a_derived_tier_sits_between_its_anchors(priced):
     an interpolation landing outside its anchors is not an interpolation."""
     checked = 0
     for (country, product, bw), value in priced.items():
-        if bw not in (2000, 5000):
+        if bw not in TARGETS:
             continue
-        lo = priced[(country, product, 1000)]
-        hi = priced[(country, product, 10000)]
+        low_t, high_t = ANCHORS[bw]
+        lo = priced[(country, product, low_t)]
+        hi = priced[(country, product, high_t)]
         for i in range(3):
             assert lo[i] <= value[i] <= hi[i], (country, product, bw)
         checked += 1
@@ -80,9 +89,9 @@ def test_a_derived_tier_sits_between_its_anchors(priced):
 def test_every_derived_tier_is_cheaper_than_the_one_it_replaces(priced):
     """The whole point. A 1,650 Mbps circuit used to pay the 10 Gbps rate."""
     for (country, product, bw), value in priced.items():
-        if bw != 2000:
+        if bw not in TARGETS:
             continue
-        assert value[1] < priced[(country, product, 10000)][1]
+        assert value[1] < priced[(country, product, ANCHORS[bw][1])][1]
 
 
 def test_the_tiers_stay_monotonic_in_bandwidth(priced):
@@ -101,8 +110,8 @@ def test_nothing_is_extrapolated_past_the_top_of_a_card(priced):
     weaker claim than sitting between two. DIA and the broadband products
     stop at 1 Gbps and must gain nothing here."""
     for (country, product, bw) in priced:
-        if bw in (2000, 5000):
-            assert (country, product, 10000) in priced, (
+        if bw in TARGETS:
+            assert (country, product, ANCHORS[bw][1]) in priced, (
                 f"{country} {product} {bw} has no upper anchor")
 
 
@@ -125,7 +134,7 @@ def test_a_derived_tier_is_not_presented_as_a_seeded_position():
     its anchors are quoted."""
     assert seed._DERIVED_TIER_KEYS, "no derived tiers"
     for country, product, bw in seed._DERIVED_TIER_KEYS:
-        assert bw in (2000, 5000)
+        assert bw in TARGETS
         assert product == "ETHERNET", (
             "only ETHERNET spans 1-10 Gbps on this card; a tier elsewhere "
             "would be an extrapolation wearing an interpolation's label")
@@ -141,7 +150,7 @@ def test_every_row_at_a_new_tier_is_labelled_interpolated():
     - rows derived twice over, presenting as positions somebody set.
     """
     at_new_tier = {(c, p, int(bw)) for c, p, _l, bw, _lo, _ba, _hi
-                   in seed.PRIORS if int(bw) in (2000, 5000)}
+                   in seed.PRIORS if int(bw) in TARGETS}
     assert at_new_tier == seed._DERIVED_TIER_KEYS, (
         "unlabelled: " + str(sorted(at_new_tier - seed._DERIVED_TIER_KEYS)[:5]))
 
@@ -151,9 +160,9 @@ def test_regions_inherit_the_new_tiers(priced):
     gap for countries, leaving regions with a 1-to-10 Gbps cliff would put
     the overshoot back for every country that falls through to one."""
     for region in ("EMEA", "APAC", "AMER"):
-        tiers = sorted(bw for (c, p, bw) in priced
-                       if c == region and p == "ETHERNET")
-        assert 2000 in tiers and 5000 in tiers, f"{region}: {tiers}"
+        tiers = {bw for (c, p, bw) in priced
+                 if c == region and p == "ETHERNET"}
+        assert TARGETS <= tiers, f"{region} missing {TARGETS - tiers}"
 
 
 def test_a_tier_priced_before_the_fill_is_never_relabelled():
