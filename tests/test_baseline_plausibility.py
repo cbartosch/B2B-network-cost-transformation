@@ -1,0 +1,133 @@
+"""CR-03: the plausibility gate, and what it refuses to do without a benchmark.
+
+The thresholds are the owner's. These test everything around them: the
+ratios, the flag logic once a range exists, the confidence cap, and - most
+importantly - that an absent benchmark produces NOT_ASSESSABLE and never a
+quietly-invented verdict.
+"""
+import pytest
+
+from app.domain import baseline_plausibility as plausibility
+from app.domain.money import D
+
+BASE = dict(baseline="10000000", employees="50000", revenue="20000000000",
+            sites="2000", industry="GROCERY_RETAIL")
+
+
+def _bench(metric, low, high, industry="DEFAULT", **over):
+    row = {"metric": metric, "industry": industry, "low": low, "high": high,
+           "unit": "x", "source": "test", "as_of": "2026-01-01",
+           "evidence_grade": "B"}
+    row.update(over)
+    return {(metric, industry): row}
+
+
+# -------------------------------------------------- the shipped state
+
+def test_with_no_benchmark_every_metric_is_not_assessable():
+    """The state this ships in. Nothing is judged, and the output says why
+    rather than leaving a reader to wonder whether OK meant checked."""
+    out = plausibility.assess(**BASE, benchmarks={})
+    assert out["flag"] == plausibility.NOT_ASSESSABLE
+    assert out["benchmark_rows"] == 0
+    for m in plausibility.METRICS:
+        assert out["metrics"][m]["flag"] == plausibility.NOT_ASSESSABLE
+    assert any("thresholds are the owner's" in n for n in out["notes"])
+
+
+def test_the_ratios_are_published_even_with_no_benchmark():
+    """The part that is useful without anybody setting a threshold. A reader
+    can see 0.05% of revenue and form a view; before, they could not see it
+    at all."""
+    out = plausibility.assess(**BASE, benchmarks={})
+    assert out["metrics"]["BASELINE_PER_EMPLOYEE"]["value"] == "200.00"
+    assert out["metrics"]["BASELINE_PCT_OF_REVENUE"]["value"] == "0.05"
+    assert out["metrics"]["BASELINE_PER_SITE"]["value"] == "5000.00"
+
+
+def test_not_assessable_does_not_cap_confidence():
+    """An unmeasured baseline is not a wrong one. Treating "nobody has said"
+    as "this is wrong" would make the absence of a benchmark look like a
+    finding about the company."""
+    assert not plausibility.caps_confidence(plausibility.NOT_ASSESSABLE)
+
+
+# ------------------------------------------------- once a range exists
+
+@pytest.mark.parametrize("low,high,expect", [
+    ("100", "300", plausibility.OK),
+    ("250", "400", plausibility.LOW),
+    ("50", "150", plausibility.HIGH),
+])
+def test_a_ratio_is_judged_against_its_band(low, high, expect):
+    out = plausibility.assess(
+        **BASE, benchmarks=_bench("BASELINE_PER_EMPLOYEE", low, high))
+    assert out["metrics"]["BASELINE_PER_EMPLOYEE"]["flag"] == expect
+    assert out["flag"] == expect
+
+
+def test_the_worst_metric_governs_the_company_flag():
+    """A company fine on one metric and wrong on another is flagged. The
+    question is whether anything is wrong, not whether most of it is fine."""
+    marks = {}
+    marks.update(_bench("BASELINE_PER_EMPLOYEE", "100", "300"))      # OK
+    marks.update(_bench("BASELINE_PER_SITE", "10", "50"))            # HIGH
+    out = plausibility.assess(**BASE, benchmarks=marks)
+    assert out["metrics"]["BASELINE_PER_EMPLOYEE"]["flag"] == plausibility.OK
+    assert out["metrics"]["BASELINE_PER_SITE"]["flag"] == plausibility.HIGH
+    assert out["flag"] == plausibility.HIGH
+
+
+def test_an_industry_row_beats_the_default():
+    marks = {}
+    marks.update(_bench("BASELINE_PER_EMPLOYEE", "1", "5"))              # DEFAULT
+    marks.update(_bench("BASELINE_PER_EMPLOYEE", "100", "300",
+                        industry="GROCERY_RETAIL"))
+    out = plausibility.assess(**BASE, benchmarks=marks)
+    assert out["metrics"]["BASELINE_PER_EMPLOYEE"]["flag"] == plausibility.OK
+
+
+def test_a_flagged_baseline_caps_confidence():
+    """CR-03's second acceptance criterion."""
+    assert plausibility.caps_confidence(plausibility.LOW)
+    assert plausibility.caps_confidence(plausibility.HIGH)
+    assert not plausibility.caps_confidence(plausibility.OK)
+
+
+def test_the_benchmark_behind_a_judgement_is_published_with_it():
+    """A flag nobody can trace to a source is the thing the benchmark table
+    exists to prevent."""
+    out = plausibility.assess(
+        **BASE, benchmarks=_bench("BASELINE_PER_SITE", "10", "50",
+                                  source="ACME 2026 survey p.12"))
+    b = out["metrics"]["BASELINE_PER_SITE"]["benchmark"]
+    assert b["source"] == "ACME 2026 survey p.12"
+    assert b["as_of"] == "2026-01-01"
+
+
+# ------------------------------------------------------- missing inputs
+
+def test_a_metric_with_no_input_is_not_assessable_not_zero():
+    out = plausibility.assess(
+        baseline="10000000", employees=None, revenue="20000000000",
+        sites="2000", benchmarks=_bench("BASELINE_PER_EMPLOYEE", "1", "9"))
+    m = out["metrics"]["BASELINE_PER_EMPLOYEE"]
+    assert m["flag"] == plausibility.NOT_ASSESSABLE
+    assert m["value"] is None
+    assert "not available" in m["note"]
+
+
+def test_a_zero_denominator_does_not_divide():
+    out = plausibility.assess(baseline="1000", employees="0", revenue="0",
+                              sites="0", benchmarks={})
+    for m in plausibility.METRICS:
+        assert out["metrics"][m]["value"] is None
+
+
+def test_the_provenance_of_each_input_is_carried():
+    """A ratio whose numerator is dated 2026 and denominator 2019 is not a
+    ratio, so CR-03 asks for the source and period of each input."""
+    prov = {"employees": {"source": "AR 2025 p.4", "as_of": "2025-12-31"},
+            "revenue": {"source": "AR 2025 p.9", "as_of": "2025-12-31"}}
+    out = plausibility.assess(**BASE, benchmarks={}, inputs_provenance=prov)
+    assert out["inputs"]["provenance"]["employees"]["as_of"] == "2025-12-31"

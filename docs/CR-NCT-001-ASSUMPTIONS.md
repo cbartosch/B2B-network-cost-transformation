@@ -290,7 +290,7 @@ approval of a value already chosen.
 
 | item | needed from the owner |
 | --- | --- |
-| **CR-03** plausibility benchmark file | The thresholds and their sources. CR §5 makes these explicitly the owner's; inventing them would violate principle 1 and put a fabricated benchmark behind a flag that lowers confidence. |
+| **CR-03** plausibility benchmark rows | **The machinery is built; only the numbers are missing.** `reference.plausibility_benchmark` ships empty, with columns for `low`, `high`, `unit`, `source`, `as_of` and `evidence_grade` — the source and date are not nullable. Insert a row per metric (and optionally per industry) and every estimate starts judging itself against it. Until then all three ratios are computed and published and the flag is `NOT_ASSESSABLE`. Inventing ranges would violate principle 1 and put a fabricated benchmark behind a flag that lowers confidence. |
 | **CR-05** wave parameters | Delivery capacity, sites per wave, parallel waves. The current `sites_migrated_per_month = 120` is governed but is a single global rate. |
 | **CR-01** coverage thresholds | The CR proposes ≥80% of domains and ≥70% of baseline for `COMPLETE`. Not yet applied — see the rescope note, which keeps `priced_scope_status` measuring priced scope and adds evidence columns beside it. |
 | **CR-02b** country scope | Whether to widen the sample beyond 2–3 countries per company. Costs a full research re-run and changes every number. |

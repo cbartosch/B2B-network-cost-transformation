@@ -33,9 +33,10 @@ from ..domain import (access as access_vocab, anchor_estimate,
                       confidence, coverage,
                       dispositions,
                       entity_resolution,
-                      estimate, known_facts, policy, preflight, promotion, questionnaire,
+                      baseline_plausibility, estimate, known_facts, policy, preflight,
+                      promotion, questionnaire,
                       reachability, reconciliation, research, savings_advisory,
-                      scope, simulation, stage)
+                      scope, simulation, stage, triangulate)
 from ..domain.money import D, Range
 from ..llm import errors, gateway, prompts, registry
 
@@ -158,6 +159,69 @@ def _evidenced_domain_share(session, case_id: str):
             db.domain_disposition.c.case_id == case_id)).all()
     got = {r.domain_no for r in rows if r.agent_run_id} & routed
     return D(len(got)) / D(len(routed))
+
+
+import re as _re
+
+# CR-03. Employees and revenue, read back from what the agents found.
+#
+# Both are researched - domain 1 returns them for every company in the
+# sample set - but neither is an estimate input, so the baseline was
+# published with no way to ask whether it was a sane size for the company
+# it describes.
+_EMPLOYEE_LABEL = _re.compile(r"employee|headcount|staff|workforce", _re.I)
+_REVENUE_LABEL = _re.compile(r"revenue|turnover|business volume|net sales",
+                             _re.I)
+# A group figure, not a subsidiary's. "GROUP EMPLOYEES (CONSOLIDATED)" is
+# the denominator a baseline for the whole estate belongs over; a country
+# subsidiary's headcount would make the ratio look several times worse.
+_GROUP_HINT = _re.compile(r"group|consolidated", _re.I)
+
+
+def _largest_quantity(session, case_id, pattern):
+    """The biggest matching figure, with where it came from.
+
+    Biggest, because the group number is the one a whole-estate baseline
+    belongs over and subsidiary rows sit underneath it. A group hint wins
+    outright where one exists.
+    """
+    rows = session.execute(select(db.domain_disposition.c.evidence).where(
+        db.domain_disposition.c.case_id == case_id)).all()
+    best, best_hint = None, None
+    for (ev,) in rows:
+        if not isinstance(ev, dict):
+            continue
+        for q in (ev.get("quantities") or []):
+            label = str(q.get("label") or "")
+            if not pattern.search(label):
+                continue
+            value = triangulate.parse_value(q.get("value"))
+            if value is None or value <= 0:
+                continue
+            cand = {"value": str(value), "label": label,
+                    "as_of": q.get("as_of"), "unit": q.get("unit")}
+            if _GROUP_HINT.search(label):
+                if best_hint is None or value > D(best_hint["value"]):
+                    best_hint = cand
+            elif best is None or value > D(best["value"]):
+                best = cand
+    return best_hint or best
+
+
+def _baseline_plausibility(session, case_id, *, baseline, sites,
+                           industry):
+    emp = _largest_quantity(session, case_id, _EMPLOYEE_LABEL)
+    rev = _largest_quantity(session, case_id, _REVENUE_LABEL)
+    return baseline_plausibility.assess(
+        baseline=baseline,
+        employees=(emp or {}).get("value"),
+        revenue=(rev or {}).get("value"),
+        sites=sites,
+        industry=industry,
+        benchmarks=baseline_plausibility.load_benchmarks(
+            session, db.plausibility_benchmark),
+        inputs_provenance={k: v for k, v in
+                           (("employees", emp), ("revenue", rev)) if v})
 
 
 def _range_policy(s):
@@ -3520,6 +3584,15 @@ def _run_anchor_estimate(s, *, case_id, case_row, payload,
         components, policy=_range_policy(s),
         evidenced_domain_share=_evidenced_domain_share(s, case_id))
     cur = estimate.current_tco(components, range_factor=_range_factor)
+    # CR-03: is this baseline a sane size for this company?
+    # Three ratios against what the research found. Reported
+    # whether or not a benchmark exists to judge them - the
+    # thresholds are the owner's and the ratios are useful
+    # without them.
+    _plaus = _baseline_plausibility(
+        s, case_id, baseline=cur['total']['base'],
+        sites=estimate.site_count(components),
+        industry=getattr(case_row, 'industry', None))
     lv = [dict(r._mapping) for r in s.execute(select(db.lever)).all()]
     levers_by_id = {l["lever_id"]: l for l in lv}
     # With the transition policy, so each scenario carries what it
@@ -3563,6 +3636,21 @@ def _run_anchor_estimate(s, *, case_id, case_row, payload,
         # A-02: what the rates behind the baseline are worth as evidence.
         unsourced_price_share=cov.get("unsourced_price_share"),
         v0_status=cov["status"], drivers=derived["drivers"])
+
+    # CR-03: a flagged baseline cannot be reported above D - Indicative.
+    #
+    # Applied after the score rather than as another ceiling inside it.
+    # The confidence model answers "how well is this evidenced";
+    # plausibility answers "is the number the right size at all". Folding
+    # one into the other would make a flagged baseline indistinguishable
+    # from a poorly evidenced one.
+    #
+    # NOT_ASSESSABLE does not cap. Nobody having set a threshold is not a
+    # finding about the company.
+    if baseline_plausibility.caps_confidence(_plaus["flag"]):
+        conf = {**conf, "band": "D - Indicative",
+                "ceilings_applied": list(conf.get("ceilings_applied") or [])
+                + [f"plausibility_{_plaus['flag'].lower()}_band_cap"]}
 
     snap_id = str(uuid.uuid4())
     s.execute(insert(db.estimate_snapshot).values(
@@ -3647,6 +3735,7 @@ def _run_anchor_estimate(s, *, case_id, case_row, payload,
                 # distinguished it from COMPLETE.
                 coverage=cov),
             "scenarios": scen, "confidence": conf, "coverage": cov,
+            "baseline_plausibility": _plaus,
             "simulated_share": "0",
             "asserted_share": str(estimate.asserted_share(components)),
             "entered_share": str(estimate.entered_share(components)),
@@ -4074,6 +4163,15 @@ def run_estimate(case_id: str, payload: EstimateIn):
             components, policy=_range_policy(s),
             evidenced_domain_share=_evidenced_domain_share(s, case_id))
         cur = estimate.current_tco(components, range_factor=_range_factor)
+        # CR-03: is this baseline a sane size for this company?
+        # Three ratios against what the research found. Reported
+        # whether or not a benchmark exists to judge them - the
+        # thresholds are the owner's and the ratios are useful
+        # without them.
+        _plaus = _baseline_plausibility(
+            s, case_id, baseline=cur['total']['base'],
+            sites=estimate.site_count(components),
+            industry=getattr(case_row, 'industry', None))
         lv = [dict(r._mapping) for r in s.execute(select(db.lever)).all()]
         levers_by_id = {l["lever_id"]: l for l in lv}
         # With the transition policy, so each scenario carries what it
@@ -4131,6 +4229,21 @@ def run_estimate(case_id: str, payload: EstimateIn):
             realization=derived["realization"],
             simulated_share=sim_share, asserted_share=asserted,
             v0_status=cov["status"], drivers=derived["drivers"])
+
+        # CR-03: a flagged baseline cannot be reported above D - Indicative.
+        #
+        # Applied after the score rather than as another ceiling inside it.
+        # The confidence model answers "how well is this evidenced";
+        # plausibility answers "is the number the right size at all". Folding
+        # one into the other would make a flagged baseline indistinguishable
+        # from a poorly evidenced one.
+        #
+        # NOT_ASSESSABLE does not cap. Nobody having set a threshold is not a
+        # finding about the company.
+        if baseline_plausibility.caps_confidence(_plaus["flag"]):
+            conf = {**conf, "band": "D - Indicative",
+                    "ceilings_applied": list(conf.get("ceilings_applied") or [])
+                    + [f"plausibility_{_plaus['flag'].lower()}_band_cap"]}
 
         snap_id = str(uuid.uuid4())
         s.execute(insert(db.estimate_snapshot).values(
@@ -4192,6 +4305,7 @@ def run_estimate(case_id: str, payload: EstimateIn):
                     scen, current_total=cur["total"]["base"],
                     coverage=cov),
                 "confidence": conf,
+                "baseline_plausibility": _plaus,
                 "coverage": {**cov, "unpriced_components": unpriced},
                 "simulated_share": str(sim_share),
                 "simulated_share_by_scenario": {k: str(v) for k, v in scenario_shares.items()},
