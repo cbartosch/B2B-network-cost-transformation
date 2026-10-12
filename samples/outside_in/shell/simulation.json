@@ -1,13 +1,13 @@
 {
-  "simulation_run_id": "fcae187d-9330-4200-920e-70f2c2bb324a",
+  "simulation_run_id": "7238f863-2d87-48a5-8070-58de0a32f0e5",
   "case_id": "4ceb19bd-c331-45c1-8220-87db66ff9103",
   "model_version": "sim-2.7.0",
   "seed": 20260101,
   "ensemble_size": 25,
   "status": "SUCCEEDED",
-  "output_hash": "a6a2d1c7656f530bd553c8284a146d6219f0fe9a02bdf82791d2db564f0269dd",
-  "started_at": "2026-10-12 13:38:00.762376+00:00",
-  "ended_at": "2026-10-12 13:38:32.797912+00:00",
+  "output_hash": "47df638e41da233d4ef874fb740e6ab5907cd35e508fe4347841dada22f2c332",
+  "started_at": "2026-10-12 14:49:28.284925+00:00",
+  "ended_at": "2026-10-12 14:49:37.395318+00:00",
   "params": {
     "footprint": [
       {
@@ -24,7 +24,7 @@
         "sites": 1900,
         "industry": null,
         "count_source": null,
-        "density": null
+        "density": "SUBURBAN"
       },
       {
         "country": "DE",
@@ -40,7 +40,7 @@
         "sites": 8,
         "industry": null,
         "count_source": null,
-        "density": null
+        "density": "URBAN"
       },
       {
         "country": "GB",
@@ -48,7 +48,7 @@
         "sites": 1000,
         "industry": null,
         "count_source": null,
-        "density": null
+        "density": "SUBURBAN"
       },
       {
         "country": "NL",
@@ -80,7 +80,7 @@
         "sites": 3,
         "industry": null,
         "count_source": null,
-        "density": null
+        "density": "RURAL"
       },
       {
         "country": "NL",
@@ -88,7 +88,7 @@
         "sites": 500,
         "industry": null,
         "count_source": null,
-        "density": null
+        "density": "SUBURBAN"
       },
       {
         "country": "NL",
@@ -1992,21 +1992,39 @@
     "model_version": "sim-2.7.0",
     "seed": 20260101,
     "ensemble_size": 25,
-    "sites": 5995,
+    "sites": 5992,
     "serviceability": {
       "counts": {
-        "DELIVERED": 5995,
+        "DELIVERED": 5992,
         "SUBSTITUTED": 0,
         "UNSERVICEABLE": 0
       },
       "substitutions": [],
-      "by_access_technology": [],
+      "by_access_technology": [
+        {
+          "access_technology": "PON",
+          "sites": 3400
+        },
+        {
+          "access_technology": "ETHERNET_FIBRE",
+          "sites": 8
+        }
+      ],
       "unserviceable": 0,
-      "note": "0 of 5995 site(s) take a different product or tier from the one their type asks for, and 0 can be served by nothing at all. A uniform estate is an assumption; this is what the density bands say about it.",
+      "note": "0 of 5992 site(s) take a different product or tier from the one their type asks for, and 0 can be served by nothing at all. 8 of 5992 are delivered over a bearer other than PON (8 on ETHERNET_FIBRE), which is a different circuit at a different rate. A uniform estate is an assumption; this is what the density bands say about it.",
       "table_rows": 102,
       "table_basis": "GOVERNED"
     },
-    "unserviceable": [],
+    "unserviceable": [
+      {
+        "country": "NL",
+        "archetype": "PLANT",
+        "density": "RURAL",
+        "sites": 3,
+        "asked_for": "ETHERNET",
+        "reason": "no bearer that can carry a ETHERNET is available in RURAL NL - ETHERNET_FIBRE, DARK_FIBRE are recorded and none is deliverable"
+      }
+    ],
     "single_by_necessity": [
       {
         "because": "NOT_DELIVERABLE",
@@ -2041,23 +2059,23 @@
         "reason": "the only backup deliverable in None US is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
       }
     ],
-    "estate_truncated": 995,
+    "estate_truncated": 992,
     "sites_named": 0,
-    "sites_generated": 5995,
+    "sites_generated": 5992,
     "circuits": {
-      "low": 7567,
-      "base": 7597,
-      "high": 7634
+      "low": 7560,
+      "base": 7591,
+      "high": 7629
     },
     "circuits_primary": {
-      "low": 5995,
-      "base": 5995,
-      "high": 5995
+      "low": 5992,
+      "base": 5992,
+      "high": 5992
     },
     "circuits_backup": {
-      "low": 1564,
-      "base": 1594,
-      "high": 1631
+      "low": 1560,
+      "base": 1591,
+      "high": 1629
     },
     "products": [
       {
@@ -2115,7 +2133,7 @@
         "product": "MOBILE_5G",
         "role": "BACKUP",
         "bandwidth_mbps": 50,
-        "count": 1050,
+        "count": 1031,
         "service_class": "BEST_EFFORT",
         "bearer_mbps": 50,
         "access_technology": "MOBILE_5G"
@@ -2165,7 +2183,7 @@
         "product": "MOBILE_5G",
         "role": "BACKUP",
         "bandwidth_mbps": 50,
-        "count": 185,
+        "count": 211,
         "service_class": "BEST_EFFORT",
         "bearer_mbps": 50,
         "access_technology": "MOBILE_5G"
@@ -2179,16 +2197,6 @@
         "service_class": "BEST_EFFORT",
         "bearer_mbps": 50,
         "access_technology": "HFC"
-      },
-      {
-        "country": "NL",
-        "product": "BROADBAND_PON",
-        "role": "BACKUP",
-        "bandwidth_mbps": 1000,
-        "count": 2,
-        "service_class": "BEST_EFFORT",
-        "bearer_mbps": 1000,
-        "access_technology": "PON"
       },
       {
         "country": "NL",
@@ -2234,16 +2242,6 @@
         "country": "NL",
         "product": "ETHERNET",
         "role": "PRIMARY",
-        "bandwidth_mbps": 600,
-        "count": 3,
-        "service_class": "ETHERNET",
-        "bearer_mbps": 1000,
-        "access_technology": "ETHERNET_FIBRE"
-      },
-      {
-        "country": "NL",
-        "product": "ETHERNET",
-        "role": "PRIMARY",
         "bandwidth_mbps": 9500,
         "count": 1,
         "service_class": "ETHERNET",
@@ -2255,7 +2253,7 @@
         "product": "MOBILE_5G",
         "role": "BACKUP",
         "bandwidth_mbps": 50,
-        "count": 347,
+        "count": 340,
         "service_class": "BEST_EFFORT",
         "bearer_mbps": 50,
         "access_technology": "MOBILE_5G"
@@ -2282,12 +2280,12 @@
       }
     ],
     "dual_access_sites": {
-      "low": 1564,
-      "base": 1594,
-      "high": 1631
+      "low": 1560,
+      "base": 1591,
+      "high": 1629
     },
     "circuits_backbone": 8,
-    "circuits_per_site_base": 1.2671,
+    "circuits_per_site_base": 1.2669,
     "implied_users": 54986,
     "bandwidth_profile": {
       "PLANT": {
@@ -2383,8 +2381,8 @@
       "backbone_circuits": 8,
       "note": ""
     },
-    "node_count": 5995,
-    "edge_count": 7596
+    "node_count": 5992,
+    "edge_count": 7591
   },
   "output_omitted": {
     "fields": [

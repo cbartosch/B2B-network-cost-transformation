@@ -43,52 +43,62 @@
     {
       "country": "BR",
       "archetype": "DC",
-      "sites": 1
+      "sites": 1,
+      "density": null
     },
     {
       "country": "DE",
       "archetype": "STORE",
-      "sites": 220
+      "sites": 220,
+      "density": null
     },
     {
       "country": "DE",
       "archetype": "WAREHOUSE",
-      "sites": 200
+      "sites": 200,
+      "density": "SUBURBAN"
     },
     {
       "country": "FR",
       "archetype": "DC",
-      "sites": 3
+      "sites": 3,
+      "density": "SUBURBAN"
     },
     {
       "country": "FR",
       "archetype": "LARGE_OFFICE",
-      "sites": 1
+      "sites": 1,
+      "density": null
     },
     {
       "country": "FR",
       "archetype": "PLANT",
-      "sites": 60
+      "sites": 60,
+      "density": "RURAL"
     },
     {
       "country": "FR",
       "archetype": "STORE",
-      "sites": 2000
+      "sites": 2000,
+      "density": null
     },
     {
       "country": "FR",
       "archetype": "WAREHOUSE",
-      "sites": 900
+      "sites": 900,
+      "density": "SUBURBAN"
     },
     {
       "country": "GB",
       "archetype": "STORE",
-      "sites": 600
+      "sites": 600,
+      "density": null
     },
     {
       "country": "GB",
       "archetype": "WAREHOUSE",
-      "sites": 700
+      "sites": 700,
+      "density": "SUBURBAN"
     }
   ],
   "footprint_provenance": [
@@ -96,49 +106,57 @@
       "country": "BR",
       "archetype": "DC",
       "sites": 1,
-      "origin": "RESEARCHED"
+      "origin": "RESEARCHED",
+      "density": null
     },
     {
       "country": "DE",
       "archetype": "STORE",
       "sites": 220,
-      "origin": "RESEARCHED"
+      "origin": "RESEARCHED",
+      "density": null
     },
     {
       "country": "DE",
       "archetype": "WAREHOUSE",
       "sites": 200,
-      "origin": "PUBLIC_DISCLOSURE"
+      "origin": "PUBLIC_DISCLOSURE",
+      "density": "SUBURBAN"
     },
     {
       "country": "FR",
       "archetype": "DC",
       "sites": 3,
-      "origin": "PUBLIC_DISCLOSURE"
+      "origin": "PUBLIC_DISCLOSURE",
+      "density": "SUBURBAN"
     },
     {
       "country": "FR",
       "archetype": "LARGE_OFFICE",
       "sites": 1,
-      "origin": "RESEARCHED"
+      "origin": "RESEARCHED",
+      "density": null
     },
     {
       "country": "FR",
       "archetype": "PLANT",
       "sites": 60,
-      "origin": "PUBLIC_DISCLOSURE"
+      "origin": "PUBLIC_DISCLOSURE",
+      "density": "RURAL"
     },
     {
       "country": "FR",
       "archetype": "STORE",
       "sites": 2000,
-      "origin": "RESEARCHED"
+      "origin": "RESEARCHED",
+      "density": null
     },
     {
       "country": "FR",
       "archetype": "WAREHOUSE",
       "sites": 900,
       "origin": "DISCLOSURE_KEPT_RESEARCH_FOUND_FEWER",
+      "density": "SUBURBAN",
       "research_said": 230,
       "disclosure_said": 900
     },
@@ -146,13 +164,21 @@
       "country": "GB",
       "archetype": "STORE",
       "sites": 600,
-      "origin": "RESEARCHED"
+      "origin": "RESEARCHED",
+      "density": null
     },
     {
       "country": "GB",
       "archetype": "WAREHOUSE",
       "sites": 700,
-      "origin": "PUBLIC_DISCLOSURE"
+      "origin": "PUBLIC_DISCLOSURE",
+      "density": "SUBURBAN"
+    },
+    {
+      "origin": "NO_DENSITY_BAND",
+      "rows": 5,
+      "sites": 2822,
+      "note": "these rows carry no density band, so serviceability cannot be resolved for them and their sites are treated as deliverable. Researched pairs have no band because evidenced_footprint stores a count and a source, not a density."
     }
   ],
   "scope_countries_modelled": [
@@ -227,8 +253,8 @@
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-12T13:37:46.630348+00:00",
-  "run_seconds": 43.5,
+  "run_started": "2026-10-12T14:49:20.996156+00:00",
+  "run_seconds": 16.5,
   "preflight_conditions": 8,
   "promotion": {
     "promoted": true,

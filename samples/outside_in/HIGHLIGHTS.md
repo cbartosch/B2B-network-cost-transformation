@@ -255,7 +255,7 @@ Sources: [germancompanyformation.com](https://germancompanyformation.com/guides/
 
 - **Industry** CHEMICALS (entity resolution)
 - **Scope** DE, BE, US, CN, FR, ES, IT, BR, IN, EUR, 219 sites (research merged with disclosure)
-- **Confidence** 0.346 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.345 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 6 source(s)
 
@@ -635,7 +635,7 @@ Sources: [Deutsche Bahn AG (Investor Relations)](https://ir.deutschebahn.com/en/
 
 - **Industry** PARCEL_LOGISTICS (entity resolution)
 - **Scope** DE, NL, GB, EUR, 3,961 sites (research merged with disclosure)
-- **Confidence** 0.324 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.323 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 6 source(s)
 
@@ -1178,7 +1178,7 @@ Sources: [Telecom Review Europe](https://www.telecomrevieweurope.com/articles/te
 
 - **Industry** AIRLINES (entity resolution)
 - **Scope** DE, CH, AT, EUR, 223 sites (research merged with disclosure)
-- **Confidence** 0.272 (D - Indicative), coverage PARTIAL
+- **Confidence** 0.271 (D - Indicative), coverage PARTIAL
 
 **Profile** - EVIDENCED_PUBLIC, 9 source(s)
 
@@ -1887,7 +1887,7 @@ Sources: [leasedlineandmpls.co.uk](https://www.leasedlineandmpls.co.uk/top-100gb
 
 - **Industry** BUILDING_MATERIALS (entity resolution)
 - **Scope** FR, DE, GB, EUR, 4,685 sites (research merged with disclosure)
-- **Confidence** 0.333 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.332 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 9 source(s)
 
@@ -2584,7 +2584,7 @@ Sources: [servnetuk.com](https://www.servnetuk.com/insights/sd-wan-vs-mpls-uk-20
 
 - **Industry** AUTOMOTIVE_OEM (entity resolution)
 - **Scope** DE, ES, CZ, CN, MX, BR, SK, PT, PL, US, EUR, 183 sites (research merged with disclosure)
-- **Confidence** 0.347 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.346 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 9 source(s)
 

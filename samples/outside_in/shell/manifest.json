@@ -43,67 +43,80 @@
     {
       "country": "DE",
       "archetype": "PLANT",
-      "sites": 1
+      "sites": 1,
+      "density": null
     },
     {
       "country": "DE",
       "archetype": "SERVICE_POINT",
-      "sites": 1900
+      "sites": 1900,
+      "density": "SUBURBAN"
     },
     {
       "country": "DE",
       "archetype": "STORE",
-      "sites": 1916
+      "sites": 1916,
+      "density": null
     },
     {
       "country": "GB",
       "archetype": "LARGE_OFFICE",
-      "sites": 8
+      "sites": 8,
+      "density": "URBAN"
     },
     {
       "country": "GB",
       "archetype": "SERVICE_POINT",
-      "sites": 1000
+      "sites": 1000,
+      "density": "SUBURBAN"
     },
     {
       "country": "NL",
       "archetype": "CAMPUS",
-      "sites": 1
+      "sites": 1,
+      "density": null
     },
     {
       "country": "NL",
       "archetype": "DC",
-      "sites": 1
+      "sites": 1,
+      "density": null
     },
     {
       "country": "NL",
       "archetype": "LARGE_OFFICE",
-      "sites": 1
+      "sites": 1,
+      "density": null
     },
     {
       "country": "NL",
       "archetype": "PLANT",
-      "sites": 3
+      "sites": 3,
+      "density": "RURAL"
     },
     {
       "country": "NL",
       "archetype": "SERVICE_POINT",
-      "sites": 500
+      "sites": 500,
+      "density": "SUBURBAN"
     },
     {
       "country": "NL",
       "archetype": "STORE",
-      "sites": 662
+      "sites": 662,
+      "density": null
     },
     {
       "country": "US",
       "archetype": "CAMPUS",
-      "sites": 1
+      "sites": 1,
+      "density": null
     },
     {
       "country": "US",
       "archetype": "DC",
-      "sites": 1
+      "sites": 1,
+      "density": null
     }
   ],
   "footprint_provenance": [
@@ -111,25 +124,29 @@
       "country": "DE",
       "archetype": "PLANT",
       "sites": 1,
-      "origin": "RESEARCHED"
+      "origin": "RESEARCHED",
+      "density": null
     },
     {
       "country": "DE",
       "archetype": "SERVICE_POINT",
       "sites": 1900,
-      "origin": "PUBLIC_DISCLOSURE"
+      "origin": "PUBLIC_DISCLOSURE",
+      "density": "SUBURBAN"
     },
     {
       "country": "DE",
       "archetype": "STORE",
       "sites": 1916,
-      "origin": "RESEARCHED"
+      "origin": "RESEARCHED",
+      "density": null
     },
     {
       "country": "GB",
       "archetype": "LARGE_OFFICE",
       "sites": 8,
       "origin": "DISCLOSURE_KEPT_RESEARCH_FOUND_FEWER",
+      "density": "URBAN",
       "research_said": 1,
       "disclosure_said": 8
     },
@@ -137,55 +154,70 @@
       "country": "GB",
       "archetype": "SERVICE_POINT",
       "sites": 1000,
-      "origin": "PUBLIC_DISCLOSURE"
+      "origin": "PUBLIC_DISCLOSURE",
+      "density": "SUBURBAN"
     },
     {
       "country": "NL",
       "archetype": "CAMPUS",
       "sites": 1,
-      "origin": "RESEARCHED"
+      "origin": "RESEARCHED",
+      "density": null
     },
     {
       "country": "NL",
       "archetype": "DC",
       "sites": 1,
-      "origin": "RESEARCHED"
+      "origin": "RESEARCHED",
+      "density": null
     },
     {
       "country": "NL",
       "archetype": "LARGE_OFFICE",
       "sites": 1,
-      "origin": "RESEARCHED"
+      "origin": "RESEARCHED",
+      "density": null
     },
     {
       "country": "NL",
       "archetype": "PLANT",
       "sites": 3,
-      "origin": "PUBLIC_DISCLOSURE"
+      "origin": "PUBLIC_DISCLOSURE",
+      "density": "RURAL"
     },
     {
       "country": "NL",
       "archetype": "SERVICE_POINT",
       "sites": 500,
-      "origin": "PUBLIC_DISCLOSURE"
+      "origin": "PUBLIC_DISCLOSURE",
+      "density": "SUBURBAN"
     },
     {
       "country": "NL",
       "archetype": "STORE",
       "sites": 662,
-      "origin": "RESEARCHED"
+      "origin": "RESEARCHED",
+      "density": null
     },
     {
       "country": "US",
       "archetype": "CAMPUS",
       "sites": 1,
-      "origin": "RESEARCHED"
+      "origin": "RESEARCHED",
+      "density": null
     },
     {
       "country": "US",
       "archetype": "DC",
       "sites": 1,
-      "origin": "RESEARCHED"
+      "origin": "RESEARCHED",
+      "density": null
+    },
+    {
+      "origin": "NO_DENSITY_BAND",
+      "rows": 8,
+      "sites": 2584,
+      "note": "these rows carry no density band, so serviceability cannot be resolved for them and their sites are treated as deliverable. Researched pairs have no band because evidenced_footprint stores a count and a source, not a density."
     }
   ],
   "scope_countries_modelled": [
@@ -262,8 +294,8 @@
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-12T13:37:46.639355+00:00",
-  "run_seconds": 66.5,
+  "run_started": "2026-10-12T14:49:21.021212+00:00",
+  "run_seconds": 24.6,
   "preflight_conditions": 8,
   "promotion": {
     "promoted": true,

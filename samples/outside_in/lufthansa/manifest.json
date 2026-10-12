@@ -43,42 +43,50 @@
     {
       "country": "AT",
       "archetype": "LARGE_OFFICE",
-      "sites": 2
+      "sites": 2,
+      "density": null
     },
     {
       "country": "AT",
       "archetype": "REMOTE_SITE",
-      "sites": 30
+      "sites": 30,
+      "density": "SUBURBAN"
     },
     {
       "country": "CH",
       "archetype": "LARGE_OFFICE",
-      "sites": 3
+      "sites": 3,
+      "density": null
     },
     {
       "country": "CH",
       "archetype": "REMOTE_SITE",
-      "sites": 40
+      "sites": 40,
+      "density": "SUBURBAN"
     },
     {
       "country": "DE",
       "archetype": "DC",
-      "sites": 5
+      "sites": 5,
+      "density": "SUBURBAN"
     },
     {
       "country": "DE",
       "archetype": "LARGE_OFFICE",
-      "sites": 18
+      "sites": 18,
+      "density": "URBAN"
     },
     {
       "country": "DE",
       "archetype": "REMOTE_SITE",
-      "sites": 120
+      "sites": 120,
+      "density": "SUBURBAN"
     },
     {
       "country": "DE",
       "archetype": "WAREHOUSE",
-      "sites": 5
+      "sites": 5,
+      "density": null
     }
   ],
   "footprint_provenance": [
@@ -86,31 +94,36 @@
       "country": "AT",
       "archetype": "LARGE_OFFICE",
       "sites": 2,
-      "origin": "RESEARCHED"
+      "origin": "RESEARCHED",
+      "density": null
     },
     {
       "country": "AT",
       "archetype": "REMOTE_SITE",
       "sites": 30,
-      "origin": "PUBLIC_DISCLOSURE"
+      "origin": "PUBLIC_DISCLOSURE",
+      "density": "SUBURBAN"
     },
     {
       "country": "CH",
       "archetype": "LARGE_OFFICE",
       "sites": 3,
-      "origin": "RESEARCHED"
+      "origin": "RESEARCHED",
+      "density": null
     },
     {
       "country": "CH",
       "archetype": "REMOTE_SITE",
       "sites": 40,
-      "origin": "PUBLIC_DISCLOSURE"
+      "origin": "PUBLIC_DISCLOSURE",
+      "density": "SUBURBAN"
     },
     {
       "country": "DE",
       "archetype": "DC",
       "sites": 5,
       "origin": "DISCLOSURE_KEPT_RESEARCH_FOUND_FEWER",
+      "density": "SUBURBAN",
       "research_said": 1,
       "disclosure_said": 5
     },
@@ -119,6 +132,7 @@
       "archetype": "LARGE_OFFICE",
       "sites": 18,
       "origin": "DISCLOSURE_KEPT_RESEARCH_FOUND_FEWER",
+      "density": "URBAN",
       "research_said": 6,
       "disclosure_said": 18
     },
@@ -126,13 +140,21 @@
       "country": "DE",
       "archetype": "REMOTE_SITE",
       "sites": 120,
-      "origin": "PUBLIC_DISCLOSURE"
+      "origin": "PUBLIC_DISCLOSURE",
+      "density": "SUBURBAN"
     },
     {
       "country": "DE",
       "archetype": "WAREHOUSE",
       "sites": 5,
-      "origin": "RESEARCHED"
+      "origin": "RESEARCHED",
+      "density": null
+    },
+    {
+      "origin": "NO_DENSITY_BAND",
+      "rows": 3,
+      "sites": 10,
+      "note": "these rows carry no density band, so serviceability cannot be resolved for them and their sites are treated as deliverable. Researched pairs have no band because evidenced_footprint stores a count and a source, not a density."
     }
   ],
   "scope_countries_modelled": [
@@ -205,8 +227,8 @@
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-12T13:40:49.273890+00:00",
-  "run_seconds": 7.2,
+  "run_started": "2026-10-12T14:50:19.380213+00:00",
+  "run_seconds": 4.9,
   "preflight_conditions": 8,
   "promotion": {
     "promoted": true,

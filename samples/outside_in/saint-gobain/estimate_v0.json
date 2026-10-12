@@ -1,46 +1,46 @@
 {
-  "estimate_snapshot_id": "c7ec5424-1c21-4f01-a5b4-2299a6142c3a",
+  "estimate_snapshot_id": "e9e7f7b7-7ebe-4e83-a770-ad09676dce61",
   "v0_status": "COMPLETE",
   "current_tco": {
-    "low": "15963621.29",
-    "base": "27387189.76",
-    "high": "42727843.13"
+    "low": "15277893.48",
+    "base": "26330066.05",
+    "high": "41287035.12"
   },
   "by_layer": {
     "L0": {
-      "low": "7656209.29",
-      "base": "13622829.76",
-      "high": "21399757.44"
+      "low": "7033025.81",
+      "base": "12659306.05",
+      "high": "20096524.52"
     },
     "L1": {
-      "low": "147629.62",
+      "low": "147658.59",
       "base": "384000.00",
-      "high": "789206.37"
+      "high": "789156.70"
     },
     "L2": {
-      "low": "1905605.09",
-      "base": "3092100.00",
-      "high": "4674093.22"
+      "low": "1881343.91",
+      "base": "3052500.00",
+      "high": "4614041.46"
     },
     "L4": {
-      "low": "3224172.21",
+      "low": "3224521.27",
       "base": "6071760.00",
-      "high": "9868543.72"
+      "high": "9868078.30"
     },
     "OPS": {
-      "low": "3030005.09",
-      "base": "4216500.00",
-      "high": "5996242.37"
+      "low": "2991343.91",
+      "base": "4162500.00",
+      "high": "5919234.14"
     }
   },
   "origin_breakdown": {
     "ANALYST_ENTERED_SCOPE": {
-      "value": "26115223.47",
-      "share": "0.9536"
+      "value": "25137470.91",
+      "share": "0.9547"
     },
     "SIMULATED": {
-      "value": "1271966.28",
-      "share": "0.0464"
+      "value": "1192595.13",
+      "share": "0.0453"
     }
   },
   "components": [
@@ -88,7 +88,7 @@
       "key": "L0_backup_DE_BROADBAND_HFC_100M",
       "layer": "L0",
       "driver": "circuits",
-      "quantity": 94,
+      "quantity": 92,
       "quantity_origin": "SIMULATED",
       "unit_cost_origin": "BENCHMARK_PRIOR",
       "product": "BROADBAND_HFC",
@@ -99,9 +99,9 @@
       "committed_mbps": 100,
       "source_ref": null,
       "value": {
-        "low": "54043.04",
-        "base": "72712.46",
-        "high": "90399.27"
+        "low": "52893.19",
+        "base": "71165.39",
+        "high": "88475.88"
       }
     },
     {
@@ -148,7 +148,7 @@
       "key": "L0_backup_DE_MOBILE_5G_50M",
       "layer": "L0",
       "driver": "circuits",
-      "quantity": 79,
+      "quantity": 76,
       "quantity_origin": "SIMULATED",
       "unit_cost_origin": "BENCHMARK_PRIOR",
       "product": "MOBILE_5G",
@@ -159,9 +159,9 @@
       "committed_mbps": 50,
       "source_ref": null,
       "value": {
-        "low": "23122.48",
-        "base": "41290.14",
-        "high": "72670.65"
+        "low": "22244.41",
+        "base": "39722.16",
+        "high": "69911.00"
       }
     },
     {
@@ -188,7 +188,7 @@
       "key": "L0_backup_FR_BROADBAND_HFC_100M",
       "layer": "L0",
       "driver": "circuits",
-      "quantity": 408,
+      "quantity": 410,
       "quantity_origin": "SIMULATED",
       "unit_cost_origin": "BENCHMARK_PRIOR",
       "product": "BROADBAND_HFC",
@@ -199,9 +199,9 @@
       "committed_mbps": 100,
       "source_ref": null,
       "value": {
-        "low": "268689.05",
-        "base": "358252.07",
-        "high": "447815.09"
+        "low": "270006.16",
+        "base": "360008.21",
+        "high": "450010.26"
       }
     },
     {
@@ -222,26 +222,6 @@
         "low": "836256.00",
         "base": "1296196.80",
         "high": "2027920.80"
-      }
-    },
-    {
-      "key": "L0_backup_FR_BROADBAND_PON_1000M",
-      "layer": "L0",
-      "driver": "circuits",
-      "quantity": 53,
-      "quantity_origin": "SIMULATED",
-      "unit_cost_origin": "BENCHMARK_PRIOR",
-      "product": "BROADBAND_PON",
-      "role": "BACKUP",
-      "service_class": "BEST_EFFORT",
-      "access_technology": "PON",
-      "bearer_mbps": 1000,
-      "committed_mbps": 1000,
-      "source_ref": null,
-      "value": {
-        "low": "61496.18",
-        "base": "82548.92",
-        "high": "103047.65"
       }
     },
     {
@@ -285,7 +265,7 @@
       }
     },
     {
-      "key": "L0_primary_FR_ETHERNET_3000M_priced_at_10000M",
+      "key": "L0_primary_FR_ETHERNET_150M_priced_at_500M",
       "layer": "L0",
       "driver": "circuits",
       "quantity": 3,
@@ -295,13 +275,13 @@
       "role": "PRIMARY",
       "service_class": "ETHERNET",
       "access_technology": "ETHERNET_FIBRE",
-      "bearer_mbps": 10000,
-      "committed_mbps": 3000,
+      "bearer_mbps": 500,
+      "committed_mbps": 150,
       "source_ref": null,
       "value": {
-        "low": "124873.93",
-        "base": "166582.20",
-        "high": "208165.02"
+        "low": "26279.34",
+        "base": "35060.03",
+        "high": "43809.36"
       }
     },
     {
@@ -325,30 +305,10 @@
       }
     },
     {
-      "key": "L0_primary_FR_ETHERNET_600M_priced_at_1000M",
-      "layer": "L0",
-      "driver": "circuits",
-      "quantity": 60,
-      "quantity_origin": "ANALYST_ENTERED_SCOPE",
-      "unit_cost_origin": "BENCHMARK_PRIOR",
-      "product": "ETHERNET",
-      "role": "PRIMARY",
-      "service_class": "ETHERNET",
-      "access_technology": "ETHERNET_FIBRE",
-      "bearer_mbps": 1000,
-      "committed_mbps": 600,
-      "source_ref": null,
-      "value": {
-        "low": "564472.80",
-        "base": "752630.40",
-        "high": "940788.00"
-      }
-    },
-    {
       "key": "L0_backup_FR_MOBILE_5G_50M",
       "layer": "L0",
       "driver": "circuits",
-      "quantity": 681,
+      "quantity": 693,
       "quantity_origin": "SIMULATED",
       "unit_cost_origin": "BENCHMARK_PRIOR",
       "product": "MOBILE_5G",
@@ -359,16 +319,16 @@
       "committed_mbps": 50,
       "source_ref": null,
       "value": {
-        "low": "185084.36",
-        "base": "334575.57",
-        "high": "597964.85"
+        "low": "188345.76",
+        "base": "340471.18",
+        "high": "608501.68"
       }
     },
     {
       "key": "L0_backup_GB_BROADBAND_HFC_100M",
       "layer": "L0",
       "driver": "circuits",
-      "quantity": 317,
+      "quantity": 321,
       "quantity_origin": "SIMULATED",
       "unit_cost_origin": "BENCHMARK_PRIOR",
       "product": "BROADBAND_HFC",
@@ -379,9 +339,9 @@
       "committed_mbps": 100,
       "source_ref": null,
       "value": {
-        "low": "198819.86",
-        "base": "265093.15",
-        "high": "331366.44"
+        "low": "201328.63",
+        "base": "268438.18",
+        "high": "335547.72"
       }
     },
     {
@@ -428,7 +388,7 @@
       "key": "L0_backup_GB_MOBILE_5G_50M",
       "layer": "L0",
       "driver": "circuits",
-      "quantity": 216,
+      "quantity": 206,
       "quantity_origin": "SIMULATED",
       "unit_cost_origin": "BENCHMARK_PRIOR",
       "product": "MOBILE_5G",
@@ -439,16 +399,16 @@
       "committed_mbps": 50,
       "source_ref": null,
       "value": {
-        "low": "56447.28",
-        "base": "101605.10",
-        "high": "180631.30"
+        "low": "53833.98",
+        "base": "96901.16",
+        "high": "172268.74"
       }
     },
     {
       "key": "L2_overlay",
       "layer": "L2",
       "driver": "sites",
-      "quantity": 4685,
+      "quantity": 4625,
       "quantity_origin": "ANALYST_ENTERED_SCOPE",
       "unit_cost_origin": "BENCHMARK_PRIOR",
       "product": "SDWAN_OVERLAY",
@@ -459,9 +419,9 @@
       "committed_mbps": null,
       "source_ref": null,
       "value": {
-        "low": "2248800.00",
-        "base": "3092100.00",
-        "high": "4216500.00"
+        "low": "2220000.00",
+        "base": "3052500.00",
+        "high": "4162500.00"
       }
     },
     {
@@ -508,7 +468,7 @@
       "key": "OPS_operations",
       "layer": "OPS",
       "driver": "sites",
-      "quantity": 4685,
+      "quantity": 4625,
       "quantity_origin": "ANALYST_ENTERED_SCOPE",
       "unit_cost_origin": "BENCHMARK_PRIOR",
       "product": null,
@@ -519,9 +479,9 @@
       "committed_mbps": null,
       "source_ref": null,
       "value": {
-        "low": "3373200.00",
-        "base": "4216500.00",
-        "high": "5481450.00"
+        "low": "3330000.00",
+        "base": "4162500.00",
+        "high": "5411250.00"
       }
     }
   ],
@@ -531,30 +491,30 @@
         "layers_addressed": [
           "L0"
         ],
-        "addressable_base": "13622829.76",
-        "saving_base": "1994382.28",
+        "addressable_base": "12659306.05",
+        "saving_base": "1853322.41",
         "within_ceiling": true,
         "note": null
       },
       "label": "Reprice current state",
       "target_tco": {
-        "low": "17117532.31",
-        "base": "25392807.48",
-        "high": "36961513.92"
+        "low": "16488924.13",
+        "base": "24476743.64",
+        "high": "35716570.35"
       },
       "gross_run_rate_savings": {
-        "low": "104450.12",
-        "base": "1994382.28",
-        "high": "5363870.62"
+        "low": "91562.70",
+        "base": "1853322.41",
+        "high": "5032521.15"
       },
       "gross_run_rate_savings_unwidened": {
-        "low": "651115.01",
-        "base": "1994382.28",
-        "high": "4389242.54"
+        "low": "601000.05",
+        "base": "1853322.41",
+        "high": "4113211.56"
       },
-      "saving_on_evidenced_baseline": "1808166.42",
-      "saving_on_unevidenced_baseline": "186215.86",
-      "savings_pct_base": "0.073",
+      "saving_on_evidenced_baseline": "1678726.48",
+      "saving_on_unevidenced_baseline": "174595.93",
+      "savings_pct_base": "0.070",
       "levers": [
         {
           "lever_id": "LEV-REPRICE-001",
@@ -564,11 +524,11 @@
             "L0"
           ],
           "eligibility": {},
-          "saving_low": "562923.64",
-          "saving_base": "1634739.57",
-          "saving_high": "3447049.11",
-          "saving_on_unevidenced_baseline": "152635.95",
-          "saving_on_evidenced_baseline": "1482103.62"
+          "saving_low": "519596.59",
+          "saving_base": "1519116.73",
+          "saving_high": "3230270.86",
+          "saving_on_unevidenced_baseline": "143111.42",
+          "saving_on_evidenced_baseline": "1376005.31"
         },
         {
           "lever_id": "LEV-CLEANUP-001",
@@ -578,23 +538,23 @@
             "L0"
           ],
           "eligibility": {},
-          "saving_low": "88191.37",
-          "saving_base": "359642.71",
-          "saving_high": "942193.42",
-          "saving_on_unevidenced_baseline": "33579.91",
-          "saving_on_evidenced_baseline": "326062.80"
+          "saving_low": "81403.47",
+          "saving_base": "334205.68",
+          "saving_high": "882940.70",
+          "saving_on_unevidenced_baseline": "31484.51",
+          "saving_on_evidenced_baseline": "302721.17"
         }
       ],
       "transition": {
         "one_time_cost": {
-          "low": "2004128.00",
-          "base": "4509288.00",
-          "high": "9018576.00"
+          "low": "1998944.00",
+          "base": "4497624.00",
+          "high": "8995248.00"
         },
         "one_time_cost_build": {
           "by_component": {
-            "hardware": "1646568.00",
-            "migration": "1176120.00",
+            "hardware": "1639764.00",
+            "migration": "1171260.00",
             "integration": "843300.00",
             "project_management": "843300.00"
           },
@@ -618,26 +578,26 @@
             {
               "archetype": "PLANT",
               "sites": 60,
-              "circuits": "113.00",
-              "circuits_per_site": "1.883",
-              "cost_per_site_base": "1173.60",
-              "cost_base": "70416.00"
+              "circuits": "83.00",
+              "circuits_per_site": "1.383",
+              "cost_per_site_base": "957.60",
+              "cost_base": "57456.00"
             },
             {
               "archetype": "STORE",
               "sites": 2820,
-              "circuits": "3796.00",
+              "circuits": "3795.00",
               "circuits_per_site": "1.346",
-              "cost_per_site_base": "941.51",
-              "cost_base": "2655072.00"
+              "cost_per_site_base": "941.36",
+              "cost_base": "2654640.00"
             },
             {
               "archetype": "WAREHOUSE",
               "sites": 1800,
-              "circuits": "2619.00",
-              "circuits_per_site": "1.455",
-              "cost_per_site_base": "988.56",
-              "cost_base": "1779408.00"
+              "circuits": "2623.00",
+              "circuits_per_site": "1.457",
+              "cost_per_site_base": "989.52",
+              "cost_base": "1781136.00"
             }
           ],
           "origin": {
@@ -651,37 +611,37 @@
           }
         },
         "dual_running_cost": {
-          "low": "105222.93",
-          "base": "175371.55",
-          "high": "350743.09"
+          "low": "102473.77",
+          "base": "170789.62",
+          "high": "341579.24"
         },
         "total_transition_cost": {
-          "low": "2109350.93",
-          "base": "4684659.55",
-          "high": "9369319.09"
+          "low": "2101417.77",
+          "base": "4668413.62",
+          "high": "9336827.24"
         },
         "gross_run_rate_savings": {
-          "low": "651115.01",
-          "base": "1994382.28",
-          "high": "4389242.54"
+          "low": "601000.05",
+          "base": "1853322.41",
+          "high": "4113211.56"
         },
-        "first_year_net": "-2690277.27",
+        "first_year_net": "-2815091.21",
         "payback_months": {
-          "optimistic": 13,
-          "base": 51,
-          "pessimistic": 196
+          "optimistic": 14,
+          "base": 53,
+          "pessimistic": 209
         },
         "payback_definition": "first month in which cumulative net benefit turns positive, with savings accruing as circuits are cut over",
-        "payback_simple_months": 29,
-        "payback_reconciliation_note": "Ramped payback is 51 month(s) against a simple 29, a gap of 76%. The simple figure divides total transition cost by the full-year saving, which is the saving only once every site is live; this programme runs 44 month(s), so for most of it the estate is part-migrated and saving proportionally less.",
+        "payback_simple_months": 31,
+        "payback_reconciliation_note": "Ramped payback is 53 month(s) against a simple 31, a gap of 71%. The simple figure divides total transition cost by the full-year saving, which is the saving only once every site is live; this programme runs 44 month(s), so for most of it the estate is part-migrated and saving proportionally less.",
         "run_rate_saving": {
-          "low": "651115.01",
-          "base": "1994382.28",
-          "high": "4389242.54"
+          "low": "601000.05",
+          "base": "1853322.41",
+          "high": "4113211.56"
         },
         "programme_months": 44,
         "programme_months_band": {
-          "low": 44,
+          "low": 43,
           "base": 44,
           "high": 44
         },
@@ -715,7 +675,7 @@
             {
               "month": 5,
               "circuits": "150.00",
-              "cumulative_share": "0.11"
+              "cumulative_share": "0.12"
             },
             {
               "month": 6,
@@ -765,7 +725,7 @@
             {
               "month": 15,
               "circuits": "150.00",
-              "cumulative_share": "0.34"
+              "cumulative_share": "0.35"
             },
             {
               "month": 16,
@@ -815,7 +775,7 @@
             {
               "month": 25,
               "circuits": "150.00",
-              "cumulative_share": "0.57"
+              "cumulative_share": "0.58"
             },
             {
               "month": 26,
@@ -830,7 +790,7 @@
             {
               "month": 28,
               "circuits": "150.00",
-              "cumulative_share": "0.64"
+              "cumulative_share": "0.65"
             },
             {
               "month": 29,
@@ -850,7 +810,7 @@
             {
               "month": 32,
               "circuits": "150.00",
-              "cumulative_share": "0.73"
+              "cumulative_share": "0.74"
             },
             {
               "month": 33,
@@ -865,7 +825,7 @@
             {
               "month": 35,
               "circuits": "150.00",
-              "cumulative_share": "0.80"
+              "cumulative_share": "0.81"
             },
             {
               "month": 36,
@@ -880,7 +840,7 @@
             {
               "month": 38,
               "circuits": "150.00",
-              "cumulative_share": "0.87"
+              "cumulative_share": "0.88"
             },
             {
               "month": 39,
@@ -895,12 +855,12 @@
             {
               "month": 41,
               "circuits": "150.00",
-              "cumulative_share": "0.94"
+              "cumulative_share": "0.95"
             },
             {
               "month": 42,
               "circuits": "150.00",
-              "cumulative_share": "0.96"
+              "cumulative_share": "0.97"
             },
             {
               "month": 43,
@@ -909,7 +869,7 @@
             },
             {
               "month": 44,
-              "circuits": "84.00",
+              "circuits": "57.00",
               "cumulative_share": "1.00"
             }
           ],
@@ -932,15 +892,15 @@
         "note": "Savings accrue as circuits are cut over. This programme runs 44 month(s) at 150.00 circuit(s) a month, and the payback above is the first month cumulative net benefit turns positive against that rollout."
       },
       "levers_not_applicable": [],
-      "simulated_share": "0.0428",
+      "simulated_share": "0.0416",
       "origin_breakdown": {
         "ANALYST_ENTERED_SCOPE": {
-          "value": "24307057.06",
-          "share": "0.9572"
+          "value": "23458744.43",
+          "share": "0.9584"
         },
         "SIMULATED": {
-          "value": "1085750.42",
-          "share": "0.0428"
+          "value": "1017999.21",
+          "share": "0.0416"
         }
       },
       "target_components": [
@@ -988,7 +948,7 @@
           "key": "L0_backup_DE_BROADBAND_HFC_100M",
           "layer": "L0",
           "driver": "circuits",
-          "quantity": 94,
+          "quantity": 92,
           "quantity_origin": "SIMULATED",
           "unit_cost_origin": "BENCHMARK_PRIOR",
           "product": "BROADBAND_HFC",
@@ -999,9 +959,9 @@
           "committed_mbps": 100,
           "source_ref": null,
           "value": {
-            "low": "41656.38",
-            "base": "62067.36",
-            "high": "84125.56"
+            "low": "40770.07",
+            "base": "60746.77",
+            "high": "82335.66"
           }
         },
         {
@@ -1048,7 +1008,7 @@
           "key": "L0_backup_DE_MOBILE_5G_50M",
           "layer": "L0",
           "driver": "circuits",
-          "quantity": 79,
+          "quantity": 76,
           "quantity_origin": "SIMULATED",
           "unit_cost_origin": "BENCHMARK_PRIOR",
           "product": "MOBILE_5G",
@@ -1059,9 +1019,9 @@
           "committed_mbps": 50,
           "source_ref": null,
           "value": {
-            "low": "17822.81",
-            "base": "35245.26",
-            "high": "67627.30"
+            "low": "17145.99",
+            "base": "33906.84",
+            "high": "65059.18"
           }
         },
         {
@@ -1088,7 +1048,7 @@
           "key": "L0_backup_FR_BROADBAND_HFC_100M",
           "layer": "L0",
           "driver": "circuits",
-          "quantity": 408,
+          "quantity": 410,
           "quantity_origin": "SIMULATED",
           "unit_cost_origin": "BENCHMARK_PRIOR",
           "product": "BROADBAND_HFC",
@@ -1099,9 +1059,9 @@
           "committed_mbps": 100,
           "source_ref": null,
           "value": {
-            "low": "207105.52",
-            "base": "305803.97",
-            "high": "416736.72"
+            "low": "208120.75",
+            "base": "307303.01",
+            "high": "418779.55"
           }
         },
         {
@@ -1122,26 +1082,6 @@
             "low": "644586.12",
             "base": "1106433.59",
             "high": "1887183.10"
-          }
-        },
-        {
-          "key": "L0_backup_FR_BROADBAND_PON_1000M",
-          "layer": "L0",
-          "driver": "circuits",
-          "quantity": 53,
-          "quantity_origin": "SIMULATED",
-          "unit_cost_origin": "BENCHMARK_PRIOR",
-          "product": "BROADBAND_PON",
-          "role": "BACKUP",
-          "service_class": "BEST_EFFORT",
-          "access_technology": "PON",
-          "bearer_mbps": 1000,
-          "committed_mbps": 1000,
-          "source_ref": null,
-          "value": {
-            "low": "47401.25",
-            "base": "70463.76",
-            "high": "95896.14"
           }
         },
         {
@@ -1185,7 +1125,7 @@
           }
         },
         {
-          "key": "L0_primary_FR_ETHERNET_3000M_priced_at_10000M",
+          "key": "L0_primary_FR_ETHERNET_150M_priced_at_500M",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 3,
@@ -1195,13 +1135,13 @@
           "role": "PRIMARY",
           "service_class": "ETHERNET",
           "access_technology": "ETHERNET_FIBRE",
-          "bearer_mbps": 10000,
-          "committed_mbps": 3000,
+          "bearer_mbps": 500,
+          "committed_mbps": 150,
           "source_ref": null,
           "value": {
-            "low": "96252.82",
-            "base": "142194.56",
-            "high": "193718.37"
+            "low": "20256.12",
+            "base": "29927.24",
+            "high": "40768.99"
           }
         },
         {
@@ -1225,30 +1165,10 @@
           }
         },
         {
-          "key": "L0_primary_FR_ETHERNET_600M_priced_at_1000M",
-          "layer": "L0",
-          "driver": "circuits",
-          "quantity": 60,
-          "quantity_origin": "ANALYST_ENTERED_SCOPE",
-          "unit_cost_origin": "BENCHMARK_PRIOR",
-          "product": "ETHERNET",
-          "role": "PRIMARY",
-          "service_class": "ETHERNET",
-          "access_technology": "ETHERNET_FIBRE",
-          "bearer_mbps": 1000,
-          "committed_mbps": 600,
-          "source_ref": null,
-          "value": {
-            "low": "435095.63",
-            "base": "642445.31",
-            "high": "875497.31"
-          }
-        },
-        {
           "key": "L0_backup_FR_MOBILE_5G_50M",
           "layer": "L0",
           "driver": "circuits",
-          "quantity": 681,
+          "quantity": 693,
           "quantity_origin": "SIMULATED",
           "unit_cost_origin": "BENCHMARK_PRIOR",
           "product": "MOBILE_5G",
@@ -1259,16 +1179,16 @@
           "committed_mbps": 50,
           "source_ref": null,
           "value": {
-            "low": "142663.02",
-            "base": "285593.71",
-            "high": "556466.09"
+            "low": "145176.91",
+            "base": "290626.20",
+            "high": "566271.66"
           }
         },
         {
           "key": "L0_backup_GB_BROADBAND_HFC_100M",
           "layer": "L0",
           "driver": "circuits",
-          "quantity": 317,
+          "quantity": 321,
           "quantity_origin": "SIMULATED",
           "unit_cost_origin": "BENCHMARK_PRIOR",
           "product": "BROADBAND_HFC",
@@ -1279,9 +1199,9 @@
           "committed_mbps": 100,
           "source_ref": null,
           "value": {
-            "low": "153250.35",
-            "base": "226283.51",
-            "high": "308369.61"
+            "low": "155184.11",
+            "base": "229138.83",
+            "high": "312260.71"
           }
         },
         {
@@ -1328,7 +1248,7 @@
           "key": "L0_backup_GB_MOBILE_5G_50M",
           "layer": "L0",
           "driver": "circuits",
-          "quantity": 216,
+          "quantity": 206,
           "quantity_origin": "SIMULATED",
           "unit_cost_origin": "BENCHMARK_PRIOR",
           "product": "MOBILE_5G",
@@ -1339,16 +1259,16 @@
           "committed_mbps": 50,
           "source_ref": null,
           "value": {
-            "low": "43509.56",
-            "base": "86730.12",
-            "high": "168095.48"
+            "low": "41495.23",
+            "base": "82714.83",
+            "high": "160313.29"
           }
         },
         {
           "key": "L2_overlay",
           "layer": "L2",
           "driver": "sites",
-          "quantity": 4685,
+          "quantity": 4625,
           "quantity_origin": "ANALYST_ENTERED_SCOPE",
           "unit_cost_origin": "BENCHMARK_PRIOR",
           "product": "SDWAN_OVERLAY",
@@ -1359,9 +1279,9 @@
           "committed_mbps": null,
           "source_ref": null,
           "value": {
-            "low": "2248800.00",
-            "base": "3092100.00",
-            "high": "4216500.00"
+            "low": "2220000.00",
+            "base": "3052500.00",
+            "high": "4162500.00"
           }
         },
         {
@@ -1408,7 +1328,7 @@
           "key": "OPS_operations",
           "layer": "OPS",
           "driver": "sites",
-          "quantity": 4685,
+          "quantity": 4625,
           "quantity_origin": "ANALYST_ENTERED_SCOPE",
           "unit_cost_origin": "BENCHMARK_PRIOR",
           "product": null,
@@ -1419,9 +1339,9 @@
           "committed_mbps": null,
           "source_ref": null,
           "value": {
-            "low": "3373200.00",
-            "base": "4216500.00",
-            "high": "5481450.00"
+            "low": "3330000.00",
+            "base": "4162500.00",
+            "high": "5411250.00"
           }
         }
       ]
@@ -1431,30 +1351,30 @@
         "layers_addressed": [
           "L0"
         ],
-        "addressable_base": "13622829.76",
-        "saving_base": "1016108.64",
+        "addressable_base": "12659306.05",
+        "saving_base": "947074.55",
         "within_ceiling": true,
         "note": null
       },
       "label": "Optimized SD-WAN",
       "target_tco": {
-        "low": "18059926.71",
-        "base": "26371081.12",
-        "high": "37668668.92"
+        "low": "17354825.31",
+        "base": "25382991.49",
+        "high": "36377266.80"
       },
       "gross_run_rate_savings": {
-        "low": "11372.47",
-        "base": "1016108.64",
-        "high": "3086301.11"
+        "low": "8271.45",
+        "base": "947074.55",
+        "high": "2905240.72"
       },
       "gross_run_rate_savings_unwidened": {
-        "low": "301993.47",
-        "base": "1016108.64",
-        "high": "2487495.74"
+        "low": "279739.44",
+        "base": "947074.55",
+        "high": "2339009.70"
       },
-      "saving_on_evidenced_baseline": "901949.45",
-      "saving_on_unevidenced_baseline": "114159.19",
-      "savings_pct_base": "0.037",
+      "saving_on_evidenced_baseline": "840058.77",
+      "saving_on_unevidenced_baseline": "107015.78",
+      "savings_pct_base": "0.036",
       "levers": [
         {
           "lever_id": "LEV-RISKTIER-001",
@@ -1468,10 +1388,10 @@
               "BEST_EFFORT"
             ]
           },
-          "saving_low": "82126.61",
-          "saving_base": "281297.49",
-          "saving_high": "757851.98",
-          "saving_on_unevidenced_baseline": "113046.97",
+          "saving_low": "79764.61",
+          "saving_base": "274154.09",
+          "saving_high": "741983.19",
+          "saving_on_unevidenced_baseline": "105903.56",
           "saving_on_evidenced_baseline": "168250.53"
         },
         {
@@ -1488,23 +1408,23 @@
               "IPVPN"
             ]
           },
-          "saving_low": "219866.86",
-          "saving_base": "734811.14",
-          "saving_high": "1729643.76",
+          "saving_low": "199974.84",
+          "saving_base": "672920.46",
+          "saving_high": "1597026.52",
           "saving_on_unevidenced_baseline": "1112.22",
-          "saving_on_evidenced_baseline": "733698.92"
+          "saving_on_evidenced_baseline": "671808.24"
         }
       ],
       "transition": {
         "one_time_cost": {
-          "low": "2004128.00",
-          "base": "4509288.00",
-          "high": "9018576.00"
+          "low": "1998944.00",
+          "base": "4497624.00",
+          "high": "8995248.00"
         },
         "one_time_cost_build": {
           "by_component": {
-            "hardware": "1646568.00",
-            "migration": "1176120.00",
+            "hardware": "1639764.00",
+            "migration": "1171260.00",
             "integration": "843300.00",
             "project_management": "843300.00"
           },
@@ -1528,26 +1448,26 @@
             {
               "archetype": "PLANT",
               "sites": 60,
-              "circuits": "113.00",
-              "circuits_per_site": "1.883",
-              "cost_per_site_base": "1173.60",
-              "cost_base": "70416.00"
+              "circuits": "83.00",
+              "circuits_per_site": "1.383",
+              "cost_per_site_base": "957.60",
+              "cost_base": "57456.00"
             },
             {
               "archetype": "STORE",
               "sites": 2820,
-              "circuits": "3796.00",
+              "circuits": "3795.00",
               "circuits_per_site": "1.346",
-              "cost_per_site_base": "941.51",
-              "cost_base": "2655072.00"
+              "cost_per_site_base": "941.36",
+              "cost_base": "2654640.00"
             },
             {
               "archetype": "WAREHOUSE",
               "sites": 1800,
-              "circuits": "2619.00",
-              "circuits_per_site": "1.455",
-              "cost_per_site_base": "988.56",
-              "cost_base": "1779408.00"
+              "circuits": "2623.00",
+              "circuits_per_site": "1.457",
+              "cost_per_site_base": "989.52",
+              "cost_base": "1781136.00"
             }
           ],
           "origin": {
@@ -1561,37 +1481,37 @@
           }
         },
         "dual_running_cost": {
-          "low": "105222.93",
-          "base": "175371.55",
-          "high": "350743.09"
+          "low": "102473.77",
+          "base": "170789.62",
+          "high": "341579.24"
         },
         "total_transition_cost": {
-          "low": "2109350.93",
-          "base": "4684659.55",
-          "high": "9369319.09"
+          "low": "2101417.77",
+          "base": "4668413.62",
+          "high": "9336827.24"
         },
         "gross_run_rate_savings": {
-          "low": "301993.47",
-          "base": "1016108.64",
-          "high": "2487495.74"
+          "low": "279739.44",
+          "base": "947074.55",
+          "high": "2339009.70"
         },
-        "first_year_net": "-3668550.91",
+        "first_year_net": "-3721339.06",
         "payback_months": {
-          "optimistic": 22,
-          "base": 78,
-          "pessimistic": 395
+          "optimistic": 23,
+          "base": 82,
+          "pessimistic": 423
         },
         "payback_definition": "first month in which cumulative net benefit turns positive, with savings accruing as circuits are cut over",
-        "payback_simple_months": 56,
-        "payback_reconciliation_note": "Ramped payback is 78 month(s) against a simple 56, a gap of 39%. The simple figure divides total transition cost by the full-year saving, which is the saving only once every site is live; this programme runs 44 month(s), so for most of it the estate is part-migrated and saving proportionally less.",
+        "payback_simple_months": 60,
+        "payback_reconciliation_note": "Ramped payback is 82 month(s) against a simple 60, a gap of 37%. The simple figure divides total transition cost by the full-year saving, which is the saving only once every site is live; this programme runs 44 month(s), so for most of it the estate is part-migrated and saving proportionally less.",
         "run_rate_saving": {
-          "low": "301993.47",
-          "base": "1016108.64",
-          "high": "2487495.74"
+          "low": "279739.44",
+          "base": "947074.55",
+          "high": "2339009.70"
         },
         "programme_months": 44,
         "programme_months_band": {
-          "low": 44,
+          "low": 43,
           "base": 44,
           "high": 44
         },
@@ -1625,7 +1545,7 @@
             {
               "month": 5,
               "circuits": "150.00",
-              "cumulative_share": "0.11"
+              "cumulative_share": "0.12"
             },
             {
               "month": 6,
@@ -1675,7 +1595,7 @@
             {
               "month": 15,
               "circuits": "150.00",
-              "cumulative_share": "0.34"
+              "cumulative_share": "0.35"
             },
             {
               "month": 16,
@@ -1725,7 +1645,7 @@
             {
               "month": 25,
               "circuits": "150.00",
-              "cumulative_share": "0.57"
+              "cumulative_share": "0.58"
             },
             {
               "month": 26,
@@ -1740,7 +1660,7 @@
             {
               "month": 28,
               "circuits": "150.00",
-              "cumulative_share": "0.64"
+              "cumulative_share": "0.65"
             },
             {
               "month": 29,
@@ -1760,7 +1680,7 @@
             {
               "month": 32,
               "circuits": "150.00",
-              "cumulative_share": "0.73"
+              "cumulative_share": "0.74"
             },
             {
               "month": 33,
@@ -1775,7 +1695,7 @@
             {
               "month": 35,
               "circuits": "150.00",
-              "cumulative_share": "0.80"
+              "cumulative_share": "0.81"
             },
             {
               "month": 36,
@@ -1790,7 +1710,7 @@
             {
               "month": 38,
               "circuits": "150.00",
-              "cumulative_share": "0.87"
+              "cumulative_share": "0.88"
             },
             {
               "month": 39,
@@ -1805,12 +1725,12 @@
             {
               "month": 41,
               "circuits": "150.00",
-              "cumulative_share": "0.94"
+              "cumulative_share": "0.95"
             },
             {
               "month": 42,
               "circuits": "150.00",
-              "cumulative_share": "0.96"
+              "cumulative_share": "0.97"
             },
             {
               "month": 43,
@@ -1819,7 +1739,7 @@
             },
             {
               "month": 44,
-              "circuits": "84.00",
+              "circuits": "57.00",
               "cumulative_share": "1.00"
             }
           ],
@@ -1858,15 +1778,15 @@
           "reason": "MPLS substitution acts on service_class in ['IPVPN'], and this estate's service_class=BEST_EFFORT, service_class=DIA, service_class=ETHERNET in L0 contain none of them. No saving is booked."
         }
       ],
-      "simulated_share": "0.0439",
+      "simulated_share": "0.0428",
       "origin_breakdown": {
         "ANALYST_ENTERED_SCOPE": {
-          "value": "25213274.03",
-          "share": "0.9561"
+          "value": "24297412.14",
+          "share": "0.9572"
         },
         "SIMULATED": {
-          "value": "1157807.09",
-          "share": "0.0439"
+          "value": "1085579.35",
+          "share": "0.0428"
         }
       },
       "target_components": [
@@ -1914,7 +1834,7 @@
           "key": "L0_backup_DE_BROADBAND_HFC_100M",
           "layer": "L0",
           "driver": "circuits",
-          "quantity": 94,
+          "quantity": 92,
           "quantity_origin": "SIMULATED",
           "unit_cost_origin": "BENCHMARK_PRIOR",
           "product": "BROADBAND_HFC",
@@ -1925,9 +1845,9 @@
           "committed_mbps": 100,
           "source_ref": null,
           "value": {
-            "low": "45396.16",
-            "base": "66168.34",
-            "high": "86783.30"
+            "low": "44430.28",
+            "base": "64760.50",
+            "high": "84936.85"
           }
         },
         {
@@ -1974,7 +1894,7 @@
           "key": "L0_backup_DE_MOBILE_5G_50M",
           "layer": "L0",
           "driver": "circuits",
-          "quantity": 79,
+          "quantity": 76,
           "quantity_origin": "SIMULATED",
           "unit_cost_origin": "BENCHMARK_PRIOR",
           "product": "MOBILE_5G",
@@ -1985,9 +1905,9 @@
           "committed_mbps": 50,
           "source_ref": null,
           "value": {
-            "low": "19422.88",
-            "base": "37574.03",
-            "high": "69763.82"
+            "low": "18685.30",
+            "base": "36147.17",
+            "high": "67114.56"
           }
         },
         {
@@ -2014,7 +1934,7 @@
           "key": "L0_backup_FR_BROADBAND_HFC_100M",
           "layer": "L0",
           "driver": "circuits",
-          "quantity": 408,
+          "quantity": 410,
           "quantity_origin": "SIMULATED",
           "unit_cost_origin": "BENCHMARK_PRIOR",
           "product": "BROADBAND_HFC",
@@ -2025,9 +1945,9 @@
           "committed_mbps": 100,
           "source_ref": null,
           "value": {
-            "low": "225698.80",
-            "base": "326009.38",
-            "high": "429902.48"
+            "low": "226805.17",
+            "base": "327607.47",
+            "high": "432009.85"
           }
         },
         {
@@ -2048,26 +1968,6 @@
             "low": "702455.04",
             "base": "1179539.09",
             "high": "1946803.97"
-          }
-        },
-        {
-          "key": "L0_backup_FR_BROADBAND_PON_1000M",
-          "layer": "L0",
-          "driver": "circuits",
-          "quantity": 53,
-          "quantity_origin": "SIMULATED",
-          "unit_cost_origin": "BENCHMARK_PRIOR",
-          "product": "BROADBAND_PON",
-          "role": "BACKUP",
-          "service_class": "BEST_EFFORT",
-          "access_technology": "PON",
-          "bearer_mbps": 1000,
-          "committed_mbps": 1000,
-          "source_ref": null,
-          "value": {
-            "low": "51656.79",
-            "base": "75119.52",
-            "high": "98925.74"
           }
         },
         {
@@ -2111,7 +2011,7 @@
           }
         },
         {
-          "key": "L0_primary_FR_ETHERNET_3000M_priced_at_10000M",
+          "key": "L0_primary_FR_ETHERNET_150M_priced_at_500M",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 3,
@@ -2121,13 +2021,13 @@
           "role": "PRIMARY",
           "service_class": "ETHERNET",
           "access_technology": "ETHERNET_FIBRE",
-          "bearer_mbps": 10000,
-          "committed_mbps": 3000,
+          "bearer_mbps": 500,
+          "committed_mbps": 150,
           "source_ref": null,
           "value": {
-            "low": "109889.06",
-            "base": "154921.44",
-            "high": "201920.07"
+            "low": "23125.82",
+            "base": "32605.83",
+            "high": "42495.08"
           }
         },
         {
@@ -2151,30 +2051,10 @@
           }
         },
         {
-          "key": "L0_primary_FR_ETHERNET_600M_priced_at_1000M",
-          "layer": "L0",
-          "driver": "circuits",
-          "quantity": 60,
-          "quantity_origin": "ANALYST_ENTERED_SCOPE",
-          "unit_cost_origin": "BENCHMARK_PRIOR",
-          "product": "ETHERNET",
-          "role": "PRIMARY",
-          "service_class": "ETHERNET",
-          "access_technology": "ETHERNET_FIBRE",
-          "bearer_mbps": 1000,
-          "committed_mbps": 600,
-          "source_ref": null,
-          "value": {
-            "low": "496736.06",
-            "base": "699946.27",
-            "high": "912564.36"
-          }
-        },
-        {
           "key": "L0_backup_FR_MOBILE_5G_50M",
           "layer": "L0",
           "driver": "circuits",
-          "quantity": 681,
+          "quantity": 693,
           "quantity_origin": "SIMULATED",
           "unit_cost_origin": "BENCHMARK_PRIOR",
           "product": "MOBILE_5G",
@@ -2185,16 +2065,16 @@
           "committed_mbps": 50,
           "source_ref": null,
           "value": {
-            "low": "155470.86",
-            "base": "304463.77",
-            "high": "574046.26"
+            "low": "158210.44",
+            "base": "309828.77",
+            "high": "584161.61"
           }
         },
         {
           "key": "L0_backup_GB_BROADBAND_HFC_100M",
           "layer": "L0",
           "driver": "circuits",
-          "quantity": 317,
+          "quantity": 321,
           "quantity_origin": "SIMULATED",
           "unit_cost_origin": "BENCHMARK_PRIOR",
           "product": "BROADBAND_HFC",
@@ -2205,9 +2085,9 @@
           "committed_mbps": 100,
           "source_ref": null,
           "value": {
-            "low": "167008.69",
-            "base": "241234.77",
-            "high": "318111.78"
+            "low": "169116.05",
+            "base": "244278.74",
+            "high": "322125.81"
           }
         },
         {
@@ -2254,7 +2134,7 @@
           "key": "L0_backup_GB_MOBILE_5G_50M",
           "layer": "L0",
           "driver": "circuits",
-          "quantity": 216,
+          "quantity": 206,
           "quantity_origin": "SIMULATED",
           "unit_cost_origin": "BENCHMARK_PRIOR",
           "product": "MOBILE_5G",
@@ -2265,16 +2145,16 @@
           "committed_mbps": 50,
           "source_ref": null,
           "value": {
-            "low": "47415.72",
-            "base": "92460.64",
-            "high": "173406.04"
+            "low": "45220.54",
+            "base": "88180.06",
+            "high": "165377.99"
           }
         },
         {
           "key": "L2_overlay",
           "layer": "L2",
           "driver": "sites",
-          "quantity": 4685,
+          "quantity": 4625,
           "quantity_origin": "ANALYST_ENTERED_SCOPE",
           "unit_cost_origin": "BENCHMARK_PRIOR",
           "product": "SDWAN_OVERLAY",
@@ -2285,9 +2165,9 @@
           "committed_mbps": null,
           "source_ref": null,
           "value": {
-            "low": "2248800.00",
-            "base": "3092100.00",
-            "high": "4216500.00"
+            "low": "2220000.00",
+            "base": "3052500.00",
+            "high": "4162500.00"
           }
         },
         {
@@ -2334,7 +2214,7 @@
           "key": "OPS_operations",
           "layer": "OPS",
           "driver": "sites",
-          "quantity": 4685,
+          "quantity": 4625,
           "quantity_origin": "ANALYST_ENTERED_SCOPE",
           "unit_cost_origin": "BENCHMARK_PRIOR",
           "product": null,
@@ -2345,9 +2225,9 @@
           "committed_mbps": null,
           "source_ref": null,
           "value": {
-            "low": "3373200.00",
-            "base": "4216500.00",
-            "high": "5481450.00"
+            "low": "3330000.00",
+            "base": "4162500.00",
+            "high": "5411250.00"
           }
         }
       ]
@@ -2360,30 +2240,30 @@
           "L2",
           "L4"
         ],
-        "addressable_base": "23170689.76",
-        "saving_base": "2962393.91",
+        "addressable_base": "22167566.05",
+        "saving_base": "2953681.91",
         "within_ceiling": true,
         "note": null
       },
       "label": "SASE northstar",
       "target_tco": {
-        "low": "16372749.84",
-        "base": "24424795.85",
-        "high": "35964049.25"
+        "low": "15587848.33",
+        "base": "23376384.14",
+        "high": "34642005.63"
       },
       "gross_run_rate_savings": {
-        "low": "329558.24",
-        "base": "2962393.91",
-        "high": "7455320.31"
+        "low": "328563.09",
+        "base": "2953681.91",
+        "high": "7434004.14"
       },
       "gross_run_rate_savings_unwidened": {
-        "low": "1091108.75",
-        "base": "2962393.91",
-        "high": "6155736.58"
+        "low": "1087652.75",
+        "base": "2953681.91",
+        "high": "6138456.58"
       },
-      "saving_on_evidenced_baseline": "2962393.91",
+      "saving_on_evidenced_baseline": "2953681.91",
       "saving_on_unevidenced_baseline": "0.00",
-      "savings_pct_base": "0.108",
+      "savings_pct_base": "0.112",
       "levers": [
         {
           "lever_id": "LEV-POP-001",
@@ -2431,11 +2311,11 @@
               "SSE_LICENCE"
             ]
           },
-          "saving_low": "755596.80",
-          "saving_base": "2016049.20",
-          "saving_high": "4155782.40",
+          "saving_low": "752140.80",
+          "saving_base": "2007337.20",
+          "saving_high": "4138502.40",
           "saving_on_unevidenced_baseline": "0.00",
-          "saving_on_evidenced_baseline": "2016049.20"
+          "saving_on_evidenced_baseline": "2007337.20"
         },
         {
           "lever_id": "LEV-SECRETIRE-001",
@@ -2458,14 +2338,14 @@
       ],
       "transition": {
         "one_time_cost": {
-          "low": "2004128.00",
-          "base": "4509288.00",
-          "high": "9018576.00"
+          "low": "1998944.00",
+          "base": "4497624.00",
+          "high": "8995248.00"
         },
         "one_time_cost_build": {
           "by_component": {
-            "hardware": "1646568.00",
-            "migration": "1176120.00",
+            "hardware": "1639764.00",
+            "migration": "1171260.00",
             "integration": "843300.00",
             "project_management": "843300.00"
           },
@@ -2489,26 +2369,26 @@
             {
               "archetype": "PLANT",
               "sites": 60,
-              "circuits": "113.00",
-              "circuits_per_site": "1.883",
-              "cost_per_site_base": "1173.60",
-              "cost_base": "70416.00"
+              "circuits": "83.00",
+              "circuits_per_site": "1.383",
+              "cost_per_site_base": "957.60",
+              "cost_base": "57456.00"
             },
             {
               "archetype": "STORE",
               "sites": 2820,
-              "circuits": "3796.00",
+              "circuits": "3795.00",
               "circuits_per_site": "1.346",
-              "cost_per_site_base": "941.51",
-              "cost_base": "2655072.00"
+              "cost_per_site_base": "941.36",
+              "cost_base": "2654640.00"
             },
             {
               "archetype": "WAREHOUSE",
               "sites": 1800,
-              "circuits": "2619.00",
-              "circuits_per_site": "1.455",
-              "cost_per_site_base": "988.56",
-              "cost_base": "1779408.00"
+              "circuits": "2623.00",
+              "circuits_per_site": "1.457",
+              "cost_per_site_base": "989.52",
+              "cost_base": "1781136.00"
             }
           ],
           "origin": {
@@ -2522,21 +2402,21 @@
           }
         },
         "dual_running_cost": {
-          "low": "105222.93",
-          "base": "175371.55",
-          "high": "350743.09"
+          "low": "102473.77",
+          "base": "170789.62",
+          "high": "341579.24"
         },
         "total_transition_cost": {
-          "low": "2109350.93",
-          "base": "4684659.55",
-          "high": "9369319.09"
+          "low": "2101417.77",
+          "base": "4668413.62",
+          "high": "9336827.24"
         },
         "gross_run_rate_savings": {
-          "low": "1091108.75",
-          "base": "2962393.91",
-          "high": "6155736.58"
+          "low": "1087652.75",
+          "base": "2953681.91",
+          "high": "6138456.58"
         },
-        "first_year_net": "-1722265.64",
+        "first_year_net": "-1714731.71",
         "payback_months": {
           "optimistic": 10,
           "base": 39,
@@ -2546,13 +2426,13 @@
         "payback_simple_months": 19,
         "payback_reconciliation_note": "Ramped payback is 39 month(s) against a simple 19, a gap of 105%. The simple figure divides total transition cost by the full-year saving, which is the saving only once every site is live; this programme runs 44 month(s), so for most of it the estate is part-migrated and saving proportionally less.",
         "run_rate_saving": {
-          "low": "1091108.75",
-          "base": "2962393.91",
-          "high": "6155736.58"
+          "low": "1087652.75",
+          "base": "2953681.91",
+          "high": "6138456.58"
         },
         "programme_months": 44,
         "programme_months_band": {
-          "low": 44,
+          "low": 43,
           "base": 44,
           "high": 44
         },
@@ -2586,7 +2466,7 @@
             {
               "month": 5,
               "circuits": "150.00",
-              "cumulative_share": "0.11"
+              "cumulative_share": "0.12"
             },
             {
               "month": 6,
@@ -2636,7 +2516,7 @@
             {
               "month": 15,
               "circuits": "150.00",
-              "cumulative_share": "0.34"
+              "cumulative_share": "0.35"
             },
             {
               "month": 16,
@@ -2686,7 +2566,7 @@
             {
               "month": 25,
               "circuits": "150.00",
-              "cumulative_share": "0.57"
+              "cumulative_share": "0.58"
             },
             {
               "month": 26,
@@ -2701,7 +2581,7 @@
             {
               "month": 28,
               "circuits": "150.00",
-              "cumulative_share": "0.64"
+              "cumulative_share": "0.65"
             },
             {
               "month": 29,
@@ -2721,7 +2601,7 @@
             {
               "month": 32,
               "circuits": "150.00",
-              "cumulative_share": "0.73"
+              "cumulative_share": "0.74"
             },
             {
               "month": 33,
@@ -2736,7 +2616,7 @@
             {
               "month": 35,
               "circuits": "150.00",
-              "cumulative_share": "0.80"
+              "cumulative_share": "0.81"
             },
             {
               "month": 36,
@@ -2751,7 +2631,7 @@
             {
               "month": 38,
               "circuits": "150.00",
-              "cumulative_share": "0.87"
+              "cumulative_share": "0.88"
             },
             {
               "month": 39,
@@ -2766,12 +2646,12 @@
             {
               "month": 41,
               "circuits": "150.00",
-              "cumulative_share": "0.94"
+              "cumulative_share": "0.95"
             },
             {
               "month": 42,
               "circuits": "150.00",
-              "cumulative_share": "0.96"
+              "cumulative_share": "0.97"
             },
             {
               "month": 43,
@@ -2780,7 +2660,7 @@
             },
             {
               "month": 44,
-              "circuits": "84.00",
+              "circuits": "57.00",
               "cumulative_share": "1.00"
             }
           ],
@@ -2803,15 +2683,15 @@
         "note": "Savings accrue as circuits are cut over. This programme runs 44 month(s) at 150.00 circuit(s) a month, and the payback above is the first month cumulative net benefit turns positive against that rollout."
       },
       "levers_not_applicable": [],
-      "simulated_share": "0.0521",
+      "simulated_share": "0.0510",
       "origin_breakdown": {
         "ANALYST_ENTERED_SCOPE": {
-          "value": "23152829.57",
-          "share": "0.9479"
+          "value": "22183789.01",
+          "share": "0.9490"
         },
         "SIMULATED": {
-          "value": "1271966.28",
-          "share": "0.0521"
+          "value": "1192595.13",
+          "share": "0.0510"
         }
       },
       "target_components": [
@@ -2859,7 +2739,7 @@
           "key": "L0_backup_DE_BROADBAND_HFC_100M",
           "layer": "L0",
           "driver": "circuits",
-          "quantity": 94,
+          "quantity": 92,
           "quantity_origin": "SIMULATED",
           "unit_cost_origin": "BENCHMARK_PRIOR",
           "product": "BROADBAND_HFC",
@@ -2870,9 +2750,9 @@
           "committed_mbps": 100,
           "source_ref": null,
           "value": {
-            "low": "54043.04",
-            "base": "72712.46",
-            "high": "90399.27"
+            "low": "52893.19",
+            "base": "71165.39",
+            "high": "88475.88"
           }
         },
         {
@@ -2919,7 +2799,7 @@
           "key": "L0_backup_DE_MOBILE_5G_50M",
           "layer": "L0",
           "driver": "circuits",
-          "quantity": 79,
+          "quantity": 76,
           "quantity_origin": "SIMULATED",
           "unit_cost_origin": "BENCHMARK_PRIOR",
           "product": "MOBILE_5G",
@@ -2930,9 +2810,9 @@
           "committed_mbps": 50,
           "source_ref": null,
           "value": {
-            "low": "23122.48",
-            "base": "41290.14",
-            "high": "72670.65"
+            "low": "22244.41",
+            "base": "39722.16",
+            "high": "69911.00"
           }
         },
         {
@@ -2959,7 +2839,7 @@
           "key": "L0_backup_FR_BROADBAND_HFC_100M",
           "layer": "L0",
           "driver": "circuits",
-          "quantity": 408,
+          "quantity": 410,
           "quantity_origin": "SIMULATED",
           "unit_cost_origin": "BENCHMARK_PRIOR",
           "product": "BROADBAND_HFC",
@@ -2970,9 +2850,9 @@
           "committed_mbps": 100,
           "source_ref": null,
           "value": {
-            "low": "268689.05",
-            "base": "358252.07",
-            "high": "447815.09"
+            "low": "270006.16",
+            "base": "360008.21",
+            "high": "450010.26"
           }
         },
         {
@@ -2993,26 +2873,6 @@
             "low": "836256.00",
             "base": "1296196.80",
             "high": "2027920.80"
-          }
-        },
-        {
-          "key": "L0_backup_FR_BROADBAND_PON_1000M",
-          "layer": "L0",
-          "driver": "circuits",
-          "quantity": 53,
-          "quantity_origin": "SIMULATED",
-          "unit_cost_origin": "BENCHMARK_PRIOR",
-          "product": "BROADBAND_PON",
-          "role": "BACKUP",
-          "service_class": "BEST_EFFORT",
-          "access_technology": "PON",
-          "bearer_mbps": 1000,
-          "committed_mbps": 1000,
-          "source_ref": null,
-          "value": {
-            "low": "61496.18",
-            "base": "82548.92",
-            "high": "103047.65"
           }
         },
         {
@@ -3056,7 +2916,7 @@
           }
         },
         {
-          "key": "L0_primary_FR_ETHERNET_3000M_priced_at_10000M",
+          "key": "L0_primary_FR_ETHERNET_150M_priced_at_500M",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 3,
@@ -3066,13 +2926,13 @@
           "role": "PRIMARY",
           "service_class": "ETHERNET",
           "access_technology": "ETHERNET_FIBRE",
-          "bearer_mbps": 10000,
-          "committed_mbps": 3000,
+          "bearer_mbps": 500,
+          "committed_mbps": 150,
           "source_ref": null,
           "value": {
-            "low": "124873.93",
-            "base": "166582.20",
-            "high": "208165.02"
+            "low": "26279.34",
+            "base": "35060.03",
+            "high": "43809.36"
           }
         },
         {
@@ -3096,30 +2956,10 @@
           }
         },
         {
-          "key": "L0_primary_FR_ETHERNET_600M_priced_at_1000M",
-          "layer": "L0",
-          "driver": "circuits",
-          "quantity": 60,
-          "quantity_origin": "ANALYST_ENTERED_SCOPE",
-          "unit_cost_origin": "BENCHMARK_PRIOR",
-          "product": "ETHERNET",
-          "role": "PRIMARY",
-          "service_class": "ETHERNET",
-          "access_technology": "ETHERNET_FIBRE",
-          "bearer_mbps": 1000,
-          "committed_mbps": 600,
-          "source_ref": null,
-          "value": {
-            "low": "564472.80",
-            "base": "752630.40",
-            "high": "940788.00"
-          }
-        },
-        {
           "key": "L0_backup_FR_MOBILE_5G_50M",
           "layer": "L0",
           "driver": "circuits",
-          "quantity": 681,
+          "quantity": 693,
           "quantity_origin": "SIMULATED",
           "unit_cost_origin": "BENCHMARK_PRIOR",
           "product": "MOBILE_5G",
@@ -3130,16 +2970,16 @@
           "committed_mbps": 50,
           "source_ref": null,
           "value": {
-            "low": "185084.36",
-            "base": "334575.57",
-            "high": "597964.85"
+            "low": "188345.76",
+            "base": "340471.18",
+            "high": "608501.68"
           }
         },
         {
           "key": "L0_backup_GB_BROADBAND_HFC_100M",
           "layer": "L0",
           "driver": "circuits",
-          "quantity": 317,
+          "quantity": 321,
           "quantity_origin": "SIMULATED",
           "unit_cost_origin": "BENCHMARK_PRIOR",
           "product": "BROADBAND_HFC",
@@ -3150,9 +2990,9 @@
           "committed_mbps": 100,
           "source_ref": null,
           "value": {
-            "low": "198819.86",
-            "base": "265093.15",
-            "high": "331366.44"
+            "low": "201328.63",
+            "base": "268438.18",
+            "high": "335547.72"
           }
         },
         {
@@ -3199,7 +3039,7 @@
           "key": "L0_backup_GB_MOBILE_5G_50M",
           "layer": "L0",
           "driver": "circuits",
-          "quantity": 216,
+          "quantity": 206,
           "quantity_origin": "SIMULATED",
           "unit_cost_origin": "BENCHMARK_PRIOR",
           "product": "MOBILE_5G",
@@ -3210,16 +3050,16 @@
           "committed_mbps": 50,
           "source_ref": null,
           "value": {
-            "low": "56447.28",
-            "base": "101605.10",
-            "high": "180631.30"
+            "low": "53833.98",
+            "base": "96901.16",
+            "high": "172268.74"
           }
         },
         {
           "key": "L2_overlay",
           "layer": "L2",
           "driver": "sites",
-          "quantity": 4685,
+          "quantity": 4625,
           "quantity_origin": "ANALYST_ENTERED_SCOPE",
           "unit_cost_origin": "BENCHMARK_PRIOR",
           "product": "SDWAN_OVERLAY",
@@ -3230,9 +3070,9 @@
           "committed_mbps": null,
           "source_ref": null,
           "value": {
-            "low": "1529184.00",
-            "base": "2411838.00",
-            "high": "3710520.00"
+            "low": "1509600.00",
+            "base": "2380950.00",
+            "high": "3663000.00"
           }
         },
         {
@@ -3279,7 +3119,7 @@
           "key": "OPS_operations",
           "layer": "OPS",
           "driver": "sites",
-          "quantity": 4685,
+          "quantity": 4625,
           "quantity_origin": "ANALYST_ENTERED_SCOPE",
           "unit_cost_origin": "BENCHMARK_PRIOR",
           "product": null,
@@ -3290,9 +3130,9 @@
           "committed_mbps": null,
           "source_ref": null,
           "value": {
-            "low": "3373200.00",
-            "base": "4216500.00",
-            "high": "5481450.00"
+            "low": "3330000.00",
+            "base": "4162500.00",
+            "high": "5411250.00"
           }
         }
       ]
@@ -3303,30 +3143,30 @@
           "L0",
           "OPS"
         ],
-        "addressable_base": "17839329.76",
-        "saving_base": "5093872.34",
+        "addressable_base": "16821806.05",
+        "saving_base": "4809593.36",
         "within_ceiling": true,
         "note": null
       },
       "label": "Carrier-managed NaaS",
       "target_tco": {
-        "low": "13920140.56",
-        "base": "22293317.42",
-        "high": "34758616.56"
+        "low": "13439630.26",
+        "base": "21520472.69",
+        "high": "33604991.89"
       },
       "gross_run_rate_savings": {
-        "low": "527945.93",
-        "base": "5093872.34",
-        "high": "12390568.89"
+        "low": "496349.89",
+        "base": "4809593.36",
+        "high": "11770707.67"
       },
       "gross_run_rate_savings_unwidened": {
-        "low": "1848644.99",
-        "base": "5093872.34",
-        "high": "10279991.67"
+        "low": "1743584.31",
+        "base": "4809593.36",
+        "high": "9757804.53"
       },
-      "saving_on_evidenced_baseline": "4740774.50",
-      "saving_on_unevidenced_baseline": "353097.84",
-      "savings_pct_base": "0.186",
+      "saving_on_evidenced_baseline": "4478528.95",
+      "saving_on_unevidenced_baseline": "331064.41",
+      "savings_pct_base": "0.183",
       "levers": [
         {
           "lever_id": "LEV-OPS-001",
@@ -3336,11 +3176,11 @@
             "OPS"
           ],
           "eligibility": {},
-          "saving_low": "337320.00",
-          "saving_base": "758970.00",
-          "saving_high": "1534806.00",
+          "saving_low": "333000.00",
+          "saving_base": "749250.00",
+          "saving_high": "1515150.00",
           "saving_on_unevidenced_baseline": "0.00",
-          "saving_on_evidenced_baseline": "758970.00"
+          "saving_on_evidenced_baseline": "749250.00"
         },
         {
           "lever_id": "LEV-NAAS-001",
@@ -3351,11 +3191,11 @@
             "OPS"
           ],
           "eligibility": {},
-          "saving_low": "993435.25",
-          "saving_base": "2732857.56",
-          "saving_high": "5543260.04",
-          "saving_on_unevidenced_baseline": "203514.61",
-          "saving_on_evidenced_baseline": "2529342.96"
+          "saving_low": "932555.45",
+          "saving_base": "2571608.97",
+          "saving_high": "5242091.81",
+          "saving_on_unevidenced_baseline": "190815.22",
+          "saving_on_evidenced_baseline": "2380793.75"
         },
         {
           "lever_id": "LEV-LASTMILE-001",
@@ -3365,23 +3205,23 @@
             "L0"
           ],
           "eligibility": {},
-          "saving_low": "517889.74",
-          "saving_base": "1602044.78",
-          "saving_high": "3201925.62",
-          "saving_on_unevidenced_baseline": "149583.23",
-          "saving_on_evidenced_baseline": "1452461.54"
+          "saving_low": "478028.86",
+          "saving_base": "1488734.39",
+          "saving_high": "3000562.71",
+          "saving_on_unevidenced_baseline": "140249.19",
+          "saving_on_evidenced_baseline": "1348485.20"
         }
       ],
       "transition": {
         "one_time_cost": {
-          "low": "2004128.00",
-          "base": "4509288.00",
-          "high": "9018576.00"
+          "low": "1998944.00",
+          "base": "4497624.00",
+          "high": "8995248.00"
         },
         "one_time_cost_build": {
           "by_component": {
-            "hardware": "1646568.00",
-            "migration": "1176120.00",
+            "hardware": "1639764.00",
+            "migration": "1171260.00",
             "integration": "843300.00",
             "project_management": "843300.00"
           },
@@ -3405,26 +3245,26 @@
             {
               "archetype": "PLANT",
               "sites": 60,
-              "circuits": "113.00",
-              "circuits_per_site": "1.883",
-              "cost_per_site_base": "1173.60",
-              "cost_base": "70416.00"
+              "circuits": "83.00",
+              "circuits_per_site": "1.383",
+              "cost_per_site_base": "957.60",
+              "cost_base": "57456.00"
             },
             {
               "archetype": "STORE",
               "sites": 2820,
-              "circuits": "3796.00",
+              "circuits": "3795.00",
               "circuits_per_site": "1.346",
-              "cost_per_site_base": "941.51",
-              "cost_base": "2655072.00"
+              "cost_per_site_base": "941.36",
+              "cost_base": "2654640.00"
             },
             {
               "archetype": "WAREHOUSE",
               "sites": 1800,
-              "circuits": "2619.00",
-              "circuits_per_site": "1.455",
-              "cost_per_site_base": "988.56",
-              "cost_base": "1779408.00"
+              "circuits": "2623.00",
+              "circuits_per_site": "1.457",
+              "cost_per_site_base": "989.52",
+              "cost_base": "1781136.00"
             }
           ],
           "origin": {
@@ -3438,37 +3278,37 @@
           }
         },
         "dual_running_cost": {
-          "low": "105222.93",
-          "base": "175371.55",
-          "high": "350743.09"
+          "low": "102473.77",
+          "base": "170789.62",
+          "high": "341579.24"
         },
         "total_transition_cost": {
-          "low": "2109350.93",
-          "base": "4684659.55",
-          "high": "9369319.09"
+          "low": "2101417.77",
+          "base": "4668413.62",
+          "high": "9336827.24"
         },
         "gross_run_rate_savings": {
-          "low": "1848644.99",
-          "base": "5093872.34",
-          "high": "10279991.67"
+          "low": "1743584.31",
+          "base": "4809593.36",
+          "high": "9757804.53"
         },
-        "first_year_net": "409212.79",
+        "first_year_net": "141179.74",
         "payback_months": {
-          "optimistic": 6,
-          "base": 24,
-          "pessimistic": 84
+          "optimistic": 7,
+          "base": 25,
+          "pessimistic": 87
         },
         "payback_definition": "first month in which cumulative net benefit turns positive, with savings accruing as circuits are cut over",
         "payback_simple_months": 12,
-        "payback_reconciliation_note": "Ramped payback is 24 month(s) against a simple 12, a gap of 100%. The simple figure divides total transition cost by the full-year saving, which is the saving only once every site is live; this programme runs 44 month(s), so for most of it the estate is part-migrated and saving proportionally less.",
+        "payback_reconciliation_note": "Ramped payback is 25 month(s) against a simple 12, a gap of 108%. The simple figure divides total transition cost by the full-year saving, which is the saving only once every site is live; this programme runs 44 month(s), so for most of it the estate is part-migrated and saving proportionally less.",
         "run_rate_saving": {
-          "low": "1848644.99",
-          "base": "5093872.34",
-          "high": "10279991.67"
+          "low": "1743584.31",
+          "base": "4809593.36",
+          "high": "9757804.53"
         },
         "programme_months": 44,
         "programme_months_band": {
-          "low": 44,
+          "low": 43,
           "base": 44,
           "high": 44
         },
@@ -3502,7 +3342,7 @@
             {
               "month": 5,
               "circuits": "150.00",
-              "cumulative_share": "0.11"
+              "cumulative_share": "0.12"
             },
             {
               "month": 6,
@@ -3552,7 +3392,7 @@
             {
               "month": 15,
               "circuits": "150.00",
-              "cumulative_share": "0.34"
+              "cumulative_share": "0.35"
             },
             {
               "month": 16,
@@ -3602,7 +3442,7 @@
             {
               "month": 25,
               "circuits": "150.00",
-              "cumulative_share": "0.57"
+              "cumulative_share": "0.58"
             },
             {
               "month": 26,
@@ -3617,7 +3457,7 @@
             {
               "month": 28,
               "circuits": "150.00",
-              "cumulative_share": "0.64"
+              "cumulative_share": "0.65"
             },
             {
               "month": 29,
@@ -3637,7 +3477,7 @@
             {
               "month": 32,
               "circuits": "150.00",
-              "cumulative_share": "0.73"
+              "cumulative_share": "0.74"
             },
             {
               "month": 33,
@@ -3652,7 +3492,7 @@
             {
               "month": 35,
               "circuits": "150.00",
-              "cumulative_share": "0.80"
+              "cumulative_share": "0.81"
             },
             {
               "month": 36,
@@ -3667,7 +3507,7 @@
             {
               "month": 38,
               "circuits": "150.00",
-              "cumulative_share": "0.87"
+              "cumulative_share": "0.88"
             },
             {
               "month": 39,
@@ -3682,12 +3522,12 @@
             {
               "month": 41,
               "circuits": "150.00",
-              "cumulative_share": "0.94"
+              "cumulative_share": "0.95"
             },
             {
               "month": 42,
               "circuits": "150.00",
-              "cumulative_share": "0.96"
+              "cumulative_share": "0.97"
             },
             {
               "month": 43,
@@ -3696,7 +3536,7 @@
             },
             {
               "month": 44,
-              "circuits": "84.00",
+              "circuits": "57.00",
               "cumulative_share": "1.00"
             }
           ],
@@ -3719,15 +3559,15 @@
         "note": "Savings accrue as circuits are cut over. This programme runs 44 month(s) at 150.00 circuit(s) a month, and the payback above is the first month cumulative net benefit turns positive against that rollout."
       },
       "levers_not_applicable": [],
-      "simulated_share": "0.0412",
+      "simulated_share": "0.0400",
       "origin_breakdown": {
         "ANALYST_ENTERED_SCOPE": {
-          "value": "21374448.97",
-          "share": "0.9588"
+          "value": "20658941.96",
+          "share": "0.9600"
         },
         "SIMULATED": {
-          "value": "918868.44",
-          "share": "0.0412"
+          "value": "861530.73",
+          "share": "0.0400"
         }
       },
       "target_components": [
@@ -3775,7 +3615,7 @@
           "key": "L0_backup_DE_BROADBAND_HFC_100M",
           "layer": "L0",
           "driver": "circuits",
-          "quantity": 94,
+          "quantity": 92,
           "quantity_origin": "SIMULATED",
           "unit_cost_origin": "BENCHMARK_PRIOR",
           "product": "BROADBAND_HFC",
@@ -3786,9 +3626,9 @@
           "committed_mbps": 100,
           "source_ref": null,
           "value": {
-            "low": "32036.72",
-            "base": "52527.48",
-            "high": "78177.29"
+            "low": "31355.08",
+            "base": "51409.87",
+            "high": "76513.95"
           }
         },
         {
@@ -3835,7 +3675,7 @@
           "key": "L0_backup_DE_MOBILE_5G_50M",
           "layer": "L0",
           "driver": "circuits",
-          "quantity": 79,
+          "quantity": 76,
           "quantity_origin": "SIMULATED",
           "unit_cost_origin": "BENCHMARK_PRIOR",
           "product": "MOBILE_5G",
@@ -3846,9 +3686,9 @@
           "committed_mbps": 50,
           "source_ref": null,
           "value": {
-            "low": "13707.01",
-            "base": "29828.00",
-            "high": "62845.58"
+            "low": "13186.49",
+            "base": "28695.29",
+            "high": "60459.03"
           }
         },
         {
@@ -3875,7 +3715,7 @@
           "key": "L0_backup_FR_BROADBAND_HFC_100M",
           "layer": "L0",
           "driver": "circuits",
-          "quantity": 408,
+          "quantity": 410,
           "quantity_origin": "SIMULATED",
           "unit_cost_origin": "BENCHMARK_PRIOR",
           "product": "BROADBAND_HFC",
@@ -3886,9 +3726,9 @@
           "committed_mbps": 100,
           "source_ref": null,
           "value": {
-            "low": "159278.87",
-            "base": "258801.30",
-            "high": "387270.49"
+            "low": "160059.65",
+            "base": "260069.93",
+            "high": "389168.87"
           }
         },
         {
@@ -3909,26 +3749,6 @@
             "low": "495732.56",
             "base": "936372.57",
             "high": "1753745.91"
-          }
-        },
-        {
-          "key": "L0_backup_FR_BROADBAND_PON_1000M",
-          "layer": "L0",
-          "driver": "circuits",
-          "quantity": 53,
-          "quantity_origin": "SIMULATED",
-          "unit_cost_origin": "BENCHMARK_PRIOR",
-          "product": "BROADBAND_PON",
-          "role": "BACKUP",
-          "service_class": "BEST_EFFORT",
-          "access_technology": "PON",
-          "bearer_mbps": 1000,
-          "committed_mbps": 1000,
-          "source_ref": null,
-          "value": {
-            "low": "36454.93",
-            "base": "59633.34",
-            "high": "89115.60"
           }
         },
         {
@@ -3972,7 +3792,7 @@
           }
         },
         {
-          "key": "L0_primary_FR_ETHERNET_3000M_priced_at_10000M",
+          "key": "L0_primary_FR_ETHERNET_150M_priced_at_500M",
           "layer": "L0",
           "driver": "circuits",
           "quantity": 3,
@@ -3982,13 +3802,13 @@
           "role": "PRIMARY",
           "service_class": "ETHERNET",
           "access_technology": "ETHERNET_FIBRE",
-          "bearer_mbps": 10000,
-          "committed_mbps": 3000,
+          "bearer_mbps": 500,
+          "committed_mbps": 150,
           "source_ref": null,
           "value": {
-            "low": "74025.26",
-            "base": "120338.98",
-            "high": "180021.11"
+            "low": "15578.40",
+            "base": "25327.37",
+            "high": "37886.34"
           }
         },
         {
@@ -4012,30 +3832,10 @@
           }
         },
         {
-          "key": "L0_primary_FR_ETHERNET_600M_priced_at_1000M",
-          "layer": "L0",
-          "driver": "circuits",
-          "quantity": 60,
-          "quantity_origin": "ANALYST_ENTERED_SCOPE",
-          "unit_cost_origin": "BENCHMARK_PRIOR",
-          "product": "ETHERNET",
-          "role": "PRIMARY",
-          "service_class": "ETHERNET",
-          "access_technology": "ETHERNET_FIBRE",
-          "bearer_mbps": 1000,
-          "committed_mbps": 600,
-          "source_ref": null,
-          "value": {
-            "low": "334619.48",
-            "base": "543700.20",
-            "high": "813593.46"
-          }
-        },
-        {
           "key": "L0_backup_FR_MOBILE_5G_50M",
           "layer": "L0",
           "driver": "circuits",
-          "quantity": 681,
+          "quantity": 693,
           "quantity_origin": "SIMULATED",
           "unit_cost_origin": "BENCHMARK_PRIOR",
           "product": "MOBILE_5G",
@@ -4046,16 +3846,16 @@
           "committed_mbps": 50,
           "source_ref": null,
           "value": {
-            "low": "109718.01",
-            "base": "241697.39",
-            "high": "517120.00"
+            "low": "111651.37",
+            "base": "245956.38",
+            "high": "526232.25"
           }
         },
         {
           "key": "L0_backup_GB_BROADBAND_HFC_100M",
           "layer": "L0",
           "driver": "circuits",
-          "quantity": 317,
+          "quantity": 321,
           "quantity_origin": "SIMULATED",
           "unit_cost_origin": "BENCHMARK_PRIOR",
           "product": "BROADBAND_HFC",
@@ -4066,9 +3866,9 @@
           "committed_mbps": 100,
           "source_ref": null,
           "value": {
-            "low": "117860.42",
-            "base": "191503.29",
-            "high": "286565.70"
+            "low": "119347.61",
+            "base": "193919.74",
+            "high": "290181.67"
           }
         },
         {
@@ -4115,7 +3915,7 @@
           "key": "L0_backup_GB_MOBILE_5G_50M",
           "layer": "L0",
           "driver": "circuits",
-          "quantity": 216,
+          "quantity": 206,
           "quantity_origin": "SIMULATED",
           "unit_cost_origin": "BENCHMARK_PRIOR",
           "product": "MOBILE_5G",
@@ -4126,16 +3926,16 @@
           "committed_mbps": 50,
           "source_ref": null,
           "value": {
-            "low": "33461.95",
-            "base": "73399.53",
-            "high": "156209.94"
+            "low": "31912.78",
+            "base": "70001.40",
+            "high": "148978.00"
           }
         },
         {
           "key": "L2_overlay",
           "layer": "L2",
           "driver": "sites",
-          "quantity": 4685,
+          "quantity": 4625,
           "quantity_origin": "ANALYST_ENTERED_SCOPE",
           "unit_cost_origin": "BENCHMARK_PRIOR",
           "product": "SDWAN_OVERLAY",
@@ -4146,9 +3946,9 @@
           "committed_mbps": null,
           "source_ref": null,
           "value": {
-            "low": "2248800.00",
-            "base": "3092100.00",
-            "high": "4216500.00"
+            "low": "2220000.00",
+            "base": "3052500.00",
+            "high": "4162500.00"
           }
         },
         {
@@ -4195,7 +3995,7 @@
           "key": "OPS_operations",
           "layer": "OPS",
           "driver": "sites",
-          "quantity": 4685,
+          "quantity": 4625,
           "quantity_origin": "ANALYST_ENTERED_SCOPE",
           "unit_cost_origin": "BENCHMARK_PRIOR",
           "product": null,
@@ -4206,24 +4006,24 @@
           "committed_mbps": null,
           "source_ref": null,
           "value": {
-            "low": "1845815.04",
-            "base": "2904325.20",
-            "high": "4538640.60"
+            "low": "1822176.00",
+            "base": "2867130.00",
+            "high": "4480515.00"
           }
         }
       ]
     }
   },
   "savings_bridge": {
-    "baseline": "27387189.76",
+    "baseline": "26330066.05",
     "steps": [
       {
         "step": "Same-service repricing",
         "lever_id": "LEV-REPRICE-001",
         "scenario": "A",
-        "saving": "1634739.57",
-        "from": "27387189.76",
-        "to": "25752450.19",
+        "saving": "1519116.73",
+        "from": "26330066.05",
+        "to": "24810949.32",
         "basis": "GOVERNED_LEVER",
         "layers": [
           "L0"
@@ -4233,9 +4033,9 @@
         "step": "Billing cleanup",
         "lever_id": "LEV-CLEANUP-001",
         "scenario": "A",
-        "saving": "359642.71",
-        "from": "25752450.19",
-        "to": "25392807.48",
+        "saving": "334205.68",
+        "from": "24810949.32",
+        "to": "24476743.64",
         "basis": "GOVERNED_LEVER",
         "layers": [
           "L0"
@@ -4245,9 +4045,9 @@
         "step": "Risk-tiered access",
         "lever_id": "LEV-RISKTIER-001",
         "scenario": "B",
-        "saving": "281297.49",
-        "from": "25392807.48",
-        "to": "25111509.99",
+        "saving": "274154.09",
+        "from": "24476743.64",
+        "to": "24202589.55",
         "basis": "GOVERNED_LEVER",
         "layers": [
           "L0"
@@ -4257,9 +4057,9 @@
         "step": "Right-sizing",
         "lever_id": "LEV-BANDWIDTH-001",
         "scenario": "B",
-        "saving": "734811.14",
-        "from": "25111509.99",
-        "to": "24376698.85",
+        "saving": "672920.46",
+        "from": "24202589.55",
+        "to": "23529669.09",
         "basis": "GOVERNED_LEVER",
         "layers": [
           "L0"
@@ -4270,8 +4070,8 @@
         "lever_id": "LEV-POP-001",
         "scenario": "C",
         "saving": "211200.00",
-        "from": "24376698.85",
-        "to": "24165498.85",
+        "from": "23529669.09",
+        "to": "23318469.09",
         "basis": "GOVERNED_LEVER",
         "layers": [
           "L1"
@@ -4282,8 +4082,8 @@
         "lever_id": "LEV-BACKBONE-001",
         "scenario": "C",
         "saving": "261547.43",
-        "from": "24165498.85",
-        "to": "23903951.42",
+        "from": "23318469.09",
+        "to": "23056921.66",
         "basis": "GOVERNED_LEVER",
         "layers": [
           "L0"
@@ -4293,9 +4093,9 @@
         "step": "Platform consolidation",
         "lever_id": "LEV-SASE-001",
         "scenario": "C",
-        "saving": "2016049.20",
-        "from": "23903951.42",
-        "to": "21887902.22",
+        "saving": "2007337.20",
+        "from": "23056921.66",
+        "to": "21049584.46",
         "basis": "GOVERNED_LEVER",
         "layers": [
           "L2",
@@ -4307,8 +4107,8 @@
         "lever_id": "LEV-SECRETIRE-001",
         "scenario": "C",
         "saving": "473597.28",
-        "from": "21887902.22",
-        "to": "21414304.94",
+        "from": "21049584.46",
+        "to": "20575987.18",
         "basis": "GOVERNED_LEVER",
         "layers": [
           "L4"
@@ -4318,9 +4118,9 @@
         "step": "Operating-model optimisation",
         "lever_id": "LEV-OPS-001",
         "scenario": "D",
-        "saving": "758970.00",
-        "from": "21414304.94",
-        "to": "20655334.94",
+        "saving": "749250.00",
+        "from": "20575987.18",
+        "to": "19826737.18",
         "basis": "GOVERNED_LEVER",
         "layers": [
           "OPS"
@@ -4330,9 +4130,9 @@
         "step": "Supplier consolidation",
         "lever_id": "LEV-NAAS-001",
         "scenario": "D",
-        "saving": "2732857.56",
-        "from": "20655334.94",
-        "to": "17922477.38",
+        "saving": "2571608.97",
+        "from": "19826737.18",
+        "to": "17255128.21",
         "basis": "GOVERNED_LEVER",
         "layers": [
           "L0",
@@ -4343,9 +4143,9 @@
         "step": "Direct local access",
         "lever_id": "LEV-LASTMILE-001",
         "scenario": "D",
-        "saving": "1602044.78",
-        "from": "17922477.38",
-        "to": "16320432.60",
+        "saving": "1488734.39",
+        "from": "17255128.21",
+        "to": "15766393.82",
         "basis": "GOVERNED_LEVER",
         "layers": [
           "L0"
@@ -4362,11 +4162,11 @@
         "reason": "MPLS substitution acts on service_class in ['IPVPN'], and this estate's service_class=BEST_EFFORT, service_class=DIA, service_class=ETHERNET in L0 contain none of them. No saving is booked."
       }
     ],
-    "target": "16320432.60",
-    "total_saving": "11066757.16",
-    "governed_saving": "11066757.16",
+    "target": "15766393.82",
+    "total_saving": "10563672.23",
+    "governed_saving": "10563672.23",
     "estimated_saving": "0",
-    "saving_pct": "0.404",
+    "saving_pct": "0.401",
     "governed_share": "1.000",
     "coverage": {
       "status": "COMPLETE",
@@ -4379,9 +4179,9 @@
   "confidence": {
     "current_baseline": "0.358",
     "target_cost": "0.750",
-    "realization": "0.183",
-    "weighted": "0.443",
-    "overall": "0.333",
+    "realization": "0.182",
+    "weighted": "0.442",
+    "overall": "0.332",
     "band": "D - Indicative",
     "policy_set": "confidence_policy",
     "ceilings_applied": [],
@@ -4399,7 +4199,7 @@
     "v0_status": "COMPLETE",
     "partial_penalty_factor": "0.8000",
     "arithmetic": "capped = min(sum(component x weight), min(component) + component_cap_headroom). If v0_status is PARTIAL, capped is lowered one band: to (next lower band floor - 0.01) where the score is at or above a floor, otherwise to capped x partial_penalty_factor. overall = clamp of the result. Ceilings in `ceilings_applied` have already been applied to the components above.",
-    "simulated_share": "0.0521",
+    "simulated_share": "0.0510",
     "asserted_share": "0.0000",
     "drivers": {
       "priced_spend_pct": "1.000",
@@ -4410,15 +4210,15 @@
       "prior_coverage": "1",
       "prior_recency": "1",
       "lever_stage_mix": {
-        "V3": "758970.00",
-        "V4": "2732857.56",
-        "V2": "1602044.78"
+        "V3": "749250.00",
+        "V4": "2571608.97",
+        "V2": "1488734.39"
       },
       "policy_set": "confidence_policy",
       "raw_before_stage_scaling": {
         "current_baseline": "0.650",
         "target_cost": "1.000",
-        "realization": "0.523"
+        "realization": "0.521"
       },
       "stage_ceilings": {
         "current_baseline": "0.5500",
@@ -4432,7 +4232,7 @@
     "scope_status": "PARTIAL_COUNTRIES",
     "metrics": {
       "BASELINE_PER_EMPLOYEE": {
-        "value": "169.06",
+        "value": "162.53",
         "flag": "NOT_ASSESSABLE",
         "note": "scope is PARTIAL_COUNTRIES: this baseline covers part of the group and the denominator is group-wide, so the ratio measures the scope gap rather than the estimate",
         "benchmark": null
@@ -4444,9 +4244,9 @@
         "benchmark": null
       },
       "BASELINE_PER_SITE": {
-        "value": "5845.72",
+        "value": "5692.99",
         "flag": "OK",
-        "note": "5845.718198505869797225186766 is within 1500.000000-20000.000000",
+        "note": "5692.987254054054054054054054 is within 1500.000000-20000.000000",
         "benchmark": {
           "low": "1500.00",
           "high": "20000.00",
@@ -4460,7 +4260,7 @@
     "inputs": {
       "employees": "162000.00",
       "revenue": "46571000000.00",
-      "sites": "4685.00",
+      "sites": "4625.00",
       "provenance": {
         "employees": {
           "value": "162000",
@@ -4483,7 +4283,7 @@
     "notes": [
       "BASELINE_PER_EMPLOYEE: scope is PARTIAL_COUNTRIES: this baseline covers part of the group and the denominator is group-wide, so the ratio measures the scope gap rather than the estimate",
       "BASELINE_PCT_OF_REVENUE: scope is PARTIAL_COUNTRIES: this baseline covers part of the group and the denominator is group-wide, so the ratio measures the scope gap rather than the estimate",
-      "BASELINE_PER_SITE: 5845.718198505869797225186766 is within 1500.000000-20000.000000",
+      "BASELINE_PER_SITE: 5692.987254054054054054054054 is within 1500.000000-20000.000000",
       "scope is PARTIAL_COUNTRIES, so only BASELINE_PER_SITE is judged. Per-site divides the cost of the estate by the size of the same estate and is unaffected by how much of the group that estate is."
     ],
     "benchmark_rows": 21
@@ -4495,10 +4295,10 @@
     "coverage_basis": "MIN_OF_VALUE_AND_CIRCUIT_COVERAGE",
     "priced_spend_pct": "1.000",
     "circuit_coverage_pct": "1.000",
-    "priced_spend": "13622829.76",
-    "total_estimated_spend": "13622829.76",
-    "priced_circuits": 6546,
-    "total_circuits": 6546,
+    "priced_spend": "12659306.06",
+    "total_estimated_spend": "12659306.06",
+    "priced_circuits": 6436,
+    "total_circuits": 6436,
     "spend_basis": "DERIVED_FROM_SIMULATED_SCOPE_AND_PRIORS",
     "unpriced_countries": [],
     "unpriced_pairs": [],
@@ -4557,13 +4357,13 @@
         "role": "BACKUP",
         "bandwidth_mbps": 100,
         "priced_at_bandwidth_mbps": null,
-        "count": 94,
+        "count": 92,
         "priced": true,
         "rate_basis": "APPROVED_PRIOR",
         "price_basis": "SEED",
         "evidence_grade": "E",
         "prior_expired": false,
-        "annual_value": "72712.46"
+        "annual_value": "71165.39"
       },
       {
         "country": "DE",
@@ -4599,13 +4399,13 @@
         "role": "BACKUP",
         "bandwidth_mbps": 50,
         "priced_at_bandwidth_mbps": null,
-        "count": 79,
+        "count": 76,
         "priced": true,
         "rate_basis": "APPROVED_PRIOR",
         "price_basis": "SEED",
         "evidence_grade": "E",
         "prior_expired": false,
-        "annual_value": "41290.14"
+        "annual_value": "39722.16"
       },
       {
         "country": "EUROPE_WEST",
@@ -4627,13 +4427,13 @@
         "role": "BACKUP",
         "bandwidth_mbps": 100,
         "priced_at_bandwidth_mbps": null,
-        "count": 408,
+        "count": 410,
         "priced": true,
         "rate_basis": "APPROVED_PRIOR",
         "price_basis": "SEED",
         "evidence_grade": "E",
         "prior_expired": false,
-        "annual_value": "358252.07"
+        "annual_value": "360008.21"
       },
       {
         "country": "FR",
@@ -4648,20 +4448,6 @@
         "evidence_grade": "E",
         "prior_expired": false,
         "annual_value": "1296196.80"
-      },
-      {
-        "country": "FR",
-        "product": "BROADBAND_PON",
-        "role": "BACKUP",
-        "bandwidth_mbps": 1000,
-        "priced_at_bandwidth_mbps": null,
-        "count": 53,
-        "priced": true,
-        "rate_basis": "APPROVED_PRIOR",
-        "price_basis": "SEED",
-        "evidence_grade": "E",
-        "prior_expired": false,
-        "annual_value": "82548.92"
       },
       {
         "country": "FR",
@@ -4695,15 +4481,15 @@
         "country": "FR",
         "product": "ETHERNET",
         "role": "PRIMARY",
-        "bandwidth_mbps": 3000,
-        "priced_at_bandwidth_mbps": 10000,
+        "bandwidth_mbps": 150,
+        "priced_at_bandwidth_mbps": 500,
         "count": 3,
         "priced": true,
         "rate_basis": "APPROVED_PRIOR",
         "price_basis": "SEED",
         "evidence_grade": "E",
         "prior_expired": false,
-        "annual_value": "166582.20"
+        "annual_value": "35060.03"
       },
       {
         "country": "FR",
@@ -4721,31 +4507,17 @@
       },
       {
         "country": "FR",
-        "product": "ETHERNET",
-        "role": "PRIMARY",
-        "bandwidth_mbps": 600,
-        "priced_at_bandwidth_mbps": 1000,
-        "count": 60,
-        "priced": true,
-        "rate_basis": "APPROVED_PRIOR",
-        "price_basis": "SEED",
-        "evidence_grade": "E",
-        "prior_expired": false,
-        "annual_value": "752630.40"
-      },
-      {
-        "country": "FR",
         "product": "MOBILE_5G",
         "role": "BACKUP",
         "bandwidth_mbps": 50,
         "priced_at_bandwidth_mbps": null,
-        "count": 681,
+        "count": 693,
         "priced": true,
         "rate_basis": "APPROVED_PRIOR",
         "price_basis": "SEED",
         "evidence_grade": "E",
         "prior_expired": false,
-        "annual_value": "334575.57"
+        "annual_value": "340471.18"
       },
       {
         "country": "GB",
@@ -4753,13 +4525,13 @@
         "role": "BACKUP",
         "bandwidth_mbps": 100,
         "priced_at_bandwidth_mbps": null,
-        "count": 317,
+        "count": 321,
         "priced": true,
         "rate_basis": "APPROVED_PRIOR",
         "price_basis": "SEED",
         "evidence_grade": "E",
         "prior_expired": false,
-        "annual_value": "265093.15"
+        "annual_value": "268438.18"
       },
       {
         "country": "GB",
@@ -4795,26 +4567,26 @@
         "role": "BACKUP",
         "bandwidth_mbps": 50,
         "priced_at_bandwidth_mbps": null,
-        "count": 216,
+        "count": 206,
         "priced": true,
         "rate_basis": "APPROVED_PRIOR",
         "price_basis": "SEED",
         "evidence_grade": "E",
         "prior_expired": false,
-        "annual_value": "101605.10"
+        "annual_value": "96901.16"
       }
     ],
     "unpriced_components": []
   },
-  "simulated_share": "0.0521",
+  "simulated_share": "0.0510",
   "simulated_share_by_scenario": {
-    "A": "0.0428",
-    "B": "0.0439",
-    "C": "0.0521",
-    "D": "0.0412"
+    "A": "0.0416",
+    "B": "0.0428",
+    "C": "0.0510",
+    "D": "0.0400"
   },
   "asserted_share": "0.0000",
-  "entered_share": "0.9536",
+  "entered_share": "0.9547",
   "quantity_sources": {
     "footprint": {
       "origin": "ANALYST_ENTERED_SCOPE",

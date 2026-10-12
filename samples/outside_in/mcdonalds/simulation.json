@@ -1,13 +1,13 @@
 {
-  "simulation_run_id": "b9f4f28c-383f-4331-b603-15ae7b4febda",
+  "simulation_run_id": "47cae99f-c9a5-4e23-add4-6eefbb2add6b",
   "case_id": "71da5c68-a0e5-4d8d-b1cf-f69c8c388689",
   "model_version": "sim-2.7.0",
   "seed": 20260101,
   "ensemble_size": 25,
   "status": "SUCCEEDED",
-  "output_hash": "035e7cf17733e6d02682ddfd87518d31b53dbc22b72359450f2fb493418f8be4",
-  "started_at": "2026-10-12 13:39:13.029147+00:00",
-  "ended_at": "2026-10-12 13:40:19.602660+00:00",
+  "output_hash": "65c8b959bae39e90b4476c07be2c95e0115a5a4304f1c27a05490a906bce9fe3",
+  "started_at": "2026-10-12 14:49:50.353118+00:00",
+  "ended_at": "2026-10-12 14:50:08.367792+00:00",
   "params": {
     "footprint": [
       {
@@ -24,7 +24,7 @@
         "sites": 1450,
         "industry": null,
         "count_source": null,
-        "density": null
+        "density": "SUBURBAN"
       },
       {
         "country": "GB",
@@ -32,7 +32,7 @@
         "sites": 1450,
         "industry": null,
         "count_source": null,
-        "density": null
+        "density": "SUBURBAN"
       },
       {
         "country": "US",
@@ -40,7 +40,7 @@
         "sites": 6,
         "industry": null,
         "count_source": null,
-        "density": null
+        "density": "URBAN"
       },
       {
         "country": "US",
@@ -48,25 +48,15 @@
         "sites": 13500,
         "industry": null,
         "count_source": null,
-        "density": null
+        "density": "SUBURBAN"
       }
     ],
     "site_inclusion_rule": null,
     "homogeneity": {
-      "rows": [
-        {
-          "country": "US",
-          "archetype": "STORE",
-          "density": null,
-          "sites": 13500,
-          "uniform_by_construction": false,
-          "note": "13,500 sites priced as one block at the STORE tier - a STORE is individually significant, so a single bandwidth, product pair and dual-access probability across 13,500 of them is a strong assumption",
-          "narrows_it": "add a density band - the row currently claims a whole country's estate is alike"
-        }
-      ],
-      "sites_in_large_rows": 13500,
-      "share_in_large_rows": "0.823",
-      "share_asserted_alike": "0.823",
+      "rows": [],
+      "sites_in_large_rows": 0,
+      "share_in_large_rows": "0.000",
+      "share_asserted_alike": "0.000",
       "basis": "sites in rows above the reporting band; nothing is refused for this - the row prices and the claim is disclosed"
     },
     "backbone": {
@@ -2016,9 +2006,18 @@
         "UNSERVICEABLE": 0
       },
       "substitutions": [],
-      "by_access_technology": [],
+      "by_access_technology": [
+        {
+          "access_technology": "PON",
+          "sites": 16400
+        },
+        {
+          "access_technology": "ETHERNET_FIBRE",
+          "sites": 6
+        }
+      ],
       "unserviceable": 0,
-      "note": "0 of 16407 site(s) take a different product or tier from the one their type asks for, and 0 can be served by nothing at all. A uniform estate is an assumption; this is what the density bands say about it.",
+      "note": "0 of 16407 site(s) take a different product or tier from the one their type asks for, and 0 can be served by nothing at all. 6 of 16407 are delivered over a bearer other than PON (6 on ETHERNET_FIBRE), which is a different circuit at a different rate. A uniform estate is an assumption; this is what the density bands say about it.",
       "table_rows": 102,
       "table_basis": "GOVERNED"
     },

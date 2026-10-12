@@ -1,13 +1,13 @@
 {
-  "simulation_run_id": "4365f4d0-8597-46f1-aefd-b698b5f47819",
+  "simulation_run_id": "14610be6-d59b-4cf6-93dd-b27648426146",
   "case_id": "e71dd642-34f1-44b8-8bc1-8c2a230f9cae",
   "model_version": "sim-2.7.0",
   "seed": 20260101,
   "ensemble_size": 25,
   "status": "SUCCEEDED",
-  "output_hash": "f879ed3d02d58d03e68b99e867f91f995e2698c246f41d56a7126eb6b654367c",
-  "started_at": "2026-10-12 13:38:55.121844+00:00",
-  "ended_at": "2026-10-12 13:39:10.075232+00:00",
+  "output_hash": "e18c4e76a93bd68143a330eca12384c04496018678edfaff8f0ba241ef972e86",
+  "started_at": "2026-10-12 14:49:44.805417+00:00",
+  "ended_at": "2026-10-12 14:49:50.487120+00:00",
   "params": {
     "footprint": [
       {
@@ -16,7 +16,7 @@
         "sites": 340,
         "industry": null,
         "count_source": null,
-        "density": null
+        "density": "SUBURBAN"
       },
       {
         "country": "DE",
@@ -24,7 +24,7 @@
         "sites": 4,
         "industry": null,
         "count_source": null,
-        "density": null
+        "density": "SUBURBAN"
       },
       {
         "country": "DE",
@@ -32,7 +32,7 @@
         "sites": 8,
         "industry": null,
         "count_source": null,
-        "density": null
+        "density": "URBAN"
       },
       {
         "country": "ES",
@@ -40,7 +40,7 @@
         "sites": 150,
         "industry": null,
         "count_source": null,
-        "density": null
+        "density": "SUBURBAN"
       },
       {
         "country": "US",
@@ -48,7 +48,7 @@
         "sites": 2600,
         "industry": null,
         "count_source": null,
-        "density": null
+        "density": "SUBURBAN"
       },
       {
         "country": "US",
@@ -65,11 +65,11 @@
         {
           "country": "US",
           "archetype": "BRANCH",
-          "density": null,
+          "density": "SUBURBAN",
           "sites": 2600,
           "uniform_by_construction": false,
           "note": "2,600 sites priced as one block at the BRANCH tier - a BRANCH is individually significant, so a single bandwidth, product pair and dual-access probability across 2,600 of them is a strong assumption",
-          "narrows_it": "add a density band - the row currently claims a whole country's estate is alike"
+          "narrows_it": "split by density or country, or name the largest sites individually on this page"
         },
         {
           "country": "US",
@@ -1597,14 +1597,26 @@
     "sites": 5726,
     "serviceability": {
       "counts": {
-        "DELIVERED": 5726,
-        "SUBSTITUTED": 0,
+        "DELIVERED": 5722,
+        "SUBSTITUTED": 4,
         "UNSERVICEABLE": 0
       },
-      "substitutions": [],
-      "by_access_technology": [],
+      "substitutions": [
+        {
+          "asked_for": "ETHERNET",
+          "delivered": "ETHERNET",
+          "bandwidth_mbps": 500,
+          "sites": 4
+        }
+      ],
+      "by_access_technology": [
+        {
+          "access_technology": "ETHERNET_FIBRE",
+          "sites": 2952
+        }
+      ],
       "unserviceable": 0,
-      "note": "0 of 5726 site(s) take a different product or tier from the one their type asks for, and 0 can be served by nothing at all. A uniform estate is an assumption; this is what the density bands say about it.",
+      "note": "4 of 5726 site(s) take a different product or tier from the one their type asks for, and 0 can be served by nothing at all. A uniform estate is an assumption; this is what the density bands say about it.",
       "table_rows": 68,
       "table_basis": "GOVERNED"
     },
@@ -1614,33 +1626,33 @@
         "because": "NOT_DELIVERABLE",
         "country": "DE",
         "archetype": "DC",
-        "density": null,
+        "density": "SUBURBAN",
         "asked_for": "ETHERNET",
-        "reason": "the only backup deliverable in None DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+        "reason": "the only backup deliverable in SUBURBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
       },
       {
         "because": "NOT_DELIVERABLE",
         "country": "DE",
         "archetype": "DC",
-        "density": null,
+        "density": "SUBURBAN",
         "asked_for": "ETHERNET",
-        "reason": "the only backup deliverable in None DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+        "reason": "the only backup deliverable in SUBURBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
       },
       {
         "because": "NOT_DELIVERABLE",
         "country": "DE",
         "archetype": "DC",
-        "density": null,
+        "density": "SUBURBAN",
         "asked_for": "ETHERNET",
-        "reason": "the only backup deliverable in None DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+        "reason": "the only backup deliverable in SUBURBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
       },
       {
         "because": "NOT_DELIVERABLE",
         "country": "DE",
         "archetype": "DC",
-        "density": null,
+        "density": "SUBURBAN",
         "asked_for": "ETHERNET",
-        "reason": "the only backup deliverable in None DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+        "reason": "the only backup deliverable in SUBURBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
       }
     ],
     "estate_truncated": 726,
@@ -1696,10 +1708,10 @@
         "country": "DE",
         "product": "ETHERNET",
         "role": "PRIMARY",
-        "bandwidth_mbps": 3000,
+        "bandwidth_mbps": 150,
         "count": 4,
         "service_class": "ETHERNET",
-        "bearer_mbps": 10000,
+        "bearer_mbps": 500,
         "access_technology": "ETHERNET_FIBRE"
       },
       {

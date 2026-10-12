@@ -486,6 +486,17 @@ def footprint_for_simulation(case_id, spec):
     # archetype) is decided once and lands in exactly one place.
     disclosed = {(r["country"], r["archetype"]): int(r["sites"])
                  for r in spec["declared_footprint"]}
+    # The declared density band, kept alongside the count.
+    #
+    # The merge used to build rows as {country, archetype, sites} and drop
+    # it. serviceability is keyed (country, density_band, bearer), so a
+    # footprint with no density matched nothing, took the "silence, not a
+    # constraint" path, and every site in all twenty estimates resolved
+    # DELIVERED. The whole serviceability model was inert and nothing said
+    # so - the SUBURBAN/URBAN/RURAL bands declared in companies.json were
+    # discarded one function before they were needed.
+    declared_density = {(r["country"], r["archetype"]): r.get("density")
+                        for r in spec["declared_footprint"]}
 
     merged, provenance = [], []
     for key in sorted(set(researched) | set(disclosed)):
@@ -512,10 +523,16 @@ def footprint_for_simulation(case_id, spec):
             # distinguishes the two.
             sites, origin = said, "DISCLOSURE_KEPT_RESEARCH_FOUND_FEWER"
 
+        # A researched pair with no disclosed counterpart has no band:
+        # evidenced_footprint carries a count and a source, not a density.
+        # Left as None rather than guessed - a density nobody established
+        # would silently re-price the estate - and counted below so the
+        # gap is visible instead of just quiet.
+        density = declared_density.get(key)
         merged.append({"country": country, "archetype": archetype,
-                       "sites": int(sites)})
+                       "sites": int(sites), "density": density})
         row = {"country": country, "archetype": archetype,
-               "sites": int(sites), "origin": origin}
+               "sites": int(sites), "origin": origin, "density": density}
         # Both numbers, wherever they differ, so the choice is arguable
         # rather than silent.
         if found is not None and said is not None and found != said:
@@ -531,6 +548,17 @@ def footprint_for_simulation(case_id, spec):
         return list(spec["declared_footprint"]), "PUBLIC_DISCLOSURE_ONLY", provenance
     origin = ("RESEARCH_MERGED_WITH_DISCLOSURE" if researched
               else "PUBLIC_DISCLOSURE_ONLY")
+    no_band = [m for m in merged if not m.get("density")]
+    if no_band:
+        provenance.append({
+            "origin": "NO_DENSITY_BAND",
+            "rows": len(no_band),
+            "sites": sum(int(m["sites"]) for m in no_band),
+            "note": ("these rows carry no density band, so serviceability "
+                     "cannot be resolved for them and their sites are "
+                     "treated as deliverable. Researched pairs have no "
+                     "band because evidenced_footprint stores a count and a "
+                     "source, not a density.")})
     return merged, origin, provenance
 
 
@@ -886,8 +914,10 @@ def run_one(spec, outdir, domains, force, repair=False, repromote=False):
 
     foot, foot_origin, foot_prov = footprint_for_simulation(case_id, spec)
     n_res = sum(1 for p in foot_prov if p["origin"] == "RESEARCHED")
+    _nb = sum(1 for r in foot if not r.get("density"))
     log(slug, f"footprint: {foot_origin}, {sum(r['sites'] for r in foot)} "
-              f"sites, {n_res} row(s) from research")
+              f"sites, {n_res} row(s) from research"
+              + (f", {_nb} row(s) with no density band" if _nb else ""))
 
     sim_id, sim = simulate(case_id, slug, foot)
     est = estimate(case_id, slug, sim_id, foot)

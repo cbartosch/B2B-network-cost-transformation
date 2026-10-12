@@ -43,37 +43,44 @@
     {
       "country": "BE",
       "archetype": "BRANCH",
-      "sites": 420
+      "sites": 420,
+      "density": "URBAN"
     },
     {
       "country": "BE",
       "archetype": "STORE",
-      "sites": 182
+      "sites": 182,
+      "density": null
     },
     {
       "country": "FR",
       "archetype": "BRANCH",
-      "sites": 1600
+      "sites": 1600,
+      "density": "URBAN"
     },
     {
       "country": "FR",
       "archetype": "DC",
-      "sites": 8
+      "sites": 8,
+      "density": "SUBURBAN"
     },
     {
       "country": "FR",
       "archetype": "LARGE_OFFICE",
-      "sites": 20
+      "sites": 20,
+      "density": "URBAN"
     },
     {
       "country": "FR",
       "archetype": "STORE",
-      "sites": 1474
+      "sites": 1474,
+      "density": null
     },
     {
       "country": "IT",
       "archetype": "BRANCH",
-      "sites": 700
+      "sites": 700,
+      "density": "URBAN"
     }
   ],
   "footprint_provenance": [
@@ -82,6 +89,7 @@
       "archetype": "BRANCH",
       "sites": 420,
       "origin": "DISCLOSURE_KEPT_RESEARCH_FOUND_FEWER",
+      "density": "URBAN",
       "research_said": 182,
       "disclosure_said": 420
     },
@@ -89,13 +97,15 @@
       "country": "BE",
       "archetype": "STORE",
       "sites": 182,
-      "origin": "RESEARCHED"
+      "origin": "RESEARCHED",
+      "density": null
     },
     {
       "country": "FR",
       "archetype": "BRANCH",
       "sites": 1600,
       "origin": "DISCLOSURE_KEPT_RESEARCH_FOUND_FEWER",
+      "density": "URBAN",
       "research_said": 50,
       "disclosure_said": 1600
     },
@@ -103,27 +113,37 @@
       "country": "FR",
       "archetype": "DC",
       "sites": 8,
-      "origin": "PUBLIC_DISCLOSURE"
+      "origin": "PUBLIC_DISCLOSURE",
+      "density": "SUBURBAN"
     },
     {
       "country": "FR",
       "archetype": "LARGE_OFFICE",
       "sites": 20,
-      "origin": "PUBLIC_DISCLOSURE"
+      "origin": "PUBLIC_DISCLOSURE",
+      "density": "URBAN"
     },
     {
       "country": "FR",
       "archetype": "STORE",
       "sites": 1474,
-      "origin": "RESEARCHED"
+      "origin": "RESEARCHED",
+      "density": null
     },
     {
       "country": "IT",
       "archetype": "BRANCH",
       "sites": 700,
       "origin": "DISCLOSURE_KEPT_RESEARCH_FOUND_FEWER",
+      "density": "URBAN",
       "research_said": 564,
       "disclosure_said": 700
+    },
+    {
+      "origin": "NO_DENSITY_BAND",
+      "rows": 2,
+      "sites": 1656,
+      "note": "these rows carry no density band, so serviceability cannot be resolved for them and their sites are treated as deliverable. Researched pairs have no band because evidenced_footprint stores a count and a source, not a density."
     }
   ],
   "scope_countries_modelled": [
@@ -196,8 +216,8 @@
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-12T13:40:33.084530+00:00",
-  "run_seconds": 37.6,
+  "run_started": "2026-10-12T14:50:11.603394+00:00",
+  "run_seconds": 12.8,
   "preflight_conditions": 8,
   "promotion": {
     "promoted": true,

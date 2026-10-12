@@ -1,13 +1,13 @@
 {
-  "simulation_run_id": "202eaf01-1c42-4362-af72-58c6f0762a0f",
+  "simulation_run_id": "41be29d7-5df3-472f-a33e-651420e39825",
   "case_id": "db96b5a3-5939-434d-97bf-79df14ddeba4",
   "model_version": "sim-2.7.0",
   "seed": 20260101,
   "ensemble_size": 25,
   "status": "SUCCEEDED",
-  "output_hash": "51b2ed48df02d59c689bed1347157b7211b46ef315df656ea8f5878167634bf1",
-  "started_at": "2026-10-12 13:38:46.631640+00:00",
-  "ended_at": "2026-10-12 13:38:47.939242+00:00",
+  "output_hash": "0bbc85672647277ef275ac8fb23a61fa48ebb4c244984fb5a7360571e22e6c18",
+  "started_at": "2026-10-12 14:49:39.103583+00:00",
+  "ended_at": "2026-10-12 14:49:39.423404+00:00",
   "params": {
     "footprint": [
       {
@@ -16,7 +16,7 @@
         "sites": 3,
         "industry": null,
         "count_source": null,
-        "density": null
+        "density": "URBAN"
       },
       {
         "country": "AU",
@@ -24,7 +24,7 @@
         "sites": 2,
         "industry": null,
         "count_source": null,
-        "density": null
+        "density": "SUBURBAN"
       },
       {
         "country": "AU",
@@ -40,7 +40,7 @@
         "sites": 60,
         "industry": null,
         "count_source": null,
-        "density": null
+        "density": "RURAL"
       },
       {
         "country": "CA",
@@ -48,7 +48,7 @@
         "sites": 20,
         "industry": null,
         "count_source": null,
-        "density": null
+        "density": "RURAL"
       },
       {
         "country": "GB",
@@ -56,7 +56,7 @@
         "sites": 4,
         "industry": null,
         "count_source": null,
-        "density": null
+        "density": "URBAN"
       }
     ],
     "site_inclusion_rule": null,
@@ -1349,7 +1349,12 @@
         "UNSERVICEABLE": 0
       },
       "substitutions": [],
-      "by_access_technology": [],
+      "by_access_technology": [
+        {
+          "access_technology": "ETHERNET_FIBRE",
+          "sites": 4
+        }
+      ],
       "unserviceable": 0,
       "note": "0 of 97 site(s) take a different product or tier from the one their type asks for, and 0 can be served by nothing at all. A uniform estate is an assumption; this is what the density bands say about it.",
       "table_rows": 34,
@@ -1361,41 +1366,41 @@
         "because": "NOT_DELIVERABLE",
         "country": "AU",
         "archetype": "CONTROL_CENTER",
-        "density": null,
+        "density": "URBAN",
         "asked_for": "ETHERNET",
-        "reason": "the only backup deliverable in None AU is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+        "reason": "the only backup deliverable in URBAN AU is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
       },
       {
         "because": "NOT_DELIVERABLE",
         "country": "AU",
         "archetype": "CONTROL_CENTER",
-        "density": null,
+        "density": "URBAN",
         "asked_for": "ETHERNET",
-        "reason": "the only backup deliverable in None AU is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+        "reason": "the only backup deliverable in URBAN AU is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
       },
       {
         "because": "NOT_DELIVERABLE",
         "country": "AU",
         "archetype": "CONTROL_CENTER",
-        "density": null,
+        "density": "URBAN",
         "asked_for": "ETHERNET",
-        "reason": "the only backup deliverable in None AU is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+        "reason": "the only backup deliverable in URBAN AU is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
       },
       {
         "because": "NOT_DELIVERABLE",
         "country": "AU",
         "archetype": "DC",
-        "density": null,
+        "density": "SUBURBAN",
         "asked_for": "ETHERNET",
-        "reason": "the only backup deliverable in None AU is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+        "reason": "the only backup deliverable in SUBURBAN AU is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
       },
       {
         "because": "NOT_DELIVERABLE",
         "country": "AU",
         "archetype": "DC",
-        "density": null,
+        "density": "SUBURBAN",
         "asked_for": "ETHERNET",
-        "reason": "the only backup deliverable in None AU is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+        "reason": "the only backup deliverable in SUBURBAN AU is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
       }
     ],
     "estate_truncated": 0,
