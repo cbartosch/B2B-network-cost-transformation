@@ -1068,6 +1068,36 @@ industry_benchmark = Table(
 # industry's posture - and both are stored rather than computed at read time,
 # so a steward can inspect and override one pair without rerunning a
 # derivation.
+# CR-03. The plausibility benchmark: what a network baseline per employee,
+# as a share of revenue, or per site looks like for an industry.
+#
+# Seeded EMPTY, deliberately. CR-NCT-001 section 5 makes these thresholds the
+# owner's and section 4 principle 1 forbids inventing them, and a fabricated
+# benchmark here would be worse than none: it sits behind a flag that lowers
+# confidence, so a made-up range would quietly change what every estimate
+# reports about itself. With no rows, plausibility.assess returns
+# NOT_ASSESSABLE and says why - which is a result, and an honest one.
+#
+# `source` and `as_of` are not optional. A threshold nobody can trace is the
+# thing this table exists to stop being hardcoded somewhere.
+plausibility_benchmark = Table(
+    "plausibility_benchmark", metadata,
+    # BASELINE_PER_EMPLOYEE | BASELINE_PCT_OF_REVENUE | BASELINE_PER_SITE
+    Column("metric", String(32), primary_key=True),
+    # "DEFAULT" for a rule that applies where the industry has none of its own.
+    Column("industry", String(48), primary_key=True, default="DEFAULT"),
+    # Below low is LOW, above high is HIGH, between is OK.
+    Column("low", Numeric(18, 6), nullable=False),
+    Column("high", Numeric(18, 6), nullable=False),
+    Column("unit", String(32), nullable=False),
+    Column("source", Text, nullable=False),
+    Column("as_of", String(10), nullable=False),
+    Column("evidence_grade", String(2)),
+    Column("approved_by", String(120)),
+    Column("note", Text),
+    schema="reference")
+
+
 archetype_resilience = Table(
     "archetype_resilience", metadata,
     Column("industry", String(48), primary_key=True),

@@ -115,6 +115,24 @@ GUIDANCE = {
     Rejection.SOURCE_NOT_RESOLVABLE:
         "A source must be a resolvable http or https URL. A title, a search "
         "phrase or a description of where to look is not a source.",
+    # And then it happened twice more. The comment above was written when
+    # FIGURE_NOT_IN_PACKET and SCHEMA_INVALID were found undocumented;
+    # ANSWER_NOT_ACTIONABLE and OPTION_NOT_SUPPLIED were added afterwards and
+    # went the same way. Both are retryable, so both were being retried with
+    # the prompt unchanged - resampling, which is what this map exists to
+    # prevent. The guard that catches it could not run until the suite could.
+    Rejection.ANSWER_NOT_ACTIONABLE: (
+        "Your reply is well-formed and gives nobody anything to do. Every "
+        "fact class you name needs a suggested query that would count it; a "
+        "review needs a headline caveat and either a concern or something you "
+        "checked and found sound; a material concern needs the rule that "
+        "would catch it next time. Add whichever of those is missing, or "
+        "abstain - a review of nothing reads as approval."),
+    Rejection.OPTION_NOT_SUPPLIED: (
+        "You referenced an option that was not offered. Use only the indices "
+        "of the gaps supplied in the packet, counting from zero. If none of "
+        "them fits what you want to say, say that instead of reaching for an "
+        "index that does not exist."),
     Rejection.CONTRADICTS_ITSELF:
         "Your reply asserts and abstains on the same field. Do one.",
     Rejection.SEARCH_NOT_ATTEMPTED:

@@ -14,15 +14,32 @@ import sys
 import types
 from decimal import Decimal as D
 
+
+def _stub_attr(name):
+    """Answer any attribute with a self-returning placeholder - except the
+    dunders.
+
+    A module-level __getattr__ that answers everything also answers
+    __path__, and the import machinery then takes the stub for a package and
+    tries to iterate what it got back: "TypeError: 'A' object is not
+    iterable", raised from importlib with nothing in the message naming the
+    stub or the module that wanted it. Raising AttributeError for dunders
+    leaves the machinery to report an honest ModuleNotFoundError for the
+    submodule that is genuinely missing from the list above.
+    """
+    if name.startswith("__") and name.endswith("__"):
+        raise AttributeError(name)
+    return type("A", (), {"__getattr__": lambda s, _x: s,
+                          "__call__": lambda s, *a, **k: s})()
+
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 APP = ROOT / "api_service" / "app"
 
-for _name in ("sqlalchemy", "sqlalchemy.orm", "sqlalchemy.exc",
+for _name in ("sqlalchemy", "sqlalchemy.orm", "sqlalchemy.exc", "sqlalchemy.pool",
               "sqlalchemy.engine", "sqlalchemy.dialects",
               "sqlalchemy.dialects.postgresql", "psycopg"):
     _m = types.ModuleType(_name)
-    _m.__getattr__ = lambda _n: type("A", (), {
-        "__getattr__": lambda s, _x: s, "__call__": lambda s, *a, **k: s})()
+    _m.__getattr__ = lambda _n: _stub_attr(_n)
     _m.__spec__ = importlib.machinery.ModuleSpec(_name, loader=None)
     sys.modules.setdefault(_name, _m)
 sys.path.insert(0, str(ROOT))

@@ -255,10 +255,25 @@ def test_readiness_is_not_cached():
         db_module.engine.connect = counting
         try:
             c.get("/v1/ready")
+            first = len(calls)
             c.get("/v1/ready")
+            second = len(calls) - first
         finally:
             db_module.engine.connect = real
-    assert len(calls) == 2
+
+    # The second call does the same work as the first. That is the property -
+    # a cached answer would show a second call costing nothing.
+    #
+    # It used to assert exactly two connections for two calls, which also
+    # froze "one round-trip per call". Readiness has since grown a second
+    # question: an instance whose ConfidencePolicy will not build answers
+    # every request and cannot compute a confidence score, and the endpoint
+    # now refuses on that too. Checking it costs a session. The count went to
+    # three per call and the test read as a caching failure, which it is not.
+    assert first > 0, "readiness reached the database on neither call"
+    assert second == first, (
+        f"the second readiness call cost {second} connection(s) against "
+        f"{first} for the first - it is answering from a cache")
 
 
 def test_liveness_makes_no_database_call():

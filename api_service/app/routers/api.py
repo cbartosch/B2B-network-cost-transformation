@@ -33,9 +33,10 @@ from ..domain import (access as access_vocab, anchor_estimate,
                       confidence, coverage,
                       dispositions,
                       entity_resolution,
-                      estimate, known_facts, policy, preflight, promotion, questionnaire,
+                      baseline_plausibility, estimate, known_facts, policy, preflight,
+                      promotion, questionnaire,
                       reachability, reconciliation, research, savings_advisory,
-                      scope, simulation, stage)
+                      scope, simulation, stage, triangulate)
 from ..domain.money import D, Range
 from ..llm import errors, gateway, prompts, registry
 
@@ -137,6 +138,183 @@ def _research_policy(s):
             _thresholds(s, "research_budget_profile"))
     except (policy.PolicyIncomplete, policy.PolicyInvalid) as exc:
         raise HTTPException(503, {"error": "governed research policy unusable",
+                                  "detail": str(exc)})
+
+
+def _evidenced_domain_share(session, case_id: str):
+    """Agent-routed domains that came back with an agent's verdict.
+
+    Counted from the dispositions, not from what was requested: a domain the
+    fallback settled BENCHMARK_PRIOR after a provider failure was never
+    researched, and counting it would report an outage as coverage. Returns
+    None where no domain is agent-routed at all, so the caller can tell
+    "nothing evidenced" from "nothing to evidence".
+    """
+    routed = {n for n, a in research.DOMAIN_AGENT_MAP.items() if a}
+    if not routed:
+        return None
+    rows = session.execute(select(
+        db.domain_disposition.c.domain_no,
+        db.domain_disposition.c.agent_run_id).where(
+            db.domain_disposition.c.case_id == case_id)).all()
+    got = {r.domain_no for r in rows if r.agent_run_id} & routed
+    return D(len(got)) / D(len(routed))
+
+
+import re as _re
+
+# CR-03. Employees and revenue, read back from what the agents found.
+#
+# Both are researched - domain 1 returns them for every company in the
+# sample set - but neither is an estimate input, so the baseline was
+# published with no way to ask whether it was a sane size for the company
+# it describes.
+_EMPLOYEE_LABEL = _re.compile(r"employee|headcount|staff|workforce", _re.I)
+_REVENUE_LABEL = _re.compile(r"revenue|turnover|business volume|net sales",
+                             _re.I)
+# A group figure, not a subsidiary's. "GROUP EMPLOYEES (CONSOLIDATED)" is
+# the denominator a baseline for the whole estate belongs over; a country
+# subsidiary's headcount would make the ratio look several times worse.
+_GROUP_HINT = _re.compile(r"group|consolidated", _re.I)
+
+
+# Research states a figure in whatever unit its source used: "324700000000
+# EUR", "5639 EUR million", "78 EUR billion". Taking the number and ignoring
+# the unit makes a company reporting in millions look a million times
+# cheaper - and because the largest raw number wins, it also picks the
+# wrong row whenever the scales are mixed.
+_SCALE = (("trillion", D("1e12")), ("billion", D("1e9")),
+          ("million", D("1e6")), ("thousand", D("1e3")))
+
+
+def _scaled(value, unit):
+    """The figure in its base unit, or None where the scale is unreadable."""
+    v = triangulate.parse_value(value)
+    if v is None:
+        return None
+    u = str(unit or "").lower()
+    for word, mult in _SCALE:
+        if word in u:
+            return v * mult
+    return v
+
+
+def _currency_of(unit):
+    """The three-letter code in a unit string, if it carries one."""
+    m = _re.search(r"\b([A-Z]{3})\b", str(unit or ""))
+    return m.group(1) if m else None
+
+
+def _largest_quantity(session, case_id, pattern):
+    """The biggest matching figure, with where it came from.
+
+    Biggest, because the group number is the one a whole-estate baseline
+    belongs over and subsidiary rows sit underneath it. A group hint wins
+    outright where one exists.
+    """
+    rows = session.execute(select(db.domain_disposition.c.evidence).where(
+        db.domain_disposition.c.case_id == case_id)).all()
+    best, best_hint = None, None
+    for (ev,) in rows:
+        if not isinstance(ev, dict):
+            continue
+        for q in (ev.get("quantities") or []):
+            label = str(q.get("label") or "")
+            if not pattern.search(label):
+                continue
+            value = _scaled(q.get("value"), q.get("unit"))
+            if value is None or value <= 0:
+                continue
+            cand = {"value": str(value), "label": label,
+                    "as_of": q.get("as_of"), "unit": q.get("unit"),
+                    "currency": _currency_of(q.get("unit")),
+                    "as_stated": str(q.get("value"))}
+            if _GROUP_HINT.search(label):
+                if best_hint is None or value > D(best_hint["value"]):
+                    best_hint = cand
+            elif best is None or value > D(best["value"]):
+                best = cand
+    return best_hint or best
+
+
+def _scope_status(case_row) -> str:
+    """How much of the group this estimate covers, as far as the case knows.
+
+    Conservative by construction: an outside-in case names the countries it
+    prices and nothing records how many the group operates in, so FULL_GROUP
+    cannot be established from here and is never returned. The consequence
+    is that the scope-sensitive plausibility ratios stay NOT_ASSESSABLE,
+    which is the right direction to be wrong in - the alternative is
+    dividing a three-country baseline by worldwide revenue and reporting the
+    scope gap as if it were a finding about the estimate.
+
+    A case that genuinely covers a whole group has no way to say so today.
+    That is a gap, recorded rather than papered over.
+    """
+    countries = list(getattr(case_row, "in_scope_countries", None) or [])
+    return "PARTIAL_COUNTRIES" if countries else "UNKNOWN"
+
+
+def _baseline_plausibility(session, case_id, *, baseline, sites, industry,
+                           base_currency=None, scope_status=None):
+    emp = _largest_quantity(session, case_id, _EMPLOYEE_LABEL)
+    rev = _largest_quantity(session, case_id, _REVENUE_LABEL)
+    # A revenue in another currency cannot be divided into a baseline in
+    # this one. Dropped rather than converted: the ratio would otherwise be
+    # out by the FX rate with nothing on the output to say so, and
+    # NOT_ASSESSABLE is the honest answer to a comparison that cannot be
+    # made from what is here.
+    if (rev and base_currency and rev.get("currency")
+            and rev["currency"].upper() != str(base_currency).upper()):
+        rev = {**rev, "value": None,
+               "dropped": f"stated in {rev['currency']}, baseline is in "
+                          f"{base_currency}"}
+    return baseline_plausibility.assess(
+        baseline=baseline,
+        employees=(emp or {}).get("value"),
+        revenue=(rev or {}).get("value"),
+        sites=sites,
+        industry=industry,
+        scope_status=scope_status,
+        benchmarks=baseline_plausibility.load_benchmarks(
+            session, db.plausibility_benchmark),
+        inputs_provenance={k: v for k, v in
+                           (("employees", emp), ("revenue", rev)) if v})
+
+
+def _range_policy(s):
+    """CR-06: how much wider than the rate card to report a band.
+
+    A 503 like every other governed policy. The alternative is reporting the
+    price card's band as though it were the estimate's uncertainty, which is
+    what the twenty-company sample did - every company between 0.688 and
+    0.735 of base however much or little was known about it.
+    """
+    try:
+        return policy.RangePolicy.from_rows(_thresholds(s, "range_policy"))
+    except (policy.PolicyIncomplete, policy.PolicyInvalid) as exc:
+        raise HTTPException(503, {"error": "governed range policy unusable",
+                                  "detail": str(exc)})
+
+
+def _transition_policy(s):
+    """What it costs to get to the target estate.
+
+    A 503 like every other governed policy, rather than None. scenarios()
+    treats the policy as optional - "a missing payback is honest, and one
+    computed from no assumptions is not" - and that is the right contract for
+    the domain function, which other callers use. It is not the right
+    contract here: the rows are seeded, this route is the one that publishes
+    a number, and silently omitting the payback is how it came to be missing
+    from every estimate ever produced without anyone noticing.
+
+    transition_policy.evidence_grade is deliberately unseeded and from_rows
+    reads it with .get(..., "E"); the five numeric fields are required.
+    """
+    try:
+        return policy.TransitionPolicy.from_rows(_thresholds(s, "transition_policy"))
+    except (policy.PolicyIncomplete, policy.PolicyInvalid) as exc:
+        raise HTTPException(503, {"error": "governed transition policy unusable",
                                   "detail": str(exc)})
 
 
@@ -250,9 +428,10 @@ def ready(response: Response):
       /v1/health              liveness   - is the process up? No dependencies,
                                            because restarting will not fix a
                                            database outage.
-      /v1/ready               readiness  - can it serve? One cheap round-trip,
-                                           never cached, because a cached
-                                           readiness answer is not one.
+      /v1/ready               readiness  - can it serve? A cheap round-trip
+                                           and a policy build, never cached,
+                                           because a cached readiness answer
+                                           is not one.
       /v1/health?deep=true    diagnostics - schema, policy, pins, incidents.
                                            Cached, and for humans.
 
@@ -1117,11 +1296,48 @@ def run_simulation(case_id: str, payload: SimIn):
         # users_base and bandwidth_mbps_base were seeded and never loaded. Five
         # columns exist on the prior; three were read. The footprint therefore
         # implied a headcount the model discarded in favour of a flat default.
+        #
+        # It happened again, to three more. The prior now has eight columns and
+        # this read five, so committed_fraction and the two service classes
+        # were seeded and dropped here.
+        #
+        # committed_fraction is the one that moved a number. simulation.py
+        # asks for it - `_for(committed_fraction_by_archetype, entry) or
+        # prior.get("committed_fraction")` - and with the key absent the second
+        # branch is always None, so access.pair_for priced on the bearer rather
+        # than on the committed rate. That is the defect the comment five lines
+        # below it already describes: "Pricing on the bearer overstated an IPVPN
+        # by 980 against 420 a month on the GB card." The fix was written and
+        # then starved of its input.
+        #
+        # The two service classes are inert today - seed.py derives them from
+        # access.LEGACY_PRODUCT, which is exactly what simulation.py falls back
+        # to - so loading them changes nothing now. They are loaded anyway,
+        # because the point of the column is to let an archetype declare a
+        # class its product does not imply, and a column nothing reads cannot
+        # ever start doing that.
         arch = {r.archetype: {"dual_access_probability": float(r.dual_access_probability),
                               "primary_product": r.primary_product,
                               "backup_product": r.backup_product,
                               "users_base": r.users_base,
-                              "bandwidth_mbps_base": r.bandwidth_mbps_base}
+                              "bandwidth_mbps_base": r.bandwidth_mbps_base,
+                              # As a string, like benchmark_committed above
+                              # and like everything else that reaches
+                              # access.pair_for, which does
+                              # Decimal(str(committed_fraction)). The raw
+                              # Numeric is a Decimal, this dict is pinned
+                              # into simulation_run.pinned_priors as JSON,
+                              # and json cannot encode one - so the run
+                              # insert raised TypeError and the endpoint 500'd.
+                              # None stays None: pair_for's "nobody said"
+                              # branch tests `in (None, "")`, and "None" is
+                              # neither.
+                              "committed_fraction": (
+                                  str(r.committed_fraction)
+                                  if r.committed_fraction is not None
+                                  else None),
+                              "primary_service_class": r.primary_service_class,
+                              "backup_service_class": r.backup_service_class}
                 for r in s.execute(select(db.archetype_prior)).all()}
 
         # Every archetype dimension resolved across four layers - seeded
@@ -1656,11 +1872,26 @@ def set_dispositions(case_id: str, records: list[DispositionIn]):
                 db.domain_disposition.c.case_id == case_id)).all()}
         incoming = {r["domain_no"] for r in records}
 
-        # Domains absent from the payload are removed, preserving the previous
-        # whole-case-replacement semantics the interface relies on.
-        for domain_no in set(existing) - incoming:
-            s.execute(delete(db.domain_disposition).where(
-                db.domain_disposition.c.id == existing[domain_no].id))
+        # A domain absent from the payload is left alone.
+        #
+        # It used to be deleted, under a comment saying that preserved "the
+        # previous whole-case-replacement semantics the interface relies on".
+        # The interface does not rely on it: page 4 sends every row of its
+        # table, all 24, on every save, so the branch could never fire for the
+        # UI. It fired only for a partial payload - where deletion is the
+        # opposite of what the caller means by sending a subset.
+        #
+        # And it was silent. `provenance_dropped` below reports a domain
+        # re-dispositioned *in* the payload; a domain dropped by omission was
+        # reported nowhere, so a seven-record PUT destroyed seventeen research
+        # dispositions - evidence blobs, agent_run_ids, the provenance for
+        # seventeen paid LIVE provider calls - and returned a success with an
+        # empty provenance_dropped. That is how this was found: by doing it.
+        #
+        # DOMAINS is a fixed list of 24 and validate() requires all 24, so a
+        # disposition that exists is never surplus to a case. There is no
+        # state this deletion was reaching that anyone wants.
+        untouched = sorted(set(existing) - incoming)
 
         provenance_dropped = []
         for r in records:
@@ -1687,9 +1918,32 @@ def set_dispositions(case_id: str, records: list[DispositionIn]):
                       .where(db.domain_disposition.c.id == prev.id)
                       .values(**values))
         s.commit()
-    return {"stored": len(records), "publication_blockers": problems,
-            "summary": dispositions.summarise(records),
-            "provenance_dropped": provenance_dropped}
+
+        # Validated against the case, not against the payload.
+        #
+        # `problems` above is dispositions.validate(records), which answers
+        # "could a case made only of these records publish?". For the UI,
+        # which sends all 24, that is the same question. For anything else it
+        # is not: a seven-record PUT reported the other seventeen as missing
+        # while the case held them, and a caller reading publication_blockers
+        # to decide whether to run an estimate was told the wrong thing.
+        #
+        # The case is what publishes, so the case is what gets validated.
+        final = [dict(r._mapping) for r in s.execute(
+            select(db.domain_disposition).where(
+                db.domain_disposition.c.case_id == case_id)).all()]
+
+    return {"stored": len(records),
+            "publication_blockers": dispositions.validate(final),
+            # Kept, and named for what it is, because it is a different
+            # question and a caller may want it: whether the payload alone
+            # would have been publishable.
+            "payload_blockers": problems,
+            "summary": dispositions.summarise(final),
+            "provenance_dropped": provenance_dropped,
+            # Named rather than implied. A caller sending a subset should be
+            # able to see that this was not a whole-case replacement.
+            "left_untouched": untouched}
 
 
 @router.get("/v1/outside-in/cases/{case_id}/domain-dispositions")
@@ -3381,10 +3635,43 @@ def _run_anchor_estimate(s, *, case_id, case_row, payload,
     if blockers:
         raise HTTPException(409, {"error": "V0 cannot publish", "blockers": blockers})
 
-    cur = estimate.current_tco(components)
+    # CR-06: the band this estimate reports carries the estate's
+    # evidence, not only the rate card's price dispersion. The
+    # base never moves - only the spread about it.
+    _range_factor, _range_basis = estimate.evidence_widening(
+        components, policy=_range_policy(s),
+        evidenced_domain_share=_evidenced_domain_share(s, case_id))
+    cur = estimate.current_tco(components, range_factor=_range_factor)
+    # CR-03: is this baseline a sane size for this company?
+    # Three ratios against what the research found. Reported
+    # whether or not a benchmark exists to judge them - the
+    # thresholds are the owner's and the ratios are useful
+    # without them.
+    _plaus = _baseline_plausibility(
+        s, case_id, baseline=cur['total']['base'],
+        sites=estimate.site_count(components),
+        industry=getattr(case_row, 'industry', None),
+        base_currency=getattr(case_row, 'base_currency', None),
+        scope_status=_scope_status(case_row))
     lv = [dict(r._mapping) for r in s.execute(select(db.lever)).all()]
     levers_by_id = {l["lever_id"]: l for l in lv}
-    scen = estimate.scenarios(components, lv)
+    # With the transition policy, so each scenario carries what it
+    # costs to get there. Site count and run rate are read back from
+    # the components rather than passed alongside them - a number
+    # passed beside the components could disagree with them.
+    scen = estimate.scenarios(
+        components, lv,
+        transition_policy=_transition_policy(s),
+        sites=estimate.site_count(components),
+        monthly_run_rate=estimate.monthly_run_rate(components),
+        range_factor=_range_factor,
+        # No site_mix, deliberately. The ANCHOR method derives a baseline
+        # from a disclosed cost line and never simulates an estate, so there
+        # is no circuit count to build a cost over. transition.net falls back
+        # to the flat reference and records in one_time_cost_build that no
+        # mix was supplied - which is the reason, stated, rather than a
+        # number that looks the same as BUILD_UP's for no visible cause.
+        site_mix=None)
 
     disp_summary = dispositions.summarise(disp)
     completeness = (D(disp_summary["total_domains"] - disp_summary["declared_unknown"])
@@ -3409,6 +3696,21 @@ def _run_anchor_estimate(s, *, case_id, case_row, payload,
         # A-02: what the rates behind the baseline are worth as evidence.
         unsourced_price_share=cov.get("unsourced_price_share"),
         v0_status=cov["status"], drivers=derived["drivers"])
+
+    # CR-03: a flagged baseline cannot be reported above D - Indicative.
+    #
+    # Applied after the score rather than as another ceiling inside it.
+    # The confidence model answers "how well is this evidenced";
+    # plausibility answers "is the number the right size at all". Folding
+    # one into the other would make a flagged baseline indistinguishable
+    # from a poorly evidenced one.
+    #
+    # NOT_ASSESSABLE does not cap. Nobody having set a threshold is not a
+    # finding about the company.
+    if baseline_plausibility.caps_confidence(_plaus["flag"]):
+        conf = {**conf, "band": "D - Indicative",
+                "ceilings_applied": list(conf.get("ceilings_applied") or [])
+                + [f"plausibility_{_plaus['flag'].lower()}_band_cap"]}
 
     snap_id = str(uuid.uuid4())
     s.execute(insert(db.estimate_snapshot).values(
@@ -3476,13 +3778,24 @@ def _run_anchor_estimate(s, *, case_id, case_row, payload,
             # Levers that found nothing to act on are carried separately as
             # `not_counted`: an opportunity the estimate could not size is
             # not one worth zero.
+            # cur["total"], not cur["current_tco"]: `cur` is what
+            # estimate.current_tco() returns, whose keys are by_layer, total,
+            # simulated_share, origin_breakdown and components. `current_tco`
+            # is the name this RESPONSE gives to cur["total"] three lines
+            # above, and the stored snapshot's column name - but it is not a
+            # key of `cur`, so reading it raised KeyError and the whole
+            # estimate returned 500 with {"detail": "'current_tco'"}.
+            #
+            # Same confusion of the response's shape with the function's that
+            # this module's test file records for the ANCHOR path.
             "savings_bridge": savings_bridge.waterfall(
-                scen, current_total=cur["current_tco"]["base"],
+                scen, current_total=cur["total"]["base"],
                 # The coverage the baseline was priced at. PARTIAL is the
                 # ordinary state of an outside-in estimate and no consumer
                 # distinguished it from COMPLETE.
                 coverage=cov),
             "scenarios": scen, "confidence": conf, "coverage": cov,
+            "baseline_plausibility": _plaus,
             "simulated_share": "0",
             "asserted_share": str(estimate.asserted_share(components)),
             "entered_share": str(estimate.entered_share(components)),
@@ -3540,6 +3853,17 @@ def run_estimate(case_id: str, payload: EstimateIn):
                     f"footprint_policy.min_plausible_ops_cost_per_site if the "
                     f"figure really is this low.")})
 
+        # The method is checked first because the check below branches on it.
+        # In the other order, `payload.method != METHOD_ANCHOR` was asked of a
+        # value nobody had validated, so a typo answered "not ANCHOR", took
+        # the ops-cost path, and a request naming method "ANCOHR" came back
+        # asking for a per-site operating cost. The caller's actual mistake
+        # was never mentioned.
+        if payload.method not in anchor_estimate.METHODS:
+            raise HTTPException(422, {
+                "error": f"unknown method {payload.method!r}",
+                "methods": list(anchor_estimate.METHODS)})
+
         if _ops is None and payload.method != anchor_estimate.METHOD_ANCHOR:
             raise HTTPException(422, {
                 "error": "no ops cost per site",
@@ -3548,11 +3872,6 @@ def run_estimate(case_id: str, payload: EstimateIn):
                           "request - it is not defaulted, because a per-site "
                           "operating cost nobody stated would be costed as "
                           "though somebody had."})
-
-        if payload.method not in anchor_estimate.METHODS:
-            raise HTTPException(422, {
-                "error": f"unknown method {payload.method!r}",
-                "methods": list(anchor_estimate.METHODS)})
 
         # ---------------------------------------------------------- ANCHOR
         if payload.method == anchor_estimate.METHOD_ANCHOR:
@@ -3897,10 +4216,51 @@ def run_estimate(case_id: str, payload: EstimateIn):
             raise HTTPException(409, {"error": "V0 publication refused (0.3C)",
                                       "coverage": cov})
 
-        cur = estimate.current_tco(components)
+        # CR-06: the band this estimate reports carries the estate's
+        # evidence, not only the rate card's price dispersion. The
+        # base never moves - only the spread about it.
+        _range_factor, _range_basis = estimate.evidence_widening(
+            components, policy=_range_policy(s),
+            evidenced_domain_share=_evidenced_domain_share(s, case_id))
+        cur = estimate.current_tco(components, range_factor=_range_factor)
+        # CR-03: is this baseline a sane size for this company?
+        # Three ratios against what the research found. Reported
+        # whether or not a benchmark exists to judge them - the
+        # thresholds are the owner's and the ratios are useful
+        # without them.
+        _plaus = _baseline_plausibility(
+            s, case_id, baseline=cur['total']['base'],
+            sites=estimate.site_count(components),
+            industry=getattr(case_row, 'industry', None),
+        base_currency=getattr(case_row, 'base_currency', None),
+        scope_status=_scope_status(case_row))
         lv = [dict(r._mapping) for r in s.execute(select(db.lever)).all()]
         levers_by_id = {l["lever_id"]: l for l in lv}
-        scen = estimate.scenarios(components, lv)
+        # With the transition policy, so each scenario carries what it
+        # costs to get there. Site count and run rate are read back from
+        # the components rather than passed alongside them - a number
+        # passed beside the components could disagree with them.
+        scen = estimate.scenarios(
+            components, lv,
+            transition_policy=_transition_policy(s),
+            sites=estimate.site_count(components),
+            monthly_run_rate=estimate.monthly_run_rate(components),
+            range_factor=_range_factor,
+            # CR-04: sites and circuits per archetype, from the estate the
+            # simulation drew. Cost per site then follows the estate rather
+            # than a flat charge - a site that drew a second access carries
+            # two circuits' worth of hardware and cutover.
+            # The footprint as well as the estate: the estate is truncated
+            # above 5,000 rows, so its row count is a sample and not the
+            # site count. Counting it understated a 16,406-site one-time
+            # cost by two thirds.
+            site_mix=estimate.site_mix_from_estate(
+                (sim.output or {}).get("estate"),
+                (sim.params or {}).get("footprint")),
+            # CR-05: the ensemble's own circuit spread drives the programme
+            # band, so a programme length carries the estate's uncertainty
+            # instead of reading as exact.
+            circuits_band=(sim.output or {}).get("circuits"))
 
         scenario_shares = {k: D(v["simulated_share"]) for k, v in scen.items()}
         sim_share = max(scenario_shares.values()) if scenario_shares else D(0)
@@ -3931,6 +4291,21 @@ def run_estimate(case_id: str, payload: EstimateIn):
             realization=derived["realization"],
             simulated_share=sim_share, asserted_share=asserted,
             v0_status=cov["status"], drivers=derived["drivers"])
+
+        # CR-03: a flagged baseline cannot be reported above D - Indicative.
+        #
+        # Applied after the score rather than as another ceiling inside it.
+        # The confidence model answers "how well is this evidenced";
+        # plausibility answers "is the number the right size at all". Folding
+        # one into the other would make a flagged baseline indistinguishable
+        # from a poorly evidenced one.
+        #
+        # NOT_ASSESSABLE does not cap. Nobody having set a threshold is not a
+        # finding about the company.
+        if baseline_plausibility.caps_confidence(_plaus["flag"]):
+            conf = {**conf, "band": "D - Indicative",
+                    "ceilings_applied": list(conf.get("ceilings_applied") or [])
+                    + [f"plausibility_{_plaus['flag'].lower()}_band_cap"]}
 
         snap_id = str(uuid.uuid4())
         s.execute(insert(db.estimate_snapshot).values(
@@ -3985,10 +4360,14 @@ def run_estimate(case_id: str, payload: EstimateIn):
                 "current_tco": cur["total"], "by_layer": cur["by_layer"],
                 "origin_breakdown": cur["origin_breakdown"],
                 "components": cur["components"], "scenarios": scen,
+                # cur["total"], not cur["current_tco"] - see the identical fix
+                # on the other estimate path. The line above names the response
+                # key from cur["total"]; `cur` itself has no current_tco key.
                 "savings_bridge": savings_bridge.waterfall(
-                    scen, current_total=cur["current_tco"]["base"],
+                    scen, current_total=cur["total"]["base"],
                     coverage=cov),
                 "confidence": conf,
+                "baseline_plausibility": _plaus,
                 "coverage": {**cov, "unpriced_components": unpriced},
                 "simulated_share": str(sim_share),
                 "simulated_share_by_scenario": {k: str(v) for k, v in scenario_shares.items()},
@@ -4149,8 +4528,20 @@ def list_estimates(case_id: str):
             try:
                 record["savings_bridge"] = savings_bridge.waterfall(
                     record.get("scenarios") or {},
-                    current_total=(record.get("current_tco") or {}).get(
-                        "base") or 0,
+                    # current_tco["total"]["base"], the way the other two
+                    # call sites read it. This read current_tco["base"],
+                    # which does not exist - the dict is keyed by cost layer
+                    # with the total under "total" - so it was always None,
+                    # and `or 0` turned that into a baseline of zero.
+                    #
+                    # Page 8's "How the saving is built" therefore showed
+                    # Baseline 0, "0% of baseline", and a target run-rate
+                    # equal to minus the saving. The `or 0` is what hid it:
+                    # without it the None reaches D(str(...)), raises, and
+                    # the handler below reports the bridge as unavailable,
+                    # which is the honest outcome and says so.
+                    current_total=((record.get("current_tco") or {})
+                                   .get("total") or {}).get("base"),
                     # From the snapshot's own stored coverage, so a bridge
                     # read a week later carries the same qualification the
                     # estimate was published with.
@@ -4184,13 +4575,37 @@ class NarrateIn(BaseModel):
     idempotency_key: str | None = None
 
 
+def _with_transition(session, record: dict) -> dict:
+    """Attach what the recommended scenario costs to reach.
+
+    Read from the snapshot rather than stored on the recommendation. The
+    block is a property of (snapshot, scenario_code) and the recommendation
+    already names both, so a copy on the row would be denormalised and free
+    to drift from the snapshot it describes - and validation_capture reads it
+    off the scenario for exactly that reason: "one-time cost lives on the
+    scenario rather than the snapshot header, because it belongs to a plan
+    rather than to a baseline."
+
+    Page 8 has rendered this since 4.165 and has been showing its fallback -
+    "No transition cost is modelled for this recommendation" - to every
+    reader, because nothing put the block on the scenario and nothing put the
+    scenario on the recommendation.
+    """
+    scenarios = session.execute(select(db.estimate_snapshot.c.scenarios).where(
+        db.estimate_snapshot.c.estimate_snapshot_id
+        == record.get("estimate_snapshot_id"))).scalar()
+    scenario = (scenarios or {}).get(record.get("scenario_code")) or {}
+    transition = scenario.get("transition")
+    return {**record, "transition": transition} if transition else record
+
+
 def _recommendation_or_404(session, case_id: str, recommendation_id: str) -> dict:
     row = session.execute(select(db.recommendation).where(
         db.recommendation.c.recommendation_id == recommendation_id)).one_or_none()
     if row is None or row.case_id != case_id:
         raise HTTPException(404, f"recommendation {recommendation_id!r} not found for "
                                  f"case {case_id!r}")
-    return dict(row._mapping)
+    return _with_transition(session, dict(row._mapping))
 
 
 @router.post("/v1/outside-in/cases/{case_id}/estimates/{estimate_snapshot_id}"
@@ -4207,10 +4622,13 @@ def run_recommendation(case_id: str, estimate_snapshot_id: str, payload: Recomme
                                      f"found for case {case_id!r}")
         rp = _recommendation_policy(s)
         try:
-            return savings_advisory.recommend(
+            # _with_transition on every path that returns a recommendation,
+            # not only the two GETs. A caller that creates one and reads the
+            # response should see the same record the list endpoint shows.
+            return _with_transition(s, savings_advisory.recommend(
                 s, estimate_snapshot_id=estimate_snapshot_id, mode=payload.mode,
                 provider=payload.provider, recommendation_policy=rp,
-                idempotency_key=payload.idempotency_key)
+                idempotency_key=payload.idempotency_key))
         except LookupError as exc:
             raise HTTPException(404, str(exc))
         except ValueError as exc:
@@ -4228,8 +4646,9 @@ def approve_recommendation(case_id: str, recommendation_id: str, payload: Approv
     with S() as s:
         _recommendation_or_404(s, case_id, recommendation_id)
         try:
-            return savings_advisory.approve(
-                s, recommendation_id=recommendation_id, approved_by=payload.approved_by)
+            return _with_transition(s, savings_advisory.approve(
+                s, recommendation_id=recommendation_id,
+                approved_by=payload.approved_by))
         except ValueError as exc:
             raise HTTPException(422, str(exc))
 
@@ -4240,10 +4659,10 @@ def run_narrative(case_id: str, recommendation_id: str, payload: NarrateIn):
     with S() as s:
         _recommendation_or_404(s, case_id, recommendation_id)
         try:
-            return savings_advisory.narrate(
+            return _with_transition(s, savings_advisory.narrate(
                 s, recommendation_id=recommendation_id, mode=payload.mode,
                 provider=payload.provider, final=payload.final,
-                idempotency_key=payload.idempotency_key)
+                idempotency_key=payload.idempotency_key))
         except PermissionError as exc:
             raise HTTPException(409, str(exc))
         except ValueError as exc:
@@ -4264,7 +4683,8 @@ def list_recommendations(case_id: str):
         rows = s.execute(select(db.recommendation).where(
             db.recommendation.c.case_id == case_id).order_by(
             db.recommendation.c.created_at.desc())).all()
-        return {"recommendations": [dict(r._mapping) for r in rows]}
+        return {"recommendations": [_with_transition(s, dict(r._mapping))
+                                    for r in rows]}
 
 
 @router.get("/v1/outside-in/cases/{case_id}/recommendations/{recommendation_id}")

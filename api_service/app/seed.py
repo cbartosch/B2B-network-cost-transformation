@@ -16,6 +16,7 @@ DOMAIN_AGENT_MAP_SEED = {
     21: 'LLM-08', 22: 'LLM-08',
 }
 from .db import (SessionLocal, archetype_bandwidth, archetype_prior,
+                 plausibility_benchmark,
                  archetype_resilience,
                  fx_rate,
                  density_mix,
@@ -205,6 +206,28 @@ THRESHOLDS = [
     # no transaction behind them. They make the model more conservative, not
     # less, which is the right direction for an unevidenced addition - but a
     # payback computed from them is a modelled payback and the output says so.
+    # CR-04. The per-site figures below are a *reference* cost at a reference
+    # circuit density, decomposed into work that scales with circuits and
+    # work that scales with sites. A site with a second access circuit costs
+    # more to migrate than one without, and the flat per-site charge said
+    # otherwise: every company in the twenty-company sample set reported
+    # exactly 900.00 per site, in four currencies.
+    #
+    # The four shares are ASSUMED and registered in
+    # docs/CR-NCT-001-ASSUMPTIONS.md with a rationale each. They are not
+    # sourced from transaction data, and transition_policy.evidence_grade
+    # stays at E to say so.
+    #
+    # They sum to 1.0, and at the reference density the build reproduces the
+    # reference cost exactly - so this adds structure without moving the
+    # governed level. What moves is the spread across estates.
+    ("transition_policy", "one_time_share_hardware", "0.35"),
+    ("transition_policy", "one_time_share_migration", "0.25"),
+    ("transition_policy", "one_time_share_integration", "0.20"),
+    ("transition_policy", "one_time_share_project_management", "0.20"),
+    # Circuits per site the reference cost assumes. A seeded estate runs
+    # about 1.3; 1.25 is the round reference the shares were set against.
+    ("transition_policy", "one_time_reference_circuits_per_site", "1.25"),
     ("transition_policy", "one_time_cost_per_site_low", "400"),
     ("transition_policy", "one_time_cost_per_site_base", "900"),
     ("transition_policy", "one_time_cost_per_site_high", "1800"),
@@ -226,6 +249,31 @@ THRESHOLDS = [
     # rather than _require, so the default already covers it and nothing needed
     # the row. A steward wanting to raise the grade once real transition data
     # exists changes the field, not a threshold.
+    # CR-06: how much wider than the rate card's own band an estimate should
+    # be reported, by what the value rests on.
+    #
+    # The band used to come from the seeded price priors alone, so every
+    # company in the twenty-company sample reported low/base between 0.688
+    # and 0.735 whatever its evidence - a company with two researched domains
+    # showed the same width as one with seventeen. The price band is real and
+    # is kept; this widens it for everything the price band cannot see.
+    #
+    # 1.00 for evidenced public: a fully evidenced estimate keeps exactly the
+    # rate card's band and nothing is added. Every other class is a multiple
+    # of that, so the scale has a fixed point rather than a floor somebody
+    # chose. All ASSUMED - see docs/CR-NCT-001-ASSUMPTIONS.md.
+    ("range_policy", "widen_evidenced_public", "1.00"),
+    ("range_policy", "widen_client_confirmed", "1.15"),
+    ("range_policy", "widen_derived_public", "1.20"),
+    ("range_policy", "widen_analyst_entered_scope", "1.35"),
+    ("range_policy", "widen_benchmark_prior", "1.40"),
+    ("range_policy", "widen_analyst_asserted_prior", "1.50"),
+    ("range_policy", "widen_simulated", "1.55"),
+    # Applied on top, scaled by the share of agent-routed domains that came
+    # back with no evidence. A domain nobody could research is uncertainty
+    # the component origins do not carry: the price and the quantity may both
+    # be benchmark-solid while the estate they describe was never checked.
+    ("range_policy", "widen_unevidenced_domain_share", "0.50"),
     ("footprint_policy", "max_sites_per_archetype_row", "100"),
     # The same rule for a row that says where its sites are. 100 was set when a
     # row meant (country, archetype) and every site in it was claimed identical
@@ -2045,6 +2093,53 @@ LEVERS = [
 ]
 
 
+# CR-03 per-site tripwires. Requested by the owner after the table shipped
+# empty, and they are tripwires rather than a benchmark - the difference
+# matters and is recorded on every row.
+#
+# NOT SOURCED. There is no published figure here for network cost per site
+# by industry, so `source` says so in words rather than naming something
+# that does not exist, `evidence_grade` is F and `approved_by` is null. A
+# flag from one of these is a prompt to look, not a verdict, and the
+# assessment publishes the source and grade next to the flag so a reader
+# sees which it is.
+#
+# Set WIDE, deliberately. estate_plausibility's own note is the right
+# standard: "a ceiling that fires on a real estate is worse than no
+# ceiling, so each is set where a plausible enterprise is nowhere near it."
+# These brackets span five to thirty times and can only catch an
+# order-of-magnitude error - a store estate priced like a refinery, or a
+# chemical group priced like a kiosk.
+#
+# They are grouped by what the estate is made of, not by sector economics:
+# a branch, a restaurant and a hotel room all take one modest circuit, and
+# a plant, a refinery and an R&D campus all take dual access and real
+# bandwidth. Picking the band is therefore a question about site types.
+#
+# On the twenty-company sample every one of them passes. That is the
+# intended state for a tripwire and not evidence that it works; the thing
+# it exists to catch has not happened yet.
+_BRANCH = ("GROCERY_RETAIL", "QSR_RESTAURANTS", "SPECIALTY_RETAIL", "HOTELS",
+           "INSURANCE", "UNIVERSAL_BANKING", "PARCEL_LOGISTICS", "RAILWAYS",
+           "UTILITIES", "INTEGRATED_OIL_GAS", "BUILDING_MATERIALS")
+_MIXED = ("HOSPITAL", "AIRLINES")
+_INDUSTRIAL = ("CHEMICALS", "PHARMACEUTICALS", "AUTOMOTIVE_OEM",
+               "FOOD_MANUFACTURING", "INDUSTRIAL_CONGLOMERATE",
+               "HOUSEHOLD_PERSONAL_CARE", "DIVERSIFIED_MINING")
+
+_UNSOURCED = ("UNSOURCED TRIPWIRE set by the workbench, not a published "
+              "benchmark. Wide enough to catch only an order-of-magnitude "
+              "error. Replace with a sourced range before any external use "
+              "- see docs/CR-NCT-001-ASSUMPTIONS.md.")
+
+PLAUSIBILITY_BENCHMARKS = (
+    [("BASELINE_PER_SITE", "DEFAULT", 1000, 150000)]
+    + [("BASELINE_PER_SITE", i, 1500, 20000) for i in _BRANCH]
+    + [("BASELINE_PER_SITE", i, 2500, 35000) for i in _MIXED]
+    + [("BASELINE_PER_SITE", i, 4000, 120000) for i in _INDUSTRIAL]
+)
+
+
 def _rows():
     """Table -> row builder. Kept together so a new reference table cannot be
     added to the model without also being given seed content."""
@@ -2172,6 +2267,14 @@ def _rows():
              "high": hi, "currency": "USD", "price_year": 2026,
              "approved": True}
             for p, l, u, lo, ba, hi in PLATFORM]),
+        (plausibility_benchmark, lambda: [
+            {"metric": m, "industry": ind, "low": lo, "high": hi,
+             "unit": "base currency per site per year",
+             "source": _UNSOURCED, "as_of": "2026-10-12",
+             "evidence_grade": "F", "approved_by": None,
+             "note": "CR-03 tripwire; per-site is the one plausibility "
+                     "metric that survives a partial scope"}
+            for m, ind, lo, hi in PLAUSIBILITY_BENCHMARKS]),
         (archetype_prior, lambda: [
             {"archetype": a, "users_base": u, "bandwidth_mbps_base": b,
              "dual_access_probability": d, "primary_product": pp, "backup_product": bp,

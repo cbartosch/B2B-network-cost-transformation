@@ -15,3 +15,14 @@ __pycache__/
 .env
 !.env.example
 case-backups/
+
+# pg_dump backups taken by `make.ps1 bundle-in` before a merge. Working
+# database contents - case data, estimates, agent runs - not source. The
+# schema under db/init/ stays tracked.
+/db-backup-*.sql
+_samples_backup/
+
+# Scratch copies of the sample set pulled out of the container during a run.
+_s[0-9]*/
+_samples_new*/
+_delta/

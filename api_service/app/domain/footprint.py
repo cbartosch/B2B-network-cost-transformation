@@ -25,10 +25,27 @@ Precedence, strongest first:
 
 The known-fact route is honest about its own limit. A registered fact says how
 many sites there are; it does not say what type they are or how they split
-across countries. So the total lands in the country of domicile as a single
-row, `needs_split` is set, and the caller is told to divide it. Spreading it
-evenly across seven countries would be inventing six numbers, and putting it
-under a guessed archetype would price it at a bandwidth nobody chose.
+across countries. So the total is returned as `unallocated_sites` with an
+EMPTY footprint, the origin is KNOWN_FACT_UNALLOCATED, `needs_split` is set,
+and the caller is told to divide it. Spreading it evenly across seven
+countries would be inventing six numbers, and putting it under a guessed
+archetype would price it at a bandwidth nobody chose.
+
+This paragraph said "the total lands in the country of domicile as a single
+row" until the behaviour changed underneath it. A single row asserts that
+every site in it shares one bandwidth, one product pair and one users-per-site
+figure, and the whole row is costed at that archetype's tier - so the bulk
+total priced an entire estate at a tier nobody chose, and looked like a
+footprint rather than like the unallocated number it was.
+
+Two or more registered totals with no analyst choice resolve to NOTHING, not
+to the best-supported one. Standing ranks facts in `_STANDING` and is still
+used to order the runners-up, but it no longer picks between rival totals: on
+a Boots UK case "standing, then largest" chose 12,028 - the Walgreens Boots
+Alliance group figure - over 1,840 GB stores, and an estimate that looks
+finished and is about a different company is worse than no estimate. The
+caller gets the range and is asked to choose. Note that a CONTRADICTED fact
+still counts as a competitor, so one disputed total suppresses one good one.
 """
 from decimal import Decimal
 

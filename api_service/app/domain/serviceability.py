@@ -336,24 +336,58 @@ def summarise(outcomes: list[dict]) -> dict:
     """
     counts = {DELIVERED: 0, SUBSTITUTED: 0, UNSERVICEABLE: 0}
     swaps: dict[tuple, int] = {}
+    # The bearer mix, which is where the finding moved to.
+    #
+    # Since the resolver started answering "does a bearer reach this site that
+    # can carry this service" rather than "is this product sold here", a rural
+    # store asking for DIA is DELIVERED - over PON, because the fibre is not
+    # there. That is the same fact the substitution count used to carry: the
+    # rural site is not a cheaper urban one, and it is priced differently
+    # because unit_cost_prior keys on access_technology as well as
+    # service_class.
+    #
+    # Counting only substitutions, a 4,000-store estate with 600 rural sites
+    # on PON read as "4,000 delivered, nothing to report". The docstring above
+    # says what this function is for - "412 sites took a different product
+    # from the one their type asks for" is the finding - and under the bearer
+    # model it was no longer producing it.
+    bearers: dict[str, int] = {}
     for entry in outcomes:
         counts[entry["outcome"]] = counts.get(entry["outcome"], 0) + 1
         if entry["outcome"] == SUBSTITUTED:
             key = (entry.get("asked_for"), entry.get("product"),
                    entry.get("bandwidth_mbps"))
             swaps[key] = swaps.get(key, 0) + 1
+        technology = entry.get("access_technology")
+        if technology:
+            bearers[technology] = bearers.get(technology, 0) + 1
     total = sum(counts.values())
+    by_technology = [{"access_technology": k, "sites": v}
+                     for k, v in sorted(bearers.items(),
+                                        key=lambda kv: (-kv[1], kv[0]))]
+    # Named rather than counted: "600 on PON" is actionable and "15% on a
+    # secondary bearer" is not.
+    off_primary = by_technology[1:]
+    bearer_note = (
+        f" {sum(r['sites'] for r in off_primary)} of {total} are delivered "
+        f"over a bearer other than {by_technology[0]['access_technology']} ("
+        + ", ".join(f"{r['sites']} on {r['access_technology']}"
+                    for r in off_primary)
+        + "), which is a different circuit at a different rate."
+        if off_primary else "")
     return {
         "counts": counts,
         "substitutions": [
             {"asked_for": a, "delivered": d, "bandwidth_mbps": m, "sites": n}
             for (a, d, m), n in sorted(swaps.items(), key=lambda kv: -kv[1])],
+        "by_access_technology": by_technology,
         "unserviceable": counts[UNSERVICEABLE],
         "note": (
             f"{counts[SUBSTITUTED]} of {total} site(s) take a different product "
             f"or tier from the one their type asks for, and "
-            f"{counts[UNSERVICEABLE]} can be served by nothing at all. A "
-            f"uniform estate is an assumption; this is what the density bands "
-            f"say about it."
+            f"{counts[UNSERVICEABLE]} can be served by nothing at all."
+            + bearer_note
+            + f" A uniform estate is an assumption; this is what the density "
+              f"bands say about it."
             if total else "No sites to check."),
     }

@@ -44,9 +44,16 @@ def test_a_site_count_reaches_the_footprint_the_simulation_reads(session):
                       promoted_by="Priya Raman")
 
     fp = promotion.evidenced_footprint(session, case_id)
+    # Exact equality kept deliberately - it catches a field being dropped as
+    # well as a value changing. The row has since grown its provenance
+    # (domain_no, the band, the source count and the URLs) and the literal was
+    # never extended, so the only thing this asserted was that the shape had
+    # not moved. Every value it did name was already correct.
     assert fp == [{"country": "DE", "archetype": "WAREHOUSE", "sites": 340,
                    "as_of": "2024-12-31", "agent_run_id": run_id,
-                   "promoted_by": "Priya Raman"}]
+                   "promoted_by": "Priya Raman", "domain_no": 2,
+                   "band_low": None, "band_high": None, "source_count": None,
+                   "source_urls": ["https://example.com/ar"]}]
 
 
 def test_promotion_requires_a_named_person(session):
@@ -62,8 +69,15 @@ def test_a_promoted_price_is_unapproved_and_carries_its_provenance(session):
     """18.1: research proposes a governed value, it does not set one. An
     approved row would put a model's answer straight into every estimate with
     no steward in between."""
+    # bandwidth_mbps as a field, not only inside the label. promote() reads
+    # q["bandwidth_mbps"] and declines a rate with no tier - "a circuit rate
+    # without a tier cannot be matched to any circuit" - which is deliberate:
+    # a null-bandwidth row would sit in unit_cost_prior pricing nothing while
+    # counting as coverage, the exact condition migration v17 deletes rows
+    # for. So the candidate was declined and no row was ever written, and
+    # this test failed on NoResultFound without reaching what it asserts.
     q = {"label": "DIA 100Mbps MRC", "value": 520, "unit": "USD/month",
-         "country": "DE", "as_of": "2025"}
+         "country": "DE", "as_of": "2025", "bandwidth_mbps": 100}
     case_id, run_id = _case_with_finding(session, q)
     cid = promotion.candidates(session, case_id)["price_candidates"][0]["candidate_id"]
 
@@ -102,11 +116,18 @@ def test_promoting_the_same_finding_twice_replaces_rather_than_duplicates(sessio
 
 
 # --- researched price vs the benchmark it would displace --------------------
-def _benchmark(session, country="DE", product="DIA", low=420, base=580, high=800):
+def _benchmark(session, country="DE", product="DIA", low=420, base=580,
+               high=800, bandwidth_mbps=None):
+    # bandwidth_mbps defaults to None so the compare_to_benchmark tests keep
+    # the untiered row they were written against. Only the promotion test
+    # needs a tier, and it needs one because promote() will not compare a
+    # 100 Mbps observation against a benchmark at no stated tier: that would
+    # be a comparison of different products, so it reports
+    # NO_BENCHMARK_AT_BANDWIDTH rather than judging it.
     session.execute(insert(db.unit_cost_prior).values(
         id=f"{country}-{product}", country=country, product=product,
         cost_layer="L0", low=low, base=base, high=high, currency="USD",
-        price_year=2026, approved=True))
+        price_year=2026, approved=True, bandwidth_mbps=bandwidth_mbps))
     session.commit()
 
 
@@ -152,9 +173,11 @@ def test_a_country_with_no_benchmark_is_new_coverage_not_silence(session):
 
 
 def test_promotion_records_the_comparison_where_a_steward_will_see_it(session):
-    _benchmark(session)
+    _benchmark(session, bandwidth_mbps=100)
+    # Same missing tier as above: declined before any comparison was made,
+    # so material_divergences was empty rather than disagreeing.
     q = {"label": "DIA 100Mbps MRC", "value": 1280, "unit": "USD/month",
-         "country": "DE", "as_of": "2025"}
+         "country": "DE", "as_of": "2025", "bandwidth_mbps": 100}
     case_id, _ = _case_with_finding(session, q)
     cid = promotion.candidates(session, case_id)["price_candidates"][0]["candidate_id"]
 
@@ -164,7 +187,11 @@ def test_promotion_records_the_comparison_where_a_steward_will_see_it(session):
 
     assert len(out["material_divergences"]) == 1
     row = session.execute(select(db.unit_cost_prior).where(
-        db.unit_cost_prior.c.id == "DE-DIA-researched")).one()
+        # The tier is part of the key: row_id is
+        # f"{country}-{product}-{mbps}-researched", because a promoted price
+        # reachable only through the legacy fallback was the defect fixed in
+        # 4.177. The literal here predates that.
+        db.unit_cost_prior.c.id == "DE-DIA-100-researched")).one()
     assert row.approved is False
     assert "OUTSIDE_BAND" in row.source_note
 
@@ -269,3 +296,168 @@ def test_the_review_panel_offers_every_target():
         assert key in page, key
     assert "feeds the simulation" in page, (
         "an analyst has to be told what promoting a topology field changes")
+
+# ------------------------------- the label the prompt actually asks agents for
+
+def test_an_archetype_named_with_its_mapping_still_reaches_the_footprint(session):
+    """`label in ARCHETYPES` required the label to be nothing but the
+    archetype, and the research prompt asks for the opposite.
+
+    The archetype block tells the agent to "say in `finding` which mapping
+    you chose and why", so a well-behaved agent returns
+    "SERVICE_POINT - Iberdrola customer service and sales points". That fell
+    through to unclassified every time, while an agent that ignored the
+    instruction and emitted a bare "PLANT" classified fine.
+
+    The sample set is the evidence: one company's agent described its
+    mappings and produced 103 findings with 0 classified; another emitted
+    bare labels and promoted 7 rows. The classifier worked only when the
+    agent omitted what it had been asked for.
+    """
+    q = {"label": "SERVICE_POINT - Iberdrola customer service and sales points",
+         "value": 650, "unit": "sites", "country": "ES", "as_of": "2025-06-30"}
+    case_id, _ = _case_with_finding(session, q)
+    cands = promotion.candidates(session, case_id)
+    assert len(cands["footprint_candidates"]) == 1, (
+        f"a described mapping was not offered: {cands['unclassified']}")
+    assert not cands["unclassified"]
+
+
+def test_the_leading_token_is_read_the_way_a_product_name_already_was(session):
+    """Two branches of one classifier, the same shape of input, and only one
+    of them read the leading token. This pins them together."""
+    import inspect
+
+    src = inspect.getsource(promotion._classify)
+    assert src.count("head = ") == 1, (
+        "the archetype and product branches should share one leading token")
+    assert "head in ARCHETYPES" in src
+    assert "head in PRODUCTS" in src
+    # And the writer takes it from the same helper, so a label the classifier
+    # accepted cannot be stored as something else.
+    assert "archetype_of" in inspect.getsource(promotion.promote)
+    assert promotion.archetype_of("SERVICE_POINT - a long description here")         == "SERVICE_POINT"
+
+
+def test_a_label_naming_two_archetypes_is_still_declined(session):
+    """Widening the match must not make it a guess. "WAREHOUSE/BRANCH" names
+    two, and a wrong promotion is silent where a declined one is visible."""
+    q = {"label": "WAREHOUSE/BRANCH - operational offices and depots",
+         "value": 34, "unit": "sites", "country": "GB", "as_of": "2024-12-31"}
+    case_id, _ = _case_with_finding(session, q)
+    cands = promotion.candidates(session, case_id)
+    assert not cands["footprint_candidates"]
+    assert len(cands["unclassified"]) == 1
+
+
+def test_a_count_whose_unit_is_not_sites_is_still_declined(session):
+    """30,000 distribution substations is a real finding and not a WAN site
+    count. The unit gate is what keeps that judgement with a person."""
+    q = {"label": "NETWORK_SITE - SP Energy Networks distribution substations",
+         "value": 30000, "unit": "substations", "country": "GB",
+         "as_of": "2024-12-31"}
+    case_id, _ = _case_with_finding(session, q)
+    cands = promotion.candidates(session, case_id)
+    assert not cands["footprint_candidates"]
+    assert len(cands["unclassified"]) == 1
+
+def test_the_archetype_stored_is_the_one_the_classifier_matched(session):
+    """_classify matched the leading token and promote() stored the whole
+    label. They were the same string only while the classifier demanded a
+    bare archetype name; widening it made them differ, and 56 characters went
+    into archetype varchar(48) - every promotion 500'd.
+
+    The length was the lesser half. The simulation keys archetypes by name,
+    so a stored description would be a footprint row for an archetype that
+    does not exist, priced at the DEFAULT prior, with the estate looking
+    enumerated. The column being too short is the only reason it was visible.
+    """
+    q = {"label": "SERVICE_POINT - Iberdrola customer service and sales points",
+         "value": 650, "unit": "sites", "country": "ES", "as_of": "2025-06-30"}
+    case_id, _ = _case_with_finding(session, q)
+    cands = promotion.candidates(session, case_id)
+    ids = [c["candidate_id"] for c in cands["footprint_candidates"]]
+    assert ids
+
+    promotion.promote(session, case_id=case_id, candidate_ids=ids,
+                      promoted_by="tester")
+    rows = session.execute(select(db.evidenced_footprint).where(
+        db.evidenced_footprint.c.case_id == case_id)).all()
+    assert len(rows) == 1
+    assert rows[0].archetype == "SERVICE_POINT", (
+        f"stored {rows[0].archetype!r}, which is not an archetype the "
+        f"simulation knows")
+    assert rows[0].sites == 650
+    assert len(rows[0].archetype) <= 48
+
+def test_the_archetype_names_agree_with_themselves(session):
+    """`in` and `set()` must answer the same question.
+
+    ARCHETYPES was a frozenset subclass constructed empty, with Python-level
+    __contains__ and __iter__ overrides. The C fast paths behind set(),
+    list(), sorted() and the set operators read the empty underlying storage
+    and never call __iter__, so "LARGE_OFFICE" in ARCHETYPES was True while
+    set(ARCHETYPES) was empty - the same object answering two forms of one
+    question differently.
+
+    Product code only ever asks `in`, so nothing in the service was wrong.
+    A caller outside it did `known = set(ARCHETYPES)`, concluded every
+    archetype was unknown, and deleted 75 rows of promoted footprint
+    evidence before anyone noticed.
+    """
+    from app.domain import promotion
+
+    names = set(promotion.ARCHETYPES)
+    assert names, "set() over the archetype names came back empty"
+    assert len(names) == len(promotion.ARCHETYPES)
+    assert sorted(names) == sorted(promotion.ARCHETYPES)
+    for n in names:
+        assert n in promotion.ARCHETYPES
+    # The two spellings a caller might reach for, agreeing.
+    assert "LARGE_OFFICE" in promotion.ARCHETYPES
+    assert "LARGE_OFFICE" in set(promotion.ARCHETYPES)
+    assert "NOT_AN_ARCHETYPE" not in promotion.ARCHETYPES
+    assert "NOT_AN_ARCHETYPE" not in set(promotion.ARCHETYPES)
+
+def test_a_value_the_classifier_accepts_is_a_value_promotion_can_write(session):
+    """The classifier admits a quantity when triangulate.parse_value can read
+    it - "1,250", "2.75", "3 million", "~10". The writer called int() on the
+    raw string, so a candidate this module offered, and a person chose to
+    promote, returned 500:
+
+        ValueError: invalid literal for int() with base 10: '~10'
+
+    Lufthansa lost all seven of its footprint rows to it and was priced from
+    public disclosure alone, with nothing in the response saying which
+    finding was at fault.
+    """
+    from sqlalchemy import select
+
+    from app import db
+
+    for raw, expected in (("~10", 10), ("1,250", 1250), ("341.0", 341),
+                          (12, 12)):
+        q = {"label": "LARGE_OFFICE - named operating sites", "value": raw,
+             "unit": "sites", "country": "DE", "as_of": "2025-12-31"}
+        case_id, _ = _case_with_finding(session, q)
+        cands = promotion.candidates(session, case_id)
+        assert cands["footprint_candidates"], f"{raw!r} was not offered"
+        promotion.promote(
+            session, case_id=case_id,
+            candidate_ids=[c["candidate_id"]
+                           for c in cands["footprint_candidates"]],
+            promoted_by="tester")
+        sites = session.execute(select(db.evidenced_footprint.c.sites).where(
+            db.evidenced_footprint.c.case_id == case_id)).scalar()
+        assert sites == expected, f"{raw!r} promoted as {sites}, want {expected}"
+
+
+def test_a_value_nothing_can_read_is_refused_not_defaulted(session):
+    """Unreachable through _classify, which declines it first. Guarded
+    anyway: a site count nobody could parse must not quietly become 0 or 1.
+    """
+    import pytest
+
+    with pytest.raises(ValueError, match="no readable value"):
+        promotion._sites_from({"label": "LARGE_OFFICE", "value": "a handful"})
+

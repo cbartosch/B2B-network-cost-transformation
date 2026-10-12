@@ -35,7 +35,7 @@ from . import db
 log = logging.getLogger("workbench.migrations")
 
 # Bump when the physical schema changes, and add a step below.
-SCHEMA_VERSION = 66
+SCHEMA_VERSION = 67
 
 VERSION_TABLE = "schema_version"
 VERSION_SCHEMA = "audit"
@@ -771,9 +771,20 @@ def _migrate_v31(conn) -> None:
     added = _add_column(conn, db.unit_cost_prior, "scope_kind")
     widened = 0
     if _has_table(conn, "reference", "unit_cost_prior"):
-        conn.execute(text(
-            'ALTER TABLE "reference"."unit_cost_prior" '
-            "ALTER COLUMN country TYPE VARCHAR(16)"))
+        # ALTER COLUMN ... TYPE is Postgres-only; SQLite has no such statement
+        # and raises a syntax error, which refuses app startup outright. That
+        # is the same defect v9 carried and the same reason it mattered: the
+        # only place SQLite is exercised is `make test` (DATABASE_URL=sqlite://),
+        # so a Postgres-only statement here is invisible in production and
+        # fatal in the test path.
+        #
+        # Skipping it on SQLite loses nothing. SQLite does not enforce VARCHAR
+        # length, so a 2-to-16 widening has no effect there, and test schemas
+        # are built fresh from db.py with the final width already.
+        if conn.dialect.name == "postgresql":
+            conn.execute(text(
+                'ALTER TABLE "reference"."unit_cost_prior" '
+                "ALTER COLUMN country TYPE VARCHAR(16)"))
         widened = conn.execute(text(
             'UPDATE "reference"."unit_cost_prior" SET scope_kind = \'COUNTRY\' '
             "WHERE scope_kind IS NULL")).rowcount or 0
@@ -885,7 +896,10 @@ def _migrate_v38(conn) -> None:
             ("reference", "benchmark_observation", "metric", 96),
             ("reference", "platform_unit_cost", "unit", 128),
             ("outside_in", "evidenced_anchor", "label", 128)):
-        if _has_table(conn, schema, table):
+        # Postgres-only, same as v31: SQLite has no ALTER COLUMN ... TYPE and
+        # does not enforce VARCHAR length, so the widening is both impossible
+        # and unnecessary there.
+        if _has_table(conn, schema, table) and conn.dialect.name == "postgresql":
             conn.execute(text(
                 f'ALTER TABLE "{schema}"."{table}" '
                 f"ALTER COLUMN {column} TYPE VARCHAR({width})"))
@@ -991,6 +1005,25 @@ def _migrate_v44(conn) -> None:
     dimensions derived from it, so a snapshot written before this migration
     stays reproducible and match_prior can key on either.
     """
+    # Same guard as _add_column, for the same reason, because the backfill
+    # below is raw SQL and does not inherit it. _add_column skips a table that
+    # is not there yet - migrations run before create_all - and then this
+    # function went on to UPDATE that same absent table, failing the whole
+    # upgrade at v44. _add_column's docstring records this defect class
+    # verbatim ("the ALTER hit a missing table and the whole upgrade failed,
+    # which is what 21 migration tests were reporting"); the guard was added
+    # there and not here.
+    #
+    # Nothing is lost by skipping: if the table does not exist, create_all
+    # builds it from db.py with both columns already present, and there are no
+    # legacy rows to derive anything from.
+    if not _has_table(conn, db.unit_cost_prior.schema, db.unit_cost_prior.name):
+        log.info("v44: %s.%s not present yet; create_all will build it with "
+                 "service_class and access_technology, and there are no legacy "
+                 "rows to backfill",
+                 db.unit_cost_prior.schema, db.unit_cost_prior.name)
+        return
+
     added = sum(_add_column(conn, db.unit_cost_prior, c)
                 for c in ("service_class", "access_technology"))
     # Derive the two dimensions from the value already stored. Done in SQL
@@ -1026,6 +1059,17 @@ def _migrate_v45(conn) -> None:
     Derived from the value already stored, so a seeded or edited prior keeps
     its other fields.
     """
+    # Migrations run before create_all, so a step that touches a table
+    # introduced by a later build meets nothing on an older database.
+    # _add_column already guards this; raw SQL does not inherit it, and
+    # this backfill is raw SQL. Without the guard the whole upgrade
+    # failed here - the defect class _add_column's docstring records.
+    if not _has_table(conn, db.archetype_prior.schema, db.archetype_prior.name):
+        log.info("v45: %s.%s not present yet; create_all will build it "
+                 "complete and there are no legacy rows to backfill",
+                 db.archetype_prior.schema, db.archetype_prior.name)
+        return
+
     added = sum(_add_column(conn, db.archetype_prior, c) for c in
                 ("primary_service_class", "backup_service_class"))
     added += _add_column(conn, db.case, "service_class_by_archetype")
@@ -1054,6 +1098,17 @@ def _migrate_v46(conn) -> None:
     Derived from the stored list in SQL, so a lever a steward has tuned keeps
     its saving band.
     """
+    # Migrations run before create_all, so a step that touches a table
+    # introduced by a later build meets nothing on an older database.
+    # _add_column already guards this; raw SQL does not inherit it, and
+    # this backfill is raw SQL. Without the guard the whole upgrade
+    # failed here - the defect class _add_column's docstring records.
+    if not _has_table(conn, db.lever.schema, db.lever.name):
+        log.info("v46: %s.%s not present yet; create_all will build it "
+                 "complete and there are no legacy rows to backfill",
+                 db.lever.schema, db.lever.name)
+        return
+
     added = sum(_add_column(conn, db.lever, c) for c in (
         "applies_to_service_classes", "applies_to_access_technologies",
         "applies_to_platform_products"))
@@ -1090,6 +1145,17 @@ def _migrate_v47(conn) -> None:
     Existing rows keep `product` and gain the technology derived from it, so a
     table an analyst has tuned is not discarded.
     """
+    # Migrations run before create_all, so a step that touches a table
+    # introduced by a later build meets nothing on an older database.
+    # _add_column already guards this; raw SQL does not inherit it, and
+    # this backfill is raw SQL. Without the guard the whole upgrade
+    # failed here - the defect class _add_column's docstring records.
+    if not _has_table(conn, db.serviceability.schema, db.serviceability.name):
+        log.info("v47: %s.%s not present yet; create_all will build it "
+                 "complete and there are no legacy rows to backfill",
+                 db.serviceability.schema, db.serviceability.name)
+        return
+
     added = _add_column(conn, db.serviceability, "access_technology")
     LEGACY = {"DIA": "ETHERNET_FIBRE", "MPLS": "ETHERNET_FIBRE",
               "ETHERNET": "ETHERNET_FIBRE", "BROADBAND_PON": "PON",
@@ -1115,6 +1181,17 @@ def _migrate_v48(conn) -> None:
 
     Derived from the stored product, which is the same mapping the priors used.
     """
+    # Migrations run before create_all, so a step that touches a table
+    # introduced by a later build meets nothing on an older database.
+    # _add_column already guards this; raw SQL does not inherit it, and
+    # this backfill is raw SQL. Without the guard the whole upgrade
+    # failed here - the defect class _add_column's docstring records.
+    if not _has_table(conn, db.benchmark_observation.schema, db.benchmark_observation.name):
+        log.info("v48: %s.%s not present yet; create_all will build it "
+                 "complete and there are no legacy rows to backfill",
+                 db.benchmark_observation.schema, db.benchmark_observation.name)
+        return
+
     added = sum(_add_column(conn, db.benchmark_observation, c)
                 for c in ("service_class", "access_technology"))
     LEGACY = {"DIA": ("DIA", None), "MPLS": ("IPVPN", None),
@@ -1388,7 +1465,18 @@ def _migrate_v66(conn) -> None:
     outside-in estimate and refusing it would block the normal case; what
     PARTIAL needs is propagation, not prohibition.
     """
-    if not _has_table(conn, "outside_in", "estimate_snapshot"):
+    # Read the schema off the model rather than naming it. This said
+    # "outside_in" while db.py has always defined the table in "analysis", so
+    # on any existing database _has_table returned False, the function logged
+    # that create_all would handle it, and returned - stamping v66 applied with
+    # the constraint never added. create_all does not add a CHECK constraint to
+    # a table that already exists, so the reassuring log was also wrong: only
+    # databases created fresh after this migration ever got the guard, which is
+    # the opposite of the set that holds data.
+    schema = db.estimate_snapshot.schema
+    table = f"{schema}.estimate_snapshot"
+
+    if not _has_table(conn, schema, "estimate_snapshot"):
         log.info("v66: estimate_snapshot not present yet, create_all will "
                  "build it with the constraint")
         return
@@ -1396,7 +1484,7 @@ def _migrate_v66(conn) -> None:
     # it is reported rather than deleted - a snapshot somebody may have acted
     # on is not something a migration should remove silently.
     existing = conn.exec_driver_sql(
-        "SELECT count(*) FROM outside_in.estimate_snapshot "
+        f"SELECT count(*) FROM {table} "
         "WHERE v0_status = 'REFUSED'").scalar()
     if existing:
         log.warning(
@@ -1405,14 +1493,34 @@ def _migrate_v66(conn) -> None:
             "allowed them. Review them before re-running: they may have been "
             "consumed by a recommendation or a questionnaire.", existing)
         return
+    # Postgres-only, same class as v31 and v38: SQLite cannot DROP or ADD a
+    # constraint on an existing table without rebuilding it. Nothing is lost by
+    # skipping — SQLite is only used for tests, whose schemas are built fresh
+    # from db.py, and the guard the constraint enforces is also asserted in the
+    # application layer.
+    if conn.dialect.name != "postgresql":
+        log.info("v66: constraint skipped on %s; Postgres-only DDL",
+                 conn.dialect.name)
+        return
     conn.exec_driver_sql(
-        "ALTER TABLE outside_in.estimate_snapshot "
+        f"ALTER TABLE {table} "
         "DROP CONSTRAINT IF EXISTS estimate_snapshot_never_refused")
     conn.exec_driver_sql(
-        "ALTER TABLE outside_in.estimate_snapshot "
+        f"ALTER TABLE {table} "
         "ADD CONSTRAINT estimate_snapshot_never_refused "
         "CHECK (v0_status <> 'REFUSED')")
     log.info("v66: estimate_snapshot_never_refused added")
+
+
+def _migrate_v67(conn) -> None:
+    """reference.plausibility_benchmark - CR-03.
+
+    Created by create_all and seeded with nothing. The thresholds are the
+    owner's under CR-NCT-001 section 9; until rows exist every estimate
+    reports plausibility NOT_ASSESSABLE, which is the honest answer to "is
+    this baseline sane?" when nobody has said what sane is.
+    """
+    log.info("v67: plausibility_benchmark created by create_all, no rows")
 
 
 MIGRATIONS = {2: _migrate_v2, 3: _migrate_v3, 4: _migrate_v4, 5: _migrate_v5,
@@ -1423,7 +1531,7 @@ MIGRATIONS = {2: _migrate_v2, 3: _migrate_v3, 4: _migrate_v4, 5: _migrate_v5,
               19: _migrate_v19, 20: _migrate_v20,
               21: _migrate_v21, 22: _migrate_v22, 23: _migrate_v23, 24: _migrate_v24, 25: _migrate_v25, 26: _migrate_v26, 27: _migrate_v27, 28: _migrate_v28, 29: _migrate_v29, 30: _migrate_v30, 31: _migrate_v31, 32: _migrate_v32, 33: _migrate_v33, 34: _migrate_v34, 35: _migrate_v35, 36: _migrate_v36, 37: _migrate_v37, 38: _migrate_v38, 39: _migrate_v39, 40: _migrate_v40, 41: _migrate_v41, 42: _migrate_v42, 43: _migrate_v43, 44: _migrate_v44, 45: _migrate_v45, 46: _migrate_v46, 47: _migrate_v47, 48: _migrate_v48, 49: _migrate_v49, 50: _migrate_v50, 51: _migrate_v51, 52: _migrate_v52, 53: _migrate_v53, 54: _migrate_v54, 55: _migrate_v55, 56: _migrate_v56, 57: _migrate_v57, 58: _migrate_v58, 59: _migrate_v59, 60: _migrate_v60, 61: _migrate_v61, 62: _migrate_v62, 63: _migrate_v63,
               64: _migrate_v64, 65: _migrate_v65,
-              66: _migrate_v66}
+              66: _migrate_v66, 67: _migrate_v67}
 
 
 class SchemaDrift(RuntimeError):

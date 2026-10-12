@@ -43,6 +43,23 @@ def _built():
                                 "because": "no PoP baseline in the model"}])
 
 
+def _list_estimates_source(api: str) -> str:
+    """The body of list_estimates, by AST rather than by byte count.
+
+    Both scans below took the 2,600 characters after `def list_estimates(`.
+    That window was measured against the code as it stood, so explaining a
+    fix inside the function pushed what they look for out of it - the check
+    failed on a comment, with nothing wrong in the code. The same shape has
+    now been found five times in this suite.
+    """
+    import ast
+
+    tree = ast.parse(api)
+    fn = next(n for n in ast.walk(tree)
+              if isinstance(n, ast.FunctionDef) and n.name == "list_estimates")
+    return ast.get_source_segment(api, fn)
+
+
 def test_the_steps_compound_rather_than_adding():
     """Each step starts where the last one ended."""
     built = _built()
@@ -128,7 +145,7 @@ def test_the_bridge_is_derived_on_read_not_only_on_run():
     app = next(c for c in (root / "api_service" / "app", root / "app")
                if (c / "routers").exists())
     api = (app / "routers" / "api.py").read_text()
-    listing = api[api.index("def list_estimates("):][:2600]
+    listing = _list_estimates_source(api)
     assert "savings_bridge.waterfall(" in listing
     assert 'record["savings_bridge"]' in listing
 
@@ -143,7 +160,7 @@ def test_a_snapshot_written_before_the_bridge_existed_does_not_break_the_page():
     app = next(c for c in (root / "api_service" / "app", root / "app")
                if (c / "routers").exists())
     api = (app / "routers" / "api.py").read_text()
-    listing = api[api.index("def list_estimates("):][:2600]
+    listing = _list_estimates_source(api)
     assert '"unavailable"' in listing
 
 
@@ -160,3 +177,82 @@ def test_the_savings_page_renders_it():
     # and the two things a reader needs beyond the number
     assert "governed_share" in page
     assert "not_counted" in page
+
+def test_the_listed_bridge_is_built_on_the_baseline_the_snapshot_stored(
+        session, client):
+    """Against the stored snapshot, not against the source text.
+
+    The two tests above scan api.py for `savings_bridge.waterfall(` and
+    `record["savings_bridge"]`, and both passed while the listing read
+    `current_tco["base"]` - a key that does not exist, because current_tco is
+    keyed by cost layer with the total under "total". It was always None, and
+    `or 0` turned it into a baseline of zero, so page 8's "How the saving is
+    built" showed Baseline 0, "0% of baseline", and a target run-rate equal
+    to minus the saving.
+
+    A source scan cannot see that: the call is there and the symbol is there,
+    and it is the argument that is wrong. So this reads the number back.
+    """
+    import uuid
+
+    from sqlalchemy import insert, select
+
+    from app import db
+
+    case_id = str(uuid.uuid4())
+    session.execute(insert(db.case).values(case_id=case_id, created_by="t"))
+    session.execute(insert(db.estimate_snapshot).values(
+        estimate_snapshot_id=str(uuid.uuid4()), case_id=case_id,
+        version_label="V0", v0_status="COMPLETE",
+        current_tco={"L0": {"low": "1", "base": "18000000", "high": "3"},
+                     "total": {"low": "2", "base": "20000000", "high": "4"}},
+        target_tco={}, scenarios=SCENARIOS, gross_run_rate_savings={},
+        confidence={}, coverage={}, simulated_share=0.05, asserted_share=0.0,
+        pins={}, levers=[]))
+    session.commit()
+
+    r = client.get(f"/v1/outside-in/cases/{case_id}/estimates")
+    assert r.status_code == 200, r.text
+    wf = r.json()["snapshots"][0]["savings_bridge"]
+
+    assert "unavailable" not in wf, wf
+    assert Decimal(wf["baseline"]) == Decimal("20000000"), (
+        "the bridge was built on a baseline the snapshot does not hold")
+    # And the rest of it follows from the baseline, so a zero there is not a
+    # cosmetic error: it takes the percentage and the target with it.
+    assert Decimal(wf["saving_pct"]) > 0
+    assert (Decimal(wf["baseline"]) - Decimal(wf["total_saving"])
+            == Decimal(wf["target"]))
+
+
+def test_a_baseline_the_snapshot_cannot_supply_is_reported_not_zeroed(
+        session, client):
+    """The `or 0` that hid the bug above would hide the next one too.
+
+    A snapshot with no usable total is an old or malformed one, and the
+    listing already has a path for that: it names the failure rather than
+    swallowing it. Zero is the one answer that is both wrong and plausible.
+    """
+    import uuid
+
+    from sqlalchemy import insert
+
+    from app import db
+
+    case_id = str(uuid.uuid4())
+    session.execute(insert(db.case).values(case_id=case_id, created_by="t"))
+    session.execute(insert(db.estimate_snapshot).values(
+        estimate_snapshot_id=str(uuid.uuid4()), case_id=case_id,
+        version_label="V0", v0_status="COMPLETE",
+        current_tco={"L0": {"base": "18000000"}},      # no "total"
+        target_tco={}, scenarios=SCENARIOS, gross_run_rate_savings={},
+        confidence={}, coverage={}, simulated_share=0.05, asserted_share=0.0,
+        pins={}, levers=[]))
+    session.commit()
+
+    r = client.get(f"/v1/outside-in/cases/{case_id}/estimates")
+    assert r.status_code == 200, r.text
+    wf = r.json()["snapshots"][0]["savings_bridge"]
+    assert "unavailable" in wf, (
+        "a bridge with no baseline to build on must say so, not report one "
+        "built on zero")

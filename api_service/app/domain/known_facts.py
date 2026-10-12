@@ -837,7 +837,18 @@ def _sweep_budget(session) -> int:
         rows = {r.key: r.value for r in session.execute(select(db.threshold)
                 .where(db.threshold.c.set_name == "research_budget_profile")
                 ).all()}
-        return int(policy_module.ResearchBudgetProfile.from_rows(
+        # ResearchPolicy, not ResearchBudgetProfile. No class of that name has
+        # ever existed in this repository, so this raised AttributeError every
+        # time, the except below swallowed it, and the governed budget was the
+        # hardcoded 6000 on every sweep that has ever run. The docstring above
+        # calls it "the governed output budget" and notes that the fallback
+        # matches the seeded value, which is how a constant passed for a
+        # policy: an operator raising the governed number would have seen no
+        # effect at all.
+        #
+        # ResearchPolicy already carries the field, with 6000 as its own
+        # default, so a profile that does not set it behaves exactly as before.
+        return int(policy_module.ResearchPolicy.from_rows(
             rows).max_output_tokens_per_sweep_call)
     except Exception:
         return 6000
@@ -1033,7 +1044,7 @@ def accept_public_proposal(session, *, case_id: str, proposal: dict,
     # assertion.
     edited = bool(proposal.get("edited"))
     basis = "INDUSTRY_KNOWLEDGE" if edited else "THIRD_PARTY_REPORT"
-    return register(
+    return register(  # noqa: E501 - basis is passed below, not re-derived
         session, case_id=case_id,
         fact_class=proposal["fact_class"], subject=proposal["subject"],
         value_base=proposal.get("value_base"),
@@ -1041,12 +1052,10 @@ def accept_public_proposal(session, *, case_id: str, proposal: dict,
         value_high=proposal.get("value_high"),
         unit=proposal.get("unit"), currency=proposal.get("currency"),
         asserted_by=accepted_by, assertion_date=date.today(),
-        # An edited figure is no longer what the source said, so it stops
-        # claiming to be a third-party report. THIRD_PARTY_REPORT means "a
-        # public source states this"; once the analyst has changed the number
-        # that is INDUSTRY_KNOWLEDGE informed by a source, and conflating them
-        # would let an edited value borrow the source's standing.
-        basis=("INDUSTRY_KNOWLEDGE" if proposal.get("edited")
-               else "THIRD_PARTY_REPORT"),
+        # The local computed above, not the same ternary written out a second
+        # time. It was derived twice from the same input with the same comment
+        # on both, which is how the two come to disagree later; the local was
+        # dead.
+        basis=basis,
         verifiability="PUBLICLY_VERIFIABLE",
         self_reported_confidence=proposal.get("self_reported_confidence"))

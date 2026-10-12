@@ -25,11 +25,30 @@ from .. import db
 # Delete order matters only for a database that enforces the references; the
 # list is exhaustive rather than clever, so a table added later that nobody
 # adds here shows up as an orphan the integrity test catches.
+# Everything a case owns, deleted with it.
+#
+# The rule is the schema, which is also how case_rate's own comment states it:
+# "outside_in, not reference: the schema is the boundary." A table in
+# outside_in, analysis or agent_runtime belongs to one case; reference holds
+# what is shared, and no reference table carries a case_id at all. So a table
+# with a case_id column belongs here - there is no shared-data exception to
+# weigh, which is the question that made this look risky.
+#
+# The eleven on the second block were missing. The test that catches it,
+# test_every_table_carrying_a_case_id_is_in_the_delete_list, could not run
+# until the client fixture was fixed, so they accumulated unseen: a deleted
+# case left its assumptions, rates, data requests, locations, providers and
+# calibration behind. For a client asking to have their data removed, that is
+# the control itself failing rather than a tidiness problem.
 DEPENDENTS = (
     "known_fact_conflict", "known_fact", "entity_candidate",
     "questionnaire_item", "stage_readiness_report", "preflight_report",
     "domain_disposition", "evidenced_footprint", "recommendation",
     "estimate_snapshot", "simulation_run", "agent_run",
+    # Added 4.273: see above.
+    "assumption_register", "case_rate", "data_request", "estimate_delta",
+    "evidenced_anchor", "evidenced_archetype", "location",
+    "outside_in_tco_calibration", "product", "provider", "validation_case",
 )
 
 

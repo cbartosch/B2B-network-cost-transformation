@@ -776,17 +776,31 @@ def test_every_case_owned_lookup_is_scoped_to_the_case():
 def test_the_lookup_helper_can_express_ownership():
     """A helper that takes one column makes the unscoped lookup the easy path
     and the scoped one a thing to remember."""
+    import ast
     import inspect
+    import textwrap
 
     from app.routers import api
 
     signature = inspect.signature(api._one_or_404)
     assert "owned_by_case" in signature.parameters
+    # Code only: ast.unparse after dropping the docstring, which also drops
+    # the comments. The scan was over raw source, and the docstring explains
+    # why the function answers 404 and not 403 - so the sentence documenting
+    # the rule was the only thing making the check of the rule fail. The
+    # function has never answered 403.
     source = inspect.getsource(api._one_or_404)
     assert "table.c.case_id == owned_by_case" in source
+    tree = ast.parse(textwrap.dedent(source))
+    fn = tree.body[0]
+    if (fn.body and isinstance(fn.body[0], ast.Expr)
+            and isinstance(getattr(fn.body[0], "value", None), ast.Constant)
+            and isinstance(fn.body[0].value.value, str)):
+        fn.body = fn.body[1:]
+    code = ast.unparse(fn)
     # 404 rather than 403: whether a resource exists on another case is not
     # something a caller without access to that case should learn.
-    assert "404" in source and "403" not in source
+    assert "404" in code and "403" not in code
 
 
 def test_the_validation_harness_refuses_to_score_synthetic_cases():

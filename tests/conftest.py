@@ -24,6 +24,24 @@ import sys
 os.environ["DATABASE_URL"] = "sqlite://"
 os.environ["WORKBENCH_ENVIRONMENT"] = "TEST"
 
+# The same lesson as DATABASE_URL, one live resource over.
+#
+# The api container is given ANTHROPIC_API_KEY from the environment, and
+# anyone working on this system has one set. config.py reads it at import
+# time, so the adapters came up configured and the suite made real, billable
+# calls to the provider: one entity-resolution test alone recorded 22,431
+# input tokens and 51 seconds of latency, and
+# test_entity_resolution_fails_closed_without_a_provider - "the single most
+# important behaviour in the bundle: no provider means no output, not
+# fabricated output" - passed or failed depending on whose laptop it ran on.
+#
+# Cleared unconditionally and before anything imports config, for the reason
+# the database binding is: a test harness must not be able to reach a live
+# resource by inheriting it. Tests that need a provider install a fake
+# adapter over gateway._adapters and are unaffected.
+os.environ["ANTHROPIC_API_KEY"] = ""
+os.environ["OPENAI_API_KEY"] = ""
+
 sys.path.insert(0, "/app")
 
 import pytest  # noqa: E402
@@ -56,3 +74,22 @@ def session():
         yield s
     finally:
         s.close()
+
+
+@pytest.fixture()
+def client():
+    """An HTTP client against the app, with its lifespan run.
+
+    Lives here because six test files ask for it and only three defined it -
+    identically, in three places. The other three errored at setup with
+    "fixture 'client' not found" and never ran, which is not a result anyone
+    reads as a missing fixture when it sits among hundreds of lines of output.
+
+    `with TestClient(app)` rather than a bare construction: the lifespan is
+    what seeds reference data, and several suites depend on it having run.
+    """
+    from fastapi.testclient import TestClient
+
+    from app.main import app
+    with TestClient(app) as c:
+        yield c

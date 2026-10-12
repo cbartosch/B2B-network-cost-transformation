@@ -30,8 +30,21 @@ def _preflight_module():
     source = (app / "domain" / "preflight.py").read_text()
     start = source.index("INPUT_FIELDS = (")
     end = source.index("def run(session")
+    # A query object that absorbs whatever is chained onto it. `select` used to
+    # return None, which worked only while nothing was chained: input_digest
+    # now builds `select(...).where(...)`, and None has no .where, so every
+    # test through this harness died before reaching an assertion.
+    #
+    # Returning a chainable no-op rather than a real Select keeps the harness
+    # honest about what it is testing - _Session ignores the query entirely and
+    # answers from its canned rows, so the query only has to be constructible,
+    # not correct.
+    class _Query:
+        def __getattr__(self, _name):
+            return lambda *a, **k: self
+
     namespace = {"hashlib": hashlib, "json": json,
-                 "select": lambda *a: None,
+                 "select": lambda *a: _Query(),
                  "db": types.SimpleNamespace(
                      case=types.SimpleNamespace(c=types.SimpleNamespace(
                          case_id=None)),

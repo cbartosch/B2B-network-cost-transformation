@@ -29,6 +29,24 @@ import pathlib
 import re
 import sys
 
+
+def _stub_attr(name):
+    """Answer any attribute with a self-returning placeholder - except the
+    dunders.
+
+    A module-level __getattr__ that answers everything also answers
+    __path__, and the import machinery then takes the stub for a package and
+    tries to iterate what it got back: "TypeError: 'A' object is not
+    iterable", raised from importlib with nothing in the message naming the
+    stub or the module that wanted it. Raising AttributeError for dunders
+    leaves the machinery to report an honest ModuleNotFoundError for the
+    submodule that is genuinely missing from the list above.
+    """
+    if name.startswith("__") and name.endswith("__"):
+        raise AttributeError(name)
+    return type("A", (), {"__getattr__": lambda s, _x: s,
+                          "__call__": lambda s, *a, **k: s})()
+
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 APP = ROOT / "api_service" / "app"
 UI = ROOT / "analyst_ui" / "streamlit_app"
@@ -636,13 +654,11 @@ def seeded_bandwidths_are_priceable() -> list:
     import sys
     import types as _types
 
-    for library in ("sqlalchemy", "sqlalchemy.orm", "sqlalchemy.exc",
+    for library in ("sqlalchemy", "sqlalchemy.orm", "sqlalchemy.exc", "sqlalchemy.pool",
                     "sqlalchemy.engine", "sqlalchemy.dialects",
                     "sqlalchemy.dialects.postgresql", "psycopg"):
         stub = _types.ModuleType(library)
-        stub.__getattr__ = lambda _n: type("A", (), {
-            "__getattr__": lambda s, _x: s,
-            "__call__": lambda s, *a, **k: s})()
+        stub.__getattr__ = lambda _n: _stub_attr(_n)
         stub.__spec__ = importlib.machinery.ModuleSpec(library, loader=None)
         sys.modules.setdefault(library, stub)
     sys.path[:0] = [str(ROOT), str(ROOT / "api_service")]
@@ -697,13 +713,11 @@ def every_country_prices_what_its_estates_need() -> list:
     import sys
     import types as _types
 
-    for library in ("sqlalchemy", "sqlalchemy.orm", "sqlalchemy.exc",
+    for library in ("sqlalchemy", "sqlalchemy.orm", "sqlalchemy.exc", "sqlalchemy.pool",
                     "sqlalchemy.engine", "sqlalchemy.dialects",
                     "sqlalchemy.dialects.postgresql", "psycopg"):
         stub = _types.ModuleType(library)
-        stub.__getattr__ = lambda _n: type("A", (), {
-            "__getattr__": lambda s, _x: s,
-            "__call__": lambda s, *a, **k: s})()
+        stub.__getattr__ = lambda _n: _stub_attr(_n)
         stub.__spec__ = importlib.machinery.ModuleSpec(library, loader=None)
         sys.modules.setdefault(library, stub)
     sys.path[:0] = [str(ROOT), str(ROOT / "api_service")]

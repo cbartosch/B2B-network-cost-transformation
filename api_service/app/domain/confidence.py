@@ -219,6 +219,42 @@ def compute(*, policy: ConfidencePolicy, current_baseline, target_cost, realizat
         "band": band(overall, policy),
         "policy_set": policy.set_name,
         "ceilings_applied": applied,
+        # CR-08: the arithmetic, so the score can be checked rather than
+        # taken. The three components were already published; the weights
+        # that combine them were not, so `overall` could be read but not
+        # reproduced - a reader could see 0.344 and the parts it came from
+        # and still not get from one to the other.
+        #
+        # Published from the policy rather than restated, so a steward
+        # retuning a weight changes what every estimate reports it used.
+        "weights": {k: str(D(v).quantize(D("0.0001")))
+                    for k, v in sorted(policy.weights.items())},
+        "component_cap_headroom": str(
+            D(policy.component_cap_headroom).quantize(D("0.0001"))),
+        "band_floors": {k: str(D(v).quantize(D("0.0001")))
+                        for k, v in sorted(policy.band_floors.items())},
+        # Both halves of the PARTIAL penalty, because it has two and only
+        # one of them was derivable from what was published.
+        #
+        # Above the lowest floor it drops the score to just under the floor
+        # below, which band_floors already describes. Below the lowest floor
+        # there is no band to drop to, so it scales by partial_penalty_factor
+        # instead - and that factor was not published, so a PARTIAL estimate
+        # could not be reproduced at all. Three of the twenty sample
+        # companies are PARTIAL and the validation gate caught every one.
+        "v0_status": v0_status,
+        "partial_penalty_factor": str(
+            D(policy.partial_penalty_factor).quantize(D("0.0001"))),
+        # How to get from the parts to the whole, in one line, for a reader
+        # holding the output and nothing else.
+        "arithmetic": (
+            "capped = min(sum(component x weight), min(component) + "
+            "component_cap_headroom). If v0_status is PARTIAL, capped is "
+            "lowered one band: to (next lower band floor - 0.01) where the "
+            "score is at or above a floor, otherwise to capped x "
+            "partial_penalty_factor. overall = clamp of the result. "
+            "Ceilings in `ceilings_applied` have already been applied to "
+            "the components above."),
         "simulated_share": str(D(simulated_share)),
         "asserted_share": str(D(asserted_share)),
     }

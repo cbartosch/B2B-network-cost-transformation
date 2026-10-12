@@ -21,6 +21,7 @@ first real signal.
 import itertools
 import json
 from dataclasses import replace
+import re
 import uuid
 from datetime import datetime, timezone
 
@@ -76,8 +77,19 @@ def _found_text(n_sources=2, subject="Acme Global Logistics"):
 
 
 def _not_found_text():
+    # With an abstention_reason, because without one this is not a negative
+    # finding - it is an empty answer, and the gate refuses it as
+    # EMPTY_RESULT_WITHOUT_ABSTENTION after three attempts. All seven LLM-08
+    # domains came back FAILED with no disposition written, so the test that
+    # asks whether a negative finding becomes DECLARED_UNKNOWN /
+    # NO_PUBLIC_EVIDENCE never reached the behaviour it is named for.
+    #
+    # The gate is right and the fixture was stale: "You returned nothing and
+    # gave no abstention_reason. If the searches turned up nothing
+    # attributable, say so with a reason from the enumeration."
     return json.dumps({"found": False, "subject": "", "finding": "",
-                       "sources": [], "confidence_note": "n/a"})
+                       "sources": [], "confidence_note": "n/a",
+                       "abstention_reason": "NO_SEARCH_RESULTS"})
 
 
 def _verified_fetch(url, timeout=10.0):
@@ -723,6 +735,16 @@ def test_the_prompt_states_the_evidence_bar_the_answer_must_clear(session, monke
 def test_the_prompt_states_what_the_model_currently_assumes(session, monkeypatch):
     """An open question against a large group returns a group-level summary.
     Stating the working assumption makes it falsifiable instead."""
+    # The `session` fixture resets the schema and seeds nothing; only `client`
+    # seeds, through the app lifespan. So archetype_prior was empty, the
+    # archetype block renders only `if ctx.get("archetypes")`, and the
+    # assertion below was testing an empty table rather than the prompt.
+    # Seeded through the real path rather than by restating the values here -
+    # the block's own comment is that the agent must be told what the
+    # simulation will use, "instead of the two drifting apart".
+    from app import seed as seed_module
+    seed_module.seed()
+
     case_id = _case(session)
     seen = {}
     _wire_fake_provider(monkeypatch, text_fn=lambda **kw: seen.update(kw) or _found_text())
@@ -755,3 +777,100 @@ def test_the_system_prompt_explains_which_numbers_move_the_total():
         template = prompts.get(prompt_id).system_template
         assert "perimeter" in template.lower(), prompt_id
         assert "source" in template.lower(), prompt_id
+
+# ------------------------------------- a failure that is not a research outcome
+
+def test_a_failure_says_what_kind_it_was_and_whether_to_try_again():
+    """`failed: true` and a sentence was the whole signal.
+
+    Four different causes reach one handler - the provider being unreachable,
+    liveness proof failing, the model answering in the wrong shape, and
+    governance refusing the mode - and they are not the same problem. The
+    first two mean the estate was never researched; the last two mean it was
+    researched and the answer is unusable. A caller could only tell them
+    apart by matching on the prefix of a free-text string.
+
+    This is not hypothetical. A twenty-company sample run lost most of its
+    research to it: DNS in the container stopped resolving the provider, every
+    call raised ProviderUnavailable, and the driver - unable to distinguish
+    that from an agent with nothing to say - disposed all seventeen domains
+    BENCHMARK_PRIOR as a safety net. Because any disposition suppresses
+    re-research, a transient outage became permanent benchmark data for seven
+    companies.
+    """
+    assert research.FAILURE_KINDS["PROVIDER_UNAVAILABLE"] is True
+    assert research.FAILURE_KINDS["LIVENESS_PROOF_FAILED"] is True
+    assert research.FAILURE_KINDS["SOURCES_UNREACHABLE"] is True
+    assert research.FAILURE_KINDS["OUTPUT_INVALID"] is False
+    assert research.FAILURE_KINDS["MODE_NOT_PERMITTED"] is False
+
+
+def test_an_unreachable_provider_is_reported_as_retryable(session, monkeypatch):
+    """The case that cost the sample run."""
+    from app.llm import errors
+
+    case_id = _case(session)
+
+    def _down(**kw):
+        raise errors.ProviderUnavailable(
+            "anthropic transport error: [Errno -2] Name or service not known")
+
+    _wire_fake_provider(monkeypatch, _down)
+    out = research.run_domain_research(
+        session, case_id=case_id, agent_ids=["LLM-01"],
+        research_policy=POLICY, domain_nos=[1])
+
+    res = out["results"][0]
+    assert res["failed"] is True
+    assert res["failure_kind"] == "PROVIDER_UNAVAILABLE"
+    assert res["retryable"] is True, (
+        "an unreachable provider means the domain was never researched")
+    # And the domain stays open, so a retry is possible at all.
+    assert res["disposition"] is None
+    rows = session.execute(select(db.domain_disposition).where(
+        db.domain_disposition.c.case_id == case_id)).all()
+    assert not rows, "a transport failure must not settle a domain"
+
+    assert out["failed_retryable"] == 1
+    assert out["failed_terminal"] == 0
+    assert out["failure_kinds"] == ["PROVIDER_UNAVAILABLE"]
+
+
+def test_a_model_that_answers_badly_is_not_retryable(session, monkeypatch):
+    """The other half. Retrying an identical request is resampling, which is
+    the distinction quality.GUIDANCE already draws for rejections."""
+    from app.llm import errors
+
+    case_id = _case(session)
+
+    def _bad(**kw):
+        raise errors.StructuredOutputInvalid("reply did not fit the schema")
+
+    _wire_fake_provider(monkeypatch, _bad)
+    out = research.run_domain_research(
+        session, case_id=case_id, agent_ids=["LLM-01"],
+        research_policy=POLICY, domain_nos=[1])
+
+    res = out["results"][0]
+    assert res["failed"] is True
+    assert res["failure_kind"] == "OUTPUT_INVALID"
+    assert res["retryable"] is False
+    assert out["failed_terminal"] == 1
+    assert out["failed_retryable"] == 0
+
+
+def test_every_failure_kind_declares_whether_it_is_retryable():
+    """A kind added without an entry would read as retryable=None, which is
+    neither answer, and the caller would be back to guessing."""
+    import inspect
+
+    src = inspect.getsource(research)
+    for kind in research.FAILURE_KINDS:
+        assert f'"{kind}"' in src
+    assigned = set(re.findall(r'failure_kind = "([A-Z_]+)"', src))
+    assigned |= set(re.findall(r'"([A-Z_]+)",\s*$', src, re.M))
+    unknown = {k for k in assigned if k.isupper() and "_" in k
+               and k in src.split("FAILURE_KINDS = {")[1].split("}")[0]
+               } - set(research.FAILURE_KINDS)
+    assert not unknown, f"failure kinds with no retryable verdict: {unknown}"
+

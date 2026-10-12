@@ -54,10 +54,26 @@ def _archetype_names() -> frozenset:
     return frozenset(row[0] for row in SEEDED)
 
 
-class _ArchetypeNames(frozenset):
+class _ArchetypeNames:
     """Late-bound so the seed stays the single source.
 
     `label not in ARCHETYPES` reads the same as before and now asks the seed.
+
+    Not a frozenset subclass, which is what this was. It inherited the set
+    API, was constructed empty, and the C-level fast paths behind `set(x)`,
+    `list(x)`, `sorted(x)` and the set operators read the empty underlying
+    storage directly - a Python-level `__iter__` override does not reach
+    them. So `"LARGE_OFFICE" in ARCHETYPES` was True while
+    `set(ARCHETYPES)` was empty, at the same moment, for the same object.
+
+    Product code only ever asks `in`, so nothing here was wrong. A caller
+    outside it reasonably did `known = set(ARCHETYPES)`, got an empty set,
+    concluded every archetype was unknown and deleted 75 rows of promoted
+    footprint evidence. A type that answers one question correctly and the
+    neighbouring one silently wrongly should not be offering the second.
+
+    A plain class offers only what it implements, and `set()` on it goes
+    through `__iter__` like anything else.
     """
 
     def __contains__(self, item):
@@ -68,6 +84,9 @@ class _ArchetypeNames(frozenset):
 
     def __len__(self):
         return len(_archetype_names())
+
+    def __repr__(self):
+        return f"ARCHETYPES({sorted(_archetype_names())!r})"
 
 
 ARCHETYPES = _ArchetypeNames()
@@ -92,6 +111,24 @@ def _as_int(value):
         return int(round(float(value)))
     except (TypeError, ValueError):
         return None
+
+
+def _sites_from(q: dict) -> int:
+    """A site count from a quantity the classifier already accepted.
+
+    Via triangulate.parse_value, so the number the writer stores is the
+    number the matcher saw. Rounded, because these columns hold site counts
+    and a source saying "about 10" means ten sites.
+    """
+    parsed = triangulate.parse_value(q.get("value"))
+    if parsed is None:
+        # Unreachable through _classify, which refuses a quantity this
+        # cannot read. Raised rather than defaulted: a site count nobody
+        # could parse must not become a zero or a one.
+        raise ValueError(
+            f"quantity {q.get('label')!r} has no readable value: "
+            f"{q.get('value')!r}")
+    return int(round(float(parsed)))
 
 
 def _triangulated_index(evidence: dict) -> dict:
@@ -195,6 +232,16 @@ def anchor_candidate(q: dict) -> bool:
     return triangulate.parse_value(q.get("value")) is not None
 
 
+def archetype_of(label) -> str:
+    """The archetype a finding's label names: its leading token.
+
+    The one place that decides this, because _classify matching on one thing
+    and promote() storing another is how a 56-character description ended up
+    being written into archetype varchar(48).
+    """
+    return (str(label or "").strip().upper().split() or [""])[0]
+
+
 def _classify(q: dict) -> str:
     """footprint | price | unclassified.
 
@@ -216,7 +263,30 @@ def _classify(q: dict) -> str:
     if triangulate.parse_value(q.get("value")) is None and \
             str(q.get("value") or "").strip().upper() not in PRODUCTS:
         return "unclassified"
-    if label in ARCHETYPES and len(country) == 2 and "site" in unit:
+    # The leading token, the way the price branch below already reads a
+    # product name - not the whole label.
+    #
+    # `label in ARCHETYPES` demanded the label be nothing but the archetype,
+    # and the research prompt asks for the opposite: the archetype block
+    # tells the agent to "say in `finding` which mapping you chose and why",
+    # so a well-behaved agent returns "SERVICE_POINT - Iberdrola customer
+    # service and sales points". That is the convention, and it fell through
+    # to unclassified every time.
+    #
+    # The sample set is the evidence. Iberdrola's agent described its
+    # mappings and produced 103 findings, 0 of them classified; Unilever's
+    # happened to emit bare labels - PLANT, WAREHOUSE, LARGE_OFFICE - and
+    # promoted 7 rows. The classifier was working only when the agent
+    # omitted what it had been asked for.
+    #
+    # Still conservative, and deliberately: "WAREHOUSE/BRANCH - ..." names
+    # two archetypes and stays unclassified, "NETWORK_SITE - ... substations"
+    # fails `"site" in unit` and stays unclassified. And classification only
+    # decides what is *offered*; promotion.candidates proposes and a named
+    # person disposes, so widening this cannot put a number into an estimate
+    # on its own.
+    head = archetype_of(label)
+    if head in ARCHETYPES and len(country) == 2 and "site" in unit:
         return "footprint"
     # How a site type is built rather than how many there are. Country-
     # independent, because an architecture standard usually is.
@@ -227,8 +297,7 @@ def _classify(q: dict) -> str:
     # EUR/year" is a total and not a unit rate.
     if anchor_candidate(q):
         return "anchor"
-    # "DIA 100Mbps MRC" -> product is the first token.
-    head = label.split()[0] if label else ""
+    # "DIA 100Mbps MRC" -> product is the first token. Same `head` as above.
     if head in PRODUCTS and len(country) == 2 and (
             "month" in unit or "mrc" in unit or "/mo" in unit):
         return "price"
@@ -463,14 +532,51 @@ def promote(session, *, case_id: str, candidate_ids: list[str],
 
         if target == "footprint":
             country = str(q["country"]).upper()
-            archetype = str(q["label"]).upper()
+            # The leading token, the same one _classify matched on - not the
+            # whole label.
+            #
+            # These were the same string for as long as the classifier only
+            # accepted a bare archetype name. Widening it to accept the
+            # described form the research prompt asks for - "SERVICE_POINT -
+            # Iberdrola customer service and sales points" - made them
+            # different, and this wrote 56 characters into archetype
+            # varchar(48): every promotion 500'd with
+            # StringDataRightTruncation.
+            #
+            # Length is the lesser half. The simulation keys archetypes by
+            # name, so storing the description would have produced a
+            # footprint row for an archetype that does not exist - priced at
+            # the DEFAULT prior, silently, with the estate looking enumerated.
+            # A column being too short is the only reason that was ever
+            # visible.
+            archetype = archetype_of(q["label"])
             session.execute(delete(db.evidenced_footprint).where(
                 db.evidenced_footprint.c.case_id == case_id,
                 db.evidenced_footprint.c.country == country,
                 db.evidenced_footprint.c.archetype == archetype))
             session.execute(insert(db.evidenced_footprint).values(
                 id=str(uuid.uuid4()), case_id=case_id, country=country,
-                archetype=archetype, sites=int(q["value"]),
+                # Parsed the way _classify parsed it, not int().
+                #
+                # The classifier admits a quantity when
+                # triangulate.parse_value() can read it, and that function
+                # deliberately reads a source's wording - "1,250", "2.75",
+                # "3 million", "~10". int() reads none of those. So a
+                # candidate this module offered, and a named person chose to
+                # promote, took the whole request down with
+                #
+                #   ValueError: invalid literal for int() with base 10: '~10'
+                #
+                # and the caller saw a 500 with no indication which finding
+                # caused it. Lufthansa lost all seven of its footprint rows
+                # that way and was priced from public disclosure alone.
+                #
+                # The fix for exactly this already existed two lines below,
+                # on the band columns, with a comment saying "crashing on a
+                # decimal string is not [right]". The site count never got
+                # it. A matcher and a writer disagreeing about what a field
+                # means is the same defect P-15 was, one field across.
+                archetype=archetype, sites=_sites_from(q),
                 as_of=str(q.get("as_of") or ""), domain_no=e["domain_no"],
                 # The band is stored as strings, and a price band's low is
                 # "477.5" - int() on that raises rather than truncating. These
@@ -484,7 +590,9 @@ def promote(session, *, case_id: str, candidate_ids: list[str],
                 promoted_at=now))
             promoted_footprint.append(
                 {"country": country, "archetype": archetype,
-                 "sites": int(q["value"]), "as_of": q.get("as_of")})
+                 # Same reading as the row that was just written, so the
+                 # receipt cannot disagree with the record it describes.
+                 "sites": _sites_from(q), "as_of": q.get("as_of")})
         elif target == "price":
             country = str(q["country"]).upper()
             product = str(q["label"]).split()[0].upper()

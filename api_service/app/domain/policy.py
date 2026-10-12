@@ -572,8 +572,96 @@ class TriangulationPolicy:
             raise PolicyInvalid("stale_after_years must be at least 1")
 
 
+# One decorator. Stacked, the inner @dataclass installs an __init__ that
+# assigns with `self.set_name = ...`, and the outer frozen=True then installs
+# the raising __setattr__ but will not replace an __init__ already present in
+# the class __dict__. The result was a class that could not be constructed at
 @dataclass(frozen=True)
-@dataclass
+class RangePolicy:
+    """CR-06: how much wider than the rate card an estimate is reported.
+
+    The seeded price priors give every component a band, and that band was
+    the only width the estimate had. It describes price dispersion and
+    nothing else - not whether the site count was researched or guessed, not
+    whether the domains behind it were evidenced. Two companies pricing off
+    the same card got the same width however differently they were known:
+    across the twenty-company sample, low/base ran 0.688 to 0.735 whether a
+    company had two researched domains or seventeen.
+    """
+    set_name: str
+    widen_evidenced_public: Decimal
+    widen_client_confirmed: Decimal
+    widen_derived_public: Decimal
+    widen_analyst_entered_scope: Decimal
+    widen_benchmark_prior: Decimal
+    widen_analyst_asserted_prior: Decimal
+    widen_simulated: Decimal
+    widen_unevidenced_domain_share: Decimal
+
+    _BY_ORIGIN = {
+        "EVIDENCED_PUBLIC": "widen_evidenced_public",
+        "CLIENT_CONFIRMED": "widen_client_confirmed",
+        "DERIVED_PUBLIC": "widen_derived_public",
+        "ANALYST_ENTERED_SCOPE": "widen_analyst_entered_scope",
+        "BENCHMARK_PRIOR": "widen_benchmark_prior",
+        "ANALYST_ASSERTED_PRIOR": "widen_analyst_asserted_prior",
+        "SIMULATED": "widen_simulated",
+    }
+
+    def widen_for(self, origin: str) -> Decimal:
+        """An origin nobody mapped takes the widest multiplier on the scale.
+
+        Not 1.0. An unrecognised origin is one this policy has never been
+        asked about, and treating it as fully evidenced would let a new
+        origin silently narrow every band that used it.
+        """
+        field = self._BY_ORIGIN.get(str(origin or "").upper())
+        if field:
+            return Decimal(str(getattr(self, field)))
+        return max(Decimal(str(getattr(self, f)))
+                   for f in self._BY_ORIGIN.values())
+
+    @classmethod
+    def from_rows(cls, rows: dict, set_name: str = "range_policy"):
+        r = lambda k: _require(rows, k, set_name)            # noqa: E731
+        policy = cls(
+            set_name=set_name,
+            widen_evidenced_public=r("widen_evidenced_public"),
+            widen_client_confirmed=r("widen_client_confirmed"),
+            widen_derived_public=r("widen_derived_public"),
+            widen_analyst_entered_scope=r("widen_analyst_entered_scope"),
+            widen_benchmark_prior=r("widen_benchmark_prior"),
+            widen_analyst_asserted_prior=r("widen_analyst_asserted_prior"),
+            widen_simulated=r("widen_simulated"),
+            widen_unevidenced_domain_share=r(
+                "widen_unevidenced_domain_share"))
+        policy.validate()
+        return policy
+
+    def validate(self):
+        ev = Decimal(str(self.widen_evidenced_public))
+        if ev != Decimal("1"):
+            raise PolicyInvalid(
+                f"{self.set_name}: widen_evidenced_public is {ev}, not 1. It "
+                f"is the fixed point of the scale - a fully evidenced "
+                f"estimate keeps exactly the rate card's band - and moving "
+                f"it rescales every other class silently.")
+        for f in self._BY_ORIGIN.values():
+            v = Decimal(str(getattr(self, f)))
+            if v < 1:
+                raise PolicyInvalid(
+                    f"{self.set_name}.{f} is {v}. A multiplier below 1 would "
+                    f"report a weaker input as more certain than an "
+                    f"evidenced one.")
+        if Decimal(str(self.widen_unevidenced_domain_share)) < 0:
+            raise PolicyInvalid(
+                f"{self.set_name}.widen_unevidenced_domain_share is "
+                f"negative: unresearched domains cannot narrow a band.")
+
+
+# all: every TransitionPolicy(...) raised FrozenInstanceError on the first
+# field. Frozen is the intent and is kept.
+@dataclass(frozen=True)
 class TransitionPolicy:
     """What it costs to get to the target estate. P3: none of this existed, so
     every scenario reported a gross saving as though it were the answer."""
@@ -583,6 +671,14 @@ class TransitionPolicy:
     one_time_cost_per_site_high: Decimal
     dual_running_months: int
     sites_migrated_per_month: int
+    # CR-04: how the reference per-site cost decomposes. Hardware and
+    # migration scale with circuits; integration and project management
+    # scale with sites.
+    one_time_share_hardware: Decimal = Decimal("0")
+    one_time_share_migration: Decimal = Decimal("0")
+    one_time_share_integration: Decimal = Decimal("0")
+    one_time_share_project_management: Decimal = Decimal("0")
+    one_time_reference_circuits_per_site: Decimal = Decimal("1")
     evidence_grade: str = "E"
 
     @classmethod
@@ -595,6 +691,13 @@ class TransitionPolicy:
             one_time_cost_per_site_high=r("one_time_cost_per_site_high"),
             dual_running_months=int(r("dual_running_months")),
             sites_migrated_per_month=int(r("sites_migrated_per_month")),
+            one_time_share_hardware=r("one_time_share_hardware"),
+            one_time_share_migration=r("one_time_share_migration"),
+            one_time_share_integration=r("one_time_share_integration"),
+            one_time_share_project_management=r(
+                "one_time_share_project_management"),
+            one_time_reference_circuits_per_site=r(
+                "one_time_reference_circuits_per_site"),
             evidence_grade=str(rows.get("evidence_grade", "E")))
         policy.validate()
         return policy
@@ -603,6 +706,24 @@ class TransitionPolicy:
         lo, ba, hi = (Decimal(self.one_time_cost_per_site_low),
                       Decimal(self.one_time_cost_per_site_base),
                       Decimal(self.one_time_cost_per_site_high))
+        shares = (Decimal(self.one_time_share_hardware)
+                  + Decimal(self.one_time_share_migration)
+                  + Decimal(self.one_time_share_integration)
+                  + Decimal(self.one_time_share_project_management))
+        if shares != Decimal(1):
+            # Not a rounding tolerance. These four shares are how a reference
+            # cost is divided, and a set that does not divide it is either
+            # losing money or inventing it.
+            raise PolicyInvalid(
+                f"{self.set_name}: the one-time cost shares sum to {shares}, "
+                f"not 1 - hardware {self.one_time_share_hardware}, migration "
+                f"{self.one_time_share_migration}, integration "
+                f"{self.one_time_share_integration}, project management "
+                f"{self.one_time_share_project_management}")
+        if Decimal(self.one_time_reference_circuits_per_site) <= 0:
+            raise PolicyInvalid(
+                f"{self.set_name}: reference circuits per site must be "
+                f"positive, not {self.one_time_reference_circuits_per_site}")
         if not lo <= ba <= hi:
             raise PolicyInvalid(
                 f"{self.set_name}: one-time cost band {lo}/{ba}/{hi} is not "

@@ -200,9 +200,22 @@ def test_the_base_contract_asks_for_findings_not_certainty():
 def test_the_contract_tells_the_agent_to_stop_searching():
     """Efficiency: an eighth query rarely changes a grade, and every one is
     latency and spend."""
+    import re
+
     from app.llm.prompts import CORE_CONTRACT, RESEARCH_CONTRACT
-    assert "Stop when you have a figure and its provenance" in (CORE_CONTRACT + RESEARCH_CONTRACT)
-    assert "Vary the phrasing" in (CORE_CONTRACT + RESEARCH_CONTRACT)
+
+    # Whitespace-normalised, because the contract is prose and gets rewrapped.
+    # The sentence is there and always has been; it is wrapped as "...a figure
+    # and its\nprovenance", so a containment check on the literal with a space
+    # in it could never match. promotion.py already carries a note about this
+    # exact trap - "One unbroken phrase per idea. Wrapping split 'stated in
+    # words' across two literals, so a test asserting on it failed even though
+    # the message was correct - and the failure named the assertion rather
+    # than the line break." Normalising is the fix that survives the next
+    # rewrap.
+    contract = re.sub(r"\s+", " ", CORE_CONTRACT + RESEARCH_CONTRACT)
+    assert "Stop when you have a figure and its provenance" in contract
+    assert "Vary the phrasing" in contract
 
 
 # ---------------------------------------- the prompt and the schema must agree

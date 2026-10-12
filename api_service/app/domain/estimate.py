@@ -663,6 +663,103 @@ def lever_stage_mix(scenario: dict, levers_by_id: dict) -> dict:
     return mix
 
 
+# CR-07. A saving computed on a value nobody evidenced is not a saving
+# anybody can bank, and it must not sit in a headline beside one that is.
+#
+# SIMULATED is the case that matters here: a component whose quantity was
+# drawn from the seeded distributions rather than counted. On the small
+# campus estates it is a quarter to a third of the baseline - Siemens 0.375,
+# Volkswagen 0.261 - so a headline saving on those estates was substantially
+# a saving on drawn value, reported as though it were on measured value.
+#
+# Taken on either axis: a drawn quantity priced from a real card is still
+# drawn, and a counted site priced from a drawn rate is still drawn.
+UNEVIDENCED_ORIGINS = frozenset({"SIMULATED", "DECLARED_UNKNOWN"})
+
+
+def is_unevidenced(component) -> bool:
+    return (component.quantity_origin in UNEVIDENCED_ORIGINS
+            or component.unit_cost_origin in UNEVIDENCED_ORIGINS)
+
+
+def evidence_widening(components, *, policy, evidenced_domain_share=None):
+    """How much wider the reported band should be than the rate card says.
+
+    CR-06. The price priors give each component a low/base/high, and that was
+    the whole of the estimate's uncertainty. It is price dispersion: it knows
+    nothing about whether the site count was researched or asserted, or
+    whether the domains behind the estate were ever evidenced. Across the
+    twenty-company sample it produced low/base between 0.688 and 0.735 for
+    every company, two researched domains or seventeen.
+
+    Two terms, because they are two different ignorances:
+
+    * the value-weighted origin mix, taking the *weaker* of each component's
+      quantity and unit-cost origin - a perfectly evidenced site count priced
+      off a benchmark is only as good as the benchmark;
+    * the share of agent-routed domains that came back with no evidence,
+      which no component origin can see. The price and the quantity may both
+      be benchmark-solid while the estate they describe was never checked.
+
+    Returns the factor and the working, so a band can be explained rather
+    than asserted.
+    """
+    tot = total(components).base
+    if tot <= 0:
+        return D(1), {"origin_factor": "1", "coverage_factor": "1",
+                      "factor": "1", "note": "no priced value"}
+
+    mix: dict[str, Decimal] = {}
+    acc = D(0)
+    for c in components:
+        # The weaker of the two origins governs: a component is no better
+        # known than its worst-known input.
+        w = max(policy.widen_for(c.quantity_origin),
+                policy.widen_for(c.unit_cost_origin))
+        share = c.value.base / tot
+        acc += share * w
+        key = f"{c.quantity_origin}/{c.unit_cost_origin}"
+        mix[key] = mix.get(key, D(0)) + share
+
+    coverage = D(1)
+    if evidenced_domain_share is not None:
+        unevidenced = D(1) - D(str(evidenced_domain_share))
+        if unevidenced < 0:
+            unevidenced = D(0)
+        coverage = D(1) + unevidenced * D(
+            str(policy.widen_unevidenced_domain_share))
+
+    factor = acc * coverage
+    return factor, {
+        "origin_factor": as_str(acc),
+        "coverage_factor": as_str(coverage),
+        "factor": as_str(factor),
+        "evidenced_domain_share": (None if evidenced_domain_share is None
+                                   else str(evidenced_domain_share)),
+        "origin_mix": {k: as_str(v) for k, v in sorted(mix.items())},
+        "basis": (
+            "The rate card's own band, widened for what the card cannot see: "
+            "the origin mix of the priced value and the share of domains "
+            "that returned no evidence. A fully evidenced estimate is "
+            "widened by exactly 1.0 and keeps the card's band."),
+    }
+
+
+def widen(r: Range, factor) -> Range:
+    """Spread a band about its base. The base never moves.
+
+    Widening is a statement about uncertainty, not about the number. A
+    version of this that moved the base would be re-forecasting under the
+    name of honesty.
+    """
+    f = D(str(factor))
+    low = r.base - (r.base - r.low) * f
+    high = r.base + (r.high - r.base) * f
+    # A cost or a saving cannot be negative, and a band wide enough to cross
+    # zero is saying "possibly nothing", which is what zero means here.
+    return Range(low if low > 0 else D(0), r.base, high)
+
+
 def origin_breakdown(components) -> dict:
     """Value by quantity origin, so the interface can show where the share comes
     from rather than only that it exists."""
@@ -685,7 +782,8 @@ def scenarios(components: list[Component], levers: list[dict],
               # always got - a missing payback is honest, a payback computed
               # from no assumptions is not.
               *, transition_policy=None, sites: int = 0,
-              monthly_run_rate=None) -> dict:
+              monthly_run_rate=None, site_mix=None,
+              circuits_band=None, range_factor=None) -> dict:
     """Apply each lever only to the cost layers it names, compounding on each
     component's remaining value. Layer composition is preserved into the target,
     which is what makes the target-side simulated share meaningful."""
@@ -756,6 +854,11 @@ def scenarios(components: list[Component], levers: list[dict],
             cut_total = D(0)
             # The saving band, accumulated with matched pairing.
             cut_low, cut_high = D(0), D(0)
+            # CR-07: the same saving, split by whether the baseline it acts
+            # on was evidenced. Accumulated here rather than derived later,
+            # because only this loop knows which component each slice came
+            # from.
+            cut_unev_low, cut_unev_base, cut_unev_high = D(0), D(0), D(0)
             skipped = []
             for key, comp in by_key.items():
                 if comp.layer not in layers:
@@ -826,6 +929,10 @@ def scenarios(components: list[Component], levers: list[dict],
                 cut_low += saved_lo
                 cut_total += saved_ba
                 cut_high += saved_hi
+                if is_unevidenced(comp):
+                    cut_unev_low += saved_lo
+                    cut_unev_base += saved_ba
+                    cut_unev_high += saved_hi
             # A lever that booked nothing, and why.
             #
             # `not_applied` was recorded only when the lever carried service
@@ -866,7 +973,18 @@ def scenarios(components: list[Component], levers: list[dict],
                                 "eligibility": {
                                     field: sorted(allowed)
                                     for field, allowed in constraints.items()},
-                                "saving_base": as_str(cut_total)})
+                                # CR-07: the band, not only the base. The
+                                # scenario published low/base/high and the
+                                # levers underneath it published a point, so
+                                # the band could not be traced to the levers
+                                # that produced it.
+                                "saving_low": as_str(cut_low),
+                                "saving_base": as_str(cut_total),
+                                "saving_high": as_str(cut_high),
+                                "saving_on_unevidenced_baseline":
+                                    as_str(cut_unev_base),
+                                "saving_on_evidenced_baseline":
+                                    as_str(cut_total - cut_unev_base)})
             elif constraints and not layer_missing:
                 # Only when the layer IS priced. A lever failing on both its
                 # layer and a product constraint was reported twice, and the
@@ -972,15 +1090,39 @@ def scenarios(components: list[Component], levers: list[dict],
             },
             "label": label,
             "target_tco": target.to_dict(),
-            "gross_run_rate_savings": saving.to_dict(),
+            # CR-06. The base is untouched; only the spread about it moves.
+            "gross_run_rate_savings": (
+                widen(saving, range_factor).to_dict() if range_factor is not None
+                else saving.to_dict()),
+            "gross_run_rate_savings_unwidened": (
+                saving.to_dict() if range_factor is not None else None),
+            # CR-07: the headline split by what it rests on. A saving on
+            # drawn value is reported, never hidden - and never mixed into
+            # the figure a reader takes as the answer.
+            "saving_on_evidenced_baseline": as_str(
+                sum((D(l["saving_on_evidenced_baseline"]) for l in applied),
+                    D(0))),
+            "saving_on_unevidenced_baseline": as_str(
+                sum((D(l["saving_on_unevidenced_baseline"]) for l in applied),
+                    D(0))),
             "savings_pct_base": (f"{(saving.base / current.base):.3f}"
                                  if current.base else "0.000"),
             "levers": applied,
             # Net of what it costs to get there. Absent when no transition
             # policy is supplied: a missing payback is honest, and one computed
             # from no assumptions is not.
+            # CR-06: the reported saving band carries the estate's evidence,
+            # not only the rate card's price dispersion. The transition model
+            # below is handed the unwidened band deliberately - payback is an
+            # arithmetic identity on the base case, and widening its inputs
+            # would move a payback without anything about the programme
+            # having changed.
             **({"transition": transition.net(
-                    gross_annual=saving, sites=sites,
+                    gross_annual=saving, sites=sites, site_mix=site_mix,
+                    # CR-05: the simulated circuit band, so the programme
+                    # carries the same uncertainty the estate does rather
+                    # than a single point.
+                    circuits_band=circuits_band,
                     monthly_run_rate=monthly_run_rate or D(0),
                     policy=transition_policy)}
                if transition_policy is not None and sites else {}),
@@ -997,12 +1139,114 @@ def scenarios(components: list[Component], levers: list[dict],
     return out
 
 
-def current_tco(components: list[Component]) -> dict:
+def site_mix_from_estate(estate, footprint=None) -> list[dict]:
+    """Sites and circuits per archetype.
+
+    Site counts come from the footprint, which is authoritative. Circuit
+    density comes from the estate, which is a **sample**: the simulation
+    truncates the published estate - McDonald's 16,406 sites arrive as 5,000
+    rows with estate_truncated: 11406 - so counting its rows counts a third
+    of the estate.
+
+    Reading sites off the estate understated McDonald's one-time cost to
+    287.80 per site against a formula whose floor is 792. The error is
+    silent and proportional: it scales the cost by the truncation ratio and
+    leaves a number that looks like a number.
+
+    So: sites per archetype from the footprint, circuits per site from
+    whatever sample of that archetype the estate carries, and the product of
+    the two. An archetype absent from the sample takes the estate-wide
+    density and is marked, rather than being dropped or assumed single-
+    circuit.
+
+    Falls back to counting the estate when no footprint is supplied, which
+    is correct whenever the estate is complete.
+    """
+    sampled: dict[str, dict] = {}
+    for site in estate or []:
+        if not isinstance(site, dict):
+            continue
+        a = site.get("archetype") or "UNKNOWN"
+        row = sampled.setdefault(a, {"sites": 0, "circuits": 0})
+        row["sites"] += 1
+        row["circuits"] += 2 if site.get("backup_product") else 1
+
+    overall = (sum(r["circuits"] for r in sampled.values())
+               / sum(r["sites"] for r in sampled.values())
+               if sampled else 1.0)
+
+    if not footprint:
+        return [{"archetype": a, "sites": r["sites"], "circuits": r["circuits"]}
+                for a, r in sorted(sampled.items())]
+
+    sites_by_type: dict[str, int] = {}
+    for row in footprint:
+        if not isinstance(row, dict):
+            continue
+        a = row.get("archetype") or "UNKNOWN"
+        sites_by_type[a] = sites_by_type.get(a, 0) + int(row.get("sites") or 0)
+
+    out = []
+    for a, n in sorted(sites_by_type.items()):
+        if n <= 0:
+            continue
+        s = sampled.get(a)
+        density = (s["circuits"] / s["sites"]) if s and s["sites"] else overall
+        out.append({
+            "archetype": a,
+            "sites": n,
+            "circuits": int(round(n * density)),
+            # How much of this archetype the density was measured on. A
+            # density from 40 of 9,000 stores is a different claim from one
+            # measured on all of them.
+            "circuit_density_sampled_sites": (s or {}).get("sites", 0),
+            "circuit_density_origin": (
+                "SIMULATED" if s else "SIMULATED_ESTATE_AVERAGE")})
+    return out
+
+
+def site_count(components: list[Component]) -> int:
+    """How many sites the estate has, read back from its components.
+
+    The transition model is driven by site count - one-time cost per site,
+    sites migrated per month, sites in flight paying for two circuits - and
+    the components already carry it, so it is read from them rather than
+    threaded separately from the simulation. A number passed alongside the
+    components could disagree with them; one read from them cannot.
+
+    Summed within a layer and maxed across layers, not summed across all of
+    them. Two layers are driven by the site count - the OPS line and the L2
+    overlay - and each is split across origins by _split(), so a flat sum
+    over every driver=="sites" component counts the estate once per
+    site-driven layer. The OPS line is unconditional; the overlay is not.
+    """
+    by_layer: dict[str, int] = {}
+    for c in components:
+        if c.driver == "sites":
+            by_layer[c.layer] = by_layer.get(c.layer, 0) + int(c.quantity)
+    return max(by_layer.values(), default=0)
+
+
+def monthly_run_rate(components: list[Component]):
+    """The estate's current cost per month.
+
+    Component values are annual - every rate is scaled by MONTHS where it is
+    built - and transition.dual_running works in months, because that is the
+    period a site spends paying for two circuits. Dividing here keeps the one
+    place that knows the values are annualised next to MONTHS itself.
+    """
+    return total(components).base / MONTHS
+
+
+def current_tco(components: list[Component], *, range_factor=None) -> dict:
     by_layer: dict[str, Range] = {}
     for c in components:
         by_layer[c.layer] = by_layer.get(c.layer, Range.zero()) + c.value
-    return {"by_layer": {k: v.to_dict() for k, v in sorted(by_layer.items())},
-            "total": total(components).to_dict(),
+    f = range_factor
+    _w = (lambda r: widen(r, f).to_dict()) if f is not None else (
+        lambda r: r.to_dict())
+    return {"by_layer": {k: _w(v) for k, v in sorted(by_layer.items())},
+            "total": _w(total(components)),
             "simulated_share": str(simulated_share(components)),
             "origin_breakdown": origin_breakdown(components),
             "components": [c.to_dict() for c in components]}

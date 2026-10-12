@@ -12,20 +12,38 @@ import types
 
 import pytest
 
-from app.domain import serviceability
+from app.domain import access, serviceability
 from app.seed import DENSITY_BANDS, SERVICEABILITY
 
 
 @pytest.fixture()
 def table():
-    return {(c, b, p): types.SimpleNamespace(available=a, max_bandwidth_mbps=m)
-            for c, b, p, a, m in SERVICEABILITY}
+    # Keyed on the ACCESS TECHNOLOGY, which is what column three holds -
+    # ETHERNET_FIBRE, PON, HFC, VDSL, MOBILE_5G. It was unpacked here as `p`
+    # for product and the table keyed on that, so every lookup asked for a
+    # product in a technology-keyed table and missed. MOBILE_5G is the one
+    # string that exists in both vocabularies, which is why every test in this
+    # file came back MOBILE_5G rather than failing to find anything.
+    #
+    # seed.py:2075 unpacks the same rows as `c, b, t, a, m`.
+    return {(c, b, t): types.SimpleNamespace(available=a, max_bandwidth_mbps=m)
+            for c, b, t, a, m in SERVICEABILITY}
 
 
-def _resolve(table, density, product="DIA", mbps=100, country="DE"):
-    return serviceability.resolve(table=table, country=country,
-                                  density=density, product=product,
-                                  wanted_mbps=mbps)
+def _resolve(table, density, product="DIA", mbps=100, country="DE",
+             service_class=None):
+    # service_class, because that is the question the table now answers:
+    # "does a bearer reach this site that can carry this service", not "is
+    # this product sold here". resolve() still has the older product-keyed
+    # branch, but simulation.py - its only caller in the service - passes a
+    # class, so a test that omits it exercises a path nothing ships.
+    #
+    # Derived the way simulation.py derives it, from access.LEGACY_PRODUCT.
+    return serviceability.resolve(
+        table=table, country=country, density=density, product=product,
+        wanted_mbps=mbps,
+        service_class=(service_class
+                       or access.LEGACY_PRODUCT.get(product, (None,))[0]))
 
 
 # ------------------------------------------------- silence is not a constraint
@@ -46,12 +64,25 @@ def test_an_urban_store_gets_what_it_asks_for(table):
 
 def test_a_rural_store_takes_a_different_circuit(table):
     """The finding for a large chain: same country, same format, a different
-    product - so a rural store is not a cheaper urban one."""
+    circuit - so a rural store is not a cheaper urban one.
+
+    The difference is the bearer now, not the product name. The resolver
+    asks "does a bearer reach this site that can carry this service" rather
+    than "is this product sold here", so the rural store still gets DIA -
+    over PON, because neither ETHERNET_FIBRE nor DARK_FIBRE reaches it. The
+    urban and suburban stores get ETHERNET_FIBRE.
+
+    That is the same finding, and it is still priced differently:
+    unit_cost_prior is keyed on access_technology as well as service_class,
+    and simulation.py passes the technology the resolver chose. This test
+    asserted the pre-split vocabulary - SUBSTITUTED onto a BROADBAND_HFC
+    product - which the model stopped speaking."""
     out = _resolve(table, "RURAL")
-    assert out["outcome"] == serviceability.SUBSTITUTED
+    assert out["outcome"] == serviceability.DELIVERED
     assert out["asked_for"] == "DIA"
-    assert out["product"] == "BROADBAND_HFC"
-    assert "cannot be delivered in RURAL" in out["note"]
+    assert out["access_technology"] == "PON"
+    assert _resolve(table, "URBAN")["access_technology"] == "ETHERNET_FIBRE", (
+        "if the urban store took the same bearer there would be no finding")
 
 
 def test_a_tier_that_cannot_be_delivered_is_capped_not_ignored(table):
@@ -61,7 +92,10 @@ def test_a_tier_that_cannot_be_delivered_is_capped_not_ignored(table):
     assert out["outcome"] == serviceability.SUBSTITUTED
     assert out["product"] == "ETHERNET"
     assert out["bandwidth_mbps"] == 500
-    assert "only to 500 Mbps" in out["note"]
+    # The note was "only to 500 Mbps" and now names the bearer that imposed
+    # the cap. Asserting both numbers rather than the sentence, so a further
+    # rewording does not fail a test whose subject is the cap.
+    assert "500 Mbps" in out["note"] and "10000 Mbps" in out["note"]
 
 
 def test_nothing_deliverable_is_reported_rather_than_priced(table):
@@ -74,7 +108,7 @@ def test_nothing_deliverable_is_reported_rather_than_priced(table):
                                  product="DIA", wanted_mbps=100)
     assert out["outcome"] == serviceability.UNSERVICEABLE
     assert out["product"] is None and out["bandwidth_mbps"] is None
-    assert "reported rather than priced" in out["note"]
+    assert "reported rather than priced" in out["note"].lower()
 
 
 def test_the_substitute_is_chosen_for_reliability_not_price(table):
@@ -95,11 +129,23 @@ def test_a_four_thousand_store_estate_reports_what_its_density_did(table):
         outcomes.extend([_resolve(table, band)] * count)
 
     summary = serviceability.summarise(outcomes)
-    assert summary["counts"][serviceability.DELIVERED] == 3400
-    assert summary["counts"][serviceability.SUBSTITUTED] == 600
-    swap = summary["substitutions"][0]
-    assert swap["asked_for"] == "DIA" and swap["delivered"] == "BROADBAND_HFC"
-    assert swap["sites"] == 600
+
+    # Every site is served; 600 of them are served over a different bearer.
+    # Under the product-keyed model those 600 were SUBSTITUTED onto
+    # BROADBAND_HFC, and the count carried the finding. Under the bearer
+    # model they are DELIVERED on PON, so the substitution count went to zero
+    # and summarise() - which looked only at substitutions - reported a
+    # 4,000-store estate as uniform. The read-out had lost the one thing this
+    # function exists to say.
+    assert summary["counts"][serviceability.DELIVERED] == 4000
+    assert summary["counts"][serviceability.SUBSTITUTED] == 0
+    assert summary["by_access_technology"] == [
+        {"access_technology": "ETHERNET_FIBRE", "sites": 3400},
+        {"access_technology": "PON", "sites": 600}]
+    # Counted and named, because "600 on PON" is actionable and "15% on a
+    # secondary bearer" is not.
+    assert "600 on PON" in summary["note"]
+    assert "different circuit at a different rate" in summary["note"]
 
 
 def test_the_summary_of_an_empty_estate_says_so():
@@ -196,16 +242,20 @@ def test_only_a_recorded_band_with_nothing_available_is_unserviceable():
 
 def test_the_seeded_table_serves_an_urban_german_store(table):
     """A regression guard on the exact case that failed."""
-    out = serviceability.resolve(table=table, country="DE", density="URBAN",
-                                 product="BROADBAND_HFC", wanted_mbps=200)
+    out = _resolve(table, "URBAN", product="BROADBAND_HFC", mbps=200)
     assert out["outcome"] == serviceability.DELIVERED
 
 
 # ------------------- the backup path, which was never serviceability-checked
-def _backup(table, density, product, primary, mbps=100, country="DE"):
+def _backup(table, density, product, primary, mbps=100, country="DE",
+            service_class=None):
+    # service_class for the same reason as _resolve: simulation.py passes
+    # backup_class, so omitting it here tested a branch nothing ships.
     return serviceability.resolve_backup(
         table=table, country=country, density=density, product=product,
-        wanted_mbps=mbps, primary_product=primary)
+        wanted_mbps=mbps, primary_product=primary,
+        service_class=(service_class
+                       or access.LEGACY_PRODUCT.get(product, (None,))[0]))
 
 
 def test_a_backup_that_cannot_be_delivered_is_not_counted_as_resilience(table):
@@ -237,12 +287,51 @@ def test_two_circuits_of_the_same_product_are_not_a_second_path(table):
     assert "not a second path" in out["note"]
 
 
-def test_a_substitution_onto_a_genuinely_different_product_is_resilient(table):
-    """The rule must not block a real second path. A rural DC asking for an
-    ETHERNET backup gets broadband, which is a different failure domain."""
+def test_a_backup_whose_bearer_does_not_reach_is_not_a_second_path(table):
+    """An ETHERNET backup in a rural town is not a second path, because the
+    bearer it needs is not there.
+
+    carriers_for("ETHERNET") is (ETHERNET_FIBRE, DARK_FIBRE) and the seed
+    marks both unavailable in DE RURAL, so there is no path at any speed.
+
+    This test used to expect the opposite - "a rural DC asking for an
+    ETHERNET backup gets broadband, which is a different failure domain" -
+    and that is the real change, not the bandwidth. The old product-keyed
+    resolver walked FALLBACK_ORDER and substituted across product classes;
+    the bearer resolver only considers carriers of the class that was asked
+    for, so it never quietly turns a dedicated backup into a broadband one.
+
+    Confirmed as intended rather than assumed: counting a circuit the site
+    cannot actually be given would overstate resilience on exactly the rural
+    estates where the question decides the answer. The companion rules are
+    the test above - two circuits of the same product are not a second path -
+    and the test below, so a backup has to be diverse AND deliverable.
+    """
     out = _backup(table, "RURAL", "ETHERNET", "ETHERNET", mbps=10_000)
+    assert out["resilient"] is False
+    assert out["outcome"] == serviceability.UNSERVICEABLE
+    assert out["product"] is None
+    assert "no second access path is deliverable" in out["note"]
+
+    # Not a bandwidth question. The same ask at a hundredth of the speed is
+    # refused for the same reason, which is what makes this about the bearer.
+    assert _backup(table, "RURAL", "ETHERNET", "ETHERNET",
+                   mbps=100)["resilient"] is False
+
+
+def test_a_diverse_backup_that_is_deliverable_is_a_second_path(table):
+    """The other side, so the rule above cannot be satisfied by a resolver
+    that simply refuses every rural backup.
+
+    A rural site with an ETHERNET primary and a BROADBAND_HFC backup gets
+    one: BEST_EFFORT rides on PON among others, and PON reaches DE RURAL.
+    Different product, different bearer, so it counts.
+    """
+    out = _backup(table, "RURAL", "BROADBAND_HFC", "ETHERNET", mbps=100)
     assert out["resilient"] is True
-    assert out["product"] != "ETHERNET"
+    assert out["outcome"] == serviceability.DELIVERED
+    assert out["product"] == "BROADBAND_HFC"
+    assert out["access_technology"] == "PON"
 
 
 def test_an_ordinary_urban_backup_is_unaffected(table):
@@ -286,7 +375,12 @@ def _bearer_table():
     return {(c, b, t): _Row(a, m) for c, b, t, a, m in SERVICEABILITY}
 
 
-def _resolve(service_class, wanted=100, density="RURAL", country="DE"):
+# Renamed from _resolve: a second helper of that name shadowed the one at the
+# top of this file, so every test above it passed a bearer `table` where this
+# expects a `service_class`. carriers_for() then did a dict-membership test on
+# a dict - "unhashable type" - and the product= argument became unexpected.
+# Named for what it does: resolve by service class, via _by_access.
+def _resolve_by_class(service_class, wanted=100, density="RURAL", country="DE"):
     return serviceability._by_access(
         table=_bearer_table(), country=country, density=density,
         service_class=service_class, wanted_mbps=wanted, asked_for="X")
@@ -302,8 +396,8 @@ def test_a_committed_vpn_is_deliverable_where_a_dedicated_service_is_not():
     reaches."""
     from app.domain import access
 
-    assert _resolve(access.IPVPN)["outcome"] == serviceability.DELIVERED
-    assert _resolve(access.ETHERNET)["outcome"] == serviceability.UNSERVICEABLE
+    assert _resolve_by_class(access.IPVPN)["outcome"] == serviceability.DELIVERED
+    assert _resolve_by_class(access.ETHERNET)["outcome"] == serviceability.UNSERVICEABLE
 
 
 def test_the_outcome_names_the_bearer_that_carries_it():
@@ -311,7 +405,7 @@ def test_the_outcome_names_the_bearer_that_carries_it():
     accept."""
     from app.domain import access
 
-    out = _resolve(access.BEST_EFFORT)
+    out = _resolve_by_class(access.BEST_EFFORT)
     assert out["access_technology"] in access.ACCESS_TECHNOLOGIES
 
 
@@ -319,7 +413,7 @@ def test_a_bearer_that_reaches_but_cannot_carry_the_size_substitutes():
     """A smaller circuit is a real option; a silent downgrade is not."""
     from app.domain import access
 
-    out = _resolve(access.BEST_EFFORT, wanted=500)
+    out = _resolve_by_class(access.BEST_EFFORT, wanted=500)
     assert out["outcome"] == serviceability.SUBSTITUTED
     assert out["bandwidth_mbps"] < 500
     assert "below the 500 Mbps" in out["note"]
@@ -364,9 +458,9 @@ def test_dense_urban_delivers_what_rural_cannot():
     """The band has to matter, or the table is decoration."""
     from app.domain import access
 
-    assert _resolve(access.ETHERNET, density="DENSE_URBAN")["outcome"] == (
+    assert _resolve_by_class(access.ETHERNET, density="DENSE_URBAN")["outcome"] == (
         serviceability.DELIVERED)
-    assert _resolve(access.ETHERNET, density="RURAL")["outcome"] == (
+    assert _resolve_by_class(access.ETHERNET, density="RURAL")["outcome"] == (
         serviceability.UNSERVICEABLE)
 
 

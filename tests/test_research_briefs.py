@@ -97,8 +97,16 @@ def test_the_plan_version_changes_when_a_brief_changes(session):
     session.execute(update(db.research_brief)
                     .where(db.research_brief.c.domain_no == 2)
                     .values(active=False))
+    # A version derived from the catalogue, not the literal "1.1.0". That
+    # literal was a future version when this was written and the catalogue
+    # has since reached it, so the seed now creates brief_id "2-1.1.0" itself
+    # and the insert collided on the primary key. The test needs a revision
+    # that is newer than whatever is seeded, which is a thing to compute
+    # rather than to write down - the same mistake is available at 1.2.0.
+    _major, _minor, _patch = BRIEF_CATALOGUE_VERSION.split(".")
+    revision = f"{_major}.{int(_minor) + 1}.0"
     session.execute(insert(db.research_brief).values(
-        brief_id="2-1.1.0", domain_no=2, brief_version="1.1.0",
+        brief_id=f"2-{revision}", domain_no=2, brief_version=revision,
         agent_id="LLM-01", asks="Revised", search=["x"], sources=[],
         active=True, approved_by="Priya Raman"))
     session.commit()

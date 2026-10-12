@@ -69,6 +69,46 @@ COPY api_service/app ./app
 # Tests live at the bundle root, beside the two services they exercise -
 # test_compose.py and test_wiring.py read files from both.
 COPY tests ./tests
+# The second of those two services. The line above has always said the tests
+# read files from both, and `make test` runs them from inside this image - but
+# only api_service/app was ever copied, so roughly a hundred tests that read
+# the Streamlit source died on FileNotFoundError before asserting anything.
+# The suite's own documented entry point could not run them.
+#
+# Source only, and read only by the suite: the api process does not import it.
+COPY analyst_ui ./analyst_ui
+# The bundle-root files the suite reads, for the same reason. Without them
+# test_backup_fallback died on FileNotFoundError for make.ps1 - five checks on
+# whether `bundle-in` takes a pg_dump when the API is down, which is the one
+# occasion that backup is most needed. test_compose.py skips itself when
+# docker-compose.yml is absent, which is worse than failing: the guard reported
+# nothing and ran nowhere, because this image is the only place the suite runs.
+#
+# Config and manifests, no secrets: docker-compose.yml names ${POSTGRES_PASSWORD}
+# rather than holding it.
+COPY docker-compose.yml ./docker-compose.yml
+COPY make.ps1 ./make.ps1
+# test_readiness reads the HEALTHCHECK out of this file to check it
+# still polls /v1/ready rather than /v1/health - "if the healthcheck
+# moved to /v1/health this file would be guarding nothing". Both
+# checks died on FileNotFoundError instead.
+COPY api_service/Dockerfile ./api_service/Dockerfile
+# The bundle layout the tooling resolves against, as one symlink rather
+# than fourteen edits. Every tool in tools/ locates the service the same
+# way - `APP = ROOT / "api_service" / "app"`, or sys.path.insert of
+# ROOT/"api_service" - because that is where the service lives in a
+# checkout. This image flattens it to /app/app so the api process can
+# `import app` from WORKDIR, and every one of those tools then died on
+# FileNotFoundError for /app/api_service/app/... - including
+# verify_domains.py, which is the end-to-end pass over all 17 agent
+# domains and the only one that runs without a network.
+#
+# Pointing api_service/app at the same files satisfies both spellings
+# without moving the package or touching the tools. requirements.txt is
+# placed beside it for check_lockfile.py, which reads the per-service
+# manifests at their repo-relative paths.
+RUN mkdir -p api_service && ln -s /app/app /app/api_service/app
+COPY api_service/requirements.txt ./api_service/requirements.txt
 # Single definition of the API/UI auth contract, shared with the UI image.
 COPY contract ./contract
 # Non-root. An earlier revision ran both containers as root.

@@ -167,8 +167,35 @@ def test_the_transition_policy_still_carries_a_grade_without_the_row():
         "one_time_cost_per_site_base": "900",
         "one_time_cost_per_site_high": "1800",
         "dual_running_months": "3",
-        "sites_migrated_per_month": "120"})
+        "sites_migrated_per_month": "120",
+        # CR-04 added these as required: the reference cost is now
+        # decomposed into work that scales with circuits and work that
+        # scales with sites, and a set that does not say how is incomplete.
+        "one_time_share_hardware": "0.35",
+        "one_time_share_migration": "0.25",
+        "one_time_share_integration": "0.20",
+        "one_time_share_project_management": "0.20",
+        "one_time_reference_circuits_per_site": "1.25"})
     assert built.evidence_grade == "E"
+
+
+def test_one_time_shares_that_do_not_divide_the_cost_are_refused():
+    """Four shares of one reference cost. A set summing to anything else is
+    losing money or inventing it, and either way the build would be wrong
+    while every individual threshold looked reasonable."""
+    rows = {
+        "one_time_cost_per_site_low": "400",
+        "one_time_cost_per_site_base": "900",
+        "one_time_cost_per_site_high": "1800",
+        "dual_running_months": "3",
+        "sites_migrated_per_month": "120",
+        "one_time_share_hardware": "0.35",
+        "one_time_share_migration": "0.25",
+        "one_time_share_integration": "0.20",
+        "one_time_share_project_management": "0.30",   # sums to 1.10
+        "one_time_reference_circuits_per_site": "1.25"}
+    with pytest.raises(policy.PolicyInvalid, match="sum to"):
+        policy.TransitionPolicy.from_rows(rows)
 
 
 def test_a_missing_numeric_threshold_is_still_refused():

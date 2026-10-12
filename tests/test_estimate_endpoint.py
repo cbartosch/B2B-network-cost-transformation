@@ -29,9 +29,10 @@ from datetime import datetime, timezone
 
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import insert
+from sqlalchemy import delete, insert, select
 
 from app import db
+from app.domain.money import D
 from app.domain import dispositions
 from app.main import app
 
@@ -105,8 +106,16 @@ def _simulation(session, case_id, *, with_bandwidth=True, country="GB") -> str:
 
 def _prior(session, *, country="GB", product="DIA", mbps=100,
            low=380, base=520, high=720):
+    # Pinned, not merely inserted. reference.unit_cost_prior is seeded now
+    # (1,308 rows), so a bare insert collided on the primary key and every
+    # test using this helper errored in setup. Skipping the insert instead
+    # would be worse: the estimate would be computed from whatever the seed
+    # holds, and these tests assert on 380/520/720.
+    prior_id = f"{country}-{product}-{mbps}"
+    session.execute(delete(db.unit_cost_prior).where(
+        db.unit_cost_prior.c.id == prior_id))
     session.execute(insert(db.unit_cost_prior).values(
-        id=f"{country}-{product}-{mbps}", country=country, product=product,
+        id=prior_id, country=country, product=product,
         cost_layer="L0", bandwidth_mbps=mbps, low=low, base=base, high=high,
         currency="USD", price_year=2026, approved=True))
     session.commit()
@@ -157,6 +166,131 @@ def test_anchor_runs_end_to_end_and_returns_the_same_contract(session, client):
     basis = body["anchor_basis"]
     assert float(basis["addressable_pool"]["base"]) < 213_000_000, (
         "the pool must be a share of the anchor, not the anchor itself")
+
+
+def test_every_scenario_carries_what_it_costs_to_get_there(session, client):
+    """The wiring, which is the part that was missing.
+
+    transition.net, TransitionPolicy, the page 8 renderer and
+    validation_capture's one-time-cost extraction were all written and all
+    correct. Nothing built a policy and passed it to scenarios(), so
+    estimate.py's `if transition_policy is not None` was never true and every
+    scenario ever published reported a gross run-rate saving with no payback
+    and no one-time cost - the exact defect the module was written for: "P3:
+    none of this existed, so every scenario reported a gross saving as though
+    it were the answer."
+
+    Nothing failed while that was true. The domain tests passed, because they
+    call transition.net directly; the endpoint tests passed, because none of
+    them looked for the block. This asserts at the seam the two met at.
+    """
+    case_id = _ready_case(session)
+    sim_id = _simulation(session, case_id)
+    _prior(session)
+
+    r = client.post(f"/v1/outside-in/cases/{case_id}/estimates:run",
+                    json={"method": "BUILD_UP", "simulation_run_id": sim_id,
+                          "users": 500, "ops_cost_per_site_base": 900})
+    assert r.status_code == 200, r.text
+    scenarios = r.json()["scenarios"]
+    assert scenarios, "no scenarios to check"
+
+    for code, scenario in scenarios.items():
+        transition = scenario.get("transition")
+        assert transition, (
+            f"scenario {code} reports a saving with no cost of getting there")
+        # The figures a business case turns on, each a band.
+        for field in ("one_time_cost", "dual_running_cost",
+                      "total_transition_cost"):
+            assert set(transition[field]) >= {"low", "base", "high"}
+        assert set(transition["payback_months"]) == {
+            "optimistic", "base", "pessimistic"}
+        assert transition["programme_months"] >= 1
+        # Says what it is. A modelled payback presented as a business case is
+        # worse than no payback.
+        assert "modelled payback" in transition["payback_basis"]
+
+    # And it survives being stored: the scenarios go into a JSON column, which
+    # is where a stray Decimal last took out this route.
+    stored = session.execute(select(db.estimate_snapshot.c.scenarios).where(
+        db.estimate_snapshot.c.estimate_snapshot_id
+        == r.json()["estimate_snapshot_id"])).scalar()
+    assert all(s.get("transition") for s in stored.values())
+
+
+def test_the_transition_is_costed_for_the_estate_that_was_simulated(session,
+                                                                    client):
+    """Not for some other number of sites.
+
+    site_count() reads the estate back from the components rather than taking
+    it as an argument, so this checks the two agree. A site count that is
+    wrong in either direction is silent - it produces a plausible payback,
+    not an error - and the one-time cost is linear in it.
+    """
+    case_id = _ready_case(session)
+    sim_id = _simulation(session, case_id)
+    _prior(session)
+
+    r = client.post(f"/v1/outside-in/cases/{case_id}/estimates:run",
+                    json={"method": "BUILD_UP", "simulation_run_id": sim_id,
+                          "users": 500, "ops_cost_per_site_base": 900})
+    assert r.status_code == 200, r.text
+    body = r.json()
+
+    # _simulation() publishes output {"sites": 100, ...}, so the estate the
+    # estimate priced is 100 sites and the transition has to be costed for
+    # 100 - not for the circuit count, which is also 100 here only by
+    # coincidence of the fixture, and not for twice that, which is what a
+    # flat sum over every site-driven layer would give.
+    sites = 100
+
+    transition = next(iter(body["scenarios"].values()))["transition"]
+    # The seeded band is 400 / 900 / 1800 per site.
+    assert D(transition["one_time_cost"]["base"]) == D(900) * sites
+    assert D(transition["one_time_cost"]["low"]) == D(400) * sites
+    assert D(transition["one_time_cost"]["high"]) == D(1800) * sites
+    # ceil(100 / 120 sites a month) = 1
+    assert transition["programme_months"] == 1
+
+
+def test_a_recommendation_carries_the_payback_of_the_scenario_it_names(
+        session, client):
+    """Page 8 renders this and has been showing its fallback instead.
+
+    The block is read from the snapshot rather than stored on the
+    recommendation row: it belongs to (snapshot, scenario_code), which the
+    recommendation already names, so a copy would be free to drift.
+    """
+    case_id = _ready_case(session)
+    sim_id = _simulation(session, case_id)
+    _prior(session)
+    r = client.post(f"/v1/outside-in/cases/{case_id}/estimates:run",
+                    json={"method": "BUILD_UP", "simulation_run_id": sim_id,
+                          "users": 500, "ops_cost_per_site_base": 900})
+    assert r.status_code == 200, r.text
+    snapshot_id = r.json()["estimate_snapshot_id"]
+    code = sorted(r.json()["scenarios"])[0]
+
+    rec_id = str(uuid.uuid4())
+    session.execute(insert(db.recommendation).values(
+        recommendation_id=rec_id, estimate_snapshot_id=snapshot_id,
+        case_id=case_id, scenario_code=code, percentile="base",
+        basis="t", label="DETERMINISTIC_PROPOSED",
+        gross_run_rate_savings={"base": "1"}, material_levers=[]))
+    session.commit()
+
+    listed = client.get(f"/v1/outside-in/cases/{case_id}/recommendations")
+    assert listed.status_code == 200, listed.text
+    found = [x for x in listed.json()["recommendations"]
+             if x["recommendation_id"] == rec_id]
+    assert found and found[0].get("transition"), (
+        "the recommendation names a scenario whose payback is known, and the "
+        "page that renders it was told there was none")
+
+    one = client.get(
+        f"/v1/outside-in/cases/{case_id}/recommendations/{rec_id}")
+    assert one.status_code == 200, one.text
+    assert one.json()["transition"] == found[0]["transition"]
 
 
 def test_a_simulation_without_bandwidth_is_refused_by_name(session, client):
@@ -286,27 +420,52 @@ def test_a_footprint_of_all_zeros_is_refused_by_name(session, client):
         "the refusal should name the route to evidence, not just the mistake")
 
 
-def test_a_single_row_carrying_hundreds_of_sites_is_refused(session, client):
-    """100 sites are never identical.
+def test_a_single_row_carrying_a_whole_estate_is_disclosed(session, client):
+    """A bulk row is priced and the assumption is disclosed, not refused.
 
     A row asserts that every site in it shares one bandwidth, one primary and
-    backup product and one dual-access probability, and the whole row is costed
-    at that archetype's tier - so a bulk total in one row puts a wrong number
-    into the baseline and looks deliberate. Enforced at the API rather than
-    only in the interface, so no caller can route around it."""
+    backup product and one dual-access probability, and the whole row is
+    costed at that archetype's tier, so a bulk total in one row puts a claim
+    into the baseline that nobody stated out loud.
+
+    This used to be a 422 at 100 sites, and it was withdrawn deliberately -
+    "it made it unusable on the estates that most need it, and the analyst's
+    only route through was to mis-type the rows". It was replaced by pricing
+    the row and pinning what was assumed: homogeneity_report's own basis line
+    says "nothing is refused for this - the row prices and the claim is
+    disclosed".
+
+    So the old premise is gone twice over. The limit is not 100 and there is
+    no limit: rows are reported above a band of 2,000 (25,000 where the
+    archetype is mass-deployed to one specification and a density is given).
+    This exercises 3,000 un-banded STORE sites, which is above the band it is
+    actually judged against.
+
+    The share is the point. One row means something different at 3% of an
+    estate than at 100% of it, so what is pinned is the share, not the
+    count."""
     case_id = _ready_case(session, countries=("DE",))
 
     r = client.post(f"/v1/outside-in/cases/{case_id}/simulations:run",
                     json={"seed": 42, "ensemble_size": 1,
                           "footprint": [{"country": "DE",
                                          "archetype": "STORE",
-                                         "sites": 1000}]})
+                                         "sites": 3000}]})
 
-    assert r.status_code == 422, r.text
-    detail = r.json()["detail"]
-    assert detail["error"] == "a single archetype row carries too many sites"
-    assert detail["limit"] == 100
-    assert "STORE" in detail["detail"] or detail["rows"][0]["sites"] == 1000
+    assert r.status_code == 202, r.text
+    run_id = r.json()["simulation_run_id"]
+
+    params = session.execute(select(db.simulation_run.c.params).where(
+        db.simulation_run.c.simulation_run_id == run_id)).scalar()
+    hom = params["homogeneity"]
+    assert hom["sites_in_large_rows"] == 3000
+    assert hom["share_in_large_rows"] == "1.000", (
+        "the whole estate is priced as one block; a reader has to be able to "
+        "see that from the pinned run")
+    assert hom["share_asserted_alike"] == "1.000", (
+        "with no density band the row is not uniform by construction - it is "
+        "an assertion the analyst made, not a property of the archetype")
+    assert any(row["archetype"] == "STORE" for row in hom["rows"])
 
 
 def test_an_allocated_footprint_of_the_same_total_is_accepted(session, client):
@@ -332,7 +491,6 @@ def test_anchor_does_not_require_a_driver_it_never_uses(session, client):
     request for a driver the calculation would not have used. Two existing
     tests caught it on the first real run."""
     case_id = _ready_case(session, countries=("DE",))
-    _dispose_all(session, case_id)
 
     r = client.post(f"/v1/outside-in/cases/{case_id}/estimates:run",
                     json={"method": "ANCHOR", "anchor_value": 213_000_000})
@@ -344,7 +502,6 @@ def test_build_up_still_refuses_a_missing_ops_cost(session, client):
     """The refusal exists because 900 per site used to be a server-side
     default that reached the baseline whenever a caller omitted the field."""
     case_id = _ready_case(session, countries=("DE",))
-    _dispose_all(session, case_id)
 
     r = client.post(f"/v1/outside-in/cases/{case_id}/estimates:run",
                     json={"method": "BUILD_UP", "users": 500})
