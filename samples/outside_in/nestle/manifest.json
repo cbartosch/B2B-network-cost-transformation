@@ -9,7 +9,14 @@
   "in_scope_countries": [
     "CH",
     "DE",
-    "FR"
+    "FR",
+    "US",
+    "GB",
+    "ES",
+    "IT",
+    "BR",
+    "MX",
+    "CN"
   ],
   "base_currency": "CHF",
   "case_id": "c06346b4-5fad-4862-8004-16e63cb1e199",
@@ -41,6 +48,16 @@
   "footprint_origin": "RESEARCH_MERGED_WITH_DISCLOSURE",
   "footprint_used": [
     {
+      "country": "BR",
+      "archetype": "LARGE_OFFICE",
+      "sites": 8
+    },
+    {
+      "country": "BR",
+      "archetype": "PLANT",
+      "sites": 28
+    },
+    {
       "country": "CH",
       "archetype": "DC",
       "sites": 3
@@ -61,6 +78,16 @@
       "sites": 4
     },
     {
+      "country": "CN",
+      "archetype": "LARGE_OFFICE",
+      "sites": 10
+    },
+    {
+      "country": "CN",
+      "archetype": "PLANT",
+      "sites": 31
+    },
+    {
       "country": "DE",
       "archetype": "DC",
       "sites": 1
@@ -76,6 +103,11 @@
       "sites": 20
     },
     {
+      "country": "ES",
+      "archetype": "PLANT",
+      "sites": 11
+    },
+    {
       "country": "FR",
       "archetype": "LARGE_OFFICE",
       "sites": 4
@@ -89,9 +121,61 @@
       "country": "FR",
       "archetype": "WAREHOUSE",
       "sites": 12
+    },
+    {
+      "country": "GB",
+      "archetype": "LARGE_OFFICE",
+      "sites": 5
+    },
+    {
+      "country": "GB",
+      "archetype": "PLANT",
+      "sites": 14
+    },
+    {
+      "country": "IT",
+      "archetype": "PLANT",
+      "sites": 10
+    },
+    {
+      "country": "MX",
+      "archetype": "LARGE_OFFICE",
+      "sites": 6
+    },
+    {
+      "country": "MX",
+      "archetype": "PLANT",
+      "sites": 17
+    },
+    {
+      "country": "US",
+      "archetype": "DC",
+      "sites": 2
+    },
+    {
+      "country": "US",
+      "archetype": "LARGE_OFFICE",
+      "sites": 18
+    },
+    {
+      "country": "US",
+      "archetype": "PLANT",
+      "sites": 55
     }
   ],
   "footprint_provenance": [
+    {
+      "country": "BR",
+      "archetype": "LARGE_OFFICE",
+      "sites": 8,
+      "origin": "PUBLIC_DISCLOSURE"
+    },
+    {
+      "country": "BR",
+      "archetype": "PLANT",
+      "sites": 28,
+      "origin": "PUBLIC_DISCLOSURE"
+    },
     {
       "country": "CH",
       "archetype": "DC",
@@ -123,6 +207,18 @@
       "origin": "RESEARCHED"
     },
     {
+      "country": "CN",
+      "archetype": "LARGE_OFFICE",
+      "sites": 10,
+      "origin": "PUBLIC_DISCLOSURE"
+    },
+    {
+      "country": "CN",
+      "archetype": "PLANT",
+      "sites": 31,
+      "origin": "PUBLIC_DISCLOSURE"
+    },
+    {
       "country": "DE",
       "archetype": "DC",
       "sites": 1,
@@ -138,6 +234,12 @@
       "country": "DE",
       "archetype": "PLANT",
       "sites": 20,
+      "origin": "PUBLIC_DISCLOSURE"
+    },
+    {
+      "country": "ES",
+      "archetype": "PLANT",
+      "sites": 11,
       "origin": "PUBLIC_DISCLOSURE"
     },
     {
@@ -157,16 +259,71 @@
       "archetype": "WAREHOUSE",
       "sites": 12,
       "origin": "RESEARCHED"
+    },
+    {
+      "country": "GB",
+      "archetype": "LARGE_OFFICE",
+      "sites": 5,
+      "origin": "PUBLIC_DISCLOSURE"
+    },
+    {
+      "country": "GB",
+      "archetype": "PLANT",
+      "sites": 14,
+      "origin": "PUBLIC_DISCLOSURE"
+    },
+    {
+      "country": "IT",
+      "archetype": "PLANT",
+      "sites": 10,
+      "origin": "PUBLIC_DISCLOSURE"
+    },
+    {
+      "country": "MX",
+      "archetype": "LARGE_OFFICE",
+      "sites": 6,
+      "origin": "PUBLIC_DISCLOSURE"
+    },
+    {
+      "country": "MX",
+      "archetype": "PLANT",
+      "sites": 17,
+      "origin": "PUBLIC_DISCLOSURE"
+    },
+    {
+      "country": "US",
+      "archetype": "DC",
+      "sites": 2,
+      "origin": "PUBLIC_DISCLOSURE"
+    },
+    {
+      "country": "US",
+      "archetype": "LARGE_OFFICE",
+      "sites": 18,
+      "origin": "PUBLIC_DISCLOSURE"
+    },
+    {
+      "country": "US",
+      "archetype": "PLANT",
+      "sites": 55,
+      "origin": "PUBLIC_DISCLOSURE"
     }
   ],
   "scope_countries_modelled": [
+    "BR",
     "CH",
+    "CN",
     "DE",
-    "FR"
+    "ES",
+    "FR",
+    "GB",
+    "IT",
+    "MX",
+    "US"
   ],
   "scope_countries_company_total": "DECLARED_UNKNOWN",
   "scope_status": "PARTIAL_COUNTRIES",
-  "scope_note": "Baseline covers 3 country(ies) (CH, DE, FR) and the site types listed in sites_origin. The group's full country and site-type count is not sourced, so the share of the group this represents is DECLARED_UNKNOWN. This is baseline_in_scope, not a group baseline.",
+  "scope_note": "Baseline covers 10 country(ies) (BR, CH, CN, DE, ES, FR, GB, IT, MX, US) and the site types listed in sites_origin. The group's full country and site-type count is not sourced, so the share of the group this represents is DECLARED_UNKNOWN. This is baseline_in_scope, not a group baseline.",
   "sites_origin": {
     "DC": "RESEARCHED",
     "LARGE_OFFICE": "RESEARCHED",
@@ -229,13 +386,13 @@
   ],
   "estimate_inputs": {
     "method": "BUILD_UP",
-    "users": 1140,
+    "users": 3720,
     "ops_cost_per_site_base": 900,
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-12T08:35:23.895772+00:00",
-  "run_seconds": 5.2,
+  "run_started": "2026-10-12T13:18:50.513187+00:00",
+  "run_seconds": 4.0,
   "preflight_conditions": 8,
   "promotion": {
     "promoted": true,

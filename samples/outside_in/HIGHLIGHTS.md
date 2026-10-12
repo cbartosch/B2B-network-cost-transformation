@@ -254,7 +254,7 @@ Sources: [germancompanyformation.com](https://germancompanyformation.com/guides/
 ## BASF SE
 
 - **Industry** CHEMICALS (entity resolution)
-- **Scope** DE, BE, US, EUR, 102 sites (research merged with disclosure)
+- **Scope** DE, BE, US, CN, FR, ES, IT, BR, IN, EUR, 219 sites (research merged with disclosure)
 - **Confidence** 0.346 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 6 source(s)
@@ -1460,7 +1460,7 @@ Sources: [TeleGeography](https://resources.telegeography.com/the-rise-of-dia-ove
 ## Nestle SA
 
 - **Industry** FOOD_MANUFACTURING (entity resolution)
-- **Scope** CH, DE, FR, CHF, 95 sites (research merged with disclosure)
+- **Scope** CH, DE, FR, US, GB, ES, IT, BR, MX, CN, CHF, 310 sites (research merged with disclosure)
 - **Confidence** 0.278 (D - Indicative), coverage PARTIAL
 
 **Profile** - EVIDENCED_PUBLIC, 8 source(s)
@@ -1616,8 +1616,8 @@ Sources: [Swiss Federal Office of Communications / ComCom](https://www.comcom.ad
 ## Novartis AG
 
 - **Industry** PHARMACEUTICALS (entity resolution)
-- **Scope** CH, DE, US, CHF, 67 sites (research merged with disclosure)
-- **Confidence** 0.347 (D - Indicative), coverage COMPLETE
+- **Scope** CH, DE, US, IE, IT, ES, AT, SG, CHF, 125 sites (research merged with disclosure)
+- **Confidence** 0.346 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 9 source(s)
 
@@ -2146,7 +2146,7 @@ Sources: [ServNet UK (trade press)](https://www.servnetuk.com/insights/sd-wan-vs
 ## Siemens AG
 
 - **Industry** INDUSTRIAL_CONGLOMERATE (entity resolution)
-- **Scope** DE, AT, US, EUR, 197 sites (research merged with disclosure)
+- **Scope** DE, AT, US, CN, IN, GB, FR, IT, EUR, 497 sites (research merged with disclosure)
 - **Confidence** 0.346 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 10 source(s)
@@ -2433,8 +2433,8 @@ Sources: [ComReg (Commission for Communications Regulation](https://comreg.ie/me
 ## Unilever PLC
 
 - **Industry** HOUSEHOLD_PERSONAL_CARE (entity resolution)
-- **Scope** GB, NL, DE, EUR, 48 sites (research merged with disclosure)
-- **Confidence** 0.346 (D - Indicative), coverage COMPLETE
+- **Scope** GB, NL, DE, US, IN, BR, MX, PL, IT, FR, EUR, 216 sites (research merged with disclosure)
+- **Confidence** 0.345 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 6 source(s)
 
@@ -2583,7 +2583,7 @@ Sources: [servnetuk.com](https://www.servnetuk.com/insights/sd-wan-vs-mpls-uk-20
 ## Volkswagen AG
 
 - **Industry** AUTOMOTIVE_OEM (entity resolution)
-- **Scope** DE, ES, CZ, EUR, 86 sites (research merged with disclosure)
+- **Scope** DE, ES, CZ, CN, MX, BR, SK, PT, PL, US, EUR, 183 sites (research merged with disclosure)
 - **Confidence** 0.347 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 9 source(s)

@@ -1,19 +1,51 @@
 {
-  "simulation_run_id": "59171a44-1aa7-4691-b224-38fe9f3d066d",
+  "simulation_run_id": "0333ad15-42ca-4c43-8beb-8f4e742afb43",
   "case_id": "cbf4d17f-c7e7-45be-92fe-82e7a4005752",
   "model_version": "sim-2.7.0",
   "seed": 20260101,
   "ensemble_size": 25,
   "status": "SUCCEEDED",
-  "output_hash": "ceb8dfa07eb4768fd74f4cc4372766e5046afb65de0d91d370d7a9335a5fcde5",
-  "started_at": "2026-10-12 08:35:20.957454+00:00",
-  "ended_at": "2026-10-12 08:35:22.014830+00:00",
+  "output_hash": "830c2ae5b9c9f1100c84e4ee8ee88e42513c3afb7b642e9e5e9d0fae275a772c",
+  "started_at": "2026-10-12 13:18:51.887697+00:00",
+  "ended_at": "2026-10-12 13:18:52.315869+00:00",
   "params": {
     "footprint": [
       {
         "country": "BE",
         "archetype": "PLANT",
         "sites": 12,
+        "industry": null,
+        "count_source": null,
+        "density": null
+      },
+      {
+        "country": "BR",
+        "archetype": "LARGE_OFFICE",
+        "sites": 6,
+        "industry": null,
+        "count_source": null,
+        "density": null
+      },
+      {
+        "country": "BR",
+        "archetype": "PLANT",
+        "sites": 11,
+        "industry": null,
+        "count_source": null,
+        "density": null
+      },
+      {
+        "country": "CN",
+        "archetype": "LARGE_OFFICE",
+        "sites": 10,
+        "industry": null,
+        "count_source": null,
+        "density": null
+      },
+      {
+        "country": "CN",
+        "archetype": "PLANT",
+        "sites": 26,
         "industry": null,
         "count_source": null,
         "density": null
@@ -43,9 +75,65 @@
         "density": null
       },
       {
+        "country": "ES",
+        "archetype": "PLANT",
+        "sites": 9,
+        "industry": null,
+        "count_source": null,
+        "density": null
+      },
+      {
+        "country": "FR",
+        "archetype": "LARGE_OFFICE",
+        "sites": 6,
+        "industry": null,
+        "count_source": null,
+        "density": null
+      },
+      {
+        "country": "FR",
+        "archetype": "PLANT",
+        "sites": 12,
+        "industry": null,
+        "count_source": null,
+        "density": null
+      },
+      {
+        "country": "IN",
+        "archetype": "LARGE_OFFICE",
+        "sites": 6,
+        "industry": null,
+        "count_source": null,
+        "density": null
+      },
+      {
+        "country": "IN",
+        "archetype": "PLANT",
+        "sites": 8,
+        "industry": null,
+        "count_source": null,
+        "density": null
+      },
+      {
+        "country": "IT",
+        "archetype": "PLANT",
+        "sites": 8,
+        "industry": null,
+        "count_source": null,
+        "density": null
+      },
+      {
+        "country": "US",
+        "archetype": "DC",
+        "sites": 2,
+        "industry": null,
+        "count_source": null,
+        "density": null
+      },
+      {
         "country": "US",
         "archetype": "LARGE_OFFICE",
-        "sites": 1,
+        "sites": 14,
         "industry": null,
         "count_source": null,
         "density": null
@@ -71,19 +159,39 @@
       "template_version": "1.0.0",
       "regions": {
         "AMER": [
+          "BR",
           "US"
+        ],
+        "APAC": [
+          "CN",
+          "IN"
         ],
         "EUROPE_CENTRAL": [
           "DE"
         ],
+        "EUROPE_SOUTH": [
+          "ES",
+          "IT"
+        ],
         "EUROPE_WEST": [
-          "BE"
+          "BE",
+          "FR"
         ]
       },
       "hub_regions": [
+        "AMER",
         "EUROPE_CENTRAL"
       ],
       "links": [
+        {
+          "tier": "DC_TO_REGION",
+          "region": "AMER",
+          "count": 2,
+          "product": "ETHERNET",
+          "bandwidth_mbps": 10000,
+          "dual": true,
+          "note": "2 data centre(s) in AMER to the AMER hub"
+        },
         {
           "tier": "DC_TO_REGION",
           "region": "EUROPE_CENTRAL",
@@ -92,11 +200,29 @@
           "bandwidth_mbps": 10000,
           "dual": true,
           "note": "4 data centre(s) in EUROPE_CENTRAL to the EUROPE_CENTRAL hub"
+        },
+        {
+          "tier": "REGION_TO_CORE",
+          "region": "AMER",
+          "count": 1,
+          "product": "ETHERNET",
+          "bandwidth_mbps": 10000,
+          "dual": true,
+          "note": "AMER hub to the global core"
+        },
+        {
+          "tier": "REGION_TO_CORE",
+          "region": "EUROPE_CENTRAL",
+          "count": 1,
+          "product": "ETHERNET",
+          "bandwidth_mbps": 10000,
+          "dual": true,
+          "note": "EUROPE_CENTRAL hub to the global core"
         }
       ],
       "unmapped_countries": [],
-      "backbone_circuits": 8,
-      "note": "One region with data centres (EUROPE_CENTRAL), so there is no global core tier - a hub has nothing to reach across."
+      "backbone_circuits": 16,
+      "note": ""
     },
     "site_rule": {
       "basis": null,
@@ -370,6 +496,278 @@
       },
       {
         "country": "DE",
+        "density_band": "RURAL",
+        "product": "SATELLITE",
+        "access_technology": "SATELLITE",
+        "available": true,
+        "max_bandwidth_mbps": 50
+      },
+      {
+        "country": "FR",
+        "density_band": "DENSE_URBAN",
+        "product": "ETHERNET_FIBRE",
+        "access_technology": "ETHERNET_FIBRE",
+        "available": true,
+        "max_bandwidth_mbps": 10000
+      },
+      {
+        "country": "FR",
+        "density_band": "DENSE_URBAN",
+        "product": "DARK_FIBRE",
+        "access_technology": "DARK_FIBRE",
+        "available": true,
+        "max_bandwidth_mbps": 100000
+      },
+      {
+        "country": "FR",
+        "density_band": "DENSE_URBAN",
+        "product": "PON",
+        "access_technology": "PON",
+        "available": true,
+        "max_bandwidth_mbps": 1000
+      },
+      {
+        "country": "FR",
+        "density_band": "DENSE_URBAN",
+        "product": "HFC",
+        "access_technology": "HFC",
+        "available": true,
+        "max_bandwidth_mbps": 1000
+      },
+      {
+        "country": "FR",
+        "density_band": "DENSE_URBAN",
+        "product": "VDSL",
+        "access_technology": "VDSL",
+        "available": true,
+        "max_bandwidth_mbps": 80
+      },
+      {
+        "country": "FR",
+        "density_band": "DENSE_URBAN",
+        "product": "ADSL",
+        "access_technology": "ADSL",
+        "available": true,
+        "max_bandwidth_mbps": 24
+      },
+      {
+        "country": "FR",
+        "density_band": "DENSE_URBAN",
+        "product": "MOBILE_5G",
+        "access_technology": "MOBILE_5G",
+        "available": true,
+        "max_bandwidth_mbps": 300
+      },
+      {
+        "country": "FR",
+        "density_band": "DENSE_URBAN",
+        "product": "MOBILE_4G",
+        "access_technology": "MOBILE_4G",
+        "available": true,
+        "max_bandwidth_mbps": 50
+      },
+      {
+        "country": "FR",
+        "density_band": "URBAN",
+        "product": "ETHERNET_FIBRE",
+        "access_technology": "ETHERNET_FIBRE",
+        "available": true,
+        "max_bandwidth_mbps": 1000
+      },
+      {
+        "country": "FR",
+        "density_band": "URBAN",
+        "product": "DARK_FIBRE",
+        "access_technology": "DARK_FIBRE",
+        "available": true,
+        "max_bandwidth_mbps": 10000
+      },
+      {
+        "country": "FR",
+        "density_band": "URBAN",
+        "product": "PON",
+        "access_technology": "PON",
+        "available": true,
+        "max_bandwidth_mbps": 1000
+      },
+      {
+        "country": "FR",
+        "density_band": "URBAN",
+        "product": "HFC",
+        "access_technology": "HFC",
+        "available": true,
+        "max_bandwidth_mbps": 1000
+      },
+      {
+        "country": "FR",
+        "density_band": "URBAN",
+        "product": "VDSL",
+        "access_technology": "VDSL",
+        "available": true,
+        "max_bandwidth_mbps": 80
+      },
+      {
+        "country": "FR",
+        "density_band": "URBAN",
+        "product": "ADSL",
+        "access_technology": "ADSL",
+        "available": true,
+        "max_bandwidth_mbps": 24
+      },
+      {
+        "country": "FR",
+        "density_band": "URBAN",
+        "product": "MOBILE_5G",
+        "access_technology": "MOBILE_5G",
+        "available": true,
+        "max_bandwidth_mbps": 300
+      },
+      {
+        "country": "FR",
+        "density_band": "URBAN",
+        "product": "MOBILE_4G",
+        "access_technology": "MOBILE_4G",
+        "available": true,
+        "max_bandwidth_mbps": 50
+      },
+      {
+        "country": "FR",
+        "density_band": "SUBURBAN",
+        "product": "ETHERNET_FIBRE",
+        "access_technology": "ETHERNET_FIBRE",
+        "available": true,
+        "max_bandwidth_mbps": 500
+      },
+      {
+        "country": "FR",
+        "density_band": "SUBURBAN",
+        "product": "DARK_FIBRE",
+        "access_technology": "DARK_FIBRE",
+        "available": false,
+        "max_bandwidth_mbps": null
+      },
+      {
+        "country": "FR",
+        "density_band": "SUBURBAN",
+        "product": "PON",
+        "access_technology": "PON",
+        "available": true,
+        "max_bandwidth_mbps": 300
+      },
+      {
+        "country": "FR",
+        "density_band": "SUBURBAN",
+        "product": "HFC",
+        "access_technology": "HFC",
+        "available": true,
+        "max_bandwidth_mbps": 500
+      },
+      {
+        "country": "FR",
+        "density_band": "SUBURBAN",
+        "product": "VDSL",
+        "access_technology": "VDSL",
+        "available": true,
+        "max_bandwidth_mbps": 80
+      },
+      {
+        "country": "FR",
+        "density_band": "SUBURBAN",
+        "product": "ADSL",
+        "access_technology": "ADSL",
+        "available": true,
+        "max_bandwidth_mbps": 24
+      },
+      {
+        "country": "FR",
+        "density_band": "SUBURBAN",
+        "product": "MOBILE_5G",
+        "access_technology": "MOBILE_5G",
+        "available": true,
+        "max_bandwidth_mbps": 200
+      },
+      {
+        "country": "FR",
+        "density_band": "SUBURBAN",
+        "product": "MOBILE_4G",
+        "access_technology": "MOBILE_4G",
+        "available": true,
+        "max_bandwidth_mbps": 50
+      },
+      {
+        "country": "FR",
+        "density_band": "RURAL",
+        "product": "ETHERNET_FIBRE",
+        "access_technology": "ETHERNET_FIBRE",
+        "available": false,
+        "max_bandwidth_mbps": null
+      },
+      {
+        "country": "FR",
+        "density_band": "RURAL",
+        "product": "DARK_FIBRE",
+        "access_technology": "DARK_FIBRE",
+        "available": false,
+        "max_bandwidth_mbps": null
+      },
+      {
+        "country": "FR",
+        "density_band": "RURAL",
+        "product": "PON",
+        "access_technology": "PON",
+        "available": true,
+        "max_bandwidth_mbps": 100
+      },
+      {
+        "country": "FR",
+        "density_band": "RURAL",
+        "product": "HFC",
+        "access_technology": "HFC",
+        "available": true,
+        "max_bandwidth_mbps": 200
+      },
+      {
+        "country": "FR",
+        "density_band": "RURAL",
+        "product": "VDSL",
+        "access_technology": "VDSL",
+        "available": true,
+        "max_bandwidth_mbps": 40
+      },
+      {
+        "country": "FR",
+        "density_band": "RURAL",
+        "product": "ADSL",
+        "access_technology": "ADSL",
+        "available": true,
+        "max_bandwidth_mbps": 16
+      },
+      {
+        "country": "FR",
+        "density_band": "RURAL",
+        "product": "FWA",
+        "access_technology": "FWA",
+        "available": true,
+        "max_bandwidth_mbps": 100
+      },
+      {
+        "country": "FR",
+        "density_band": "RURAL",
+        "product": "MOBILE_5G",
+        "access_technology": "MOBILE_5G",
+        "available": true,
+        "max_bandwidth_mbps": 100
+      },
+      {
+        "country": "FR",
+        "density_band": "RURAL",
+        "product": "MOBILE_4G",
+        "access_technology": "MOBILE_4G",
+        "available": true,
+        "max_bandwidth_mbps": 30
+      },
+      {
+        "country": "FR",
         "density_band": "RURAL",
         "product": "SATELLITE",
         "access_technology": "SATELLITE",
@@ -1581,19 +1979,39 @@
       "template_version": "1.0.0",
       "regions": {
         "AMER": [
+          "BR",
           "US"
+        ],
+        "APAC": [
+          "CN",
+          "IN"
         ],
         "EUROPE_CENTRAL": [
           "DE"
         ],
+        "EUROPE_SOUTH": [
+          "ES",
+          "IT"
+        ],
         "EUROPE_WEST": [
-          "BE"
+          "BE",
+          "FR"
         ]
       },
       "hub_regions": [
+        "AMER",
         "EUROPE_CENTRAL"
       ],
       "links": [
+        {
+          "tier": "DC_TO_REGION",
+          "region": "AMER",
+          "count": 2,
+          "product": "ETHERNET",
+          "bandwidth_mbps": 10000,
+          "dual": true,
+          "note": "2 data centre(s) in AMER to the AMER hub"
+        },
         {
           "tier": "DC_TO_REGION",
           "region": "EUROPE_CENTRAL",
@@ -1602,29 +2020,47 @@
           "bandwidth_mbps": 10000,
           "dual": true,
           "note": "4 data centre(s) in EUROPE_CENTRAL to the EUROPE_CENTRAL hub"
+        },
+        {
+          "tier": "REGION_TO_CORE",
+          "region": "AMER",
+          "count": 1,
+          "product": "ETHERNET",
+          "bandwidth_mbps": 10000,
+          "dual": true,
+          "note": "AMER hub to the global core"
+        },
+        {
+          "tier": "REGION_TO_CORE",
+          "region": "EUROPE_CENTRAL",
+          "count": 1,
+          "product": "ETHERNET",
+          "bandwidth_mbps": 10000,
+          "dual": true,
+          "note": "EUROPE_CENTRAL hub to the global core"
         }
       ],
       "unmapped_countries": [],
-      "backbone_circuits": 8,
-      "note": "One region with data centres (EUROPE_CENTRAL), so there is no global core tier - a hub has nothing to reach across."
+      "backbone_circuits": 16,
+      "note": ""
     }
   },
   "output": {
     "model_version": "sim-2.7.0",
     "seed": 20260101,
     "ensemble_size": 25,
-    "sites": 102,
+    "sites": 219,
     "serviceability": {
       "counts": {
-        "DELIVERED": 102,
+        "DELIVERED": 219,
         "SUBSTITUTED": 0,
         "UNSERVICEABLE": 0
       },
       "substitutions": [],
       "by_access_technology": [],
       "unserviceable": 0,
-      "note": "0 of 102 site(s) take a different product or tier from the one their type asks for, and 0 can be served by nothing at all. A uniform estate is an assumption; this is what the density bands say about it.",
-      "table_rows": 68,
+      "note": "0 of 219 site(s) take a different product or tier from the one their type asks for, and 0 can be served by nothing at all. A uniform estate is an assumption; this is what the density bands say about it.",
+      "table_rows": 102,
       "table_basis": "GOVERNED"
     },
     "unserviceable": [],
@@ -1660,27 +2096,53 @@
         "density": null,
         "asked_for": "ETHERNET",
         "reason": "the only backup deliverable in None DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "US",
+        "archetype": "DC",
+        "density": null,
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in None US is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "US",
+        "archetype": "DC",
+        "density": null,
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in None US is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
       }
     ],
     "estate_truncated": 0,
     "sites_named": 0,
-    "sites_generated": 102,
+    "sites_generated": 219,
     "circuits": {
-      "low": 200,
-      "base": 203,
-      "high": 205
+      "low": 434,
+      "base": 438,
+      "high": 442
     },
     "circuits_primary": {
-      "low": 102,
-      "base": 102,
-      "high": 102
+      "low": 219,
+      "base": 219,
+      "high": 219
     },
     "circuits_backup": {
-      "low": 90,
-      "base": 93,
-      "high": 95
+      "low": 199,
+      "base": 203,
+      "high": 207
     },
     "products": [
+      {
+        "country": "AMER",
+        "product": "ETHERNET",
+        "role": "BACKBONE",
+        "bandwidth_mbps": 10000,
+        "count": 6,
+        "service_class": "ETHERNET",
+        "bearer_mbps": 10000,
+        "access_technology": "ETHERNET_FIBRE"
+      },
       {
         "country": "BE",
         "product": "BROADBAND_PON",
@@ -1702,11 +2164,91 @@
         "access_technology": "ETHERNET_FIBRE"
       },
       {
+        "country": "BR",
+        "product": "BROADBAND_PON",
+        "role": "BACKUP",
+        "bandwidth_mbps": 1000,
+        "count": 9,
+        "service_class": "BEST_EFFORT",
+        "bearer_mbps": 1000,
+        "access_technology": "PON"
+      },
+      {
+        "country": "BR",
+        "product": "DIA",
+        "role": "BACKUP",
+        "bandwidth_mbps": 1000,
+        "count": 4,
+        "service_class": "DIA",
+        "bearer_mbps": 1000,
+        "access_technology": null
+      },
+      {
+        "country": "BR",
+        "product": "ETHERNET",
+        "role": "PRIMARY",
+        "bandwidth_mbps": 500,
+        "count": 6,
+        "service_class": "ETHERNET",
+        "bearer_mbps": 1000,
+        "access_technology": "ETHERNET_FIBRE"
+      },
+      {
+        "country": "BR",
+        "product": "ETHERNET",
+        "role": "PRIMARY",
+        "bandwidth_mbps": 600,
+        "count": 11,
+        "service_class": "ETHERNET",
+        "bearer_mbps": 1000,
+        "access_technology": "ETHERNET_FIBRE"
+      },
+      {
+        "country": "CN",
+        "product": "BROADBAND_PON",
+        "role": "BACKUP",
+        "bandwidth_mbps": 1000,
+        "count": 23,
+        "service_class": "BEST_EFFORT",
+        "bearer_mbps": 1000,
+        "access_technology": "PON"
+      },
+      {
+        "country": "CN",
+        "product": "DIA",
+        "role": "BACKUP",
+        "bandwidth_mbps": 1000,
+        "count": 9,
+        "service_class": "DIA",
+        "bearer_mbps": 1000,
+        "access_technology": null
+      },
+      {
+        "country": "CN",
+        "product": "ETHERNET",
+        "role": "PRIMARY",
+        "bandwidth_mbps": 500,
+        "count": 10,
+        "service_class": "ETHERNET",
+        "bearer_mbps": 1000,
+        "access_technology": "ETHERNET_FIBRE"
+      },
+      {
+        "country": "CN",
+        "product": "ETHERNET",
+        "role": "PRIMARY",
+        "bandwidth_mbps": 600,
+        "count": 26,
+        "service_class": "ETHERNET",
+        "bearer_mbps": 1000,
+        "access_technology": "ETHERNET_FIBRE"
+      },
+      {
         "country": "DE",
         "product": "BROADBAND_PON",
         "role": "BACKUP",
         "bandwidth_mbps": 1000,
-        "count": 35,
+        "count": 31,
         "service_class": "BEST_EFFORT",
         "bearer_mbps": 1000,
         "access_technology": "PON"
@@ -1716,7 +2258,7 @@
         "product": "DIA",
         "role": "BACKUP",
         "bandwidth_mbps": 1000,
-        "count": 14,
+        "count": 13,
         "service_class": "DIA",
         "bearer_mbps": 1000,
         "access_technology": null
@@ -1752,13 +2294,133 @@
         "access_technology": "ETHERNET_FIBRE"
       },
       {
+        "country": "ES",
+        "product": "BROADBAND_PON",
+        "role": "BACKUP",
+        "bandwidth_mbps": 1000,
+        "count": 8,
+        "service_class": "BEST_EFFORT",
+        "bearer_mbps": 1000,
+        "access_technology": "PON"
+      },
+      {
+        "country": "ES",
+        "product": "ETHERNET",
+        "role": "PRIMARY",
+        "bandwidth_mbps": 600,
+        "count": 9,
+        "service_class": "ETHERNET",
+        "bearer_mbps": 1000,
+        "access_technology": "ETHERNET_FIBRE"
+      },
+      {
         "country": "EUROPE_CENTRAL",
         "product": "ETHERNET",
         "role": "BACKBONE",
         "bandwidth_mbps": 10000,
-        "count": 8,
+        "count": 10,
         "service_class": "ETHERNET",
         "bearer_mbps": 10000,
+        "access_technology": "ETHERNET_FIBRE"
+      },
+      {
+        "country": "FR",
+        "product": "BROADBAND_PON",
+        "role": "BACKUP",
+        "bandwidth_mbps": 1000,
+        "count": 11,
+        "service_class": "BEST_EFFORT",
+        "bearer_mbps": 1000,
+        "access_technology": "PON"
+      },
+      {
+        "country": "FR",
+        "product": "DIA",
+        "role": "BACKUP",
+        "bandwidth_mbps": 1000,
+        "count": 6,
+        "service_class": "DIA",
+        "bearer_mbps": 1000,
+        "access_technology": null
+      },
+      {
+        "country": "FR",
+        "product": "ETHERNET",
+        "role": "PRIMARY",
+        "bandwidth_mbps": 500,
+        "count": 6,
+        "service_class": "ETHERNET",
+        "bearer_mbps": 1000,
+        "access_technology": "ETHERNET_FIBRE"
+      },
+      {
+        "country": "FR",
+        "product": "ETHERNET",
+        "role": "PRIMARY",
+        "bandwidth_mbps": 600,
+        "count": 12,
+        "service_class": "ETHERNET",
+        "bearer_mbps": 1000,
+        "access_technology": "ETHERNET_FIBRE"
+      },
+      {
+        "country": "IN",
+        "product": "BROADBAND_PON",
+        "role": "BACKUP",
+        "bandwidth_mbps": 1000,
+        "count": 7,
+        "service_class": "BEST_EFFORT",
+        "bearer_mbps": 1000,
+        "access_technology": "PON"
+      },
+      {
+        "country": "IN",
+        "product": "DIA",
+        "role": "BACKUP",
+        "bandwidth_mbps": 1000,
+        "count": 5,
+        "service_class": "DIA",
+        "bearer_mbps": 1000,
+        "access_technology": null
+      },
+      {
+        "country": "IN",
+        "product": "ETHERNET",
+        "role": "PRIMARY",
+        "bandwidth_mbps": 500,
+        "count": 6,
+        "service_class": "ETHERNET",
+        "bearer_mbps": 1000,
+        "access_technology": "ETHERNET_FIBRE"
+      },
+      {
+        "country": "IN",
+        "product": "ETHERNET",
+        "role": "PRIMARY",
+        "bandwidth_mbps": 600,
+        "count": 8,
+        "service_class": "ETHERNET",
+        "bearer_mbps": 1000,
+        "access_technology": "ETHERNET_FIBRE"
+      },
+      {
+        "country": "IT",
+        "product": "BROADBAND_PON",
+        "role": "BACKUP",
+        "bandwidth_mbps": 1000,
+        "count": 8,
+        "service_class": "BEST_EFFORT",
+        "bearer_mbps": 1000,
+        "access_technology": "PON"
+      },
+      {
+        "country": "IT",
+        "product": "ETHERNET",
+        "role": "PRIMARY",
+        "bandwidth_mbps": 600,
+        "count": 8,
+        "service_class": "ETHERNET",
+        "bearer_mbps": 1000,
         "access_technology": "ETHERNET_FIBRE"
       },
       {
@@ -1766,7 +2428,7 @@
         "product": "BROADBAND_PON",
         "role": "BACKUP",
         "bandwidth_mbps": 1000,
-        "count": 25,
+        "count": 26,
         "service_class": "BEST_EFFORT",
         "bearer_mbps": 1000,
         "access_technology": "PON"
@@ -1776,7 +2438,7 @@
         "product": "DIA",
         "role": "BACKUP",
         "bandwidth_mbps": 1000,
-        "count": 1,
+        "count": 10,
         "service_class": "DIA",
         "bearer_mbps": 1000,
         "access_technology": null
@@ -1785,8 +2447,18 @@
         "country": "US",
         "product": "ETHERNET",
         "role": "PRIMARY",
+        "bandwidth_mbps": 3000,
+        "count": 2,
+        "service_class": "ETHERNET",
+        "bearer_mbps": 10000,
+        "access_technology": "ETHERNET_FIBRE"
+      },
+      {
+        "country": "US",
+        "product": "ETHERNET",
+        "role": "PRIMARY",
         "bandwidth_mbps": 500,
-        "count": 1,
+        "count": 14,
         "service_class": "ETHERNET",
         "bearer_mbps": 1000,
         "access_technology": "ETHERNET_FIBRE"
@@ -1803,49 +2475,69 @@
       }
     ],
     "dual_access_sites": {
-      "low": 90,
-      "base": 93,
-      "high": 95
+      "low": 199,
+      "base": 203,
+      "high": 207
     },
-    "circuits_backbone": 8,
-    "circuits_per_site_base": 1.9216,
-    "implied_users": 36800,
+    "circuits_backbone": 16,
+    "circuits_per_site_base": 1.8995,
+    "implied_users": 76650,
     "bandwidth_profile": {
       "PLANT": {
-        "sites": 82,
+        "sites": 156,
         "mbps_per_site": 1000,
-        "mbps_total": 82000
-      },
-      "DC": {
-        "sites": 4,
-        "mbps_per_site": 10000,
-        "mbps_total": 40000
+        "mbps_total": 156000
       },
       "LARGE_OFFICE": {
-        "sites": 16,
+        "sites": 57,
         "mbps_per_site": 1000,
-        "mbps_total": 16000
+        "mbps_total": 57000
+      },
+      "DC": {
+        "sites": 6,
+        "mbps_per_site": 10000,
+        "mbps_total": 60000
       }
     },
-    "bandwidth_mbps_total": 138000,
+    "bandwidth_mbps_total": 273000,
     "diversity_state": "SIMULATED",
     "backbone": {
       "template_version": "1.0.0",
       "regions": {
         "AMER": [
+          "BR",
           "US"
+        ],
+        "APAC": [
+          "CN",
+          "IN"
         ],
         "EUROPE_CENTRAL": [
           "DE"
         ],
+        "EUROPE_SOUTH": [
+          "ES",
+          "IT"
+        ],
         "EUROPE_WEST": [
-          "BE"
+          "BE",
+          "FR"
         ]
       },
       "hub_regions": [
+        "AMER",
         "EUROPE_CENTRAL"
       ],
       "links": [
+        {
+          "tier": "DC_TO_REGION",
+          "region": "AMER",
+          "count": 2,
+          "product": "ETHERNET",
+          "bandwidth_mbps": 10000,
+          "dual": true,
+          "note": "2 data centre(s) in AMER to the AMER hub"
+        },
         {
           "tier": "DC_TO_REGION",
           "region": "EUROPE_CENTRAL",
@@ -1854,18 +2546,36 @@
           "bandwidth_mbps": 10000,
           "dual": true,
           "note": "4 data centre(s) in EUROPE_CENTRAL to the EUROPE_CENTRAL hub"
+        },
+        {
+          "tier": "REGION_TO_CORE",
+          "region": "AMER",
+          "count": 1,
+          "product": "ETHERNET",
+          "bandwidth_mbps": 10000,
+          "dual": true,
+          "note": "AMER hub to the global core"
+        },
+        {
+          "tier": "REGION_TO_CORE",
+          "region": "EUROPE_CENTRAL",
+          "count": 1,
+          "product": "ETHERNET",
+          "bandwidth_mbps": 10000,
+          "dual": true,
+          "note": "EUROPE_CENTRAL hub to the global core"
         }
       ],
       "unmapped_countries": [],
-      "backbone_circuits": 8,
-      "note": "One region with data centres (EUROPE_CENTRAL), so there is no global core tier - a hub has nothing to reach across."
+      "backbone_circuits": 16,
+      "note": ""
     },
-    "node_count": 102,
-    "edge_count": 196
+    "node_count": 219,
+    "edge_count": 416
   },
   "output_omitted": {
     "fields": [
-      "estate (102 rows)",
+      "estate (219 rows)",
       "sample_topology (2 rows)"
     ],
     "why": "per-site arrays, the same information the aggregates carry; tools/backfill_simulation.py --full keeps them"

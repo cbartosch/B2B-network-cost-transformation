@@ -9,7 +9,12 @@
   "in_scope_countries": [
     "DE",
     "AT",
-    "US"
+    "US",
+    "CN",
+    "IN",
+    "GB",
+    "FR",
+    "IT"
   ],
   "base_currency": "EUR",
   "case_id": "3e29f228-1016-4a3d-b0ac-bea45544106e",
@@ -47,8 +52,23 @@
     },
     {
       "country": "AT",
+      "archetype": "LARGE_OFFICE",
+      "sites": 12
+    },
+    {
+      "country": "AT",
       "archetype": "PLANT",
       "sites": 8
+    },
+    {
+      "country": "CN",
+      "archetype": "LARGE_OFFICE",
+      "sites": 55
+    },
+    {
+      "country": "CN",
+      "archetype": "PLANT",
+      "sites": 21
     },
     {
       "country": "DE",
@@ -71,6 +91,56 @@
       "sites": 35
     },
     {
+      "country": "FR",
+      "archetype": "LARGE_OFFICE",
+      "sites": 20
+    },
+    {
+      "country": "FR",
+      "archetype": "PLANT",
+      "sites": 7
+    },
+    {
+      "country": "GB",
+      "archetype": "LARGE_OFFICE",
+      "sites": 25
+    },
+    {
+      "country": "GB",
+      "archetype": "PLANT",
+      "sites": 9
+    },
+    {
+      "country": "IN",
+      "archetype": "LARGE_OFFICE",
+      "sites": 40
+    },
+    {
+      "country": "IN",
+      "archetype": "PLANT",
+      "sites": 14
+    },
+    {
+      "country": "IT",
+      "archetype": "LARGE_OFFICE",
+      "sites": 18
+    },
+    {
+      "country": "IT",
+      "archetype": "PLANT",
+      "sites": 6
+    },
+    {
+      "country": "US",
+      "archetype": "DC",
+      "sites": 3
+    },
+    {
+      "country": "US",
+      "archetype": "LARGE_OFFICE",
+      "sites": 70
+    },
+    {
       "country": "US",
       "archetype": "PLANT",
       "sites": 25
@@ -85,8 +155,26 @@
     },
     {
       "country": "AT",
+      "archetype": "LARGE_OFFICE",
+      "sites": 12,
+      "origin": "PUBLIC_DISCLOSURE"
+    },
+    {
+      "country": "AT",
       "archetype": "PLANT",
       "sites": 8,
+      "origin": "PUBLIC_DISCLOSURE"
+    },
+    {
+      "country": "CN",
+      "archetype": "LARGE_OFFICE",
+      "sites": 55,
+      "origin": "PUBLIC_DISCLOSURE"
+    },
+    {
+      "country": "CN",
+      "archetype": "PLANT",
+      "sites": 21,
       "origin": "PUBLIC_DISCLOSURE"
     },
     {
@@ -118,6 +206,66 @@
       "disclosure_said": 35
     },
     {
+      "country": "FR",
+      "archetype": "LARGE_OFFICE",
+      "sites": 20,
+      "origin": "PUBLIC_DISCLOSURE"
+    },
+    {
+      "country": "FR",
+      "archetype": "PLANT",
+      "sites": 7,
+      "origin": "PUBLIC_DISCLOSURE"
+    },
+    {
+      "country": "GB",
+      "archetype": "LARGE_OFFICE",
+      "sites": 25,
+      "origin": "PUBLIC_DISCLOSURE"
+    },
+    {
+      "country": "GB",
+      "archetype": "PLANT",
+      "sites": 9,
+      "origin": "PUBLIC_DISCLOSURE"
+    },
+    {
+      "country": "IN",
+      "archetype": "LARGE_OFFICE",
+      "sites": 40,
+      "origin": "PUBLIC_DISCLOSURE"
+    },
+    {
+      "country": "IN",
+      "archetype": "PLANT",
+      "sites": 14,
+      "origin": "PUBLIC_DISCLOSURE"
+    },
+    {
+      "country": "IT",
+      "archetype": "LARGE_OFFICE",
+      "sites": 18,
+      "origin": "PUBLIC_DISCLOSURE"
+    },
+    {
+      "country": "IT",
+      "archetype": "PLANT",
+      "sites": 6,
+      "origin": "PUBLIC_DISCLOSURE"
+    },
+    {
+      "country": "US",
+      "archetype": "DC",
+      "sites": 3,
+      "origin": "PUBLIC_DISCLOSURE"
+    },
+    {
+      "country": "US",
+      "archetype": "LARGE_OFFICE",
+      "sites": 70,
+      "origin": "PUBLIC_DISCLOSURE"
+    },
+    {
       "country": "US",
       "archetype": "PLANT",
       "sites": 25,
@@ -126,12 +274,17 @@
   ],
   "scope_countries_modelled": [
     "AT",
+    "CN",
     "DE",
+    "FR",
+    "GB",
+    "IN",
+    "IT",
     "US"
   ],
   "scope_countries_company_total": "DECLARED_UNKNOWN",
   "scope_status": "PARTIAL_COUNTRIES",
-  "scope_note": "Baseline covers 3 country(ies) (AT, DE, US) and the site types listed in sites_origin. The group's full country and site-type count is not sourced, so the share of the group this represents is DECLARED_UNKNOWN. This is baseline_in_scope, not a group baseline.",
+  "scope_note": "Baseline covers 8 country(ies) (AT, CN, DE, FR, GB, IN, IT, US) and the site types listed in sites_origin. The group's full country and site-type count is not sourced, so the share of the group this represents is DECLARED_UNKNOWN. This is baseline_in_scope, not a group baseline.",
   "sites_origin": {
     "CAMPUS": "RESEARCHED",
     "DC": "ASSUMED_PUBLIC_DISCLOSURE",
@@ -189,13 +342,13 @@
   ],
   "estimate_inputs": {
     "method": "BUILD_UP",
-    "users": 2364,
+    "users": 5964,
     "ops_cost_per_site_base": 900,
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-12T08:35:52.231977+00:00",
-  "run_seconds": 4.2,
+  "run_started": "2026-10-12T13:18:50.478679+00:00",
+  "run_seconds": 5.7,
   "preflight_conditions": 8,
   "promotion": {
     "promoted": true,

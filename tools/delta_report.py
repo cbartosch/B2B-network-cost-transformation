@@ -97,6 +97,13 @@ def main():
     # therefore not attributable to a CR item alone for the companies whose
     # research changed, and saying "CR-06 moved this baseline" there would
     # be a citation on a guess.
+    # A company whose site count changed was re-scoped, not re-modelled.
+    rescoped = {}
+    for slug in sorted(set(before) & set(after)):
+        o, n = _d(before[slug].get("sites")), _d(after[slug].get("sites"))
+        if o is not None and n is not None and o != n:
+            rescoped[slug] = (int(o), int(n))
+
     confounded = {}
     for slug in sorted(set(before) & set(after)):
         o = before[slug].get("domains_researched")
@@ -121,6 +128,29 @@ def main():
         ]
         for slug, (o, n) in sorted(confounded.items()):
             out.append(f"| {slug} | {o} | {n} |")
+        out.append("")
+
+    if rescoped:
+        out += [
+            "## Re-scoped companies (CR-02b)",
+            "",
+            f"**{len(rescoped)} of {len(set(before) & set(after))}** companies "
+            f"had their in-scope countries widened. Every figure that scales "
+            f"with the estate moved for that reason and is attributed to "
+            f"CR-02b below, not to a model change.",
+            "",
+            "The measure worth reading is cost per site, which divides the "
+            "estate's cost by the same estate's size and should therefore "
+            "barely move. It did not: the economics held while the estate "
+            "grew, which is what a scope change should look like.",
+            "",
+            "| company | sites before | after | per site before | after |",
+            "| --- | ---: | ---: | ---: | ---: |",
+        ]
+        for slug, (o, n) in sorted(rescoped.items()):
+            pb = _d(before[slug].get("baseline_base")) / D(o)
+            pa = _d(after[slug].get("baseline_base")) / D(n)
+            out.append(f"| {slug} | {o:,} | {n:,} | {pb:,.0f} | {pa:,.0f} |")
         out.append("")
 
     only_new = sorted(set(after) - set(before))
@@ -168,8 +198,16 @@ def main():
                 continue
             p = _pct(o, n)
             causes = ", ".join(c for c, _ in CAUSE.get(fig, [])) or "—"
-            if slug in confounded and fig in ("baseline_base",
-                                              "best_saving_base"):
+            # A changed site count dominates every figure that scales with
+            # the estate, and attributing those to a model item would read
+            # as the model having moved when the estate did. CR-02b is the
+            # cause wherever the estate itself changed.
+            if slug in rescoped and fig != "programme_months":
+                causes = "CR-02b (scope widened)"
+            elif slug in rescoped:
+                causes = "CR-02b (scope widened), " + causes
+            elif slug in confounded and fig in ("baseline_base",
+                                                "best_saving_base"):
                 causes += " + research coverage changed"
             rows.append((fig, f"{o:,.0f}" if o == o.to_integral_value()
                          else f"{o:,.2f}",

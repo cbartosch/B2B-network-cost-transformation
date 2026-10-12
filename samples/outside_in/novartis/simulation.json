@@ -1,15 +1,31 @@
 {
-  "simulation_run_id": "3ab437d9-d4fa-46e1-99aa-51087a319dd1",
+  "simulation_run_id": "eae55333-3932-4a60-b38f-3f6bcdc35986",
   "case_id": "18f2d1bc-b978-4074-8726-19be0609f087",
   "model_version": "sim-2.7.0",
   "seed": 20260101,
   "ensemble_size": 25,
   "status": "SUCCEEDED",
-  "output_hash": "b96a241a949144898a77c79ad9e1cf272892a5426fce291f5278a73bf0d5cdc3",
-  "started_at": "2026-10-12 08:35:57.041834+00:00",
-  "ended_at": "2026-10-12 08:35:57.177777+00:00",
+  "output_hash": "7a4766ba74e03967ebd4ac256f0b1813d794e07933d120fd1752664c39b594a7",
+  "started_at": "2026-10-12 13:18:51.418717+00:00",
+  "ended_at": "2026-10-12 13:18:51.756420+00:00",
   "params": {
     "footprint": [
+      {
+        "country": "AT",
+        "archetype": "PLANT",
+        "sites": 4,
+        "industry": null,
+        "count_source": null,
+        "density": null
+      },
+      {
+        "country": "CH",
+        "archetype": "CAMPUS",
+        "sites": 6,
+        "industry": null,
+        "count_source": null,
+        "density": null
+      },
       {
         "country": "CH",
         "archetype": "DC",
@@ -37,7 +53,7 @@
       {
         "country": "DE",
         "archetype": "LARGE_OFFICE",
-        "sites": 2,
+        "sites": 7,
         "industry": null,
         "count_source": null,
         "density": null
@@ -51,9 +67,65 @@
         "density": null
       },
       {
+        "country": "ES",
+        "archetype": "PLANT",
+        "sites": 4,
+        "industry": null,
+        "count_source": null,
+        "density": null
+      },
+      {
+        "country": "IE",
+        "archetype": "LARGE_OFFICE",
+        "sites": 4,
+        "industry": null,
+        "count_source": null,
+        "density": null
+      },
+      {
+        "country": "IE",
+        "archetype": "PLANT",
+        "sites": 5,
+        "industry": null,
+        "count_source": null,
+        "density": null
+      },
+      {
+        "country": "IT",
+        "archetype": "PLANT",
+        "sites": 6,
+        "industry": null,
+        "count_source": null,
+        "density": null
+      },
+      {
+        "country": "SG",
+        "archetype": "PLANT",
+        "sites": 3,
+        "industry": null,
+        "count_source": null,
+        "density": null
+      },
+      {
+        "country": "US",
+        "archetype": "CAMPUS",
+        "sites": 5,
+        "industry": null,
+        "count_source": null,
+        "density": null
+      },
+      {
         "country": "US",
         "archetype": "DC",
         "sites": 2,
+        "industry": null,
+        "count_source": null,
+        "density": null
+      },
+      {
+        "country": "US",
+        "archetype": "LARGE_OFFICE",
+        "sites": 16,
         "industry": null,
         "count_source": null,
         "density": null
@@ -81,9 +153,20 @@
         "AMER": [
           "US"
         ],
+        "APAC": [
+          "SG"
+        ],
         "EUROPE_CENTRAL": [
+          "AT",
           "CH",
           "DE"
+        ],
+        "EUROPE_SOUTH": [
+          "ES",
+          "IT"
+        ],
+        "EUROPE_WEST": [
+          "IE"
         ]
       },
       "hub_regions": [
@@ -1579,9 +1662,20 @@
         "AMER": [
           "US"
         ],
+        "APAC": [
+          "SG"
+        ],
         "EUROPE_CENTRAL": [
+          "AT",
           "CH",
           "DE"
+        ],
+        "EUROPE_SOUTH": [
+          "ES",
+          "IT"
+        ],
+        "EUROPE_WEST": [
+          "IE"
         ]
       },
       "hub_regions": [
@@ -1635,17 +1729,17 @@
     "model_version": "sim-2.7.0",
     "seed": 20260101,
     "ensemble_size": 25,
-    "sites": 67,
+    "sites": 125,
     "serviceability": {
       "counts": {
-        "DELIVERED": 67,
+        "DELIVERED": 125,
         "SUBSTITUTED": 0,
         "UNSERVICEABLE": 0
       },
       "substitutions": [],
       "by_access_technology": [],
       "unserviceable": 0,
-      "note": "0 of 67 site(s) take a different product or tier from the one their type asks for, and 0 can be served by nothing at all. A uniform estate is an assumption; this is what the density bands say about it.",
+      "note": "0 of 125 site(s) take a different product or tier from the one their type asks for, and 0 can be served by nothing at all. A uniform estate is an assumption; this is what the density bands say about it.",
       "table_rows": 68,
       "table_basis": "GOVERNED"
     },
@@ -1654,7 +1748,47 @@
       {
         "because": "NOT_DELIVERABLE",
         "country": "CH",
-        "archetype": "DC",
+        "archetype": "CAMPUS",
+        "density": null,
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in None CH is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "CH",
+        "archetype": "CAMPUS",
+        "density": null,
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in None CH is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "CH",
+        "archetype": "CAMPUS",
+        "density": null,
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in None CH is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "CH",
+        "archetype": "CAMPUS",
+        "density": null,
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in None CH is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "CH",
+        "archetype": "CAMPUS",
+        "density": null,
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in None CH is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "CH",
+        "archetype": "CAMPUS",
         "density": null,
         "asked_for": "ETHERNET",
         "reason": "the only backup deliverable in None CH is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
@@ -1682,6 +1816,54 @@
         "density": null,
         "asked_for": "ETHERNET",
         "reason": "the only backup deliverable in None CH is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "CH",
+        "archetype": "DC",
+        "density": null,
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in None CH is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "US",
+        "archetype": "CAMPUS",
+        "density": null,
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in None US is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "US",
+        "archetype": "CAMPUS",
+        "density": null,
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in None US is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "US",
+        "archetype": "CAMPUS",
+        "density": null,
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in None US is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "US",
+        "archetype": "CAMPUS",
+        "density": null,
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in None US is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "US",
+        "archetype": "CAMPUS",
+        "density": null,
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in None US is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
       },
       {
         "because": "NOT_DELIVERABLE",
@@ -1702,21 +1884,21 @@
     ],
     "estate_truncated": 0,
     "sites_named": 0,
-    "sites_generated": 67,
+    "sites_generated": 125,
     "circuits": {
-      "low": 135,
-      "base": 137,
-      "high": 140
+      "low": 234,
+      "base": 238,
+      "high": 241
     },
     "circuits_primary": {
-      "low": 67,
-      "base": 67,
-      "high": 67
+      "low": 125,
+      "base": 125,
+      "high": 125
     },
     "circuits_backup": {
-      "low": 52,
-      "base": 54,
-      "high": 57
+      "low": 93,
+      "base": 97,
+      "high": 100
     },
     "products": [
       {
@@ -1730,11 +1912,31 @@
         "access_technology": "ETHERNET_FIBRE"
       },
       {
+        "country": "AT",
+        "product": "BROADBAND_PON",
+        "role": "BACKUP",
+        "bandwidth_mbps": 1000,
+        "count": 4,
+        "service_class": "BEST_EFFORT",
+        "bearer_mbps": 1000,
+        "access_technology": "PON"
+      },
+      {
+        "country": "AT",
+        "product": "ETHERNET",
+        "role": "PRIMARY",
+        "bandwidth_mbps": 600,
+        "count": 4,
+        "service_class": "ETHERNET",
+        "bearer_mbps": 1000,
+        "access_technology": "ETHERNET_FIBRE"
+      },
+      {
         "country": "CH",
         "product": "BROADBAND_PON",
         "role": "BACKUP",
         "bandwidth_mbps": 1000,
-        "count": 9,
+        "count": 11,
         "service_class": "BEST_EFFORT",
         "bearer_mbps": 1000,
         "access_technology": "PON"
@@ -1744,7 +1946,7 @@
         "product": "DIA",
         "role": "BACKUP",
         "bandwidth_mbps": 1000,
-        "count": 25,
+        "count": 24,
         "service_class": "DIA",
         "bearer_mbps": 1000,
         "access_technology": null
@@ -1780,11 +1982,21 @@
         "access_technology": "ETHERNET_FIBRE"
       },
       {
+        "country": "CH",
+        "product": "ETHERNET",
+        "role": "PRIMARY",
+        "bandwidth_mbps": 9500,
+        "count": 6,
+        "service_class": "ETHERNET",
+        "bearer_mbps": 10000,
+        "access_technology": "ETHERNET_FIBRE"
+      },
+      {
         "country": "DE",
         "product": "BROADBAND_PON",
         "role": "BACKUP",
         "bandwidth_mbps": 1000,
-        "count": 7,
+        "count": 8,
         "service_class": "BEST_EFFORT",
         "bearer_mbps": 1000,
         "access_technology": "PON"
@@ -1794,7 +2006,7 @@
         "product": "DIA",
         "role": "BACKUP",
         "bandwidth_mbps": 1000,
-        "count": 2,
+        "count": 6,
         "service_class": "DIA",
         "bearer_mbps": 1000,
         "access_technology": null
@@ -1804,7 +2016,7 @@
         "product": "ETHERNET",
         "role": "PRIMARY",
         "bandwidth_mbps": 500,
-        "count": 2,
+        "count": 7,
         "service_class": "ETHERNET",
         "bearer_mbps": 1000,
         "access_technology": "ETHERNET_FIBRE"
@@ -1820,6 +2032,26 @@
         "access_technology": "ETHERNET_FIBRE"
       },
       {
+        "country": "ES",
+        "product": "BROADBAND_PON",
+        "role": "BACKUP",
+        "bandwidth_mbps": 1000,
+        "count": 3,
+        "service_class": "BEST_EFFORT",
+        "bearer_mbps": 1000,
+        "access_technology": "PON"
+      },
+      {
+        "country": "ES",
+        "product": "ETHERNET",
+        "role": "PRIMARY",
+        "bandwidth_mbps": 600,
+        "count": 4,
+        "service_class": "ETHERNET",
+        "bearer_mbps": 1000,
+        "access_technology": "ETHERNET_FIBRE"
+      },
+      {
         "country": "EUROPE_CENTRAL",
         "product": "ETHERNET",
         "role": "BACKBONE",
@@ -1830,14 +2062,104 @@
         "access_technology": "ETHERNET_FIBRE"
       },
       {
+        "country": "IE",
+        "product": "BROADBAND_PON",
+        "role": "BACKUP",
+        "bandwidth_mbps": 1000,
+        "count": 3,
+        "service_class": "BEST_EFFORT",
+        "bearer_mbps": 1000,
+        "access_technology": "PON"
+      },
+      {
+        "country": "IE",
+        "product": "DIA",
+        "role": "BACKUP",
+        "bandwidth_mbps": 1000,
+        "count": 4,
+        "service_class": "DIA",
+        "bearer_mbps": 1000,
+        "access_technology": null
+      },
+      {
+        "country": "IE",
+        "product": "ETHERNET",
+        "role": "PRIMARY",
+        "bandwidth_mbps": 500,
+        "count": 4,
+        "service_class": "ETHERNET",
+        "bearer_mbps": 1000,
+        "access_technology": "ETHERNET_FIBRE"
+      },
+      {
+        "country": "IE",
+        "product": "ETHERNET",
+        "role": "PRIMARY",
+        "bandwidth_mbps": 600,
+        "count": 5,
+        "service_class": "ETHERNET",
+        "bearer_mbps": 1000,
+        "access_technology": "ETHERNET_FIBRE"
+      },
+      {
+        "country": "IT",
+        "product": "BROADBAND_PON",
+        "role": "BACKUP",
+        "bandwidth_mbps": 1000,
+        "count": 6,
+        "service_class": "BEST_EFFORT",
+        "bearer_mbps": 1000,
+        "access_technology": "PON"
+      },
+      {
+        "country": "IT",
+        "product": "ETHERNET",
+        "role": "PRIMARY",
+        "bandwidth_mbps": 600,
+        "count": 6,
+        "service_class": "ETHERNET",
+        "bearer_mbps": 1000,
+        "access_technology": "ETHERNET_FIBRE"
+      },
+      {
+        "country": "SG",
+        "product": "BROADBAND_PON",
+        "role": "BACKUP",
+        "bandwidth_mbps": 1000,
+        "count": 3,
+        "service_class": "BEST_EFFORT",
+        "bearer_mbps": 1000,
+        "access_technology": "PON"
+      },
+      {
+        "country": "SG",
+        "product": "ETHERNET",
+        "role": "PRIMARY",
+        "bandwidth_mbps": 600,
+        "count": 3,
+        "service_class": "ETHERNET",
+        "bearer_mbps": 1000,
+        "access_technology": "ETHERNET_FIBRE"
+      },
+      {
         "country": "US",
         "product": "BROADBAND_PON",
         "role": "BACKUP",
         "bandwidth_mbps": 1000,
-        "count": 11,
+        "count": 8,
         "service_class": "BEST_EFFORT",
         "bearer_mbps": 1000,
         "access_technology": "PON"
+      },
+      {
+        "country": "US",
+        "product": "DIA",
+        "role": "BACKUP",
+        "bandwidth_mbps": 1000,
+        "count": 13,
+        "service_class": "DIA",
+        "bearer_mbps": 1000,
+        "access_technology": null
       },
       {
         "country": "US",
@@ -1853,39 +2175,64 @@
         "country": "US",
         "product": "ETHERNET",
         "role": "PRIMARY",
+        "bandwidth_mbps": 500,
+        "count": 16,
+        "service_class": "ETHERNET",
+        "bearer_mbps": 1000,
+        "access_technology": "ETHERNET_FIBRE"
+      },
+      {
+        "country": "US",
+        "product": "ETHERNET",
+        "role": "PRIMARY",
         "bandwidth_mbps": 600,
         "count": 14,
         "service_class": "ETHERNET",
         "bearer_mbps": 1000,
         "access_technology": "ETHERNET_FIBRE"
+      },
+      {
+        "country": "US",
+        "product": "ETHERNET",
+        "role": "PRIMARY",
+        "bandwidth_mbps": 9500,
+        "count": 5,
+        "service_class": "ETHERNET",
+        "bearer_mbps": 10000,
+        "access_technology": "ETHERNET_FIBRE"
       }
     ],
     "dual_access_sites": {
-      "low": 52,
-      "base": 54,
-      "high": 57
+      "low": 93,
+      "base": 97,
+      "high": 100
     },
     "circuits_backbone": 16,
-    "circuits_per_site_base": 2.0448,
-    "implied_users": 20350,
+    "circuits_per_site_base": 1.872,
+    "implied_users": 90400,
     "bandwidth_profile": {
+      "PLANT": {
+        "sites": 56,
+        "mbps_per_site": 1000,
+        "mbps_total": 56000
+      },
+      "CAMPUS": {
+        "sites": 11,
+        "mbps_per_site": 10000,
+        "mbps_total": 110000
+      },
       "DC": {
         "sites": 6,
         "mbps_per_site": 10000,
         "mbps_total": 60000
       },
       "LARGE_OFFICE": {
-        "sites": 27,
+        "sites": 52,
         "mbps_per_site": 1000,
-        "mbps_total": 27000
-      },
-      "PLANT": {
-        "sites": 34,
-        "mbps_per_site": 1000,
-        "mbps_total": 34000
+        "mbps_total": 52000
       }
     },
-    "bandwidth_mbps_total": 121000,
+    "bandwidth_mbps_total": 278000,
     "diversity_state": "SIMULATED",
     "backbone": {
       "template_version": "1.0.0",
@@ -1893,9 +2240,20 @@
         "AMER": [
           "US"
         ],
+        "APAC": [
+          "SG"
+        ],
         "EUROPE_CENTRAL": [
+          "AT",
           "CH",
           "DE"
+        ],
+        "EUROPE_SOUTH": [
+          "ES",
+          "IT"
+        ],
+        "EUROPE_WEST": [
+          "IE"
         ]
       },
       "hub_regions": [
@@ -1944,12 +2302,12 @@
       "backbone_circuits": 16,
       "note": ""
     },
-    "node_count": 67,
-    "edge_count": 137
+    "node_count": 125,
+    "edge_count": 234
   },
   "output_omitted": {
     "fields": [
-      "estate (67 rows)",
+      "estate (125 rows)",
       "sample_topology (2 rows)"
     ],
     "why": "per-site arrays, the same information the aggregates carry; tools/backfill_simulation.py --full keeps them"
