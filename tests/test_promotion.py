@@ -323,20 +323,32 @@ def test_an_archetype_named_with_its_mapping_still_reaches_the_footprint(session
     assert not cands["unclassified"]
 
 
-def test_the_leading_token_is_read_the_way_a_product_name_already_was(session):
-    """Two branches of one classifier, the same shape of input, and only one
-    of them read the leading token. This pins them together."""
+def test_the_classifier_and_the_writer_resolve_a_label_the_same_way(session):
+    """What actually protects: a label the classifier accepted cannot be
+    stored as something else.
+
+    This asserted that both branches shared one leading-token helper, which
+    was the implementation rather than the invariant. The two branches have
+    genuinely different inputs - the brief asks for "ARCHETYPE - description"
+    so an archetype leads, while research leads with the market and returns
+    "US DIA 1 Gbps MRC" against a brief whose own example is "DIA 100Mbps
+    MRC". Pinning them to one rule declined four real market medians on word
+    order.
+
+    So each branch has its own resolver and both are shared with promote().
+    That is the property; the symmetry never was.
+    """
     import inspect
 
-    src = inspect.getsource(promotion._classify)
-    assert src.count("head = ") == 1, (
-        "the archetype and product branches should share one leading token")
-    assert "head in ARCHETYPES" in src
-    assert "head in PRODUCTS" in src
-    # And the writer takes it from the same helper, so a label the classifier
-    # accepted cannot be stored as something else.
-    assert "archetype_of" in inspect.getsource(promotion.promote)
+    classify = inspect.getsource(promotion._classify)
+    writer = inspect.getsource(promotion.promote)
+    for resolver in ("archetype_of", "product_in"):
+        assert resolver in classify, f"_classify should use {resolver}"
+        assert resolver in writer, (
+            f"promote() must resolve with {resolver}, or it can store "
+            f"something the classifier never matched")
     assert promotion.archetype_of("SERVICE_POINT - a long description here")         == "SERVICE_POINT"
+    assert promotion.product_in("US DIA 1 Gbps MRC - median") == "DIA"
 
 
 def test_a_label_naming_two_archetypes_is_still_declined(session):

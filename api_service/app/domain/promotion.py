@@ -313,6 +313,53 @@ def is_premises_unit(unit) -> bool:
     return any(w in PREMISES_UNITS for w in words)
 
 
+# A monthly RATE, as opposed to a duration counted in months.
+#
+# The test was `"month" in unit`, which "36 months" satisfies. Domain 20 asks
+# for customary contract lengths and returns exactly that - 24 of them in the
+# sample - and they were kept out of the price bucket only by the product
+# test sitting beside it. Widening that test without this one turns "standard
+# leased-line contract term, 36 months" into a circuit costing 36 a month.
+#
+# A rate is per month: "usd/month", "eur per month", "MRC". A duration is a
+# count of them.
+_RATE_PER_MONTH = ("/month", "/mo", "per month", "a month", "monthly", "mrc",
+                   "p/m", "pcm")
+
+
+def is_monthly_rate_unit(unit) -> bool:
+    text = str(unit or "").strip().lower()
+    if not any(hint in text for hint in _RATE_PER_MONTH):
+        return False
+    # "36 months" has no per-unit sense at all; "eur/month/site" does.
+    bare_duration = text.replace(".", "").strip() in (
+        "month", "months", "mth", "mths")
+    return not bare_duration
+
+
+def product_in(label) -> str | None:
+    """The connectivity product a finding's label names, if exactly one.
+
+    WORD BOUNDARIES, and the reason is the data: "US BROADBAND 100 MBPS MRC -
+    LIGHTYEAR DATASET MEDIAN" contains "DIA" inside "MEDIAN". A substring scan
+    prices every median broadband figure in the sample as dedicated internet
+    access.
+
+    Anywhere in the label rather than the leading token, because research
+    leads with the market: the agent returned "US DIA 100 Mbps MRC" and
+    "US DIA 1 Gbps MRC" against a brief whose own example is "DIA 100Mbps
+    MRC". Four real market medians were declined on word order.
+
+    Exactly one, or None. "DIA/MPLS blended rate" names two products and a
+    blended rate is neither of them.
+    """
+    words = set("".join(
+        ch if (ch.isalnum() or ch == "_") else " "
+        for ch in str(label or "").upper()).split())
+    found = {p for p in PRODUCTS if p in words}
+    return next(iter(found)) if len(found) == 1 else None
+
+
 def archetype_of(label) -> str:
     """The archetype a finding's label names: its leading token.
 
@@ -381,9 +428,14 @@ def _classify(q: dict) -> str:
     # EUR/year" is a total and not a unit rate.
     if anchor_candidate(q):
         return "anchor"
-    # "DIA 100Mbps MRC" -> product is the first token. Same `head` as above.
-    if head in PRODUCTS and len(country) == 2 and (
-            "month" in unit or "mrc" in unit or "/mo" in unit):
+    # A monthly rate for a named product in a named country.
+    #
+    # Both halves were too narrow and failed on real findings. The product had
+    # to be the leading token, so "US DIA 1 Gbps MRC" was declined while "DIA
+    # 1 Gbps MRC" passed - word order. And the unit test accepted any string
+    # containing "month", which a contract term of "36 months" does.
+    priced = product_in(label)
+    if priced and len(country) == 2 and is_monthly_rate_unit(unit):
         return "price"
     return "unclassified"
 
@@ -679,7 +731,18 @@ def promote(session, *, case_id: str, candidate_ids: list[str],
                  "sites": _sites_from(q), "as_of": q.get("as_of")})
         elif target == "price":
             country = str(q["country"]).upper()
-            product = str(q["label"]).split()[0].upper()
+            # The SAME resolver the classifier used, not the leading token.
+            #
+            # _classify matching one thing and promote() storing another is a
+            # defect this module has already had once, with the archetype:
+            # the classifier was widened to the leading token while promote()
+            # stored the whole label, and 56 characters went into a
+            # varchar(48). Widening the classifier to find a product anywhere
+            # in the label while this still took `split()[0]` would write
+            # "US" as the product of "US DIA 1 Gbps MRC" - a rate card row for
+            # a product that does not exist, which no circuit would ever
+            # match and nothing would report.
+            product = product_in(q["label"])
             _parsed = triangulate.parse_value(q["value"])
             if _parsed is None:
                 declined.append({

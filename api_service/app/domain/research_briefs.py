@@ -28,7 +28,7 @@ Keys, all optional except `asks`:
             non-answer is worse than an abstention
 """
 
-BRIEF_CATALOGUE_VERSION = "1.1.0"
+BRIEF_CATALOGUE_VERSION = "1.2.0"
 
 RESEARCH_BRIEFS: dict[int, dict] = {
     # Each brief is a research instruction, not a label. The first version of
@@ -296,10 +296,21 @@ RESEARCH_BRIEFS: dict[int, dict] = {
     19: {
         "asks": "Market unit prices for enterprise connectivity in the "
                 "in-scope countries.",
-        "wants": "Monthly recurring charge per circuit by product (DIA, MPLS, "
-                 "ETHERNET, BROADBAND, MOBILE_5G) and bandwidth, per country, "
-                 "with currency and price year. This feeds the pricing "
-                 "benchmark directly, so precision matters more than coverage.",
+        "wants": "Monthly recurring charge per circuit, per country, for a "
+                 "NAMED product at a NAMED bandwidth. This feeds the pricing "
+                 "benchmark directly, so precision matters more than "
+                 "coverage. Four fields decide whether a price can be used "
+                 "at all, and a price missing any of them is discarded. "
+                 "(1) `label` must contain one of DIA, MPLS, ETHERNET, "
+                 "BROADBAND_PON, BROADBAND_HFC, MOBILE_5G, spelled exactly - "
+                 "'broadband' alone is not usable, because the benchmark "
+                 "prices fibre and cable separately, so say which. "
+                 "(2) `bandwidth_mbps` must be a number: a rate with no tier "
+                 "cannot be matched to any circuit. "
+                 "(3) `country` must be a two-letter ISO code - a region "
+                 "such as 'North America' or 'EMEA' cannot be priced. "
+                 "(4) `unit` must be a rate per month, like 'USD/month', "
+                 "and not a duration counted in months.",
         "search": ["{country} leased line pricing benchmark enterprise",
                    "dedicated internet access price per Mbps {country}",
                    "regulator broadband business tariff comparison {country}",
@@ -307,10 +318,20 @@ RESEARCH_BRIEFS: dict[int, dict] = {
         "sources": ["national regulator price benchmarking studies",
                     "published carrier business tariffs",
                     "analyst pricing studies - TeleGeography and similar"],
+        # bandwidth_mbps was absent from this example and promotion
+        # declines a price without it - "a circuit rate without a tier cannot
+        # be matched to any circuit". The brief asked for bandwidth in prose
+        # and showed a shape that omitted it, so the agent returned the tier
+        # in the label text where nothing could read it.
         "example": '[{"label": "DIA 100Mbps MRC", "value": 520, "unit": "USD/'
-                   'month", "country": "DE", "as_of": "2025"}]',
+                   'month", "bandwidth_mbps": 100, "currency": "USD", '
+                   '"country": "DE", "as_of": "2025"}]',
         "reject": "Consumer broadband pricing is not an enterprise circuit "
-                  "price. Say which market a price describes.",
+                  "price. Say which market a price describes. Do not return "
+                  "a contract length here - that is domain 20, and a term in "
+                  "months is not a monthly rate. Do not blend two products "
+                  "into one rate: a figure covering DIA and MPLS together "
+                  "names neither and cannot be used.",
     },
     20: {
         "asks": "Customary contract lengths and commercial terms for "
