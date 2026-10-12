@@ -68,6 +68,11 @@ COPY VERSION ./VERSION
 COPY api_service/app ./app
 # Tests live at the bundle root, beside the two services they exercise -
 # test_compose.py and test_wiring.py read files from both.
+# The company spec the sample driver reads. Baked in so it is versioned with
+# the image, rather than arriving in the output directory the driver restores
+# from a backup - which is how six companies once ran at a three-commit-old
+# scope without any error. Only the spec, not the 16MB of sample output.
+COPY samples/outside_in/companies.json ./samples/outside_in/companies.json
 COPY tests ./tests
 # The second of those two services. The line above has always said the tests
 # read files from both, and `make test` runs them from inside this image - but

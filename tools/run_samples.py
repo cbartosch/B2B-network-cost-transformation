@@ -22,6 +22,7 @@ Usage, from the bundle root with the stack up:
     --domains 1,2,6,7,8   research only these domains (a cheaper pilot)
 """
 import argparse
+import hashlib
 import json
 import pathlib
 import time
@@ -420,6 +421,64 @@ def promote(case_id, slug):
                    timeout=600)
     log(slug, f"promote {len(ids)} footprint finding(s): {st}")
     return {"promoted": st == 200, "ids": ids, "result": res}
+
+
+#: Where the committed spec lives, relative to the repository root and to the
+#: image root. Both are checked because this script runs from either.
+SPEC_RELATIVE = pathlib.Path("samples") / "outside_in" / "companies.json"
+
+#: Filled in by main() once the spec is resolved, and written into every
+#: manifest. Module-level because every company in a run reads the same
+#: spec, and threading it through each call site would invite one that
+#: does not.
+SPEC_IDENTITY: dict = {"path": None, "digest": None}
+
+
+def resolve_spec(explicit: str, outdir: pathlib.Path) -> pathlib.Path:
+    """Where the company spec comes from, which is never the output directory.
+
+    It used to be `outdir / "companies.json"`, and that is a loaded gun. The
+    driver's output directory is pulled out of the container before a restart
+    and pushed back in afterwards, so the INPUT travelled inside the OUTPUT:
+    a spec committed to the repository reached a re-run only if somebody
+    remembered to copy it in by hand.
+
+    Nobody did. Six companies silently reverted to a scope three commits old
+    - BASF 219 sites to 101, Siemens 495 to 195, Unilever 214 to 43 - because
+    the restored copy predated CR-02b. The run completed, every company
+    reported success, the validation gate passed, and the only visible signal
+    was estates shrinking in industries the change under test did not touch.
+    One more step and it would have been published.
+
+    So the output directory is refused outright rather than demoted in a
+    precedence order. A fallback that silently reads the wrong file is the
+    defect; making it the last resort would only make it rarer.
+    """
+    outdir = outdir.resolve()
+    if explicit:
+        found = pathlib.Path(explicit).resolve()
+        if not found.exists():
+            raise SystemExit(f"--spec {found} does not exist")
+    else:
+        here = pathlib.Path(__file__).resolve()
+        candidates = [here.parents[1] / SPEC_RELATIVE,        # a repo checkout
+                      pathlib.Path("/app") / SPEC_RELATIVE]   # the image
+        found = next((c for c in candidates if c.exists()), None)
+        if found is None:
+            raise SystemExit(
+                "no company spec found at " +
+                " or ".join(str(c) for c in candidates) +
+                ". Pass --spec. It is NOT read from --out: a spec that "
+                "travels with the output is restored from backups and goes "
+                "stale without saying so.")
+    if found == outdir / "companies.json" or outdir in found.parents:
+        raise SystemExit(
+            f"refusing to read the spec from inside --out ({found}). That "
+            f"directory is restored from a backup before a re-run, so a spec "
+            f"living in it is whatever the last restore happened to carry - "
+            f"which once reverted six companies to a three-commit-old scope "
+            f"without any error. Pass --spec with the committed file.")
+    return found
 
 
 def footprint_for_simulation(case_id, spec):
@@ -1006,6 +1065,11 @@ def run_one(spec, outdir, domains, force, repair=False, repromote=False):
         "in_scope_countries": spec["countries"],
         "base_currency": spec["currency"],
         "case_id": case_id,
+        # Which spec produced this, so an artifact can be traced back to the
+        # input that made it. A stale spec once rewrote six companies' scope
+        # with nothing in any output naming the file it had read.
+        "spec_path": str(SPEC_IDENTITY.get("path") or ""),
+        "spec_sha256": SPEC_IDENTITY.get("digest") or "",
         "entity_resolution": ent,
         "resumed_existing_case": resumed,
         "mode": ("repromote" if repromote else "repair" if repair else "run"),
@@ -1085,10 +1149,21 @@ def main():
                     help="no provider calls: re-offer findings already paid "
                          "for, then re-simulate and re-estimate")
     ap.add_argument("--force", action="store_true")
+    ap.add_argument("--spec", default="",
+                    help="path to companies.json. Never read from --out: see "
+                         "resolve_spec for what that cost.")
     args = ap.parse_args()
 
     outdir = pathlib.Path(args.out)
-    specs = json.loads((outdir / "companies.json").read_text("utf-8"))["companies"]
+    spec_path = resolve_spec(args.spec, outdir)
+    spec_doc = spec_path.read_text("utf-8")
+    spec_digest = hashlib.sha256(spec_doc.encode("utf-8")).hexdigest()[:12]
+    SPEC_IDENTITY.update(path=spec_path, digest=spec_digest)
+    specs = json.loads(spec_doc)["companies"]
+    print(f"spec {spec_path} sha256:{spec_digest} "
+          f"({len(specs)} companies, "
+          f"{sum(len(s['declared_footprint']) for s in specs)} declared rows)",
+          flush=True)
     if args.only:
         want = {x.strip() for x in args.only.split(",") if x.strip()}
         specs = [s for s in specs if s["slug"] in want]
