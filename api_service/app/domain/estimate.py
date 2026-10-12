@@ -663,6 +663,25 @@ def lever_stage_mix(scenario: dict, levers_by_id: dict) -> dict:
     return mix
 
 
+# CR-07. A saving computed on a value nobody evidenced is not a saving
+# anybody can bank, and it must not sit in a headline beside one that is.
+#
+# SIMULATED is the case that matters here: a component whose quantity was
+# drawn from the seeded distributions rather than counted. On the small
+# campus estates it is a quarter to a third of the baseline - Siemens 0.375,
+# Volkswagen 0.261 - so a headline saving on those estates was substantially
+# a saving on drawn value, reported as though it were on measured value.
+#
+# Taken on either axis: a drawn quantity priced from a real card is still
+# drawn, and a counted site priced from a drawn rate is still drawn.
+UNEVIDENCED_ORIGINS = frozenset({"SIMULATED", "DECLARED_UNKNOWN"})
+
+
+def is_unevidenced(component) -> bool:
+    return (component.quantity_origin in UNEVIDENCED_ORIGINS
+            or component.unit_cost_origin in UNEVIDENCED_ORIGINS)
+
+
 def evidence_widening(components, *, policy, evidenced_domain_share=None):
     """How much wider the reported band should be than the rate card says.
 
@@ -835,6 +854,11 @@ def scenarios(components: list[Component], levers: list[dict],
             cut_total = D(0)
             # The saving band, accumulated with matched pairing.
             cut_low, cut_high = D(0), D(0)
+            # CR-07: the same saving, split by whether the baseline it acts
+            # on was evidenced. Accumulated here rather than derived later,
+            # because only this loop knows which component each slice came
+            # from.
+            cut_unev_low, cut_unev_base, cut_unev_high = D(0), D(0), D(0)
             skipped = []
             for key, comp in by_key.items():
                 if comp.layer not in layers:
@@ -905,6 +929,10 @@ def scenarios(components: list[Component], levers: list[dict],
                 cut_low += saved_lo
                 cut_total += saved_ba
                 cut_high += saved_hi
+                if is_unevidenced(comp):
+                    cut_unev_low += saved_lo
+                    cut_unev_base += saved_ba
+                    cut_unev_high += saved_hi
             # A lever that booked nothing, and why.
             #
             # `not_applied` was recorded only when the lever carried service
@@ -945,7 +973,18 @@ def scenarios(components: list[Component], levers: list[dict],
                                 "eligibility": {
                                     field: sorted(allowed)
                                     for field, allowed in constraints.items()},
-                                "saving_base": as_str(cut_total)})
+                                # CR-07: the band, not only the base. The
+                                # scenario published low/base/high and the
+                                # levers underneath it published a point, so
+                                # the band could not be traced to the levers
+                                # that produced it.
+                                "saving_low": as_str(cut_low),
+                                "saving_base": as_str(cut_total),
+                                "saving_high": as_str(cut_high),
+                                "saving_on_unevidenced_baseline":
+                                    as_str(cut_unev_base),
+                                "saving_on_evidenced_baseline":
+                                    as_str(cut_total - cut_unev_base)})
             elif constraints and not layer_missing:
                 # Only when the layer IS priced. A lever failing on both its
                 # layer and a product constraint was reported twice, and the
@@ -1057,6 +1096,15 @@ def scenarios(components: list[Component], levers: list[dict],
                 else saving.to_dict()),
             "gross_run_rate_savings_unwidened": (
                 saving.to_dict() if range_factor is not None else None),
+            # CR-07: the headline split by what it rests on. A saving on
+            # drawn value is reported, never hidden - and never mixed into
+            # the figure a reader takes as the answer.
+            "saving_on_evidenced_baseline": as_str(
+                sum((D(l["saving_on_evidenced_baseline"]) for l in applied),
+                    D(0))),
+            "saving_on_unevidenced_baseline": as_str(
+                sum((D(l["saving_on_unevidenced_baseline"]) for l in applied),
+                    D(0))),
             "savings_pct_base": (f"{(saving.base / current.base):.3f}"
                                  if current.base else "0.000"),
             "levers": applied,

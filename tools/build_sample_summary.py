@@ -29,7 +29,17 @@ FIELDS = [
     ("baseline_low", lambda m, s, e, r: _g(e, "current_tco", "low")),
     ("baseline_high", lambda m, s, e, r: _g(e, "current_tco", "high")),
     ("best_scenario", lambda m, s, e, r: _best(e)[0]),
+    # CR-07 / F11: why that one. It was picked here as the largest base
+    # saving and the reason was recorded nowhere, so a reader comparing two
+    # companies could not tell whether the choice meant anything.
+    ("best_scenario_reason", lambda m, s, e, r: _best_reason(e)),
     ("best_saving_base", lambda m, s, e, r: _best(e)[1]),
+    # The headline split by what it rests on. A saving on drawn value is
+    # reported, never mixed into the figure a reader takes as the answer.
+    ("saving_on_evidenced_baseline",
+     lambda m, s, e, r: _scen(e, "saving_on_evidenced_baseline")),
+    ("saving_on_unevidenced_baseline",
+     lambda m, s, e, r: _scen(e, "saving_on_unevidenced_baseline")),
     ("one_time_cost_base", lambda m, s, e, r: _trans(e, "one_time_cost")),
     ("payback_months_base", lambda m, s, e, r: _payback(e)),
     ("programme_months", lambda m, s, e, r: _prog(e)),
@@ -181,6 +191,42 @@ def _best(e):
         if val is None or float(v) > float(val):
             best, val = code, v
     return best, val
+
+
+def _scen(e, key):
+    """A field off the scenario the summary selected."""
+    code, _ = _best(e)
+    return ((e.get("scenarios") or {}).get(code) or {}).get(key)
+
+
+def _best_reason(e):
+    """Why this scenario and not another, in the summary's own terms.
+
+    The engine already publishes each scenario's label, levers, ceiling and
+    non-applicable levers with reasons; what was missing was the comparison
+    the summary itself makes. Written here because the choice is made here -
+    recording it anywhere else would be recording a different decision.
+    """
+    scen = e.get("scenarios") or {}
+    code, val = _best(e)
+    if not code:
+        return None
+    ranked = sorted(
+        ((c, _g(sc, "gross_run_rate_savings", "base")) for c, sc in scen.items()),
+        key=lambda kv: float(kv[1] or 0), reverse=True)
+    label = (scen.get(code) or {}).get("label") or code
+    if len(ranked) < 2 or not ranked[1][1]:
+        return f"{label}: only scenario with a saving"
+    runner, second = ranked[1]
+    margin = float(val or 0) - float(second or 0)
+    pct = (margin / float(second)) * 100 if float(second) else 0
+    unev = _scen(e, "saving_on_unevidenced_baseline")
+    tail = ""
+    if unev and float(unev) > 0 and float(val or 0):
+        tail = (f"; {float(unev) / float(val) * 100:.0f}% of it rests on "
+                f"unevidenced baseline")
+    return (f"{label}: largest base saving, {margin:,.0f} ({pct:.0f}%) above "
+            f"{runner}{tail}")
 
 
 def _trans(e, key):

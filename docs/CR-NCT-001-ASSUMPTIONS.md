@@ -144,6 +144,37 @@ widening.
 
 ---
 
+## CR-07 · savings build
+
+**No new assumed parameters.** The compounding build was already correct and
+the four invariants pass on it unchanged — they confirm behaviour rather
+than repair it. What was missing was attribution and reporting.
+
+| added | why |
+| --- | --- |
+| Per-lever `saving_low` / `saving_high` | The scenario published a band and the levers underneath it published a point, so the band could not be traced to the levers that produced it. |
+| `saving_on_evidenced_baseline` / `saving_on_unevidenced_baseline`, per lever and per scenario | A saving on drawn value is not one anybody can bank. On small campus estates `SIMULATED` is a quarter to a third of the baseline — Siemens 0.375, Volkswagen 0.261 — so the headline was substantially a saving on drawn value, reported as though measured. |
+| `best_scenario_reason` | The choice was made in the summary builder by largest base saving and recorded nowhere. |
+
+**Unevidenced is taken on either axis:** a drawn quantity priced from a real
+card is still drawn, and a counted site priced from a drawn rate is still
+drawn. Same "weaker input governs" rule as CR-06.
+
+### F9 — documented, not removed
+
+CR-07 asks that a size relationship in saving percentage be removed or
+explained. It is real (Unilever 21.6% at 48 sites against Shell 15.1% at
+5,995) and the cause is **lever mix, not evidence**: small campus estates
+carry proportionally more platform and overlay value (L2/L4) where the
+seeded levers bite hardest, while branch-heavy estates are dominated by
+access circuits (L0) with lower lever reach.
+
+It is a property of the lever set against the estate shape. Treating it as a
+defect and flattening it would be tuning the model to a expectation about
+its own output, which §4 principle 2 forbids.
+
+---
+
 ## Open, and blocking
 
 | item | needed from the owner |
