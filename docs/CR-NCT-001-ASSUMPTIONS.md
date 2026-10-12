@@ -12,9 +12,30 @@ is either a decomposition of a value that was already governed, or a
 
 | | |
 | --- | --- |
-| Owner sign-off | **not obtained** |
+| Owner sign-off | **obtained** — Christian Bartosch, 2026-10-12 |
+| Assumed parameters signed | 13 of 13 |
 | Safe for internal review | yes |
-| Safe for external use | **no**, until the table below is signed |
+| Safe for external use | see below — signing the assumptions does not clear the set on its own |
+
+**What the signature covers.** The thirteen values in the tables below:
+the one-time cost component shares and reference density (CR-04), the
+savings-accrual and cost-spread conventions in the rollout (CR-05), and the
+per-evidence-class range multipliers and the unresearched-domain
+coefficient (CR-06). Each is a judgement with no source, which is why it
+needed a name against it.
+
+**What it does not cover**, and what still stands between this set and an
+external reader:
+
+| | |
+| --- | --- |
+| **CR-03 is not implemented** | There is no plausibility check on any baseline. The validation gate reports this as NOT CHECKED HERE rather than passing it. A signature on the assumptions does not create the benchmark file. |
+| **Every estimate is band D — Indicative** | Outside-in, from public evidence, `NO_CONTACT`. That is a property of the method, not of the parameters, and no signature changes it. |
+| **The four open items below** | These need *values*, not approval. They are unaffected by this sign-off. |
+
+Signing a parameter is attesting that the value is a reasonable judgement
+to publish under, not that it is measured. Each remains `ASSUMED` in the
+output and is reported as such.
 
 ---
 
@@ -24,13 +45,13 @@ The per-site reference cost (400 / 900 / 1800) was already governed and is
 unchanged. What is new is the split of it into work that scales with
 circuits and work that scales with sites.
 
-| parameter | value | class | rationale | sign-off |
+| parameter | value | class | rationale | signed |
 | --- | --- | --- | --- | --- |
-| `one_time_share_hardware` | 0.35 | ASSUMED | CPE and a switch port are per access circuit, not per site. Largest single component because it is the only one with a hardware bill. | ☐ |
-| `one_time_share_migration` | 0.25 | ASSUMED | Cutover labour and test are per circuit: a dual-access site is cut over twice. | ☐ |
-| `one_time_share_integration` | 0.20 | ASSUMED | Configuring and proving a site happens once however many circuits land in it. | ☐ |
-| `one_time_share_project_management` | 0.20 | ASSUMED | Programme overhead of touching a site at all — survey, scheduling, acceptance. | ☐ |
-| `one_time_reference_circuits_per_site` | 1.25 | ASSUMED | The density the reference cost is taken to assume. A seeded estate runs about 1.3; 1.25 is the round figure the four shares were set against. | ☐ |
+| `one_time_share_hardware` | 0.35 | ASSUMED | CPE and a switch port are per access circuit, not per site. Largest single component because it is the only one with a hardware bill. | ☑ CB 2026-10-12 |
+| `one_time_share_migration` | 0.25 | ASSUMED | Cutover labour and test are per circuit: a dual-access site is cut over twice. | ☑ CB 2026-10-12 |
+| `one_time_share_integration` | 0.20 | ASSUMED | Configuring and proving a site happens once however many circuits land in it. | ☑ CB 2026-10-12 |
+| `one_time_share_project_management` | 0.20 | ASSUMED | Programme overhead of touching a site at all — survey, scheduling, acceptance. | ☑ CB 2026-10-12 |
+| `one_time_reference_circuits_per_site` | 1.25 | ASSUMED | The density the reference cost is taken to assume. A seeded estate runs about 1.3; 1.25 is the round figure the four shares were set against. | ☑ CB 2026-10-12 |
 
 **The shares must sum to 1.0** and `TransitionPolicy.validate` refuses a set
 that does not. They divide a reference cost; a set summing to anything else
@@ -105,16 +126,16 @@ The rate card's own band is real and is kept. These widen it for what the
 card cannot see. All are judgements with no source — the CR asks for them
 documented with rationale, which is what this table is.
 
-| parameter | value | class | rationale | sign-off |
+| parameter | value | class | rationale | signed |
 | --- | --- | --- | --- | --- |
-| `widen_evidenced_public` | 1.00 | FIXED POINT | A fully evidenced estimate is reported at exactly the card's width. The scale has a fixed point rather than a floor somebody chose, and `validate` refuses any other value. | ☐ |
-| `widen_client_confirmed` | 1.15 | ASSUMED | First-party and not independently checkable; internal records go stale and the person answering may not be the one who knows. | ☐ |
-| `widen_derived_public` | 1.20 | ASSUMED | A figure computed from evidence carries the evidence's error plus the derivation's. | ☐ |
-| `widen_analyst_entered_scope` | 1.35 | ASSUMED | A scoped figure nobody sourced. Wider than derived, narrower than a pure benchmark because somebody chose it for this estate. | ☐ |
-| `widen_benchmark_prior` | 1.40 | ASSUMED | A governed rate for a population, applied to one company. The card's band describes dispersion *within* the benchmark, not whether the benchmark fits. | ☐ |
-| `widen_analyst_asserted_prior` | 1.50 | ASSUMED | An unverified recollection. Weaker than a benchmark, which at least has a published basis. | ☐ |
-| `widen_simulated` | 1.55 | ASSUMED | A drawn value. The widest, because nothing outside the model attests to it. | ☐ |
-| `widen_unevidenced_domain_share` | 0.50 | ASSUMED | Coefficient on the unresearched-domain share. At 0.5, an estate with no domains evidenced is reported 50% wider than one fully evidenced, before the origin term. | ☐ |
+| `widen_evidenced_public` | 1.00 | FIXED POINT | A fully evidenced estimate is reported at exactly the card's width. The scale has a fixed point rather than a floor somebody chose, and `validate` refuses any other value. | ☑ CB 2026-10-12 |
+| `widen_client_confirmed` | 1.15 | ASSUMED | First-party and not independently checkable; internal records go stale and the person answering may not be the one who knows. | ☑ CB 2026-10-12 |
+| `widen_derived_public` | 1.20 | ASSUMED | A figure computed from evidence carries the evidence's error plus the derivation's. | ☑ CB 2026-10-12 |
+| `widen_analyst_entered_scope` | 1.35 | ASSUMED | A scoped figure nobody sourced. Wider than derived, narrower than a pure benchmark because somebody chose it for this estate. | ☑ CB 2026-10-12 |
+| `widen_benchmark_prior` | 1.40 | ASSUMED | A governed rate for a population, applied to one company. The card's band describes dispersion *within* the benchmark, not whether the benchmark fits. | ☑ CB 2026-10-12 |
+| `widen_analyst_asserted_prior` | 1.50 | ASSUMED | An unverified recollection. Weaker than a benchmark, which at least has a published basis. | ☑ CB 2026-10-12 |
+| `widen_simulated` | 1.55 | ASSUMED | A drawn value. The widest, because nothing outside the model attests to it. | ☑ CB 2026-10-12 |
+| `widen_unevidenced_domain_share` | 0.50 | ASSUMED | Coefficient on the unresearched-domain share. At 0.5, an estate with no domains evidenced is reported 50% wider than one fully evidenced, before the origin term. | ☑ CB 2026-10-12 |
 
 **Two terms, because they are two different ignorances.** The value-weighted
 origin mix takes the *weaker* of each component's quantity and unit-cost
@@ -240,7 +261,32 @@ conversion fails the gate.
 
 ---
 
+## Sample-run inputs · **not covered by the sign-off above**
+
+Added to this register after it was signed, so they carry no signature. They
+were documented in `samples/outside_in/README.md` from the start but never
+listed here, which meant the register was not the single place it claims to
+be — and the 2026-10-12 signature was given against a table that did not
+contain them.
+
+Both are inputs to the sample run rather than to the model, and both are
+material: the OPS layer of every one of the twenty baselines rests entirely
+on the first.
+
+| parameter | value | class | rationale | signed |
+| --- | --- | --- | --- | --- |
+| `ops_cost_per_site_base` | 900 per site per month | ASSUMED | A flat figure applied to all twenty companies in the base currency. Nobody researched it; no domain produces it. | ☐ |
+| `users` | `sites x 12` | ASSUMED | A uniform proxy for headcount per site, used where the research returned no user count. Crude, and applied to a retail store and a data centre alike. | ☐ |
+
+Neither is a finding. If either is wrong, every OPS baseline in the set
+moves with it.
+
+---
+
 ## Open, and blocking
+
+**Unaffected by the sign-off above.** These need values or a decision, not
+approval of a value already chosen.
 
 | item | needed from the owner |
 | --- | --- |

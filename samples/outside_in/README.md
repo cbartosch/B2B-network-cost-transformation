@@ -112,7 +112,8 @@ are recorded in every `manifest.json` under `estimate_inputs`:
 - **`users`** is derived as `sites x 12`. A crude proxy, applied uniformly.
 
 Neither is a finding, and the OPS layer of every baseline rests on the first
-of them.
+of them. Both are in `docs/CR-NCT-001-ASSUMPTIONS.md`, which is the one
+place every unsourced value in this set is listed with who signed it.
 
 Seven of the twenty-four domains have no research agent routed to them -
 3, 4, 5, 11, 17, 23 and 24 - so they are disposed `BENCHMARK_PRIOR`: this
