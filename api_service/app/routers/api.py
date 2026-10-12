@@ -237,8 +237,26 @@ def _largest_quantity(session, case_id, pattern):
     return best_hint or best
 
 
+def _scope_status(case_row) -> str:
+    """How much of the group this estimate covers, as far as the case knows.
+
+    Conservative by construction: an outside-in case names the countries it
+    prices and nothing records how many the group operates in, so FULL_GROUP
+    cannot be established from here and is never returned. The consequence
+    is that the scope-sensitive plausibility ratios stay NOT_ASSESSABLE,
+    which is the right direction to be wrong in - the alternative is
+    dividing a three-country baseline by worldwide revenue and reporting the
+    scope gap as if it were a finding about the estimate.
+
+    A case that genuinely covers a whole group has no way to say so today.
+    That is a gap, recorded rather than papered over.
+    """
+    countries = list(getattr(case_row, "in_scope_countries", None) or [])
+    return "PARTIAL_COUNTRIES" if countries else "UNKNOWN"
+
+
 def _baseline_plausibility(session, case_id, *, baseline, sites, industry,
-                           base_currency=None):
+                           base_currency=None, scope_status=None):
     emp = _largest_quantity(session, case_id, _EMPLOYEE_LABEL)
     rev = _largest_quantity(session, case_id, _REVENUE_LABEL)
     # A revenue in another currency cannot be divided into a baseline in
@@ -257,6 +275,7 @@ def _baseline_plausibility(session, case_id, *, baseline, sites, industry,
         revenue=(rev or {}).get("value"),
         sites=sites,
         industry=industry,
+        scope_status=scope_status,
         benchmarks=baseline_plausibility.load_benchmarks(
             session, db.plausibility_benchmark),
         inputs_provenance={k: v for k, v in
@@ -3632,7 +3651,8 @@ def _run_anchor_estimate(s, *, case_id, case_row, payload,
         s, case_id, baseline=cur['total']['base'],
         sites=estimate.site_count(components),
         industry=getattr(case_row, 'industry', None),
-        base_currency=getattr(case_row, 'base_currency', None))
+        base_currency=getattr(case_row, 'base_currency', None),
+        scope_status=_scope_status(case_row))
     lv = [dict(r._mapping) for r in s.execute(select(db.lever)).all()]
     levers_by_id = {l["lever_id"]: l for l in lv}
     # With the transition policy, so each scenario carries what it
@@ -4212,7 +4232,8 @@ def run_estimate(case_id: str, payload: EstimateIn):
             s, case_id, baseline=cur['total']['base'],
             sites=estimate.site_count(components),
             industry=getattr(case_row, 'industry', None),
-        base_currency=getattr(case_row, 'base_currency', None))
+        base_currency=getattr(case_row, 'base_currency', None),
+        scope_status=_scope_status(case_row))
         lv = [dict(r._mapping) for r in s.execute(select(db.lever)).all()]
         levers_by_id = {l["lever_id"]: l for l in lv}
         # With the transition policy, so each scenario carries what it

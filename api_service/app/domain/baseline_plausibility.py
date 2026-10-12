@@ -39,6 +39,27 @@ _SEVERITY = {NOT_ASSESSABLE: 0, OK: 1, LOW: 2, HIGH: 3}
 METRICS = ("BASELINE_PER_EMPLOYEE", "BASELINE_PCT_OF_REVENUE",
            "BASELINE_PER_SITE")
 
+# Which metrics survive an estimate that covers part of the group.
+#
+# Revenue and headcount are published group-wide. A baseline covering three
+# countries divided by worldwide revenue is not a ratio anybody can judge -
+# it is the scope mismatch, expressed as a number, and it will always look
+# absurdly low.
+#
+# This was not hypothetical. The first version judged all three regardless,
+# and reading the output I concluded that half the sample was priced twenty
+# to two hundred times too low and that the fix was to widen the country
+# scope - hours of research on the strength of a comparison that could not
+# have come out any other way. The per-site figures said otherwise all
+# along: 3,756 to 5,846 per site for retail and branch estates, 14,304 to
+# 43,762 for plants and R&D campuses, which is the gradient a network cost
+# model should produce.
+#
+# Per site is scope-independent: it divides the cost of the estate by the
+# size of the same estate. It stays assessable whatever the scope.
+SCOPE_SENSITIVE = ("BASELINE_PER_EMPLOYEE", "BASELINE_PCT_OF_REVENUE")
+PARTIAL_SCOPES = ("PARTIAL_COUNTRIES", "PARTIAL_SITE_TYPES", "UNKNOWN")
+
 
 def _d(value):
     if value in (None, ""):
@@ -75,7 +96,8 @@ def _judge(value, row):
 
 
 def assess(*, baseline, employees=None, revenue=None, sites=None,
-           industry=None, benchmarks=None, inputs_provenance=None) -> dict:
+           industry=None, benchmarks=None, inputs_provenance=None,
+           scope_status=None) -> dict:
     """Three ratios, each judged where a benchmark exists.
 
     `benchmarks` is {(metric, industry): row} from
@@ -103,11 +125,22 @@ def assess(*, baseline, employees=None, revenue=None, sites=None,
         else None,
     }
 
+    partial = str(scope_status or "").upper() in PARTIAL_SCOPES
+
     metrics, worst = {}, NOT_ASSESSABLE
     for metric in METRICS:
         value = values[metric]
         row = _band_for(benchmarks, metric, industry)
-        flag, why = _judge(value, row)
+        if partial and metric in SCOPE_SENSITIVE:
+            # Computed and published, because the figure is still worth
+            # seeing - but not judged, because the denominator covers more
+            # of the company than the numerator does.
+            flag = NOT_ASSESSABLE
+            why = (f"scope is {scope_status}: this baseline covers part of "
+                   f"the group and the denominator is group-wide, so the "
+                   f"ratio measures the scope gap rather than the estimate")
+        else:
+            flag, why = _judge(value, row)
         metrics[metric] = {
             "value": as_str(value) if value is not None else None,
             "flag": flag,
@@ -131,8 +164,16 @@ def assess(*, baseline, employees=None, revenue=None, sites=None,
             "invented here, so the ratios above are reported and not "
             "judged.")
 
+    if partial:
+        notes.append(
+            f"scope is {scope_status}, so only BASELINE_PER_SITE is judged. "
+            f"Per-site divides the cost of the estate by the size of the "
+            f"same estate and is unaffected by how much of the group that "
+            f"estate is.")
+
     return {
         "flag": worst,
+        "scope_status": scope_status,
         "metrics": metrics,
         "inputs": {
             "employees": as_str(emp) if emp is not None else None,

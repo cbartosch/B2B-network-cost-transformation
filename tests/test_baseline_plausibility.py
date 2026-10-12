@@ -168,3 +168,50 @@ def test_a_currency_code_is_read_out_of_the_unit():
     assert _currency_of("USD") == "USD"
     assert _currency_of("sites") is None
 
+
+
+# ------------------------------------- scope, and the ratio it invalidates
+
+def test_a_partial_scope_suspends_the_group_wide_ratios():
+    """Revenue and headcount are published group-wide. A baseline covering
+    three countries divided by worldwide revenue is the scope mismatch
+    expressed as a number, and it will always look absurdly low.
+
+    This is not hypothetical. Reading the first version's output I concluded
+    that half the sample was priced twenty to two hundred times too low and
+    recommended hours of re-research to widen the country scope. The
+    per-site figures said otherwise all along."""
+    out = plausibility.assess(
+        **BASE, scope_status="PARTIAL_COUNTRIES",
+        benchmarks={**_bench("BASELINE_PER_EMPLOYEE", "1", "5"),
+                    **_bench("BASELINE_PCT_OF_REVENUE", "1", "5")})
+    for m in plausibility.SCOPE_SENSITIVE:
+        assert out["metrics"][m]["flag"] == plausibility.NOT_ASSESSABLE
+        assert "scope" in out["metrics"][m]["note"]
+    assert any("only BASELINE_PER_SITE is judged" in n for n in out["notes"])
+
+
+def test_per_site_survives_a_partial_scope():
+    """It divides the cost of the estate by the size of the same estate, so
+    it is unaffected by how much of the group that estate is."""
+    out = plausibility.assess(
+        **BASE, scope_status="PARTIAL_COUNTRIES",
+        benchmarks=_bench("BASELINE_PER_SITE", "10", "50"))
+    assert out["metrics"]["BASELINE_PER_SITE"]["flag"] == plausibility.HIGH
+    assert out["flag"] == plausibility.HIGH
+
+
+def test_the_scope_sensitive_values_are_still_published():
+    """Suspended from judgement, not withheld. A reader can still see the
+    figure and draw their own conclusion about the scope gap."""
+    out = plausibility.assess(**BASE, scope_status="PARTIAL_COUNTRIES",
+                              benchmarks={})
+    assert out["metrics"]["BASELINE_PCT_OF_REVENUE"]["value"] == "0.05"
+
+
+def test_a_full_group_scope_judges_everything():
+    out = plausibility.assess(
+        **BASE, scope_status="FULL_GROUP",
+        benchmarks=_bench("BASELINE_PER_EMPLOYEE", "100", "300"))
+    assert out["metrics"]["BASELINE_PER_EMPLOYEE"]["flag"] == plausibility.OK
+
