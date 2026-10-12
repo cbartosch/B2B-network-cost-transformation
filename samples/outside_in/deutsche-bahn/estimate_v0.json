@@ -1,5 +1,5 @@
 {
-  "estimate_snapshot_id": "6c7f560b-026e-4da2-8ca7-3197b7719eb8",
+  "estimate_snapshot_id": "ac05c0ec-e99d-45f2-82a5-765f930ad616",
   "v0_status": "COMPLETE",
   "current_tco": {
     "low": "17850405.23",
@@ -352,9 +352,68 @@
       ],
       "transition": {
         "one_time_cost": {
-          "low": "2234400.00",
-          "base": "5027400.00",
-          "high": "10054800.00"
+          "low": "2290368.00",
+          "base": "5153328.00",
+          "high": "10306656.00"
+        },
+        "one_time_cost_build": {
+          "by_component": {
+            "hardware": "1833048.00",
+            "migration": "1309320.00",
+            "integration": "1005480.00",
+            "project_management": "1005480.00"
+          },
+          "by_site_type": [
+            {
+              "archetype": "CONTROL_CENTER",
+              "sites": 30,
+              "circuits": "30.00",
+              "circuits_per_site": "1.000",
+              "cost_per_site_base": "792.00",
+              "cost_base": "23760.00"
+            },
+            {
+              "archetype": "DC",
+              "sites": 6,
+              "circuits": "6.00",
+              "circuits_per_site": "1.000",
+              "cost_per_site_base": "792.00",
+              "cost_base": "4752.00"
+            },
+            {
+              "archetype": "LARGE_OFFICE",
+              "sites": 60,
+              "circuits": "111.00",
+              "circuits_per_site": "1.850",
+              "cost_per_site_base": "1159.20",
+              "cost_base": "69552.00"
+            },
+            {
+              "archetype": "NETWORK_SITE",
+              "sites": 5400,
+              "circuits": "7010.00",
+              "circuits_per_site": "1.298",
+              "cost_per_site_base": "920.80",
+              "cost_base": "4972320.00"
+            },
+            {
+              "archetype": "WAREHOUSE",
+              "sites": 90,
+              "circuits": "117.00",
+              "circuits_per_site": "1.300",
+              "cost_per_site_base": "921.60",
+              "cost_base": "82944.00"
+            }
+          ],
+          "origin": {
+            "shares": "ASSUMED",
+            "reference_cost": "ASSUMED",
+            "circuits": "SIMULATED"
+          },
+          "not_varied_by": {
+            "country": "DECLARED_UNKNOWN - no sourced per-country transition cost, and a factor invented to vary it would read as evidence",
+            "target_architecture": "DECLARED_UNKNOWN - same reason"
+          }
         },
         "dual_running_cost": {
           "low": "80097.03",
@@ -362,20 +421,20 @@
           "high": "266990.12"
         },
         "total_transition_cost": {
-          "low": "2314497.03",
-          "base": "5160895.06",
-          "high": "10321790.12"
+          "low": "2370465.03",
+          "base": "5286823.06",
+          "high": "10573646.12"
         },
         "gross_run_rate_savings": {
           "low": "431175.35",
           "base": "1275314.38",
           "high": "2686610.29"
         },
-        "first_year_net": "-3885580.68",
+        "first_year_net": "-4011508.68",
         "payback_months": {
           "optimistic": 11,
-          "base": 49,
-          "pessimistic": 288
+          "base": 50,
+          "pessimistic": 295
         },
         "programme_months": 47,
         "payback_basis": "Modelled. Transition cost is evidence grade E - an expert assumption with no quoted transaction behind it - so this payback is a modelled payback and not a business case. It excludes 6 cost categories this model has no basis for.",
@@ -720,9 +779,68 @@
       ],
       "transition": {
         "one_time_cost": {
-          "low": "2234400.00",
-          "base": "5027400.00",
-          "high": "10054800.00"
+          "low": "2290368.00",
+          "base": "5153328.00",
+          "high": "10306656.00"
+        },
+        "one_time_cost_build": {
+          "by_component": {
+            "hardware": "1833048.00",
+            "migration": "1309320.00",
+            "integration": "1005480.00",
+            "project_management": "1005480.00"
+          },
+          "by_site_type": [
+            {
+              "archetype": "CONTROL_CENTER",
+              "sites": 30,
+              "circuits": "30.00",
+              "circuits_per_site": "1.000",
+              "cost_per_site_base": "792.00",
+              "cost_base": "23760.00"
+            },
+            {
+              "archetype": "DC",
+              "sites": 6,
+              "circuits": "6.00",
+              "circuits_per_site": "1.000",
+              "cost_per_site_base": "792.00",
+              "cost_base": "4752.00"
+            },
+            {
+              "archetype": "LARGE_OFFICE",
+              "sites": 60,
+              "circuits": "111.00",
+              "circuits_per_site": "1.850",
+              "cost_per_site_base": "1159.20",
+              "cost_base": "69552.00"
+            },
+            {
+              "archetype": "NETWORK_SITE",
+              "sites": 5400,
+              "circuits": "7010.00",
+              "circuits_per_site": "1.298",
+              "cost_per_site_base": "920.80",
+              "cost_base": "4972320.00"
+            },
+            {
+              "archetype": "WAREHOUSE",
+              "sites": 90,
+              "circuits": "117.00",
+              "circuits_per_site": "1.300",
+              "cost_per_site_base": "921.60",
+              "cost_base": "82944.00"
+            }
+          ],
+          "origin": {
+            "shares": "ASSUMED",
+            "reference_cost": "ASSUMED",
+            "circuits": "SIMULATED"
+          },
+          "not_varied_by": {
+            "country": "DECLARED_UNKNOWN - no sourced per-country transition cost, and a factor invented to vary it would read as evidence",
+            "target_architecture": "DECLARED_UNKNOWN - same reason"
+          }
         },
         "dual_running_cost": {
           "low": "80097.03",
@@ -730,20 +848,20 @@
           "high": "266990.12"
         },
         "total_transition_cost": {
-          "low": "2314497.03",
-          "base": "5160895.06",
-          "high": "10321790.12"
+          "low": "2370465.03",
+          "base": "5286823.06",
+          "high": "10573646.12"
         },
         "gross_run_rate_savings": {
           "low": "226636.14",
           "base": "724519.34",
           "high": "1719184.70"
         },
-        "first_year_net": "-4436375.72",
+        "first_year_net": "-4562303.72",
         "payback_months": {
           "optimistic": 17,
-          "base": 86,
-          "pessimistic": 547
+          "base": 88,
+          "pessimistic": 560
         },
         "programme_months": 47,
         "payback_basis": "Modelled. Transition cost is evidence grade E - an expert assumption with no quoted transaction behind it - so this payback is a modelled payback and not a business case. It excludes 6 cost categories this model has no basis for.",
@@ -1131,9 +1249,68 @@
       ],
       "transition": {
         "one_time_cost": {
-          "low": "2234400.00",
-          "base": "5027400.00",
-          "high": "10054800.00"
+          "low": "2290368.00",
+          "base": "5153328.00",
+          "high": "10306656.00"
+        },
+        "one_time_cost_build": {
+          "by_component": {
+            "hardware": "1833048.00",
+            "migration": "1309320.00",
+            "integration": "1005480.00",
+            "project_management": "1005480.00"
+          },
+          "by_site_type": [
+            {
+              "archetype": "CONTROL_CENTER",
+              "sites": 30,
+              "circuits": "30.00",
+              "circuits_per_site": "1.000",
+              "cost_per_site_base": "792.00",
+              "cost_base": "23760.00"
+            },
+            {
+              "archetype": "DC",
+              "sites": 6,
+              "circuits": "6.00",
+              "circuits_per_site": "1.000",
+              "cost_per_site_base": "792.00",
+              "cost_base": "4752.00"
+            },
+            {
+              "archetype": "LARGE_OFFICE",
+              "sites": 60,
+              "circuits": "111.00",
+              "circuits_per_site": "1.850",
+              "cost_per_site_base": "1159.20",
+              "cost_base": "69552.00"
+            },
+            {
+              "archetype": "NETWORK_SITE",
+              "sites": 5400,
+              "circuits": "7010.00",
+              "circuits_per_site": "1.298",
+              "cost_per_site_base": "920.80",
+              "cost_base": "4972320.00"
+            },
+            {
+              "archetype": "WAREHOUSE",
+              "sites": 90,
+              "circuits": "117.00",
+              "circuits_per_site": "1.300",
+              "cost_per_site_base": "921.60",
+              "cost_base": "82944.00"
+            }
+          ],
+          "origin": {
+            "shares": "ASSUMED",
+            "reference_cost": "ASSUMED",
+            "circuits": "SIMULATED"
+          },
+          "not_varied_by": {
+            "country": "DECLARED_UNKNOWN - no sourced per-country transition cost, and a factor invented to vary it would read as evidence",
+            "target_architecture": "DECLARED_UNKNOWN - same reason"
+          }
         },
         "dual_running_cost": {
           "low": "80097.03",
@@ -1141,20 +1318,20 @@
           "high": "266990.12"
         },
         "total_transition_cost": {
-          "low": "2314497.03",
-          "base": "5160895.06",
-          "high": "10321790.12"
+          "low": "2370465.03",
+          "base": "5286823.06",
+          "high": "10573646.12"
         },
         "gross_run_rate_savings": {
           "low": "1208110.69",
           "base": "3240677.46",
           "high": "6656992.52"
         },
-        "first_year_net": "-1920217.60",
+        "first_year_net": "-2046145.60",
         "payback_months": {
           "optimistic": 5,
           "base": 20,
-          "pessimistic": 103
+          "pessimistic": 106
         },
         "programme_months": 47,
         "payback_basis": "Modelled. Transition cost is evidence grade E - an expert assumption with no quoted transaction behind it - so this payback is a modelled payback and not a business case. It excludes 6 cost categories this model has no basis for.",
@@ -1501,9 +1678,68 @@
       ],
       "transition": {
         "one_time_cost": {
-          "low": "2234400.00",
-          "base": "5027400.00",
-          "high": "10054800.00"
+          "low": "2290368.00",
+          "base": "5153328.00",
+          "high": "10306656.00"
+        },
+        "one_time_cost_build": {
+          "by_component": {
+            "hardware": "1833048.00",
+            "migration": "1309320.00",
+            "integration": "1005480.00",
+            "project_management": "1005480.00"
+          },
+          "by_site_type": [
+            {
+              "archetype": "CONTROL_CENTER",
+              "sites": 30,
+              "circuits": "30.00",
+              "circuits_per_site": "1.000",
+              "cost_per_site_base": "792.00",
+              "cost_base": "23760.00"
+            },
+            {
+              "archetype": "DC",
+              "sites": 6,
+              "circuits": "6.00",
+              "circuits_per_site": "1.000",
+              "cost_per_site_base": "792.00",
+              "cost_base": "4752.00"
+            },
+            {
+              "archetype": "LARGE_OFFICE",
+              "sites": 60,
+              "circuits": "111.00",
+              "circuits_per_site": "1.850",
+              "cost_per_site_base": "1159.20",
+              "cost_base": "69552.00"
+            },
+            {
+              "archetype": "NETWORK_SITE",
+              "sites": 5400,
+              "circuits": "7010.00",
+              "circuits_per_site": "1.298",
+              "cost_per_site_base": "920.80",
+              "cost_base": "4972320.00"
+            },
+            {
+              "archetype": "WAREHOUSE",
+              "sites": 90,
+              "circuits": "117.00",
+              "circuits_per_site": "1.300",
+              "cost_per_site_base": "921.60",
+              "cost_base": "82944.00"
+            }
+          ],
+          "origin": {
+            "shares": "ASSUMED",
+            "reference_cost": "ASSUMED",
+            "circuits": "SIMULATED"
+          },
+          "not_varied_by": {
+            "country": "DECLARED_UNKNOWN - no sourced per-country transition cost, and a factor invented to vary it would read as evidence",
+            "target_architecture": "DECLARED_UNKNOWN - same reason"
+          }
         },
         "dual_running_cost": {
           "low": "80097.03",
@@ -1511,20 +1747,20 @@
           "high": "266990.12"
         },
         "total_transition_cost": {
-          "low": "2314497.03",
-          "base": "5160895.06",
-          "high": "10321790.12"
+          "low": "2370465.03",
+          "base": "5286823.06",
+          "high": "10573646.12"
         },
         "gross_run_rate_savings": {
           "low": "1531754.49",
           "base": "3982745.94",
           "high": "7732399.02"
         },
-        "first_year_net": "-1178149.12",
+        "first_year_net": "-1304077.12",
         "payback_months": {
           "optimistic": 4,
           "base": 16,
-          "pessimistic": 81
+          "pessimistic": 83
         },
         "programme_months": 47,
         "payback_basis": "Modelled. Transition cost is evidence grade E - an expert assumption with no quoted transaction behind it - so this payback is a modelled payback and not a business case. It excludes 6 cost categories this model has no basis for.",
@@ -1977,10 +2213,10 @@
     "note": "11 step(s) in the order they compound - each acts on what the ones before it left, so they do not add up to the sum of their percentages. 1 lever(s) had a baseline and matched nothing in this estate."
   },
   "confidence": {
-    "current_baseline": "0.358",
+    "current_baseline": "0.346",
     "target_cost": "0.700",
     "realization": "0.175",
-    "weighted": "0.423",
+    "weighted": "0.419",
     "overall": "0.325",
     "band": "D - Indicative",
     "policy_set": "confidence_policy",
@@ -1994,7 +2230,7 @@
       "evidenced_value_share": "0.0000",
       "client_confirmed_value_share": "0",
       "client_confirmed_evidence_weight": "0.7000",
-      "domain_completeness": "1",
+      "domain_completeness": "0.9166666666666666666666666667",
       "prior_coverage": "1",
       "prior_recency": "1",
       "lever_stage_mix": {
@@ -2004,7 +2240,7 @@
       },
       "policy_set": "confidence_policy",
       "raw_before_stage_scaling": {
-        "current_baseline": "0.650",
+        "current_baseline": "0.629",
         "target_cost": "1.000",
         "realization": "0.500"
       },

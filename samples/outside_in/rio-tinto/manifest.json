@@ -18,7 +18,7 @@
     "resumed": true
   },
   "resumed_existing_case": true,
-  "mode": "repromote",
+  "mode": "repair",
   "domains_already_researched_on_resume": [
     1,
     2,
@@ -110,8 +110,34 @@
       "origin": "PUBLIC_DISCLOSURE"
     }
   ],
+  "scope_countries_modelled": [
+    "AU",
+    "CA",
+    "GB"
+  ],
+  "scope_countries_company_total": "DECLARED_UNKNOWN",
+  "scope_status": "PARTIAL_COUNTRIES",
+  "scope_note": "Baseline covers 3 country(ies) (AU, CA, GB) and the site types listed in sites_origin. The group's full country and site-type count is not sourced, so the share of the group this represents is DECLARED_UNKNOWN. This is baseline_in_scope, not a group baseline.",
+  "sites_origin": {
+    "CONTROL_CENTER": "ASSUMED_PUBLIC_DISCLOSURE",
+    "DC": "ASSUMED_PUBLIC_DISCLOSURE",
+    "LARGE_OFFICE": "ASSUMED_PUBLIC_DISCLOSURE",
+    "PLANT": "RESEARCHED",
+    "REMOTE_SITE": "ASSUMED_PUBLIC_DISCLOSURE"
+  },
+  "fx_to_eur": {
+    "rate": "0.87110000",
+    "as_of": "2026-09-17",
+    "basis": "USD->EUR",
+    "evidence_grade": "B",
+    "source": "mid-market EUR/USD 1.1480 inverted, 17 September 2026; the rate used to read a German quote against this card",
+    "convention": "SPOT"
+  },
   "seed": 20260101,
   "ensemble_size": 25,
+  "domains_declared_unknown": [
+    19
+  ],
   "domains_requested": [
     1,
     2,
@@ -157,8 +183,8 @@
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-11T12:12:39.389524+00:00",
-  "run_seconds": 13.7,
+  "run_started": "2026-10-11T19:34:26.258165+00:00",
+  "run_seconds": 224.8,
   "preflight_conditions": 8,
   "promotion": {
     "promoted": true,

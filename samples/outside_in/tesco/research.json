@@ -18765,16 +18765,916 @@
       "estimate_snapshot_id": null,
       "domain_no": 22,
       "domain_name": "Currency, inflation and tax",
-      "disposition": "BENCHMARK_PRIOR",
-      "reason": "research returned no verdict",
-      "agent_run_id": null,
-      "evidence": null
+      "disposition": "EVIDENCED_PUBLIC",
+      "reason": null,
+      "agent_run_id": "49c33257-3826-43dc-968b-e76e48dfdda0",
+      "evidence": {
+        "sources": [
+          {
+            "url": "https://www.valutafx.com/history/gbp-eur-2026",
+            "publisher": "valutafx.com",
+            "as_of": "2026-09",
+            "source_class": "AGGREGATOR",
+            "how_read": "SNIPPET_ONLY",
+            "figure_basis": "STATED",
+            "excerpt": "Average: 1.1583 EUR over this period; Highest 1.1809, Lowest 1.1410",
+            "status_code": 200,
+            "fragment": "British Pound (GBP) to Euro (EUR) 2026 Historical Exchange Rates (function() { var host = window.location.hostname; var element = document.createElement('script'); var firstScript = document.getElementsByTagName('script')[0]; var url = 'https://cmp.inmobi.com' .concat('/choice/', 'TbeCCL2qST3L2', '/', host, '/choice.js?tag_version=V3'); var uspTries = 0; var uspTriesLimit = 3; element.async = true; element.type = 'text/javascript'; element.src = url; firstScript.parentNode.insertBefore(element, firstScript); function makeStub() { var TCF_LOCATOR_NAME = '__tcfapiLocator'; var queue = []; var wi",
+            "claim_checked": "NOT_FOUND",
+            "claim_verified": false
+          },
+          {
+            "url": "https://www.poundsterlinglive.com/history/EUR-GBP-2026",
+            "publisher": "poundsterlinglive.com",
+            "as_of": "2026",
+            "source_class": "AGGREGATOR",
+            "how_read": "SNIPPET_ONLY",
+            "figure_basis": "STATED",
+            "excerpt": "The average level of 2026 was 0.864",
+            "status_code": 200,
+            "fragment": "Euro-British Pound History: 2026 .com_content_article_1635 #gkBreadcrumb,.com_content_article_1635 .breadcrumb{display:none} {\"joomla.jtext\":{\"ERROR\":\"Error\",\"MESSAGE\":\"Message\",\"NOTICE\":\"Notice\",\"WARNING\":\"Warning\",\"SUCCESS\":\"Success\",\"JCLOSE\":\"Close\",\"JOK\":\"OK\",\"JOPEN\":\"Open\"},\"system.paths\":{\"root\":\"\",\"rootFull\":\"https:\\/\\/www.poundsterlinglive.com\\/\",\"base\":\"\",\"baseFull\":\"https:\\/\\/www.poundsterlinglive.com\\/\"},\"csrf.token\":\"12bc4240c682b1e631b5c653d3bfc336\"} { \"@context\": \"https://schema.org\", \"@type\": \"WebPage\", \"@id\": \"https://www.poundsterlinglive.com/history/EUR-GBP-2026#webpage\", \"na",
+            "claim_checked": "NOT_FOUND",
+            "claim_verified": false
+          },
+          {
+            "url": "https://www.moneyguideireland.com/vat-rates-in-ireland-to-increase.html",
+            "publisher": "moneyguideireland.com",
+            "as_of": "2026",
+            "source_class": "OTHER",
+            "how_read": "SNIPPET_ONLY",
+            "figure_basis": "STATED",
+            "excerpt": "The standard 23% VAT rate applies to … telecommunications",
+            "status_code": 200,
+            "fragment": "--> VAT Rates in Ireland 2026 - Money Guide Ireland {\"@context\":\"https:\\/\\/schema.org\",\"@graph\":[{\"@type\":\"Article\",\"@id\":\"https:\\/\\/www.moneyguideireland.com\\/vat-rates-in-ireland-to-increase.html#article\",\"isPartOf\":{\"@id\":\"https:\\/\\/www.moneyguideireland.com\\/vat-rates-in-ireland-to-increase.html\"},\"author\":{\"name\":\"Money Guide\",\"@id\":\"https:\\/\\/www.moneyguideireland.com\\/#\\/schema\\/person\\/63f3678ee9b55c88a568b9369799803b\"},\"headline\":\"VAT Rates in Ireland 2026\",\"datePublished\":\"2026-06-30T08:43:00+00:00\",\"dateModified\":\"2026-07-02T16:51:58+00:00\",\"mainEntityOfPage\":{\"@id\":\"https:\\/\\/www.m",
+            "claim_checked": "NOT_FOUND",
+            "claim_verified": false
+          },
+          {
+            "url": "https://tipalti.com/en-uk/blog/vat-on-digital-services/",
+            "publisher": "tipalti.com",
+            "as_of": "2026",
+            "source_class": "OTHER",
+            "how_read": "SNIPPET_ONLY",
+            "figure_basis": "STATED",
+            "excerpt": "In the UK, the standard VAT rate is 20%",
+            "status_code": 200,
+            "fragment": "window.dataLayer = window.dataLayer || []; function gtag() { dataLayer.push(arguments); } gtag('consent', 'default', { 'ad_storage': 'granted', 'ad_user_data': 'granted', 'ad_personalization': 'granted', 'analytics_storage': 'granted', 'wait_for_update': 500 }); (function () { function uuid() { return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) { var r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16); }); } // Segment stores ajs_anonymous_id as a JSON-stringified UUID; match that // format so Segment adopts the value on init instead of ge",
+            "claim_checked": "FIGURES_ONLY",
+            "claim_verified": true
+          },
+          {
+            "url": "https://www.ons.gov.uk/economy/inflationandpriceindices/bulletins/consumerpriceinflation/august2026",
+            "publisher": "ONS",
+            "as_of": "2026-08",
+            "source_class": "REGULATOR",
+            "how_read": "SNIPPET_ONLY",
+            "figure_basis": "STATED",
+            "excerpt": "CPI services annual rate was unchanged, at 3.4%",
+            "status_code": 200,
+            "fragment": "Consumer price inflation, UK - Office for National Statistics // extractValue extracts the value from an undecodeable json cookie string function extractValue(key, extractionString) { const extractionRegex = new RegExp(`'${key}':(.*?)[,}]`) const match = extractionString.match(extractionRegex) if (match) { return match[1] } return null } // isUsageCookieAllowed reads the ons_cookie_policy to determine the user's usage preference. function isUsageCookieAllowed() { // ons_cookie_policy handler var policyCookie = document.cookie.match('(?:^|; )ons_cookie_policy=({.*?})'); if (policyCookie) { cons",
+            "claim_checked": "NOT_FOUND",
+            "claim_verified": false
+          },
+          {
+            "url": "https://www.ons.gov.uk/economy/inflationandpriceindices/bulletins/producerpriceinflation/march2026includingservicesjanuarytomarch2026",
+            "publisher": "ONS",
+            "as_of": "2026-Q1",
+            "source_class": "REGULATOR",
+            "how_read": "SNIPPET_ONLY",
+            "figure_basis": "STATED",
+            "excerpt": "Information and communication services … rose by 2.5% in Quarter 1 2026",
+            "status_code": 200,
+            "fragment": "Producer price inflation, UK - Office for National Statistics // extractValue extracts the value from an undecodeable json cookie string function extractValue(key, extractionString) { const extractionRegex = new RegExp(`'${key}':(.*?)[,}]`) const match = extractionString.match(extractionRegex) if (match) { return match[1] } return null } // isUsageCookieAllowed reads the ons_cookie_policy to determine the user's usage preference. function isUsageCookieAllowed() { // ons_cookie_policy handler var policyCookie = document.cookie.match('(?:^|; )ons_cookie_policy=({.*?})'); if (policyCookie) { cons",
+            "claim_checked": "NOT_FOUND",
+            "claim_verified": false
+          }
+        ],
+        "quantities": [
+          {
+            "label": "GBP/EUR FX rate – 2026 YTD average (Jan–Sep)",
+            "value": "1.1584",
+            "unit": "EUR per 1 GBP",
+            "country": "GB",
+            "bandwidth_mbps": null,
+            "as_of": "2026-09",
+            "currency": "EUR",
+            "vendor": null,
+            "term_months": null,
+            "technology": null,
+            "candidates": [
+              {
+                "value": "1.1584",
+                "unit": "EUR per 1 GBP",
+                "source_url": "https://moneyswapp.com/exchange-rates/gbpeur/",
+                "publisher": "Moneyswapp (based on ECB reference rates)",
+                "as_of": "2026-09",
+                "note": "Based on ECB euro foreign exchange reference rates",
+                "source_class": "AGGREGATOR",
+                "how_read": "SNIPPET_ONLY",
+                "figure_basis": "STATED",
+                "excerpt": "Year: 2026 (Jan–Sep). Average rate: 1.1584"
+              },
+              {
+                "value": "1.1583",
+                "unit": "EUR per 1 GBP",
+                "source_url": "https://www.valutafx.com/history/gbp-eur-2026",
+                "publisher": "valutafx.com",
+                "as_of": "2026-09",
+                "note": "Full-year 2026 data up to Sep",
+                "source_class": "AGGREGATOR",
+                "how_read": "SNIPPET_ONLY",
+                "figure_basis": "STATED",
+                "excerpt": "Highest: 1.1809 EUR on 2026-07-15 Average: 1.1583 EUR over this period Lowest: 1.1410 EUR on 2026-02-27"
+              },
+              {
+                "value": "1.1583",
+                "unit": "EUR per 1 GBP",
+                "source_url": "https://www.exchange-rates.org/exchange-rate-history/gbp-eur-2026",
+                "publisher": "exchange-rates.org",
+                "as_of": "2026-09",
+                "note": "Independent aggregator; matches valutafx",
+                "source_class": "AGGREGATOR",
+                "how_read": "SNIPPET_ONLY",
+                "figure_basis": "STATED",
+                "excerpt": "Average: 1.1583 EUR over this period"
+              },
+              {
+                "value": "1.16008",
+                "unit": "EUR per 1 GBP",
+                "source_url": "https://moneyswapp.com/exchange-rates/gbpeur/",
+                "publisher": "Moneyswapp (yearly 2026 to Oct)",
+                "as_of": "2026-10",
+                "note": "Calendar-year average including October data",
+                "source_class": "AGGREGATOR",
+                "how_read": "SNIPPET_ONLY",
+                "figure_basis": "STATED",
+                "excerpt": "Yearly 2026: Average rate 1.16008"
+              }
+            ],
+            "candidates_omitted": 0
+          },
+          {
+            "label": "EUR/GBP FX rate – 2026 year average",
+            "value": "0.864",
+            "unit": "GBP per 1 EUR",
+            "country": "IE",
+            "bandwidth_mbps": null,
+            "as_of": "2026",
+            "currency": "GBP",
+            "vendor": null,
+            "term_months": null,
+            "technology": null,
+            "candidates": [
+              {
+                "value": "0.8640",
+                "unit": "GBP per 1 EUR",
+                "source_url": "https://www.poundsterlinglive.com/history/EUR-GBP-2026",
+                "publisher": "poundsterlinglive.com",
+                "as_of": "2026",
+                "note": "EUR/GBP direction; reciprocal of GBP/EUR ~1.157",
+                "source_class": "AGGREGATOR",
+                "how_read": "SNIPPET_ONLY",
+                "figure_basis": "STATED",
+                "excerpt": "The average level of 2026 was 0.864"
+              },
+              {
+                "value": "0.8644",
+                "unit": "GBP per 1 EUR",
+                "source_url": "https://www.exchangerates.org.uk/EUR-GBP-spot-exchange-rates-history-2026.html",
+                "publisher": "exchangerates.org.uk",
+                "as_of": "2026-08",
+                "note": "Average of 202 closing observations Jan–Aug 2026",
+                "source_class": "AGGREGATOR",
+                "how_read": "SNIPPET_ONLY",
+                "figure_basis": "STATED",
+                "excerpt": "Average close 0.8644 202 completed observations"
+              }
+            ],
+            "candidates_omitted": 0
+          },
+          {
+            "label": "UK standard VAT rate – telecom and digital services",
+            "value": "20",
+            "unit": "percent",
+            "country": "GB",
+            "bandwidth_mbps": null,
+            "as_of": "2026",
+            "currency": null,
+            "vendor": null,
+            "term_months": null,
+            "technology": "WAN/Internet/Telecom",
+            "candidates": [
+              {
+                "value": "20",
+                "unit": "percent",
+                "source_url": "https://tipalti.com/en-uk/blog/vat-on-digital-services/",
+                "publisher": "tipalti.com",
+                "as_of": "2026",
+                "note": "UK standard rate; applies to B2B telecom services",
+                "source_class": "OTHER",
+                "how_read": "SNIPPET_ONLY",
+                "figure_basis": "STATED",
+                "excerpt": "In the UK, the standard VAT rate is 20%, with a 5% rate of VAT for specified goods and services"
+              },
+              {
+                "value": "20",
+                "unit": "percent",
+                "source_url": "https://riseaccounting.co.uk/blog/vat-on-digital-services/",
+                "publisher": "riseaccounting.co.uk",
+                "as_of": "2026",
+                "note": "September 2026 publication",
+                "source_class": "OTHER",
+                "how_read": "SNIPPET_ONLY",
+                "figure_basis": "STATED",
+                "excerpt": "Most digital sales to UK consumers carry the standard 20% rate"
+              }
+            ],
+            "candidates_omitted": 0
+          },
+          {
+            "label": "Ireland standard VAT rate – telecom and professional services",
+            "value": "23",
+            "unit": "percent",
+            "country": "IE",
+            "bandwidth_mbps": null,
+            "as_of": "2026",
+            "currency": null,
+            "vendor": null,
+            "term_months": null,
+            "technology": "WAN/Internet/Telecom",
+            "candidates": [
+              {
+                "value": "23",
+                "unit": "percent",
+                "source_url": "https://www.moneyguideireland.com/vat-rates-in-ireland-to-increase.html",
+                "publisher": "moneyguideireland.com",
+                "as_of": "2026",
+                "note": "Explicit reference to telecoms at standard rate",
+                "source_class": "OTHER",
+                "how_read": "SNIPPET_ONLY",
+                "figure_basis": "STATED",
+                "excerpt": "The standard 23% VAT rate applies to … telecommunications"
+              },
+              {
+                "value": "23",
+                "unit": "percent",
+                "source_url": "https://www.numeral.com/blog/ireland-vat-rates-and-compliance",
+                "publisher": "numeral.com",
+                "as_of": "2026",
+                "note": "Includes digital services and telecoms in standard-rated category",
+                "source_class": "OTHER",
+                "how_read": "SNIPPET_ONLY",
+                "figure_basis": "STATED",
+                "excerpt": "Standard rate (23%): default rate for most goods and services … digital services, consulting"
+              },
+              {
+                "value": "23",
+                "unit": "percent",
+                "source_url": "https://taxology.co/what-vat-rate-applies-in-irland/",
+                "publisher": "taxology.co",
+                "as_of": "2026",
+                "note": "Third independent source confirming 23% standard rate 2026",
+                "source_class": "OTHER",
+                "how_read": "SNIPPET_ONLY",
+                "figure_basis": "STATED",
+                "excerpt": "the standard VAT rate in Ireland is 23%"
+              }
+            ],
+            "candidates_omitted": 0
+          },
+          {
+            "label": "Ireland ComReg regulatory levy on telecom operators",
+            "value": "0.2",
+            "unit": "percent of relevant turnover",
+            "country": "IE",
+            "bandwidth_mbps": null,
+            "as_of": "2023",
+            "currency": null,
+            "vendor": null,
+            "term_months": null,
+            "technology": "Telecom operators (carrier cost, may pass through to enterprise pricing)",
+            "candidates": [
+              {
+                "value": "0.2",
+                "unit": "percent of relevant turnover",
+                "source_url": "https://www.lexology.com/library/detail.aspx?g=146e59af-39e8-4f35-afd6-84610cf5fe64",
+                "publisher": "Lexology (citing Communications Regulation Acts 2002–2023)",
+                "as_of": "2023",
+                "note": "Operator-level cost; threshold €500k Irish revenue; as_of reflects Act vintage",
+                "source_class": "TRADE_PRESS",
+                "how_read": "SNIPPET_ONLY",
+                "figure_basis": "STATED",
+                "excerpt": "an annual levy (0.2 per cent of relevant turnover) is payable where an operator's relevant turnover … in Ireland … is €500,000 or more"
+              }
+            ],
+            "candidates_omitted": 0
+          },
+          {
+            "label": "UK CPI services inflation – annual rate",
+            "value": "3.4",
+            "unit": "percent year-on-year",
+            "country": "GB",
+            "bandwidth_mbps": null,
+            "as_of": "2026-08",
+            "currency": null,
+            "vendor": null,
+            "term_months": null,
+            "technology": null,
+            "candidates": [
+              {
+                "value": "3.4",
+                "unit": "percent year-on-year",
+                "source_url": "https://www.ons.gov.uk/economy/inflationandpriceindices/bulletins/consumerpriceinflation/august2026",
+                "publisher": "ONS – Consumer price inflation, UK: August 2026",
+                "as_of": "2026-08",
+                "note": "CPI all-services 12-month rate to August 2026",
+                "source_class": "REGULATOR",
+                "how_read": "SNIPPET_ONLY",
+                "figure_basis": "STATED",
+                "excerpt": "CPI services annual rate was unchanged, at 3.4%"
+              },
+              {
+                "value": "3.6",
+                "unit": "percent year-on-year",
+                "source_url": "https://www.ons.gov.uk/economy/inflationandpriceindices/bulletins/consumerpriceinflation/july2026",
+                "publisher": "ONS – Consumer price inflation, UK: July 2026",
+                "as_of": "2026-07",
+                "note": "CPIH services was 3.6%; CPI services was 3.4%",
+                "source_class": "REGULATOR",
+                "how_read": "SNIPPET_ONLY",
+                "figure_basis": "STATED",
+                "excerpt": "CPI all-services index rose by 3.4% in the 12 months to July 2026"
+              },
+              {
+                "value": "3.6",
+                "unit": "percent year-on-year",
+                "source_url": "https://www.ons.gov.uk/economy/inflationandpriceindices/bulletins/consumerpriceinflation/june2026",
+                "publisher": "ONS – Consumer price inflation, UK: June 2026",
+                "as_of": "2026-06",
+                "note": "June 2026 reading",
+                "source_class": "REGULATOR",
+                "how_read": "SNIPPET_ONLY",
+                "figure_basis": "STATED",
+                "excerpt": "CPI all-services index rose by 3.6% in the 12 months to June 2026"
+              },
+              {
+                "value": "3.2",
+                "unit": "percent year-on-year",
+                "source_url": "https://www.ons.gov.uk/economy/inflationandpriceindices/bulletins/consumerpriceinflation/april2026",
+                "publisher": "ONS – Consumer price inflation, UK: April 2026",
+                "as_of": "2026-04",
+                "note": "April 2026 reading – fell sharply from March's 4.5%",
+                "source_class": "REGULATOR",
+                "how_read": "SNIPPET_ONLY",
+                "figure_basis": "STATED",
+                "excerpt": "CPI services annual rate fell from 4.5% to 3.2%"
+              }
+            ],
+            "candidates_omitted": 0
+          },
+          {
+            "label": "UK producer price inflation – information and communication services",
+            "value": "2.5",
+            "unit": "percent year-on-year",
+            "country": "GB",
+            "bandwidth_mbps": null,
+            "as_of": "2026-Q1",
+            "currency": null,
+            "vendor": null,
+            "term_months": null,
+            "technology": "Information and communication services",
+            "candidates": [
+              {
+                "value": "2.5",
+                "unit": "percent year-on-year",
+                "source_url": "https://www.ons.gov.uk/economy/inflationandpriceindices/bulletins/producerpriceinflation/march2026includingservicesjanuarytomarch2026",
+                "publisher": "ONS – Producer price inflation, UK: March 2026 including services",
+                "as_of": "2026-Q1",
+                "note": "PPI services sub-index specifically for info & comms; most relevant to WAN/telecom pricing",
+                "source_class": "REGULATOR",
+                "how_read": "SNIPPET_ONLY",
+                "figure_basis": "STATED",
+                "excerpt": "Information and communication services … rose by 2.5% in Quarter 1 2026, up from a revised rise of 1.7% in Quarter 4 2025"
+              },
+              {
+                "value": "4.3",
+                "unit": "percent year-on-year",
+                "source_url": "https://www.ons.gov.uk/economy/inflationandpriceindices/bulletins/producerpriceinflation/june2026includingservicesapriltojune2026",
+                "publisher": "ONS – Producer price inflation, UK: June 2026 including services",
+                "as_of": "2026-Q2",
+                "note": "Overall services PPI Q2 2026; broader than I&C sub-index",
+                "source_class": "REGULATOR",
+                "how_read": "SNIPPET_ONLY",
+                "figure_basis": "STATED",
+                "excerpt": "Services producer prices rose by 4.3% in the year to Quarter 2 (Apr to June) 2026"
+              }
+            ],
+            "candidates_omitted": 0
+          },
+          {
+            "label": "UK Digital Services Tax (DST) rate",
+            "value": "2",
+            "unit": "percent of UK-derived revenue",
+            "country": "GB",
+            "bandwidth_mbps": null,
+            "as_of": "2026",
+            "currency": null,
+            "vendor": null,
+            "term_months": null,
+            "technology": "Digital platforms (social media, search, marketplaces only – NOT applicable to WAN/internet circuits)",
+            "candidates": [
+              {
+                "value": "2",
+                "unit": "percent",
+                "source_url": "https://www.cnbc.com/2026/04/24/trump-tariffs-uk-tech-apple-google-meta.html",
+                "publisher": "CNBC",
+                "as_of": "2026",
+                "note": "Does not apply to telecom/WAN circuit purchases; noted for completeness only",
+                "source_class": "TRADE_PRESS",
+                "how_read": "SNIPPET_ONLY",
+                "figure_basis": "STATED",
+                "excerpt": "The tax is a 2% levy on the revenues of search engines, social media services and online marketplaces"
+              },
+              {
+                "value": "2",
+                "unit": "percent",
+                "source_url": "https://1stopvat.com/uk-digital-services-tax-revenue-1-billion-2025-2026/",
+                "publisher": "1stopvat.com",
+                "as_of": "2026",
+                "note": "Threshold: global revenue >£500m AND UK revenue >£25m",
+                "source_class": "OTHER",
+                "how_read": "SNIPPET_ONLY",
+                "figure_basis": "STATED",
+                "excerpt": "DST is charged at a 2% rate on revenues generated in the UK by large tech companies"
+              }
+            ],
+            "candidates_omitted": 0
+          }
+        ],
+        "triangulated": [
+          {
+            "label": "EUR/GBP FX RATE – 2026 YEAR AVERAGE",
+            "country": "IE",
+            "unit": "gbp per 1 eur",
+            "low": "0.864",
+            "base": "0.8642",
+            "high": "0.8644",
+            "newest_value": "0.8642",
+            "newest_year": 2026,
+            "oldest_year": 2026,
+            "spread_share": 0.0005,
+            "candidate_count": 2,
+            "candidates": [
+              {
+                "value": "0.8640",
+                "unit": "GBP per 1 EUR",
+                "source_url": "https://www.poundsterlinglive.com/history/EUR-GBP-2026",
+                "publisher": "poundsterlinglive.com",
+                "as_of": "2026",
+                "note": "EUR/GBP direction; reciprocal of GBP/EUR ~1.157",
+                "source_class": "AGGREGATOR",
+                "how_read": "SNIPPET_ONLY",
+                "figure_basis": "STATED",
+                "excerpt": "The average level of 2026 was 0.864"
+              },
+              {
+                "value": "0.8644",
+                "unit": "GBP per 1 EUR",
+                "source_url": "https://www.exchangerates.org.uk/EUR-GBP-spot-exchange-rates-history-2026.html",
+                "publisher": "exchangerates.org.uk",
+                "as_of": "2026-08",
+                "note": "Average of 202 closing observations Jan–Aug 2026",
+                "source_class": "AGGREGATOR",
+                "how_read": "SNIPPET_ONLY",
+                "figure_basis": "STATED",
+                "excerpt": "Average close 0.8644 202 completed observations"
+              }
+            ],
+            "set_aside": [],
+            "flags": [],
+            "conflict_group_id": null,
+            "review_required": false,
+            "basis": "median of 2 source(s); low and high are the observed extremes, not a confidence interval"
+          },
+          {
+            "label": "GBP/EUR FX RATE – 2026 YTD AVERAGE (JAN–SEP)",
+            "country": "GB",
+            "unit": "eur per 1 gbp",
+            "low": "1.1583",
+            "base": "1.15835",
+            "high": "1.16008",
+            "newest_value": "1.15835",
+            "newest_year": 2026,
+            "oldest_year": 2026,
+            "spread_share": 0.0015,
+            "candidate_count": 4,
+            "candidates": [
+              {
+                "value": "1.1584",
+                "unit": "EUR per 1 GBP",
+                "source_url": "https://moneyswapp.com/exchange-rates/gbpeur/",
+                "publisher": "Moneyswapp (based on ECB reference rates)",
+                "as_of": "2026-09",
+                "note": "Based on ECB euro foreign exchange reference rates",
+                "source_class": "AGGREGATOR",
+                "how_read": "SNIPPET_ONLY",
+                "figure_basis": "STATED",
+                "excerpt": "Year: 2026 (Jan–Sep). Average rate: 1.1584"
+              },
+              {
+                "value": "1.1583",
+                "unit": "EUR per 1 GBP",
+                "source_url": "https://www.valutafx.com/history/gbp-eur-2026",
+                "publisher": "valutafx.com",
+                "as_of": "2026-09",
+                "note": "Full-year 2026 data up to Sep",
+                "source_class": "AGGREGATOR",
+                "how_read": "SNIPPET_ONLY",
+                "figure_basis": "STATED",
+                "excerpt": "Highest: 1.1809 EUR on 2026-07-15 Average: 1.1583 EUR over this period Lowest: 1.1410 EUR on 2026-02-27"
+              },
+              {
+                "value": "1.1583",
+                "unit": "EUR per 1 GBP",
+                "source_url": "https://www.exchange-rates.org/exchange-rate-history/gbp-eur-2026",
+                "publisher": "exchange-rates.org",
+                "as_of": "2026-09",
+                "note": "Independent aggregator; matches valutafx",
+                "source_class": "AGGREGATOR",
+                "how_read": "SNIPPET_ONLY",
+                "figure_basis": "STATED",
+                "excerpt": "Average: 1.1583 EUR over this period"
+              },
+              {
+                "value": "1.16008",
+                "unit": "EUR per 1 GBP",
+                "source_url": "https://moneyswapp.com/exchange-rates/gbpeur/",
+                "publisher": "Moneyswapp (yearly 2026 to Oct)",
+                "as_of": "2026-10",
+                "note": "Calendar-year average including October data",
+                "source_class": "AGGREGATOR",
+                "how_read": "SNIPPET_ONLY",
+                "figure_basis": "STATED",
+                "excerpt": "Yearly 2026: Average rate 1.16008"
+              }
+            ],
+            "set_aside": [],
+            "flags": [],
+            "conflict_group_id": null,
+            "review_required": false,
+            "basis": "median of 4 source(s); low and high are the observed extremes, not a confidence interval"
+          },
+          {
+            "label": "IRELAND COMREG REGULATORY LEVY ON TELECOM OPERATORS",
+            "country": "IE",
+            "unit": "percent of relevant turnover",
+            "low": "0.2",
+            "base": "0.2",
+            "high": "0.2",
+            "newest_value": "0.2",
+            "newest_year": 2023,
+            "oldest_year": 2023,
+            "spread_share": 0.0,
+            "candidate_count": 1,
+            "candidates": [
+              {
+                "value": "0.2",
+                "unit": "percent of relevant turnover",
+                "source_url": "https://www.lexology.com/library/detail.aspx?g=146e59af-39e8-4f35-afd6-84610cf5fe64",
+                "publisher": "Lexology (citing Communications Regulation Acts 2002–2023)",
+                "as_of": "2023",
+                "note": "Operator-level cost; threshold €500k Irish revenue; as_of reflects Act vintage",
+                "source_class": "TRADE_PRESS",
+                "how_read": "SNIPPET_ONLY",
+                "figure_basis": "STATED",
+                "excerpt": "an annual levy (0.2 per cent of relevant turnover) is payable where an operator's relevant turnover … in Ireland … is €500,000 or more"
+              }
+            ],
+            "set_aside": [],
+            "flags": [
+              "SINGLE_SOURCE"
+            ],
+            "conflict_group_id": null,
+            "review_required": false,
+            "basis": "median of 1 source(s); low and high are the observed extremes, not a confidence interval"
+          },
+          {
+            "label": "IRELAND STANDARD VAT RATE – TELECOM AND PROFESSIONAL SERVICES",
+            "country": "IE",
+            "unit": "percent",
+            "low": "23",
+            "base": "23",
+            "high": "23",
+            "newest_value": "23",
+            "newest_year": 2026,
+            "oldest_year": 2026,
+            "spread_share": 0.0,
+            "candidate_count": 3,
+            "candidates": [
+              {
+                "value": "23",
+                "unit": "percent",
+                "source_url": "https://www.moneyguideireland.com/vat-rates-in-ireland-to-increase.html",
+                "publisher": "moneyguideireland.com",
+                "as_of": "2026",
+                "note": "Explicit reference to telecoms at standard rate",
+                "source_class": "OTHER",
+                "how_read": "SNIPPET_ONLY",
+                "figure_basis": "STATED",
+                "excerpt": "The standard 23% VAT rate applies to … telecommunications"
+              },
+              {
+                "value": "23",
+                "unit": "percent",
+                "source_url": "https://www.numeral.com/blog/ireland-vat-rates-and-compliance",
+                "publisher": "numeral.com",
+                "as_of": "2026",
+                "note": "Includes digital services and telecoms in standard-rated category",
+                "source_class": "OTHER",
+                "how_read": "SNIPPET_ONLY",
+                "figure_basis": "STATED",
+                "excerpt": "Standard rate (23%): default rate for most goods and services … digital services, consulting"
+              },
+              {
+                "value": "23",
+                "unit": "percent",
+                "source_url": "https://taxology.co/what-vat-rate-applies-in-irland/",
+                "publisher": "taxology.co",
+                "as_of": "2026",
+                "note": "Third independent source confirming 23% standard rate 2026",
+                "source_class": "OTHER",
+                "how_read": "SNIPPET_ONLY",
+                "figure_basis": "STATED",
+                "excerpt": "the standard VAT rate in Ireland is 23%"
+              }
+            ],
+            "set_aside": [],
+            "flags": [],
+            "conflict_group_id": null,
+            "review_required": false,
+            "basis": "median of 3 source(s); low and high are the observed extremes, not a confidence interval"
+          },
+          {
+            "label": "UK CPI SERVICES INFLATION – ANNUAL RATE",
+            "country": "GB",
+            "unit": "percent year-on-year",
+            "low": "3.2",
+            "base": "3.5",
+            "high": "3.6",
+            "newest_value": "3.5",
+            "newest_year": 2026,
+            "oldest_year": 2026,
+            "spread_share": 0.125,
+            "candidate_count": 4,
+            "candidates": [
+              {
+                "value": "3.4",
+                "unit": "percent year-on-year",
+                "source_url": "https://www.ons.gov.uk/economy/inflationandpriceindices/bulletins/consumerpriceinflation/august2026",
+                "publisher": "ONS – Consumer price inflation, UK: August 2026",
+                "as_of": "2026-08",
+                "note": "CPI all-services 12-month rate to August 2026",
+                "source_class": "REGULATOR",
+                "how_read": "SNIPPET_ONLY",
+                "figure_basis": "STATED",
+                "excerpt": "CPI services annual rate was unchanged, at 3.4%"
+              },
+              {
+                "value": "3.6",
+                "unit": "percent year-on-year",
+                "source_url": "https://www.ons.gov.uk/economy/inflationandpriceindices/bulletins/consumerpriceinflation/july2026",
+                "publisher": "ONS – Consumer price inflation, UK: July 2026",
+                "as_of": "2026-07",
+                "note": "CPIH services was 3.6%; CPI services was 3.4%",
+                "source_class": "REGULATOR",
+                "how_read": "SNIPPET_ONLY",
+                "figure_basis": "STATED",
+                "excerpt": "CPI all-services index rose by 3.4% in the 12 months to July 2026"
+              },
+              {
+                "value": "3.6",
+                "unit": "percent year-on-year",
+                "source_url": "https://www.ons.gov.uk/economy/inflationandpriceindices/bulletins/consumerpriceinflation/june2026",
+                "publisher": "ONS – Consumer price inflation, UK: June 2026",
+                "as_of": "2026-06",
+                "note": "June 2026 reading",
+                "source_class": "REGULATOR",
+                "how_read": "SNIPPET_ONLY",
+                "figure_basis": "STATED",
+                "excerpt": "CPI all-services index rose by 3.6% in the 12 months to June 2026"
+              },
+              {
+                "value": "3.2",
+                "unit": "percent year-on-year",
+                "source_url": "https://www.ons.gov.uk/economy/inflationandpriceindices/bulletins/consumerpriceinflation/april2026",
+                "publisher": "ONS – Consumer price inflation, UK: April 2026",
+                "as_of": "2026-04",
+                "note": "April 2026 reading – fell sharply from March's 4.5%",
+                "source_class": "REGULATOR",
+                "how_read": "SNIPPET_ONLY",
+                "figure_basis": "STATED",
+                "excerpt": "CPI services annual rate fell from 4.5% to 3.2%"
+              }
+            ],
+            "set_aside": [],
+            "flags": [],
+            "conflict_group_id": null,
+            "review_required": false,
+            "basis": "median of 4 source(s); low and high are the observed extremes, not a confidence interval"
+          },
+          {
+            "label": "UK DIGITAL SERVICES TAX (DST) RATE",
+            "country": "GB",
+            "unit": "percent of uk-derived revenue",
+            "low": "2",
+            "base": "2",
+            "high": "2",
+            "newest_value": "2",
+            "newest_year": 2026,
+            "oldest_year": 2026,
+            "spread_share": 0.0,
+            "candidate_count": 2,
+            "candidates": [
+              {
+                "value": "2",
+                "unit": "percent",
+                "source_url": "https://www.cnbc.com/2026/04/24/trump-tariffs-uk-tech-apple-google-meta.html",
+                "publisher": "CNBC",
+                "as_of": "2026",
+                "note": "Does not apply to telecom/WAN circuit purchases; noted for completeness only",
+                "source_class": "TRADE_PRESS",
+                "how_read": "SNIPPET_ONLY",
+                "figure_basis": "STATED",
+                "excerpt": "The tax is a 2% levy on the revenues of search engines, social media services and online marketplaces"
+              },
+              {
+                "value": "2",
+                "unit": "percent",
+                "source_url": "https://1stopvat.com/uk-digital-services-tax-revenue-1-billion-2025-2026/",
+                "publisher": "1stopvat.com",
+                "as_of": "2026",
+                "note": "Threshold: global revenue >£500m AND UK revenue >£25m",
+                "source_class": "OTHER",
+                "how_read": "SNIPPET_ONLY",
+                "figure_basis": "STATED",
+                "excerpt": "DST is charged at a 2% rate on revenues generated in the UK by large tech companies"
+              }
+            ],
+            "set_aside": [],
+            "flags": [],
+            "conflict_group_id": null,
+            "review_required": false,
+            "basis": "median of 2 source(s); low and high are the observed extremes, not a confidence interval"
+          },
+          {
+            "label": "UK PRODUCER PRICE INFLATION – INFORMATION AND COMMUNICATION SERVICES",
+            "country": "GB",
+            "unit": "percent year-on-year",
+            "low": "2.5",
+            "base": "3.4",
+            "high": "4.3",
+            "newest_value": "3.4",
+            "newest_year": 2026,
+            "oldest_year": 2026,
+            "spread_share": 0.72,
+            "candidate_count": 2,
+            "candidates": [
+              {
+                "value": "2.5",
+                "unit": "percent year-on-year",
+                "source_url": "https://www.ons.gov.uk/economy/inflationandpriceindices/bulletins/producerpriceinflation/march2026includingservicesjanuarytomarch2026",
+                "publisher": "ONS – Producer price inflation, UK: March 2026 including services",
+                "as_of": "2026-Q1",
+                "note": "PPI services sub-index specifically for info & comms; most relevant to WAN/telecom pricing",
+                "source_class": "REGULATOR",
+                "how_read": "SNIPPET_ONLY",
+                "figure_basis": "STATED",
+                "excerpt": "Information and communication services … rose by 2.5% in Quarter 1 2026, up from a revised rise of 1.7% in Quarter 4 2025"
+              },
+              {
+                "value": "4.3",
+                "unit": "percent year-on-year",
+                "source_url": "https://www.ons.gov.uk/economy/inflationandpriceindices/bulletins/producerpriceinflation/june2026includingservicesapriltojune2026",
+                "publisher": "ONS – Producer price inflation, UK: June 2026 including services",
+                "as_of": "2026-Q2",
+                "note": "Overall services PPI Q2 2026; broader than I&C sub-index",
+                "source_class": "REGULATOR",
+                "how_read": "SNIPPET_ONLY",
+                "figure_basis": "STATED",
+                "excerpt": "Services producer prices rose by 4.3% in the year to Quarter 2 (Apr to June) 2026"
+              }
+            ],
+            "set_aside": [],
+            "flags": [
+              "MATERIAL_SPREAD"
+            ],
+            "conflict_group_id": "b08efaf8-a236-4ea5-9d94-c48b8cfe5eb5",
+            "review_required": true,
+            "basis": "median of 2 source(s); low and high are the observed extremes, not a confidence interval"
+          },
+          {
+            "label": "UK STANDARD VAT RATE – TELECOM AND DIGITAL SERVICES",
+            "country": "GB",
+            "unit": "percent",
+            "low": "20",
+            "base": "20",
+            "high": "20",
+            "newest_value": "20",
+            "newest_year": 2026,
+            "oldest_year": 2026,
+            "spread_share": 0.0,
+            "candidate_count": 2,
+            "candidates": [
+              {
+                "value": "20",
+                "unit": "percent",
+                "source_url": "https://tipalti.com/en-uk/blog/vat-on-digital-services/",
+                "publisher": "tipalti.com",
+                "as_of": "2026",
+                "note": "UK standard rate; applies to B2B telecom services",
+                "source_class": "OTHER",
+                "how_read": "SNIPPET_ONLY",
+                "figure_basis": "STATED",
+                "excerpt": "In the UK, the standard VAT rate is 20%, with a 5% rate of VAT for specified goods and services"
+              },
+              {
+                "value": "20",
+                "unit": "percent",
+                "source_url": "https://riseaccounting.co.uk/blog/vat-on-digital-services/",
+                "publisher": "riseaccounting.co.uk",
+                "as_of": "2026",
+                "note": "September 2026 publication",
+                "source_class": "OTHER",
+                "how_read": "SNIPPET_ONLY",
+                "figure_basis": "STATED",
+                "excerpt": "Most digital sales to UK consumers carry the standard 20% rate"
+              }
+            ],
+            "set_aside": [],
+            "flags": [],
+            "conflict_group_id": null,
+            "review_required": false,
+            "basis": "median of 2 source(s); low and high are the observed extremes, not a confidence interval"
+          }
+        ],
+        "qualitative": [],
+        "reliability": null,
+        "conflicts": [
+          {
+            "label": "UK PRODUCER PRICE INFLATION – INFORMATION AND COMMUNICATION SERVICES",
+            "country": "GB",
+            "conflict_group_id": "b08efaf8-a236-4ea5-9d94-c48b8cfe5eb5",
+            "flags": [
+              "MATERIAL_SPREAD"
+            ],
+            "band": {
+              "low": "2.5",
+              "base": "3.4",
+              "high": "4.3"
+            },
+            "spread_share": 0.72,
+            "vintages": [
+              "2026-Q1",
+              "2026-Q2"
+            ],
+            "candidates": [
+              {
+                "value": "2.5",
+                "unit": "percent year-on-year",
+                "source_url": "https://www.ons.gov.uk/economy/inflationandpriceindices/bulletins/producerpriceinflation/march2026includingservicesjanuarytomarch2026",
+                "publisher": "ONS – Producer price inflation, UK: March 2026 including services",
+                "as_of": "2026-Q1",
+                "note": "PPI services sub-index specifically for info & comms; most relevant to WAN/telecom pricing",
+                "source_class": "REGULATOR",
+                "how_read": "SNIPPET_ONLY",
+                "figure_basis": "STATED",
+                "excerpt": "Information and communication services … rose by 2.5% in Quarter 1 2026, up from a revised rise of 1.7% in Quarter 4 2025"
+              },
+              {
+                "value": "4.3",
+                "unit": "percent year-on-year",
+                "source_url": "https://www.ons.gov.uk/economy/inflationandpriceindices/bulletins/producerpriceinflation/june2026includingservicesapriltojune2026",
+                "publisher": "ONS – Producer price inflation, UK: June 2026 including services",
+                "as_of": "2026-Q2",
+                "note": "Overall services PPI Q2 2026; broader than I&C sub-index",
+                "source_class": "REGULATOR",
+                "how_read": "SNIPPET_ONLY",
+                "figure_basis": "STATED",
+                "excerpt": "Services producer prices rose by 4.3% in the year to Quarter 2 (Apr to June) 2026"
+              }
+            ],
+            "why": "sources disagree by 72% (2.5 to 4.3), which is beyond the governed threshold - the disagreement is the finding and is not resolved here"
+          }
+        ],
+        "queries_used": 1,
+        "captures_used": 10
+      }
     }
   ],
   "known_facts": [],
   "evidenced_footprint": [
     {
-      "id": "2e60f6d3-e40f-45d3-b37c-67db56550d25",
+      "id": "7927f16e-e39b-4c1a-b8f9-c180a7ca4a9e",
       "case_id": "1acf16ce-b58d-437f-8c30-60d47bbf86d2",
       "country": "GB",
       "archetype": "DC",
@@ -18798,10 +19698,10 @@
         "https://www.slideshare.net/StoreTec/tesco-data-centre-consolidation-nearing-completion"
       ],
       "promoted_by": "sample-run",
-      "promoted_at": "2026-10-11 12:12:04.558939+00:00"
+      "promoted_at": "2026-10-11 19:32:09.741126+00:00"
     },
     {
-      "id": "5a5cf964-7990-4c8c-8f61-220cbf5fb590",
+      "id": "d9cb2520-9a66-46d5-ab34-2aa29da86085",
       "case_id": "1acf16ce-b58d-437f-8c30-60d47bbf86d2",
       "country": "IE",
       "archetype": "DC",
@@ -18825,8 +19725,10 @@
         "https://www.slideshare.net/StoreTec/tesco-data-centre-consolidation-nearing-completion"
       ],
       "promoted_by": "sample-run",
-      "promoted_at": "2026-10-11 12:12:04.558939+00:00"
+      "promoted_at": "2026-10-11 19:32:09.741126+00:00"
     }
   ],
-  "timings_seconds": {}
+  "timings_seconds": {
+    "22": 125.4
+  }
 }

@@ -17,7 +17,7 @@
     "resumed": true
   },
   "resumed_existing_case": true,
-  "mode": "repromote",
+  "mode": "repair",
   "domains_already_researched_on_resume": [
     1,
     2,
@@ -98,8 +98,28 @@
       "origin": "PUBLIC_DISCLOSURE"
     }
   ],
+  "scope_countries_modelled": [
+    "GB",
+    "IE"
+  ],
+  "scope_countries_company_total": "DECLARED_UNKNOWN",
+  "scope_status": "PARTIAL_COUNTRIES",
+  "scope_note": "Baseline covers 2 country(ies) (GB, IE) and the site types listed in sites_origin. The group's full country and site-type count is not sourced, so the share of the group this represents is DECLARED_UNKNOWN. This is baseline_in_scope, not a group baseline.",
+  "sites_origin": {
+    "DC": "RESEARCHED",
+    "LARGE_OFFICE": "ASSUMED_PUBLIC_DISCLOSURE",
+    "STORE": "ASSUMED_PUBLIC_DISCLOSURE"
+  },
+  "fx_to_eur": {
+    "rate": null,
+    "as_of": null,
+    "basis": "DECLARED_UNKNOWN",
+    "evidence_grade": null,
+    "source": null
+  },
   "seed": 20260101,
   "ensemble_size": 25,
+  "domains_declared_unknown": [],
   "domains_requested": [
     1,
     2,
@@ -136,7 +156,8 @@
     18,
     19,
     20,
-    21
+    21,
+    22
   ],
   "estimate_inputs": {
     "method": "BUILD_UP",
@@ -145,8 +166,8 @@
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-11T12:12:02.614985+00:00",
-  "run_seconds": 22.7,
+  "run_started": "2026-10-11T19:30:04.023954+00:00",
+  "run_seconds": 135.4,
   "preflight_conditions": 8,
   "promotion": {
     "promoted": true,

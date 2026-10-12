@@ -2523,14 +2523,324 @@
     "vendors": {
       "domain_no": 8,
       "domain": "Current vendor and product signals",
-      "disposition": "BENCHMARK_PRIOR",
-      "reason": "research returned no verdict",
-      "quantities": null,
-      "triangulated": null,
-      "qualitative": null,
-      "conflicts": null,
+      "disposition": "EVIDENCED_PUBLIC",
+      "reason": null,
+      "quantities": [
+        {
+          "label": "Managed network sites covered by Telefónica MPLS",
+          "value": "3000",
+          "unit": "sites",
+          "country": null,
+          "bandwidth_mbps": null,
+          "as_of": "2016",
+          "currency": null,
+          "vendor": "Telefónica",
+          "term_months": null,
+          "technology": "MPLS IP-VPN",
+          "candidates": [
+            {
+              "value": "3000",
+              "unit": "sites",
+              "source_url": "https://cloud.telefonica.com/en/case-studies/inditex-group-zara/",
+              "publisher": "Telefónica Cloud (vendor case study)",
+              "as_of": "2016",
+              "note": "Undated case study; store-count reference anchors to ~2014–2016. Current store network is ~5,500 globally.",
+              "source_class": "COMPANY_PUBLISHED",
+              "how_read": "SNIPPET_ONLY",
+              "figure_basis": "STATED",
+              "excerpt": "Single MPLS VPN managed end-to-end for Inditex offices and shops in over 3,000 sites in 34 countries."
+            }
+          ],
+          "candidates_omitted": 0
+        },
+        {
+          "label": "Countries covered by Telefónica managed MPLS network for Inditex",
+          "value": "34",
+          "unit": "countries",
+          "country": null,
+          "bandwidth_mbps": null,
+          "as_of": "2016",
+          "currency": null,
+          "vendor": "Telefónica",
+          "term_months": null,
+          "technology": "MPLS IP-VPN",
+          "candidates": [
+            {
+              "value": "34",
+              "unit": "countries",
+              "source_url": "https://cloud.telefonica.com/en/case-studies/inditex-group-zara/",
+              "publisher": "Telefónica Cloud (vendor case study)",
+              "as_of": "2016",
+              "note": "Inditex now operates in 90+ countries; coverage scope of current arrangement unknown.",
+              "source_class": "COMPANY_PUBLISHED",
+              "how_read": "SNIPPET_ONLY",
+              "figure_basis": "STATED",
+              "excerpt": "Telefónica provided a fully managed MPLS service… over 3,000 sites in 34 countries."
+            }
+          ],
+          "candidates_omitted": 0
+        },
+        {
+          "label": "Mobile devices managed by Telefónica for Inditex",
+          "value": "1600",
+          "unit": "devices",
+          "country": null,
+          "bandwidth_mbps": null,
+          "as_of": "2016",
+          "currency": null,
+          "vendor": "Telefónica",
+          "term_months": null,
+          "technology": "Mobile management",
+          "candidates": [
+            {
+              "value": "1600",
+              "unit": "devices",
+              "source_url": "https://cloud.telefonica.com/en/case-studies/inditex-group-zara/",
+              "publisher": "Telefónica Cloud (vendor case study)",
+              "as_of": "2016",
+              "note": "Undated; very likely understates current fleet given Inditex now employs 162,000+ people.",
+              "source_class": "COMPANY_PUBLISHED",
+              "how_read": "SNIPPET_ONLY",
+              "figure_basis": "STATED",
+              "excerpt": "Mobile management for more than 1,600 devices."
+            }
+          ],
+          "candidates_omitted": 0
+        }
+      ],
+      "triangulated": [
+        {
+          "label": "COUNTRIES COVERED BY TELEFÓNICA MANAGED MPLS NETWORK FOR INDITEX",
+          "country": null,
+          "unit": "countries",
+          "low": "34",
+          "base": "34",
+          "high": "34",
+          "newest_value": "34",
+          "newest_year": 2016,
+          "oldest_year": 2016,
+          "spread_share": 0.0,
+          "candidate_count": 1,
+          "candidates": [
+            {
+              "value": "34",
+              "unit": "countries",
+              "source_url": "https://cloud.telefonica.com/en/case-studies/inditex-group-zara/",
+              "publisher": "Telefónica Cloud (vendor case study)",
+              "as_of": "2016",
+              "note": "Inditex now operates in 90+ countries; coverage scope of current arrangement unknown.",
+              "source_class": "COMPANY_PUBLISHED",
+              "how_read": "SNIPPET_ONLY",
+              "figure_basis": "STATED",
+              "excerpt": "Telefónica provided a fully managed MPLS service… over 3,000 sites in 34 countries."
+            }
+          ],
+          "set_aside": [],
+          "flags": [
+            "SINGLE_SOURCE",
+            "STALE"
+          ],
+          "conflict_group_id": null,
+          "review_required": false,
+          "basis": "median of 1 source(s); low and high are the observed extremes, not a confidence interval"
+        },
+        {
+          "label": "MANAGED NETWORK SITES COVERED BY TELEFÓNICA MPLS",
+          "country": null,
+          "unit": "sites",
+          "low": "3000",
+          "base": "3000",
+          "high": "3000",
+          "newest_value": "3000",
+          "newest_year": 2016,
+          "oldest_year": 2016,
+          "spread_share": 0.0,
+          "candidate_count": 1,
+          "candidates": [
+            {
+              "value": "3000",
+              "unit": "sites",
+              "source_url": "https://cloud.telefonica.com/en/case-studies/inditex-group-zara/",
+              "publisher": "Telefónica Cloud (vendor case study)",
+              "as_of": "2016",
+              "note": "Undated case study; store-count reference anchors to ~2014–2016. Current store network is ~5,500 globally.",
+              "source_class": "COMPANY_PUBLISHED",
+              "how_read": "SNIPPET_ONLY",
+              "figure_basis": "STATED",
+              "excerpt": "Single MPLS VPN managed end-to-end for Inditex offices and shops in over 3,000 sites in 34 countries."
+            }
+          ],
+          "set_aside": [],
+          "flags": [
+            "SINGLE_SOURCE",
+            "STALE"
+          ],
+          "conflict_group_id": null,
+          "review_required": false,
+          "basis": "median of 1 source(s); low and high are the observed extremes, not a confidence interval"
+        },
+        {
+          "label": "MOBILE DEVICES MANAGED BY TELEFÓNICA FOR INDITEX",
+          "country": null,
+          "unit": "devices",
+          "low": "1600",
+          "base": "1600",
+          "high": "1600",
+          "newest_value": "1600",
+          "newest_year": 2016,
+          "oldest_year": 2016,
+          "spread_share": 0.0,
+          "candidate_count": 1,
+          "candidates": [
+            {
+              "value": "1600",
+              "unit": "devices",
+              "source_url": "https://cloud.telefonica.com/en/case-studies/inditex-group-zara/",
+              "publisher": "Telefónica Cloud (vendor case study)",
+              "as_of": "2016",
+              "note": "Undated; very likely understates current fleet given Inditex now employs 162,000+ people.",
+              "source_class": "COMPANY_PUBLISHED",
+              "how_read": "SNIPPET_ONLY",
+              "figure_basis": "STATED",
+              "excerpt": "Mobile management for more than 1,600 devices."
+            }
+          ],
+          "set_aside": [],
+          "flags": [
+            "SINGLE_SOURCE",
+            "STALE"
+          ],
+          "conflict_group_id": null,
+          "review_required": false,
+          "basis": "median of 1 source(s); low and high are the observed extremes, not a confidence interval"
+        }
+      ],
+      "qualitative": [
+        {
+          "label": "WAN carrier / managed network services provider",
+          "value": "Telefónica",
+          "unit": "named supplier",
+          "country": "ES",
+          "bandwidth_mbps": null,
+          "as_of": "2016",
+          "currency": null,
+          "vendor": "Telefónica",
+          "term_months": null,
+          "technology": "MPLS IP-VPN with DSL store access",
+          "candidates": [
+            {
+              "value": "Telefónica",
+              "unit": "named managed WAN supplier",
+              "source_url": "https://cloud.telefonica.com/en/case-studies/inditex-group-zara/",
+              "publisher": "Telefónica Cloud (vendor case study)",
+              "as_of": "2016",
+              "note": "No explicit publication date; store count (~4,300 in 73 countries) anchors to ~2014–2016 era. Age discount applies.",
+              "source_class": "COMPANY_PUBLISHED",
+              "how_read": "SNIPPET_ONLY",
+              "figure_basis": "STATED",
+              "excerpt": "Telefónica provided a fully managed MPLS service… managing offices and shops in over 3,000 sites in 34 countries."
+            }
+          ],
+          "candidates_omitted": 0
+        },
+        {
+          "label": "Store last-mile access technology (WAN)",
+          "value": "DSL",
+          "unit": "access technology",
+          "country": null,
+          "bandwidth_mbps": null,
+          "as_of": "2016",
+          "currency": null,
+          "vendor": "Telefónica",
+          "term_months": null,
+          "technology": "DSL to MPLS cloud",
+          "candidates": [
+            {
+              "value": "DSL",
+              "unit": "access technology",
+              "source_url": "https://cloud.telefonica.com/en/case-studies/inditex-group-zara/",
+              "publisher": "Telefónica Cloud (vendor case study)",
+              "as_of": "2016",
+              "note": "Dated signal; likely superseded by fibre or SD-WAN in current state, but no more recent source found.",
+              "source_class": "COMPANY_PUBLISHED",
+              "how_read": "SNIPPET_ONLY",
+              "figure_basis": "STATED",
+              "excerpt": "DSL connections link individual stores to the MPLS cloud."
+            }
+          ],
+          "candidates_omitted": 0
+        },
+        {
+          "label": "ERP platform (affecting WAN/cloud traffic)",
+          "value": "SAP S/4HANA",
+          "unit": "named platform",
+          "country": null,
+          "bandwidth_mbps": null,
+          "as_of": "2023",
+          "currency": null,
+          "vendor": "SAP",
+          "term_months": null,
+          "technology": "ERP cloud/on-premise",
+          "candidates": [
+            {
+              "value": "SAP S/4HANA",
+              "unit": "named platform",
+              "source_url": "https://www.appsruntheworld.com/customers-database/customers/view/inditex-spain",
+              "publisher": "AppsRunTheWorld (technographics aggregator)",
+              "as_of": "2023",
+              "note": "SAP S/4HANA drives significant WAN/internet traffic to SAP cloud infrastructure; relevant to internet sizing.",
+              "source_class": "AGGREGATOR",
+              "how_read": "SNIPPET_ONLY",
+              "figure_basis": "STATED",
+              "excerpt": "In 2022, Inditex migrated from SAP ERP ECC 6.0 to SAP S/4 HANA to consolidate its ERP Financial landscape."
+            }
+          ],
+          "candidates_omitted": 0
+        },
+        {
+          "label": "Cloud hyperscaler collaboration (internet/WAN traffic driver)",
+          "value": "Google Cloud",
+          "unit": "named hyperscaler",
+          "country": "ES",
+          "bandwidth_mbps": null,
+          "as_of": "2023",
+          "currency": null,
+          "vendor": "Google Cloud",
+          "term_months": null,
+          "technology": "Public cloud",
+          "candidates": [
+            {
+              "value": "Google Cloud",
+              "unit": "named hyperscaler",
+              "source_url": "https://static.inditex.com/annual_report_2023/en/Social.pdf",
+              "publisher": "Inditex Group Annual Report 2023 / Social PDF",
+              "as_of": "2023",
+              "note": "Confirms Google Cloud relationship but does not define network topology or spend.",
+              "source_class": "PRIMARY_FILING",
+              "how_read": "SNIPPET_ONLY",
+              "figure_basis": "STATED",
+              "excerpt": "Collaboration with Google Cloud at a digital workshop in Madrid."
+            }
+          ],
+          "candidates_omitted": 0
+        }
+      ],
+      "conflicts": [],
       "reliability": null,
-      "sources": []
+      "sources": [
+        {
+          "url": "https://www.appsruntheworld.com/customers-database/customers/view/inditex-spain",
+          "publisher": "AppsRunTheWorld",
+          "as_of": "2023",
+          "source_class": "AGGREGATOR"
+        },
+        {
+          "url": "https://static.inditex.com/annual_report_2023/en/Social.pdf",
+          "publisher": "Inditex (Annual Report 2023)",
+          "as_of": "2023",
+          "source_class": "PRIMARY_FILING"
+        }
+      ]
     },
     "contracts": {
       "domain_no": 12,
@@ -10209,10 +10519,343 @@
       "estimate_snapshot_id": null,
       "domain_no": 8,
       "domain_name": "Current vendor and product signals",
-      "disposition": "BENCHMARK_PRIOR",
-      "reason": "research returned no verdict",
-      "agent_run_id": null,
-      "evidence": null
+      "disposition": "EVIDENCED_PUBLIC",
+      "reason": null,
+      "agent_run_id": "6021bf0f-8b4a-4a23-8a79-d7543600c651",
+      "evidence": {
+        "sources": [
+          {
+            "url": "https://www.appsruntheworld.com/customers-database/customers/view/inditex-spain",
+            "publisher": "AppsRunTheWorld",
+            "as_of": "2023",
+            "source_class": "AGGREGATOR",
+            "how_read": "SNIPPET_ONLY",
+            "figure_basis": "STATED",
+            "excerpt": "In 2022, Inditex migrated from SAP ERP ECC 6.0 to SAP S/4 HANA.",
+            "status_code": 200,
+            "fragment": "Inditex Technographics, Software Purchases, AI and Digital Transformation Initiatives --> --> --> @font-face { font-family: \"Poppins\"; src: local(\"Poppins\"), url(\"https://www.appsruntheworld.com/customers-database/assets_new/fonts/Poppins-Regular.woff\") format(\"woff\"); font-display: swap; } body { --arrow-down-image: url('https://artw-assets.nyc3.cdn.digitaloceanspaces.com/assets/arrow_drop_down.svg'); } --> --> --> --> --> --> var ci_site_url = 'https://www.appsruntheworld.com/customers-database/'; window.addEventListener('DOMContentLoaded', function () { const viewport = document.querySelect",
+            "claim_checked": "NOT_FOUND",
+            "claim_verified": false
+          },
+          {
+            "url": "https://static.inditex.com/annual_report_2023/en/Social.pdf",
+            "publisher": "Inditex (Annual Report 2023)",
+            "as_of": "2023",
+            "source_class": "PRIMARY_FILING",
+            "how_read": "SNIPPET_ONLY",
+            "figure_basis": "STATED",
+            "excerpt": "Collaboration with Google Cloud at a digital workshop in Madrid.",
+            "status_code": 200,
+            "fragment": "%PDF-1.4 %���� 1 0 obj > endobj 5 0 obj > endobj 2 0 obj > endobj 3 0 obj > endobj 4 0 obj > endobj 6 0 obj > endobj 7 0 obj > endobj 8 0 obj > endobj 9 0 obj > endobj 10 0 obj > endobj 11 0 obj > endobj 12 0 obj > endobj 13 0 obj > endobj 14 0 obj > endobj 15 0 obj > endobj 16 0 obj > endobj 17 0 obj > endobj 18 0 obj > endobj 19 0 obj > endobj 20 0 obj > endobj 21 0 obj > endobj 22 0 obj > endobj 23 0 obj > endobj 24 0 obj > endobj 25 0 obj > endobj 26 0 obj > endobj 27 0 obj > endobj 28 0 obj > endobj 29 0 obj > endobj 30 0 obj > endobj 31 0 obj > endobj 32 0 obj > endobj 33 0 obj > endobj ",
+            "claim_checked": "NOT_FOUND",
+            "claim_verified": false
+          }
+        ],
+        "quantities": [
+          {
+            "label": "Managed network sites covered by Telefónica MPLS",
+            "value": "3000",
+            "unit": "sites",
+            "country": null,
+            "bandwidth_mbps": null,
+            "as_of": "2016",
+            "currency": null,
+            "vendor": "Telefónica",
+            "term_months": null,
+            "technology": "MPLS IP-VPN",
+            "candidates": [
+              {
+                "value": "3000",
+                "unit": "sites",
+                "source_url": "https://cloud.telefonica.com/en/case-studies/inditex-group-zara/",
+                "publisher": "Telefónica Cloud (vendor case study)",
+                "as_of": "2016",
+                "note": "Undated case study; store-count reference anchors to ~2014–2016. Current store network is ~5,500 globally.",
+                "source_class": "COMPANY_PUBLISHED",
+                "how_read": "SNIPPET_ONLY",
+                "figure_basis": "STATED",
+                "excerpt": "Single MPLS VPN managed end-to-end for Inditex offices and shops in over 3,000 sites in 34 countries."
+              }
+            ],
+            "candidates_omitted": 0
+          },
+          {
+            "label": "Countries covered by Telefónica managed MPLS network for Inditex",
+            "value": "34",
+            "unit": "countries",
+            "country": null,
+            "bandwidth_mbps": null,
+            "as_of": "2016",
+            "currency": null,
+            "vendor": "Telefónica",
+            "term_months": null,
+            "technology": "MPLS IP-VPN",
+            "candidates": [
+              {
+                "value": "34",
+                "unit": "countries",
+                "source_url": "https://cloud.telefonica.com/en/case-studies/inditex-group-zara/",
+                "publisher": "Telefónica Cloud (vendor case study)",
+                "as_of": "2016",
+                "note": "Inditex now operates in 90+ countries; coverage scope of current arrangement unknown.",
+                "source_class": "COMPANY_PUBLISHED",
+                "how_read": "SNIPPET_ONLY",
+                "figure_basis": "STATED",
+                "excerpt": "Telefónica provided a fully managed MPLS service… over 3,000 sites in 34 countries."
+              }
+            ],
+            "candidates_omitted": 0
+          },
+          {
+            "label": "Mobile devices managed by Telefónica for Inditex",
+            "value": "1600",
+            "unit": "devices",
+            "country": null,
+            "bandwidth_mbps": null,
+            "as_of": "2016",
+            "currency": null,
+            "vendor": "Telefónica",
+            "term_months": null,
+            "technology": "Mobile management",
+            "candidates": [
+              {
+                "value": "1600",
+                "unit": "devices",
+                "source_url": "https://cloud.telefonica.com/en/case-studies/inditex-group-zara/",
+                "publisher": "Telefónica Cloud (vendor case study)",
+                "as_of": "2016",
+                "note": "Undated; very likely understates current fleet given Inditex now employs 162,000+ people.",
+                "source_class": "COMPANY_PUBLISHED",
+                "how_read": "SNIPPET_ONLY",
+                "figure_basis": "STATED",
+                "excerpt": "Mobile management for more than 1,600 devices."
+              }
+            ],
+            "candidates_omitted": 0
+          }
+        ],
+        "triangulated": [
+          {
+            "label": "COUNTRIES COVERED BY TELEFÓNICA MANAGED MPLS NETWORK FOR INDITEX",
+            "country": null,
+            "unit": "countries",
+            "low": "34",
+            "base": "34",
+            "high": "34",
+            "newest_value": "34",
+            "newest_year": 2016,
+            "oldest_year": 2016,
+            "spread_share": 0.0,
+            "candidate_count": 1,
+            "candidates": [
+              {
+                "value": "34",
+                "unit": "countries",
+                "source_url": "https://cloud.telefonica.com/en/case-studies/inditex-group-zara/",
+                "publisher": "Telefónica Cloud (vendor case study)",
+                "as_of": "2016",
+                "note": "Inditex now operates in 90+ countries; coverage scope of current arrangement unknown.",
+                "source_class": "COMPANY_PUBLISHED",
+                "how_read": "SNIPPET_ONLY",
+                "figure_basis": "STATED",
+                "excerpt": "Telefónica provided a fully managed MPLS service… over 3,000 sites in 34 countries."
+              }
+            ],
+            "set_aside": [],
+            "flags": [
+              "SINGLE_SOURCE",
+              "STALE"
+            ],
+            "conflict_group_id": null,
+            "review_required": false,
+            "basis": "median of 1 source(s); low and high are the observed extremes, not a confidence interval"
+          },
+          {
+            "label": "MANAGED NETWORK SITES COVERED BY TELEFÓNICA MPLS",
+            "country": null,
+            "unit": "sites",
+            "low": "3000",
+            "base": "3000",
+            "high": "3000",
+            "newest_value": "3000",
+            "newest_year": 2016,
+            "oldest_year": 2016,
+            "spread_share": 0.0,
+            "candidate_count": 1,
+            "candidates": [
+              {
+                "value": "3000",
+                "unit": "sites",
+                "source_url": "https://cloud.telefonica.com/en/case-studies/inditex-group-zara/",
+                "publisher": "Telefónica Cloud (vendor case study)",
+                "as_of": "2016",
+                "note": "Undated case study; store-count reference anchors to ~2014–2016. Current store network is ~5,500 globally.",
+                "source_class": "COMPANY_PUBLISHED",
+                "how_read": "SNIPPET_ONLY",
+                "figure_basis": "STATED",
+                "excerpt": "Single MPLS VPN managed end-to-end for Inditex offices and shops in over 3,000 sites in 34 countries."
+              }
+            ],
+            "set_aside": [],
+            "flags": [
+              "SINGLE_SOURCE",
+              "STALE"
+            ],
+            "conflict_group_id": null,
+            "review_required": false,
+            "basis": "median of 1 source(s); low and high are the observed extremes, not a confidence interval"
+          },
+          {
+            "label": "MOBILE DEVICES MANAGED BY TELEFÓNICA FOR INDITEX",
+            "country": null,
+            "unit": "devices",
+            "low": "1600",
+            "base": "1600",
+            "high": "1600",
+            "newest_value": "1600",
+            "newest_year": 2016,
+            "oldest_year": 2016,
+            "spread_share": 0.0,
+            "candidate_count": 1,
+            "candidates": [
+              {
+                "value": "1600",
+                "unit": "devices",
+                "source_url": "https://cloud.telefonica.com/en/case-studies/inditex-group-zara/",
+                "publisher": "Telefónica Cloud (vendor case study)",
+                "as_of": "2016",
+                "note": "Undated; very likely understates current fleet given Inditex now employs 162,000+ people.",
+                "source_class": "COMPANY_PUBLISHED",
+                "how_read": "SNIPPET_ONLY",
+                "figure_basis": "STATED",
+                "excerpt": "Mobile management for more than 1,600 devices."
+              }
+            ],
+            "set_aside": [],
+            "flags": [
+              "SINGLE_SOURCE",
+              "STALE"
+            ],
+            "conflict_group_id": null,
+            "review_required": false,
+            "basis": "median of 1 source(s); low and high are the observed extremes, not a confidence interval"
+          }
+        ],
+        "qualitative": [
+          {
+            "label": "WAN carrier / managed network services provider",
+            "value": "Telefónica",
+            "unit": "named supplier",
+            "country": "ES",
+            "bandwidth_mbps": null,
+            "as_of": "2016",
+            "currency": null,
+            "vendor": "Telefónica",
+            "term_months": null,
+            "technology": "MPLS IP-VPN with DSL store access",
+            "candidates": [
+              {
+                "value": "Telefónica",
+                "unit": "named managed WAN supplier",
+                "source_url": "https://cloud.telefonica.com/en/case-studies/inditex-group-zara/",
+                "publisher": "Telefónica Cloud (vendor case study)",
+                "as_of": "2016",
+                "note": "No explicit publication date; store count (~4,300 in 73 countries) anchors to ~2014–2016 era. Age discount applies.",
+                "source_class": "COMPANY_PUBLISHED",
+                "how_read": "SNIPPET_ONLY",
+                "figure_basis": "STATED",
+                "excerpt": "Telefónica provided a fully managed MPLS service… managing offices and shops in over 3,000 sites in 34 countries."
+              }
+            ],
+            "candidates_omitted": 0
+          },
+          {
+            "label": "Store last-mile access technology (WAN)",
+            "value": "DSL",
+            "unit": "access technology",
+            "country": null,
+            "bandwidth_mbps": null,
+            "as_of": "2016",
+            "currency": null,
+            "vendor": "Telefónica",
+            "term_months": null,
+            "technology": "DSL to MPLS cloud",
+            "candidates": [
+              {
+                "value": "DSL",
+                "unit": "access technology",
+                "source_url": "https://cloud.telefonica.com/en/case-studies/inditex-group-zara/",
+                "publisher": "Telefónica Cloud (vendor case study)",
+                "as_of": "2016",
+                "note": "Dated signal; likely superseded by fibre or SD-WAN in current state, but no more recent source found.",
+                "source_class": "COMPANY_PUBLISHED",
+                "how_read": "SNIPPET_ONLY",
+                "figure_basis": "STATED",
+                "excerpt": "DSL connections link individual stores to the MPLS cloud."
+              }
+            ],
+            "candidates_omitted": 0
+          },
+          {
+            "label": "ERP platform (affecting WAN/cloud traffic)",
+            "value": "SAP S/4HANA",
+            "unit": "named platform",
+            "country": null,
+            "bandwidth_mbps": null,
+            "as_of": "2023",
+            "currency": null,
+            "vendor": "SAP",
+            "term_months": null,
+            "technology": "ERP cloud/on-premise",
+            "candidates": [
+              {
+                "value": "SAP S/4HANA",
+                "unit": "named platform",
+                "source_url": "https://www.appsruntheworld.com/customers-database/customers/view/inditex-spain",
+                "publisher": "AppsRunTheWorld (technographics aggregator)",
+                "as_of": "2023",
+                "note": "SAP S/4HANA drives significant WAN/internet traffic to SAP cloud infrastructure; relevant to internet sizing.",
+                "source_class": "AGGREGATOR",
+                "how_read": "SNIPPET_ONLY",
+                "figure_basis": "STATED",
+                "excerpt": "In 2022, Inditex migrated from SAP ERP ECC 6.0 to SAP S/4 HANA to consolidate its ERP Financial landscape."
+              }
+            ],
+            "candidates_omitted": 0
+          },
+          {
+            "label": "Cloud hyperscaler collaboration (internet/WAN traffic driver)",
+            "value": "Google Cloud",
+            "unit": "named hyperscaler",
+            "country": "ES",
+            "bandwidth_mbps": null,
+            "as_of": "2023",
+            "currency": null,
+            "vendor": "Google Cloud",
+            "term_months": null,
+            "technology": "Public cloud",
+            "candidates": [
+              {
+                "value": "Google Cloud",
+                "unit": "named hyperscaler",
+                "source_url": "https://static.inditex.com/annual_report_2023/en/Social.pdf",
+                "publisher": "Inditex Group Annual Report 2023 / Social PDF",
+                "as_of": "2023",
+                "note": "Confirms Google Cloud relationship but does not define network topology or spend.",
+                "source_class": "PRIMARY_FILING",
+                "how_read": "SNIPPET_ONLY",
+                "figure_basis": "STATED",
+                "excerpt": "Collaboration with Google Cloud at a digital workshop in Madrid."
+              }
+            ],
+            "candidates_omitted": 0
+          }
+        ],
+        "reliability": null,
+        "conflicts": [],
+        "queries_used": 1,
+        "captures_used": 3
+      }
     },
     {
       "id": "993f91a0-4248-4bf4-ae60-99d4b923e162",
@@ -15520,7 +16163,7 @@
   "known_facts": [],
   "evidenced_footprint": [
     {
-      "id": "08f84cd2-40b5-4364-8ff1-20a79a5ffee5",
+      "id": "49b241be-5abc-47f4-ab52-f8b659a8a0fb",
       "case_id": "2e26a1fa-bffc-4f1d-b4e3-a19ab29a45dc",
       "country": "ES",
       "archetype": "DC",
@@ -15543,10 +16186,10 @@
         "https://www.datacenterdynamics.com/es/noticias/el-data-center-de-inditex-recibe-la-certificaci%C3%B3n-tier-iv/"
       ],
       "promoted_by": "sample-run",
-      "promoted_at": "2026-10-11 12:12:31.530835+00:00"
+      "promoted_at": "2026-10-11 19:32:21.398333+00:00"
     },
     {
-      "id": "b0cad292-f728-4204-beb3-7b1de9dbd09d",
+      "id": "3afdad9a-3c96-44de-adde-f876bf11b6b4",
       "case_id": "2e26a1fa-bffc-4f1d-b4e3-a19ab29a45dc",
       "country": "FR",
       "archetype": "DC",
@@ -15569,10 +16212,10 @@
         "https://www.datacenterdynamics.com/es/noticias/el-data-center-de-inditex-recibe-la-certificaci%C3%B3n-tier-iv/"
       ],
       "promoted_by": "sample-run",
-      "promoted_at": "2026-10-11 12:12:31.530835+00:00"
+      "promoted_at": "2026-10-11 19:32:21.398333+00:00"
     },
     {
-      "id": "863c722e-e4b0-4353-8f11-64f1679b1bc8",
+      "id": "25a33f66-b19e-4c58-b96a-5195de22c5ee",
       "case_id": "2e26a1fa-bffc-4f1d-b4e3-a19ab29a45dc",
       "country": "DE",
       "archetype": "DC",
@@ -15595,8 +16238,11 @@
         "https://www.datacenterdynamics.com/es/noticias/el-data-center-de-inditex-recibe-la-certificaci%C3%B3n-tier-iv/"
       ],
       "promoted_by": "sample-run",
-      "promoted_at": "2026-10-11 12:12:31.530835+00:00"
+      "promoted_at": "2026-10-11 19:32:21.398333+00:00"
     }
   ],
-  "timings_seconds": {}
+  "timings_seconds": {
+    "8": 87.0,
+    "12": 50.1
+  }
 }

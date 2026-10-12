@@ -109,7 +109,25 @@ Sources: [Wifirst](https://www.wifirst.com/en/success-stories/accor); [Wifirst](
 
 **Transformation announcements** - BENCHMARK_PRIOR: research returned no verdict
 
-**Market serviceability** - BENCHMARK_PRIOR: research returned no verdict
+**Market serviceability** - EVIDENCED_PUBLIC, 9 source(s)
+
+- Leased line provisioning lead time — United Kingdom: 45-90
+- Western Europe MPLS unit price — 1 Gbps monthly: 1100-1300
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| CREDIBLE ENTERPRISE CARRIERS — FRANCE (DIA/MPLS/ETHERNET) | FR | None | None | None |  |
+| CREDIBLE ENTERPRISE CARRIERS — GERMANY (DIA/MPLS/ETHERNET) | DE | 39 | 39 | 39 | 2025 |
+| CREDIBLE ENTERPRISE LEASED-LINE/DIA CARRIERS — UNITED KINGDO | GB | None | None | None |  |
+| FRANCE FTTH PREMISES COVERAGE | FR | 95 | 95 | 95 | 2025 |
+| GERMANY FIBRE SUBSCRIPTION SHARE (PROJECTED TO ~50% BY MID-2 | DE | 16 | 16 | 16 | 2024 |
+| LEASED LINE PROVISIONING LEAD TIME — FRANCE | FR | 30 | 30 | 30 | 2023 |
+| LEASED LINE PROVISIONING LEAD TIME — GERMANY (LINES REQUIRIN | DE | None | None | None |  |
+| UK FULL-FIBRE / FTTP PREMISES COVERAGE | GB | 79.5 | 79.5 | 79.5 | 2025 |
+
+*3 conflict(s) flagged: CREDIBLE ENTERPRISE CARRIERS — GERMANY (DIA/MPLS/ETHERNET), FRANCE FTTH PREMISES COVERAGE, UK FULL-FIBRE / FTTP PREMISES COVERAGE*
+
+Sources: [ARCEP (French telecom regulator)](https://en.arcep.fr/news/press-releases/view/n/annual-report-020726.html); [ARCEP](https://en.arcep.fr/news/press-releases/view/n/fixed-broadband-and-superfast-broadband-market-regulation-290623.html); [checkeverything.fr](https://checkeverything.fr/en/telecommunications/operators); [PwC](https://www.pwc.com/gx/en/1/industries/technology-media-telecom/telecom-outlook-perspectives.html) and 5 more
 
 ---
 
@@ -589,9 +607,27 @@ Sources: [HUBER+SUHNER AG](https://www.hubersuhner.com/en/newsroom/company-news/
 
 **Contract and sourcing events** - BENCHMARK_PRIOR: research returned no verdict
 
-**Transformation announcements** - BENCHMARK_PRIOR: research returned no verdict
+**Transformation announcements** - EVIDENCED_PUBLIC, 10 source(s)
 
-**Market serviceability** - BENCHMARK_PRIOR: research returned no verdict
+- FRMCS / 5G railway radio transition – DB Germany timeline: 2026-2035
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| DIFA – PERMANENT ANNUAL BASE SAVINGS FROM 2026 | DE | 30000000 | 30000000 | 30000000 | 2024 |
+| DIGITAL MAINTENANCE VEHICLES (DIFA) – CUMULATIVE SAVINGS TAR | DE | 120000000 | 120000000 | 120000000 | 2024 |
+| FEDERAL DIGITALIZATION APPROPRIATION FOR DB RAIL INFRASTRUCT | DE | 1600000000 | 1600000000 | 1600000000 | 2025 |
+| S3 RESTRUCTURING PROGRAMME – EBIT TARGET BY 2027 | DE | 2000000000 | 2000000000 | 2000000000 | 2024 |
+| S3 RESTRUCTURING PROGRAMME – OPERATING EXPENSE SAVINGS ACHIE | DE | 100000000 | 100000000 | 100000000 | 2025 |
+| S3 RESTRUCTURING PROGRAMME – OPERATING EXPENSE SAVINGS ACHIE | DE | 300000000 | 300000000 | 300000000 | 2024 |
+| S3 RESTRUCTURING PROGRAMME – OVERHEAD COST REDUCTION TARGET  | DE | 20 | 20 | 20 | 2024 |
+| S3 RESTRUCTURING PROGRAMME – OVERHEAD HEADCOUNT REDUCTION TA | DE | 10000 | 10000 | 10000 | 2024 |
+| STRONG IT PROGRAMME – IT APPLICATION DECOMMISSIONING TARGET  | DE | 50 | 50 | 50 | 2025 |
+
+*1 conflict(s) flagged: STRONG IT PROGRAMME – IT APPLICATION DECOMMISSIONING TARGET BY END-2027*
+
+Sources: [Deutsche Bahn AG (Investor Relations)](https://ir.deutschebahn.com/en/news-presentations/news/detail/deutsche-bahn-launches-overall-restructuring-program-to-improve-infrastructure-rail-operations-and-profitability-by-2027/); [Deutsche Bahn AG (2024 Annual Report)](https://ibir.deutschebahn.com/2024/en/to-our-stakeholders/chairmans-letter/); [Deutsche Bahn AG (2024 Annual Report – S3 overvi](https://ibir.deutschebahn.com/2024/en/back-on-track/); [Deutsche Bahn AG (IR press release FY2024)](https://ir.deutschebahn.com/en/news-presentations/news/detail/on-a-turnaround-course-deutsche-bahn-significantly-reduced-losses-in-2024/) and 6 more
+
+**Market serviceability** - DECLARED_UNKNOWN: OUT_OF_PERIMETER
 
 ---
 
@@ -851,7 +887,25 @@ Sources: [EuropaWire](https://news.europawire.eu/fresenius-and-microsoft-sign-la
 
 Sources: [Fresenius SE — Annual Report 2024](https://report.fresenius.com/2024/annual-report/group-management-report/fundamental-information-about-the-group/strategy-and-goals.html); [Fresenius Medical Care (newsroom)](https://freseniusmedicalcare.com/en/media/newsroom/fresenius-medical-care-delivers-18percent-earnings-growth-in-2024-and-continues-the-acceleration-momentum-into-2025/); [Fresenius Medical Care AG — Q1/2026 Quarterly Re](https://freseniusmedicalcare.com/content/dam/fresenius-medical-care/global/en/03_investors/pdf/03_publications/2026/q1/FME_Q1_2026_Quarterly_Report.pdf); [Fresenius Medical Care AG — CEO speech, 2026 AGM](https://freseniusmedicalcare.com/content/dam/fresenius-medical-care/global/en/03_investors/pdf/hauptversammlung/2026/260512_FME_Speech_Helen_Giza_2026_EN.pdf) and 1 more
 
-**Market serviceability** - BENCHMARK_PRIOR: research returned no verdict
+**Market serviceability** - EVIDENCED_PUBLIC, 9 source(s)
+
+- MPLS circuit monthly price — Western Europe, 1 Gbps: 1100-1300
+- DIA circuit monthly price — Western Europe, 1 Gbps: 700-900
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| CREDIBLE ENTERPRISE CARRIERS — GERMANY (FACILITIES-BASED MNO | DE | 4 | 4 | 4 | 2025 |
+| CREDIBLE ENTERPRISE CARRIERS — SPAIN (PRINCIPAL NATIONAL GRO | ES | 4 | 4 | 4 | 2025 |
+| CREDIBLE ENTERPRISE ETHERNET/WAN CARRIERS — US (CARRIER ETHE | US | 6 | 6.5 | 7 | 2026 |
+| DEUTSCHE TELEKOM RETAIL BROADBAND MARKET SHARE — GERMANY | DE | 50.2 | 50.2 | 50.2 | 2025 |
+| DIA SHARE OF ENTERPRISE WAN SITES (GLOBAL SURVEY) |  | 54 | 54 | 54 | 2025 |
+| MPLS SHARE OF ENTERPRISE WAN SITES (GLOBAL SURVEY) |  | 22 | 22 | 22 | 2025 |
+| SPAIN FTTH INSTALLED ACCESSES (WHOLESALE NETWORK AVAILABLE T | ES | 80800000 | 80800000 | 80800000 | 2025 |
+| TELEFÓNICA ESPAÑA RETAIL MARKET SHARE — SPAIN | ES | 35.3 | 35.3 | 35.3 | 2025 |
+
+*2 conflict(s) flagged: CREDIBLE ENTERPRISE ETHERNET/WAN CARRIERS — US (CARRIER ETHERNET LEADERBOARD RANK ORDER), DEUTSCHE TELEKOM RETAIL BROADBAND MARKET SHARE — GERMANY*
+
+Sources: [germancompanyformation.com](https://germancompanyformation.com/guides/telecommunication-companies-in-germany); [VATM (German telecoms industry association)](https://www.vatm.de/wp-content/uploads/2025/06/VATM-Market-Analysis-Germany-2025.pdf); [Yahoo Finance / ResearchAndMarkets](https://uk.finance.yahoo.com/news/germany-telecom-operators-intelligence-report-144900650.html); [KenResearch](https://www.kenresearch.com/industry-reports/spain-telecom-market) and 5 more
 
 ---
 
@@ -1067,7 +1121,20 @@ Sources: [Uptime Institute](https://uptimeinstitute.com/component/tierachievemen
 
 Sources: [OpenIntel](https://openintel.uk/zara/v-dig/)
 
-**Current providers and products** - BENCHMARK_PRIOR: research returned no verdict
+**Current providers and products** - EVIDENCED_PUBLIC, 2 source(s)
+
+- WAN carrier / managed network services provider: Telefónica
+- Store last-mile access technology (WAN): DSL
+- ERP platform (affecting WAN/cloud traffic): SAP S/4HANA
+- Cloud hyperscaler collaboration (internet/WAN traffic driver): Google Cloud
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| COUNTRIES COVERED BY TELEFÓNICA MANAGED MPLS NETWORK FOR IND |  | 34 | 34 | 34 | 2016 |
+| MANAGED NETWORK SITES COVERED BY TELEFÓNICA MPLS |  | 3000 | 3000 | 3000 | 2016 |
+| MOBILE DEVICES MANAGED BY TELEFÓNICA FOR INDITEX |  | 1600 | 1600 | 1600 | 2016 |
+
+Sources: [AppsRunTheWorld](https://www.appsruntheworld.com/customers-database/customers/view/inditex-spain); [Inditex (Annual Report 2023)](https://static.inditex.com/annual_report_2023/en/Social.pdf)
 
 **Contract and sourcing events** - BENCHMARK_PRIOR: research returned no verdict
 
@@ -1258,7 +1325,7 @@ Sources: [germancompanyformation.com](https://germancompanyformation.com/guides/
 ## McDonald's Corporation
 
 - **Industry** QSR_RESTAURANTS (entity resolution)
-- **Scope** US, GB, DE, USD, 16,406 sites (public disclosure only)
+- **Scope** US, GB, DE, USD, 16,407 sites (research merged with disclosure)
 - **Confidence** 0.330 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 10 source(s)
@@ -1277,7 +1344,20 @@ Sources: [germancompanyformation.com](https://germancompanyformation.com/guides/
 
 Sources: [McDonald's Corporation (SEC EDGAR 10-K FY2024)](https://www.sec.gov/Archives/edgar/data/63908/000006390825000012/mcd-20241231.htm); [McDonald's Corporation (SEC EDGAR 10-K FY2025)](https://www.sec.gov/Archives/edgar/data/63908/000006390826000035/mcd-20251231.htm); [McDonald's Corporation 2024 Annual Report (Fortu](https://fortune.com/company-assets/713/quartr/annual-report-10-k-01ec7-2025-02-25-06-30-21.pdf); [McDonald's Corporation (official Restaurants by ](https://corporate.mcdonalds.com/content/dam/sites/corp/nfl/pdf/Restaurants%20by%20Market%202025.pdf) and 6 more
 
-**Locations** - BENCHMARK_PRIOR: research returned no verdict
+**Locations** - EVIDENCED_PUBLIC, 10 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| LARGE_OFFICE | DE | 1 | 1 | 1 | 2026 |
+| LARGE_OFFICE | GB | 1 | 1 | 1 | 2024 |
+| LARGE_OFFICE | US | 1 | 1 | 1 | 2018 |
+| STORE | DE | 1365 | 1374.5 | 1382 | 2026 |
+| STORE | GB | 1470 | 1505 | 1507 | 2026 |
+| STORE | US | 13557 | 13557 | 13706 | 2025 |
+
+*2 conflict(s) flagged: LARGE_OFFICE*
+
+Sources: [McDonald's Corporation](https://corporate.mcdonalds.com/content/dam/sites/corp/nfl/pdf/Restaurants%20by%20Market%202025.pdf); [McDonald's Corporation](https://corporate.mcdonalds.com/content/dam/sites/corp/nfl/pdf/Restaurants%20by%20Market%202024.pdf); [McDonald's Corporation (SEC 10-K FY2024)](https://www.sec.gov/Archives/edgar/data/63908/000006390825000012/mcd-20241231.htm); [ScrapeHero](https://www.scrapehero.com/location-reports/McDonald's-UK/) and 6 more
 
 **Data centres and cloud** - EVIDENCED_PUBLIC, 9 source(s)
 
@@ -2181,9 +2261,27 @@ Sources: [Orange Group / OBS newsroom](https://newsroom.orange.com/orange-busine
 
 Sources: [Orange Business Services](https://www.orange-business.com/en/press/siemens-ag-extends-contract-orange-business-services-global-sd-wan-infrastructure-support-its); [Pipeline Publishing](https://www.pipelinepub.com/news/Siemens-Signs-Six-Year-240-Million-Euro-SD-WAN-Deal-with-Orange); [Light Reading](https://www.lightreading.com/sd-wan/siemens-goes-all-in-on-orange-sd-wan); [RCR Wireless](https://www.rcrwireless.com/20180322/network-infrastructure/siemens-cashes-in-on-sd-wan-with-294-million-orange-contract) and 5 more
 
-**Transformation announcements** - BENCHMARK_PRIOR: research returned no verdict
+**Transformation announcements** - EVIDENCED_PUBLIC, 8 source(s)
 
-**Market serviceability** - BENCHMARK_PRIOR: research returned no verdict
+- Mid-term revenue growth ambition (ONE Tech Company): 6-9
+- ONE Tech Company – ONE ERP/CRM/data fabric: scope (global, all Siemens businesses): global
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| DIGITAL BUSINESS REVENUE DOUBLING AMBITION BY 2030 (FROM ~€9 |  | 15 | 15 | 15 | 2025 |
+| DIGITAL INDUSTRIES WORKFORCE REDUCTION – GERMANY HEADCOUNT C | DE | 2600 | 2600 | 2600 | 2025 |
+| DIGITAL INDUSTRIES WORKFORCE REDUCTION – GLOBAL HEADCOUNT CU |  | 5600 | 5600 | 5600 | 2025 |
+| EV CHARGING BUSINESS WORKFORCE REDUCTION – GLOBAL |  | 450 | 450 | 450 | 2025 |
+| ONE TECH COMPANY – AI INVESTMENT COMMITMENT (NEXT 3 YEARS) |  | 1000000000 | 1000000000 | 1000000000 | 2025 |
+| ONE TECH COMPANY – INNOVATION / FOUNDATIONAL TECHNOLOGY ANNU |  | 700000000 | 700000000 | 700000000 | 2026 |
+| SEVERANCE COSTS – FY2026 GUIDANCE (GROUP-WIDE) |  | None | None | None |  |
+| SIEMENS TOTAL EMPLOYEES IN GERMANY (CONTEXT FOR DE SITE/NETW | DE | 86000 | 86000 | 86000 | 2025 |
+
+*1 conflict(s) flagged: DIGITAL BUSINESS REVENUE DOUBLING AMBITION BY 2030 (FROM ~€9.4BN FY2025 BASE)*
+
+Sources: [Siemens AG](https://press.siemens.com/global/en/pressrelease/siemens-enters-next-stage-growth-its-one-tech-company-program); [Siemens AG – CFO Speech](https://assets.new.siemens.com/siemens/assets/api/uuid:74aedb6a-c07d-472b-a6a5-07832e3804ff/ONE%20Tech%20-%20Speech%20Ralf%20P.%20Thomas_CFO_EN.pdf); [Siemens AG – CEO Speech](https://assets.new.siemens.com/siemens/assets/api/uuid:10d377b8-58b0-44f5-a46e-501aa17398e2/ONE%20Tech%20-%20Speech%20Roland%20Busch_CEO_EN.pdf); [Siemens AG – CEO Presentation](https://assets.new.siemens.com/siemens/assets/api/uuid:8687580a-ad6c-4302-8a90-1478c77dedb7/ONE%20Tech%20-%20Presentation%20Roland%20Busch_CEO.pdf) and 4 more
+
+**Market serviceability** - DECLARED_UNKNOWN: OUT_OF_PERIMETER
 
 ---
 
@@ -2442,7 +2540,25 @@ Sources: [Zscaler (DE)](https://www.zscaler.de/customers/unilever); [Telecompape
 
 Sources: [Telecompaper](https://www.telecompaper.com/news/bt-wins-unilever-outsourcing-contract-extension--745480); [Workplace Insight](https://workplaceinsight.net/unilever-extends-bt-partnership-to-further-more-sustainable-ways-of-working/); [Tech Monitor](https://www.techmonitor.ai/technology/unisys_wins_it_outsourcing_contract_with_unilever_111109)
 
-**Transformation announcements** - BENCHMARK_PRIOR: research returned no verdict
+**Transformation announcements** - EVIDENCED_PUBLIC, 10 source(s)
+
+- Highest ICT spend function (network leads all functions per aggregator): Network
+- GAP 2030 – programme announced (qualitative, no standalone IT budget): no IT-specific budget disclosed
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| ESTIMATED TOTAL ICT SPEND (AGGREGATOR ESTIMATE) |  | 990300000 | 990300000 | 990300000 | 2023 |
+| HEADCOUNT REDUCTION TARGET (PRODUCTIVITY PROGRAMME) |  | 7500 | 7500 | 7500 | 2024 |
+| PRODUCTIVITY PROGRAMME TOTAL COST SAVINGS TARGET |  | 800000000 | 800000000 | 800000000 | 2026 |
+| PRODUCTIVITY PROGRAMME – CUMULATIVE SAVINGS DELIVERED BY END |  | 200000000 | 550000000 | 670000000 | 2025 |
+| PRODUCTIVITY PROGRAMME – REMAINING SAVINGS TO BE DELIVERED I |  | 130000000 | 140000000 | 150000000 | 2025 |
+| R&D INVESTMENT (ANNUAL, AS CONTEXT FOR TECHNOLOGY INVESTMENT |  | 987000000 | 987000000 | 987000000 | 2024 |
+| RESTRUCTURING COSTS (INCLUDING TECHNOLOGY AND SUPPLY-CHAIN P |  | 850000000 | 850000000 | 850000000 | 2024 |
+| RESTRUCTURING COSTS FY2026 GUIDANCE (AS % OF GROUP TURNOVER) |  | 1 | 1 | 1 | 2026 |
+
+*3 conflict(s) flagged: HEADCOUNT REDUCTION TARGET (PRODUCTIVITY PROGRAMME), PRODUCTIVITY PROGRAMME – CUMULATIVE SAVINGS DELIVERED BY END-2025, PRODUCTIVITY PROGRAMME – REMAINING SAVINGS TO BE DELIVERED IN 2026*
+
+Sources: [Unilever PLC via SEC (6-K, GAP announcement)](https://www.sec.gov/Archives/edgar/data/217410/000165495424003351/a3322h.htm); [Unilever PLC via SEC (20-F FY2024)](https://www.sec.gov/Archives/edgar/data/0000217410/000021741025000015/ul-20241231.htm); [Unilever PLC via SEC (6-K, FY2024 results)](https://www.sec.gov/Archives/edgar/data/217410/000165495425001439/a9248w.htm); [Unilever PLC (FY2025 results press release)](https://www.unilever.com/news/press-and-media/press-releases/2026/sharper-focus-and-disciplined-execution-driving-competitive-performance/) and 6 more
 
 **Market serviceability** - EVIDENCED_PUBLIC, 6 source(s)
 
@@ -2562,8 +2678,40 @@ Sources: [T-Systems International GmbH](https://www.t-systems.com/de/en/insights
 
 Sources: [Deutsche Telekom](https://www.telekom.com/en/newsroom/latest-updates/media-information/2026/06/major-contract-volkswagen-group-relying-on-t-cloud); [Heise Online (EN)](https://www.heise.de/en/news/VW-relies-on-Telekom-T-Systems-builds-global-cloud-for-Volkswagen-11331610.html); [Intelligent CIO Europe](https://www.intelligentcio.com/eu/2026/07/09/volkswagen-selects-t-systems-to-build-global-private-cloud-for-secure-european-data-processing/); [Webwire (Deutsche Telekom press release)](https://www.webwire.com/ViewPressRel.asp?aId=356171) and 5 more
 
-**Transformation announcements** - BENCHMARK_PRIOR: research returned no verdict
+**Transformation announcements** - EVIDENCED_PUBLIC, 10 source(s)
 
-**Market serviceability** - BENCHMARK_PRIOR: research returned no verdict
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| AI INVESTMENT PROGRAMME – TOTAL INVESTMENT BY 2030 (VEHICLE  |  | 1000000000 | 1000000000 | 1000000000 | 2025 |
+| AI PROGRAMME – EXPECTED EFFICIENCY GAINS AND COST AVOIDANCE  |  | 4000000000 | 4000000000 | 4000000000 | 2025 |
+| FIVE-YEAR INVESTMENT PLAN (ROLLING) 2026–2030 |  | 160000000000 | 162500000000 | 165000000000 | 2025 |
+| FUTURE PLAN 2030 – CAPEX + R&D INVESTMENT ENVELOPE 2027–2031 |  | 135000000000 | 135000000000 | 135000000000 | 2026 |
+| FUTURE PLAN 2030 – OVERHEAD COST CAP (TARGET LEVEL POST-REDU |  | 37000000000 | 37000000000 | 37000000000 | 2026 |
+| FUTURE PLAN 2030 – OVERHEAD COST REDUCTION (20% CUT IMPLIED  |  | 9250000000 | 9250000000 | 9250000000 | 2026 |
+| GLOBAL IT TOP 10 PROGRAMME – IT PERFORMANCE IMPROVEMENT TARG |  | 30 | 30 | 30 | 2024 |
+| LEGACY IT SYSTEM REPLACEMENT – TIMELINE FOR REPLACING HUNDRE |  | 2026 | 2026 | 2026 | 2025 |
+| VW BRAND 'ACCELERATE FORWARD / ROAD TO 6.5' – CUMULATIVE EAR | DE | 10000000000 | 10000000000 | 10000000000 | 2023 |
+| VW BRAND TEST-VEHICLE DIGITALISATION – ANNUAL SAVINGS FROM 5 | DE | 400000000 | 400000000 | 400000000 | 2023 |
+
+Sources: [Volkswagen Group (official)](https://www.volkswagen-group.com/en/press-releases/boosting-innovation-reshaping-mobility-volkswagen-group-invests-in-ai-19852); [Volkswagen Group (official)](https://www.volkswagen-group.com/en/press-releases/supervisory-board-approves-future-plan-2030-a-strong-signal-for-volkswagen-group-20662); [Volkswagen Group (official)](https://www.volkswagen-group.com/en/future-plan-the-next-phase-of-transformation-20510); [Volkswagen Group Annual Report 2024](https://annualreport2024.volkswagen-group.com/group-management-report/sustainable-value-enhancement/information-technology.html) and 6 more
+
+**Market serviceability** - EVIDENCED_PUBLIC, 9 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| CETIN CZ ACTIVE FIXED CONNECTIONS | CZ | 1.32 | 1.32 | 1.32 | 2025 |
+| CREDIBLE ENTERPRISE WAN/DIA CARRIERS | CZ | 3 | 3 | 3 | 2026 |
+| CREDIBLE ENTERPRISE WAN/DIA CARRIERS | DE | 4 | 4 | 4 | 2025 |
+| CREDIBLE ENTERPRISE WAN/DIA CARRIERS | ES | 3 | 3 | 3 | 2025 |
+| DEUTSCHE TELEKOM RETAIL BROADBAND MARKET SHARE (DE) | DE | 50.2 | 50.2 | 50.2 | 2023 |
+| GERMANY BUSINESS CUSTOMER TELECOM MARKET SIZE | DE | 21.3 | 21.3 | 21.3 | 2025 |
+| GERMANY LEASED LINE STANDARD PROVISIONING TARGET (WHERE RESO | DE | 8 | 8 | 8 | 2015 |
+| GERMANY TOTAL TELECOM MARKET REVENUE | DE | 60.8 | 69.4 | 78 | 2025 |
+| SPAIN FTTH INSTALLED ACCESSES | ES | 80.8 | 80.8 | 80.8 | 2025 |
+| SPAIN LEASED LINE STANDARD PROVISIONING TARGET (TERMINATING  | ES | 60 | 60 | 60 | 2015 |
+
+*4 conflict(s) flagged: CREDIBLE ENTERPRISE WAN/DIA CARRIERS, DEUTSCHE TELEKOM RETAIL BROADBAND MARKET SHARE (DE), GERMANY TOTAL TELECOM MARKET REVENUE*
+
+Sources: [German Company Formation (trade press)](https://germancompanyformation.com/articles/blog/telecommunication-companies-in-germany/); [VATM (German Telecommunications and Value-Added ](https://www.vatm.de/wp-content/uploads/2025/06/VATM-Market-Analysis-Germany-2025.pdf); [Deutsche Telekom Wholesale](https://wholesale.telekom.com/global-connectivity/our-solutions/sd-wan-enabling-transport/internet-access); [Mordor Intelligence](https://www.mordorintelligence.com/industry-reports/germany-telecom-market) and 5 more
 
 ---

@@ -1,15 +1,23 @@
 {
-  "simulation_run_id": "f3503f8e-1210-47e5-b6e5-5417428c67cc",
+  "simulation_run_id": "a5bfd6f9-3577-4314-ad63-18e5896c98b4",
   "case_id": "71da5c68-a0e5-4d8d-b1cf-f69c8c388689",
   "model_version": "sim-2.7.0",
   "seed": 20260101,
   "ensemble_size": 25,
   "status": "SUCCEEDED",
-  "output_hash": "74f9e8cc64f0da933fafd59a1bd68d4d9a1ead3f8102879ac99869e9c3a3704d",
-  "started_at": "2026-10-11 12:12:56.743192+00:00",
-  "ended_at": "2026-10-11 12:13:32.734652+00:00",
+  "output_hash": "035e7cf17733e6d02682ddfd87518d31b53dbc22b72359450f2fb493418f8be4",
+  "started_at": "2026-10-11 19:42:52.466925+00:00",
+  "ended_at": "2026-10-11 19:43:00.661813+00:00",
   "params": {
     "footprint": [
+      {
+        "country": "DE",
+        "archetype": "LARGE_OFFICE",
+        "sites": 1,
+        "industry": null,
+        "count_source": null,
+        "density": null
+      },
       {
         "country": "DE",
         "archetype": "STORE",
@@ -2000,39 +2008,39 @@
     "model_version": "sim-2.7.0",
     "seed": 20260101,
     "ensemble_size": 25,
-    "sites": 16406,
+    "sites": 16407,
     "serviceability": {
       "counts": {
-        "DELIVERED": 16406,
+        "DELIVERED": 16407,
         "SUBSTITUTED": 0,
         "UNSERVICEABLE": 0
       },
       "substitutions": [],
       "by_access_technology": [],
       "unserviceable": 0,
-      "note": "0 of 16406 site(s) take a different product or tier from the one their type asks for, and 0 can be served by nothing at all. A uniform estate is an assumption; this is what the density bands say about it.",
+      "note": "0 of 16407 site(s) take a different product or tier from the one their type asks for, and 0 can be served by nothing at all. A uniform estate is an assumption; this is what the density bands say about it.",
       "table_rows": 102,
       "table_basis": "GOVERNED"
     },
     "unserviceable": [],
     "single_by_necessity": [],
-    "estate_truncated": 11406,
+    "estate_truncated": 11407,
     "sites_named": 0,
-    "sites_generated": 16406,
+    "sites_generated": 16407,
     "circuits": {
-      "low": 22123,
-      "base": 22165,
-      "high": 22219
+      "low": 22126,
+      "base": 22167,
+      "high": 22221
     },
     "circuits_primary": {
-      "low": 16406,
-      "base": 16406,
-      "high": 16406
+      "low": 16407,
+      "base": 16407,
+      "high": 16407
     },
     "circuits_backup": {
-      "low": 5717,
-      "base": 5759,
-      "high": 5813
+      "low": 5719,
+      "base": 5760,
+      "high": 5814
     },
     "products": [
       {
@@ -2044,6 +2052,26 @@
         "service_class": "BEST_EFFORT",
         "bearer_mbps": 275,
         "access_technology": "HFC"
+      },
+      {
+        "country": "DE",
+        "product": "DIA",
+        "role": "BACKUP",
+        "bandwidth_mbps": 500,
+        "count": 1,
+        "service_class": "DIA",
+        "bearer_mbps": 500,
+        "access_technology": null
+      },
+      {
+        "country": "DE",
+        "product": "ETHERNET",
+        "role": "PRIMARY",
+        "bandwidth_mbps": 250,
+        "count": 1,
+        "service_class": "ETHERNET",
+        "bearer_mbps": 500,
+        "access_technology": "ETHERNET_FIBRE"
       },
       {
         "country": "DE",
@@ -2117,26 +2145,26 @@
       }
     ],
     "dual_access_sites": {
-      "low": 5717,
-      "base": 5759,
-      "high": 5813
+      "low": 5719,
+      "base": 5760,
+      "high": 5814
     },
     "circuits_backbone": 0,
-    "circuits_per_site_base": 1.351,
-    "implied_users": 198300,
+    "circuits_per_site_base": 1.3511,
+    "implied_users": 198550,
     "bandwidth_profile": {
+      "LARGE_OFFICE": {
+        "sites": 7,
+        "mbps_per_site": 500,
+        "mbps_total": 3500
+      },
       "STORE": {
         "sites": 16400,
         "mbps_per_site": 275,
         "mbps_total": 4510000
-      },
-      "LARGE_OFFICE": {
-        "sites": 6,
-        "mbps_per_site": 500,
-        "mbps_total": 3000
       }
     },
-    "bandwidth_mbps_total": 4513000,
+    "bandwidth_mbps_total": 4513500,
     "diversity_state": "SIMULATED",
     "backbone": {
       "template_version": "1.0.0",
@@ -2157,8 +2185,8 @@
       "backbone_circuits": 0,
       "note": "No backbone tier: this estate has no data centres, so there is nothing to cluster. Access circuits only, which is correct for a footprint of leaves - not a gap in the model."
     },
-    "node_count": 16406,
-    "edge_count": 22165
+    "node_count": 16407,
+    "edge_count": 22167
   },
   "output_omitted": {
     "fields": [
