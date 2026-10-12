@@ -1,31 +1,31 @@
 {
-  "estimate_snapshot_id": "32fca5f2-ab08-41d3-a412-668c22fa4086",
+  "estimate_snapshot_id": "3fb2f3ce-ce50-4307-9479-887e3050b6cb",
   "v0_status": "COMPLETE",
   "current_tco": {
-    "low": "5942227.41",
+    "low": "4595847.93",
     "base": "8470761.83",
-    "high": "12098729.17"
+    "high": "14030528.37"
   },
   "by_layer": {
     "L0": {
-      "low": "1287907.41",
+      "low": "892505.65",
       "base": "2030481.83",
-      "high": "3209519.17"
+      "high": "3837326.19"
     },
     "L2": {
-      "low": "1082400.00",
+      "low": "866268.70",
       "base": "1488300.00",
-      "high": "2029500.00"
+      "high": "2317675.07"
     },
     "L4": {
-      "low": "1948320.00",
+      "low": "1429604.88",
       "base": "2922480.00",
-      "high": "4221360.00"
+      "high": "4912980.16"
     },
     "OPS": {
-      "low": "1623600.00",
+      "low": "1407468.70",
       "base": "2029500.00",
-      "high": "2638350.00"
+      "high": "2962546.95"
     }
   },
   "origin_breakdown": {
@@ -278,10 +278,17 @@
         "high": "11875988.54"
       },
       "gross_run_rate_savings": {
+        "low": "0.00",
+        "base": "297262.54",
+        "high": "969036.81"
+      },
+      "gross_run_rate_savings_unwidened": {
         "low": "89380.77",
         "base": "297262.54",
         "high": "735621.79"
       },
+      "saving_on_evidenced_baseline": "229307.42",
+      "saving_on_unevidenced_baseline": "67955.12",
       "savings_pct_base": "0.035",
       "levers": [
         {
@@ -292,7 +299,11 @@
             "L0"
           ],
           "eligibility": {},
-          "saving_base": "243657.82"
+          "saving_low": "77274.44",
+          "saving_base": "243657.82",
+          "saving_high": "577713.45",
+          "saving_on_unevidenced_baseline": "55700.92",
+          "saving_on_evidenced_baseline": "187956.90"
         },
         {
           "lever_id": "LEV-CLEANUP-001",
@@ -302,7 +313,11 @@
             "L0"
           ],
           "eligibility": {},
-          "saving_base": "53604.72"
+          "saving_low": "12106.33",
+          "saving_base": "53604.72",
+          "saving_high": "157908.34",
+          "saving_on_unevidenced_baseline": "12254.20",
+          "saving_on_evidenced_baseline": "41350.52"
         }
       ],
       "transition": {
@@ -363,11 +378,144 @@
         },
         "first_year_net": "-1939646.52",
         "payback_months": {
-          "optimistic": 17,
-          "base": 91,
-          "pessimistic": 601
+          "optimistic": 29,
+          "base": 101,
+          "pessimistic": null
         },
-        "programme_months": 19,
+        "payback_definition": "first month in which cumulative net benefit turns positive, with savings accruing as circuits are cut over",
+        "payback_simple_months": 91,
+        "payback_reconciliation_note": null,
+        "run_rate_saving": {
+          "low": "89380.77",
+          "base": "297262.54",
+          "high": "735621.79"
+        },
+        "programme_months": 21,
+        "programme_months_band": {
+          "low": 23,
+          "base": 21,
+          "high": 23
+        },
+        "programme_flag": null,
+        "programme": {
+          "months": 21,
+          "capacity_per_month": "150.00",
+          "capacity_unit": "circuits",
+          "parallel_waves": 1,
+          "waves": [
+            {
+              "month": 1,
+              "circuits": "150.00",
+              "cumulative_share": "0.05"
+            },
+            {
+              "month": 2,
+              "circuits": "150.00",
+              "cumulative_share": "0.10"
+            },
+            {
+              "month": 3,
+              "circuits": "150.00",
+              "cumulative_share": "0.15"
+            },
+            {
+              "month": 4,
+              "circuits": "150.00",
+              "cumulative_share": "0.20"
+            },
+            {
+              "month": 5,
+              "circuits": "150.00",
+              "cumulative_share": "0.25"
+            },
+            {
+              "month": 6,
+              "circuits": "150.00",
+              "cumulative_share": "0.30"
+            },
+            {
+              "month": 7,
+              "circuits": "150.00",
+              "cumulative_share": "0.35"
+            },
+            {
+              "month": 8,
+              "circuits": "150.00",
+              "cumulative_share": "0.39"
+            },
+            {
+              "month": 9,
+              "circuits": "150.00",
+              "cumulative_share": "0.44"
+            },
+            {
+              "month": 10,
+              "circuits": "150.00",
+              "cumulative_share": "0.49"
+            },
+            {
+              "month": 11,
+              "circuits": "150.00",
+              "cumulative_share": "0.54"
+            },
+            {
+              "month": 12,
+              "circuits": "150.00",
+              "cumulative_share": "0.59"
+            },
+            {
+              "month": 13,
+              "circuits": "150.00",
+              "cumulative_share": "0.64"
+            },
+            {
+              "month": 14,
+              "circuits": "150.00",
+              "cumulative_share": "0.69"
+            },
+            {
+              "month": 15,
+              "circuits": "150.00",
+              "cumulative_share": "0.74"
+            },
+            {
+              "month": 16,
+              "circuits": "150.00",
+              "cumulative_share": "0.79"
+            },
+            {
+              "month": 17,
+              "circuits": "150.00",
+              "cumulative_share": "0.84"
+            },
+            {
+              "month": 18,
+              "circuits": "150.00",
+              "cumulative_share": "0.89"
+            },
+            {
+              "month": 19,
+              "circuits": "150.00",
+              "cumulative_share": "0.94"
+            },
+            {
+              "month": 20,
+              "circuits": "150.00",
+              "cumulative_share": "0.99"
+            },
+            {
+              "month": 21,
+              "circuits": "38.00",
+              "cumulative_share": "1.00"
+            }
+          ],
+          "basis": "Capacity-limited rollout at 150.00 circuit(s) a month, derived from the governed 120 sites a month at the reference density of 1.2500 circuits per site. Pilot waves, capacity ramp and inter-site dependencies are not modelled - they are owner inputs and none is sourced.",
+          "not_modelled": [
+            "pilot_wave",
+            "capacity_ramp",
+            "site_dependencies"
+          ]
+        },
         "payback_basis": "Modelled. Transition cost is evidence grade E - an expert assumption with no quoted transaction behind it - so this payback is a modelled payback and not a business case. It excludes 6 cost categories this model has no basis for.",
         "not_modelled": [
           "CPE purchase or refresh",
@@ -377,7 +525,7 @@
           "site-survey and construction charges where access is not on-net",
           "temporary capacity during cutover"
         ],
-        "note": "Savings do not begin until a site is cut over, and this programme runs 19 month(s) at 120 sites a month. A payback shorter than the programme is arithmetic, not a schedule."
+        "note": "Savings accrue as circuits are cut over. This programme runs 21 month(s) at 150.00 circuit(s) a month, and the payback above is the first month cumulative net benefit turns positive against that rollout."
       },
       "levers_not_applicable": [],
       "simulated_share": "0.0485",
@@ -631,10 +779,17 @@
         "high": "11972071.61"
       },
       "gross_run_rate_savings": {
+        "low": "0.00",
+        "base": "179985.81",
+        "high": "680559.97"
+      },
+      "gross_run_rate_savings_unwidened": {
         "low": "50482.48",
         "base": "179985.81",
         "high": "506630.23"
       },
+      "saving_on_evidenced_baseline": "139799.01",
+      "saving_on_unevidenced_baseline": "40186.80",
       "savings_pct_base": "0.021",
       "levers": [
         {
@@ -649,7 +804,11 @@
               "BEST_EFFORT"
             ]
           },
-          "saving_base": "170334.37"
+          "saving_low": "47381.01",
+          "saving_base": "170334.37",
+          "saving_high": "485951.71",
+          "saving_on_unevidenced_baseline": "34625.70",
+          "saving_on_evidenced_baseline": "135708.67"
         },
         {
           "lever_id": "LEV-BANDWIDTH-001",
@@ -665,7 +824,11 @@
               "IPVPN"
             ]
           },
-          "saving_base": "9651.44"
+          "saving_low": "3101.46",
+          "saving_base": "9651.44",
+          "saving_high": "20678.52",
+          "saving_on_unevidenced_baseline": "5561.10",
+          "saving_on_evidenced_baseline": "4090.34"
         }
       ],
       "transition": {
@@ -726,11 +889,144 @@
         },
         "first_year_net": "-2056923.25",
         "payback_months": {
-          "optimistic": 24,
-          "base": 150,
-          "pessimistic": 1064
+          "optimistic": 36,
+          "base": 160,
+          "pessimistic": null
         },
-        "programme_months": 19,
+        "payback_definition": "first month in which cumulative net benefit turns positive, with savings accruing as circuits are cut over",
+        "payback_simple_months": 150,
+        "payback_reconciliation_note": null,
+        "run_rate_saving": {
+          "low": "50482.48",
+          "base": "179985.81",
+          "high": "506630.23"
+        },
+        "programme_months": 21,
+        "programme_months_band": {
+          "low": 23,
+          "base": 21,
+          "high": 23
+        },
+        "programme_flag": null,
+        "programme": {
+          "months": 21,
+          "capacity_per_month": "150.00",
+          "capacity_unit": "circuits",
+          "parallel_waves": 1,
+          "waves": [
+            {
+              "month": 1,
+              "circuits": "150.00",
+              "cumulative_share": "0.05"
+            },
+            {
+              "month": 2,
+              "circuits": "150.00",
+              "cumulative_share": "0.10"
+            },
+            {
+              "month": 3,
+              "circuits": "150.00",
+              "cumulative_share": "0.15"
+            },
+            {
+              "month": 4,
+              "circuits": "150.00",
+              "cumulative_share": "0.20"
+            },
+            {
+              "month": 5,
+              "circuits": "150.00",
+              "cumulative_share": "0.25"
+            },
+            {
+              "month": 6,
+              "circuits": "150.00",
+              "cumulative_share": "0.30"
+            },
+            {
+              "month": 7,
+              "circuits": "150.00",
+              "cumulative_share": "0.35"
+            },
+            {
+              "month": 8,
+              "circuits": "150.00",
+              "cumulative_share": "0.39"
+            },
+            {
+              "month": 9,
+              "circuits": "150.00",
+              "cumulative_share": "0.44"
+            },
+            {
+              "month": 10,
+              "circuits": "150.00",
+              "cumulative_share": "0.49"
+            },
+            {
+              "month": 11,
+              "circuits": "150.00",
+              "cumulative_share": "0.54"
+            },
+            {
+              "month": 12,
+              "circuits": "150.00",
+              "cumulative_share": "0.59"
+            },
+            {
+              "month": 13,
+              "circuits": "150.00",
+              "cumulative_share": "0.64"
+            },
+            {
+              "month": 14,
+              "circuits": "150.00",
+              "cumulative_share": "0.69"
+            },
+            {
+              "month": 15,
+              "circuits": "150.00",
+              "cumulative_share": "0.74"
+            },
+            {
+              "month": 16,
+              "circuits": "150.00",
+              "cumulative_share": "0.79"
+            },
+            {
+              "month": 17,
+              "circuits": "150.00",
+              "cumulative_share": "0.84"
+            },
+            {
+              "month": 18,
+              "circuits": "150.00",
+              "cumulative_share": "0.89"
+            },
+            {
+              "month": 19,
+              "circuits": "150.00",
+              "cumulative_share": "0.94"
+            },
+            {
+              "month": 20,
+              "circuits": "150.00",
+              "cumulative_share": "0.99"
+            },
+            {
+              "month": 21,
+              "circuits": "38.00",
+              "cumulative_share": "1.00"
+            }
+          ],
+          "basis": "Capacity-limited rollout at 150.00 circuit(s) a month, derived from the governed 120 sites a month at the reference density of 1.2500 circuits per site. Pilot waves, capacity ramp and inter-site dependencies are not modelled - they are owner inputs and none is sourced.",
+          "not_modelled": [
+            "pilot_wave",
+            "capacity_ramp",
+            "site_dependencies"
+          ]
+        },
         "payback_basis": "Modelled. Transition cost is evidence grade E - an expert assumption with no quoted transaction behind it - so this payback is a modelled payback and not a business case. It excludes 6 cost categories this model has no basis for.",
         "not_modelled": [
           "CPE purchase or refresh",
@@ -740,7 +1036,7 @@
           "site-survey and construction charges where access is not on-net",
           "temporary capacity during cutover"
         ],
-        "note": "Savings do not begin until a site is cut over, and this programme runs 19 month(s) at 120 sites a month. A payback shorter than the programme is arithmetic, not a schedule."
+        "note": "Savings accrue as circuits are cut over. This programme runs 21 month(s) at 150.00 circuit(s) a month, and the payback above is the first month cumulative net benefit turns positive against that rollout."
       },
       "levers_not_applicable": [
         {
@@ -1013,10 +1309,17 @@
         "high": "11162886.13"
       },
       "gross_run_rate_savings": {
+        "low": "50635.82",
+        "base": "1198325.04",
+        "high": "3131133.87"
+      },
+      "gross_run_rate_savings_unwidened": {
         "low": "449412.48",
         "base": "1198325.04",
         "high": "2459559.17"
       },
+      "saving_on_evidenced_baseline": "1198325.04",
+      "saving_on_unevidenced_baseline": "0.00",
       "savings_pct_base": "0.141",
       "levers": [
         {
@@ -1033,7 +1336,11 @@
               "SSE_LICENCE"
             ]
           },
-          "saving_base": "970371.60"
+          "saving_low": "363686.40",
+          "saving_base": "970371.60",
+          "saving_high": "2000275.20",
+          "saving_on_unevidenced_baseline": "0.00",
+          "saving_on_evidenced_baseline": "970371.60"
         },
         {
           "lever_id": "LEV-SECRETIRE-001",
@@ -1047,7 +1354,11 @@
               "SSE_LICENCE"
             ]
           },
-          "saving_base": "227953.44"
+          "saving_low": "85726.08",
+          "saving_base": "227953.44",
+          "saving_high": "459283.97",
+          "saving_on_unevidenced_baseline": "0.00",
+          "saving_on_evidenced_baseline": "227953.44"
         }
       ],
       "transition": {
@@ -1108,11 +1419,144 @@
         },
         "first_year_net": "-1038584.02",
         "payback_months": {
-          "optimistic": 5,
-          "base": 23,
-          "pessimistic": 120
+          "optimistic": 11,
+          "base": 34,
+          "pessimistic": 132
         },
-        "programme_months": 19,
+        "payback_definition": "first month in which cumulative net benefit turns positive, with savings accruing as circuits are cut over",
+        "payback_simple_months": 23,
+        "payback_reconciliation_note": "Ramped payback is 34 month(s) against a simple 23, a gap of 48%. The simple figure divides total transition cost by the full-year saving, which is the saving only once every site is live; this programme runs 21 month(s), so for most of it the estate is part-migrated and saving proportionally less.",
+        "run_rate_saving": {
+          "low": "449412.48",
+          "base": "1198325.04",
+          "high": "2459559.17"
+        },
+        "programme_months": 21,
+        "programme_months_band": {
+          "low": 23,
+          "base": 21,
+          "high": 23
+        },
+        "programme_flag": null,
+        "programme": {
+          "months": 21,
+          "capacity_per_month": "150.00",
+          "capacity_unit": "circuits",
+          "parallel_waves": 1,
+          "waves": [
+            {
+              "month": 1,
+              "circuits": "150.00",
+              "cumulative_share": "0.05"
+            },
+            {
+              "month": 2,
+              "circuits": "150.00",
+              "cumulative_share": "0.10"
+            },
+            {
+              "month": 3,
+              "circuits": "150.00",
+              "cumulative_share": "0.15"
+            },
+            {
+              "month": 4,
+              "circuits": "150.00",
+              "cumulative_share": "0.20"
+            },
+            {
+              "month": 5,
+              "circuits": "150.00",
+              "cumulative_share": "0.25"
+            },
+            {
+              "month": 6,
+              "circuits": "150.00",
+              "cumulative_share": "0.30"
+            },
+            {
+              "month": 7,
+              "circuits": "150.00",
+              "cumulative_share": "0.35"
+            },
+            {
+              "month": 8,
+              "circuits": "150.00",
+              "cumulative_share": "0.39"
+            },
+            {
+              "month": 9,
+              "circuits": "150.00",
+              "cumulative_share": "0.44"
+            },
+            {
+              "month": 10,
+              "circuits": "150.00",
+              "cumulative_share": "0.49"
+            },
+            {
+              "month": 11,
+              "circuits": "150.00",
+              "cumulative_share": "0.54"
+            },
+            {
+              "month": 12,
+              "circuits": "150.00",
+              "cumulative_share": "0.59"
+            },
+            {
+              "month": 13,
+              "circuits": "150.00",
+              "cumulative_share": "0.64"
+            },
+            {
+              "month": 14,
+              "circuits": "150.00",
+              "cumulative_share": "0.69"
+            },
+            {
+              "month": 15,
+              "circuits": "150.00",
+              "cumulative_share": "0.74"
+            },
+            {
+              "month": 16,
+              "circuits": "150.00",
+              "cumulative_share": "0.79"
+            },
+            {
+              "month": 17,
+              "circuits": "150.00",
+              "cumulative_share": "0.84"
+            },
+            {
+              "month": 18,
+              "circuits": "150.00",
+              "cumulative_share": "0.89"
+            },
+            {
+              "month": 19,
+              "circuits": "150.00",
+              "cumulative_share": "0.94"
+            },
+            {
+              "month": 20,
+              "circuits": "150.00",
+              "cumulative_share": "0.99"
+            },
+            {
+              "month": 21,
+              "circuits": "38.00",
+              "cumulative_share": "1.00"
+            }
+          ],
+          "basis": "Capacity-limited rollout at 150.00 circuit(s) a month, derived from the governed 120 sites a month at the reference density of 1.2500 circuits per site. Pilot waves, capacity ramp and inter-site dependencies are not modelled - they are owner inputs and none is sourced.",
+          "not_modelled": [
+            "pilot_wave",
+            "capacity_ramp",
+            "site_dependencies"
+          ]
+        },
         "payback_basis": "Modelled. Transition cost is evidence grade E - an expert assumption with no quoted transaction behind it - so this payback is a modelled payback and not a business case. It excludes 6 cost categories this model has no basis for.",
         "not_modelled": [
           "CPE purchase or refresh",
@@ -1122,7 +1566,7 @@
           "site-survey and construction charges where access is not on-net",
           "temporary capacity during cutover"
         ],
-        "note": "Savings do not begin until a site is cut over, and this programme runs 19 month(s) at 120 sites a month. A payback shorter than the programme is arithmetic, not a schedule."
+        "note": "Savings accrue as circuits are cut over. This programme runs 21 month(s) at 150.00 circuit(s) a month, and the payback above is the first month cumulative net benefit turns positive against that rollout."
       },
       "levers_not_applicable": [
         {
@@ -1401,10 +1845,17 @@
         "high": "11211005.98"
       },
       "gross_run_rate_savings": {
+        "low": "58364.06",
+        "base": "1195242.16",
+        "high": "3197142.28"
+      },
+      "gross_run_rate_savings_unwidened": {
         "low": "453384.28",
         "base": "1195242.16",
         "high": "2501561.09"
       },
+      "saving_on_evidenced_baseline": "1066387.36",
+      "saving_on_unevidenced_baseline": "128854.80",
       "savings_pct_base": "0.141",
       "levers": [
         {
@@ -1415,7 +1866,11 @@
             "OPS"
           ],
           "eligibility": {},
-          "saving_base": "365310.00"
+          "saving_low": "162360.00",
+          "saving_base": "365310.00",
+          "saving_high": "738738.00",
+          "saving_on_unevidenced_baseline": "0.00",
+          "saving_on_evidenced_baseline": "365310.00"
         },
         {
           "lever_id": "LEV-NAAS-001",
@@ -1426,7 +1881,11 @@
             "OPS"
           ],
           "eligibility": {},
-          "saving_base": "591147.49"
+          "saving_low": "219931.79",
+          "saving_base": "591147.49",
+          "saving_high": "1226191.48",
+          "saving_on_unevidenced_baseline": "74267.90",
+          "saving_on_evidenced_baseline": "516879.60"
         },
         {
           "lever_id": "LEV-LASTMILE-001",
@@ -1436,7 +1895,11 @@
             "L0"
           ],
           "eligibility": {},
-          "saving_base": "238784.66"
+          "saving_low": "71092.49",
+          "saving_base": "238784.66",
+          "saving_high": "536631.60",
+          "saving_on_unevidenced_baseline": "54586.90",
+          "saving_on_evidenced_baseline": "184197.76"
         }
       ],
       "transition": {
@@ -1497,11 +1960,144 @@
         },
         "first_year_net": "-1041666.90",
         "payback_months": {
-          "optimistic": 5,
-          "base": 23,
-          "pessimistic": 119
+          "optimistic": 11,
+          "base": 34,
+          "pessimistic": 131
         },
-        "programme_months": 19,
+        "payback_definition": "first month in which cumulative net benefit turns positive, with savings accruing as circuits are cut over",
+        "payback_simple_months": 23,
+        "payback_reconciliation_note": "Ramped payback is 34 month(s) against a simple 23, a gap of 48%. The simple figure divides total transition cost by the full-year saving, which is the saving only once every site is live; this programme runs 21 month(s), so for most of it the estate is part-migrated and saving proportionally less.",
+        "run_rate_saving": {
+          "low": "453384.28",
+          "base": "1195242.16",
+          "high": "2501561.09"
+        },
+        "programme_months": 21,
+        "programme_months_band": {
+          "low": 23,
+          "base": 21,
+          "high": 23
+        },
+        "programme_flag": null,
+        "programme": {
+          "months": 21,
+          "capacity_per_month": "150.00",
+          "capacity_unit": "circuits",
+          "parallel_waves": 1,
+          "waves": [
+            {
+              "month": 1,
+              "circuits": "150.00",
+              "cumulative_share": "0.05"
+            },
+            {
+              "month": 2,
+              "circuits": "150.00",
+              "cumulative_share": "0.10"
+            },
+            {
+              "month": 3,
+              "circuits": "150.00",
+              "cumulative_share": "0.15"
+            },
+            {
+              "month": 4,
+              "circuits": "150.00",
+              "cumulative_share": "0.20"
+            },
+            {
+              "month": 5,
+              "circuits": "150.00",
+              "cumulative_share": "0.25"
+            },
+            {
+              "month": 6,
+              "circuits": "150.00",
+              "cumulative_share": "0.30"
+            },
+            {
+              "month": 7,
+              "circuits": "150.00",
+              "cumulative_share": "0.35"
+            },
+            {
+              "month": 8,
+              "circuits": "150.00",
+              "cumulative_share": "0.39"
+            },
+            {
+              "month": 9,
+              "circuits": "150.00",
+              "cumulative_share": "0.44"
+            },
+            {
+              "month": 10,
+              "circuits": "150.00",
+              "cumulative_share": "0.49"
+            },
+            {
+              "month": 11,
+              "circuits": "150.00",
+              "cumulative_share": "0.54"
+            },
+            {
+              "month": 12,
+              "circuits": "150.00",
+              "cumulative_share": "0.59"
+            },
+            {
+              "month": 13,
+              "circuits": "150.00",
+              "cumulative_share": "0.64"
+            },
+            {
+              "month": 14,
+              "circuits": "150.00",
+              "cumulative_share": "0.69"
+            },
+            {
+              "month": 15,
+              "circuits": "150.00",
+              "cumulative_share": "0.74"
+            },
+            {
+              "month": 16,
+              "circuits": "150.00",
+              "cumulative_share": "0.79"
+            },
+            {
+              "month": 17,
+              "circuits": "150.00",
+              "cumulative_share": "0.84"
+            },
+            {
+              "month": 18,
+              "circuits": "150.00",
+              "cumulative_share": "0.89"
+            },
+            {
+              "month": 19,
+              "circuits": "150.00",
+              "cumulative_share": "0.94"
+            },
+            {
+              "month": 20,
+              "circuits": "150.00",
+              "cumulative_share": "0.99"
+            },
+            {
+              "month": 21,
+              "circuits": "38.00",
+              "cumulative_share": "1.00"
+            }
+          ],
+          "basis": "Capacity-limited rollout at 150.00 circuit(s) a month, derived from the governed 120 sites a month at the reference density of 1.2500 circuits per site. Pilot waves, capacity ramp and inter-site dependencies are not modelled - they are owner inputs and none is sourced.",
+          "not_modelled": [
+            "pilot_wave",
+            "capacity_ramp",
+            "site_dependencies"
+          ]
+        },
         "payback_basis": "Modelled. Transition cost is evidence grade E - an expert assumption with no quoted transaction behind it - so this payback is a modelled payback and not a business case. It excludes 6 cost categories this model has no basis for.",
         "not_modelled": [
           "CPE purchase or refresh",
@@ -1511,7 +2107,7 @@
           "site-survey and construction charges where access is not on-net",
           "temporary capacity during cutover"
         ],
-        "note": "Savings do not begin until a site is cut over, and this programme runs 19 month(s) at 120 sites a month. A payback shorter than the programme is arithmetic, not a schedule."
+        "note": "Savings accrue as circuits are cut over. This programme runs 21 month(s) at 150.00 circuit(s) a month, and the payback above is the first month cumulative net benefit turns positive against that rollout."
       },
       "levers_not_applicable": [],
       "simulated_share": "0.0461",
@@ -1914,6 +2510,20 @@
     "band": "D - Indicative",
     "policy_set": "confidence_policy",
     "ceilings_applied": [],
+    "weights": {
+      "current_baseline": "0.3500",
+      "realization": "0.3000",
+      "target_cost": "0.3500"
+    },
+    "component_cap_headroom": "0.1500",
+    "band_floors": {
+      "A": "0.8500",
+      "B": "0.7000",
+      "C": "0.5000"
+    },
+    "v0_status": "COMPLETE",
+    "partial_penalty_factor": "0.8000",
+    "arithmetic": "capped = min(sum(component x weight), min(component) + component_cap_headroom). If v0_status is PARTIAL, capped is lowered one band: to (next lower band floor - 0.01) where the score is at or above a floor, otherwise to capped x partial_penalty_factor. overall = clamp of the result. Ceilings in `ceilings_applied` have already been applied to the components above.",
     "simulated_share": "0.0638",
     "asserted_share": "0.0000",
     "drivers": {

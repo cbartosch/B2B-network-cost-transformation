@@ -233,13 +233,28 @@ def compute(*, policy: ConfidencePolicy, current_baseline, target_cost, realizat
             D(policy.component_cap_headroom).quantize(D("0.0001"))),
         "band_floors": {k: str(D(v).quantize(D("0.0001")))
                         for k, v in sorted(policy.band_floors.items())},
+        # Both halves of the PARTIAL penalty, because it has two and only
+        # one of them was derivable from what was published.
+        #
+        # Above the lowest floor it drops the score to just under the floor
+        # below, which band_floors already describes. Below the lowest floor
+        # there is no band to drop to, so it scales by partial_penalty_factor
+        # instead - and that factor was not published, so a PARTIAL estimate
+        # could not be reproduced at all. Three of the twenty sample
+        # companies are PARTIAL and the validation gate caught every one.
+        "v0_status": v0_status,
+        "partial_penalty_factor": str(
+            D(policy.partial_penalty_factor).quantize(D("0.0001"))),
         # How to get from the parts to the whole, in one line, for a reader
         # holding the output and nothing else.
         "arithmetic": (
-            "overall = clamp(min(sum(component x weight), "
-            "min(component) + component_cap_headroom)); a PARTIAL v0 is then "
-            "lowered one band. Ceilings in `ceilings_applied` have already "
-            "been applied to the components above."),
+            "capped = min(sum(component x weight), min(component) + "
+            "component_cap_headroom). If v0_status is PARTIAL, capped is "
+            "lowered one band: to (next lower band floor - 0.01) where the "
+            "score is at or above a floor, otherwise to capped x "
+            "partial_penalty_factor. overall = clamp of the result. "
+            "Ceilings in `ceilings_applied` have already been applied to "
+            "the components above."),
         "simulated_share": str(D(simulated_share)),
         "asserted_share": str(D(asserted_share)),
     }

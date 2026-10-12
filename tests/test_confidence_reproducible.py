@@ -29,6 +29,10 @@ POLICY = policy_mod.ConfidencePolicy.from_rows(_seeded("confidence_policy"))
 
 
 def _recompute(out):
+    """Includes the PARTIAL penalty, which the first version of this helper
+    omitted - every case below used v0_status=COMPLETE, so the gap was
+    invisible here and surfaced only when the validation gate ran against a
+    real set with three PARTIAL companies in it."""
     """`overall`, from the published fields alone.
 
     Deliberately written against the output dict rather than by importing
@@ -40,6 +44,15 @@ def _recompute(out):
     weighted = sum(v * D(out["weights"][k]) for k, v in comps.items())
     capped = min(weighted,
                  min(comps.values()) + D(out["component_cap_headroom"]))
+    if (out.get("v0_status") == "PARTIAL"
+            and "unpriced_scope_confidence_penalty=one_band"
+            in (out.get("ceilings_applied") or [])):
+        floors = {k.upper(): D(v) for k, v in out["band_floors"].items()}
+        lowered = next((floors[k] - D("0.01") for k in ("A", "B", "C")
+                        if k in floors and capped >= floors[k]), None)
+        if lowered is None:
+            lowered = capped * D(out["partial_penalty_factor"])
+        capped = min(capped, lowered)
     return weighted, capped
 
 
@@ -138,3 +151,33 @@ def test_the_confidence_signature_takes_only_evidence_and_scope():
         "policy", "current_baseline", "target_cost", "realization",
         "simulated_share", "asserted_share", "v0_status",
         "unsourced_price_share", "drivers"}, sorted(params)
+
+@pytest.mark.parametrize("cb,tc,rz", [
+    ("0.20", "0.30", "0.10"), ("0.55", "0.60", "0.30"),
+    ("0.90", "0.95", "0.80"), ("0.45", "0.50", "0.40")])
+def test_a_partial_estimate_reproduces_too(cb, tc, rz):
+    """The case the first version of these tests missed entirely.
+
+    Every parameterised case above passes v0_status=COMPLETE, so the
+    one-band penalty was never exercised and partial_penalty_factor was
+    never needed - and it was not published. Three of the twenty sample
+    companies are PARTIAL, and the validation gate failed all three against
+    an engine that was computing them correctly.
+    """
+    out = confidence.compute(
+        policy=POLICY, current_baseline=cb, target_cost=tc, realization=rz,
+        simulated_share="0.10", asserted_share="0.00", v0_status="PARTIAL")
+    _, capped = _recompute(out)
+    assert abs(capped - D(out["overall"])) < D("0.001"), out
+
+
+def test_the_partial_penalty_publishes_both_of_its_halves():
+    """It has two branches - drop to the floor below, or scale when there is
+    no floor below - and only the first was derivable from the output."""
+    out = confidence.compute(
+        policy=POLICY, current_baseline="0.30", target_cost="0.30",
+        realization="0.30", simulated_share="0.10", asserted_share="0.00",
+        v0_status="PARTIAL")
+    assert out["v0_status"] == "PARTIAL"
+    assert out["partial_penalty_factor"]
+    assert "partial_penalty_factor" in out["arithmetic"]

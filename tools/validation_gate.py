@@ -210,6 +210,31 @@ def c7_confidence(rows, out):
             continue
         weighted = sum(v * D(weights[k]) for k, v in comps.items())
         capped = min(weighted, min(comps.values()) + D(headroom))
+
+        # The PARTIAL penalty. The first version of this check omitted it and
+        # failed three companies whose engine arithmetic was correct - a gate
+        # that reports a sound estimate as broken is worse than no gate,
+        # because the next person stops believing the ones that are real.
+        if (conf.get("v0_status") == "PARTIAL"
+                and "unpriced_scope_confidence_penalty=one_band"
+                in (conf.get("ceilings_applied") or [])):
+            floors = {k.upper(): D(v)
+                      for k, v in (conf.get("band_floors") or {}).items()}
+            factor = conf.get("partial_penalty_factor")
+            lowered = None
+            for key in ("A", "B", "C"):
+                if key in floors and capped >= floors[key]:
+                    lowered = floors[key] - D("0.01")
+                    break
+            if lowered is None and factor is not None:
+                lowered = capped * D(factor)
+            if lowered is None:
+                r.fail(f"{slug}: a PARTIAL penalty was applied but the "
+                       f"output publishes no partial_penalty_factor, so the "
+                       f"score cannot be reproduced")
+                continue
+            capped = min(capped, lowered)
+
         overall = _num(conf.get("overall"))
         if overall is None or abs(capped - overall) > D("0.002"):
             r.fail(f"{slug}: published overall {overall} but the components "
