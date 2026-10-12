@@ -1,13 +1,13 @@
 {
-  "simulation_run_id": "1d2d9d5a-e404-4ef3-a498-a366d085e9e4",
+  "simulation_run_id": "c905a92a-cf04-4fd5-b05c-cfed87bf4953",
   "case_id": "fab3cb28-e3ff-4c9e-a9d1-a220efeb3ac0",
   "model_version": "sim-2.7.0",
   "seed": 20260101,
   "ensemble_size": 25,
   "status": "SUCCEEDED",
-  "output_hash": "cd0c18ba9a47b8a91ae79392ba6a8e974922a736059b91b114e65eef3054493e",
-  "started_at": "2026-10-12 15:23:33.479694+00:00",
-  "ended_at": "2026-10-12 15:23:37.563231+00:00",
+  "output_hash": "dc1491cd1c4ee76a7fd286c80c46c10fc79760f3833e5d0d2c628eb4863e5fad",
+  "started_at": "2026-10-12 15:48:06.740316+00:00",
+  "ended_at": "2026-10-12 15:48:20.883126+00:00",
   "params": {
     "footprint": [
       {
@@ -16,15 +16,39 @@
         "sites": 1,
         "industry": null,
         "count_source": null,
-        "density": "URBAN"
+        "density": "DENSE_URBAN"
       },
       {
         "country": "DE",
         "archetype": "STORE",
-        "sites": 220,
+        "sites": 3,
+        "industry": null,
+        "count_source": null,
+        "density": "DENSE_URBAN"
+      },
+      {
+        "country": "DE",
+        "archetype": "STORE",
+        "sites": 51,
         "industry": null,
         "count_source": null,
         "density": "RURAL"
+      },
+      {
+        "country": "DE",
+        "archetype": "STORE",
+        "sites": 118,
+        "industry": null,
+        "count_source": null,
+        "density": "SUBURBAN"
+      },
+      {
+        "country": "DE",
+        "archetype": "STORE",
+        "sites": 48,
+        "industry": null,
+        "count_source": null,
+        "density": "URBAN"
       },
       {
         "country": "DE",
@@ -48,7 +72,7 @@
         "sites": 1,
         "industry": null,
         "count_source": null,
-        "density": "URBAN"
+        "density": "DENSE_URBAN"
       },
       {
         "country": "FR",
@@ -61,10 +85,34 @@
       {
         "country": "FR",
         "archetype": "STORE",
-        "sites": 2000,
+        "sites": 26,
+        "industry": null,
+        "count_source": null,
+        "density": "DENSE_URBAN"
+      },
+      {
+        "country": "FR",
+        "archetype": "STORE",
+        "sites": 461,
         "industry": null,
         "count_source": null,
         "density": "RURAL"
+      },
+      {
+        "country": "FR",
+        "archetype": "STORE",
+        "sites": 1077,
+        "industry": null,
+        "count_source": null,
+        "density": "SUBURBAN"
+      },
+      {
+        "country": "FR",
+        "archetype": "STORE",
+        "sites": 436,
+        "industry": null,
+        "count_source": null,
+        "density": "URBAN"
       },
       {
         "country": "FR",
@@ -77,10 +125,34 @@
       {
         "country": "GB",
         "archetype": "STORE",
-        "sites": 600,
+        "sites": 8,
+        "industry": null,
+        "count_source": null,
+        "density": "DENSE_URBAN"
+      },
+      {
+        "country": "GB",
+        "archetype": "STORE",
+        "sites": 138,
         "industry": null,
         "count_source": null,
         "density": "RURAL"
+      },
+      {
+        "country": "GB",
+        "archetype": "STORE",
+        "sites": 323,
+        "industry": null,
+        "count_source": null,
+        "density": "SUBURBAN"
+      },
+      {
+        "country": "GB",
+        "archetype": "STORE",
+        "sites": 131,
+        "industry": null,
+        "count_source": null,
+        "density": "URBAN"
       },
       {
         "country": "GB",
@@ -985,6 +1057,16 @@
   },
   "pinned_priors": {
     "archetype_prior": {
+      "LEGACY_WAN_SITE": {
+        "dual_access_probability": 0.6,
+        "primary_product": "MPLS",
+        "backup_product": "BROADBAND_PON",
+        "users_base": 40,
+        "bandwidth_mbps_base": 100,
+        "committed_fraction": "0.800",
+        "primary_service_class": "IPVPN",
+        "backup_service_class": "BEST_EFFORT"
+      },
       "BRANCH": {
         "dual_access_probability": 0.55,
         "primary_product": "DIA",
@@ -1123,16 +1205,6 @@
         "bandwidth_mbps_base": 50,
         "committed_fraction": "0.600",
         "primary_service_class": "BEST_EFFORT",
-        "backup_service_class": "BEST_EFFORT"
-      },
-      "LEGACY_WAN_SITE": {
-        "dual_access_probability": 0.6,
-        "primary_product": "MPLS",
-        "backup_product": "BROADBAND_PON",
-        "users_base": 40,
-        "bandwidth_mbps_base": 100,
-        "committed_fraction": "0.800",
-        "primary_service_class": "IPVPN",
         "backup_service_class": "BEST_EFFORT"
       },
       "DEFAULT/BRANCH": {
@@ -1305,16 +1377,6 @@
         "primary_service_class": "ETHERNET",
         "backup_service_class": "ETHERNET"
       },
-      "BUILDING_MATERIALS/BRANCH": {
-        "dual_access_probability": 0.55,
-        "primary_product": "DIA",
-        "backup_product": "BROADBAND_PON",
-        "users_base": 25,
-        "bandwidth_mbps_base": 100,
-        "committed_fraction": "0.500",
-        "primary_service_class": "DIA",
-        "backup_service_class": "BEST_EFFORT"
-      },
       "BUILDING_MATERIALS/PLANT": {
         "dual_access_probability": 0.85,
         "primary_product": "ETHERNET",
@@ -1333,6 +1395,26 @@
         "bandwidth_mbps_base": 100,
         "committed_fraction": "0.800",
         "primary_service_class": "IPVPN",
+        "backup_service_class": "BEST_EFFORT"
+      },
+      "BUILDING_MATERIALS/STORE": {
+        "dual_access_probability": 0.35,
+        "primary_product": "BROADBAND_HFC",
+        "backup_product": "MOBILE_5G",
+        "users_base": 12,
+        "bandwidth_mbps_base": 50,
+        "committed_fraction": "0.500",
+        "primary_service_class": "BEST_EFFORT",
+        "backup_service_class": "BEST_EFFORT"
+      },
+      "BUILDING_MATERIALS/WAREHOUSE": {
+        "dual_access_probability": 0.45,
+        "primary_product": "DIA",
+        "backup_product": "BROADBAND_HFC",
+        "users_base": 60,
+        "bandwidth_mbps_base": 100,
+        "committed_fraction": "0.500",
+        "primary_service_class": "DIA",
         "backup_service_class": "BEST_EFFORT"
       }
     },
@@ -1432,10 +1514,6 @@
           "value": 25,
           "layer": "SEEDED_PRIOR"
         },
-        "BUILDING_MATERIALS/BRANCH.bandwidth_mbps_base": {
-          "value": 100,
-          "layer": "INDUSTRY_DEFAULT"
-        },
         "BUILDING_MATERIALS/DC.bandwidth_mbps_base": {
           "value": 10000,
           "layer": "INDUSTRY_DEFAULT"
@@ -1450,6 +1528,14 @@
         },
         "BUILDING_MATERIALS/PLANT.bandwidth_mbps_base": {
           "value": 1000,
+          "layer": "INDUSTRY_DEFAULT"
+        },
+        "BUILDING_MATERIALS/STORE.bandwidth_mbps_base": {
+          "value": 50,
+          "layer": "INDUSTRY_DEFAULT"
+        },
+        "BUILDING_MATERIALS/WAREHOUSE.bandwidth_mbps_base": {
+          "value": 100,
           "layer": "INDUSTRY_DEFAULT"
         },
         "CAMPUS.backup_product": {
@@ -1791,11 +1877,12 @@
         "BRANCH.dual_access_probability",
         "BRANCH.primary_product",
         "BRANCH.users_base",
-        "BUILDING_MATERIALS/BRANCH.bandwidth_mbps_base",
         "BUILDING_MATERIALS/DC.bandwidth_mbps_base",
         "BUILDING_MATERIALS/LARGE_OFFICE.bandwidth_mbps_base",
         "BUILDING_MATERIALS/LEGACY_WAN_SITE.bandwidth_mbps_base",
         "BUILDING_MATERIALS/PLANT.bandwidth_mbps_base",
+        "BUILDING_MATERIALS/STORE.bandwidth_mbps_base",
+        "BUILDING_MATERIALS/WAREHOUSE.bandwidth_mbps_base",
         "CAMPUS.backup_product",
         "CAMPUS.bandwidth_mbps_base",
         "CAMPUS.dual_access_probability",
@@ -1881,10 +1968,12 @@
     },
     "service_class_by_archetype": {},
     "committed_fraction_by_archetype": {
+      "BUILDING_MATERIALS/STORE": "0.6250",
+      "STORE": "0.6250",
+      "BUILDING_MATERIALS/WAREHOUSE": "0.6250",
+      "WAREHOUSE": "0.6250",
       "BUILDING_MATERIALS/LEGACY_WAN_SITE": "0.7750",
       "LEGACY_WAN_SITE": "0.7750",
-      "BUILDING_MATERIALS/BRANCH": "0.6250",
-      "BRANCH": "0.6250",
       "BUILDING_MATERIALS/LARGE_OFFICE": "0.6250",
       "LARGE_OFFICE": "0.6250",
       "BUILDING_MATERIALS/DC": "0.5250",
@@ -1893,10 +1982,12 @@
       "PLANT": "0.6750"
     },
     "dual_access_by_archetype": {
+      "BUILDING_MATERIALS/STORE": "0.5125",
+      "STORE": "0.5125",
+      "BUILDING_MATERIALS/WAREHOUSE": "0.5875",
+      "WAREHOUSE": "0.5875",
       "BUILDING_MATERIALS/LEGACY_WAN_SITE": "0.7000",
       "LEGACY_WAN_SITE": "0.7000",
-      "BUILDING_MATERIALS/BRANCH": "0.6625",
-      "BRANCH": "0.6625",
       "BUILDING_MATERIALS/LARGE_OFFICE": "0.9250",
       "LARGE_OFFICE": "0.9250",
       "BUILDING_MATERIALS/DC": "1.0000",
@@ -1907,7 +1998,7 @@
     "resilience_basis": {
       "industry": "BUILDING_MATERIALS",
       "criticality_tier": "Tier 2",
-      "archetypes_covered": 5
+      "archetypes_covered": 6
     },
     "providers_by_role": {},
     "backbone": {
@@ -2020,9 +2111,9 @@
         "because": "NOT_DELIVERABLE",
         "country": "BR",
         "archetype": "DC",
-        "density": "URBAN",
+        "density": "DENSE_URBAN",
         "asked_for": "ETHERNET",
-        "reason": "the only backup deliverable in URBAN BR is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+        "reason": "the only backup deliverable in DENSE_URBAN BR is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
       },
       {
         "because": "NOT_DELIVERABLE",
@@ -2053,9 +2144,9 @@
     "sites_named": 0,
     "sites_generated": 4625,
     "circuits": {
-      "low": 6415,
-      "base": 6436,
-      "high": 6467
+      "low": 7103,
+      "base": 7151,
+      "high": 7179
     },
     "circuits_primary": {
       "low": 4625,
@@ -2063,9 +2154,9 @@
       "high": 4625
     },
     "circuits_backup": {
-      "low": 1778,
-      "base": 1799,
-      "high": 1830
+      "low": 2466,
+      "base": 2514,
+      "high": 2542
     },
     "products": [
       {
@@ -2123,7 +2214,7 @@
         "product": "MOBILE_5G",
         "role": "BACKUP",
         "bandwidth_mbps": 50,
-        "count": 76,
+        "count": 69,
         "service_class": "BEST_EFFORT",
         "bearer_mbps": 50,
         "access_technology": "MOBILE_5G"
@@ -2143,7 +2234,7 @@
         "product": "BROADBAND_HFC",
         "role": "BACKUP",
         "bandwidth_mbps": 100,
-        "count": 410,
+        "count": 394,
         "service_class": "BEST_EFFORT",
         "bearer_mbps": 100,
         "access_technology": "HFC"
@@ -2157,16 +2248,6 @@
         "service_class": "BEST_EFFORT",
         "bearer_mbps": 50,
         "access_technology": "HFC"
-      },
-      {
-        "country": "FR",
-        "product": "DIA",
-        "role": "BACKUP",
-        "bandwidth_mbps": 1000,
-        "count": 1,
-        "service_class": "DIA",
-        "bearer_mbps": 1000,
-        "access_technology": null
       },
       {
         "country": "FR",
@@ -2203,7 +2284,7 @@
         "product": "MOBILE_5G",
         "role": "BACKUP",
         "bandwidth_mbps": 50,
-        "count": 693,
+        "count": 725,
         "service_class": "BEST_EFFORT",
         "bearer_mbps": 50,
         "access_technology": "MOBILE_5G"
@@ -2213,7 +2294,7 @@
         "product": "BROADBAND_HFC",
         "role": "BACKUP",
         "bandwidth_mbps": 100,
-        "count": 321,
+        "count": 320,
         "service_class": "BEST_EFFORT",
         "bearer_mbps": 100,
         "access_technology": "HFC"
@@ -2243,19 +2324,19 @@
         "product": "MOBILE_5G",
         "role": "BACKUP",
         "bandwidth_mbps": 50,
-        "count": 206,
+        "count": 200,
         "service_class": "BEST_EFFORT",
         "bearer_mbps": 50,
         "access_technology": "MOBILE_5G"
       }
     ],
     "dual_access_sites": {
-      "low": 1778,
-      "base": 1799,
-      "high": 1830
+      "low": 2466,
+      "base": 2514,
+      "high": 2542
     },
     "circuits_backbone": 12,
-    "circuits_per_site_base": 1.3916,
+    "circuits_per_site_base": 1.3918,
     "implied_users": 166090,
     "bandwidth_profile": {
       "DC": {
@@ -2347,7 +2428,7 @@
       "note": ""
     },
     "node_count": 4625,
-    "edge_count": 6436
+    "edge_count": 6437
   },
   "output_omitted": {
     "fields": [

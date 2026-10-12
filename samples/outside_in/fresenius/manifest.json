@@ -71,19 +71,25 @@
     {
       "country": "US",
       "archetype": "STORE",
-      "sites": 807,
+      "sites": 269,
       "density": "DENSE_URBAN"
     },
     {
       "country": "US",
       "archetype": "STORE",
-      "sites": 606,
+      "sites": 404,
+      "density": "RURAL"
+    },
+    {
+      "country": "US",
+      "archetype": "STORE",
+      "sites": 942,
       "density": "SUBURBAN"
     },
     {
       "country": "US",
       "archetype": "STORE",
-      "sites": 1211,
+      "sites": 1009,
       "density": "URBAN"
     }
   ],
@@ -139,14 +145,14 @@
           "country": "US",
           "archetype": "STORE",
           "sites": 2624,
-          "basis": "SECTOR_LAYER_SYNONYM",
+          "basis": "INDUSTRY_DEFAULT",
           "mix_industry": "HOSPITAL",
           "bands": {
-            "DENSE_URBAN": 807,
-            "SUBURBAN": 606,
-            "URBAN": 1211
-          },
-          "via_layer": "TERMINAL"
+            "DENSE_URBAN": 269,
+            "RURAL": 404,
+            "SUBURBAN": 942,
+            "URBAN": 1009
+          }
         }
       ],
       "note": "the count and the site type are evidenced; the band is a governed sector default from reference.density_mix, not a finding about this client. It decides which bearers are tested, so it is worth replacing with what the client actually has."
@@ -223,8 +229,8 @@
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-12T15:23:50.493019+00:00",
-  "run_seconds": 14.3,
+  "run_started": "2026-10-12T15:48:31.000732+00:00",
+  "run_seconds": 42.8,
   "preflight_conditions": 8,
   "promotion": {
     "promoted": true,

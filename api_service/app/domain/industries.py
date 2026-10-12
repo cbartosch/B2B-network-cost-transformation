@@ -313,6 +313,92 @@ SHAPES = {
         ("BRANCH", "RURAL", "0.0704"),
         ("DC", "DENSE_URBAN", "0.0352"), ("DC", "URBAN", "0.0264"),
     ],
+    # ---------------------------------------------------------------------
+    # The four shapes below exist because their sectors' customer-facing
+    # layer is a distinct kind of site, and modelling it as a branch put
+    # 13,038 sites in the wrong density bands.
+    #
+    # Each one replaces a generic shape that had no row for the layer at all,
+    # so those sites previously carried no band, matched no serviceability
+    # key and resolved DELIVERED untested. A band decides which bearers are
+    # tested, and a forecourt is not a bank branch: the question "is fibre
+    # available here" has a different answer on a trunk road than on a high
+    # street, and the generic shapes answered it as though it did not.
+    #
+    # THE SHARES ARE THIS REPOSITORY'S JUDGEMENT. Nobody publishes what
+    # fraction of a forecourt network is rural. What is not judgement is the
+    # DIRECTION each one encodes, and that is the part worth checking:
+    # forecourts follow the road network rather than the population, trade
+    # counters need yard space and vehicle access so they sit off the high
+    # street, clinics follow the population closely, and tied agencies follow
+    # it most closely of all. Replace the numbers per engagement; the
+    # orderings are the claim.
+    "forecourt-network": [
+        ("LEGACY_WAN_SITE", "SUBURBAN", "0.0500"),
+        # Fuel retail. A road-network asset, not a high-street one: arterial
+        # roads, ring roads and motorway junctions, where land is cheap
+        # enough for a forecourt and a canopy. Dense urban is the rarest band
+        # rather than a middling one, and rural is the second largest, which
+        # is the reverse of every retail shape here.
+        ("STORE", "DENSE_URBAN", "0.0300"), ("STORE", "URBAN", "0.1900"),
+        ("STORE", "SUBURBAN", "0.4000"), ("STORE", "RURAL", "0.2400"),
+        # Refineries and chemical plants. Coastal or estuarine, a handful.
+        ("PLANT", "SUBURBAN", "0.0150"), ("PLANT", "RURAL", "0.0150"),
+        # Fuel terminals and distribution depots.
+        ("WAREHOUSE", "SUBURBAN", "0.0200"), ("WAREHOUSE", "RURAL", "0.0100"),
+        ("CAMPUS", "SUBURBAN", "0.0100"),
+        ("LARGE_OFFICE", "DENSE_URBAN", "0.0050"),
+        ("LARGE_OFFICE", "URBAN", "0.0050"),
+        ("DC", "DENSE_URBAN", "0.0050"), ("DC", "URBAN", "0.0050"),
+    ],
+    "clinic-network": [
+        ("LEGACY_WAN_SITE", "SUBURBAN", "0.0500"),
+        # Dialysis centres, day surgery, outpatient and diagnostic sites.
+        # Sited where the patients are and within travelling distance of
+        # them, so the distribution tracks population more closely than any
+        # other shape here, with a real rural tail for coverage.
+        ("STORE", "DENSE_URBAN", "0.0800"), ("STORE", "URBAN", "0.3000"),
+        ("STORE", "SUBURBAN", "0.2800"), ("STORE", "RURAL", "0.1200"),
+        # Acute hospitals. TERMINAL because the benchmark calls them that -
+        # see MAJOR_HOSPITAL in bics.ARCHETYPE_OF_BENCHMARK - and the name is
+        # kept so the representative site still lands in its own slot.
+        ("TERMINAL", "DENSE_URBAN", "0.0300"), ("TERMINAL", "URBAN", "0.0500"),
+        ("TERMINAL", "SUBURBAN", "0.0200"),
+        ("WAREHOUSE", "SUBURBAN", "0.0300"),
+        ("LARGE_OFFICE", "URBAN", "0.0200"),
+        ("DC", "DENSE_URBAN", "0.0100"), ("DC", "URBAN", "0.0100"),
+    ],
+    "merchant-network": [
+        ("LEGACY_WAN_SITE", "SUBURBAN", "0.0500"),
+        # Builders' merchants and trade counters. A yard, a warehouse and a
+        # counter, serving tradespeople who arrive by van - so industrial
+        # estates and town edges, almost never a dense urban core, and spread
+        # into small towns to stay within a morning's drive of a site.
+        ("STORE", "DENSE_URBAN", "0.0100"), ("STORE", "URBAN", "0.1700"),
+        ("STORE", "SUBURBAN", "0.4200"), ("STORE", "RURAL", "0.1800"),
+        # Glass works, plasterboard plants, quarries.
+        ("PLANT", "SUBURBAN", "0.0500"), ("PLANT", "RURAL", "0.0500"),
+        ("WAREHOUSE", "SUBURBAN", "0.0300"),
+        ("LARGE_OFFICE", "DENSE_URBAN", "0.0100"),
+        ("LARGE_OFFICE", "URBAN", "0.0100"),
+        ("DC", "DENSE_URBAN", "0.0100"), ("DC", "URBAN", "0.0100"),
+    ],
+    "agency-network": [
+        ("LEGACY_WAN_SITE", "SUBURBAN", "0.0500"),
+        # Tied agent offices. Two or three people in a shopfront, carrying a
+        # broadband line and nothing else, placed wherever there are enough
+        # households to support one - which makes this the most
+        # population-following distribution in the file.
+        #
+        # Assumes a TIED-AGENT insurer. A broker-model or direct insurer has
+        # no agency layer at all and is an office estate; those sit on
+        # office-centric and should stay there.
+        ("STORE", "DENSE_URBAN", "0.0900"), ("STORE", "URBAN", "0.3400"),
+        ("STORE", "SUBURBAN", "0.2800"), ("STORE", "RURAL", "0.1200"),
+        ("LARGE_OFFICE", "DENSE_URBAN", "0.0300"),
+        ("LARGE_OFFICE", "URBAN", "0.0500"),
+        ("DC", "DENSE_URBAN", "0.0200"), ("DC", "URBAN", "0.0200"),
+    ],
     "network-centric": [
         # The estate is infrastructure. Many small unstaffed sites and a few
         # very large ones - priced here as DC and BRANCH because those are the

@@ -52,9 +52,21 @@ from decimal import Decimal
 # sites in branches. AstraZeneca was modelled with a branch network it does not
 # have, and the shape contradicted the benchmark beside it.
 #
-# Insurance and commercial real estate name an office and stay office-centric.
-# Investment banking names a trading floor and integrated oil a refinery; those
-# are different estates again and keep what they had.
+# Commercial real estate names an office and stays office-centric. Investment
+# banking names a trading floor and keeps what it had.
+#
+# Four codes moved off their generic shape in 4.278.0, and all four for the
+# same reason: the benchmark names the site the sector is BUILT AROUND, and
+# deriving the shape from it misses the layer the sector has MOST OF. An
+# insurer's benchmark says REGIONAL_OFFICE and its site count is tied
+# agencies; integrated oil says REFINERY and its count is forecourts; a
+# hospital group says MAJOR_HOSPITAL and its count is clinics; building
+# materials says PRODUCTION_PLANT and its count is builders' merchants.
+#
+# Those four layers had no row in the generic shape at all, so 13,038 sites
+# across the sample set carried no density band, matched no serviceability
+# key and resolved DELIVERED without ever being tested. See the four shapes
+# in industries.SHAPES for what each one claims and what it assumes.
 SHAPE_OF_BICS = {
     # A postal or parcel network is not few-large. Almost all of its sites are
     # tiny retail collection points and almost all of its criticality sits in
@@ -96,14 +108,17 @@ SHAPE_OF_BICS = {
     "FORESTRY_PAPER": "plant-centric",
     # Materials: MINE
     "GOLD_MINING": "plant-centric",
-    # Healthcare: MAJOR_HOSPITAL
-    "HOSPITAL": "few-large",
+    # Healthcare: MAJOR_HOSPITAL - the acute hospitals, which are the
+    # smallest layer by count. The estate is clinics and outpatient sites.
+    "HOSPITAL": "clinic-network",
     # Consumer Discretionary: RESORT
     "HOTELS": "many-small",
-    # Financials: REGIONAL_OFFICE
-    "INSURANCE": "office-centric",
-    # Energy: HQ, REFINERY
-    "INTEGRATED_OIL_GAS": "office-centric",
+    # Financials: REGIONAL_OFFICE - true of the offices, silent on the tied
+    # agency network that is most of the site count.
+    "INSURANCE": "agency-network",
+    # Energy: HQ, REFINERY - both real and both a handful of sites. An
+    # integrated major's site count is its forecourts.
+    "INTEGRATED_OIL_GAS": "forecourt-network",
     # Financials: TRADING_FLOOR
     "INVESTMENT_BANKING": "office-centric",
     # Energy: EXPORT_TERMINAL
@@ -165,7 +180,7 @@ SHAPE_OF_BICS = {
     # Materials: PRODUCTION_PLANT. Cement, aggregates and glass - hundreds of
     # small fixed sites, many genuinely rural because a quarry is where the
     # rock is. Saint-Gobain, Holcim, Heidelberg, CRH and CEMEX.
-    "BUILDING_MATERIALS": "plant-centric",
+    "BUILDING_MATERIALS": "merchant-network",
     # Materials: MILL. ArcelorMittal was mapped to FORESTRY_PAPER - the
     # archetype was right and the label was indefensible.
     "STEEL": "plant-centric",
@@ -299,21 +314,21 @@ ARCHETYPE_OF_BENCHMARK = {
 # not an office, so FOOD_MANUFACTURING/WAREHOUSE, AIRLINES/WAREHOUSE,
 # HOUSEHOLD_PERSONAL_CARE/WAREHOUSE and INTEGRATED_OIL_GAS/PLANT have no entry
 # and stay unbanded. Twenty-three sites, left visible rather than forced.
+# Five entries were retired in 4.278.0 - INSURANCE, BUILDING_MATERIALS,
+# HOSPITAL and INTEGRATED_OIL_GAS for STORE, and INTEGRATED_OIL_GAS for
+# CAMPUS. Each now has a real row in a shape authored for that site type, and
+# an exact match is always preferred to a synonym, so they had stopped firing
+# anyway. Keeping them would have left the table saying a forecourt's bands
+# come from a branch, which is the claim the new shapes exist to retire.
 BAND_LAYER_SYNONYM = {
-    # Customer-facing layers that research types as STORE.
-    ("INSURANCE", "STORE"): "BRANCH",              # tied agent offices
-    ("UNIVERSAL_BANKING", "STORE"): "BRANCH",      # retail branches
-    ("BUILDING_MATERIALS", "STORE"): "BRANCH",     # builders' merchants
-    ("INTEGRATED_OIL_GAS", "STORE"): "BRANCH",     # fuel forecourts
-    # Patient-facing sites. The mix calls them TERMINAL because the benchmark
-    # does - see MAJOR_HOSPITAL above - and dialysis clinics sit where the
-    # hospitals do, near the population they serve.
-    ("HOSPITAL", "STORE"): "TERMINAL",
+    # A retail bank's customer-facing sites. branch-network is authored for
+    # exactly this estate, so BRANCH is where these bands belong - this is
+    # the one STORE entry that was never a workaround.
+    ("UNIVERSAL_BANKING", "STORE"): "BRANCH",
     # Operating sites, under the name each sector's shape gives them.
     ("UTILITIES", "PLANT"): "CONTROL_CENTER",      # generation and grid sites
     ("DIVERSIFIED_MINING", "PLANT"): "REMOTE_SITE",  # processing on the mine
     ("INDUSTRIAL_CONGLOMERATE", "CAMPUS"): "PLANT",
-    ("INTEGRATED_OIL_GAS", "CAMPUS"): "LARGE_OFFICE",
 }
 
 

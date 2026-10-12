@@ -1,0 +1,255 @@
+{
+  "slug": "fresenius",
+  "legal_name": "Fresenius SE & Co. KGaA",
+  "industry": {
+    "industry": "HOSPITAL",
+    "origin": "ENTITY_RESOLUTION"
+  },
+  "domicile": "DE",
+  "in_scope_countries": [
+    "DE",
+    "ES",
+    "US"
+  ],
+  "base_currency": "EUR",
+  "case_id": "e71dd642-34f1-44b8-8bc1-8c2a230f9cae",
+  "entity_resolution": {
+    "resolved": null,
+    "resumed": true
+  },
+  "resumed_existing_case": true,
+  "mode": "repromote",
+  "domains_already_researched_on_resume": [
+    1,
+    2,
+    6,
+    7,
+    8,
+    9,
+    10,
+    12,
+    13,
+    14,
+    15,
+    16,
+    18,
+    19,
+    20
+  ],
+  "footprint_origin": "RESEARCH_MERGED_WITH_DISCLOSURE",
+  "footprint_used": [
+    {
+      "country": "DE",
+      "archetype": "BRANCH",
+      "sites": 340,
+      "density": "SUBURBAN"
+    },
+    {
+      "country": "DE",
+      "archetype": "DC",
+      "sites": 4,
+      "density": "SUBURBAN"
+    },
+    {
+      "country": "DE",
+      "archetype": "LARGE_OFFICE",
+      "sites": 8,
+      "density": "URBAN"
+    },
+    {
+      "country": "ES",
+      "archetype": "BRANCH",
+      "sites": 150,
+      "density": "SUBURBAN"
+    },
+    {
+      "country": "US",
+      "archetype": "BRANCH",
+      "sites": 2600,
+      "density": "SUBURBAN"
+    },
+    {
+      "country": "US",
+      "archetype": "STORE",
+      "sites": 807,
+      "density": "DENSE_URBAN"
+    },
+    {
+      "country": "US",
+      "archetype": "STORE",
+      "sites": 606,
+      "density": "SUBURBAN"
+    },
+    {
+      "country": "US",
+      "archetype": "STORE",
+      "sites": 1211,
+      "density": "URBAN"
+    }
+  ],
+  "footprint_provenance": [
+    {
+      "country": "DE",
+      "archetype": "BRANCH",
+      "sites": 340,
+      "origin": "PUBLIC_DISCLOSURE",
+      "density": "SUBURBAN"
+    },
+    {
+      "country": "DE",
+      "archetype": "DC",
+      "sites": 4,
+      "origin": "SUPERSEDED_BY_RESEARCH",
+      "density": "SUBURBAN"
+    },
+    {
+      "country": "DE",
+      "archetype": "LARGE_OFFICE",
+      "sites": 8,
+      "origin": "PUBLIC_DISCLOSURE",
+      "density": "URBAN"
+    },
+    {
+      "country": "ES",
+      "archetype": "BRANCH",
+      "sites": 150,
+      "origin": "PUBLIC_DISCLOSURE",
+      "density": "SUBURBAN"
+    },
+    {
+      "country": "US",
+      "archetype": "BRANCH",
+      "sites": 2600,
+      "origin": "PUBLIC_DISCLOSURE",
+      "density": "SUBURBAN"
+    },
+    {
+      "country": "US",
+      "archetype": "STORE",
+      "sites": 2624,
+      "origin": "RESEARCHED",
+      "density": null
+    },
+    {
+      "origin": "DENSITY_FROM_MIX",
+      "rows": 1,
+      "sites": 2624,
+      "filled": [
+        {
+          "country": "US",
+          "archetype": "STORE",
+          "sites": 2624,
+          "basis": "SECTOR_LAYER_SYNONYM",
+          "mix_industry": "HOSPITAL",
+          "bands": {
+            "DENSE_URBAN": 807,
+            "SUBURBAN": 606,
+            "URBAN": 1211
+          },
+          "via_layer": "TERMINAL"
+        }
+      ],
+      "note": "the count and the site type are evidenced; the band is a governed sector default from reference.density_mix, not a finding about this client. It decides which bearers are tested, so it is worth replacing with what the client actually has."
+    }
+  ],
+  "scope_countries_modelled": [
+    "DE",
+    "ES",
+    "US"
+  ],
+  "scope_countries_company_total": "DECLARED_UNKNOWN",
+  "scope_status": "PARTIAL_COUNTRIES",
+  "scope_note": "Baseline covers 3 country(ies) (DE, ES, US) and the site types listed in sites_origin. The group's full country and site-type count is not sourced, so the share of the group this represents is DECLARED_UNKNOWN. This is baseline_in_scope, not a group baseline.",
+  "sites_origin": {
+    "BRANCH": "ASSUMED_PUBLIC_DISCLOSURE",
+    "DC": "RESEARCHED",
+    "LARGE_OFFICE": "ASSUMED_PUBLIC_DISCLOSURE",
+    "STORE": "RESEARCHED"
+  },
+  "fx_to_eur": {
+    "rate": "1.0",
+    "as_of": null,
+    "basis": "base currency",
+    "evidence_grade": null,
+    "source": "identity"
+  },
+  "seed": 20260101,
+  "ensemble_size": 25,
+  "domains_declared_unknown": [
+    21,
+    22
+  ],
+  "domains_requested": [
+    1,
+    2,
+    6,
+    7,
+    8,
+    9,
+    10,
+    12,
+    13,
+    14,
+    15,
+    16,
+    18,
+    19,
+    20,
+    21,
+    22
+  ],
+  "domains_fell_back_unanswered": [],
+  "domains_researched": [
+    1,
+    2,
+    6,
+    7,
+    8,
+    9,
+    10,
+    12,
+    13,
+    14,
+    15,
+    16,
+    18,
+    19,
+    20
+  ],
+  "estimate_inputs": {
+    "method": "BUILD_UP",
+    "users": 68712,
+    "ops_cost_per_site_base": 900,
+    "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
+  },
+  "build": "4.272.0",
+  "run_started": "2026-10-12T15:23:50.493019+00:00",
+  "run_seconds": 14.3,
+  "preflight_conditions": 8,
+  "promotion": {
+    "promoted": true,
+    "detail": null
+  },
+  "domains_benchmark_disposed": [
+    3,
+    4,
+    5,
+    11,
+    17,
+    23,
+    24
+  ],
+  "domains_with_no_agent": [
+    3,
+    4,
+    5,
+    11,
+    17,
+    23,
+    24
+  ],
+  "analyst_disposition_response": {
+    "stored": 7,
+    "provenance_dropped": []
+  }
+}

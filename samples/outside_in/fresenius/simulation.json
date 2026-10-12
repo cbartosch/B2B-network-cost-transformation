@@ -1,13 +1,13 @@
 {
-  "simulation_run_id": "681608c6-4681-416a-9a10-e21cbb0b059c",
+  "simulation_run_id": "7f404322-3976-481c-b17a-a1406603b887",
   "case_id": "e71dd642-34f1-44b8-8bc1-8c2a230f9cae",
   "model_version": "sim-2.7.0",
   "seed": 20260101,
   "ensemble_size": 25,
   "status": "SUCCEEDED",
-  "output_hash": "f24bf6b872393de6e4b8225a2d231590ac463b6cb145d1da7eaea9a4b48de5e1",
-  "started_at": "2026-10-12 15:23:51.823490+00:00",
-  "ended_at": "2026-10-12 15:23:57.922079+00:00",
+  "output_hash": "6348cd295f73a174231f9edab7317f2d7f31378680a6336554309ad93f912210",
+  "started_at": "2026-10-12 15:48:42.281077+00:00",
+  "ended_at": "2026-10-12 15:48:54.594905+00:00",
   "params": {
     "footprint": [
       {
@@ -53,7 +53,7 @@
       {
         "country": "US",
         "archetype": "STORE",
-        "sites": 807,
+        "sites": 269,
         "industry": null,
         "count_source": null,
         "density": "DENSE_URBAN"
@@ -61,7 +61,15 @@
       {
         "country": "US",
         "archetype": "STORE",
-        "sites": 606,
+        "sites": 404,
+        "industry": null,
+        "count_source": null,
+        "density": "RURAL"
+      },
+      {
+        "country": "US",
+        "archetype": "STORE",
+        "sites": 942,
         "industry": null,
         "count_source": null,
         "density": "SUBURBAN"
@@ -69,7 +77,7 @@
       {
         "country": "US",
         "archetype": "STORE",
-        "sites": 1211,
+        "sites": 1009,
         "industry": null,
         "count_source": null,
         "density": "URBAN"
@@ -678,6 +686,16 @@
   },
   "pinned_priors": {
     "archetype_prior": {
+      "LEGACY_WAN_SITE": {
+        "dual_access_probability": 0.6,
+        "primary_product": "MPLS",
+        "backup_product": "BROADBAND_PON",
+        "users_base": 40,
+        "bandwidth_mbps_base": 100,
+        "committed_fraction": "0.800",
+        "primary_service_class": "IPVPN",
+        "backup_service_class": "BEST_EFFORT"
+      },
       "BRANCH": {
         "dual_access_probability": 0.55,
         "primary_product": "DIA",
@@ -816,16 +834,6 @@
         "bandwidth_mbps_base": 50,
         "committed_fraction": "0.600",
         "primary_service_class": "BEST_EFFORT",
-        "backup_service_class": "BEST_EFFORT"
-      },
-      "LEGACY_WAN_SITE": {
-        "dual_access_probability": 0.6,
-        "primary_product": "MPLS",
-        "backup_product": "BROADBAND_PON",
-        "users_base": 40,
-        "bandwidth_mbps_base": 100,
-        "committed_fraction": "0.800",
-        "primary_service_class": "IPVPN",
         "backup_service_class": "BEST_EFFORT"
       },
       "DEFAULT/BRANCH": {
@@ -1007,6 +1015,36 @@
         "committed_fraction": "0.850",
         "primary_service_class": "ETHERNET",
         "backup_service_class": "ETHERNET"
+      },
+      "HOSPITAL/STORE": {
+        "dual_access_probability": 0.35,
+        "primary_product": "BROADBAND_HFC",
+        "backup_product": "MOBILE_5G",
+        "users_base": 12,
+        "bandwidth_mbps_base": 50,
+        "committed_fraction": "0.500",
+        "primary_service_class": "BEST_EFFORT",
+        "backup_service_class": "BEST_EFFORT"
+      },
+      "HOSPITAL/LARGE_OFFICE": {
+        "dual_access_probability": 0.9,
+        "primary_product": "ETHERNET",
+        "backup_product": "DIA",
+        "users_base": 250,
+        "bandwidth_mbps_base": 1000,
+        "committed_fraction": "0.500",
+        "primary_service_class": "ETHERNET",
+        "backup_service_class": "DIA"
+      },
+      "HOSPITAL/LEGACY_WAN_SITE": {
+        "dual_access_probability": 0.6,
+        "primary_product": "MPLS",
+        "backup_product": "BROADBAND_PON",
+        "users_base": 40,
+        "bandwidth_mbps_base": 100,
+        "committed_fraction": "0.800",
+        "primary_service_class": "IPVPN",
+        "backup_service_class": "BEST_EFFORT"
       }
     },
     "bandwidth_basis": {
@@ -1227,6 +1265,18 @@
         },
         "HOSPITAL/DC.bandwidth_mbps_base": {
           "value": 10000,
+          "layer": "INDUSTRY_DEFAULT"
+        },
+        "HOSPITAL/LARGE_OFFICE.bandwidth_mbps_base": {
+          "value": 1000,
+          "layer": "INDUSTRY_DEFAULT"
+        },
+        "HOSPITAL/LEGACY_WAN_SITE.bandwidth_mbps_base": {
+          "value": 100,
+          "layer": "INDUSTRY_DEFAULT"
+        },
+        "HOSPITAL/STORE.bandwidth_mbps_base": {
+          "value": 50,
           "layer": "INDUSTRY_DEFAULT"
         },
         "HOSPITAL/TERMINAL.bandwidth_mbps_base": {
@@ -1487,6 +1537,9 @@
         "DEFAULT/TERMINAL.bandwidth_mbps_base",
         "DEFAULT/WAREHOUSE.bandwidth_mbps_base",
         "HOSPITAL/DC.bandwidth_mbps_base",
+        "HOSPITAL/LARGE_OFFICE.bandwidth_mbps_base",
+        "HOSPITAL/LEGACY_WAN_SITE.bandwidth_mbps_base",
+        "HOSPITAL/STORE.bandwidth_mbps_base",
         "HOSPITAL/TERMINAL.bandwidth_mbps_base",
         "HOSPITAL/WAREHOUSE.bandwidth_mbps_base",
         "LARGE_OFFICE.backup_product",
@@ -1544,6 +1597,12 @@
     },
     "service_class_by_archetype": {},
     "committed_fraction_by_archetype": {
+      "HOSPITAL/LARGE_OFFICE": "0.7000",
+      "LARGE_OFFICE": "0.7000",
+      "HOSPITAL/LEGACY_WAN_SITE": "0.8500",
+      "LEGACY_WAN_SITE": "0.8500",
+      "HOSPITAL/STORE": "0.7000",
+      "STORE": "0.7000",
       "HOSPITAL/WAREHOUSE": "0.7000",
       "WAREHOUSE": "0.7000",
       "HOSPITAL/DC": "0.6000",
@@ -1552,6 +1611,12 @@
       "TERMINAL": "0.8750"
     },
     "dual_access_by_archetype": {
+      "HOSPITAL/LARGE_OFFICE": "0.9650",
+      "LARGE_OFFICE": "0.9650",
+      "HOSPITAL/LEGACY_WAN_SITE": "0.8600",
+      "LEGACY_WAN_SITE": "0.8600",
+      "HOSPITAL/STORE": "0.5500",
+      "STORE": "0.5500",
       "HOSPITAL/WAREHOUSE": "0.8075",
       "WAREHOUSE": "0.8075",
       "HOSPITAL/DC": "1.0000",
@@ -1562,7 +1627,7 @@
     "resilience_basis": {
       "industry": "HOSPITAL",
       "criticality_tier": "Tier 1",
-      "archetypes_covered": 3
+      "archetypes_covered": 6
     },
     "providers_by_role": {},
     "backbone": {
@@ -1670,9 +1735,9 @@
     "sites_named": 0,
     "sites_generated": 5726,
     "circuits": {
-      "low": 8341,
-      "base": 8374,
-      "high": 8396
+      "low": 8849,
+      "base": 8908,
+      "high": 8925
     },
     "circuits_primary": {
       "low": 5726,
@@ -1680,9 +1745,9 @@
       "high": 5726
     },
     "circuits_backup": {
-      "low": 2607,
-      "base": 2640,
-      "high": 2662
+      "low": 3115,
+      "base": 3174,
+      "high": 3191
     },
     "products": [
       {
@@ -1690,7 +1755,7 @@
         "product": "BROADBAND_PON",
         "role": "BACKUP",
         "bandwidth_mbps": 100,
-        "count": 184,
+        "count": 182,
         "service_class": "BEST_EFFORT",
         "bearer_mbps": 100,
         "access_technology": "PON"
@@ -1740,7 +1805,7 @@
         "product": "BROADBAND_PON",
         "role": "BACKUP",
         "bandwidth_mbps": 100,
-        "count": 78,
+        "count": 84,
         "service_class": "BEST_EFFORT",
         "bearer_mbps": 100,
         "access_technology": "PON"
@@ -1780,7 +1845,7 @@
         "product": "BROADBAND_PON",
         "role": "BACKUP",
         "bandwidth_mbps": 100,
-        "count": 1425,
+        "count": 1429,
         "service_class": "BEST_EFFORT",
         "bearer_mbps": 100,
         "access_technology": "PON"
@@ -1800,19 +1865,19 @@
         "product": "MOBILE_5G",
         "role": "BACKUP",
         "bandwidth_mbps": 50,
-        "count": 947,
+        "count": 921,
         "service_class": "BEST_EFFORT",
         "bearer_mbps": 50,
         "access_technology": "MOBILE_5G"
       }
     ],
     "dual_access_sites": {
-      "low": 2607,
-      "base": 2640,
-      "high": 2662
+      "low": 3115,
+      "base": 3174,
+      "high": 3191
     },
     "circuits_backbone": 8,
-    "circuits_per_site_base": 1.4625,
+    "circuits_per_site_base": 1.4593,
     "implied_users": 110738,
     "bandwidth_profile": {
       "BRANCH": {
@@ -1870,7 +1935,7 @@
       "note": "One region with data centres (EUROPE_CENTRAL), so there is no global core tier - a hub has nothing to reach across."
     },
     "node_count": 5726,
-    "edge_count": 8374
+    "edge_count": 8356
   },
   "output_omitted": {
     "fields": [

@@ -138,6 +138,14 @@ ABSORBS_SURPLUS = {
     "campus-centric": "LARGE_OFFICE",
     "few-large": "WAREHOUSE",
     "office-centric": "BRANCH",
+    # The four sector shapes added in 4.278.0. Each is built around a
+    # customer-facing layer its generic predecessor had no row for, and that
+    # layer is the operating site in all four - a capped data centre on a
+    # forecourt network is a forecourt, not a refinery.
+    "forecourt-network": "STORE",
+    "clinic-network": "STORE",
+    "merchant-network": "STORE",
+    "agency-network": "STORE",
 }
 
 

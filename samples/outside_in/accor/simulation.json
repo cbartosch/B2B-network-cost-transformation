@@ -1,13 +1,13 @@
 {
-  "simulation_run_id": "9f2ed9b2-11e2-4fe2-8e92-7c7e90641bc2",
+  "simulation_run_id": "4b64e9f5-6acb-4c5b-a31e-90d7d5526d5f",
   "case_id": "e7b1b7bd-01fa-4804-a671-efa023ca8d21",
   "model_version": "sim-2.7.0",
   "seed": 20260101,
   "ensemble_size": 25,
   "status": "SUCCEEDED",
   "output_hash": "66ab09ce90588fd43014d6102151e0b4c3f5c693d7335940b2e189982dbd197c",
-  "started_at": "2026-10-12 15:24:21.745415+00:00",
-  "ended_at": "2026-10-12 15:24:24.432962+00:00",
+  "started_at": "2026-10-12 15:49:07.271097+00:00",
+  "ended_at": "2026-10-12 15:49:20.952914+00:00",
   "params": {
     "footprint": [
       {
@@ -894,6 +894,16 @@
   },
   "pinned_priors": {
     "archetype_prior": {
+      "LEGACY_WAN_SITE": {
+        "dual_access_probability": 0.6,
+        "primary_product": "MPLS",
+        "backup_product": "BROADBAND_PON",
+        "users_base": 40,
+        "bandwidth_mbps_base": 100,
+        "committed_fraction": "0.800",
+        "primary_service_class": "IPVPN",
+        "backup_service_class": "BEST_EFFORT"
+      },
       "BRANCH": {
         "dual_access_probability": 0.55,
         "primary_product": "DIA",
@@ -1032,16 +1042,6 @@
         "bandwidth_mbps_base": 50,
         "committed_fraction": "0.600",
         "primary_service_class": "BEST_EFFORT",
-        "backup_service_class": "BEST_EFFORT"
-      },
-      "LEGACY_WAN_SITE": {
-        "dual_access_probability": 0.6,
-        "primary_product": "MPLS",
-        "backup_product": "BROADBAND_PON",
-        "users_base": 40,
-        "bandwidth_mbps_base": 100,
-        "committed_fraction": "0.800",
-        "primary_service_class": "IPVPN",
         "backup_service_class": "BEST_EFFORT"
       },
       "DEFAULT/BRANCH": {

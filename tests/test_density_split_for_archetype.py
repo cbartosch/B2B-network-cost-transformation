@@ -94,17 +94,17 @@ def test_an_absent_site_type_with_no_declared_synonym_yields_nothing():
 
 
 def test_a_synonym_sourced_band_does_not_claim_to_be_a_direct_hit():
-    """Shell's forecourts promote as STORE and take INTEGRATED_OIL_GAS's
-    BRANCH bands. That is a weaker step than finding a STORE row, and the
-    basis has to say so - SECTOR_LAYER_SYNONYM, not INDUSTRY_DEFAULT - or a
-    reader cannot tell the two apart downstream."""
+    """BNP's branches promote as STORE and take UNIVERSAL_BANKING's BRANCH
+    bands. That is a weaker step than finding a STORE row, and the basis has
+    to say so - SECTOR_LAYER_SYNONYM, not INDUSTRY_DEFAULT - or a reader
+    cannot tell the two apart downstream."""
     out = footprint.density_split_for_archetype(
-        _mix([_row("INTEGRATED_OIL_GAS", "BRANCH", "URBAN", "0.466"),
-              _row("INTEGRATED_OIL_GAS", "LARGE_OFFICE", "URBAN", "0.352")]),
-        sites=1916, archetype="STORE", industry="INTEGRATED_OIL_GAS")
+        _mix([_row("UNIVERSAL_BANKING", "BRANCH", "URBAN", "0.45"),
+              _row("UNIVERSAL_BANKING", "LARGE_OFFICE", "URBAN", "0.02")]),
+        sites=1656, archetype="STORE", industry="UNIVERSAL_BANKING")
     assert out["basis"] == "SECTOR_LAYER_SYNONYM"
     assert out["via_layer"] == "BRANCH"
-    assert sum(r["sites"] for r in out["rows"]) == 1916
+    assert sum(r["sites"] for r in out["rows"]) == 1656
 
 
 def test_the_generic_mix_is_used_only_for_the_same_site_type():
@@ -156,13 +156,17 @@ def test_the_result_says_the_band_is_a_default_and_the_count_is_not():
 # ----------------------------- one layer, two names, inside one industry
 
 def test_a_layer_recorded_under_another_name_in_the_same_sector_is_found():
-    """Research types a customer-facing site as STORE; INSURANCE's mix calls
-    that layer BRANCH. One layer, two names, and the mismatch left 14,746
-    sites unbanded and therefore never tested for serviceability."""
+    """Research types a customer-facing site as STORE; UNIVERSAL_BANKING's
+    mix calls that layer BRANCH. One layer, two names, and the mismatch left
+    14,746 sites unbanded and therefore never tested for serviceability.
+
+    Four of the nine pairs were retired once their sector got a shape with a
+    real STORE row; this is one of the four that remain, where BRANCH is the
+    right home rather than a workaround."""
     out = footprint.density_split_for_archetype(
-        _mix([_row("INSURANCE", "BRANCH", "URBAN", "0.45"),
-              _row("INSURANCE", "BRANCH", "RURAL", "0.17")]),
-        sites=5016, archetype="STORE", industry="INSURANCE")
+        _mix([_row("UNIVERSAL_BANKING", "BRANCH", "URBAN", "0.45"),
+              _row("UNIVERSAL_BANKING", "BRANCH", "RURAL", "0.17")]),
+        sites=5016, archetype="STORE", industry="UNIVERSAL_BANKING")
     assert sum(r["sites"] for r in out["rows"]) == 5016
     assert out["via_layer"] == "BRANCH", "the step must be visible"
     assert {r["archetype"] for r in out["rows"]} == {"STORE"}, (
@@ -215,3 +219,66 @@ def test_every_synonym_target_exists_in_that_industrys_seeded_mix():
     missing = [(i, a, t) for (i, a), t in bics.BAND_LAYER_SYNONYM.items()
                if (bics.LEGACY_TO_BICS.get(i, i), t) not in have]
     assert not missing, f"synonym targets absent from the mix: {missing}"
+
+
+# ------------------------------------- the four authored sector shapes
+
+AUTHORED = ("forecourt-network", "clinic-network", "merchant-network",
+            "agency-network")
+
+
+@pytest.mark.parametrize("shape", AUTHORED)
+def test_an_authored_shape_sums_to_exactly_one(shape):
+    """Not approximately. propose_split multiplies a registered total by each
+    share and corrects by largest remainder, so a mix summing to 2.0 makes
+    `total - sum(counts)` negative and the correction inflates instead of
+    trimming."""
+    from decimal import Decimal
+    from app.domain import industries
+    total = sum(Decimal(s) for _a, _b, s in industries.SHAPES[shape])
+    assert total == Decimal("1.0000"), f"{shape} sums to {total}"
+
+
+@pytest.mark.parametrize("shape", AUTHORED)
+def test_an_authored_shape_has_no_duplicate_type_and_band(shape):
+    from app.domain import industries
+    pairs = [(a, b) for a, b, _s in industries.SHAPES[shape]]
+    assert len(pairs) == len(set(pairs)), f"{shape} repeats a (type, band)"
+
+
+@pytest.mark.parametrize("shape,layer", [
+    ("forecourt-network", "STORE"), ("clinic-network", "STORE"),
+    ("merchant-network", "STORE"), ("agency-network", "STORE")])
+def test_the_layer_the_shape_exists_for_is_the_largest_in_it(shape, layer):
+    """Each of these replaced a generic shape that had no row for this layer
+    at all, which is what left 13,038 sites unbanded. If it is not the
+    dominant layer the shape has not done its job."""
+    from decimal import Decimal
+    from app.domain import industries
+    totals = {}
+    for archetype, _band, share in industries.SHAPES[shape]:
+        totals[archetype] = totals.get(archetype, Decimal("0")) + Decimal(share)
+    assert max(totals, key=lambda a: totals[a]) == layer
+
+
+@pytest.mark.parametrize("shape,representative", [
+    # bics.density_mix_rows substitutes the benchmark's representative site
+    # into the shape's dominant slot, but only when the shape does not
+    # already contain it. Each of these does, so the authored distribution
+    # survives - without this the forecourt layer would be overwritten by
+    # the refinery the benchmark names.
+    ("forecourt-network", "PLANT"), ("clinic-network", "TERMINAL"),
+    ("merchant-network", "PLANT"), ("agency-network", "LARGE_OFFICE")])
+def test_the_representative_site_is_already_in_the_shape(shape, representative):
+    from app.domain import industries
+    assert representative in {a for a, _b, _s in industries.SHAPES[shape]}
+
+
+def test_the_four_sectors_now_hit_their_own_store_row_directly():
+    """The point of the exercise: these stop being synonym lookups and
+    report INDUSTRY_DEFAULT, because the band now comes from a profile
+    authored for this site type rather than borrowed from a branch."""
+    from app.domain import bics
+    for industry in ("INSURANCE", "BUILDING_MATERIALS", "HOSPITAL",
+                     "INTEGRATED_OIL_GAS"):
+        assert bics.band_layer_synonym(industry, "STORE") is None
