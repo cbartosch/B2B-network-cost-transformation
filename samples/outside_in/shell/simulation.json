@@ -1,13 +1,13 @@
 {
-  "simulation_run_id": "6df06d62-2b8e-48a7-9d04-7fb83b7f1dbf",
+  "simulation_run_id": "d14bc0a7-cc3e-44b0-8b3b-b1c2a75e75f3",
   "case_id": "4ceb19bd-c331-45c1-8220-87db66ff9103",
   "model_version": "sim-2.7.0",
   "seed": 20260101,
   "ensemble_size": 25,
   "status": "SUCCEEDED",
-  "output_hash": "57fafb5b3670f1eeb18b05832de255ec8b9e914b361a40f56cd5b20f2f17e989",
-  "started_at": "2026-10-12 15:04:34.678016+00:00",
-  "ended_at": "2026-10-12 15:04:42.516329+00:00",
+  "output_hash": "9128d04f8eeb80fc79eec9bbb87b242fb939d1f60234ffddf1388062995473a7",
+  "started_at": "2026-10-12 15:23:39.738891+00:00",
+  "ended_at": "2026-10-12 15:23:47.949008+00:00",
   "params": {
     "footprint": [
       {
@@ -29,10 +29,26 @@
       {
         "country": "DE",
         "archetype": "STORE",
-        "sites": 1916,
+        "sites": 289,
         "industry": null,
         "count_source": null,
-        "density": null
+        "density": "RURAL"
+      },
+      {
+        "country": "DE",
+        "archetype": "STORE",
+        "sites": 723,
+        "industry": null,
+        "count_source": null,
+        "density": "SUBURBAN"
+      },
+      {
+        "country": "DE",
+        "archetype": "STORE",
+        "sites": 904,
+        "industry": null,
+        "count_source": null,
+        "density": "URBAN"
       },
       {
         "country": "GB",
@@ -56,7 +72,7 @@
         "sites": 1,
         "industry": null,
         "count_source": null,
-        "density": null
+        "density": "URBAN"
       },
       {
         "country": "NL",
@@ -93,10 +109,26 @@
       {
         "country": "NL",
         "archetype": "STORE",
-        "sites": 662,
+        "sites": 100,
         "industry": null,
         "count_source": null,
-        "density": null
+        "density": "RURAL"
+      },
+      {
+        "country": "NL",
+        "archetype": "STORE",
+        "sites": 250,
+        "industry": null,
+        "count_source": null,
+        "density": "SUBURBAN"
+      },
+      {
+        "country": "NL",
+        "archetype": "STORE",
+        "sites": 312,
+        "industry": null,
+        "count_source": null,
+        "density": "URBAN"
       },
       {
         "country": "US",
@@ -104,7 +136,7 @@
         "sites": 1,
         "industry": null,
         "count_source": null,
-        "density": null
+        "density": "URBAN"
       },
       {
         "country": "US",
@@ -1995,23 +2027,30 @@
     "sites": 5992,
     "serviceability": {
       "counts": {
-        "DELIVERED": 5992,
-        "SUBSTITUTED": 0,
+        "DELIVERED": 5991,
+        "SUBSTITUTED": 1,
         "UNSERVICEABLE": 0
       },
-      "substitutions": [],
+      "substitutions": [
+        {
+          "asked_for": "ETHERNET",
+          "delivered": "ETHERNET",
+          "bandwidth_mbps": 1000,
+          "sites": 1
+        }
+      ],
       "by_access_technology": [
         {
           "access_technology": "PON",
-          "sites": 3400
+          "sites": 5978
         },
         {
           "access_technology": "ETHERNET_FIBRE",
-          "sites": 10
+          "sites": 11
         }
       ],
       "unserviceable": 0,
-      "note": "0 of 5992 site(s) take a different product or tier from the one their type asks for, and 0 can be served by nothing at all. 10 of 5992 are delivered over a bearer other than PON (10 on ETHERNET_FIBRE), which is a different circuit at a different rate. A uniform estate is an assumption; this is what the density bands say about it.",
+      "note": "1 of 5992 site(s) take a different product or tier from the one their type asks for, and 0 can be served by nothing at all. 11 of 5992 are delivered over a bearer other than PON (11 on ETHERNET_FIBRE), which is a different circuit at a different rate. A uniform estate is an assumption; this is what the density bands say about it.",
       "table_rows": 102,
       "table_basis": "GOVERNED"
     },
@@ -2030,9 +2069,9 @@
         "because": "NOT_DELIVERABLE",
         "country": "NL",
         "archetype": "CAMPUS",
-        "density": null,
+        "density": "URBAN",
         "asked_for": "ETHERNET",
-        "reason": "the only backup deliverable in None NL is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+        "reason": "the only backup deliverable in URBAN NL is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
       },
       {
         "because": "NOT_DELIVERABLE",
@@ -2046,9 +2085,9 @@
         "because": "NOT_DELIVERABLE",
         "country": "US",
         "archetype": "CAMPUS",
-        "density": null,
+        "density": "URBAN",
         "asked_for": "ETHERNET",
-        "reason": "the only backup deliverable in None US is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+        "reason": "the only backup deliverable in URBAN US is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
       },
       {
         "because": "NOT_DELIVERABLE",
@@ -2242,10 +2281,10 @@
         "country": "NL",
         "product": "ETHERNET",
         "role": "PRIMARY",
-        "bandwidth_mbps": 9500,
+        "bandwidth_mbps": 950,
         "count": 1,
         "service_class": "ETHERNET",
-        "bearer_mbps": 10000,
+        "bearer_mbps": 1000,
         "access_technology": "ETHERNET_FIBRE"
       },
       {

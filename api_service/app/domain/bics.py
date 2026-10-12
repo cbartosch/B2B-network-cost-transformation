@@ -272,6 +272,57 @@ ARCHETYPE_OF_BENCHMARK = {
 }
 
 
+# Where one sector's estate layer appears under two names, for DENSITY BANDS
+# ONLY.
+#
+# The benchmark names 37 site types and the simulation generates six, so a
+# layer is already recorded under whichever of the six fits - a major hospital
+# is a TERMINAL, a resort is a STORE. Research promoting a footprint row picks
+# from the same six independently, and for a customer-facing layer it reaches
+# for STORE: Allianz's tied agencies, BNP's branches, Saint-Gobain's builders'
+# merchants and Shell's forecourts all arrive as STORE, while their sector's
+# mix calls that same layer BRANCH. The two names denote one layer, and the
+# mismatch left 14,746 sites with no band and therefore never tested for
+# serviceability.
+#
+# WHAT THIS IS NOT. It is not a re-typing: the footprint row keeps the type
+# research gave it, and nothing here reaches the estate, the pricing or
+# `propose_split`. It supplies a band distribution and nothing else.
+#
+# WHY IT IS SAFE WHERE CROSS-SECTOR BORROWING IS NOT. Every entry stays inside
+# one industry and points at the layer that sector's own mix authored for
+# these sites. Shell's forecourts take the bands of INTEGRATED_OIL_GAS's
+# customer-facing layer, never of a bank's - which is the substitution
+# `density_split_for_archetype` refuses and must keep refusing.
+#
+# WHAT IS DELIBERATELY ABSENT. A warehouse is not a plant and a refinery is
+# not an office, so FOOD_MANUFACTURING/WAREHOUSE, AIRLINES/WAREHOUSE,
+# HOUSEHOLD_PERSONAL_CARE/WAREHOUSE and INTEGRATED_OIL_GAS/PLANT have no entry
+# and stay unbanded. Twenty-three sites, left visible rather than forced.
+BAND_LAYER_SYNONYM = {
+    # Customer-facing layers that research types as STORE.
+    ("INSURANCE", "STORE"): "BRANCH",              # tied agent offices
+    ("UNIVERSAL_BANKING", "STORE"): "BRANCH",      # retail branches
+    ("BUILDING_MATERIALS", "STORE"): "BRANCH",     # builders' merchants
+    ("INTEGRATED_OIL_GAS", "STORE"): "BRANCH",     # fuel forecourts
+    # Patient-facing sites. The mix calls them TERMINAL because the benchmark
+    # does - see MAJOR_HOSPITAL above - and dialysis clinics sit where the
+    # hospitals do, near the population they serve.
+    ("HOSPITAL", "STORE"): "TERMINAL",
+    # Operating sites, under the name each sector's shape gives them.
+    ("UTILITIES", "PLANT"): "CONTROL_CENTER",      # generation and grid sites
+    ("DIVERSIFIED_MINING", "PLANT"): "REMOTE_SITE",  # processing on the mine
+    ("INDUSTRIAL_CONGLOMERATE", "CAMPUS"): "PLANT",
+    ("INTEGRATED_OIL_GAS", "CAMPUS"): "LARGE_OFFICE",
+}
+
+
+def band_layer_synonym(industry: str | None, archetype: str | None):
+    """The name this sector's density mix uses for the same estate layer."""
+    return BAND_LAYER_SYNONYM.get(
+        ((industry or "").strip().upper(), (archetype or "").strip().upper()))
+
+
 def canonical_archetype(benchmark_archetype: str | None) -> str | None:
     """The generatable site type this benchmark archetype is an instance of."""
     if not benchmark_archetype:

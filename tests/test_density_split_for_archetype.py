@@ -79,19 +79,32 @@ def test_the_site_type_is_carried_through_unchanged():
 
 # ------------------------------------------- the site type is never swapped
 
-def test_an_absent_site_type_yields_nothing_rather_than_another_type_s_bands():
-    """The defect this guards is the reason the function exists separately
-    from propose_split. Shell's 1,916 German service stations promote as
-    STORE; the INTEGRATED_OIL_GAS mix carries BRANCH, LARGE_OFFICE and DC and
-    no STORE at all. Falling back to the industry's other rows would price
-    forecourts as bank branches."""
+def test_an_absent_site_type_with_no_declared_synonym_yields_nothing():
+    """The reason this function exists separately from propose_split. A type
+    the sector's mix does not carry, and that no entry in BAND_LAYER_SYNONYM
+    names as the same layer under another name, gets no band at all rather
+    than the bands of whatever else that industry happens to hold."""
+    out = footprint.density_split_for_archetype(
+        _mix([_row("CHEMICALS", "PLANT", "SUBURBAN", "0.768"),
+              _row("CHEMICALS", "LARGE_OFFICE", "URBAN", "0.096")]),
+        sites=1916, archetype="STORE", industry="CHEMICALS")
+    assert out["rows"] == []
+    assert out["basis"] is None
+    assert "STORE" in out["note"] and "CHEMICALS" in out["note"]
+
+
+def test_a_synonym_sourced_band_does_not_claim_to_be_a_direct_hit():
+    """Shell's forecourts promote as STORE and take INTEGRATED_OIL_GAS's
+    BRANCH bands. That is a weaker step than finding a STORE row, and the
+    basis has to say so - SECTOR_LAYER_SYNONYM, not INDUSTRY_DEFAULT - or a
+    reader cannot tell the two apart downstream."""
     out = footprint.density_split_for_archetype(
         _mix([_row("INTEGRATED_OIL_GAS", "BRANCH", "URBAN", "0.466"),
               _row("INTEGRATED_OIL_GAS", "LARGE_OFFICE", "URBAN", "0.352")]),
         sites=1916, archetype="STORE", industry="INTEGRATED_OIL_GAS")
-    assert out["rows"] == []
-    assert out["basis"] is None
-    assert "STORE" in out["note"] and "INTEGRATED_OIL_GAS" in out["note"]
+    assert out["basis"] == "SECTOR_LAYER_SYNONYM"
+    assert out["via_layer"] == "BRANCH"
+    assert sum(r["sites"] for r in out["rows"]) == 1916
 
 
 def test_the_generic_mix_is_used_only_for_the_same_site_type():
@@ -138,3 +151,67 @@ def test_the_result_says_the_band_is_a_default_and_the_count_is_not():
         _mix([_row("RETAIL", "STORE", "URBAN", "0.40")]),
         sites=10, archetype="STORE", industry="RETAIL")
     assert "evidenced" in out["note"] and "default" in out["note"]
+
+
+# ----------------------------- one layer, two names, inside one industry
+
+def test_a_layer_recorded_under_another_name_in_the_same_sector_is_found():
+    """Research types a customer-facing site as STORE; INSURANCE's mix calls
+    that layer BRANCH. One layer, two names, and the mismatch left 14,746
+    sites unbanded and therefore never tested for serviceability."""
+    out = footprint.density_split_for_archetype(
+        _mix([_row("INSURANCE", "BRANCH", "URBAN", "0.45"),
+              _row("INSURANCE", "BRANCH", "RURAL", "0.17")]),
+        sites=5016, archetype="STORE", industry="INSURANCE")
+    assert sum(r["sites"] for r in out["rows"]) == 5016
+    assert out["via_layer"] == "BRANCH", "the step must be visible"
+    assert {r["archetype"] for r in out["rows"]} == {"STORE"}, (
+        "the row keeps the type research gave it; only the bands came from "
+        "the other name")
+
+
+def test_the_synonym_never_crosses_an_industry():
+    """The guard that keeps this from becoming the substitution the function
+    exists to refuse. Shell's forecourts take INTEGRATED_OIL_GAS's own
+    customer-facing bands; nothing lets them take a bank's."""
+    from app.domain import bics
+    for (industry, _archetype), target in bics.BAND_LAYER_SYNONYM.items():
+        assert bics.band_layer_synonym(industry, "NOT_A_TYPE") is None
+        assert isinstance(target, str) and target
+
+
+def test_an_unmapped_pair_is_still_refused():
+    """A warehouse is not a plant. Deliberately absent from the synonym
+    table, so these stay unbanded and visible."""
+    from app.domain import bics
+    for pair in [("FOOD_MANUFACTURING", "WAREHOUSE"),
+                 ("AIRLINES", "WAREHOUSE"),
+                 ("HOUSEHOLD_PERSONAL_CARE", "WAREHOUSE"),
+                 ("INTEGRATED_OIL_GAS", "PLANT")]:
+        assert bics.band_layer_synonym(*pair) is None
+
+
+def test_a_legacy_industry_code_resolves_to_the_bics_mix():
+    """PARCEL_LOGISTICS is mapped to POSTAL_AND_PARCEL_NETWORK for its
+    benchmark, but the mix is seeded under the BICS name - so the lookup
+    missed it and a parcel network fell back to the generic many-small shape,
+    which gives it a store layer and no collection points at all."""
+    out = footprint.density_split_for_archetype(
+        _mix([_row("POSTAL_AND_PARCEL_NETWORK", "SERVICE_POINT",
+                   "URBAN", "0.29"),
+              _row("POSTAL_AND_PARCEL_NETWORK", "SERVICE_POINT",
+                   "RURAL", "0.07")]),
+        sites=1600, archetype="SERVICE_POINT", industry="PARCEL_LOGISTICS")
+    assert out["industry"] == "POSTAL_AND_PARCEL_NETWORK"
+    assert sum(r["sites"] for r in out["rows"]) == 1600
+
+
+def test_every_synonym_target_exists_in_that_industrys_seeded_mix():
+    """The table is only useful if each target is a layer the sector's mix
+    actually carries. A typo here fails silently as an unfilled band."""
+    from app.domain import bics, industries
+    from app import seed
+    have = {(i, a) for i, a, _b, _s in seed.DENSITY_MIX}
+    missing = [(i, a, t) for (i, a), t in bics.BAND_LAYER_SYNONYM.items()
+               if (bics.LEGACY_TO_BICS.get(i, i), t) not in have]
+    assert not missing, f"synonym targets absent from the mix: {missing}"

@@ -49,7 +49,7 @@
       "country": "AT",
       "archetype": "CAMPUS",
       "sites": 1,
-      "density": null
+      "density": "RURAL"
     },
     {
       "country": "AT",
@@ -79,7 +79,7 @@
       "country": "DE",
       "archetype": "CAMPUS",
       "sites": 1,
-      "density": null
+      "density": "RURAL"
     },
     {
       "country": "DE",
@@ -312,13 +312,34 @@
       "density": "SUBURBAN"
     },
     {
-      "origin": "NO_DENSITY_BAND",
+      "origin": "DENSITY_FROM_MIX",
       "rows": 2,
       "sites": 2,
-      "reasons": {
-        "CAMPUS": "no governed band mix for CAMPUS in INDUSTRIAL_CONGLOMERATE, so the band is left unknown - borrowing another site type's bands would re-price these 1 sites against a shape nobody established for them"
-      },
-      "note": "these rows carry no density band, so serviceability cannot be resolved for them and their sites are treated as deliverable. The sector mix has no row for their site type, and another type's bands are not borrowed."
+      "filled": [
+        {
+          "country": "AT",
+          "archetype": "CAMPUS",
+          "sites": 1,
+          "basis": "SECTOR_LAYER_SYNONYM",
+          "mix_industry": "INDUSTRIAL_CONGLOMERATE",
+          "bands": {
+            "RURAL": 1
+          },
+          "via_layer": "PLANT"
+        },
+        {
+          "country": "DE",
+          "archetype": "CAMPUS",
+          "sites": 1,
+          "basis": "SECTOR_LAYER_SYNONYM",
+          "mix_industry": "INDUSTRIAL_CONGLOMERATE",
+          "bands": {
+            "RURAL": 1
+          },
+          "via_layer": "PLANT"
+        }
+      ],
+      "note": "the count and the site type are evidenced; the band is a governed sector default from reference.density_mix, not a finding about this client. It decides which bearers are tested, so it is worth replacing with what the client actually has."
     }
   ],
   "scope_countries_modelled": [
@@ -396,8 +417,8 @@
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-12T15:05:05.474386+00:00",
-  "run_seconds": 15.3,
+  "run_started": "2026-10-12T15:24:04.807373+00:00",
+  "run_seconds": 18.0,
   "preflight_conditions": 8,
   "promotion": {
     "promoted": true,

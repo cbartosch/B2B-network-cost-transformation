@@ -600,13 +600,17 @@ def _fill_bands_from_mix(merged, provenance, spec):
                         "archetype": row["archetype"],
                         "sites": int(part["sites"]),
                         "density": part["density"]})
-        filled.append({"country": row["country"],
-                       "archetype": row["archetype"],
-                       "sites": int(row["sites"]),
-                       "basis": split["basis"],
-                       "mix_industry": split["industry"],
-                       "bands": {p["density"]: p["sites"]
-                                 for p in split["rows"]}})
+        entry = {"country": row["country"],
+                 "archetype": row["archetype"],
+                 "sites": int(row["sites"]),
+                 "basis": split["basis"],
+                 "mix_industry": split["industry"],
+                 "bands": {p["density"]: p["sites"] for p in split["rows"]}}
+        # The sector records this layer under another name, so say so rather
+        # than leave a STORE wearing a branch network's distribution.
+        if split.get("via_layer"):
+            entry["via_layer"] = split["via_layer"]
+        filled.append(entry)
 
     if filled:
         provenance.append({

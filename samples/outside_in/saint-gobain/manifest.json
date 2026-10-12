@@ -50,7 +50,7 @@
       "country": "DE",
       "archetype": "STORE",
       "sites": 220,
-      "density": null
+      "density": "RURAL"
     },
     {
       "country": "DE",
@@ -80,7 +80,7 @@
       "country": "FR",
       "archetype": "STORE",
       "sites": 2000,
-      "density": null
+      "density": "RURAL"
     },
     {
       "country": "FR",
@@ -92,7 +92,7 @@
       "country": "GB",
       "archetype": "STORE",
       "sites": 600,
-      "density": null
+      "density": "RURAL"
     },
     {
       "country": "GB",
@@ -176,8 +176,8 @@
     },
     {
       "origin": "DENSITY_FROM_MIX",
-      "rows": 2,
-      "sites": 2,
+      "rows": 5,
+      "sites": 2822,
       "filled": [
         {
           "country": "BR",
@@ -190,6 +190,17 @@
           }
         },
         {
+          "country": "DE",
+          "archetype": "STORE",
+          "sites": 220,
+          "basis": "SECTOR_LAYER_SYNONYM",
+          "mix_industry": "BUILDING_MATERIALS",
+          "bands": {
+            "RURAL": 220
+          },
+          "via_layer": "BRANCH"
+        },
+        {
           "country": "FR",
           "archetype": "LARGE_OFFICE",
           "sites": 1,
@@ -198,18 +209,31 @@
           "bands": {
             "URBAN": 1
           }
+        },
+        {
+          "country": "FR",
+          "archetype": "STORE",
+          "sites": 2000,
+          "basis": "SECTOR_LAYER_SYNONYM",
+          "mix_industry": "BUILDING_MATERIALS",
+          "bands": {
+            "RURAL": 2000
+          },
+          "via_layer": "BRANCH"
+        },
+        {
+          "country": "GB",
+          "archetype": "STORE",
+          "sites": 600,
+          "basis": "SECTOR_LAYER_SYNONYM",
+          "mix_industry": "BUILDING_MATERIALS",
+          "bands": {
+            "RURAL": 600
+          },
+          "via_layer": "BRANCH"
         }
       ],
       "note": "the count and the site type are evidenced; the band is a governed sector default from reference.density_mix, not a finding about this client. It decides which bearers are tested, so it is worth replacing with what the client actually has."
-    },
-    {
-      "origin": "NO_DENSITY_BAND",
-      "rows": 3,
-      "sites": 2820,
-      "reasons": {
-        "STORE": "no governed band mix for STORE in BUILDING_MATERIALS, so the band is left unknown - borrowing another site type's bands would re-price these 600 sites against a shape nobody established for them"
-      },
-      "note": "these rows carry no density band, so serviceability cannot be resolved for them and their sites are treated as deliverable. The sector mix has no row for their site type, and another type's bands are not borrowed."
     }
   ],
   "scope_countries_modelled": [
@@ -284,8 +308,8 @@
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-12T15:04:26.989835+00:00",
-  "run_seconds": 17.5,
+  "run_started": "2026-10-12T15:23:31.454941+00:00",
+  "run_seconds": 15.8,
   "preflight_conditions": 8,
   "promotion": {
     "promoted": true,

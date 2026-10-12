@@ -72,8 +72,20 @@
     {
       "country": "GB",
       "archetype": "PLANT",
-      "sites": 40,
-      "density": null
+      "sites": 9,
+      "density": "RURAL"
+    },
+    {
+      "country": "GB",
+      "archetype": "PLANT",
+      "sites": 14,
+      "density": "SUBURBAN"
+    },
+    {
+      "country": "GB",
+      "archetype": "PLANT",
+      "sites": 17,
+      "density": "URBAN"
     }
   ],
   "footprint_provenance": [
@@ -120,13 +132,25 @@
       "density": null
     },
     {
-      "origin": "NO_DENSITY_BAND",
+      "origin": "DENSITY_FROM_MIX",
       "rows": 1,
       "sites": 40,
-      "reasons": {
-        "PLANT": "no governed band mix for PLANT in UTILITIES, so the band is left unknown - borrowing another site type's bands would re-price these 40 sites against a shape nobody established for them"
-      },
-      "note": "these rows carry no density band, so serviceability cannot be resolved for them and their sites are treated as deliverable. The sector mix has no row for their site type, and another type's bands are not borrowed."
+      "filled": [
+        {
+          "country": "GB",
+          "archetype": "PLANT",
+          "sites": 40,
+          "basis": "SECTOR_LAYER_SYNONYM",
+          "mix_industry": "UTILITIES",
+          "bands": {
+            "RURAL": 9,
+            "SUBURBAN": 14,
+            "URBAN": 17
+          },
+          "via_layer": "CONTROL_CENTER"
+        }
+      ],
+      "note": "the count and the site type are evidenced; the band is a governed sector default from reference.density_mix, not a finding about this client. It decides which bearers are tested, so it is worth replacing with what the client actually has."
     }
   ],
   "scope_countries_modelled": [
@@ -199,8 +223,8 @@
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-12T15:04:49.298096+00:00",
-  "run_seconds": 21.2,
+  "run_started": "2026-10-12T15:23:54.996320+00:00",
+  "run_seconds": 19.6,
   "preflight_conditions": 8,
   "promotion": {
     "promoted": true,

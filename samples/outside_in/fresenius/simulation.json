@@ -1,13 +1,13 @@
 {
-  "simulation_run_id": "898a1749-d28a-4cb3-8aae-307f131ebce3",
+  "simulation_run_id": "681608c6-4681-416a-9a10-e21cbb0b059c",
   "case_id": "e71dd642-34f1-44b8-8bc1-8c2a230f9cae",
   "model_version": "sim-2.7.0",
   "seed": 20260101,
   "ensemble_size": 25,
   "status": "SUCCEEDED",
-  "output_hash": "e18c4e76a93bd68143a330eca12384c04496018678edfaff8f0ba241ef972e86",
-  "started_at": "2026-10-12 15:04:48.496155+00:00",
-  "ended_at": "2026-10-12 15:04:56.199691+00:00",
+  "output_hash": "f24bf6b872393de6e4b8225a2d231590ac463b6cb145d1da7eaea9a4b48de5e1",
+  "started_at": "2026-10-12 15:23:51.823490+00:00",
+  "ended_at": "2026-10-12 15:23:57.922079+00:00",
   "params": {
     "footprint": [
       {
@@ -53,10 +53,26 @@
       {
         "country": "US",
         "archetype": "STORE",
-        "sites": 2624,
+        "sites": 807,
         "industry": null,
         "count_source": null,
-        "density": null
+        "density": "DENSE_URBAN"
+      },
+      {
+        "country": "US",
+        "archetype": "STORE",
+        "sites": 606,
+        "industry": null,
+        "count_source": null,
+        "density": "SUBURBAN"
+      },
+      {
+        "country": "US",
+        "archetype": "STORE",
+        "sites": 1211,
+        "industry": null,
+        "count_source": null,
+        "density": "URBAN"
       }
     ],
     "site_inclusion_rule": null,
@@ -70,20 +86,11 @@
           "uniform_by_construction": false,
           "note": "2,600 sites priced as one block at the BRANCH tier - a BRANCH is individually significant, so a single bandwidth, product pair and dual-access probability across 2,600 of them is a strong assumption",
           "narrows_it": "split by density or country, or name the largest sites individually on this page"
-        },
-        {
-          "country": "US",
-          "archetype": "STORE",
-          "density": null,
-          "sites": 2624,
-          "uniform_by_construction": false,
-          "note": "2,624 sites priced as one block at the STORE tier - a STORE is individually significant, so a single bandwidth, product pair and dual-access probability across 2,624 of them is a strong assumption",
-          "narrows_it": "add a density band - the row currently claims a whole country's estate is alike"
         }
       ],
-      "sites_in_large_rows": 5224,
-      "share_in_large_rows": "0.912",
-      "share_asserted_alike": "0.912",
+      "sites_in_large_rows": 2600,
+      "share_in_large_rows": "0.454",
+      "share_asserted_alike": "0.454",
       "basis": "sites in rows above the reporting band; nothing is refused for this - the row prices and the claim is disclosed"
     },
     "backbone": {
@@ -1613,10 +1620,14 @@
         {
           "access_technology": "ETHERNET_FIBRE",
           "sites": 2952
+        },
+        {
+          "access_technology": "PON",
+          "sites": 2624
         }
       ],
       "unserviceable": 0,
-      "note": "4 of 5726 site(s) take a different product or tier from the one their type asks for, and 0 can be served by nothing at all. A uniform estate is an assumption; this is what the density bands say about it.",
+      "note": "4 of 5726 site(s) take a different product or tier from the one their type asks for, and 0 can be served by nothing at all. 2624 of 5726 are delivered over a bearer other than ETHERNET_FIBRE (2624 on PON), which is a different circuit at a different rate. A uniform estate is an assumption; this is what the density bands say about it.",
       "table_rows": 68,
       "table_basis": "GOVERNED"
     },

@@ -573,24 +573,56 @@ def density_split_for_archetype(session, *, sites: int, archetype: str,
     if not kind or sites <= 0:
         return {"rows": [], "basis": None, "industry": None, "note": None}
 
+    # Where to look, most specific first.
+    #
+    # The sector's own mix answers if it can. Only when it cannot does an
+    # older workbench code fall through to the BICS code it maps to:
+    # PARCEL_LOGISTICS is mapped to POSTAL_AND_PARCEL_NETWORK for its
+    # benchmark, but the mix is seeded under the BICS name, so a parcel
+    # network was reaching the generic many-small shape - the one
+    # LEGACY_TO_BICS exists to get it away from, which gives it a store layer
+    # and no collection points at all.
+    #
+    # Ordered rather than rewritten up front, because most legacy codes DO
+    # have a mix of their own and redirecting those would change answers that
+    # were already right.
+    alias = bics.LEGACY_TO_BICS.get(sector)
+    candidates = [sector]
+    if alias and alias != sector:
+        candidates.append(alias)
+    candidates.append("DEFAULT")
+
     rows = session.execute(select(db.density_mix).where(
-        db.density_mix.c.industry.in_([sector, "DEFAULT"]),
-        db.density_mix.c.archetype == kind)).all()
-    # Filtered again here, not only in the query. The one property this
-    # function must hold is that it never swaps a site type, and resting that
-    # entirely on a WHERE clause makes it a property of the SQL rather than
-    # of the code - a later caller passing a prepared row set, or a widened
-    # query, would re-type counted sites with nothing to stop it.
-    rows = [r for r in rows if (r.archetype or "").strip().upper() == kind]
-    chosen = [r for r in rows if r.industry == sector]
-    matched = bool(chosen)
+        db.density_mix.c.industry.in_(candidates))).all()
+
+    # Matched in the code, not only in the query. The one property this
+    # function must hold is that it never swaps a site type for an unrelated
+    # one, and resting that on a WHERE clause makes it a property of the SQL
+    # rather than of the code.
+    #
+    # Within one industry the exact type always wins; the synonym is reached
+    # only when that industry records the layer under another name.
+    chosen, found_in, lookup = [], None, kind
+    for candidate in candidates:
+        for name in (kind, bics.band_layer_synonym(candidate, kind)):
+            if not name:
+                continue
+            hit = [r for r in rows
+                   if r.industry == candidate
+                   and (r.archetype or "").strip().upper() == name]
+            if hit:
+                chosen, found_in, lookup = hit, candidate, name
+                break
+        if chosen:
+            break
+
+    matched = bool(chosen) and found_in != "DEFAULT"
     if not chosen:
-        chosen = [r for r in rows if r.industry == "DEFAULT"]
-    if not chosen:
-        # No row for this type in this sector or the generic mix. The band is
-        # left unknown rather than borrowed from a different type: SUBURBAN
-        # and RURAL resolve different bearers at different rates, so a
-        # substituted type would re-price the estate on nobody's authority.
+        # No row for this type in this sector or the generic mix, and no
+        # declared synonym for it either. The band is left unknown rather
+        # than borrowed from an unrelated type: SUBURBAN and RURAL resolve
+        # different bearers at different rates, so a substituted type would
+        # re-price the estate on nobody's authority.
         return {
             "rows": [], "basis": None, "industry": None,
             "note": (f"no governed band mix for {kind} in {sector}, so the "
@@ -613,16 +645,27 @@ def density_split_for_archetype(session, *, sites: int, archetype: str,
     return {
         "rows": [{"archetype": kind, "density": r.density_band, "sites": n}
                  for r, n in zip(chosen, counts) if n > 0],
-        "basis": "INDUSTRY_DEFAULT" if matched else "GENERIC_DEFAULT",
-        "industry": sector if matched else "DEFAULT",
+        # Three bases, not two. A synonym-sourced band did not come from this
+        # site type at all - it came from another layer in the same sector -
+        # and reporting that as INDUSTRY_DEFAULT would hide the weaker step
+        # behind the stronger label.
+        "basis": ("SECTOR_LAYER_SYNONYM" if lookup != kind
+                  else "INDUSTRY_DEFAULT" if matched else "GENERIC_DEFAULT"),
+        "industry": found_in,
+        # Named when the bands came from the same layer under another name,
+        # so a reader can see the step rather than wonder where a STORE got a
+        # branch network's distribution.
+        "via_layer": lookup if lookup != kind else None,
         "note": (
             f"The COUNT and the TYPE are evidenced; only the BAND is a "
             f"default. {sites:,} {kind} site(s) are spread across density "
             f"bands using the "
-            f"{'governed mix for ' + sector if matched else 'generic mix, this sector having none of its own'}"
-            f" - a typical shape, not a finding about this client. It decides "
-            f"which bearers are tested, so it is a default worth replacing "
-            f"with what the client actually has."),
+            f"{'governed mix for ' + str(found_in) if matched else 'generic mix, this sector having none of its own'}"
+            + (f", which records this layer as {lookup}" if lookup != kind
+               else "")
+            + f" - a typical shape, not a finding about this client. It "
+            f"decides which bearers are tested, so it is a default worth "
+            f"replacing with what the client actually has."),
     }
 
 

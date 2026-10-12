@@ -1,13 +1,13 @@
 {
-  "simulation_run_id": "0eb12280-ca54-4bb2-9511-a3ee3281b044",
+  "simulation_run_id": "af15c71f-f17a-4070-af03-722b7df89ce8",
   "case_id": "3e29f228-1016-4a3d-b0ac-bea45544106e",
   "model_version": "sim-2.7.0",
   "seed": 20260101,
   "ensemble_size": 25,
   "status": "SUCCEEDED",
-  "output_hash": "9b5d192bd777e69ac058e540adb64b787e40c36d35d6408423a13cd81f4282bd",
-  "started_at": "2026-10-12 15:05:15.198667+00:00",
-  "ended_at": "2026-10-12 15:05:15.845422+00:00",
+  "output_hash": "67d5b0f16ec831a1725350c12025c6b6ecdb17c0dcb05a9f19ebe5d5693d494c",
+  "started_at": "2026-10-12 15:24:18.885674+00:00",
+  "ended_at": "2026-10-12 15:24:19.732388+00:00",
   "params": {
     "footprint": [
       {
@@ -16,7 +16,7 @@
         "sites": 1,
         "industry": null,
         "count_source": null,
-        "density": null
+        "density": "RURAL"
       },
       {
         "country": "AT",
@@ -56,7 +56,7 @@
         "sites": 1,
         "industry": null,
         "count_source": null,
-        "density": null
+        "density": "RURAL"
       },
       {
         "country": "DE",
@@ -2343,10 +2343,10 @@
     "model_version": "sim-2.7.0",
     "seed": 20260101,
     "ensemble_size": 25,
-    "sites": 497,
+    "sites": 496,
     "serviceability": {
       "counts": {
-        "DELIVERED": 411,
+        "DELIVERED": 410,
         "SUBSTITUTED": 86,
         "UNSERVICEABLE": 0
       },
@@ -2365,27 +2365,28 @@
         }
       ],
       "unserviceable": 0,
-      "note": "86 of 497 site(s) take a different product or tier from the one their type asks for, and 0 can be served by nothing at all. A uniform estate is an assumption; this is what the density bands say about it.",
+      "note": "86 of 496 site(s) take a different product or tier from the one their type asks for, and 0 can be served by nothing at all. A uniform estate is an assumption; this is what the density bands say about it.",
       "table_rows": 136,
       "table_basis": "GOVERNED"
     },
-    "unserviceable": [],
+    "unserviceable": [
+      {
+        "country": "DE",
+        "archetype": "CAMPUS",
+        "density": "RURAL",
+        "sites": 1,
+        "asked_for": "ETHERNET",
+        "reason": "no bearer that can carry a ETHERNET is available in RURAL DE - ETHERNET_FIBRE, DARK_FIBRE are recorded and none is deliverable"
+      }
+    ],
     "single_by_necessity": [
       {
         "because": "NOT_DELIVERABLE",
         "country": "AT",
         "archetype": "CAMPUS",
-        "density": null,
+        "density": "RURAL",
         "asked_for": "ETHERNET",
-        "reason": "the only backup deliverable in None AT is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
-      },
-      {
-        "because": "NOT_DELIVERABLE",
-        "country": "DE",
-        "archetype": "CAMPUS",
-        "density": null,
-        "asked_for": "ETHERNET",
-        "reason": "the only backup deliverable in None DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+        "reason": "the only backup deliverable in RURAL AT is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
       },
       {
         "because": "NOT_DELIVERABLE",
@@ -2470,21 +2471,21 @@
     ],
     "estate_truncated": 0,
     "sites_named": 0,
-    "sites_generated": 497,
+    "sites_generated": 496,
     "circuits": {
-      "low": 958,
-      "base": 964,
-      "high": 972
+      "low": 956,
+      "base": 963,
+      "high": 970
     },
     "circuits_primary": {
-      "low": 497,
-      "base": 497,
-      "high": 497
+      "low": 496,
+      "base": 496,
+      "high": 496
     },
     "circuits_backup": {
-      "low": 437,
+      "low": 436,
       "base": 443,
-      "high": 451
+      "high": 450
     },
     "products": [
       {
@@ -2592,7 +2593,7 @@
         "product": "BROADBAND_PON",
         "role": "BACKUP",
         "bandwidth_mbps": 300,
-        "count": 27,
+        "count": 26,
         "service_class": "BEST_EFFORT",
         "bearer_mbps": 300,
         "access_technology": "PON"
@@ -2602,7 +2603,7 @@
         "product": "DIA",
         "role": "BACKUP",
         "bandwidth_mbps": 1000,
-        "count": 105,
+        "count": 104,
         "service_class": "DIA",
         "bearer_mbps": 1000,
         "access_technology": null
@@ -2635,16 +2636,6 @@
         "count": 120,
         "service_class": "ETHERNET",
         "bearer_mbps": 1000,
-        "access_technology": "ETHERNET_FIBRE"
-      },
-      {
-        "country": "DE",
-        "product": "ETHERNET",
-        "role": "PRIMARY",
-        "bandwidth_mbps": 9500,
-        "count": 1,
-        "service_class": "ETHERNET",
-        "bearer_mbps": 10000,
         "access_technology": "ETHERNET_FIBRE"
       },
       {
@@ -2869,12 +2860,12 @@
       }
     ],
     "dual_access_sites": {
-      "low": 437,
+      "low": 436,
       "base": 443,
-      "high": 451
+      "high": 450
     },
     "circuits_backbone": 24,
-    "circuits_per_site_base": 1.9175,
+    "circuits_per_site_base": 1.9153,
     "implied_users": 150000,
     "bandwidth_profile": {
       "CAMPUS": {
@@ -2968,12 +2959,12 @@
       "backbone_circuits": 24,
       "note": ""
     },
-    "node_count": 497,
-    "edge_count": 953
+    "node_count": 496,
+    "edge_count": 950
   },
   "output_omitted": {
     "fields": [
-      "estate (497 rows)",
+      "estate (496 rows)",
       "sample_topology (2 rows)"
     ],
     "why": "per-site arrays, the same information the aggregates carry; tools/backfill_simulation.py --full keeps them"

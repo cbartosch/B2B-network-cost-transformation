@@ -54,8 +54,20 @@
     {
       "country": "AU",
       "archetype": "PLANT",
-      "sites": 8,
-      "density": null
+      "sites": 4,
+      "density": "RURAL"
+    },
+    {
+      "country": "AU",
+      "archetype": "PLANT",
+      "sites": 3,
+      "density": "SUBURBAN"
+    },
+    {
+      "country": "AU",
+      "archetype": "PLANT",
+      "sites": 1,
+      "density": "URBAN"
     },
     {
       "country": "AU",
@@ -122,13 +134,25 @@
       "density": "URBAN"
     },
     {
-      "origin": "NO_DENSITY_BAND",
+      "origin": "DENSITY_FROM_MIX",
       "rows": 1,
       "sites": 8,
-      "reasons": {
-        "PLANT": "no governed band mix for PLANT in DIVERSIFIED_MINING, so the band is left unknown - borrowing another site type's bands would re-price these 8 sites against a shape nobody established for them"
-      },
-      "note": "these rows carry no density band, so serviceability cannot be resolved for them and their sites are treated as deliverable. The sector mix has no row for their site type, and another type's bands are not borrowed."
+      "filled": [
+        {
+          "country": "AU",
+          "archetype": "PLANT",
+          "sites": 8,
+          "basis": "SECTOR_LAYER_SYNONYM",
+          "mix_industry": "DIVERSIFIED_MINING",
+          "bands": {
+            "RURAL": 4,
+            "SUBURBAN": 3,
+            "URBAN": 1
+          },
+          "via_layer": "REMOTE_SITE"
+        }
+      ],
+      "note": "the count and the site type are evidenced; the band is a governed sector default from reference.density_mix, not a finding about this client. It decides which bearers are tested, so it is worth replacing with what the client actually has."
     }
   ],
   "scope_countries_modelled": [
@@ -204,8 +228,8 @@
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-12T15:04:44.542884+00:00",
-  "run_seconds": 6.5,
+  "run_started": "2026-10-12T15:23:47.304850+00:00",
+  "run_seconds": 4.5,
   "preflight_conditions": 8,
   "promotion": {
     "promoted": true,

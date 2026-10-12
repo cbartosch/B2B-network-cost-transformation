@@ -55,8 +55,20 @@
     {
       "country": "DE",
       "archetype": "STORE",
-      "sites": 1916,
-      "density": null
+      "sites": 289,
+      "density": "RURAL"
+    },
+    {
+      "country": "DE",
+      "archetype": "STORE",
+      "sites": 723,
+      "density": "SUBURBAN"
+    },
+    {
+      "country": "DE",
+      "archetype": "STORE",
+      "sites": 904,
+      "density": "URBAN"
     },
     {
       "country": "GB",
@@ -74,7 +86,7 @@
       "country": "NL",
       "archetype": "CAMPUS",
       "sites": 1,
-      "density": null
+      "density": "URBAN"
     },
     {
       "country": "NL",
@@ -103,14 +115,26 @@
     {
       "country": "NL",
       "archetype": "STORE",
-      "sites": 662,
-      "density": null
+      "sites": 100,
+      "density": "RURAL"
+    },
+    {
+      "country": "NL",
+      "archetype": "STORE",
+      "sites": 250,
+      "density": "SUBURBAN"
+    },
+    {
+      "country": "NL",
+      "archetype": "STORE",
+      "sites": 312,
+      "density": "URBAN"
     },
     {
       "country": "US",
       "archetype": "CAMPUS",
       "sites": 1,
-      "density": null
+      "density": "URBAN"
     },
     {
       "country": "US",
@@ -215,9 +239,33 @@
     },
     {
       "origin": "DENSITY_FROM_MIX",
-      "rows": 3,
-      "sites": 3,
+      "rows": 7,
+      "sites": 2583,
       "filled": [
+        {
+          "country": "DE",
+          "archetype": "STORE",
+          "sites": 1916,
+          "basis": "SECTOR_LAYER_SYNONYM",
+          "mix_industry": "INTEGRATED_OIL_GAS",
+          "bands": {
+            "RURAL": 289,
+            "SUBURBAN": 723,
+            "URBAN": 904
+          },
+          "via_layer": "BRANCH"
+        },
+        {
+          "country": "NL",
+          "archetype": "CAMPUS",
+          "sites": 1,
+          "basis": "SECTOR_LAYER_SYNONYM",
+          "mix_industry": "INTEGRATED_OIL_GAS",
+          "bands": {
+            "URBAN": 1
+          },
+          "via_layer": "LARGE_OFFICE"
+        },
         {
           "country": "NL",
           "archetype": "DC",
@@ -239,6 +287,30 @@
           }
         },
         {
+          "country": "NL",
+          "archetype": "STORE",
+          "sites": 662,
+          "basis": "SECTOR_LAYER_SYNONYM",
+          "mix_industry": "INTEGRATED_OIL_GAS",
+          "bands": {
+            "RURAL": 100,
+            "SUBURBAN": 250,
+            "URBAN": 312
+          },
+          "via_layer": "BRANCH"
+        },
+        {
+          "country": "US",
+          "archetype": "CAMPUS",
+          "sites": 1,
+          "basis": "SECTOR_LAYER_SYNONYM",
+          "mix_industry": "INTEGRATED_OIL_GAS",
+          "bands": {
+            "URBAN": 1
+          },
+          "via_layer": "LARGE_OFFICE"
+        },
+        {
           "country": "US",
           "archetype": "DC",
           "sites": 1,
@@ -253,12 +325,10 @@
     },
     {
       "origin": "NO_DENSITY_BAND",
-      "rows": 5,
-      "sites": 2581,
+      "rows": 1,
+      "sites": 1,
       "reasons": {
-        "PLANT": "no governed band mix for PLANT in INTEGRATED_OIL_GAS, so the band is left unknown - borrowing another site type's bands would re-price these 1 sites against a shape nobody established for them",
-        "STORE": "no governed band mix for STORE in INTEGRATED_OIL_GAS, so the band is left unknown - borrowing another site type's bands would re-price these 662 sites against a shape nobody established for them",
-        "CAMPUS": "no governed band mix for CAMPUS in INTEGRATED_OIL_GAS, so the band is left unknown - borrowing another site type's bands would re-price these 1 sites against a shape nobody established for them"
+        "PLANT": "no governed band mix for PLANT in INTEGRATED_OIL_GAS, so the band is left unknown - borrowing another site type's bands would re-price these 1 sites against a shape nobody established for them"
       },
       "note": "these rows carry no density band, so serviceability cannot be resolved for them and their sites are treated as deliverable. The sector mix has no row for their site type, and another type's bands are not borrowed."
     }
@@ -337,8 +407,8 @@
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-12T15:04:26.961793+00:00",
-  "run_seconds": 22.3,
+  "run_started": "2026-10-12T15:23:31.427171+00:00",
+  "run_seconds": 23.5,
   "preflight_conditions": 8,
   "promotion": {
     "promoted": true,

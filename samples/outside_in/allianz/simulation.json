@@ -1,13 +1,13 @@
 {
-  "simulation_run_id": "26d60f9f-3275-44b6-b492-b381f0f97ce4",
+  "simulation_run_id": "f5f951cf-57e9-4405-9b45-1c73e8b972ee",
   "case_id": "d306c1b6-5c12-4709-b0b8-bda47b7763d1",
   "model_version": "sim-2.7.0",
   "seed": 20260101,
   "ensemble_size": 25,
   "status": "SUCCEEDED",
-  "output_hash": "589494701bdb1b26fde69e4cc686e66afc4a3a3ce55f220e9e6ad76afdf4d290",
-  "started_at": "2026-10-12 15:04:27.996521+00:00",
-  "ended_at": "2026-10-12 15:04:33.507767+00:00",
+  "output_hash": "b5bdd9145e49707fbfdded35e62aa031e22c040c90d2ec639f82890778f140e0",
+  "started_at": "2026-10-12 15:23:35.926599+00:00",
+  "ended_at": "2026-10-12 15:23:45.166165+00:00",
   "params": {
     "footprint": [
       {
@@ -37,10 +37,26 @@
       {
         "country": "DE",
         "archetype": "STORE",
-        "sites": 2500,
+        "sites": 377,
         "industry": null,
         "count_source": null,
-        "density": null
+        "density": "RURAL"
+      },
+      {
+        "country": "DE",
+        "archetype": "STORE",
+        "sites": 944,
+        "industry": null,
+        "count_source": null,
+        "density": "SUBURBAN"
+      },
+      {
+        "country": "DE",
+        "archetype": "STORE",
+        "sites": 1179,
+        "industry": null,
+        "count_source": null,
+        "density": "URBAN"
       },
       {
         "country": "FR",
@@ -61,10 +77,26 @@
       {
         "country": "FR",
         "archetype": "STORE",
-        "sites": 2516,
+        "sites": 380,
         "industry": null,
         "count_source": null,
-        "density": null
+        "density": "RURAL"
+      },
+      {
+        "country": "FR",
+        "archetype": "STORE",
+        "sites": 949,
+        "industry": null,
+        "count_source": null,
+        "density": "SUBURBAN"
+      },
+      {
+        "country": "FR",
+        "archetype": "STORE",
+        "sites": 1187,
+        "industry": null,
+        "count_source": null,
+        "density": "URBAN"
       },
       {
         "country": "IT",
@@ -85,29 +117,10 @@
     ],
     "site_inclusion_rule": null,
     "homogeneity": {
-      "rows": [
-        {
-          "country": "DE",
-          "archetype": "STORE",
-          "density": null,
-          "sites": 2500,
-          "uniform_by_construction": false,
-          "note": "2,500 sites priced as one block at the STORE tier - a STORE is individually significant, so a single bandwidth, product pair and dual-access probability across 2,500 of them is a strong assumption",
-          "narrows_it": "add a density band - the row currently claims a whole country's estate is alike"
-        },
-        {
-          "country": "FR",
-          "archetype": "STORE",
-          "density": null,
-          "sites": 2516,
-          "uniform_by_construction": false,
-          "note": "2,516 sites priced as one block at the STORE tier - a STORE is individually significant, so a single bandwidth, product pair and dual-access probability across 2,516 of them is a strong assumption",
-          "narrows_it": "add a density band - the row currently claims a whole country's estate is alike"
-        }
-      ],
-      "sites_in_large_rows": 5016,
-      "share_in_large_rows": "0.765",
-      "share_asserted_alike": "0.765",
+      "rows": [],
+      "sites_in_large_rows": 0,
+      "share_in_large_rows": "0.000",
+      "share_asserted_alike": "0.000",
       "basis": "sites in rows above the reporting band; nothing is refused for this - the row prices and the claim is disclosed"
     },
     "backbone": {
@@ -1825,12 +1838,16 @@
       ],
       "by_access_technology": [
         {
+          "access_technology": "PON",
+          "sites": 5016
+        },
+        {
           "access_technology": "ETHERNET_FIBRE",
           "sites": 1136
         }
       ],
       "unserviceable": 0,
-      "note": "36 of 6553 site(s) take a different product or tier from the one their type asks for, and 0 can be served by nothing at all. A uniform estate is an assumption; this is what the density bands say about it.",
+      "note": "36 of 6553 site(s) take a different product or tier from the one their type asks for, and 0 can be served by nothing at all. 1136 of 6553 are delivered over a bearer other than PON (1136 on ETHERNET_FIBRE), which is a different circuit at a different rate. A uniform estate is an assumption; this is what the density bands say about it.",
       "table_rows": 68,
       "table_basis": "GOVERNED"
     },

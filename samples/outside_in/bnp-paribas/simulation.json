@@ -1,13 +1,13 @@
 {
-  "simulation_run_id": "fd8b3850-9f36-4377-9bab-9ff50611ae5c",
+  "simulation_run_id": "a954d8f8-01c5-4a73-82df-1e800f764d97",
   "case_id": "7af28f40-a494-461a-b6dd-da0b42200b72",
   "model_version": "sim-2.7.0",
   "seed": 20260101,
   "ensemble_size": 25,
   "status": "SUCCEEDED",
-  "output_hash": "e5416d02713030bc38bdbef8bb4211ce892cf2a423f4a00872eddaccc8618608",
-  "started_at": "2026-10-12 15:05:22.285868+00:00",
-  "ended_at": "2026-10-12 15:05:25.560721+00:00",
+  "output_hash": "a18bedfc284fdc5ecc78244de47d49918cf4a63933a0394735b4d734f6f277b3",
+  "started_at": "2026-10-12 15:24:26.679966+00:00",
+  "ended_at": "2026-10-12 15:24:30.703530+00:00",
   "params": {
     "footprint": [
       {
@@ -21,10 +21,26 @@
       {
         "country": "BE",
         "archetype": "STORE",
-        "sites": 182,
+        "sites": 34,
         "industry": null,
         "count_source": null,
-        "density": null
+        "density": "RURAL"
+      },
+      {
+        "country": "BE",
+        "archetype": "STORE",
+        "sites": 59,
+        "industry": null,
+        "count_source": null,
+        "density": "SUBURBAN"
+      },
+      {
+        "country": "BE",
+        "archetype": "STORE",
+        "sites": 89,
+        "industry": null,
+        "count_source": null,
+        "density": "URBAN"
       },
       {
         "country": "FR",
@@ -53,10 +69,26 @@
       {
         "country": "FR",
         "archetype": "STORE",
-        "sites": 1474,
+        "sites": 272,
         "industry": null,
         "count_source": null,
-        "density": null
+        "density": "RURAL"
+      },
+      {
+        "country": "FR",
+        "archetype": "STORE",
+        "sites": 481,
+        "industry": null,
+        "count_source": null,
+        "density": "SUBURBAN"
+      },
+      {
+        "country": "FR",
+        "archetype": "STORE",
+        "sites": 721,
+        "industry": null,
+        "count_source": null,
+        "density": "URBAN"
       },
       {
         "country": "IT",
@@ -1326,10 +1358,14 @@
         {
           "access_technology": "ETHERNET_FIBRE",
           "sites": 1628
+        },
+        {
+          "access_technology": "PON",
+          "sites": 1474
         }
       ],
       "unserviceable": 0,
-      "note": "8 of 4404 site(s) take a different product or tier from the one their type asks for, and 0 can be served by nothing at all. A uniform estate is an assumption; this is what the density bands say about it.",
+      "note": "8 of 4404 site(s) take a different product or tier from the one their type asks for, and 0 can be served by nothing at all. 1474 of 4404 are delivered over a bearer other than ETHERNET_FIBRE (1474 on PON), which is a different circuit at a different rate. A uniform estate is an assumption; this is what the density bands say about it.",
       "table_rows": 34,
       "table_basis": "GOVERNED"
     },

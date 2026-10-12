@@ -1,13 +1,13 @@
 {
-  "simulation_run_id": "97a8ba1c-a3ad-449b-93f8-06f3e4581608",
+  "simulation_run_id": "1d2d9d5a-e404-4ef3-a498-a366d085e9e4",
   "case_id": "fab3cb28-e3ff-4c9e-a9d1-a220efeb3ac0",
   "model_version": "sim-2.7.0",
   "seed": 20260101,
   "ensemble_size": 25,
   "status": "SUCCEEDED",
-  "output_hash": "7440dc773ec07de51d1ebe108deda8588a7aa1b3ed56588baa8c7373e885da92",
-  "started_at": "2026-10-12 15:04:34.928709+00:00",
-  "ended_at": "2026-10-12 15:04:39.958208+00:00",
+  "output_hash": "cd0c18ba9a47b8a91ae79392ba6a8e974922a736059b91b114e65eef3054493e",
+  "started_at": "2026-10-12 15:23:33.479694+00:00",
+  "ended_at": "2026-10-12 15:23:37.563231+00:00",
   "params": {
     "footprint": [
       {
@@ -24,7 +24,7 @@
         "sites": 220,
         "industry": null,
         "count_source": null,
-        "density": null
+        "density": "RURAL"
       },
       {
         "country": "DE",
@@ -64,7 +64,7 @@
         "sites": 2000,
         "industry": null,
         "count_source": null,
-        "density": null
+        "density": "RURAL"
       },
       {
         "country": "FR",
@@ -80,7 +80,7 @@
         "sites": 600,
         "industry": null,
         "count_source": null,
-        "density": null
+        "density": "RURAL"
       },
       {
         "country": "GB",
@@ -1992,12 +1992,16 @@
       ],
       "by_access_technology": [
         {
+          "access_technology": "PON",
+          "sites": 2820
+        },
+        {
           "access_technology": "ETHERNET_FIBRE",
           "sites": 1804
         }
       ],
       "unserviceable": 0,
-      "note": "3 of 4625 site(s) take a different product or tier from the one their type asks for, and 0 can be served by nothing at all. A uniform estate is an assumption; this is what the density bands say about it.",
+      "note": "3 of 4625 site(s) take a different product or tier from the one their type asks for, and 0 can be served by nothing at all. 1804 of 4625 are delivered over a bearer other than PON (1804 on ETHERNET_FIBRE), which is a different circuit at a different rate. A uniform estate is an assumption; this is what the density bands say about it.",
       "table_rows": 102,
       "table_basis": "GOVERNED"
     },
