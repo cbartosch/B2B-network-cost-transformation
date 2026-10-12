@@ -420,6 +420,37 @@ def highlights_md(rows):
     return "\n".join(out)
 
 
+def backfill_fx(root, rates):
+    """Fill in an FX rate a manifest could not find when it ran.
+
+    CR-09. reference.fx_rate is USD-quoted - every row is USD->X - so only
+    USD had a direct line to EUR and CHF, GBP and anything else went out as
+    DECLARED_UNKNOWN. The rates were in the table the whole time, one
+    division apart. Three of twenty companies could not be compared.
+
+    Only a manifest with no rate is touched; one that found its own is never
+    overwritten. Marked, because a rate read after the fact is not the rate
+    the run read, even when it is the same number.
+    """
+    touched = []
+    for d in sorted(root.iterdir()):
+        f = d / "manifest.json" if d.is_dir() else None
+        if not f or not f.exists():
+            continue
+        m = json.loads(f.read_text("utf-8"))
+        fx = m.get("fx_to_eur") or {}
+        if fx.get("rate"):
+            continue
+        fresh = rates.get((m.get("base_currency") or "").upper())
+        if not fresh or not fresh.get("rate"):
+            continue
+        m["fx_to_eur"] = {**fresh, "backfilled": True}
+        f.write_text(json.dumps(m, indent=2, default=str,
+                                ensure_ascii=False), encoding="utf-8")
+        touched.append(d.name)
+    return touched
+
+
 def backfill_build(root, build):
     """Stamp the build onto manifests written before the driver could read it.
 
@@ -447,6 +478,9 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", required=True)
     ap.add_argument("--build", default="", help="stamp manifests missing one")
+    ap.add_argument("--fx", default="",
+                    help="JSON of currency -> fx_to_eur, to fill in a rate a "
+                         "manifest could not find when it ran")
     args = ap.parse_args()
     root = pathlib.Path(args.out)
 
@@ -454,6 +488,13 @@ def main():
         done = backfill_build(root, args.build)
         if done:
             print(f"stamped build {args.build} onto {len(done)} manifest(s)")
+
+    if args.fx:
+        rates = json.loads(pathlib.Path(args.fx).read_text("utf-8"))
+        done = backfill_fx(root, {k.upper(): v for k, v in rates.items()})
+        if done:
+            print(f"backfilled an FX rate onto {len(done)} manifest(s): "
+                  f"{', '.join(done)}")
 
     rows = []
     for d in sorted(root.iterdir()):

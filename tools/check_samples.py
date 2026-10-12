@@ -12,6 +12,7 @@ because 98 of its 106 agent runs had failed against an unreachable provider.
 import argparse
 import csv
 import json
+from decimal import Decimal as D
 import pathlib
 import sys
 
@@ -74,6 +75,28 @@ def check(out: pathlib.Path, baseline: pathlib.Path | None,
                     f"a regression against the committed set")
             elif researched > before:
                 notes.append(f"{slug}: {before} -> {researched} researched")
+
+        # CR-09: the EUR column is derived, so it has to be derivable. A
+        # figure that does not equal local x rate is either a stale
+        # conversion or a rate that changed under it, and both look like a
+        # number somebody can compare across currencies.
+        fx = r.get("fx_rate_to_eur")
+        for local_col, eur_col in (("baseline_base", "baseline_base_eur"),
+                                   ("best_saving_base", "best_saving_base_eur"),
+                                   ("one_time_cost_base",
+                                    "one_time_cost_base_eur")):
+            local, eur = r.get(local_col), r.get(eur_col)
+            if not fx or eur in (None, "", "DECLARED_UNKNOWN"):
+                continue
+            try:
+                diff = abs(D(local) * D(fx) - D(eur))
+            except Exception:
+                fails.append(f"{slug}: {eur_col} is not a number: {eur!r}")
+                continue
+            if diff > D("0.01"):
+                fails.append(
+                    f"{slug}: {eur_col} is {eur}, but {local_col} x "
+                    f"{fx} is {D(local) * D(fx)}")
 
         if slug in repaired and researched < MIN_RESEARCHED:
             fails.append(

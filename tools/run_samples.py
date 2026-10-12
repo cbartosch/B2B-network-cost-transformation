@@ -617,6 +617,21 @@ def fx_to_eur(currency):
     if cur == "EUR":
         return {"rate": "1.0", "as_of": None, "basis": "base currency",
                 "evidence_grade": None, "source": "identity"}
+    def _grade(*rows):
+        """The weakest leg governs. A cross-rate is no better evidenced than
+        its worst half, and reporting the better grade would make a derived
+        rate look stronger than either number behind it."""
+        order = ["A", "B", "C", "D", "E", "F"]
+        grades = [getattr(r, "evidence_grade", None) for r in rows]
+        found = [g for g in grades if g in order]
+        return max(found, key=order.index) if found else None
+
+    def _oldest(*rows):
+        """A rate is only as fresh as its stalest leg."""
+        dates = [str(getattr(r, "as_of", "") or "") for r in rows]
+        real = [d for d in dates if d]
+        return min(real) if real else None
+
     with db.SessionLocal() as s:
         row = s.execute(select(db.fx_rate).where(
             db.fx_rate.c.from_currency == cur,
@@ -633,6 +648,44 @@ def fx_to_eur(currency):
                         "evidence_grade": getattr(row, "evidence_grade", None),
                         "source": getattr(row, "source", None),
                         "convention": getattr(row, "convention", None)}
+
+        if row is None:
+            # A cross-rate through the table's own base, where both legs
+            # exist. reference.fx_rate is USD-quoted - every row is USD->X -
+            # so only USD had a direct line to EUR, and CHF and GBP figures
+            # went out as DECLARED_UNKNOWN while USD->CHF, USD->GBP and
+            # USD->EUR were all sitting in the table. Three of twenty
+            # companies could not be compared for want of one division.
+            #
+            # Arithmetic on two governed rates, not a new number: both legs
+            # are named, the date is the older of the two and the grade the
+            # weaker, because a derived rate must not read as fresher or
+            # better evidenced than the figures behind it.
+            for base in ("USD", "EUR"):
+                if base == cur:
+                    continue
+                leg_cur = s.execute(select(db.fx_rate).where(
+                    db.fx_rate.c.from_currency == base,
+                    db.fx_rate.c.to_currency == cur)).first()
+                leg_eur = s.execute(select(db.fx_rate).where(
+                    db.fx_rate.c.from_currency == base,
+                    db.fx_rate.c.to_currency == "EUR")).first()
+                if not (leg_cur and leg_eur):
+                    continue
+                rc, re_ = D(str(leg_cur.rate)), D(str(leg_eur.rate))
+                if rc == 0:
+                    continue
+                return {
+                    "rate": str(re_ / rc),
+                    "as_of": _oldest(leg_cur, leg_eur),
+                    "basis": f"cross-rate via {base}",
+                    "legs": [f"{base}->{cur}={leg_cur.rate}"
+                             f"@{getattr(leg_cur, 'as_of', '') or '?'}",
+                             f"{base}->EUR={leg_eur.rate}"
+                             f"@{getattr(leg_eur, 'as_of', '') or '?'}"],
+                    "evidence_grade": _grade(leg_cur, leg_eur),
+                    "source": "derived from reference.fx_rate",
+                    "convention": getattr(leg_eur, "convention", None)}
     if row is None:
         # Declared, not guessed. A missing rate makes the EUR column unknown,
         # not approximate.

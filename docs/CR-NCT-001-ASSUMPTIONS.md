@@ -207,6 +207,39 @@ would pass whatever the helper did.
 
 ---
 
+## CR-09 · currency comparability
+
+**No assumed parameters.** Every rate comes from `reference.fx_rate`.
+
+`fx_rate_to_eur`, `fx_date`, `fx_evidence_grade` and EUR columns for
+baseline, saving and one-time cost were already in the summary. What was
+missing was that `reference.fx_rate` is **USD-quoted** — every row is
+`USD->X` — so only USD had a direct line to EUR. CHF, GBP and anything else
+went out as `DECLARED_UNKNOWN` while `USD->CHF`, `USD->GBP` and `USD->EUR`
+all sat in the table, one division apart. Three of twenty companies could
+not be compared.
+
+A cross-rate is arithmetic on two governed rates, not a new number, and it
+is reported as derived:
+
+| | |
+| --- | --- |
+| `basis` | `cross-rate via USD` |
+| `legs` | both source rates with their own dates |
+| `as_of` | the **older** of the two — a rate is only as fresh as its stalest leg |
+| `evidence_grade` | the **weaker** of the two — a derived rate must not read as better evidenced than either half |
+
+So Swiss francs convert at `1.088875` dated `2026-01-01` and grade E, not at
+the EUR leg's `2026-09-17` and grade B. A currency with no path to EUR is
+still `DECLARED_UNKNOWN`.
+
+**Local currency remains the source of truth.** The EUR column is derived
+and the gate checks it: `local x rate = eur` for baseline, saving and
+one-time cost on every row, within 0.01. Verified by mutation — a wrong
+conversion fails the gate.
+
+---
+
 ## Open, and blocking
 
 | item | needed from the owner |

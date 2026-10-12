@@ -140,11 +140,17 @@
     "PLANT": "ASSUMED_PUBLIC_DISCLOSURE"
   },
   "fx_to_eur": {
-    "rate": null,
-    "as_of": null,
-    "basis": "DECLARED_UNKNOWN",
-    "evidence_grade": null,
-    "source": null
+    "rate": "1.088875",
+    "as_of": "2026-01-01",
+    "basis": "cross-rate via USD",
+    "legs": [
+      "USD->CHF=0.80000000@2026-01-01",
+      "USD->EUR=0.87110000@2026-09-17"
+    ],
+    "evidence_grade": "E",
+    "source": "derived from reference.fx_rate",
+    "convention": "SPOT",
+    "backfilled": true
   },
   "seed": 20260101,
   "ensemble_size": 25,
