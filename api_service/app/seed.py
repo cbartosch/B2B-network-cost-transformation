@@ -248,6 +248,31 @@ THRESHOLDS = [
     # rather than _require, so the default already covers it and nothing needed
     # the row. A steward wanting to raise the grade once real transition data
     # exists changes the field, not a threshold.
+    # CR-06: how much wider than the rate card's own band an estimate should
+    # be reported, by what the value rests on.
+    #
+    # The band used to come from the seeded price priors alone, so every
+    # company in the twenty-company sample reported low/base between 0.688
+    # and 0.735 whatever its evidence - a company with two researched domains
+    # showed the same width as one with seventeen. The price band is real and
+    # is kept; this widens it for everything the price band cannot see.
+    #
+    # 1.00 for evidenced public: a fully evidenced estimate keeps exactly the
+    # rate card's band and nothing is added. Every other class is a multiple
+    # of that, so the scale has a fixed point rather than a floor somebody
+    # chose. All ASSUMED - see docs/CR-NCT-001-ASSUMPTIONS.md.
+    ("range_policy", "widen_evidenced_public", "1.00"),
+    ("range_policy", "widen_client_confirmed", "1.15"),
+    ("range_policy", "widen_derived_public", "1.20"),
+    ("range_policy", "widen_analyst_entered_scope", "1.35"),
+    ("range_policy", "widen_benchmark_prior", "1.40"),
+    ("range_policy", "widen_analyst_asserted_prior", "1.50"),
+    ("range_policy", "widen_simulated", "1.55"),
+    # Applied on top, scaled by the share of agent-routed domains that came
+    # back with no evidence. A domain nobody could research is uncertainty
+    # the component origins do not carry: the price and the quantity may both
+    # be benchmark-solid while the estate they describe was never checked.
+    ("range_policy", "widen_unevidenced_domain_share", "0.50"),
     ("footprint_policy", "max_sites_per_archetype_row", "100"),
     # The same rule for a row that says where its sites are. 100 was set when a
     # row meant (country, archetype) and every site in it was claimed identical

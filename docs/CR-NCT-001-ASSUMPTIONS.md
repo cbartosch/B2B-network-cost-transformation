@@ -99,6 +99,51 @@ changes. All three are named in `programme.not_modelled` on every estimate.
 
 ---
 
+## CR-06 · evidence-based ranges
+
+The rate card's own band is real and is kept. These widen it for what the
+card cannot see. All are judgements with no source — the CR asks for them
+documented with rationale, which is what this table is.
+
+| parameter | value | class | rationale | sign-off |
+| --- | --- | --- | --- | --- |
+| `widen_evidenced_public` | 1.00 | FIXED POINT | A fully evidenced estimate is reported at exactly the card's width. The scale has a fixed point rather than a floor somebody chose, and `validate` refuses any other value. | ☐ |
+| `widen_client_confirmed` | 1.15 | ASSUMED | First-party and not independently checkable; internal records go stale and the person answering may not be the one who knows. | ☐ |
+| `widen_derived_public` | 1.20 | ASSUMED | A figure computed from evidence carries the evidence's error plus the derivation's. | ☐ |
+| `widen_analyst_entered_scope` | 1.35 | ASSUMED | A scoped figure nobody sourced. Wider than derived, narrower than a pure benchmark because somebody chose it for this estate. | ☐ |
+| `widen_benchmark_prior` | 1.40 | ASSUMED | A governed rate for a population, applied to one company. The card's band describes dispersion *within* the benchmark, not whether the benchmark fits. | ☐ |
+| `widen_analyst_asserted_prior` | 1.50 | ASSUMED | An unverified recollection. Weaker than a benchmark, which at least has a published basis. | ☐ |
+| `widen_simulated` | 1.55 | ASSUMED | A drawn value. The widest, because nothing outside the model attests to it. | ☐ |
+| `widen_unevidenced_domain_share` | 0.50 | ASSUMED | Coefficient on the unresearched-domain share. At 0.5, an estate with no domains evidenced is reported 50% wider than one fully evidenced, before the origin term. | ☐ |
+
+**Two terms, because they are two different ignorances.** The value-weighted
+origin mix takes the *weaker* of each component's quantity and unit-cost
+origin — a perfectly evidenced site count priced off a benchmark is only as
+good as the benchmark. The coverage term is scaled by the share of
+agent-routed domains that returned no evidence, which no component origin can
+see: price and quantity may both be benchmark-solid while the estate they
+describe was never checked.
+
+**The base never moves.** Widening spreads the band about it. A version that
+moved the base would be re-forecasting under the name of honesty, and a test
+pins it.
+
+**An origin nobody mapped takes the widest multiplier**, not 1.0. An
+unrecognised origin is one this policy has never been asked about, and
+treating it as evidenced would let a new origin silently narrow every band
+that used it.
+
+### What this does to the sample
+
+`low/base` spread went from 0.688–0.735 to 0.543–0.629 — roughly double the
+variation, with the 14-domain companies clearly widest. It remains somewhat
+clustered because all twenty genuinely *are* similarly evidenced: every one
+is ~85% `ANALYST_ENTERED_SCOPE` quantity on 100% `BENCHMARK_PRIOR` pricing.
+That residual clustering is a true property of the set, not a defect in the
+widening.
+
+---
+
 ## Open, and blocking
 
 | item | needed from the owner |

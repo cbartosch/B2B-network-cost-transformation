@@ -663,6 +663,84 @@ def lever_stage_mix(scenario: dict, levers_by_id: dict) -> dict:
     return mix
 
 
+def evidence_widening(components, *, policy, evidenced_domain_share=None):
+    """How much wider the reported band should be than the rate card says.
+
+    CR-06. The price priors give each component a low/base/high, and that was
+    the whole of the estimate's uncertainty. It is price dispersion: it knows
+    nothing about whether the site count was researched or asserted, or
+    whether the domains behind the estate were ever evidenced. Across the
+    twenty-company sample it produced low/base between 0.688 and 0.735 for
+    every company, two researched domains or seventeen.
+
+    Two terms, because they are two different ignorances:
+
+    * the value-weighted origin mix, taking the *weaker* of each component's
+      quantity and unit-cost origin - a perfectly evidenced site count priced
+      off a benchmark is only as good as the benchmark;
+    * the share of agent-routed domains that came back with no evidence,
+      which no component origin can see. The price and the quantity may both
+      be benchmark-solid while the estate they describe was never checked.
+
+    Returns the factor and the working, so a band can be explained rather
+    than asserted.
+    """
+    tot = total(components).base
+    if tot <= 0:
+        return D(1), {"origin_factor": "1", "coverage_factor": "1",
+                      "factor": "1", "note": "no priced value"}
+
+    mix: dict[str, Decimal] = {}
+    acc = D(0)
+    for c in components:
+        # The weaker of the two origins governs: a component is no better
+        # known than its worst-known input.
+        w = max(policy.widen_for(c.quantity_origin),
+                policy.widen_for(c.unit_cost_origin))
+        share = c.value.base / tot
+        acc += share * w
+        key = f"{c.quantity_origin}/{c.unit_cost_origin}"
+        mix[key] = mix.get(key, D(0)) + share
+
+    coverage = D(1)
+    if evidenced_domain_share is not None:
+        unevidenced = D(1) - D(str(evidenced_domain_share))
+        if unevidenced < 0:
+            unevidenced = D(0)
+        coverage = D(1) + unevidenced * D(
+            str(policy.widen_unevidenced_domain_share))
+
+    factor = acc * coverage
+    return factor, {
+        "origin_factor": as_str(acc),
+        "coverage_factor": as_str(coverage),
+        "factor": as_str(factor),
+        "evidenced_domain_share": (None if evidenced_domain_share is None
+                                   else str(evidenced_domain_share)),
+        "origin_mix": {k: as_str(v) for k, v in sorted(mix.items())},
+        "basis": (
+            "The rate card's own band, widened for what the card cannot see: "
+            "the origin mix of the priced value and the share of domains "
+            "that returned no evidence. A fully evidenced estimate is "
+            "widened by exactly 1.0 and keeps the card's band."),
+    }
+
+
+def widen(r: Range, factor) -> Range:
+    """Spread a band about its base. The base never moves.
+
+    Widening is a statement about uncertainty, not about the number. A
+    version of this that moved the base would be re-forecasting under the
+    name of honesty.
+    """
+    f = D(str(factor))
+    low = r.base - (r.base - r.low) * f
+    high = r.base + (r.high - r.base) * f
+    # A cost or a saving cannot be negative, and a band wide enough to cross
+    # zero is saying "possibly nothing", which is what zero means here.
+    return Range(low if low > 0 else D(0), r.base, high)
+
+
 def origin_breakdown(components) -> dict:
     """Value by quantity origin, so the interface can show where the share comes
     from rather than only that it exists."""
@@ -686,7 +764,7 @@ def scenarios(components: list[Component], levers: list[dict],
               # from no assumptions is not.
               *, transition_policy=None, sites: int = 0,
               monthly_run_rate=None, site_mix=None,
-              circuits_band=None) -> dict:
+              circuits_band=None, range_factor=None) -> dict:
     """Apply each lever only to the cost layers it names, compounding on each
     component's remaining value. Layer composition is preserved into the target,
     which is what makes the target-side simulated share meaningful."""
@@ -973,13 +1051,24 @@ def scenarios(components: list[Component], levers: list[dict],
             },
             "label": label,
             "target_tco": target.to_dict(),
-            "gross_run_rate_savings": saving.to_dict(),
+            # CR-06. The base is untouched; only the spread about it moves.
+            "gross_run_rate_savings": (
+                widen(saving, range_factor).to_dict() if range_factor is not None
+                else saving.to_dict()),
+            "gross_run_rate_savings_unwidened": (
+                saving.to_dict() if range_factor is not None else None),
             "savings_pct_base": (f"{(saving.base / current.base):.3f}"
                                  if current.base else "0.000"),
             "levers": applied,
             # Net of what it costs to get there. Absent when no transition
             # policy is supplied: a missing payback is honest, and one computed
             # from no assumptions is not.
+            # CR-06: the reported saving band carries the estate's evidence,
+            # not only the rate card's price dispersion. The transition model
+            # below is handed the unwidened band deliberately - payback is an
+            # arithmetic identity on the base case, and widening its inputs
+            # would move a payback without anything about the programme
+            # having changed.
             **({"transition": transition.net(
                     gross_annual=saving, sites=sites, site_mix=site_mix,
                     # CR-05: the simulated circuit band, so the programme
@@ -1101,12 +1190,15 @@ def monthly_run_rate(components: list[Component]):
     return total(components).base / MONTHS
 
 
-def current_tco(components: list[Component]) -> dict:
+def current_tco(components: list[Component], *, range_factor=None) -> dict:
     by_layer: dict[str, Range] = {}
     for c in components:
         by_layer[c.layer] = by_layer.get(c.layer, Range.zero()) + c.value
-    return {"by_layer": {k: v.to_dict() for k, v in sorted(by_layer.items())},
-            "total": total(components).to_dict(),
+    f = range_factor
+    _w = (lambda r: widen(r, f).to_dict()) if f is not None else (
+        lambda r: r.to_dict())
+    return {"by_layer": {k: _w(v) for k, v in sorted(by_layer.items())},
+            "total": _w(total(components)),
             "simulated_share": str(simulated_share(components)),
             "origin_breakdown": origin_breakdown(components),
             "components": [c.to_dict() for c in components]}

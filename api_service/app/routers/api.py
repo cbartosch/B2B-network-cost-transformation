@@ -140,6 +140,41 @@ def _research_policy(s):
                                   "detail": str(exc)})
 
 
+def _evidenced_domain_share(session, case_id: str):
+    """Agent-routed domains that came back with an agent's verdict.
+
+    Counted from the dispositions, not from what was requested: a domain the
+    fallback settled BENCHMARK_PRIOR after a provider failure was never
+    researched, and counting it would report an outage as coverage. Returns
+    None where no domain is agent-routed at all, so the caller can tell
+    "nothing evidenced" from "nothing to evidence".
+    """
+    routed = {n for n, a in research.DOMAIN_AGENT_MAP.items() if a}
+    if not routed:
+        return None
+    rows = session.execute(select(
+        db.domain_disposition.c.domain_no,
+        db.domain_disposition.c.agent_run_id).where(
+            db.domain_disposition.c.case_id == case_id)).all()
+    got = {r.domain_no for r in rows if r.agent_run_id} & routed
+    return D(len(got)) / D(len(routed))
+
+
+def _range_policy(s):
+    """CR-06: how much wider than the rate card to report a band.
+
+    A 503 like every other governed policy. The alternative is reporting the
+    price card's band as though it were the estimate's uncertainty, which is
+    what the twenty-company sample did - every company between 0.688 and
+    0.735 of base however much or little was known about it.
+    """
+    try:
+        return policy.RangePolicy.from_rows(_thresholds(s, "range_policy"))
+    except (policy.PolicyIncomplete, policy.PolicyInvalid) as exc:
+        raise HTTPException(503, {"error": "governed range policy unusable",
+                                  "detail": str(exc)})
+
+
 def _transition_policy(s):
     """What it costs to get to the target estate.
 
@@ -3478,7 +3513,13 @@ def _run_anchor_estimate(s, *, case_id, case_row, payload,
     if blockers:
         raise HTTPException(409, {"error": "V0 cannot publish", "blockers": blockers})
 
-    cur = estimate.current_tco(components)
+    # CR-06: the band this estimate reports carries the estate's
+    # evidence, not only the rate card's price dispersion. The
+    # base never moves - only the spread about it.
+    _range_factor, _range_basis = estimate.evidence_widening(
+        components, policy=_range_policy(s),
+        evidenced_domain_share=_evidenced_domain_share(s, case_id))
+    cur = estimate.current_tco(components, range_factor=_range_factor)
     lv = [dict(r._mapping) for r in s.execute(select(db.lever)).all()]
     levers_by_id = {l["lever_id"]: l for l in lv}
     # With the transition policy, so each scenario carries what it
@@ -3490,6 +3531,7 @@ def _run_anchor_estimate(s, *, case_id, case_row, payload,
         transition_policy=_transition_policy(s),
         sites=estimate.site_count(components),
         monthly_run_rate=estimate.monthly_run_rate(components),
+        range_factor=_range_factor,
         # No site_mix, deliberately. The ANCHOR method derives a baseline
         # from a disclosed cost line and never simulates an estate, so there
         # is no circuit count to build a cost over. transition.net falls back
@@ -4025,7 +4067,13 @@ def run_estimate(case_id: str, payload: EstimateIn):
             raise HTTPException(409, {"error": "V0 publication refused (0.3C)",
                                       "coverage": cov})
 
-        cur = estimate.current_tco(components)
+        # CR-06: the band this estimate reports carries the estate's
+        # evidence, not only the rate card's price dispersion. The
+        # base never moves - only the spread about it.
+        _range_factor, _range_basis = estimate.evidence_widening(
+            components, policy=_range_policy(s),
+            evidenced_domain_share=_evidenced_domain_share(s, case_id))
+        cur = estimate.current_tco(components, range_factor=_range_factor)
         lv = [dict(r._mapping) for r in s.execute(select(db.lever)).all()]
         levers_by_id = {l["lever_id"]: l for l in lv}
         # With the transition policy, so each scenario carries what it
@@ -4037,6 +4085,7 @@ def run_estimate(case_id: str, payload: EstimateIn):
             transition_policy=_transition_policy(s),
             sites=estimate.site_count(components),
             monthly_run_rate=estimate.monthly_run_rate(components),
+            range_factor=_range_factor,
             # CR-04: sites and circuits per archetype, from the estate the
             # simulation drew. Cost per site then follows the estate rather
             # than a flat charge - a site that drew a second access carries

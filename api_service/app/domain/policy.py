@@ -576,6 +576,89 @@ class TriangulationPolicy:
 # assigns with `self.set_name = ...`, and the outer frozen=True then installs
 # the raising __setattr__ but will not replace an __init__ already present in
 # the class __dict__. The result was a class that could not be constructed at
+@dataclass(frozen=True)
+class RangePolicy:
+    """CR-06: how much wider than the rate card an estimate is reported.
+
+    The seeded price priors give every component a band, and that band was
+    the only width the estimate had. It describes price dispersion and
+    nothing else - not whether the site count was researched or guessed, not
+    whether the domains behind it were evidenced. Two companies pricing off
+    the same card got the same width however differently they were known:
+    across the twenty-company sample, low/base ran 0.688 to 0.735 whether a
+    company had two researched domains or seventeen.
+    """
+    set_name: str
+    widen_evidenced_public: Decimal
+    widen_client_confirmed: Decimal
+    widen_derived_public: Decimal
+    widen_analyst_entered_scope: Decimal
+    widen_benchmark_prior: Decimal
+    widen_analyst_asserted_prior: Decimal
+    widen_simulated: Decimal
+    widen_unevidenced_domain_share: Decimal
+
+    _BY_ORIGIN = {
+        "EVIDENCED_PUBLIC": "widen_evidenced_public",
+        "CLIENT_CONFIRMED": "widen_client_confirmed",
+        "DERIVED_PUBLIC": "widen_derived_public",
+        "ANALYST_ENTERED_SCOPE": "widen_analyst_entered_scope",
+        "BENCHMARK_PRIOR": "widen_benchmark_prior",
+        "ANALYST_ASSERTED_PRIOR": "widen_analyst_asserted_prior",
+        "SIMULATED": "widen_simulated",
+    }
+
+    def widen_for(self, origin: str) -> Decimal:
+        """An origin nobody mapped takes the widest multiplier on the scale.
+
+        Not 1.0. An unrecognised origin is one this policy has never been
+        asked about, and treating it as fully evidenced would let a new
+        origin silently narrow every band that used it.
+        """
+        field = self._BY_ORIGIN.get(str(origin or "").upper())
+        if field:
+            return Decimal(str(getattr(self, field)))
+        return max(Decimal(str(getattr(self, f)))
+                   for f in self._BY_ORIGIN.values())
+
+    @classmethod
+    def from_rows(cls, rows: dict, set_name: str = "range_policy"):
+        r = lambda k: _require(rows, k, set_name)            # noqa: E731
+        policy = cls(
+            set_name=set_name,
+            widen_evidenced_public=r("widen_evidenced_public"),
+            widen_client_confirmed=r("widen_client_confirmed"),
+            widen_derived_public=r("widen_derived_public"),
+            widen_analyst_entered_scope=r("widen_analyst_entered_scope"),
+            widen_benchmark_prior=r("widen_benchmark_prior"),
+            widen_analyst_asserted_prior=r("widen_analyst_asserted_prior"),
+            widen_simulated=r("widen_simulated"),
+            widen_unevidenced_domain_share=r(
+                "widen_unevidenced_domain_share"))
+        policy.validate()
+        return policy
+
+    def validate(self):
+        ev = Decimal(str(self.widen_evidenced_public))
+        if ev != Decimal("1"):
+            raise PolicyInvalid(
+                f"{self.set_name}: widen_evidenced_public is {ev}, not 1. It "
+                f"is the fixed point of the scale - a fully evidenced "
+                f"estimate keeps exactly the rate card's band - and moving "
+                f"it rescales every other class silently.")
+        for f in self._BY_ORIGIN.values():
+            v = Decimal(str(getattr(self, f)))
+            if v < 1:
+                raise PolicyInvalid(
+                    f"{self.set_name}.{f} is {v}. A multiplier below 1 would "
+                    f"report a weaker input as more certain than an "
+                    f"evidenced one.")
+        if Decimal(str(self.widen_unevidenced_domain_share)) < 0:
+            raise PolicyInvalid(
+                f"{self.set_name}.widen_unevidenced_domain_share is "
+                f"negative: unresearched domains cannot narrow a band.")
+
+
 # all: every TransitionPolicy(...) raised FrozenInstanceError on the first
 # field. Frozen is the intent and is kept.
 @dataclass(frozen=True)
