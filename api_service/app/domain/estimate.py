@@ -685,7 +685,8 @@ def scenarios(components: list[Component], levers: list[dict],
               # always got - a missing payback is honest, a payback computed
               # from no assumptions is not.
               *, transition_policy=None, sites: int = 0,
-              monthly_run_rate=None, site_mix=None) -> dict:
+              monthly_run_rate=None, site_mix=None,
+              circuits_band=None) -> dict:
     """Apply each lever only to the cost layers it names, compounding on each
     component's remaining value. Layer composition is preserved into the target,
     which is what makes the target-side simulated share meaningful."""
@@ -981,6 +982,10 @@ def scenarios(components: list[Component], levers: list[dict],
             # from no assumptions is not.
             **({"transition": transition.net(
                     gross_annual=saving, sites=sites, site_mix=site_mix,
+                    # CR-05: the simulated circuit band, so the programme
+                    # carries the same uncertainty the estate does rather
+                    # than a single point.
+                    circuits_band=circuits_band,
                     monthly_run_rate=monthly_run_rate or D(0),
                     policy=transition_policy)}
                if transition_policy is not None and sites else {}),

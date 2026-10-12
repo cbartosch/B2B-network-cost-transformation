@@ -17,10 +17,18 @@ import pytest
 from app.domain import transition
 from app.domain.money import D, Range
 
+# The seeded transition_policy, as a stand-in so these stay unit tests. The
+# component shares and the reference density are required fields on the real
+# policy - CR-04 reads them whenever an estate mix is supplied, CR-05 reads
+# them always, because delivery capacity is expressed in circuits.
 POLICY = types.SimpleNamespace(
     one_time_cost_per_site_low="400", one_time_cost_per_site_base="900",
     one_time_cost_per_site_high="1800", dual_running_months="3",
-    sites_migrated_per_month="120", evidence_grade="E")
+    sites_migrated_per_month="120", evidence_grade="E",
+    one_time_share_hardware="0.35", one_time_share_migration="0.25",
+    one_time_share_integration="0.20",
+    one_time_share_project_management="0.20",
+    one_time_reference_circuits_per_site="1.25")
 
 
 def _net(sites=1842, gross=("1000000", "1500000", "2000000"),
@@ -62,7 +70,133 @@ def test_the_programme_duration_is_reported_beside_the_payback():
     sixteen: savings do not begin until a site is cut over."""
     out = _net()
     assert out["programme_months"] == 16          # 1842 sites at 120 a month
-    assert "not a schedule" in out["note"]
+    # The note used to warn that "a payback shorter than the programme is
+    # arithmetic, not a schedule". It was describing its own output - the
+    # payback divided total cost by the full-year saving and so assumed the
+    # whole estate was live on day one. CR-05 computes it against the
+    # rollout, so the note says what the rollout is instead of apologising
+    # for ignoring it.
+    assert "Savings accrue as circuits are cut over" in out["note"]
+    assert "16 month(s)" in out["note"]
+
+
+# ---------------------------------------------------------------- CR-05
+
+def test_the_payback_is_never_faster_than_if_everything_were_live_on_day_one():
+    """The invariant that makes a ramped payback a ramped payback.
+
+    Savings arrive as circuits are cut over, so cumulative net can only ever
+    turn positive later than it would if the full run-rate saving started in
+    month one - never sooner. If this ever fails, the ramp is being applied
+    to the cost and not to the saving, or not at all.
+    """
+    for sites in (50, 400, 1842, 16406):
+        out = _net(sites=sites)
+        simple, ramped = out["payback_simple_months"], out["payback_months"]["base"]
+        assert simple and ramped, (sites, simple, ramped)
+        assert ramped >= simple, (
+            f"{sites} sites: ramped payback {ramped} is faster than the "
+            f"day-one payback {simple}, which is not possible")
+
+
+def test_a_long_programme_no_longer_reports_a_short_payback():
+    """The case CR-NCT-001 named: McDonald's, 16,406 sites, a 137-month
+    programme and a 12-month payback. The payback assumed the whole estate
+    was live immediately, which for an eleven-year rollout is not a number
+    anybody could have."""
+    out = _net(sites=16406, gross=("12000000", "15000000", "18000000"),
+               monthly="7000000")
+    assert out["programme_months"] > 36
+    assert out["programme_flag"] == "LONG_PROGRAMME"
+    assert out["payback_months"]["base"] > out["payback_simple_months"], (
+        "an estate that takes years to migrate cannot pay back at the "
+        "day-one rate")
+
+
+def test_a_short_programme_is_not_flagged():
+    out = _net(sites=400)
+    assert out["programme_months"] <= 36
+    assert out["programme_flag"] is None
+
+
+def test_the_programme_is_reported_as_a_band():
+    out = _net(sites=1842)
+    band = out["programme_months_band"]
+    assert band["low"] <= band["base"] <= band["high"]
+    assert band["base"] == out["programme_months"]
+
+
+def test_capacity_stays_in_sites_when_no_estate_mix_is_known():
+    """Converting to circuits would assert the estate runs at the reference
+    density, which is a claim and not a default."""
+    out = _net(sites=1842)
+    assert out["programme"]["capacity_unit"] == "sites"
+    assert out["programme"]["capacity_per_month"] == "120.00"
+    assert "no estate mix was supplied" in out["programme"]["basis"]
+
+
+def test_a_dual_access_estate_takes_longer_than_a_single_circuit_one():
+    """The behaviour the governed site rate could not express: 1,000 data
+    centres at two circuits each is twice the cutover work of 1,000 stores
+    at one, and used to be reported as the same eight-month programme."""
+    stores = [{"archetype": "STORE", "sites": 1000, "circuits": 1000}]
+    dcs = [{"archetype": "DC", "sites": 1000, "circuits": 2000}]
+    a = transition.net(gross_annual=Range(D("1000000"), D("1500000"), D("2000000")),
+                       sites=1000, monthly_run_rate=D("700000"),
+                       policy=POLICY, site_mix=stores)
+    b = transition.net(gross_annual=Range(D("1000000"), D("1500000"), D("2000000")),
+                       sites=1000, monthly_run_rate=D("700000"),
+                       policy=POLICY, site_mix=dcs)
+    assert b["programme_months"] > a["programme_months"], (
+        a["programme_months"], b["programme_months"])
+    assert a["programme"]["capacity_unit"] == "circuits"
+
+
+def test_the_wave_plan_accounts_for_every_circuit():
+    """A rollout that loses or invents work is not a plan."""
+    plan = transition.wave_plan(circuits=D("1842"), policy=POLICY)
+    total = sum(D(w["circuits"]) for w in plan["waves"])
+    assert total == D("1842")
+    assert plan["waves"][-1]["cumulative_share"] == "1.00"
+    assert len(plan["waves"]) == plan["months"]
+
+
+def test_what_the_wave_model_does_not_claim():
+    """Pilot waves, a capacity ramp and site dependencies are owner inputs
+    and none is sourced, so the plan names them rather than inventing a
+    shape nobody chose."""
+    plan = transition.wave_plan(circuits=D("1000"), policy=POLICY)
+    assert set(plan["not_modelled"]) == {
+        "pilot_wave", "capacity_ramp", "site_dependencies"}
+    assert plan["parallel_waves"] == 1
+
+
+def test_parallel_waves_shorten_the_programme_proportionally():
+    """The parameter an owner's delivery plan drops into."""
+    one = transition.wave_plan(circuits=D("1200"), policy=POLICY)
+    two = transition.wave_plan(circuits=D("1200"), policy=POLICY,
+                               parallel_waves=2)
+    assert two["months"] * 2 == one["months"]
+
+
+def test_a_saving_that_never_repays_has_no_payback():
+    """None, not a large number, which would read as a long payback."""
+    out = _net(sites=1842, gross=("0", "0", "0"))
+    assert out["payback_months"]["base"] is None
+    assert out["payback_simple_months"] is None
+
+
+def test_the_reconciliation_note_appears_only_on_a_real_gap():
+    """CR-05 asks for a note wherever the two paybacks differ by more than
+    25%. The comparison is against total transition cost, not one-time cost
+    alone - see docs/CR-NCT-001-ROOT-CAUSE.md F3, where the CR's own formula
+    omits dual-running and would fire on every small estate."""
+    big = _net(sites=16406, gross=("12000000", "15000000", "18000000"),
+               monthly="7000000")
+    assert big["payback_reconciliation_note"], (
+        "a 137-month rollout differs from the day-one payback by far more "
+        "than 25% and must say so")
+    assert "runs" in big["payback_reconciliation_note"]
 
 
 def test_dual_running_scales_with_duration_not_only_size():

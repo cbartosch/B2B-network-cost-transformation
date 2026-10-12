@@ -170,8 +170,133 @@ def programme_months(*, sites: int, policy) -> int:
     return -(-sites // rate)          # ceiling division
 
 
+# --------------------------------------------------------------- CR-05
+def capacity_per_month(policy, *, in_circuits: bool) -> D:
+    """Delivery capacity, in whichever unit the estate is measured in.
+
+    `sites_migrated_per_month` is governed and is a rate of *sites*, which
+    made the programme a function of site count alone: every company in the
+    sample came out at ceil(sites / 120), from 1 month to 137, and a
+    dual-access data centre counted the same as a single-circuit store.
+
+    A cutover is per circuit - a site with a backup path is cut over twice -
+    so where the estate mix is known, capacity is converted at the same
+    reference density the one-time cost build uses. At that density it
+    reproduces the governed rate exactly; away from it, an estate drawing
+    more circuits per site takes longer.
+
+    Where no mix is known, it stays a site rate. There is no circuit
+    information to convert, and converting anyway would assert the estate
+    runs at the reference density - which is a claim, not a default. That
+    distinction is why a caller without a mix still gets ceil(sites / 120).
+    """
+    rate = D(policy.sites_migrated_per_month)
+    if not in_circuits:
+        return rate
+    return rate * D(policy.one_time_reference_circuits_per_site)
+
+
+def _months_for(units, policy, *, in_circuits: bool) -> int:
+    cap = capacity_per_month(policy, in_circuits=in_circuits)
+    if cap <= 0 or D(units) <= 0:
+        return 0
+    return int((D(units) / cap).to_integral_value(rounding="ROUND_CEILING"))
+
+
+def wave_plan(*, circuits, policy, parallel_waves: int = 1,
+              in_circuits: bool = True) -> dict:
+    """The rollout, month by month, as circuits cut over.
+
+    A flat capacity-limited schedule: every month takes as many circuits as
+    capacity allows until the estate is done. `parallel_waves` multiplies
+    capacity and defaults to 1, so the shape is explicit and an owner's
+    delivery plan drops in without touching this code.
+
+    Deliberately not modelled: a pilot wave, a capacity ramp, and
+    dependencies between sites. CR-NCT-001 lists those as owner inputs and
+    none of them is sourced. Inventing a ramp would put a programme shape
+    nobody chose behind a number that reads as planned.
+    """
+    total = D(circuits)
+    cap = (capacity_per_month(policy, in_circuits=in_circuits)
+           * D(max(1, int(parallel_waves))))
+    waves, done = [], D(0)
+    month = 0
+    while done < total and month < 1200:
+        month += 1
+        take = min(cap, total - done)
+        done += take
+        waves.append({"month": month, "circuits": as_str(take),
+                      "cumulative_share": as_str(done / total) if total else "0"})
+    return {
+        "months": month,
+        "capacity_per_month": as_str(cap),
+        "capacity_unit": "circuits" if in_circuits else "sites",
+        "parallel_waves": int(max(1, int(parallel_waves))),
+        "waves": waves,
+        "basis": (
+            f"Capacity-limited rollout at {as_str(cap)} "
+            f"{'circuit' if in_circuits else 'site'}(s) a month"
+            + (f", derived from the governed "
+               f"{policy.sites_migrated_per_month} sites a month at the "
+               f"reference density of "
+               f"{policy.one_time_reference_circuits_per_site} circuits per "
+               f"site" if in_circuits else
+               f" - the governed site rate, used because no estate mix was "
+               f"supplied and there is no circuit count to convert")
+            + ". Pilot waves, capacity ramp and inter-site dependencies are "
+              "not modelled - they are owner inputs and none is sourced."),
+        "not_modelled": ["pilot_wave", "capacity_ramp", "site_dependencies"],
+    }
+
+
+def ramped_payback(*, one_time_total, dual_total, annual_saving, circuits,
+                   policy, parallel_waves: int = 1, horizon_months: int = 600,
+                   in_circuits: bool = True):
+    """The first month cumulative net benefit turns positive.
+
+    The previous payback divided total cost by the full-year saving, which
+    assumes the whole estate is migrated on day one. For a 137-month
+    programme that is not a payback anybody could have: it reported twelve
+    months for an estate that would still be migrating eleven years later.
+
+    Savings accrue with the estate. A circuit cut over in month m saves from
+    month m+1 - the month it is cut over is the month it is disrupted, not
+    the month it pays. One-time cost is charged as each circuit migrates, and
+    dual-running is spread across the rollout in the same proportion, so the
+    cost lands when the work happens rather than all at the start.
+
+    Returns None where the saving never repays the cost within the horizon,
+    rather than a large number that would read as a long payback.
+    """
+    total = D(circuits)
+    annual = D(annual_saving)
+    if total <= 0 or annual <= 0:
+        return None, []
+
+    plan = wave_plan(circuits=total, policy=policy,
+                     parallel_waves=parallel_waves, in_circuits=in_circuits)
+    monthly_saving_full = annual / D(12)
+    otc, dual = D(one_time_total), D(dual_total)
+
+    schedule, cum, migrated = [], D(0), D(0)
+    for m in range(1, horizon_months + 1):
+        wave = plan["waves"][m - 1] if m <= len(plan["waves"]) else None
+        took = D(wave["circuits"]) if wave else D(0)
+        # Saving is earned on what was already live at the start of the month.
+        earned = monthly_saving_full * (migrated / total)
+        share = (took / total) if total else D(0)
+        spend = (otc + dual) * share
+        cum += earned - spend
+        migrated += took
+        schedule.append({"month": m, "cumulative_net": as_str(cum)})
+        if cum > 0:
+            return m, schedule
+    return None, schedule
+
+
 def net(*, gross_annual: Range, sites: int, monthly_run_rate, policy,
-        site_mix=None) -> dict:
+        site_mix=None, circuits_band=None) -> dict:
     """Net savings and payback, with what they rest on.
 
     `gross_annual` is the run-rate saving once the estate is fully migrated.
@@ -200,6 +325,63 @@ def net(*, gross_annual: Range, sites: int, monthly_run_rate, policy,
             return None
         return int((cost / annual * 12).to_integral_value(rounding="ROUND_CEILING"))
 
+    # CR-05. Circuits drive the rollout; fall back to the site count where no
+    # mix was supplied, which is the one-circuit-per-site reading.
+    in_circuits = bool(site_mix)
+    circuits_base = (sum(D(str(m.get("circuits") or m.get("sites") or 0))
+                         for m in site_mix) if site_mix else D(sites))
+    # The ensemble publishes circuits as a band; an older run, and the
+    # endpoint fixtures, publish a single number. Both are accepted rather
+    # than assumed, because assuming the band shape raised AttributeError on
+    # an int and took four endpoint tests down with it.
+    band = circuits_band if isinstance(circuits_band, dict) else {}
+    if circuits_band is not None and not band:
+        c_low = c_high = D(str(circuits_band))
+    else:
+        c_low = D(str(band.get("low", circuits_base)))
+        c_high = D(str(band.get("high", circuits_base)))
+
+    plan = wave_plan(circuits=circuits_base, policy=policy,
+                     in_circuits=in_circuits)
+    months_base = plan["months"]
+    # Crossed, like the payback below: the fast programme is the one with
+    # fewer circuits to cut over.
+    months_low = _months_for(min(c_low, c_high), policy,
+                             in_circuits=in_circuits)
+    months_high = _months_for(max(c_low, c_high), policy,
+                              in_circuits=in_circuits)
+
+    # Payback against the rollout, not against day one.
+    ramped_base, _sched = ramped_payback(
+        one_time_total=otc.base, dual_total=dual.base,
+        annual_saving=gross_annual.base, circuits=circuits_base,
+        policy=policy, in_circuits=in_circuits)
+    ramped_opt, _ = ramped_payback(
+        one_time_total=otc.low, dual_total=dual.low,
+        annual_saving=gross_annual.high, circuits=min(c_low, c_high),
+        policy=policy, in_circuits=in_circuits)
+    ramped_pess, _ = ramped_payback(
+        one_time_total=otc.high, dual_total=dual.high,
+        annual_saving=gross_annual.low, circuits=max(c_low, c_high),
+        policy=policy, in_circuits=in_circuits)
+
+    # The reconciliation field CR-05 asks for, with the cost term the CR's
+    # own formula omits. See docs/CR-NCT-001-ROOT-CAUSE.md F3: one-time alone
+    # understates every small estate, where dual-running dominates because
+    # the whole estate migrates at once.
+    simple = _payback(total_cost.base, gross_annual.base)
+    recon = None
+    if simple and ramped_base:
+        gap = abs(ramped_base - simple) / simple
+        if gap > D("0.25"):
+            recon = (
+                f"Ramped payback is {ramped_base} month(s) against a simple "
+                f"{simple}, a gap of {gap:.0%}. The simple figure divides "
+                f"total transition cost by the full-year saving, which is "
+                f"the saving only once every site is live; this programme "
+                f"runs {months_base} month(s), so for most of it the estate "
+                f"is part-migrated and saving proportionally less.")
+
     # Deliberately crossed: the pessimistic payback pairs the high cost with
     # the low saving, because those are the same world. Pairing high with high
     # would report a payback nobody could have.
@@ -222,12 +404,26 @@ def net(*, gross_annual: Range, sites: int, monthly_run_rate, policy,
         # Year one only: the saving accrues as sites migrate, and the
         # transition is paid during the same period.
         "first_year_net": as_str(gross_annual.base - total_cost.base),
+        # CR-05: the first month cumulative net benefit turns positive,
+        # given the rollout. The keys are unchanged so every reader keeps
+        # working; what they mean is now a payback somebody could have.
         "payback_months": {
-            "optimistic": _payback(total_cost.low, gross_annual.high),
-            "base": _payback(total_cost.base, gross_annual.base),
-            "pessimistic": _payback(total_cost.high, gross_annual.low),
+            "optimistic": ramped_opt,
+            "base": ramped_base,
+            "pessimistic": ramped_pess,
         },
-        "programme_months": programme_months(sites=sites, policy=policy),
+        "payback_definition": (
+            "first month in which cumulative net benefit turns positive, "
+            "with savings accruing as circuits are cut over"),
+        # Kept for reconciliation, with the dual-running term included.
+        "payback_simple_months": simple,
+        "payback_reconciliation_note": recon,
+        "run_rate_saving": gross_annual.to_dict(),
+        "programme_months": months_base,
+        "programme_months_band": {"low": months_low, "base": months_base,
+                                  "high": months_high},
+        "programme_flag": "LONG_PROGRAMME" if months_base > 36 else None,
+        "programme": plan,
         "payback_basis": (
             f"Modelled. Transition cost is evidence grade "
             f"{policy.evidence_grade} - an expert assumption with no quoted "
@@ -236,10 +432,15 @@ def net(*, gross_annual: Range, sites: int, monthly_run_rate, policy,
             f"{len(NOT_MODELLED)} cost categories this model has no basis "
             f"for."),
         "not_modelled": list(NOT_MODELLED),
+        # The old note warned that "a payback shorter than the programme is
+        # arithmetic, not a schedule". It was describing its own output: the
+        # payback divided total cost by the full-year saving and so assumed
+        # a fully migrated estate from day one. The warning is no longer
+        # needed because the condition it warned about can no longer arise.
         "note": (
-            f"Savings do not begin until a site is cut over, and this "
-            f"programme runs {programme_months(sites=sites, policy=policy)} "
-            f"month(s) at {policy.sites_migrated_per_month} sites a month. A "
-            f"payback shorter than the programme is arithmetic, not a "
-            f"schedule."),
+            f"Savings accrue as circuits are cut over. This programme runs "
+            f"{months_base} month(s) at "
+            f"{plan['capacity_per_month']} {plan['capacity_unit'][:-1]}(s) a month, and "
+            f"the payback above is the first month cumulative net benefit "
+            f"turns positive against that rollout."),
     }

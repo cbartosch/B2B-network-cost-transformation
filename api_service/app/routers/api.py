@@ -4047,7 +4047,11 @@ def run_estimate(case_id: str, payload: EstimateIn):
             # cost by two thirds.
             site_mix=estimate.site_mix_from_estate(
                 (sim.output or {}).get("estate"),
-                (sim.params or {}).get("footprint")))
+                (sim.params or {}).get("footprint")),
+            # CR-05: the ensemble's own circuit spread drives the programme
+            # band, so a programme length carries the estate's uncertainty
+            # instead of reading as exact.
+            circuits_band=(sim.output or {}).get("circuits"))
 
         scenario_shares = {k: D(v["simulated_share"]) for k, v in scen.items()}
         sim_share = max(scenario_shares.values()) if scenario_shares else D(0)

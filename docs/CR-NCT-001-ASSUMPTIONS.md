@@ -69,6 +69,36 @@ claim than one measured on all of them, and the field says which.
 
 ---
 
+## CR-05 · programme and payback
+
+No new assumed parameters. The wave model reuses CR-04's reference density
+and the governed `sites_migrated_per_month`; what changed is the unit
+capacity is expressed in.
+
+| decision | class | rationale |
+| --- | --- | --- |
+| Capacity in **circuits** where the estate mix is known | DERIVED | A cutover is per circuit: a dual-access site is cut over twice. Converted at the reference density, so at that density it reproduces the governed site rate exactly. |
+| Capacity in **sites** where no mix is known | GOVERNED | Converting without circuit information would assert the estate runs at the reference density. That is a claim, not a default, so a caller without a mix still gets `ceil(sites / 120)`. |
+| Savings earned on circuits live **at the start** of the month | ASSUMED | The month a site is cut over is the month it is disrupted, not the month it pays. The conservative reading. |
+| One-time and dual-running spread **pro-rata with migration** | ASSUMED | Cost lands when the work happens. The alternative — all cost in month one — would understate payback. |
+
+**A consequence worth stating.** Expressing capacity in circuits means a
+simple estate migrates faster than the governed site rate: McDonald's 16,406
+stores draw about 1.04 circuits each, below the 1.25 reference, so the
+programme falls from 137 months to 114. That is the model's claim and it
+follows from the unit change — it is not a tuning. An owner who believes
+capacity is genuinely per *site visit* rather than per circuit should say so,
+and the `in_circuits` switch already exists to express it.
+
+### Deliberately not modelled
+
+`pilot_wave`, `capacity_ramp` and `site_dependencies`. CR-NCT-001 §9 lists
+wave parameters as owner inputs and none is sourced. `parallel_waves`
+defaults to 1 and is the parameter a delivery plan drops into without code
+changes. All three are named in `programme.not_modelled` on every estimate.
+
+---
+
 ## Open, and blocking
 
 | item | needed from the owner |
