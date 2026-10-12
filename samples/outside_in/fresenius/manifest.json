@@ -93,6 +93,12 @@
       "archetype": "STORE",
       "sites": 1009,
       "density": "URBAN"
+    },
+    {
+      "country": "US",
+      "archetype": "WAREHOUSE",
+      "sites": 3,
+      "density": "SUBURBAN"
     }
   ],
   "footprint_provenance": [
@@ -139,9 +145,16 @@
       "density": null
     },
     {
+      "country": "US",
+      "archetype": "WAREHOUSE",
+      "sites": 3,
+      "origin": "RESEARCHED",
+      "density": null
+    },
+    {
       "origin": "DENSITY_FROM_MIX",
-      "rows": 1,
-      "sites": 2624,
+      "rows": 2,
+      "sites": 2627,
       "filled": [
         {
           "country": "US",
@@ -154,6 +167,16 @@
             "RURAL": 404,
             "SUBURBAN": 942,
             "URBAN": 1009
+          }
+        },
+        {
+          "country": "US",
+          "archetype": "WAREHOUSE",
+          "sites": 3,
+          "basis": "INDUSTRY_DEFAULT",
+          "mix_industry": "HOSPITAL",
+          "bands": {
+            "SUBURBAN": 3
           }
         }
       ],
@@ -172,7 +195,8 @@
     "BRANCH": "ASSUMED_PUBLIC_DISCLOSURE",
     "DC": "RESEARCHED",
     "LARGE_OFFICE": "ASSUMED_PUBLIC_DISCLOSURE",
-    "STORE": "RESEARCHED"
+    "STORE": "RESEARCHED",
+    "WAREHOUSE": "RESEARCHED"
   },
   "fx_to_eur": {
     "rate": "1.0",
@@ -226,13 +250,13 @@
   ],
   "estimate_inputs": {
     "method": "BUILD_UP",
-    "users": 68712,
+    "users": 68748,
     "ops_cost_per_site_base": 900,
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-12T18:02:35.103495+00:00",
-  "run_seconds": 13.9,
+  "run_started": "2026-10-12T19:00:08.794729+00:00",
+  "run_seconds": 71.7,
   "preflight_conditions": 8,
   "promotion": {
     "promoted": true,

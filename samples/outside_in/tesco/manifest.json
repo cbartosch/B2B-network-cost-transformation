@@ -67,8 +67,20 @@
     },
     {
       "country": "IE",
+      "archetype": "LARGE_OFFICE",
+      "sites": 1,
+      "density": "URBAN"
+    },
+    {
+      "country": "IE",
       "archetype": "STORE",
       "sites": 170,
+      "density": "SUBURBAN"
+    },
+    {
+      "country": "IE",
+      "archetype": "WAREHOUSE",
+      "sites": 1,
       "density": "SUBURBAN"
     }
   ],
@@ -79,7 +91,7 @@
       "sites": 25,
       "origin": "DISCLOSURE_KEPT_RESEARCH_FOUND_FEWER",
       "density": "SUBURBAN",
-      "research_said": 2,
+      "research_said": 1,
       "disclosure_said": 25
     },
     {
@@ -93,8 +105,10 @@
       "country": "GB",
       "archetype": "STORE",
       "sites": 3700,
-      "origin": "PUBLIC_DISCLOSURE",
-      "density": "SUBURBAN"
+      "origin": "DISCLOSURE_KEPT_RESEARCH_FOUND_FEWER",
+      "density": "SUBURBAN",
+      "research_said": 806,
+      "disclosure_said": 3700
     },
     {
       "country": "IE",
@@ -105,15 +119,31 @@
     },
     {
       "country": "IE",
+      "archetype": "LARGE_OFFICE",
+      "sites": 1,
+      "origin": "RESEARCHED",
+      "density": null
+    },
+    {
+      "country": "IE",
       "archetype": "STORE",
       "sites": 170,
-      "origin": "PUBLIC_DISCLOSURE",
-      "density": "SUBURBAN"
+      "origin": "DISCLOSURE_KEPT_RESEARCH_FOUND_FEWER",
+      "density": "SUBURBAN",
+      "research_said": 113,
+      "disclosure_said": 170
+    },
+    {
+      "country": "IE",
+      "archetype": "WAREHOUSE",
+      "sites": 1,
+      "origin": "RESEARCHED",
+      "density": null
     },
     {
       "origin": "DENSITY_FROM_MIX",
-      "rows": 1,
-      "sites": 1,
+      "rows": 3,
+      "sites": 3,
       "filled": [
         {
           "country": "IE",
@@ -123,6 +153,26 @@
           "mix_industry": "GROCERY_RETAIL",
           "bands": {
             "URBAN": 1
+          }
+        },
+        {
+          "country": "IE",
+          "archetype": "LARGE_OFFICE",
+          "sites": 1,
+          "basis": "INDUSTRY_DEFAULT",
+          "mix_industry": "GROCERY_RETAIL",
+          "bands": {
+            "URBAN": 1
+          }
+        },
+        {
+          "country": "IE",
+          "archetype": "WAREHOUSE",
+          "sites": 1,
+          "basis": "INDUSTRY_DEFAULT",
+          "mix_industry": "GROCERY_RETAIL",
+          "bands": {
+            "SUBURBAN": 1
           }
         }
       ],
@@ -138,8 +188,9 @@
   "scope_note": "Baseline covers 2 country(ies) (GB, IE) and the site types listed in sites_origin. The group's full country and site-type count is not sourced, so the share of the group this represents is DECLARED_UNKNOWN. This is baseline_in_scope, not a group baseline.",
   "sites_origin": {
     "DC": "RESEARCHED",
-    "LARGE_OFFICE": "ASSUMED_PUBLIC_DISCLOSURE",
-    "STORE": "ASSUMED_PUBLIC_DISCLOSURE"
+    "LARGE_OFFICE": "RESEARCHED",
+    "STORE": "ASSUMED_PUBLIC_DISCLOSURE",
+    "WAREHOUSE": "RESEARCHED"
   },
   "fx_to_eur": {
     "rate": "1.167224976550984858635937291",
@@ -197,13 +248,13 @@
   ],
   "estimate_inputs": {
     "method": "BUILD_UP",
-    "users": 46896,
+    "users": 46920,
     "ops_cost_per_site_base": 900,
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-12T18:02:17.345425+00:00",
-  "run_seconds": 9.1,
+  "run_started": "2026-10-12T18:59:14.380480+00:00",
+  "run_seconds": 34.9,
   "preflight_conditions": 8,
   "promotion": {
     "promoted": true,

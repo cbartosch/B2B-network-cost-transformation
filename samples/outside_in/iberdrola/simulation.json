@@ -1,13 +1,13 @@
 {
-  "simulation_run_id": "a11cdf34-eb2b-4700-86e7-e64576d0a794",
+  "simulation_run_id": "17593b80-3fc1-4f73-bec8-2f03213d6185",
   "case_id": "2ad772a6-f0e2-424e-8fc1-75ded97aad7f",
   "model_version": "sim-2.7.0",
   "seed": 20260101,
   "ensemble_size": 25,
   "status": "SUCCEEDED",
-  "output_hash": "0cfbcbffaa7d18b6869c93df58e4ce65b78d32f76cd00ac615381c3e30b34f96",
-  "started_at": "2026-10-12 18:02:33.112747+00:00",
-  "ended_at": "2026-10-12 18:02:34.831218+00:00",
+  "output_hash": "2585dc17b1d69db5e6525fe2cc80a1098c803b520e3433eb7fbcf477e9a9ee28",
+  "started_at": "2026-10-12 19:01:35.689615+00:00",
+  "ended_at": "2026-10-12 19:01:48.316020+00:00",
   "params": {
     "footprint": [
       {
@@ -73,6 +73,14 @@
         "industry": null,
         "count_source": null,
         "density": "URBAN"
+      },
+      {
+        "country": "GB",
+        "archetype": "WAREHOUSE",
+        "sites": 17,
+        "industry": null,
+        "count_source": null,
+        "density": null
       }
     ],
     "site_inclusion_rule": null,
@@ -1312,10 +1320,10 @@
     "model_version": "sim-2.7.0",
     "seed": 20260101,
     "ensemble_size": 25,
-    "sites": 2769,
+    "sites": 2786,
     "serviceability": {
       "counts": {
-        "DELIVERED": 2755,
+        "DELIVERED": 2772,
         "SUBSTITUTED": 14,
         "UNSERVICEABLE": 0
       },
@@ -1338,7 +1346,7 @@
         }
       ],
       "unserviceable": 0,
-      "note": "14 of 2769 site(s) take a different product or tier from the one their type asks for, and 0 can be served by nothing at all. 31 of 2769 are delivered over a bearer other than PON (31 on ETHERNET_FIBRE), which is a different circuit at a different rate. A uniform estate is an assumption; this is what the density bands say about it.",
+      "note": "14 of 2786 site(s) take a different product or tier from the one their type asks for, and 0 can be served by nothing at all. 31 of 2786 are delivered over a bearer other than PON (31 on ETHERNET_FIBRE), which is a different circuit at a different rate. A uniform estate is an assumption; this is what the density bands say about it.",
       "table_rows": 34,
       "table_basis": "GOVERNED"
     },
@@ -1500,21 +1508,21 @@
     ],
     "estate_truncated": 0,
     "sites_named": 0,
-    "sites_generated": 2769,
+    "sites_generated": 2786,
     "circuits": {
-      "low": 3604,
-      "base": 3631,
-      "high": 3655
+      "low": 3629,
+      "base": 3656,
+      "high": 3683
     },
     "circuits_primary": {
-      "low": 2769,
-      "base": 2769,
-      "high": 2769
+      "low": 2786,
+      "base": 2786,
+      "high": 2786
     },
     "circuits_backup": {
-      "low": 827,
-      "base": 854,
-      "high": 878
+      "low": 835,
+      "base": 862,
+      "high": 889
     },
     "products": [
       {
@@ -1577,7 +1585,7 @@
         "product": "MOBILE_5G",
         "role": "BACKUP",
         "bandwidth_mbps": 100,
-        "count": 532,
+        "count": 554,
         "service_class": "BEST_EFFORT",
         "density": "RURAL",
         "bearer_mbps": 100,
@@ -1596,10 +1604,21 @@
       },
       {
         "country": "GB",
+        "product": "BROADBAND_HFC",
+        "role": "BACKUP",
+        "bandwidth_mbps": 100,
+        "count": 8,
+        "service_class": "BEST_EFFORT",
+        "density": null,
+        "bearer_mbps": 100,
+        "access_technology": "HFC"
+      },
+      {
+        "country": "GB",
         "product": "BROADBAND_PON",
         "role": "BACKUP",
         "bandwidth_mbps": 1000,
-        "count": 17,
+        "count": 14,
         "service_class": "BEST_EFFORT",
         "density": "URBAN",
         "bearer_mbps": 1000,
@@ -1610,7 +1629,7 @@
         "product": "BROADBAND_PON",
         "role": "BACKUP",
         "bandwidth_mbps": 300,
-        "count": 10,
+        "count": 13,
         "service_class": "BEST_EFFORT",
         "density": "SUBURBAN",
         "bearer_mbps": 300,
@@ -1626,6 +1645,17 @@
         "density": "RURAL",
         "bearer_mbps": 100,
         "access_technology": "PON"
+      },
+      {
+        "country": "GB",
+        "product": "DIA",
+        "role": "PRIMARY",
+        "bandwidth_mbps": 100,
+        "count": 17,
+        "service_class": "DIA",
+        "density": null,
+        "bearer_mbps": 100,
+        "access_technology": null
       },
       {
         "country": "GB",
@@ -1654,7 +1684,7 @@
         "product": "MOBILE_5G",
         "role": "BACKUP",
         "bandwidth_mbps": 100,
-        "count": 275,
+        "count": 253,
         "service_class": "BEST_EFFORT",
         "density": "RURAL",
         "bearer_mbps": 100,
@@ -1662,13 +1692,13 @@
       }
     ],
     "dual_access_sites": {
-      "low": 827,
-      "base": 854,
-      "high": 878
+      "low": 835,
+      "base": 862,
+      "high": 889
     },
     "circuits_backbone": 8,
-    "circuits_per_site_base": 1.3113,
-    "implied_users": 22680,
+    "circuits_per_site_base": 1.3123,
+    "implied_users": 23700,
     "bandwidth_profile": {
       "CONTROL_CENTER": {
         "sites": 14,
@@ -1694,9 +1724,14 @@
         "sites": 40,
         "mbps_per_site": 1000,
         "mbps_total": 40000
+      },
+      "WAREHOUSE": {
+        "sites": 17,
+        "mbps_per_site": 100,
+        "mbps_total": 1700
       }
     },
-    "bandwidth_mbps_total": 447000,
+    "bandwidth_mbps_total": 448700,
     "diversity_state": "SIMULATED",
     "backbone": {
       "template_version": "1.0.0",
@@ -1726,12 +1761,12 @@
       "backbone_circuits": 8,
       "note": "One region with data centres (EUROPE_SOUTH), so there is no global core tier - a hub has nothing to reach across."
     },
-    "node_count": 2769,
-    "edge_count": 3631
+    "node_count": 2786,
+    "edge_count": 3656
   },
   "output_omitted": {
     "fields": [
-      "estate (2769 rows)",
+      "estate (2786 rows)",
       "sample_topology (2 rows)"
     ],
     "why": "per-site arrays, the same information the aggregates carry; tools/backfill_simulation.py --full keeps them"

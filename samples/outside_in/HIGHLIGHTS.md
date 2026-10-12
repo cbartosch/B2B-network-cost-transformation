@@ -134,7 +134,7 @@ Sources: [ARCEP (French telecom regulator)](https://en.arcep.fr/news/press-relea
 ## Allianz SE
 
 - **Industry** INSURANCE (entity resolution)
-- **Scope** DE, FR, IT, EUR, 6,553 sites (research merged with disclosure)
+- **Scope** DE, FR, IT, EUR, 6,584 sites (research merged with disclosure)
 - **Confidence** 0.332 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 2 source(s)
@@ -776,7 +776,7 @@ Sources: [germancompanyformation.com](https://germancompanyformation.com/guides/
 ## Fresenius SE & Co. KGaA
 
 - **Industry** HOSPITAL (entity resolution)
-- **Scope** DE, ES, US, EUR, 5,726 sites (research merged with disclosure)
+- **Scope** DE, ES, US, EUR, 5,729 sites (research merged with disclosure)
 - **Confidence** 0.338 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 7 source(s)
@@ -912,7 +912,7 @@ Sources: [germancompanyformation.com](https://germancompanyformation.com/guides/
 ## Iberdrola SA
 
 - **Industry** UTILITIES (entity resolution)
-- **Scope** ES, GB, EUR, 2,778 sites (research merged with disclosure)
+- **Scope** ES, GB, EUR, 2,795 sites (research merged with disclosure)
 - **Confidence** 0.325 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 8 source(s)
@@ -1325,7 +1325,7 @@ Sources: [germancompanyformation.com](https://germancompanyformation.com/guides/
 ## McDonald's Corporation
 
 - **Industry** QSR_RESTAURANTS (entity resolution)
-- **Scope** US, GB, DE, USD, 16,407 sites (research merged with disclosure)
+- **Scope** US, GB, DE, USD, 16,670 sites (research merged with disclosure)
 - **Confidence** 0.331 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 10 source(s)
@@ -2288,7 +2288,7 @@ Sources: [Siemens AG](https://press.siemens.com/global/en/pressrelease/siemens-e
 ## Tesco PLC
 
 - **Industry** GROCERY_RETAIL (entity resolution)
-- **Scope** GB, IE, GBP, 3,908 sites (research merged with disclosure)
+- **Scope** GB, IE, GBP, 3,910 sites (research merged with disclosure)
 - **Confidence** 0.381 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 9 source(s)

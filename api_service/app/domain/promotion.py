@@ -232,6 +232,87 @@ def anchor_candidate(q: dict) -> bool:
     return triangulate.parse_value(q.get("value")) is not None
 
 
+# Units that denote countable PREMISES, so a quantity in them is an estate
+# count rather than something else about the estate.
+#
+# The test was `"site" in unit`, and research almost never says "site" - it
+# says what the thing is. 35 findings across the twenty-company sample carried
+# an archetype-led label and a two-letter country and were declined on the
+# unit alone: "stores", "hotels", "offices", "restaurants", "substations",
+# "distribution centres", "bank branches", "agencies (points de vente)".
+#
+# An allowlist rather than a blocklist, because the failure modes are not
+# symmetric. A premises noun this does not know is declined and visible; a
+# non-premises unit let through is promoted silently into a site count. Two
+# of those 35 were "employees" - a headcount against an archetype-led label,
+# which under a blocklist would have become that many sites.
+PREMISES_UNITS = frozenset({
+    "site", "store", "shop", "outlet", "hotel", "restaurant", "office",
+    "branch", "agency", "location", "depot", "warehouse", "plant",
+    "factory", "clinic", "hospital", "centre", "center", "terminal",
+    "premise", "property", "building", "facility", "campus",
+    "mill", "refinery", "quarry", "lab", "laboratory", "showroom",
+    "dealership", "kiosk", "forecourt", "station",
+})
+
+# Deliberately NOT premises, though each is a countable thing in a place.
+#
+# A distribution substation, a network node, a tower, a cabinet: grid and
+# network assets, not an estate of offices and shops. Iberdrola's research
+# returns 30,000 GB substations, and promoting that would replace a 2,769-site
+# estate with a grid inventory priced as if every one took an enterprise
+# circuit. test_promotion.test_a_count_whose_unit_is_not_sites_is_still_declined
+# makes exactly this call and it is the right one - the unit gate is what
+# keeps that judgement with a person.
+#
+# Listed rather than merely omitted, because "substation" ends in a premises
+# noun's shape and the next person widening this list will reach for it.
+NOT_PREMISES = frozenset({
+    "substation", "node", "tower", "cabinet", "mast", "pole", "cell",
+    "meter", "circuit", "connection", "customer", "subscriber",
+})
+
+# A count that is not of an estate that exists today.
+#
+# "hotels in pipeline" and "hotels opened" both pass the unit test and only
+# one of them is an estate. A planned or targeted count promoted as current
+# overstates the footprint, and the overstatement is invisible once it is a
+# row. "opened" is kept deliberately - it is a count of things that exist.
+NOT_YET_BUILT = ("pipeline", "planned", "under construction", "target",
+                 "forecast", "expected", "by 20", "commitment", "ambition",
+                 "to open", "proposed")
+
+
+def _singular(word: str) -> str:
+    """Enough stemming to match a plural unit, and no more."""
+    if word.endswith("ies") and len(word) > 4:
+        return word[:-3] + "y"
+    if word.endswith("ses") or word.endswith("xes") or word.endswith("ches"):
+        return word[:-2]
+    if word.endswith("s") and not word.endswith("ss"):
+        return word[:-1]
+    return word
+
+
+def is_premises_unit(unit) -> bool:
+    """Does this unit count premises?
+
+    Word by word, so "employees" cannot match "premise" by substring and
+    "distribution centres" can match on "centre". Punctuation is split on
+    because the real data says "agencies (points de vente)".
+    """
+    text = str(unit or "").lower()
+    if any(hint in text for hint in NOT_YET_BUILT):
+        return False
+    words = [_singular(w) for w in "".join(
+        ch if ch.isalpha() else " " for ch in text).split() if w]
+    # An excluded asset anywhere in the unit decides it, so "substations"
+    # cannot be rescued by a premises noun sitting beside it.
+    if any(w in NOT_PREMISES for w in words):
+        return False
+    return any(w in PREMISES_UNITS for w in words)
+
+
 def archetype_of(label) -> str:
     """The archetype a finding's label names: its leading token.
 
@@ -280,13 +361,16 @@ def _classify(q: dict) -> str:
     # omitted what it had been asked for.
     #
     # Still conservative, and deliberately: "WAREHOUSE/BRANCH - ..." names
-    # two archetypes and stays unclassified, "NETWORK_SITE - ... substations"
-    # fails `"site" in unit` and stays unclassified. And classification only
+    # two archetypes and stays unclassified, and a finding with no country or
+    # a multi-country one - "FR+BE" - stays unclassified too, because a
+    # footprint row is keyed on a country and there is nothing to key it on.
+    # ("NETWORK_SITE - ... substations" was the example here and it now
+    # classifies: see PREMISES_UNITS.) And classification only
     # decides what is *offered*; promotion.candidates proposes and a named
     # person disposes, so widening this cannot put a number into an estimate
     # on its own.
     head = archetype_of(label)
-    if head in ARCHETYPES and len(country) == 2 and "site" in unit:
+    if head in ARCHETYPES and len(country) == 2 and is_premises_unit(unit):
         return "footprint"
     # How a site type is built rather than how many there are. Country-
     # independent, because an architecture standard usually is.

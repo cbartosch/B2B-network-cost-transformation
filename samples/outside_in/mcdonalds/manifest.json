@@ -57,7 +57,7 @@
     {
       "country": "GB",
       "archetype": "STORE",
-      "sites": 1450,
+      "sites": 1507,
       "density": "SUBURBAN"
     },
     {
@@ -69,7 +69,7 @@
     {
       "country": "US",
       "archetype": "STORE",
-      "sites": 13500,
+      "sites": 13706,
       "density": "SUBURBAN"
     }
   ],
@@ -85,15 +85,19 @@
       "country": "DE",
       "archetype": "STORE",
       "sites": 1450,
-      "origin": "PUBLIC_DISCLOSURE",
-      "density": "SUBURBAN"
+      "origin": "DISCLOSURE_KEPT_RESEARCH_FOUND_FEWER",
+      "density": "SUBURBAN",
+      "research_said": 1382,
+      "disclosure_said": 1450
     },
     {
       "country": "GB",
       "archetype": "STORE",
-      "sites": 1450,
-      "origin": "PUBLIC_DISCLOSURE",
-      "density": "SUBURBAN"
+      "sites": 1507,
+      "origin": "SUPERSEDED_BY_RESEARCH",
+      "density": "SUBURBAN",
+      "research_said": 1507,
+      "disclosure_said": 1450
     },
     {
       "country": "US",
@@ -105,9 +109,11 @@
     {
       "country": "US",
       "archetype": "STORE",
-      "sites": 13500,
-      "origin": "PUBLIC_DISCLOSURE",
-      "density": "SUBURBAN"
+      "sites": 13706,
+      "origin": "SUPERSEDED_BY_RESEARCH",
+      "density": "SUBURBAN",
+      "research_said": 13706,
+      "disclosure_said": 13500
     },
     {
       "origin": "DENSITY_FROM_MIX",
@@ -138,7 +144,7 @@
   "scope_note": "Baseline covers 3 country(ies) (DE, GB, US) and the site types listed in sites_origin. The group's full country and site-type count is not sourced, so the share of the group this represents is DECLARED_UNKNOWN. This is baseline_in_scope, not a group baseline.",
   "sites_origin": {
     "LARGE_OFFICE": "RESEARCHED",
-    "STORE": "ASSUMED_PUBLIC_DISCLOSURE"
+    "STORE": "RESEARCHED"
   },
   "fx_to_eur": {
     "rate": "0.87110000",
@@ -192,13 +198,13 @@
   ],
   "estimate_inputs": {
     "method": "BUILD_UP",
-    "users": 196884,
+    "users": 200040,
     "ops_cost_per_site_base": 900,
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-12T18:02:39.631371+00:00",
-  "run_seconds": 27.5,
+  "run_started": "2026-10-12T19:00:12.789349+00:00",
+  "run_seconds": 128.9,
   "preflight_conditions": 8,
   "promotion": {
     "promoted": true,

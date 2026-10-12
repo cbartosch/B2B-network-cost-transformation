@@ -1,13 +1,13 @@
 {
-  "simulation_run_id": "e65ca1f8-7099-477e-9fb0-8391cd0cb791",
+  "simulation_run_id": "037d6ad6-d505-4973-bc84-644a93727655",
   "case_id": "e71dd642-34f1-44b8-8bc1-8c2a230f9cae",
   "model_version": "sim-2.7.0",
   "seed": 20260101,
   "ensemble_size": 25,
   "status": "SUCCEEDED",
-  "output_hash": "5aa0e254ea7f945e576afff2a2ea2937faf1764cb8754cfb750949e301630c65",
-  "started_at": "2026-10-12 18:02:35.474353+00:00",
-  "ended_at": "2026-10-12 18:02:41.106779+00:00",
+  "output_hash": "10b79d4d46a67f67e0de22dbaede4881d052c842a98e185a41002af66adead1d",
+  "started_at": "2026-10-12 19:00:15.142782+00:00",
+  "ended_at": "2026-10-12 19:00:38.034711+00:00",
   "params": {
     "footprint": [
       {
@@ -81,6 +81,14 @@
         "industry": null,
         "count_source": null,
         "density": "URBAN"
+      },
+      {
+        "country": "US",
+        "archetype": "WAREHOUSE",
+        "sites": 3,
+        "industry": null,
+        "count_source": null,
+        "density": "SUBURBAN"
       }
     ],
     "site_inclusion_rule": null,
@@ -1666,10 +1674,10 @@
     "model_version": "sim-2.7.0",
     "seed": 20260101,
     "ensemble_size": 25,
-    "sites": 5726,
+    "sites": 5729,
     "serviceability": {
       "counts": {
-        "DELIVERED": 5722,
+        "DELIVERED": 5725,
         "SUBSTITUTED": 4,
         "UNSERVICEABLE": 0
       },
@@ -1684,7 +1692,7 @@
       "by_access_technology": [
         {
           "access_technology": "ETHERNET_FIBRE",
-          "sites": 2952
+          "sites": 2955
         },
         {
           "access_technology": "PON",
@@ -1692,7 +1700,7 @@
         }
       ],
       "unserviceable": 0,
-      "note": "4 of 5726 site(s) take a different product or tier from the one their type asks for, and 0 can be served by nothing at all. 2624 of 5726 are delivered over a bearer other than ETHERNET_FIBRE (2624 on PON), which is a different circuit at a different rate. A uniform estate is an assumption; this is what the density bands say about it.",
+      "note": "4 of 5729 site(s) take a different product or tier from the one their type asks for, and 0 can be served by nothing at all. 2624 of 5729 are delivered over a bearer other than ETHERNET_FIBRE (2624 on PON), which is a different circuit at a different rate. A uniform estate is an assumption; this is what the density bands say about it.",
       "table_rows": 68,
       "table_basis": "GOVERNED"
     },
@@ -1731,23 +1739,23 @@
         "reason": "the only backup deliverable in SUBURBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
       }
     ],
-    "estate_truncated": 726,
+    "estate_truncated": 729,
     "sites_named": 0,
-    "sites_generated": 5726,
+    "sites_generated": 5729,
     "circuits": {
-      "low": 8849,
-      "base": 8908,
-      "high": 8925
+      "low": 8854,
+      "base": 8913,
+      "high": 8931
     },
     "circuits_primary": {
-      "low": 5726,
-      "base": 5726,
-      "high": 5726
+      "low": 5729,
+      "base": 5729,
+      "high": 5729
     },
     "circuits_backup": {
-      "low": 3115,
-      "base": 3174,
-      "high": 3191
+      "low": 3117,
+      "base": 3176,
+      "high": 3194
     },
     "products": [
       {
@@ -1898,7 +1906,7 @@
         "product": "DIA",
         "role": "PRIMARY",
         "bandwidth_mbps": 100,
-        "count": 2600,
+        "count": 2603,
         "service_class": "DIA",
         "density": "SUBURBAN",
         "bearer_mbps": 100,
@@ -1950,13 +1958,13 @@
       }
     ],
     "dual_access_sites": {
-      "low": 3115,
-      "base": 3174,
-      "high": 3191
+      "low": 3117,
+      "base": 3176,
+      "high": 3194
     },
     "circuits_backbone": 8,
-    "circuits_per_site_base": 1.4593,
-    "implied_users": 110738,
+    "circuits_per_site_base": 1.4591,
+    "implied_users": 110918,
     "bandwidth_profile": {
       "BRANCH": {
         "sites": 3090,
@@ -1977,9 +1985,14 @@
         "sites": 2624,
         "mbps_per_site": 50,
         "mbps_total": 131200
+      },
+      "WAREHOUSE": {
+        "sites": 3,
+        "mbps_per_site": 100,
+        "mbps_total": 300
       }
     },
-    "bandwidth_mbps_total": 488200,
+    "bandwidth_mbps_total": 488500,
     "diversity_state": "SIMULATED",
     "backbone": {
       "template_version": "1.0.0",
@@ -2012,8 +2025,8 @@
       "backbone_circuits": 8,
       "note": "One region with data centres (EUROPE_CENTRAL), so there is no global core tier - a hub has nothing to reach across."
     },
-    "node_count": 5726,
-    "edge_count": 8356
+    "node_count": 5729,
+    "edge_count": 8359
   },
   "output_omitted": {
     "fields": [

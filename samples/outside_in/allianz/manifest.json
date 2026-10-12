@@ -131,6 +131,30 @@
       "archetype": "LARGE_OFFICE",
       "sites": 1,
       "density": "URBAN"
+    },
+    {
+      "country": "IT",
+      "archetype": "STORE",
+      "sites": 3,
+      "density": "DENSE_URBAN"
+    },
+    {
+      "country": "IT",
+      "archetype": "STORE",
+      "sites": 5,
+      "density": "RURAL"
+    },
+    {
+      "country": "IT",
+      "archetype": "STORE",
+      "sites": 10,
+      "density": "SUBURBAN"
+    },
+    {
+      "country": "IT",
+      "archetype": "STORE",
+      "sites": 13,
+      "density": "URBAN"
     }
   ],
   "footprint_provenance": [
@@ -204,9 +228,16 @@
       "density": null
     },
     {
+      "country": "IT",
+      "archetype": "STORE",
+      "sites": 31,
+      "origin": "RESEARCHED",
+      "density": null
+    },
+    {
       "origin": "DENSITY_FROM_MIX",
-      "rows": 4,
-      "sites": 5018,
+      "rows": 5,
+      "sites": 5049,
       "filled": [
         {
           "country": "DE",
@@ -252,6 +283,19 @@
           "mix_industry": "INSURANCE",
           "bands": {
             "URBAN": 1
+          }
+        },
+        {
+          "country": "IT",
+          "archetype": "STORE",
+          "sites": 31,
+          "basis": "INDUSTRY_DEFAULT",
+          "mix_industry": "INSURANCE",
+          "bands": {
+            "DENSE_URBAN": 3,
+            "RURAL": 5,
+            "SUBURBAN": 10,
+            "URBAN": 13
           }
         }
       ],
@@ -323,13 +367,13 @@
   ],
   "estimate_inputs": {
     "method": "BUILD_UP",
-    "users": 78636,
+    "users": 79008,
     "ops_cost_per_site_base": 900,
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-12T18:02:17.411649+00:00",
-  "run_seconds": 22.2,
+  "run_started": "2026-10-12T18:59:14.453788+00:00",
+  "run_seconds": 58.2,
   "preflight_conditions": 8,
   "promotion": {
     "promoted": true,

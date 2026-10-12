@@ -1,13 +1,13 @@
 {
-  "simulation_run_id": "8af17421-0722-486a-96bb-40fcd3473e2e",
+  "simulation_run_id": "42244dc6-633d-4565-b536-86d28f411b97",
   "case_id": "1acf16ce-b58d-437f-8c30-60d47bbf86d2",
   "model_version": "sim-2.7.0",
   "seed": 20260101,
   "ensemble_size": 25,
   "status": "SUCCEEDED",
-  "output_hash": "3531b450e078ea529f2d8ec84e59f730ba949021ab4d852f5d0937d6438a26f8",
-  "started_at": "2026-10-12 18:02:18.168060+00:00",
-  "ended_at": "2026-10-12 18:02:20.595670+00:00",
+  "output_hash": "a0c796f8ac0137534f68dd437a929f5206d071ce93132a1df6dc0d5a0e18bd96",
+  "started_at": "2026-10-12 18:59:17.038952+00:00",
+  "ended_at": "2026-10-12 18:59:33.455906+00:00",
   "params": {
     "footprint": [
       {
@@ -44,8 +44,24 @@
       },
       {
         "country": "IE",
+        "archetype": "LARGE_OFFICE",
+        "sites": 1,
+        "industry": null,
+        "count_source": null,
+        "density": "URBAN"
+      },
+      {
+        "country": "IE",
         "archetype": "STORE",
         "sites": 170,
+        "industry": null,
+        "count_source": null,
+        "density": "SUBURBAN"
+      },
+      {
+        "country": "IE",
+        "archetype": "WAREHOUSE",
+        "sites": 1,
         "industry": null,
         "count_source": null,
         "density": "SUBURBAN"
@@ -1468,10 +1484,10 @@
     "model_version": "sim-2.7.0",
     "seed": 20260101,
     "ensemble_size": 25,
-    "sites": 3908,
+    "sites": 3910,
     "serviceability": {
       "counts": {
-        "DELIVERED": 3883,
+        "DELIVERED": 3885,
         "SUBSTITUTED": 25,
         "UNSERVICEABLE": 0
       },
@@ -1494,7 +1510,7 @@
         }
       ],
       "unserviceable": 0,
-      "note": "25 of 3908 site(s) take a different product or tier from the one their type asks for, and 0 can be served by nothing at all. 37 of 3908 are delivered over a bearer other than PON (37 on ETHERNET_FIBRE), which is a different circuit at a different rate. A uniform estate is an assumption; this is what the density bands say about it.",
+      "note": "25 of 3910 site(s) take a different product or tier from the one their type asks for, and 0 can be served by nothing at all. 37 of 3910 are delivered over a bearer other than PON (37 on ETHERNET_FIBRE), which is a different circuit at a different rate. A uniform estate is an assumption; this is what the density bands say about it.",
       "table_rows": 34,
       "table_basis": "GOVERNED"
     },
@@ -1711,21 +1727,21 @@
     ],
     "estate_truncated": 0,
     "sites_named": 0,
-    "sites_generated": 3908,
+    "sites_generated": 3910,
     "circuits": {
-      "low": 5298,
-      "base": 5322,
-      "high": 5350
+      "low": 5301,
+      "base": 5326,
+      "high": 5353
     },
     "circuits_primary": {
-      "low": 3908,
-      "base": 3908,
-      "high": 3908
+      "low": 3910,
+      "base": 3910,
+      "high": 3910
     },
     "circuits_backup": {
-      "low": 1338,
-      "base": 1362,
-      "high": 1390
+      "low": 1339,
+      "base": 1364,
+      "high": 1391
     },
     "products": [
       {
@@ -1797,6 +1813,17 @@
       {
         "country": "IE",
         "product": "BROADBAND_HFC",
+        "role": "BACKUP",
+        "bandwidth_mbps": 100,
+        "count": 1,
+        "service_class": "BEST_EFFORT",
+        "density": "SUBURBAN",
+        "bearer_mbps": 100,
+        "access_technology": "HFC"
+      },
+      {
+        "country": "IE",
+        "product": "BROADBAND_HFC",
         "role": "PRIMARY",
         "bandwidth_mbps": 110,
         "count": 170,
@@ -1804,6 +1831,39 @@
         "density": "SUBURBAN",
         "bearer_mbps": 110,
         "access_technology": "HFC"
+      },
+      {
+        "country": "IE",
+        "product": "DIA",
+        "role": "BACKUP",
+        "bandwidth_mbps": 500,
+        "count": 1,
+        "service_class": "DIA",
+        "density": "URBAN",
+        "bearer_mbps": 500,
+        "access_technology": null
+      },
+      {
+        "country": "IE",
+        "product": "DIA",
+        "role": "PRIMARY",
+        "bandwidth_mbps": 100,
+        "count": 1,
+        "service_class": "DIA",
+        "density": "SUBURBAN",
+        "bearer_mbps": 100,
+        "access_technology": null
+      },
+      {
+        "country": "IE",
+        "product": "ETHERNET",
+        "role": "PRIMARY",
+        "bandwidth_mbps": 250,
+        "count": 1,
+        "service_class": "ETHERNET",
+        "density": "URBAN",
+        "bearer_mbps": 500,
+        "access_technology": "ETHERNET_FIBRE"
       },
       {
         "country": "IE",
@@ -1829,13 +1889,13 @@
       }
     ],
     "dual_access_sites": {
-      "low": 1338,
-      "base": 1362,
-      "high": 1390
+      "low": 1339,
+      "base": 1364,
+      "high": 1391
     },
     "circuits_backbone": 52,
-    "circuits_per_site_base": 1.3618,
-    "implied_users": 49440,
+    "circuits_per_site_base": 1.3621,
+    "implied_users": 49750,
     "bandwidth_profile": {
       "DC": {
         "sites": 26,
@@ -1843,17 +1903,22 @@
         "mbps_total": 260000
       },
       "LARGE_OFFICE": {
-        "sites": 12,
+        "sites": 13,
         "mbps_per_site": 500,
-        "mbps_total": 6000
+        "mbps_total": 6500
       },
       "STORE": {
         "sites": 3870,
         "mbps_per_site": 110,
         "mbps_total": 425700
+      },
+      "WAREHOUSE": {
+        "sites": 1,
+        "mbps_per_site": 100,
+        "mbps_total": 100
       }
     },
-    "bandwidth_mbps_total": 691700,
+    "bandwidth_mbps_total": 692300,
     "diversity_state": "SIMULATED",
     "backbone": {
       "template_version": "1.0.0",
@@ -1881,12 +1946,12 @@
       "backbone_circuits": 52,
       "note": "One region with data centres (EUROPE_WEST), so there is no global core tier - a hub has nothing to reach across."
     },
-    "node_count": 3908,
-    "edge_count": 5322
+    "node_count": 3910,
+    "edge_count": 5326
   },
   "output_omitted": {
     "fields": [
-      "estate (3908 rows)",
+      "estate (3910 rows)",
       "sample_topology (2 rows)"
     ],
     "why": "per-site arrays, the same information the aggregates carry; tools/backfill_simulation.py --full keeps them"
