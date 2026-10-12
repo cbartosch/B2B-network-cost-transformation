@@ -33,7 +33,7 @@ from decimal import Decimal as D
 from sqlalchemy import select
 
 from app import _version, db
-from app.domain import dispositions, research
+from app.domain import dispositions, footprint, research
 
 API = "http://127.0.0.1:8000"
 
@@ -548,18 +548,89 @@ def footprint_for_simulation(case_id, spec):
         return list(spec["declared_footprint"]), "PUBLIC_DISCLOSURE_ONLY", provenance
     origin = ("RESEARCH_MERGED_WITH_DISCLOSURE" if researched
               else "PUBLIC_DISCLOSURE_ONLY")
+    merged, provenance = _fill_bands_from_mix(merged, provenance, spec)
+    return merged, origin, provenance
+
+
+def _fill_bands_from_mix(merged, provenance, spec):
+    """Give researched rows a density band from the governed sector mix.
+
+    A researched pair arrives with a country, a type and a count but no band,
+    because evidenced_footprint stores a source rather than a density. The
+    band is what serviceability is keyed on, so without it the row matches
+    nothing and its sites resolve DELIVERED untested.
+
+    reference.density_mix is the governed answer to what bands a sector's
+    sites sit in, so it fills them - splitting each counted row across bands
+    rather than picking the modal one, because assigning 2,601 agencies to a
+    single band overstates what a share actually says.
+
+    Three things it will not do. It does not substitute a site type: a row
+    whose type is absent from the sector's mix keeps no band at all, rather
+    than borrowing the bands of a type the client was never counted as
+    having. It does not touch a declared band, which is a statement about
+    this client and outranks a sector norm. And it does not present the
+    result as evidence - the filled rows are marked DENSITY_FROM_MIX and
+    carry the basis, so a reader can tell a default from a finding.
+    """
     no_band = [m for m in merged if not m.get("density")]
-    if no_band:
+    if not no_band:
+        return merged, provenance
+
+    industry = (spec.get("industry") or {})
+    sector = industry.get("industry") if isinstance(industry, dict) else industry
+
+    out, filled, unfilled, reasons = [], [], [], {}
+    for row in merged:
+        if row.get("density"):
+            out.append(row)
+            continue
+        with db.SessionLocal() as session:
+            split = footprint.density_split_for_archetype(
+                session, sites=int(row["sites"]),
+                archetype=row["archetype"], industry=sector)
+        if not split["rows"]:
+            out.append(row)
+            unfilled.append(row)
+            if split.get("note"):
+                reasons[row["archetype"]] = split["note"]
+            continue
+        for part in split["rows"]:
+            out.append({"country": row["country"],
+                        "archetype": row["archetype"],
+                        "sites": int(part["sites"]),
+                        "density": part["density"]})
+        filled.append({"country": row["country"],
+                       "archetype": row["archetype"],
+                       "sites": int(row["sites"]),
+                       "basis": split["basis"],
+                       "mix_industry": split["industry"],
+                       "bands": {p["density"]: p["sites"]
+                                 for p in split["rows"]}})
+
+    if filled:
+        provenance.append({
+            "origin": "DENSITY_FROM_MIX",
+            "rows": len(filled),
+            "sites": sum(f["sites"] for f in filled),
+            "filled": filled,
+            "note": ("the count and the site type are evidenced; the band is "
+                     "a governed sector default from reference.density_mix, "
+                     "not a finding about this client. It decides which "
+                     "bearers are tested, so it is worth replacing with what "
+                     "the client actually has.")})
+    if unfilled:
         provenance.append({
             "origin": "NO_DENSITY_BAND",
-            "rows": len(no_band),
-            "sites": sum(int(m["sites"]) for m in no_band),
+            "rows": len(unfilled),
+            "sites": sum(int(m["sites"]) for m in unfilled),
+            "reasons": reasons,
             "note": ("these rows carry no density band, so serviceability "
                      "cannot be resolved for them and their sites are "
-                     "treated as deliverable. Researched pairs have no "
-                     "band because evidenced_footprint stores a count and a "
-                     "source, not a density.")})
-    return merged, origin, provenance
+                     "treated as deliverable. The sector mix has no row for "
+                     "their site type, and another type's bands are not "
+                     "borrowed.")})
+    return out, provenance
 
 
 def simulate(case_id, slug, footprint):

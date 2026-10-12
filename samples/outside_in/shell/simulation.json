@@ -1,13 +1,13 @@
 {
-  "simulation_run_id": "7238f863-2d87-48a5-8070-58de0a32f0e5",
+  "simulation_run_id": "6df06d62-2b8e-48a7-9d04-7fb83b7f1dbf",
   "case_id": "4ceb19bd-c331-45c1-8220-87db66ff9103",
   "model_version": "sim-2.7.0",
   "seed": 20260101,
   "ensemble_size": 25,
   "status": "SUCCEEDED",
-  "output_hash": "47df638e41da233d4ef874fb740e6ab5907cd35e508fe4347841dada22f2c332",
-  "started_at": "2026-10-12 14:49:28.284925+00:00",
-  "ended_at": "2026-10-12 14:49:37.395318+00:00",
+  "output_hash": "57fafb5b3670f1eeb18b05832de255ec8b9e914b361a40f56cd5b20f2f17e989",
+  "started_at": "2026-10-12 15:04:34.678016+00:00",
+  "ended_at": "2026-10-12 15:04:42.516329+00:00",
   "params": {
     "footprint": [
       {
@@ -64,7 +64,7 @@
         "sites": 1,
         "industry": null,
         "count_source": null,
-        "density": null
+        "density": "DENSE_URBAN"
       },
       {
         "country": "NL",
@@ -72,7 +72,7 @@
         "sites": 1,
         "industry": null,
         "count_source": null,
-        "density": null
+        "density": "URBAN"
       },
       {
         "country": "NL",
@@ -112,7 +112,7 @@
         "sites": 1,
         "industry": null,
         "count_source": null,
-        "density": null
+        "density": "DENSE_URBAN"
       }
     ],
     "site_inclusion_rule": null,
@@ -2007,11 +2007,11 @@
         },
         {
           "access_technology": "ETHERNET_FIBRE",
-          "sites": 8
+          "sites": 10
         }
       ],
       "unserviceable": 0,
-      "note": "0 of 5992 site(s) take a different product or tier from the one their type asks for, and 0 can be served by nothing at all. 8 of 5992 are delivered over a bearer other than PON (8 on ETHERNET_FIBRE), which is a different circuit at a different rate. A uniform estate is an assumption; this is what the density bands say about it.",
+      "note": "0 of 5992 site(s) take a different product or tier from the one their type asks for, and 0 can be served by nothing at all. 10 of 5992 are delivered over a bearer other than PON (10 on ETHERNET_FIBRE), which is a different circuit at a different rate. A uniform estate is an assumption; this is what the density bands say about it.",
       "table_rows": 102,
       "table_basis": "GOVERNED"
     },
@@ -2038,9 +2038,9 @@
         "because": "NOT_DELIVERABLE",
         "country": "NL",
         "archetype": "DC",
-        "density": null,
+        "density": "DENSE_URBAN",
         "asked_for": "ETHERNET",
-        "reason": "the only backup deliverable in None NL is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+        "reason": "the only backup deliverable in DENSE_URBAN NL is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
       },
       {
         "because": "NOT_DELIVERABLE",
@@ -2054,9 +2054,9 @@
         "because": "NOT_DELIVERABLE",
         "country": "US",
         "archetype": "DC",
-        "density": null,
+        "density": "DENSE_URBAN",
         "asked_for": "ETHERNET",
-        "reason": "the only backup deliverable in None US is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+        "reason": "the only backup deliverable in DENSE_URBAN US is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
       }
     ],
     "estate_truncated": 992,

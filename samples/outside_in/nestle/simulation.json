@@ -1,13 +1,13 @@
 {
-  "simulation_run_id": "11299ed3-1144-43eb-b510-ce7e5a7be20d",
+  "simulation_run_id": "bb3eb7eb-1a4a-4e2d-8bf1-82f8e5c15c61",
   "case_id": "c06346b4-5fad-4862-8004-16e63cb1e199",
   "model_version": "sim-2.7.0",
   "seed": 20260101,
   "ensemble_size": 25,
   "status": "SUCCEEDED",
-  "output_hash": "6e308c815e687247035301b611c2682b23154b81cf068549ae5b3c650d32c970",
-  "started_at": "2026-10-12 14:49:39.076946+00:00",
-  "ended_at": "2026-10-12 14:49:39.476465+00:00",
+  "output_hash": "ea40fe2a3ec19121863fb4ac55b243addc6e9317625d8590ccfff9d7290c729b",
+  "started_at": "2026-10-12 15:04:43.718643+00:00",
+  "ended_at": "2026-10-12 15:04:44.742755+00:00",
   "params": {
     "footprint": [
       {
@@ -80,7 +80,7 @@
         "sites": 1,
         "industry": null,
         "count_source": null,
-        "density": null
+        "density": "URBAN"
       },
       {
         "country": "DE",
@@ -88,7 +88,7 @@
         "sites": 1,
         "industry": null,
         "count_source": null,
-        "density": null
+        "density": "URBAN"
       },
       {
         "country": "DE",
@@ -112,7 +112,7 @@
         "sites": 4,
         "industry": null,
         "count_source": null,
-        "density": null
+        "density": "URBAN"
       },
       {
         "country": "FR",
@@ -2373,8 +2373,8 @@
     "sites": 193,
     "serviceability": {
       "counts": {
-        "DELIVERED": 191,
-        "SUBSTITUTED": 2,
+        "DELIVERED": 190,
+        "SUBSTITUTED": 3,
         "UNSERVICEABLE": 0
       },
       "substitutions": [
@@ -2383,16 +2383,22 @@
           "delivered": "ETHERNET",
           "bandwidth_mbps": 500,
           "sites": 2
+        },
+        {
+          "asked_for": "ETHERNET",
+          "delivered": "ETHERNET",
+          "bandwidth_mbps": 1000,
+          "sites": 1
         }
       ],
       "by_access_technology": [
         {
           "access_technology": "ETHERNET_FIBRE",
-          "sites": 25
+          "sites": 31
         }
       ],
       "unserviceable": 0,
-      "note": "2 of 193 site(s) take a different product or tier from the one their type asks for, and 0 can be served by nothing at all. A uniform estate is an assumption; this is what the density bands say about it.",
+      "note": "3 of 193 site(s) take a different product or tier from the one their type asks for, and 0 can be served by nothing at all. A uniform estate is an assumption; this is what the density bands say about it.",
       "table_rows": 136,
       "table_basis": "GOVERNED"
     },
@@ -2459,9 +2465,9 @@
         "because": "NOT_DELIVERABLE",
         "country": "DE",
         "archetype": "DC",
-        "density": null,
+        "density": "URBAN",
         "asked_for": "ETHERNET",
-        "reason": "the only backup deliverable in None DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+        "reason": "the only backup deliverable in URBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
       },
       {
         "because": "NOT_DELIVERABLE",
@@ -2673,10 +2679,10 @@
         "country": "DE",
         "product": "ETHERNET",
         "role": "PRIMARY",
-        "bandwidth_mbps": 3000,
+        "bandwidth_mbps": 300,
         "count": 1,
         "service_class": "ETHERNET",
-        "bearer_mbps": 10000,
+        "bearer_mbps": 1000,
         "access_technology": "ETHERNET_FIBRE"
       },
       {

@@ -1,13 +1,13 @@
 {
-  "simulation_run_id": "34ead345-5b0c-4c6f-bf70-1f5b144ae690",
+  "simulation_run_id": "97a8ba1c-a3ad-449b-93f8-06f3e4581608",
   "case_id": "fab3cb28-e3ff-4c9e-a9d1-a220efeb3ac0",
   "model_version": "sim-2.7.0",
   "seed": 20260101,
   "ensemble_size": 25,
   "status": "SUCCEEDED",
-  "output_hash": "d26ac5e9157bc4106e334f770614a67956abd5849552c44f011203f09a306033",
-  "started_at": "2026-10-12 14:49:21.934409+00:00",
-  "ended_at": "2026-10-12 14:49:26.689990+00:00",
+  "output_hash": "7440dc773ec07de51d1ebe108deda8588a7aa1b3ed56588baa8c7373e885da92",
+  "started_at": "2026-10-12 15:04:34.928709+00:00",
+  "ended_at": "2026-10-12 15:04:39.958208+00:00",
   "params": {
     "footprint": [
       {
@@ -16,7 +16,7 @@
         "sites": 1,
         "industry": null,
         "count_source": null,
-        "density": null
+        "density": "URBAN"
       },
       {
         "country": "DE",
@@ -48,7 +48,7 @@
         "sites": 1,
         "industry": null,
         "count_source": null,
-        "density": null
+        "density": "URBAN"
       },
       {
         "country": "FR",
@@ -1993,7 +1993,7 @@
       "by_access_technology": [
         {
           "access_technology": "ETHERNET_FIBRE",
-          "sites": 1803
+          "sites": 1804
         }
       ],
       "unserviceable": 0,
@@ -2016,9 +2016,9 @@
         "because": "NOT_DELIVERABLE",
         "country": "BR",
         "archetype": "DC",
-        "density": null,
+        "density": "URBAN",
         "asked_for": "ETHERNET",
-        "reason": "the only backup deliverable in None BR is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+        "reason": "the only backup deliverable in URBAN BR is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
       },
       {
         "because": "NOT_DELIVERABLE",

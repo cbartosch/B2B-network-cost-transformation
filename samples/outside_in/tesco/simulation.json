@@ -1,13 +1,13 @@
 {
-  "simulation_run_id": "6ea09dd1-f9ec-4f20-8128-26922ed7fcbe",
+  "simulation_run_id": "33ee5d1b-dee4-4ac9-9bd8-a68136217971",
   "case_id": "1acf16ce-b58d-437f-8c30-60d47bbf86d2",
   "model_version": "sim-2.7.0",
   "seed": 20260101,
   "ensemble_size": 25,
   "status": "SUCCEEDED",
-  "output_hash": "e32c7fb03a27f042f08d98aa0c96b7acc10f33fa98e83ffd132cf8134c93fb1c",
-  "started_at": "2026-10-12 14:49:23.165851+00:00",
-  "ended_at": "2026-10-12 14:49:27.124477+00:00",
+  "output_hash": "8e1c066b03a1629117f8d5ea7d8edd323523d227a8c5d716b6bff4419c2edfc3",
+  "started_at": "2026-10-12 15:04:27.677260+00:00",
+  "ended_at": "2026-10-12 15:04:32.311673+00:00",
   "params": {
     "footprint": [
       {
@@ -40,7 +40,7 @@
         "sites": 1,
         "industry": null,
         "count_source": null,
-        "density": null
+        "density": "URBAN"
       },
       {
         "country": "IE",
@@ -1704,9 +1704,9 @@
         "because": "NOT_DELIVERABLE",
         "country": "IE",
         "archetype": "DC",
-        "density": null,
+        "density": "URBAN",
         "asked_for": "ETHERNET",
-        "reason": "the only backup deliverable in None IE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+        "reason": "the only backup deliverable in URBAN IE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
       }
     ],
     "estate_truncated": 0,

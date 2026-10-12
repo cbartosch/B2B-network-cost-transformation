@@ -42,13 +42,18 @@ def driver(monkeypatch):
     return mod
 
 
-def _merge(driver, rows, promoted=None):
+def _merge(driver, rows, promoted=None, mix=None, industry="RETAIL"):
     """Run the merge with the database stubbed out.
 
     `select` is stubbed as well as the session: the merge builds a real
     SQLAlchemy select over evidenced_footprint, and a fake table is not a
     FROM clause. The subject here is what the merge does with the rows, not
     how it asks for them.
+
+    Two different queries run against this stub - the promoted footprint
+    rows, then one density_mix lookup per row that arrived with no band - so
+    sessions are handed out in that order. The band fill opens its own
+    session per row, which is what makes the order usable.
     """
     import types
 
@@ -57,8 +62,13 @@ def _merge(driver, rows, promoted=None):
             return self
 
     driver.select = lambda *a, **k: _Q()
+    opened = []
 
     class _Session:
+        def __init__(self):
+            self._first = not opened
+            opened.append(self)
+
         def __enter__(self):
             return self
 
@@ -66,9 +76,9 @@ def _merge(driver, rows, promoted=None):
             return False
 
         def execute(self, *a, **k):
+            payload = (promoted or []) if self._first else (mix or [])
             return types.SimpleNamespace(
-                all=lambda: [types.SimpleNamespace(**p)
-                             for p in (promoted or [])])
+                all=lambda: [types.SimpleNamespace(**p) for p in payload])
 
     class _Cols:
         """Any column name, comparable to anything.
@@ -88,8 +98,16 @@ def _merge(driver, rows, promoted=None):
 
     driver.db = types.SimpleNamespace(
         SessionLocal=_Session,
-        evidenced_footprint=types.SimpleNamespace(c=_Cols()))
-    return driver.footprint_for_simulation("case", _spec(rows))
+        evidenced_footprint=types.SimpleNamespace(c=_Cols()),
+        density_mix=types.SimpleNamespace(c=_Cols()))
+    spec = _spec(rows)
+    spec["industry"] = industry
+    return driver.footprint_for_simulation("case", spec)
+
+
+def _mix_row(archetype, band, share, industry="RETAIL"):
+    return {"industry": industry, "archetype": archetype,
+            "density_band": band, "share": share}
 
 
 # ----------------------------------------------------------- the defect
@@ -139,15 +157,50 @@ def test_no_gap_row_when_every_band_is_known(driver):
     assert not [p for p in prov if p.get("origin") == "NO_DENSITY_BAND"]
 
 
-def test_the_band_is_never_guessed_for_a_researched_only_pair(driver):
-    """A density nobody established would silently re-price the estate:
-    SUBURBAN and RURAL resolve different bearers at different rates."""
+def test_a_researched_pair_never_borrows_the_band_beside_it(driver):
+    """A researched pair has no band of its own. It may take one from the
+    governed sector mix - that is a stated default - but never from whatever
+    declared row happens to sit next to it in the same estate, which would
+    read as a finding about this client and is about a different site type
+    in a different country."""
     merged, _o, _p = _merge(
         driver,
         [{"country": "GB", "archetype": "STORE", "sites": 10,
           "density": "URBAN"}],
         promoted=[{"country": "FR", "archetype": "PLANT", "sites": 4,
-                   "promoted_at": "now"}])
+                   "promoted_at": "now"}],
+        mix=[])            # the mix has no PLANT row, so nothing fills it
     fr = [r for r in merged if r["country"] == "FR"]
-    assert fr and fr[0]["density"] is None, (
-        "a researched pair has no declared band and must not borrow one")
+    assert fr and all(r["density"] is None for r in fr)
+
+
+def test_a_researched_pair_takes_its_band_from_the_governed_mix(driver):
+    """The fill itself: a counted, typed row with no band is spread across
+    the sector's bands rather than left untested. Without this the row
+    matches no serviceability key and its sites resolve DELIVERED."""
+    merged, _o, prov = _merge(
+        driver,
+        [{"country": "GB", "archetype": "STORE", "sites": 10,
+          "density": "URBAN"}],
+        promoted=[{"country": "FR", "archetype": "PLANT", "sites": 100,
+                   "promoted_at": "now"}],
+        mix=[_mix_row("PLANT", "SUBURBAN", "0.6"),
+             _mix_row("PLANT", "RURAL", "0.4")])
+    fr = [r for r in merged if r["country"] == "FR"]
+    assert {r["density"] for r in fr} == {"SUBURBAN", "RURAL"}
+    assert sum(r["sites"] for r in fr) == 100, "the counted total is evidence"
+    filled = [p for p in prov if p.get("origin") == "DENSITY_FROM_MIX"]
+    assert filled and filled[0]["sites"] == 100
+    assert filled[0]["filled"][0]["basis"] == "INDUSTRY_DEFAULT"
+
+
+def test_a_declared_band_is_not_overwritten_by_the_mix(driver):
+    """A declared band is a statement about this client and outranks a
+    sector norm, however confident the norm is."""
+    merged, _o, prov = _merge(
+        driver,
+        [{"country": "GB", "archetype": "STORE", "sites": 10,
+          "density": "URBAN"}],
+        mix=[_mix_row("STORE", "RURAL", "1.0")])
+    assert [r["density"] for r in merged] == ["URBAN"]
+    assert not [p for p in prov if p.get("origin") == "DENSITY_FROM_MIX"]

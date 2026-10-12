@@ -539,6 +539,93 @@ def propose_split(session, *, total: int, country: str, industry: str | None,
     }
 
 
+def density_split_for_archetype(session, *, sites: int, archetype: str,
+                                industry: str | None) -> dict:
+    """Split a counted number of sites of ONE KNOWN type across density bands.
+
+    The sibling of `propose_split`, for the case where the type and the count
+    are already established and only the band is missing. Research promotes a
+    footprint row as a country, a type and a count - `evidenced_footprint`
+    stores a source, not a density - and serviceability is keyed
+    (country, density_band, bearer), so a row with no band matches nothing and
+    resolves DELIVERED. Across a twenty-company set that was 13,847 sites whose
+    access was never tested.
+
+    The difference from `propose_split` is the whole point of having two
+    functions. That one is given a total and proposes a SHAPE: which types,
+    and then which bands. This one is given a type and proposes only the BAND.
+    Applying the shape here would re-type counted sites - the failure its own
+    comment records, where 233 registered branches became 60 branches and 153
+    cash machines. So the archetype is matched exactly and never substituted:
+    if the sector's mix has no row for this type, nothing is proposed and the
+    band stays unknown, which serviceability already handles as silence rather
+    than as a constraint.
+
+    The mix is a joint distribution over (type, band) summing to one across the
+    industry, so the rows for one type are renormalised over their own sum to
+    give the distribution of bands WITHIN that type.
+
+    Largest remainder, so the parts sum to the counted total. A split that
+    loses a site reads as arithmetic, and this total is evidence.
+    """
+    sector = (industry or "DEFAULT").strip().upper() or "DEFAULT"
+    kind = (archetype or "").strip().upper()
+    if not kind or sites <= 0:
+        return {"rows": [], "basis": None, "industry": None, "note": None}
+
+    rows = session.execute(select(db.density_mix).where(
+        db.density_mix.c.industry.in_([sector, "DEFAULT"]),
+        db.density_mix.c.archetype == kind)).all()
+    # Filtered again here, not only in the query. The one property this
+    # function must hold is that it never swaps a site type, and resting that
+    # entirely on a WHERE clause makes it a property of the SQL rather than
+    # of the code - a later caller passing a prepared row set, or a widened
+    # query, would re-type counted sites with nothing to stop it.
+    rows = [r for r in rows if (r.archetype or "").strip().upper() == kind]
+    chosen = [r for r in rows if r.industry == sector]
+    matched = bool(chosen)
+    if not chosen:
+        chosen = [r for r in rows if r.industry == "DEFAULT"]
+    if not chosen:
+        # No row for this type in this sector or the generic mix. The band is
+        # left unknown rather than borrowed from a different type: SUBURBAN
+        # and RURAL resolve different bearers at different rates, so a
+        # substituted type would re-price the estate on nobody's authority.
+        return {
+            "rows": [], "basis": None, "industry": None,
+            "note": (f"no governed band mix for {kind} in {sector}, so the "
+                     f"band is left unknown - borrowing another site type's "
+                     f"bands would re-price these {sites:,} sites against a "
+                     f"shape nobody established for them")}
+
+    total_share = sum(Decimal(str(r.share)) for r in chosen)
+    if total_share <= 0:
+        return {"rows": [], "basis": None, "industry": None,
+                "note": f"the {sector} mix gives {kind} no weight"}
+
+    chosen.sort(key=lambda r: r.density_band)
+    raw = [Decimal(sites) * Decimal(str(r.share)) / total_share for r in chosen]
+    counts = [int(x) for x in raw]
+    for index in sorted(range(len(raw)), key=lambda i: raw[i] - counts[i],
+                        reverse=True)[:sites - sum(counts)]:
+        counts[index] += 1
+
+    return {
+        "rows": [{"archetype": kind, "density": r.density_band, "sites": n}
+                 for r, n in zip(chosen, counts) if n > 0],
+        "basis": "INDUSTRY_DEFAULT" if matched else "GENERIC_DEFAULT",
+        "industry": sector if matched else "DEFAULT",
+        "note": (
+            f"The COUNT and the TYPE are evidenced; only the BAND is a "
+            f"default. {sites:,} {kind} site(s) are spread across density "
+            f"bands using the "
+            f"{'governed mix for ' + sector if matched else 'generic mix, this sector having none of its own'}"
+            f" - a typical shape, not a finding about this client. It decides "
+            f"which bearers are tested, so it is a default worth replacing "
+            f"with what the client actually has."),
+    }
+
+
 def _is_placeholder(saved: list, case_row) -> bool:
     """Is this saved footprint just the runnable default?
 

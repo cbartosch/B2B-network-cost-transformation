@@ -44,7 +44,7 @@
       "country": "DE",
       "archetype": "LARGE_OFFICE",
       "sites": 1,
-      "density": null
+      "density": "URBAN"
     },
     {
       "country": "DE",
@@ -108,10 +108,22 @@
       "density": "SUBURBAN"
     },
     {
-      "origin": "NO_DENSITY_BAND",
+      "origin": "DENSITY_FROM_MIX",
       "rows": 1,
       "sites": 1,
-      "note": "these rows carry no density band, so serviceability cannot be resolved for them and their sites are treated as deliverable. Researched pairs have no band because evidenced_footprint stores a count and a source, not a density."
+      "filled": [
+        {
+          "country": "DE",
+          "archetype": "LARGE_OFFICE",
+          "sites": 1,
+          "basis": "INDUSTRY_DEFAULT",
+          "mix_industry": "QSR_RESTAURANTS",
+          "bands": {
+            "URBAN": 1
+          }
+        }
+      ],
+      "note": "the count and the site type are evidenced; the band is a governed sector default from reference.density_mix, not a finding about this client. It decides which bearers are tested, so it is worth replacing with what the client actually has."
     }
   ],
   "scope_countries_modelled": [
@@ -183,8 +195,8 @@
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-12T14:49:45.941921+00:00",
-  "run_seconds": 37.9,
+  "run_started": "2026-10-12T15:04:43.255878+00:00",
+  "run_seconds": 36.4,
   "preflight_conditions": 8,
   "promotion": {
     "promoted": true,

@@ -1,13 +1,13 @@
 {
-  "simulation_run_id": "2808e0ff-8780-4abd-a4d0-fb9f26697049",
+  "simulation_run_id": "26d60f9f-3275-44b6-b492-b381f0f97ce4",
   "case_id": "d306c1b6-5c12-4709-b0b8-bda47b7763d1",
   "model_version": "sim-2.7.0",
   "seed": 20260101,
   "ensemble_size": 25,
   "status": "SUCCEEDED",
-  "output_hash": "33ecd77e1bd88032a3a71614bfeb5907d058bcc69f16c97b6542c226ba9a0d12",
-  "started_at": "2026-10-12 14:49:28.286995+00:00",
-  "ended_at": "2026-10-12 14:49:37.451748+00:00",
+  "output_hash": "589494701bdb1b26fde69e4cc686e66afc4a3a3ce55f220e9e6ad76afdf4d290",
+  "started_at": "2026-10-12 15:04:27.996521+00:00",
+  "ended_at": "2026-10-12 15:04:33.507767+00:00",
   "params": {
     "footprint": [
       {
@@ -56,7 +56,7 @@
         "sites": 1,
         "industry": null,
         "count_source": null,
-        "density": null
+        "density": "URBAN"
       },
       {
         "country": "FR",
@@ -80,7 +80,7 @@
         "sites": 1,
         "industry": null,
         "count_source": null,
-        "density": null
+        "density": "URBAN"
       }
     ],
     "site_inclusion_rule": null,
@@ -1805,8 +1805,8 @@
     "sites": 6553,
     "serviceability": {
       "counts": {
-        "DELIVERED": 6518,
-        "SUBSTITUTED": 35,
+        "DELIVERED": 6517,
+        "SUBSTITUTED": 36,
         "UNSERVICEABLE": 0
       },
       "substitutions": [
@@ -1814,7 +1814,7 @@
           "asked_for": "ETHERNET",
           "delivered": "ETHERNET",
           "bandwidth_mbps": 1000,
-          "sites": 30
+          "sites": 31
         },
         {
           "asked_for": "ETHERNET",
@@ -1826,11 +1826,11 @@
       "by_access_technology": [
         {
           "access_technology": "ETHERNET_FIBRE",
-          "sites": 1135
+          "sites": 1136
         }
       ],
       "unserviceable": 0,
-      "note": "35 of 6553 site(s) take a different product or tier from the one their type asks for, and 0 can be served by nothing at all. A uniform estate is an assumption; this is what the density bands say about it.",
+      "note": "36 of 6553 site(s) take a different product or tier from the one their type asks for, and 0 can be served by nothing at all. A uniform estate is an assumption; this is what the density bands say about it.",
       "table_rows": 68,
       "table_basis": "GOVERNED"
     },
@@ -2000,10 +2000,10 @@
         "country": "FR",
         "product": "DIA",
         "role": "BACKUP",
-        "bandwidth_mbps": 10000,
+        "bandwidth_mbps": 1000,
         "count": 1,
         "service_class": "DIA",
-        "bearer_mbps": 10000,
+        "bearer_mbps": 1000,
         "access_technology": null
       },
       {
@@ -2020,10 +2020,10 @@
         "country": "FR",
         "product": "ETHERNET",
         "role": "PRIMARY",
-        "bandwidth_mbps": 5000,
+        "bandwidth_mbps": 500,
         "count": 1,
         "service_class": "ETHERNET",
-        "bearer_mbps": 10000,
+        "bearer_mbps": 1000,
         "access_technology": "ETHERNET_FIBRE"
       },
       {
