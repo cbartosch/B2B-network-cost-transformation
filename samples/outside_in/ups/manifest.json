@@ -3,7 +3,9 @@
   "legal_name": "United Parcel Service, Inc.",
   "industry": {
     "industry": "PARCEL_LOGISTICS",
-    "origin": "ENTITY_RESOLUTION"
+    "origin": "ENTITY_RESOLUTION",
+    "resolution_said": "Package Delivery & Logistics",
+    "agrees_with_resolution": true
   },
   "domicile": "US",
   "in_scope_countries": [
@@ -14,7 +16,7 @@
   "base_currency": "USD",
   "case_id": "fc1746fc-9230-4fd3-8e8e-98b1d81a30d0",
   "spec_path": "/tmp/companies_fixed.json",
-  "spec_sha256": "8b7ae97aae14",
+  "spec_sha256": "2e45939dbcdb",
   "entity_resolution": {
     "resolved": null,
     "resumed": true
@@ -239,12 +241,16 @@
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-13T06:19:57.925831+00:00",
-  "run_seconds": 3.0,
+  "run_started": "2026-10-13T09:35:23.086662+00:00",
+  "run_seconds": 4.0,
   "preflight_conditions": 8,
   "promotion": {
     "promoted": true,
-    "detail": null
+    "detail": null,
+    "offered": 6,
+    "accepted": 5,
+    "declined": [],
+    "declined_count": 0
   },
   "domains_benchmark_disposed": [
     3,

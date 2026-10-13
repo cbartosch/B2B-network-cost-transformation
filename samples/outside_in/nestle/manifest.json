@@ -3,7 +3,9 @@
   "legal_name": "Nestle SA",
   "industry": {
     "industry": "FOOD_MANUFACTURING",
-    "origin": "ENTITY_RESOLUTION"
+    "origin": "ENTITY_RESOLUTION",
+    "resolution_said": "Food & Beverage — Consumer Staples",
+    "agrees_with_resolution": true
   },
   "domicile": "CH",
   "in_scope_countries": [
@@ -20,8 +22,8 @@
   ],
   "base_currency": "CHF",
   "case_id": "c06346b4-5fad-4862-8004-16e63cb1e199",
-  "spec_path": "/app/samples/companies.json",
-  "spec_sha256": "89c85a8563f5",
+  "spec_path": "/tmp/companies_fixed.json",
+  "spec_sha256": "2e45939dbcdb",
   "entity_resolution": {
     "resolved": null,
     "resumed": true
@@ -486,12 +488,23 @@
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-12T18:59:50.739407+00:00",
-  "run_seconds": 17.9,
+  "run_started": "2026-10-13T09:35:41.566774+00:00",
+  "run_seconds": 2.7,
   "preflight_conditions": 8,
   "promotion": {
     "promoted": true,
-    "detail": null
+    "detail": null,
+    "offered": 11,
+    "accepted": 9,
+    "declined": [
+      {
+        "reason": "sources disagree by 0% (12 to 12) and the conflict has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again."
+      },
+      {
+        "reason": "sources disagree by 38% (13 to 18) and the conflict has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again."
+      }
+    ],
+    "declined_count": 2
   },
   "domains_benchmark_disposed": [
     3,

@@ -3,7 +3,9 @@
   "legal_name": "McDonald's Corporation",
   "industry": {
     "industry": "QSR_RESTAURANTS",
-    "origin": "ENTITY_RESOLUTION"
+    "origin": "ENTITY_RESOLUTION",
+    "resolution_said": null,
+    "agrees_with_resolution": null
   },
   "domicile": "US",
   "in_scope_countries": [
@@ -13,8 +15,8 @@
   ],
   "base_currency": "USD",
   "case_id": "71da5c68-a0e5-4d8d-b1cf-f69c8c388689",
-  "spec_path": "/app/samples/companies.json",
-  "spec_sha256": "89c85a8563f5",
+  "spec_path": "/tmp/companies_fixed.json",
+  "spec_sha256": "2e45939dbcdb",
   "entity_resolution": {
     "resolved": null,
     "resumed": true
@@ -203,12 +205,23 @@
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-12T19:00:12.789349+00:00",
-  "run_seconds": 128.9,
+  "run_started": "2026-10-13T09:35:43.008093+00:00",
+  "run_seconds": 24.8,
   "preflight_conditions": 8,
   "promotion": {
     "promoted": true,
-    "detail": null
+    "detail": null,
+    "offered": 6,
+    "accepted": 4,
+    "declined": [
+      {
+        "reason": "sources disagree by 0% (1 to 1) and the conflict has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again."
+      },
+      {
+        "reason": "sources disagree by 0% (1 to 1) and the conflict has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again."
+      }
+    ],
+    "declined_count": 2
   },
   "domains_benchmark_disposed": [
     3,

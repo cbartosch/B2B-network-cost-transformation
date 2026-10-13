@@ -134,7 +134,7 @@ Sources: [ARCEP (French telecom regulator)](https://en.arcep.fr/news/press-relea
 ## Allianz SE
 
 - **Industry** INSURANCE (entity resolution)
-- **Scope** DE, FR, IT, EUR, 6,584 sites (research merged with disclosure)
+- **Scope** DE, FR, IT, EUR, 6,585 sites (research merged with disclosure)
 - **Confidence** 0.332 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 2 source(s)
@@ -254,7 +254,7 @@ Sources: [germancompanyformation.com](https://germancompanyformation.com/guides/
 ## BASF SE
 
 - **Industry** CHEMICALS (entity resolution)
-- **Scope** DE, BE, US, CN, FR, ES, IT, BR, IN, EUR, 219 sites (research merged with disclosure)
+- **Scope** DE, BE, US, CN, FR, ES, IT, BR, IN, EUR, 263 sites (research merged with disclosure)
 - **Confidence** 0.346 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 6 source(s)
@@ -908,7 +908,7 @@ Sources: [germancompanyformation.com](https://germancompanyformation.com/guides/
 
 ## Douglas AG
 
-- **Industry** SPECIALTY_RETAIL (spec fallback)
+- **Industry** SPECIALTY_RETAIL (entity resolution)
 - **Scope** DE, FR, IT, NL, PL, EUR, 1,339 sites (research merged with disclosure)
 - **Confidence** 0.325 (D - Indicative), coverage COMPLETE
 
@@ -1994,8 +1994,8 @@ Sources: [COMCOM – Federal Communications Commission Switz](https://www.comcom
 ## Rio Tinto plc
 
 - **Industry** DIVERSIFIED_MINING (entity resolution)
-- **Scope** GB, AU, CA, USD, 97 sites (research merged with disclosure)
-- **Confidence** 0.321 (D - Indicative), coverage PARTIAL
+- **Scope** GB, AU, CA, USD, 106 sites (research merged with disclosure)
+- **Confidence** 0.275 (D - Indicative), coverage PARTIAL
 
 **Profile** - EVIDENCED_PUBLIC, 9 source(s)
 
@@ -2393,7 +2393,7 @@ Sources: [ServNet UK (trade press)](https://www.servnetuk.com/insights/sd-wan-vs
 ## Siemens AG
 
 - **Industry** INDUSTRIAL_CONGLOMERATE (entity resolution)
-- **Scope** DE, AT, US, CN, IN, GB, FR, IT, EUR, 497 sites (research merged with disclosure)
+- **Scope** DE, AT, US, CN, IN, GB, FR, IT, EUR, 557 sites (research merged with disclosure)
 - **Confidence** 0.346 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 10 source(s)
@@ -2656,7 +2656,7 @@ Sources: [Pallas Digital](https://pall.as/the-state-of-enterprise-wan/); [Socium
 ## Tesco PLC
 
 - **Industry** GROCERY_RETAIL (entity resolution)
-- **Scope** GB, IE, GBP, 3,910 sites (research merged with disclosure)
+- **Scope** GB, IE, GBP, 3,922 sites (research merged with disclosure)
 - **Confidence** 0.381 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 9 source(s)

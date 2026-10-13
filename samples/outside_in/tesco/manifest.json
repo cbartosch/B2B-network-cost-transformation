@@ -3,7 +3,9 @@
   "legal_name": "Tesco PLC",
   "industry": {
     "industry": "GROCERY_RETAIL",
-    "origin": "ENTITY_RESOLUTION"
+    "origin": "ENTITY_RESOLUTION",
+    "resolution_said": "Retail sale in non-specialised stores with food, beverages or tobacco predominating (SIC 47110)",
+    "agrees_with_resolution": true
   },
   "domicile": "GB",
   "in_scope_countries": [
@@ -12,8 +14,8 @@
   ],
   "base_currency": "GBP",
   "case_id": "1acf16ce-b58d-437f-8c30-60d47bbf86d2",
-  "spec_path": "/app/samples/companies.json",
-  "spec_sha256": "89c85a8563f5",
+  "spec_path": "/tmp/companies_fixed.json",
+  "spec_sha256": "2e45939dbcdb",
   "entity_resolution": {
     "resolved": null,
     "resumed": true
@@ -74,7 +76,7 @@
     {
       "country": "IE",
       "archetype": "STORE",
-      "sites": 170,
+      "sites": 182,
       "density": "SUBURBAN"
     },
     {
@@ -91,7 +93,7 @@
       "sites": 25,
       "origin": "DISCLOSURE_KEPT_RESEARCH_FOUND_FEWER",
       "density": "SUBURBAN",
-      "research_said": 1,
+      "research_said": 2,
       "disclosure_said": 25
     },
     {
@@ -127,10 +129,10 @@
     {
       "country": "IE",
       "archetype": "STORE",
-      "sites": 170,
-      "origin": "DISCLOSURE_KEPT_RESEARCH_FOUND_FEWER",
+      "sites": 182,
+      "origin": "SUPERSEDED_BY_RESEARCH",
       "density": "SUBURBAN",
-      "research_said": 113,
+      "research_said": 182,
       "disclosure_said": 170
     },
     {
@@ -189,7 +191,7 @@
   "sites_origin": {
     "DC": "RESEARCHED",
     "LARGE_OFFICE": "RESEARCHED",
-    "STORE": "ASSUMED_PUBLIC_DISCLOSURE",
+    "STORE": "RESEARCHED",
     "WAREHOUSE": "RESEARCHED"
   },
   "fx_to_eur": {
@@ -248,17 +250,31 @@
   ],
   "estimate_inputs": {
     "method": "BUILD_UP",
-    "users": 46920,
+    "users": 47064,
     "ops_cost_per_site_base": 900,
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-12T18:59:14.380480+00:00",
-  "run_seconds": 34.9,
+  "run_started": "2026-10-13T09:34:50.590826+00:00",
+  "run_seconds": 8.9,
   "preflight_conditions": 8,
   "promotion": {
     "promoted": true,
-    "detail": null
+    "detail": null,
+    "offered": 13,
+    "accepted": 5,
+    "declined": [
+      {
+        "reason": "sources disagree by 0% (1 to 1) and the conflict has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again."
+      },
+      {
+        "reason": "sources disagree by 29% (2958 to 3829) and the conflict has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again."
+      },
+      {
+        "reason": "sources disagree by 0% (23 to 23) and the conflict has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again."
+      }
+    ],
+    "declined_count": 3
   },
   "domains_benchmark_disposed": [
     3,

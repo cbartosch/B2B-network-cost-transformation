@@ -3,7 +3,9 @@
   "legal_name": "Iberdrola SA",
   "industry": {
     "industry": "UTILITIES",
-    "origin": "ENTITY_RESOLUTION"
+    "origin": "ENTITY_RESOLUTION",
+    "resolution_said": "Electric Utilities / Holding Company (CNAE 6421 – Holding company activities; SIC 4911 – Electric Services)",
+    "agrees_with_resolution": true
   },
   "domicile": "ES",
   "in_scope_countries": [
@@ -12,8 +14,8 @@
   ],
   "base_currency": "EUR",
   "case_id": "2ad772a6-f0e2-424e-8fc1-75ded97aad7f",
-  "spec_path": "/app/samples/companies.json",
-  "spec_sha256": "89c85a8563f5",
+  "spec_path": "/tmp/companies_fixed.json",
+  "spec_sha256": "2e45939dbcdb",
   "entity_resolution": {
     "resolved": null,
     "resumed": true
@@ -248,12 +250,23 @@
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-12T19:00:16.014193+00:00",
-  "run_seconds": 108.8,
+  "run_started": "2026-10-13T09:35:15.913668+00:00",
+  "run_seconds": 11.7,
   "preflight_conditions": 8,
   "promotion": {
     "promoted": true,
-    "detail": null
+    "detail": null,
+    "offered": 4,
+    "accepted": 2,
+    "declined": [
+      {
+        "reason": "sources disagree by 30% (500 to 650) and the conflict has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again."
+      },
+      {
+        "reason": "sources disagree by 0% (6 to 6) and the conflict has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again."
+      }
+    ],
+    "declined_count": 2
   },
   "domains_benchmark_disposed": [
     3,

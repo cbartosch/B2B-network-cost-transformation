@@ -3,7 +3,9 @@
   "legal_name": "Rio Tinto plc",
   "industry": {
     "industry": "DIVERSIFIED_MINING",
-    "origin": "ENTITY_RESOLUTION"
+    "origin": "ENTITY_RESOLUTION",
+    "resolution_said": null,
+    "agrees_with_resolution": null
   },
   "domicile": "GB",
   "in_scope_countries": [
@@ -13,8 +15,8 @@
   ],
   "base_currency": "USD",
   "case_id": "db96b5a3-5939-434d-97bf-79df14ddeba4",
-  "spec_path": "/app/samples/companies.json",
-  "spec_sha256": "89c85a8563f5",
+  "spec_path": "/tmp/companies_fixed.json",
+  "spec_sha256": "2e45939dbcdb",
   "entity_resolution": {
     "resolved": null,
     "resumed": true
@@ -56,19 +58,19 @@
     {
       "country": "AU",
       "archetype": "PLANT",
-      "sites": 4,
+      "sites": 8,
       "density": "RURAL"
     },
     {
       "country": "AU",
       "archetype": "PLANT",
-      "sites": 3,
+      "sites": 6,
       "density": "SUBURBAN"
     },
     {
       "country": "AU",
       "archetype": "PLANT",
-      "sites": 1,
+      "sites": 3,
       "density": "URBAN"
     },
     {
@@ -110,7 +112,7 @@
     {
       "country": "AU",
       "archetype": "PLANT",
-      "sites": 8,
+      "sites": 17,
       "origin": "RESEARCHED",
       "density": null
     },
@@ -138,18 +140,18 @@
     {
       "origin": "DENSITY_FROM_MIX",
       "rows": 1,
-      "sites": 8,
+      "sites": 17,
       "filled": [
         {
           "country": "AU",
           "archetype": "PLANT",
-          "sites": 8,
+          "sites": 17,
           "basis": "SECTOR_LAYER_SYNONYM",
           "mix_industry": "DIVERSIFIED_MINING",
           "bands": {
-            "RURAL": 4,
-            "SUBURBAN": 3,
-            "URBAN": 1
+            "RURAL": 8,
+            "SUBURBAN": 6,
+            "URBAN": 3
           },
           "via_layer": "REMOTE_SITE"
         }
@@ -225,17 +227,31 @@
   ],
   "estimate_inputs": {
     "method": "BUILD_UP",
-    "users": 1164,
+    "users": 1272,
     "ops_cost_per_site_base": 900,
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-12T18:59:51.630051+00:00",
-  "run_seconds": 23.5,
+  "run_started": "2026-10-13T09:35:23.814421+00:00",
+  "run_seconds": 2.6,
   "preflight_conditions": 8,
   "promotion": {
     "promoted": true,
-    "detail": null
+    "detail": null,
+    "offered": 7,
+    "accepted": 2,
+    "declined": [
+      {
+        "reason": "sources disagree by 0% (3 to 3) and the conflict has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again."
+      },
+      {
+        "reason": "sources disagree by 0% (10 to 10) and the conflict has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again."
+      },
+      {
+        "reason": "sources disagree by 0% (1 to 1) and the conflict has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again."
+      }
+    ],
+    "declined_count": 3
   },
   "domains_benchmark_disposed": [
     3,

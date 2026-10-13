@@ -1,13 +1,13 @@
 {
-  "simulation_run_id": "42244dc6-633d-4565-b536-86d28f411b97",
+  "simulation_run_id": "57340715-db21-4879-ba7c-0967173e92ec",
   "case_id": "1acf16ce-b58d-437f-8c30-60d47bbf86d2",
   "model_version": "sim-2.7.0",
   "seed": 20260101,
   "ensemble_size": 25,
   "status": "SUCCEEDED",
-  "output_hash": "a0c796f8ac0137534f68dd437a929f5206d071ce93132a1df6dc0d5a0e18bd96",
-  "started_at": "2026-10-12 18:59:17.038952+00:00",
-  "ended_at": "2026-10-12 18:59:33.455906+00:00",
+  "output_hash": "9ef0d2521499dbc3718a116bdea656aec6ed944b764ab025948d79d86e60c851",
+  "started_at": "2026-10-13 09:34:51.431709+00:00",
+  "ended_at": "2026-10-13 09:34:55.237126+00:00",
   "params": {
     "footprint": [
       {
@@ -53,7 +53,7 @@
       {
         "country": "IE",
         "archetype": "STORE",
-        "sites": 170,
+        "sites": 182,
         "industry": null,
         "count_source": null,
         "density": "SUBURBAN"
@@ -1484,10 +1484,10 @@
     "model_version": "sim-2.7.0",
     "seed": 20260101,
     "ensemble_size": 25,
-    "sites": 3910,
+    "sites": 3922,
     "serviceability": {
       "counts": {
-        "DELIVERED": 3885,
+        "DELIVERED": 3897,
         "SUBSTITUTED": 25,
         "UNSERVICEABLE": 0
       },
@@ -1510,7 +1510,7 @@
         }
       ],
       "unserviceable": 0,
-      "note": "25 of 3910 site(s) take a different product or tier from the one their type asks for, and 0 can be served by nothing at all. 37 of 3910 are delivered over a bearer other than PON (37 on ETHERNET_FIBRE), which is a different circuit at a different rate. A uniform estate is an assumption; this is what the density bands say about it.",
+      "note": "25 of 3922 site(s) take a different product or tier from the one their type asks for, and 0 can be served by nothing at all. 37 of 3922 are delivered over a bearer other than PON (37 on ETHERNET_FIBRE), which is a different circuit at a different rate. A uniform estate is an assumption; this is what the density bands say about it.",
       "table_rows": 34,
       "table_basis": "GOVERNED"
     },
@@ -1727,21 +1727,21 @@
     ],
     "estate_truncated": 0,
     "sites_named": 0,
-    "sites_generated": 3910,
+    "sites_generated": 3922,
     "circuits": {
-      "low": 5301,
-      "base": 5326,
-      "high": 5353
+      "low": 5318,
+      "base": 5343,
+      "high": 5370
     },
     "circuits_primary": {
-      "low": 3910,
-      "base": 3910,
-      "high": 3910
+      "low": 3922,
+      "base": 3922,
+      "high": 3922
     },
     "circuits_backup": {
-      "low": 1339,
-      "base": 1364,
-      "high": 1391
+      "low": 1344,
+      "base": 1369,
+      "high": 1396
     },
     "products": [
       {
@@ -1813,20 +1813,9 @@
       {
         "country": "IE",
         "product": "BROADBAND_HFC",
-        "role": "BACKUP",
-        "bandwidth_mbps": 100,
-        "count": 1,
-        "service_class": "BEST_EFFORT",
-        "density": "SUBURBAN",
-        "bearer_mbps": 100,
-        "access_technology": "HFC"
-      },
-      {
-        "country": "IE",
-        "product": "BROADBAND_HFC",
         "role": "PRIMARY",
         "bandwidth_mbps": 110,
-        "count": 170,
+        "count": 182,
         "service_class": "BEST_EFFORT",
         "density": "SUBURBAN",
         "bearer_mbps": 110,
@@ -1881,7 +1870,7 @@
         "product": "MOBILE_5G",
         "role": "BACKUP",
         "bandwidth_mbps": 110,
-        "count": 54,
+        "count": 60,
         "service_class": "BEST_EFFORT",
         "density": "SUBURBAN",
         "bearer_mbps": 110,
@@ -1889,13 +1878,13 @@
       }
     ],
     "dual_access_sites": {
-      "low": 1339,
-      "base": 1364,
-      "high": 1391
+      "low": 1344,
+      "base": 1369,
+      "high": 1396
     },
     "circuits_backbone": 52,
-    "circuits_per_site_base": 1.3621,
-    "implied_users": 49750,
+    "circuits_per_site_base": 1.3623,
+    "implied_users": 49894,
     "bandwidth_profile": {
       "DC": {
         "sites": 26,
@@ -1908,9 +1897,9 @@
         "mbps_total": 6500
       },
       "STORE": {
-        "sites": 3870,
+        "sites": 3882,
         "mbps_per_site": 110,
-        "mbps_total": 425700
+        "mbps_total": 427020
       },
       "WAREHOUSE": {
         "sites": 1,
@@ -1918,7 +1907,7 @@
         "mbps_total": 100
       }
     },
-    "bandwidth_mbps_total": 692300,
+    "bandwidth_mbps_total": 693620,
     "diversity_state": "SIMULATED",
     "backbone": {
       "template_version": "1.0.0",
@@ -1946,12 +1935,12 @@
       "backbone_circuits": 52,
       "note": "One region with data centres (EUROPE_WEST), so there is no global core tier - a hub has nothing to reach across."
     },
-    "node_count": 3910,
-    "edge_count": 5326
+    "node_count": 3922,
+    "edge_count": 5343
   },
   "output_omitted": {
     "fields": [
-      "estate (3910 rows)",
+      "estate (3922 rows)",
       "sample_topology (2 rows)"
     ],
     "why": "per-site arrays, the same information the aggregates carry; tools/backfill_simulation.py --full keeps them"

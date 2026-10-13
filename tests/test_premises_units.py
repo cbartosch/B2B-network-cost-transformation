@@ -125,3 +125,64 @@ def test_an_excluded_asset_beside_a_premises_noun_still_declines():
     """"substations and depots" names one of each. The asset decides, so a
     premises noun sitting beside it cannot rescue the count."""
     assert not is_premises_unit("substations and depots")
+
+
+# ------------------------------------------- standalone cash machines
+
+from app.domain.promotion import names_standalone_atms  # noqa: E402
+
+
+@pytest.mark.parametrize("label", [
+    "ATM - standalone off-premise cash machines",
+    "ATM - free-standing units in supermarkets",
+    "ATM - remote cashpoints",
+    "ATM - offsite machines in convenience stores",
+    "ATM - non-branch ATM estate",
+])
+def test_an_off_premise_atm_count_is_a_site_count(label):
+    """A standalone ATM in a supermarket or a forecourt is its own site and
+    needs its own connectivity.
+
+    absolute_counts.ADDITIVE_ONLY says these arrive "as an explicit count
+    from the analyst or from research" - and no such count could ever
+    arrive, because the unit gate rejects every ATM unit there is. The
+    channel the design assumes did not exist.
+    """
+    assert _classify({"label": label, "unit": "ATMs",
+                      "country": "US", "value": "300"}) == "footprint"
+
+
+@pytest.mark.parametrize("label", [
+    "ATM - total ATM estate",
+    "ATM - branch-attached machines",
+    "ATM - cash machines operated",
+    "ATM - installed base",
+])
+def test_a_bare_atm_count_stays_out(label):
+    """Most cash machines are inside a branch: equipment in a site already
+    counted. Promoting a bank's total ATM estate counts those branches
+    twice, which is the failure ADDITIVE_ONLY exists to prevent - the shape
+    model once turned Simmons Bank's 233 registered branches into 60
+    branches and 153 cash machines."""
+    assert _classify({"label": label, "unit": "ATMs",
+                      "country": "US", "value": "300"}) == "unclassified"
+
+
+def test_standalone_without_an_atm_word_is_not_an_atm_count():
+    """"Standalone" on its own is not a cash machine."""
+    assert not names_standalone_atms("STORE - standalone retail units",
+                                     "stores")
+
+
+def test_an_atm_word_without_standalone_is_not_a_site_count():
+    assert not names_standalone_atms("ATM - machines", "ATMs")
+
+
+def test_the_atm_path_does_not_widen_the_premises_units():
+    """The exception is on the ATM branch only. "ATMs" must still not count
+    as a premises unit for any other site type, or a STORE row measured in
+    ATMs would promote."""
+    assert not is_premises_unit("ATMs")
+    assert not is_premises_unit("cash machines")
+    assert _classify({"label": "STORE - outlets", "unit": "ATMs",
+                      "country": "US", "value": "50"}) == "unclassified"

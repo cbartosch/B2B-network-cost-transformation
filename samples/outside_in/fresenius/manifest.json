@@ -3,7 +3,9 @@
   "legal_name": "Fresenius SE & Co. KGaA",
   "industry": {
     "industry": "HOSPITAL",
-    "origin": "ENTITY_RESOLUTION"
+    "origin": "ENTITY_RESOLUTION",
+    "resolution_said": "Health care – pharmaceuticals, hospital services, medical nutrition, infusion therapy",
+    "agrees_with_resolution": true
   },
   "domicile": "DE",
   "in_scope_countries": [
@@ -13,8 +15,8 @@
   ],
   "base_currency": "EUR",
   "case_id": "e71dd642-34f1-44b8-8bc1-8c2a230f9cae",
-  "spec_path": "/app/samples/companies.json",
-  "spec_sha256": "89c85a8563f5",
+  "spec_path": "/tmp/companies_fixed.json",
+  "spec_sha256": "2e45939dbcdb",
   "entity_resolution": {
     "resolved": null,
     "resumed": true
@@ -255,12 +257,26 @@
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-12T19:00:08.794729+00:00",
-  "run_seconds": 71.7,
+  "run_started": "2026-10-13T09:34:50.639053+00:00",
+  "run_seconds": 14.8,
   "preflight_conditions": 8,
   "promotion": {
     "promoted": true,
-    "detail": null
+    "detail": null,
+    "offered": 6,
+    "accepted": 3,
+    "declined": [
+      {
+        "reason": "sources disagree by 0% (220 to 220) and the conflict has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again."
+      },
+      {
+        "reason": "sources disagree by 0% (130 to 130) and the conflict has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again."
+      },
+      {
+        "reason": "sources disagree by 0% (58 to 58) and the conflict has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again."
+      }
+    ],
+    "declined_count": 3
   },
   "domains_benchmark_disposed": [
     3,

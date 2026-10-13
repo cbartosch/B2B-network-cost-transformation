@@ -3,7 +3,9 @@
   "legal_name": "Allianz SE",
   "industry": {
     "industry": "INSURANCE",
-    "origin": "ENTITY_RESOLUTION"
+    "origin": "ENTITY_RESOLUTION",
+    "resolution_said": "Financial Services – Insurance & Asset Management",
+    "agrees_with_resolution": true
   },
   "domicile": "DE",
   "in_scope_countries": [
@@ -13,8 +15,8 @@
   ],
   "base_currency": "EUR",
   "case_id": "d306c1b6-5c12-4709-b0b8-bda47b7763d1",
-  "spec_path": "/app/samples/companies.json",
-  "spec_sha256": "89c85a8563f5",
+  "spec_path": "/tmp/companies_fixed.json",
+  "spec_sha256": "2e45939dbcdb",
   "entity_resolution": {
     "resolved": null,
     "resumed": true
@@ -130,6 +132,12 @@
       "country": "IT",
       "archetype": "LARGE_OFFICE",
       "sites": 1,
+      "density": "DENSE_URBAN"
+    },
+    {
+      "country": "IT",
+      "archetype": "LARGE_OFFICE",
+      "sites": 1,
       "density": "URBAN"
     },
     {
@@ -223,7 +231,7 @@
     {
       "country": "IT",
       "archetype": "LARGE_OFFICE",
-      "sites": 1,
+      "sites": 2,
       "origin": "RESEARCHED",
       "density": null
     },
@@ -237,7 +245,7 @@
     {
       "origin": "DENSITY_FROM_MIX",
       "rows": 5,
-      "sites": 5049,
+      "sites": 5050,
       "filled": [
         {
           "country": "DE",
@@ -278,10 +286,11 @@
         {
           "country": "IT",
           "archetype": "LARGE_OFFICE",
-          "sites": 1,
+          "sites": 2,
           "basis": "INDUSTRY_DEFAULT",
           "mix_industry": "INSURANCE",
           "bands": {
+            "DENSE_URBAN": 1,
             "URBAN": 1
           }
         },
@@ -367,17 +376,25 @@
   ],
   "estimate_inputs": {
     "method": "BUILD_UP",
-    "users": 79008,
+    "users": 79020,
     "ops_cost_per_site_base": 900,
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-12T18:59:14.453788+00:00",
-  "run_seconds": 58.2,
+  "run_started": "2026-10-13T09:35:29.699268+00:00",
+  "run_seconds": 13.3,
   "preflight_conditions": 8,
   "promotion": {
     "promoted": true,
-    "detail": null
+    "detail": null,
+    "offered": 14,
+    "accepted": 7,
+    "declined": [
+      {
+        "reason": "sources disagree by 3% (2516 to 2601) and the conflict has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again."
+      }
+    ],
+    "declined_count": 1
   },
   "domains_benchmark_disposed": [
     3,

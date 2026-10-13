@@ -3,7 +3,9 @@
   "legal_name": "BASF SE",
   "industry": {
     "industry": "CHEMICALS",
-    "origin": "ENTITY_RESOLUTION"
+    "origin": "ENTITY_RESOLUTION",
+    "resolution_said": "Chemicals – diversified / specialty",
+    "agrees_with_resolution": true
   },
   "domicile": "DE",
   "in_scope_countries": [
@@ -19,8 +21,8 @@
   ],
   "base_currency": "EUR",
   "case_id": "cbf4d17f-c7e7-45be-92fe-82e7a4005752",
-  "spec_path": "/app/samples/companies.json",
-  "spec_sha256": "89c85a8563f5",
+  "spec_path": "/tmp/companies_fixed.json",
+  "spec_sha256": "2e45939dbcdb",
   "entity_resolution": {
     "resolved": null,
     "resumed": true
@@ -93,7 +95,7 @@
     {
       "country": "DE",
       "archetype": "PLANT",
-      "sites": 40,
+      "sites": 54,
       "density": "SUBURBAN"
     },
     {
@@ -147,7 +149,7 @@
     {
       "country": "US",
       "archetype": "PLANT",
-      "sites": 30,
+      "sites": 60,
       "density": "SUBURBAN"
     }
   ],
@@ -208,10 +210,10 @@
     {
       "country": "DE",
       "archetype": "PLANT",
-      "sites": 40,
-      "origin": "DISCLOSURE_KEPT_RESEARCH_FOUND_FEWER",
+      "sites": 54,
+      "origin": "SUPERSEDED_BY_RESEARCH",
       "density": "SUBURBAN",
-      "research_said": 1,
+      "research_said": 54,
       "disclosure_said": 40
     },
     {
@@ -275,10 +277,10 @@
     {
       "country": "US",
       "archetype": "PLANT",
-      "sites": 30,
-      "origin": "DISCLOSURE_KEPT_RESEARCH_FOUND_FEWER",
+      "sites": 60,
+      "origin": "SUPERSEDED_BY_RESEARCH",
       "density": "SUBURBAN",
-      "research_said": 1,
+      "research_said": 60,
       "disclosure_said": 30
     }
   ],
@@ -299,7 +301,7 @@
   "sites_origin": {
     "DC": "ASSUMED_PUBLIC_DISCLOSURE",
     "LARGE_OFFICE": "ASSUMED_PUBLIC_DISCLOSURE",
-    "PLANT": "ASSUMED_PUBLIC_DISCLOSURE"
+    "PLANT": "RESEARCHED"
   },
   "fx_to_eur": {
     "rate": "1.0",
@@ -352,17 +354,21 @@
   ],
   "estimate_inputs": {
     "method": "BUILD_UP",
-    "users": 2628,
+    "users": 3156,
     "ops_cost_per_site_base": 900,
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-12T18:59:14.414728+00:00",
-  "run_seconds": 36.3,
+  "run_started": "2026-10-13T09:35:38.300205+00:00",
+  "run_seconds": 3.2,
   "preflight_conditions": 8,
   "promotion": {
     "promoted": true,
-    "detail": null
+    "detail": null,
+    "offered": 13,
+    "accepted": 5,
+    "declined": [],
+    "declined_count": 0
   },
   "domains_benchmark_disposed": [
     3,

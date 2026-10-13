@@ -1,13 +1,13 @@
 {
-  "simulation_run_id": "99aac139-5180-4e49-bbf6-34e6d36a8b05",
+  "simulation_run_id": "c15153bd-aa77-4204-8095-480cae4b713e",
   "case_id": "d306c1b6-5c12-4709-b0b8-bda47b7763d1",
   "model_version": "sim-2.7.0",
   "seed": 20260101,
   "ensemble_size": 25,
   "status": "SUCCEEDED",
-  "output_hash": "2def7c7d92ffee1a487e571d866a6ccee75bc28928eb57a758b2000c4d4b50ad",
-  "started_at": "2026-10-12 18:59:43.994877+00:00",
-  "ended_at": "2026-10-12 18:59:55.273713+00:00",
+  "output_hash": "cbe19a742ae0da8d160eb8d07bca30e5a3e91584af1ab7a499a04e4d96529836",
+  "started_at": "2026-10-13 09:35:31.549558+00:00",
+  "ended_at": "2026-10-13 09:35:36.794053+00:00",
   "params": {
     "footprint": [
       {
@@ -121,6 +121,14 @@
         "industry": null,
         "count_source": null,
         "density": "URBAN"
+      },
+      {
+        "country": "IT",
+        "archetype": "LARGE_OFFICE",
+        "sites": 1,
+        "industry": null,
+        "count_source": null,
+        "density": "DENSE_URBAN"
       },
       {
         "country": "IT",
@@ -1863,10 +1871,10 @@
     "model_version": "sim-2.7.0",
     "seed": 20260101,
     "ensemble_size": 25,
-    "sites": 6584,
+    "sites": 6585,
     "serviceability": {
       "counts": {
-        "DELIVERED": 6548,
+        "DELIVERED": 6549,
         "SUBSTITUTED": 36,
         "UNSERVICEABLE": 0
       },
@@ -1895,7 +1903,7 @@
         }
       ],
       "unserviceable": 0,
-      "note": "36 of 6584 site(s) take a different product or tier from the one their type asks for, and 0 can be served by nothing at all. 1136 of 6584 are delivered over a bearer other than PON (1136 on ETHERNET_FIBRE), which is a different circuit at a different rate. A uniform estate is an assumption; this is what the density bands say about it.",
+      "note": "36 of 6585 site(s) take a different product or tier from the one their type asks for, and 0 can be served by nothing at all. 1136 of 6585 are delivered over a bearer other than PON (1136 on ETHERNET_FIBRE), which is a different circuit at a different rate. A uniform estate is an assumption; this is what the density bands say about it.",
       "table_rows": 68,
       "table_basis": "GOVERNED"
     },
@@ -1942,22 +1950,22 @@
         "reason": "the only backup deliverable in SUBURBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
       }
     ],
-    "estate_truncated": 1584,
+    "estate_truncated": 1585,
     "sites_named": 0,
-    "sites_generated": 6584,
+    "sites_generated": 6585,
     "circuits": {
-      "low": 9976,
-      "base": 10057,
-      "high": 10084
+      "low": 9979,
+      "base": 10060,
+      "high": 10085
     },
     "circuits_primary": {
-      "low": 6584,
-      "base": 6584,
-      "high": 6584
+      "low": 6585,
+      "base": 6585,
+      "high": 6585
     },
     "circuits_backup": {
-      "low": 3382,
-      "base": 3463,
+      "low": 3384,
+      "base": 3465,
       "high": 3490
     },
     "products": [
@@ -2309,6 +2317,17 @@
         "bandwidth_mbps": 10000,
         "count": 1,
         "service_class": "DIA",
+        "density": "DENSE_URBAN",
+        "bearer_mbps": 10000,
+        "access_technology": null
+      },
+      {
+        "country": "IT",
+        "product": "DIA",
+        "role": "BACKUP",
+        "bandwidth_mbps": 10000,
+        "count": 1,
+        "service_class": "DIA",
         "density": "URBAN",
         "bearer_mbps": 10000,
         "access_technology": null
@@ -2331,6 +2350,17 @@
         "bandwidth_mbps": 5000,
         "count": 1,
         "service_class": "ETHERNET",
+        "density": "DENSE_URBAN",
+        "bearer_mbps": 10000,
+        "access_technology": "ETHERNET_FIBRE"
+      },
+      {
+        "country": "IT",
+        "product": "ETHERNET",
+        "role": "PRIMARY",
+        "bandwidth_mbps": 5000,
+        "count": 1,
+        "service_class": "ETHERNET",
         "density": "URBAN",
         "bearer_mbps": 10000,
         "access_technology": "ETHERNET_FIBRE"
@@ -2340,7 +2370,7 @@
         "product": "MOBILE_5G",
         "role": "BACKUP",
         "bandwidth_mbps": 50,
-        "count": 1,
+        "count": 2,
         "service_class": "BEST_EFFORT",
         "density": "DENSE_URBAN",
         "bearer_mbps": 50,
@@ -2351,7 +2381,7 @@
         "product": "MOBILE_5G",
         "role": "BACKUP",
         "bandwidth_mbps": 50,
-        "count": 4,
+        "count": 3,
         "service_class": "BEST_EFFORT",
         "density": "RURAL",
         "bearer_mbps": 50,
@@ -2362,7 +2392,7 @@
         "product": "MOBILE_5G",
         "role": "BACKUP",
         "bandwidth_mbps": 50,
-        "count": 3,
+        "count": 4,
         "service_class": "BEST_EFFORT",
         "density": "SUBURBAN",
         "bearer_mbps": 50,
@@ -2381,13 +2411,13 @@
       }
     ],
     "dual_access_sites": {
-      "low": 3382,
-      "base": 3463,
+      "low": 3384,
+      "base": 3465,
       "high": 3490
     },
     "circuits_backbone": 10,
-    "circuits_per_site_base": 1.4014,
-    "implied_users": 106064,
+    "circuits_per_site_base": 1.4017,
+    "implied_users": 106314,
     "bandwidth_profile": {
       "BRANCH": {
         "sites": 1500,
@@ -2400,9 +2430,9 @@
         "mbps_total": 50000
       },
       "LARGE_OFFICE": {
-        "sites": 32,
+        "sites": 33,
         "mbps_per_site": 10000,
-        "mbps_total": 320000
+        "mbps_total": 330000
       },
       "STORE": {
         "sites": 5047,
@@ -2410,7 +2440,7 @@
         "mbps_total": 252350
       }
     },
-    "bandwidth_mbps_total": 772350,
+    "bandwidth_mbps_total": 782350,
     "diversity_state": "SIMULATED",
     "backbone": {
       "template_version": "1.0.0",
@@ -2443,8 +2473,8 @@
       "backbone_circuits": 10,
       "note": "One region with data centres (EUROPE_CENTRAL), so there is no global core tier - a hub has nothing to reach across."
     },
-    "node_count": 6584,
-    "edge_count": 9227
+    "node_count": 6585,
+    "edge_count": 9230
   },
   "output_omitted": {
     "fields": [

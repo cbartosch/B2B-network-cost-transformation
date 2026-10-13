@@ -294,6 +294,40 @@ def _singular(word: str) -> str:
     return word
 
 
+# An ATM count is a site count only when it says it is OFF-PREMISE.
+#
+# absolute_counts.ADDITIVE_ONLY exists because most cash machines are inside
+# a branch: they are equipment in a site already counted, and promoting a
+# bank's total ATM estate as sites counts those branches twice. That is the
+# Simmons Bank failure in the other direction - the shape model once turned
+# 233 registered branches into 60 branches and 153 cash machines.
+#
+# But a standalone ATM in a supermarket, a forecourt or a station concourse
+# IS a site, it needs its own connectivity, and the comment that forbids
+# deriving one says plainly how it should arrive: "as an explicit count from
+# the analyst or from research". No such count could ever arrive, because
+# the unit gate rejects every ATM unit there is.
+#
+# So the label has to carry the distinction the unit cannot. A finding that
+# says standalone, off-premise, remote or non-branch is a site count; a bare
+# "ATMs: 300" stays out, which is the conservative half and the common one.
+STANDALONE_HINTS = ("standalone", "stand-alone", "off-premise", "off premise",
+                    "offsite", "off-site", "remote", "non-branch",
+                    "outside branch", "free-standing", "freestanding")
+
+ATM_UNITS = frozenset({"atm", "cashpoint", "cashmachine"})
+
+
+def names_standalone_atms(label, unit) -> bool:
+    """Is this an explicit count of ATMs that are their own site?"""
+    text = f"{label or ''} {unit or ''}".lower()
+    words = [w for w in "".join(
+        ch if ch.isalnum() else " " for ch in text).split()]
+    if not any(_singular(w) in ATM_UNITS for w in words):
+        return False
+    return any(hint in text for hint in STANDALONE_HINTS)
+
+
 def is_premises_unit(unit) -> bool:
     """Does this unit count premises?
 
@@ -417,7 +451,9 @@ def _classify(q: dict) -> str:
     # person disposes, so widening this cannot put a number into an estimate
     # on its own.
     head = archetype_of(label)
-    if head in ARCHETYPES and len(country) == 2 and is_premises_unit(unit):
+    if head in ARCHETYPES and len(country) == 2 and (
+            is_premises_unit(unit)
+            or (head == "ATM" and names_standalone_atms(label, unit))):
         return "footprint"
     # How a site type is built rather than how many there are. Country-
     # independent, because an architecture standard usually is.
@@ -575,6 +611,66 @@ def compare_to_benchmark(session, *, country: str, product: str, value: float,
     }
 
 
+def _one_row_per_pair(entries: list) -> tuple:
+    """One footprint row per (country, archetype): the largest.
+
+    evidenced_footprint holds one row per pair - promote deletes and
+    reinserts - so when several candidates share a pair, write order decided
+    which survived. Simmons Bank's locations domain returned a 222-branch
+    national total AND a six-state breakdown of the same network, all typed
+    STORE, and the estate kept KANSAS'S 4.
+
+    THE LARGEST, NOT THE SUM, and the sample set is why. Of 25 pairs with
+    several rows across 26 companies, the largest is the right answer in
+    every one:
+
+        simmons-bank  US/STORE   [4,19,45,47,57,65,222]  222, not 459
+        dhl           DE/WHSE    [38,46,81]               81, not 165
+        lufthansa     DE/OFFICE  [3,6,10]                 10, not 19
+        tesco         GB/STORE   [45,806,3829]          3829, not 4680
+        basf          DE/PLANT   [1,54]                   54, not 55
+
+    Research returns a total alongside illustrative subsets - a regional
+    breakdown, a named example, a partial measure like Tesco's "store Wi-Fi
+    site count at the time of the BT deal". It does not return a disjoint
+    partition with no total, and summing one of these double-counts the same
+    sites under two descriptions.
+
+    What is displaced is returned, not dropped: the alternatives research
+    found are part of what it found.
+    """
+    import collections
+
+    by_pair, out, superseded = collections.defaultdict(list), [], []
+    for e in entries:
+        q = e["quantity"]
+        if _classify(q) != "footprint":
+            out.append(e)
+            continue
+        by_pair[(str(q.get("country")).upper(),
+                 archetype_of(q.get("label")))].append(e)
+
+    for (country, archetype), group in sorted(by_pair.items()):
+        group.sort(key=lambda e: _sites_from(e["quantity"]) or 0)
+        winner = group[-1]
+        out.append(winner)
+        if len(group) == 1:
+            continue
+        kept = _sites_from(winner["quantity"]) or 0
+        rest = [(_sites_from(e["quantity"]) or 0) for e in group[:-1]]
+        superseded.append({
+            "country": country, "archetype": archetype,
+            "kept": kept, "also_found": sorted(rest),
+            # A genuine disjoint partition - several regions and no total -
+            # is the one shape where the largest undercounts. Nothing in the
+            # sample looks like it (the closest is 1.07x), so it is reported
+            # rather than handled: a rule invented for a case that has not
+            # happened would be guessing twice.
+            "parts_exceed_kept": sum(rest) > kept * 1.5,
+        })
+    return out, superseded
+
+
 def promote(session, *, case_id: str, candidate_ids: list[str],
             promoted_by: str, divergence_policy=None,
             accept_conflicts: bool = False) -> dict:
@@ -598,6 +694,7 @@ def promote(session, *, case_id: str, candidate_ids: list[str],
     now = datetime.now(timezone.utc)
     promoted_footprint, proposed_prices, declined = [], [], []
     promoted_archetype, promoted_anchor = [], []
+    entries, superseded = _one_row_per_pair(entries)
 
     for e in entries:
         q, target = e["quantity"], _classify(e["quantity"])
@@ -843,6 +940,11 @@ def promote(session, *, case_id: str, candidate_ids: list[str],
         # thing a steward most needs to see and the thing most easily missed
         # in a row of successful-looking promotions.
         "material_divergences": material,
+        # Several candidates described the same (country, archetype) and the
+        # largest was kept. Reported because the alternatives research found
+        # are part of what it found, and because write order used to decide
+        # this silently.
+        "superseded_within_pair": superseded,
         "declined": declined,
         "promoted_by": promoted_by,
         "note": (

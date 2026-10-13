@@ -1,13 +1,13 @@
 {
-  "simulation_run_id": "628f8897-fad5-4981-91bc-60a12a2b4738",
+  "simulation_run_id": "d8764c02-348f-456e-9ae3-32b992e02478",
   "case_id": "db96b5a3-5939-434d-97bf-79df14ddeba4",
   "model_version": "sim-2.7.0",
   "seed": 20260101,
   "ensemble_size": 25,
   "status": "SUCCEEDED",
-  "output_hash": "0d4d559cf3ae9c12388b4b0a889da45161fc2b4527571158554b90874897f6da",
-  "started_at": "2026-10-12 19:00:03.930900+00:00",
-  "ended_at": "2026-10-12 19:00:08.066210+00:00",
+  "output_hash": "963eac88e66df254493cbbd646ee08d96f3c68ddb9670616643e37c80934ca36",
+  "started_at": "2026-10-13 09:35:24.156553+00:00",
+  "ended_at": "2026-10-13 09:35:24.958587+00:00",
   "params": {
     "footprint": [
       {
@@ -29,7 +29,7 @@
       {
         "country": "AU",
         "archetype": "PLANT",
-        "sites": 4,
+        "sites": 8,
         "industry": null,
         "count_source": null,
         "density": "RURAL"
@@ -37,7 +37,7 @@
       {
         "country": "AU",
         "archetype": "PLANT",
-        "sites": 3,
+        "sites": 6,
         "industry": null,
         "count_source": null,
         "density": "SUBURBAN"
@@ -45,7 +45,7 @@
       {
         "country": "AU",
         "archetype": "PLANT",
-        "sites": 1,
+        "sites": 3,
         "industry": null,
         "count_source": null,
         "density": "URBAN"
@@ -1357,10 +1357,10 @@
     "model_version": "sim-2.7.0",
     "seed": 20260101,
     "ensemble_size": 25,
-    "sites": 97,
+    "sites": 106,
     "serviceability": {
       "counts": {
-        "DELIVERED": 97,
+        "DELIVERED": 106,
         "SUBSTITUTED": 0,
         "UNSERVICEABLE": 0
       },
@@ -1372,7 +1372,7 @@
         }
       ],
       "unserviceable": 0,
-      "note": "0 of 97 site(s) take a different product or tier from the one their type asks for, and 0 can be served by nothing at all. A uniform estate is an assumption; this is what the density bands say about it.",
+      "note": "0 of 106 site(s) take a different product or tier from the one their type asks for, and 0 can be served by nothing at all. A uniform estate is an assumption; this is what the density bands say about it.",
       "table_rows": 34,
       "table_basis": "GOVERNED"
     },
@@ -1421,21 +1421,21 @@
     ],
     "estate_truncated": 0,
     "sites_named": 0,
-    "sites_generated": 97,
+    "sites_generated": 106,
     "circuits": {
-      "low": 166,
-      "base": 171,
-      "high": 177
+      "low": 182,
+      "base": 189,
+      "high": 192
     },
     "circuits_primary": {
-      "low": 97,
-      "base": 97,
-      "high": 97
+      "low": 106,
+      "base": 106,
+      "high": 106
     },
     "circuits_backup": {
-      "low": 65,
-      "base": 70,
-      "high": 76
+      "low": 72,
+      "base": 79,
+      "high": 82
     },
     "products": [
       {
@@ -1454,7 +1454,7 @@
         "product": "BROADBAND_PON",
         "role": "BACKUP",
         "bandwidth_mbps": 100,
-        "count": 46,
+        "count": 43,
         "service_class": "BEST_EFFORT",
         "density": "RURAL",
         "bearer_mbps": 100,
@@ -1465,7 +1465,7 @@
         "product": "BROADBAND_PON",
         "role": "BACKUP",
         "bandwidth_mbps": 1000,
-        "count": 3,
+        "count": 5,
         "service_class": "BEST_EFFORT",
         "density": "RURAL",
         "bearer_mbps": 1000,
@@ -1476,9 +1476,20 @@
         "product": "BROADBAND_PON",
         "role": "BACKUP",
         "bandwidth_mbps": 1000,
-        "count": 2,
+        "count": 4,
         "service_class": "BEST_EFFORT",
         "density": "SUBURBAN",
+        "bearer_mbps": 1000,
+        "access_technology": "PON"
+      },
+      {
+        "country": "AU",
+        "product": "BROADBAND_PON",
+        "role": "BACKUP",
+        "bandwidth_mbps": 1000,
+        "count": 2,
+        "service_class": "BEST_EFFORT",
+        "density": "URBAN",
         "bearer_mbps": 1000,
         "access_technology": "PON"
       },
@@ -1509,7 +1520,7 @@
         "product": "ETHERNET",
         "role": "PRIMARY",
         "bandwidth_mbps": 600,
-        "count": 4,
+        "count": 8,
         "service_class": "ETHERNET",
         "density": "RURAL",
         "bearer_mbps": 1000,
@@ -1520,7 +1531,7 @@
         "product": "ETHERNET",
         "role": "PRIMARY",
         "bandwidth_mbps": 600,
-        "count": 3,
+        "count": 6,
         "service_class": "ETHERNET",
         "density": "SUBURBAN",
         "bearer_mbps": 1000,
@@ -1531,7 +1542,7 @@
         "product": "ETHERNET",
         "role": "PRIMARY",
         "bandwidth_mbps": 600,
-        "count": 1,
+        "count": 3,
         "service_class": "ETHERNET",
         "density": "URBAN",
         "bearer_mbps": 1000,
@@ -1553,7 +1564,7 @@
         "product": "BROADBAND_PON",
         "role": "BACKUP",
         "bandwidth_mbps": 100,
-        "count": 10,
+        "count": 15,
         "service_class": "BEST_EFFORT",
         "density": "RURAL",
         "bearer_mbps": 100,
@@ -1575,7 +1586,7 @@
         "product": "DIA",
         "role": "BACKUP",
         "bandwidth_mbps": 1000,
-        "count": 4,
+        "count": 3,
         "service_class": "DIA",
         "density": "URBAN",
         "bearer_mbps": 1000,
@@ -1594,13 +1605,13 @@
       }
     ],
     "dual_access_sites": {
-      "low": 65,
-      "base": 70,
-      "high": 76
+      "low": 72,
+      "base": 79,
+      "high": 82
     },
     "circuits_backbone": 4,
-    "circuits_per_site_base": 1.7113,
-    "implied_users": 9360,
+    "circuits_per_site_base": 1.717,
+    "implied_users": 12960,
     "bandwidth_profile": {
       "CONTROL_CENTER": {
         "sites": 3,
@@ -1613,9 +1624,9 @@
         "mbps_total": 20000
       },
       "PLANT": {
-        "sites": 8,
+        "sites": 17,
         "mbps_per_site": 1000,
-        "mbps_total": 8000
+        "mbps_total": 17000
       },
       "REMOTE_SITE": {
         "sites": 80,
@@ -1628,7 +1639,7 @@
         "mbps_total": 4000
       }
     },
-    "bandwidth_mbps_total": 43000,
+    "bandwidth_mbps_total": 52000,
     "diversity_state": "SIMULATED",
     "backbone": {
       "template_version": "1.0.0",
@@ -1661,12 +1672,12 @@
       "backbone_circuits": 4,
       "note": "One region with data centres (APAC), so there is no global core tier - a hub has nothing to reach across."
     },
-    "node_count": 97,
-    "edge_count": 166
+    "node_count": 106,
+    "edge_count": 182
   },
   "output_omitted": {
     "fields": [
-      "estate (97 rows)",
+      "estate (106 rows)",
       "sample_topology (2 rows)"
     ],
     "why": "per-site arrays, the same information the aggregates carry; tools/backfill_simulation.py --full keeps them"

@@ -5457,28 +5457,6 @@
   },
   "dispositions": [
     {
-      "id": "5569d866-f9bc-401c-8406-352269409565",
-      "case_id": "f29aa37f-2c3f-476f-8176-b4704fe1d6c6",
-      "estimate_snapshot_id": null,
-      "domain_no": 3,
-      "domain_name": "Site archetype assumptions",
-      "disposition": "BENCHMARK_PRIOR",
-      "reason": null,
-      "agent_run_id": null,
-      "evidence": null
-    },
-    {
-      "id": "aaa88ee0-a6ee-4ad6-8007-ccbb1bc3fbd7",
-      "case_id": "f29aa37f-2c3f-476f-8176-b4704fe1d6c6",
-      "estimate_snapshot_id": null,
-      "domain_no": 4,
-      "domain_name": "Bandwidth and traffic assumptions",
-      "disposition": "BENCHMARK_PRIOR",
-      "reason": null,
-      "agent_run_id": null,
-      "evidence": null
-    },
-    {
       "id": "534e9c7b-4749-473f-8ef7-93eb80b8c098",
       "case_id": "f29aa37f-2c3f-476f-8176-b4704fe1d6c6",
       "estimate_snapshot_id": null,
@@ -17113,12 +17091,55 @@
       "reason": null,
       "agent_run_id": null,
       "evidence": null
+    },
+    {
+      "id": "5569d866-f9bc-401c-8406-352269409565",
+      "case_id": "f29aa37f-2c3f-476f-8176-b4704fe1d6c6",
+      "estimate_snapshot_id": null,
+      "domain_no": 3,
+      "domain_name": "Site archetype assumptions",
+      "disposition": "BENCHMARK_PRIOR",
+      "reason": null,
+      "agent_run_id": null,
+      "evidence": null
+    },
+    {
+      "id": "aaa88ee0-a6ee-4ad6-8007-ccbb1bc3fbd7",
+      "case_id": "f29aa37f-2c3f-476f-8176-b4704fe1d6c6",
+      "estimate_snapshot_id": null,
+      "domain_no": 4,
+      "domain_name": "Bandwidth and traffic assumptions",
+      "disposition": "BENCHMARK_PRIOR",
+      "reason": null,
+      "agent_run_id": null,
+      "evidence": null
     }
   ],
   "known_facts": [],
   "evidenced_footprint": [
     {
-      "id": "e6448806-e081-477d-ac2a-804240dffe52",
+      "id": "c8e157a5-d7b7-4fdd-be9b-66b11a08d7ab",
+      "case_id": "f29aa37f-2c3f-476f-8176-b4704fe1d6c6",
+      "country": "DE",
+      "archetype": "LARGE_OFFICE",
+      "sites": 10,
+      "as_of": "2025-12-31",
+      "band_low": 10,
+      "band_high": 10,
+      "source_count": 1,
+      "domain_no": 2,
+      "agent_run_id": "734d43b3-a6e1-47dd-a40e-52a601f0ac54",
+      "source_urls": [
+        "https://cdn0.scrvt.com/fcc1c913dc63063c259fa05200249ccd/e3c48f8eaf179dd6/8c09887a8f1a/Lufthansa-Technik_Annual-Report-2025_EN.pdf",
+        "https://www.lhsystems.com/our-locations",
+        "https://aviationweek.com/mro/workforce-training/lufthansa-technik-adds-287-apprentices-across-five-german-facilities",
+        "https://www.lufthansagroup.com/de/unternehmen.html"
+      ],
+      "promoted_by": "sample-run",
+      "promoted_at": "2026-10-13 09:35:34.935368+00:00"
+    },
+    {
+      "id": "8bdc92ce-b241-48aa-ad25-2513e0907125",
       "case_id": "f29aa37f-2c3f-476f-8176-b4704fe1d6c6",
       "country": "DE",
       "archetype": "WAREHOUSE",
@@ -17136,52 +17157,10 @@
         "https://www.lufthansagroup.com/de/unternehmen.html"
       ],
       "promoted_by": "sample-run",
-      "promoted_at": "2026-10-12 19:02:31.413062+00:00"
+      "promoted_at": "2026-10-13 09:35:34.935368+00:00"
     },
     {
-      "id": "2d8f8487-dc8a-4eeb-8193-64de58cc6dcb",
-      "case_id": "f29aa37f-2c3f-476f-8176-b4704fe1d6c6",
-      "country": "DE",
-      "archetype": "LARGE_OFFICE",
-      "sites": 6,
-      "as_of": "2024-01-01",
-      "band_low": 6,
-      "band_high": 6,
-      "source_count": 1,
-      "domain_no": 2,
-      "agent_run_id": "734d43b3-a6e1-47dd-a40e-52a601f0ac54",
-      "source_urls": [
-        "https://cdn0.scrvt.com/fcc1c913dc63063c259fa05200249ccd/e3c48f8eaf179dd6/8c09887a8f1a/Lufthansa-Technik_Annual-Report-2025_EN.pdf",
-        "https://www.lhsystems.com/our-locations",
-        "https://aviationweek.com/mro/workforce-training/lufthansa-technik-adds-287-apprentices-across-five-german-facilities",
-        "https://www.lufthansagroup.com/de/unternehmen.html"
-      ],
-      "promoted_by": "sample-run",
-      "promoted_at": "2026-10-12 19:02:31.413062+00:00"
-    },
-    {
-      "id": "d3a1a83a-9710-4740-956a-47a698ca85ec",
-      "case_id": "f29aa37f-2c3f-476f-8176-b4704fe1d6c6",
-      "country": "CH",
-      "archetype": "LARGE_OFFICE",
-      "sites": 3,
-      "as_of": "2024-01-01",
-      "band_low": 3,
-      "band_high": 3,
-      "source_count": 1,
-      "domain_no": 2,
-      "agent_run_id": "734d43b3-a6e1-47dd-a40e-52a601f0ac54",
-      "source_urls": [
-        "https://cdn0.scrvt.com/fcc1c913dc63063c259fa05200249ccd/e3c48f8eaf179dd6/8c09887a8f1a/Lufthansa-Technik_Annual-Report-2025_EN.pdf",
-        "https://www.lhsystems.com/our-locations",
-        "https://aviationweek.com/mro/workforce-training/lufthansa-technik-adds-287-apprentices-across-five-german-facilities",
-        "https://www.lufthansagroup.com/de/unternehmen.html"
-      ],
-      "promoted_by": "sample-run",
-      "promoted_at": "2026-10-12 19:02:31.413062+00:00"
-    },
-    {
-      "id": "31c3fb4d-b459-4bb5-ab9b-f72c0cfa5038",
+      "id": "67c20b2c-94a4-4e0f-9b8e-e82454726296",
       "case_id": "f29aa37f-2c3f-476f-8176-b4704fe1d6c6",
       "country": "AT",
       "archetype": "LARGE_OFFICE",
@@ -17199,10 +17178,31 @@
         "https://www.lufthansagroup.com/de/unternehmen.html"
       ],
       "promoted_by": "sample-run",
-      "promoted_at": "2026-10-12 19:02:31.413062+00:00"
+      "promoted_at": "2026-10-13 09:35:34.935368+00:00"
     },
     {
-      "id": "a3580ea8-a825-48fc-85bd-ecf9bbf65a06",
+      "id": "42d3da4a-f428-4e22-adbf-f857d7ca21ae",
+      "case_id": "f29aa37f-2c3f-476f-8176-b4704fe1d6c6",
+      "country": "CH",
+      "archetype": "LARGE_OFFICE",
+      "sites": 3,
+      "as_of": "2024-01-01",
+      "band_low": 3,
+      "band_high": 3,
+      "source_count": 1,
+      "domain_no": 2,
+      "agent_run_id": "734d43b3-a6e1-47dd-a40e-52a601f0ac54",
+      "source_urls": [
+        "https://cdn0.scrvt.com/fcc1c913dc63063c259fa05200249ccd/e3c48f8eaf179dd6/8c09887a8f1a/Lufthansa-Technik_Annual-Report-2025_EN.pdf",
+        "https://www.lhsystems.com/our-locations",
+        "https://aviationweek.com/mro/workforce-training/lufthansa-technik-adds-287-apprentices-across-five-german-facilities",
+        "https://www.lufthansagroup.com/de/unternehmen.html"
+      ],
+      "promoted_by": "sample-run",
+      "promoted_at": "2026-10-13 09:35:34.935368+00:00"
+    },
+    {
+      "id": "4203f116-4fd5-4ba1-8f0b-99eb98c337f4",
       "case_id": "f29aa37f-2c3f-476f-8176-b4704fe1d6c6",
       "country": "DE",
       "archetype": "DC",
@@ -17221,7 +17221,7 @@
         "https://baxtel.com/data-center/keppel-kelsterbach"
       ],
       "promoted_by": "sample-run",
-      "promoted_at": "2026-10-12 19:02:31.413062+00:00"
+      "promoted_at": "2026-10-13 09:35:34.935368+00:00"
     }
   ],
   "timings_seconds": {}

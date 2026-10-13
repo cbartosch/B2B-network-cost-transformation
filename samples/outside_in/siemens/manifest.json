@@ -3,7 +3,9 @@
   "legal_name": "Siemens AG",
   "industry": {
     "industry": "INDUSTRIAL_CONGLOMERATE",
-    "origin": "ENTITY_RESOLUTION"
+    "origin": "ENTITY_RESOLUTION",
+    "resolution_said": null,
+    "agrees_with_resolution": null
   },
   "domicile": "DE",
   "in_scope_countries": [
@@ -18,8 +20,8 @@
   ],
   "base_currency": "EUR",
   "case_id": "3e29f228-1016-4a3d-b0ac-bea45544106e",
-  "spec_path": "/app/samples/companies.json",
-  "spec_sha256": "89c85a8563f5",
+  "spec_path": "/tmp/companies_fixed.json",
+  "spec_sha256": "2e45939dbcdb",
   "entity_resolution": {
     "resolved": null,
     "resumed": true
@@ -98,7 +100,7 @@
     {
       "country": "DE",
       "archetype": "PLANT",
-      "sites": 35,
+      "sites": 95,
       "density": "SUBURBAN"
     },
     {
@@ -230,10 +232,10 @@
     {
       "country": "DE",
       "archetype": "PLANT",
-      "sites": 35,
-      "origin": "DISCLOSURE_KEPT_RESEARCH_FOUND_FEWER",
+      "sites": 95,
+      "origin": "SUPERSEDED_BY_RESEARCH",
       "density": "SUBURBAN",
-      "research_said": 1,
+      "research_said": 95,
       "disclosure_said": 35
     },
     {
@@ -361,7 +363,7 @@
     "CAMPUS": "RESEARCHED",
     "DC": "ASSUMED_PUBLIC_DISCLOSURE",
     "LARGE_OFFICE": "ASSUMED_PUBLIC_DISCLOSURE",
-    "PLANT": "ASSUMED_PUBLIC_DISCLOSURE"
+    "PLANT": "RESEARCHED"
   },
   "fx_to_eur": {
     "rate": "1.0",
@@ -414,17 +416,21 @@
   ],
   "estimate_inputs": {
     "method": "BUILD_UP",
-    "users": 5964,
+    "users": 6684,
     "ops_cost_per_site_base": 900,
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-12T19:01:20.580053+00:00",
-  "run_seconds": 48.6,
+  "run_started": "2026-10-13T09:35:05.496866+00:00",
+  "run_seconds": 4.8,
   "preflight_conditions": 8,
   "promotion": {
     "promoted": true,
-    "detail": null
+    "detail": null,
+    "offered": 5,
+    "accepted": 4,
+    "declined": [],
+    "declined_count": 0
   },
   "domains_benchmark_disposed": [
     3,

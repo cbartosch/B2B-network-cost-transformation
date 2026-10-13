@@ -3,7 +3,9 @@
   "legal_name": "Simmons First National Corporation",
   "industry": {
     "industry": "RETAIL_BANKING",
-    "origin": "ENTITY_RESOLUTION"
+    "origin": "ENTITY_RESOLUTION",
+    "resolution_said": "Offices of Bank Holding Companies (Financial Holding Company – Domestic)",
+    "agrees_with_resolution": true
   },
   "domicile": "US",
   "in_scope_countries": [
@@ -63,7 +65,7 @@
     {
       "country": "US",
       "archetype": "STORE",
-      "sites": 4,
+      "sites": 222,
       "origin": "EXCLUDED_BY_SCOPE",
       "reason": "research types a bank's branches as STORE - it returned a 222 national total and a state-by-state breakdown of the same network. They are already declared as BRANCH, so promoting them adds the same branches a second time."
     },
@@ -91,7 +93,7 @@
       "sites": 3,
       "origin": "DISCLOSURE_KEPT_RESEARCH_FOUND_FEWER",
       "density": "URBAN",
-      "research_said": 1,
+      "research_said": 2,
       "disclosure_said": 3
     }
   ],
@@ -164,14 +166,14 @@
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-13T07:19:09.034268+00:00",
-  "run_seconds": 2.8,
+  "run_started": "2026-10-13T09:34:57.996797+00:00",
+  "run_seconds": 5.4,
   "preflight_conditions": 8,
   "promotion": {
     "promoted": true,
     "detail": null,
     "offered": 12,
-    "accepted": 12,
+    "accepted": 4,
     "declined": [],
     "declined_count": 0
   },
