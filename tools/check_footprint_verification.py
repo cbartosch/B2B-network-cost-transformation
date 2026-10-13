@@ -1,0 +1,162 @@
+"""Which footprint changes carry a dated verification entry, and which do not.
+
+An external audit raised FOOTPRINT_CHANGE_WITHOUT_VERIFICATION_RECORD on
+five rows: a site count that moved away from what the spec declared, with no
+register entry carrying an as-of date, an evidence reference and a site
+definition.
+
+`footprint_provenance` already records what changed and why, with both
+figures and the source URLs. That makes a change EXPLAINED. It does not make
+it AUDITABLE: an explanation lives in the output of the run that made it,
+and a reader checking the work has only the run's own word for it. A
+register is a separate, dated statement a person signed.
+
+So this reports the gap rather than closing it. Most changes in the set have
+no entry, which is the true state and the useful thing to see.
+
+    python tools/check_footprint_verification.py
+    python tools/check_footprint_verification.py --strict   # exit 1 on gaps
+"""
+import argparse
+import csv
+import json
+import pathlib
+import sys
+
+REGISTER = pathlib.Path("samples") / "verification_register.csv"
+SPEC = pathlib.Path("samples") / "companies.json"
+
+#: A disposition says what a person concluded, not what the model did.
+DISPOSITIONS = {
+    # The changed count was checked against the evidence and stands.
+    "VERIFIED",
+    # The research is correct and the sites are not this company's estate.
+    "EXCLUDED",
+    # The evidence was too inconsistent to accept; the declared figure holds.
+    "DECLINED",
+}
+
+
+def load_register(path: pathlib.Path) -> dict:
+    if not path.exists():
+        return {}
+    out = {}
+    for row in csv.DictReader(path.open(encoding="utf-8")):
+        disposition = (row.get("disposition") or "").strip().upper()
+        if disposition not in DISPOSITIONS:
+            raise SystemExit(
+                f"{path}: {row.get('slug')} {row.get('country')}/"
+                f"{row.get('archetype')} has disposition "
+                f"{disposition or '(blank)'}; expected one of "
+                f"{sorted(DISPOSITIONS)}")
+        for field in ("as_of", "site_definition", "verified_by"):
+            if not (row.get(field) or "").strip():
+                raise SystemExit(
+                    f"{path}: {row.get('slug')} {row.get('country')}/"
+                    f"{row.get('archetype')} has no {field}. An entry without "
+                    f"one is not a verification record.")
+        out[(row["slug"], row["country"], row["archetype"])] = row
+    return out
+
+
+def changes(outdir: pathlib.Path, spec_path: pathlib.Path) -> list:
+    """Every (country, archetype) whose count differs from the declaration."""
+    spec = {c["slug"]: c for c in
+            json.loads(spec_path.read_text("utf-8"))["companies"]}
+    found = []
+    for slug, company in sorted(spec.items()):
+        manifest = outdir / slug / "manifest.json"
+        if not manifest.exists():
+            continue
+        man = json.loads(manifest.read_text("utf-8"))
+        declared = {(r["country"], r["archetype"]): r["sites"]
+                    for r in company["declared_footprint"]}
+        used = {}
+        for r in (man.get("footprint_used") or []):
+            key = (r["country"], r["archetype"])
+            used[key] = used.get(key, 0) + r["sites"]
+        for key, count in used.items():
+            if declared.get(key, 0) != count:
+                found.append({"slug": slug, "country": key[0],
+                              "archetype": key[1],
+                              "declared": declared.get(key, 0),
+                              "used": count, "kind": "CHANGED"})
+        # An exclusion is a change too: research found sites and a scope rule
+        # kept them out. Silently dropping evidence needs a record as much as
+        # silently accepting it does.
+        for p in (man.get("footprint_provenance") or []):
+            if p.get("origin") == "EXCLUDED_BY_SCOPE":
+                found.append({"slug": slug, "country": p["country"],
+                              "archetype": p["archetype"],
+                              "declared": declared.get(
+                                  (p["country"], p["archetype"]), 0),
+                              "used": p["sites"], "kind": "EXCLUDED"})
+    return found
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--out", default="samples/outside_in")
+    ap.add_argument("--register", default=str(REGISTER))
+    ap.add_argument("--spec", default=str(SPEC))
+    ap.add_argument("--strict", action="store_true",
+                    help="exit 1 when any change has no register entry")
+    args = ap.parse_args()
+
+    register = load_register(pathlib.Path(args.register))
+    found = changes(pathlib.Path(args.out), pathlib.Path(args.spec))
+
+    covered, bare = [], []
+    for change in found:
+        key = (change["slug"], change["country"], change["archetype"])
+        (covered if key in register else bare).append((change,
+                                                       register.get(key)))
+
+    if covered:
+        print(f"verified ({len(covered)}):")
+        for change, entry in sorted(covered, key=lambda c: c[0]["slug"]):
+            print(f"  {change['slug']:<16}{change['country']}/"
+                  f"{change['archetype']:<14}"
+                  f"{change['declared']:>7,} -> {change['used']:>7,}  "
+                  f"{entry['disposition']:<9}as of {entry['as_of']}")
+    if bare:
+        print(f"\nno verification entry ({len(bare)}):")
+        by_company = {}
+        for change, _ in bare:
+            by_company.setdefault(change["slug"], []).append(change)
+        for slug, items in sorted(by_company.items()):
+            moved = sum(c["used"] - c["declared"] for c in items)
+            pairs = ", ".join(f"{c['country']}/{c['archetype']}"
+                              for c in items[:3])
+            more = f" +{len(items) - 3} more" if len(items) > 3 else ""
+            print(f"  {slug:<16}{len(items):>2} row(s), {moved:>+7,} sites  "
+                  f"{pairs}{more}")
+
+    # Entries matching no change. A DECLINED row is the common case: it
+    # records that a figure was examined and left alone, which is a decision
+    # worth keeping and invisible in a list of changes. A VERIFIED row with
+    # nothing behind it is the other case, and means the register has gone
+    # stale against a re-run.
+    changed_keys = {(c["slug"], c["country"], c["archetype"]) for c in found}
+    standing = [e for key, e in register.items() if key not in changed_keys]
+    if standing:
+        print(f"\nrecorded, no change in the set ({len(standing)}):")
+        for e in sorted(standing, key=lambda e: e["slug"]):
+            tail = ("the declared figure stands"
+                    if e["disposition"] == "DECLINED"
+                    else "VERIFIED with nothing to verify - stale?")
+            print(f"  {e['slug']:<16}{e['country']}/{e['archetype']:<14}"
+                  f"{e['disposition']:<9}{tail}")
+
+    print(f"\n{len(covered)} of {len(found)} footprint changes carry a dated "
+          f"verification entry.")
+    if bare:
+        print("A change without one is explained by footprint_provenance and "
+              "not independently checkable.")
+    if args.strict and bare:
+        return 1
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
