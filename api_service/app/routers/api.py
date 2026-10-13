@@ -3970,10 +3970,18 @@ def run_estimate(case_id: str, payload: EstimateIn):
         in_scope_regions = sorted(set(_sub) | {
             REGION_PARENT[r] for r in _sub
             if r in REGION_PARENT})
-        prior_rows = s.execute(select(db.unit_cost_prior).where(
-            db.unit_cost_prior.c.country.in_(
-                (countries or ["--"]) + in_scope_regions),
-            db.unit_cost_prior.c.approved.is_(True))).all()
+        # One row per (country, product, bandwidth), best-evidenced.
+        #
+        # The card holds a seeded assumption and a researched price that
+        # displaces it, both approved, both on the same key - and `priors`
+        # is keyed on exactly that triple. Query order decided, and it
+        # decided for the seed: six approved researched prices moved the
+        # set by nothing at all.
+        prior_rows = estimate.best_priced_rows(
+            s.execute(select(db.unit_cost_prior).where(
+                db.unit_cost_prior.c.country.in_(
+                    (countries or ["--"]) + in_scope_regions),
+                db.unit_cost_prior.c.approved.is_(True))).all())
         # This client's own rates, indexed the way match_prior looks priors
         # up. Tried before the market card: an invoiced price is what this
         # company pays and a benchmark is what somebody else paid.
@@ -4086,8 +4094,10 @@ def run_estimate(case_id: str, payload: EstimateIn):
         sizing_priors = {(r.country, r.product, r.bandwidth_mbps): {"low": r.low, "base": r.base,
                                                   "high": r.high, "price_year": r.price_year,
                                                   "currency": r.currency}
-                         for r in s.execute(select(db.unit_cost_prior).where(
-                             db.unit_cost_prior.c.approved.is_(True))).all()}
+                         for r in estimate.best_priced_rows(
+                             s.execute(select(db.unit_cost_prior).where(
+                                 db.unit_cost_prior.c.approved.is_(True))
+                                       ).all())}
 
         # Applied to the three band bounds and nothing else. A bandwidth is
         # not money and a price year is not money; multiplying a field

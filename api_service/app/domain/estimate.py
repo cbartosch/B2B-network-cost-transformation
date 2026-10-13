@@ -225,6 +225,39 @@ def expired_share(scope: list) -> str:
     return str((stale / priced).quantize(D("0.001")))
 
 
+#: Evidence grades, best first. A is a transaction, E is an assumption.
+EVIDENCE_RANK = {"A": 0, "B": 1, "C": 2, "D": 3, "E": 4, "F": 5}
+
+
+def best_priced_rows(rows: list) -> list:
+    """One rate-card row per (country, product, bandwidth): best-evidenced.
+
+    The card can hold two approved rows for one key - a seeded assumption
+    and a researched price that displaces it - and `priors` is a dict
+    comprehension keyed on exactly that triple. So both collided and
+    whichever the query returned last won.
+
+    It was the seed. Approving six researched prices, including GB MPLS at
+    GBP 200 against a seeded USD 1,000, moved the twenty-six-company set by
+    exactly nothing, because every one of them lost to the assumption it
+    was meant to replace.
+
+    Evidence grade decides, which is the same rule the rest of the model
+    applies: a researched market price is grade C, a seed is grade E, and C
+    beats E. Where grades tie the row is chosen by id so the answer is at
+    least stable between runs rather than following query order.
+    """
+    best: dict = {}
+    for row in rows:
+        key = (row.country, row.product, row.bandwidth_mbps)
+        rank = (EVIDENCE_RANK.get(
+            str(getattr(row, "evidence_grade", "") or "").upper(), 9),
+            str(getattr(row, "id", "")))
+        if key not in best or rank < best[key][0]:
+            best[key] = (rank, row)
+    return [row for _rank, row in best.values()]
+
+
 def match_prior(priors: dict, country: str, product: str, mbps,
                 # The structured speed pair, where the caller has one. When
                 # supplied, the rate card is keyed on the figure that is
