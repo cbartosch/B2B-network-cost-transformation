@@ -30,7 +30,8 @@ its liveness proof and the fetched source fragment stays unbroken.
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import delete, insert, select
+from decimal import Decimal
+from sqlalchemy import delete, insert, select, update
 
 from .. import db
 from . import access, triangulate
@@ -953,6 +954,109 @@ def promote(session, *, case_id: str, candidate_ids: list[str],
             "no part in any estimate until a steward approves them - research "
             "proposes a governed value, it does not set one."),
     }
+
+
+#: The relative band the rate card asserts on every DIA, MPLS, Ethernet and
+#: broadband row it holds. Not a judgement introduced here - measured off
+#: the card: 280 DIA rows, 89 MPLS, 356 Ethernet, all at exactly this.
+CARD_BAND_SHARE = Decimal("0.25")
+
+
+def approve_price(session, *, row_id: str, approved_by: str,
+                  low=None, high=None) -> dict:
+    """Admit a promoted price into the rate card, under a name.
+
+    WHY A BAND IS REQUIRED. `promote` writes low = base = high, because a
+    single observed price is a point and the system must not invent a
+    spread it has no evidence for. That is right while the row is
+    unapproved and wrong the moment it prices anything: `estimate.widen`
+    spreads a band about its base by scaling the gap, so a zero-width range
+    stays zero-width through every widening. An approved point price is
+    therefore immune to CR-06 evidence widening - a grade C single
+    observation presented as exact, in an estimate whose whole method is
+    outside-in. That is worse than the grade E seed it replaces, which at
+    least carries the card's own uncertainty.
+
+    So approval is where the band is set, deliberately, by the person whose
+    name goes on it. Pass low and high to state it. Omit them and the row
+    inherits CARD_BAND_SHARE - the width the card already asserts on every
+    comparable row - which is not a new claim about this price, only a
+    refusal to claim it is exact.
+
+    A zero-width band is still reachable by passing low == high == base. It
+    has to be asked for.
+    """
+    if not approved_by:
+        raise NotPromotable("approval must be attributed to a named person")
+    row = session.execute(select(db.unit_cost_prior).where(
+        db.unit_cost_prior.c.id == row_id)).first()
+    if row is None:
+        raise NotPromotable(f"no such price row: {row_id}")
+
+    base = Decimal(str(row.base))
+    if low is None and high is None:
+        low = base * (Decimal("1") - CARD_BAND_SHARE)
+        high = base * (Decimal("1") + CARD_BAND_SHARE)
+        band_origin = "CARD_DEFAULT_WIDTH"
+    else:
+        low = Decimal(str(base if low is None else low))
+        high = Decimal(str(base if high is None else high))
+        band_origin = "STATED_ON_APPROVAL"
+    if not low <= base <= high:
+        raise NotPromotable(
+            f"the band {low}-{high} does not contain the observed "
+            f"{base}. Approving would move the number, and a band is a "
+            f"statement about uncertainty rather than about the price.")
+
+    session.execute(update(db.unit_cost_prior)
+                    .where(db.unit_cost_prior.c.id == row_id)
+                    .values(approved=True, approved_by=approved_by,
+                            approved_at=datetime.now(timezone.utc),
+                            low=low, high=high))
+    session.commit()
+    return {"id": row_id, "country": row.country, "product": row.product,
+            "bandwidth_mbps": row.bandwidth_mbps,
+            "base": str(base), "low": str(low), "high": str(high),
+            "band_origin": band_origin, "approved_by": approved_by,
+            "evidence_grade": row.evidence_grade,
+            "note": ("this price now prices every circuit at this country, "
+                     "product and tier in every case")}
+
+
+def revoke_price(session, *, row_id: str, revoked_by: str,
+                 reason: str) -> dict:
+    """Take an approved price back out of the rate card.
+
+    Approval is reversible because its consequences are not always visible
+    at the moment it is made. Approving two EUR-denominated rows left the
+    card holding EUR and USD together, and the estimate refused to price 11
+    of 26 companies: "these figures are in ['EUR', 'USD'] and no conversion
+    has been applied." The guard was right and the approval was wrong, and
+    there was no way back out.
+
+    The row keeps its observed value and its grade - revoking is a
+    statement about whether it may price, not about whether it is true -
+    and the band stays where approval set it, so re-approving does not
+    silently re-derive it.
+    """
+    if not revoked_by or not reason:
+        raise NotPromotable(
+            "revocation needs a named person and a reason: a price leaving "
+            "the rate card changes every estimate that used it")
+    row = session.execute(select(db.unit_cost_prior).where(
+        db.unit_cost_prior.c.id == row_id)).first()
+    if row is None:
+        raise NotPromotable(f"no such price row: {row_id}")
+    session.execute(update(db.unit_cost_prior)
+                    .where(db.unit_cost_prior.c.id == row_id)
+                    .values(approved=False,
+                            source_note=f"{row.source_note or ''} "
+                                        f"| revoked by {revoked_by}: "
+                                        f"{reason}".strip(" |")))
+    session.commit()
+    return {"id": row_id, "country": row.country, "product": row.product,
+            "bandwidth_mbps": row.bandwidth_mbps, "approved": False,
+            "revoked_by": revoked_by, "reason": reason}
 
 
 def evidenced_footprint(session, case_id: str) -> list[dict]:

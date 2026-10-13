@@ -1191,6 +1191,15 @@ unit_cost_prior = Table(
     Column("bandwidth_mbps", Integer),
     Column("low", Numeric(14, 2)), Column("base", Numeric(14, 2)), Column("high", Numeric(14, 2)),
     Column("currency", String(3)), Column("price_year", Integer), Column("approved", Boolean, default=True),
+    # Who approved this price into the rate card, and when.
+    #
+    # `approved` gates five readers and decides whether a figure prices
+    # every circuit at its (country, product, tier) in every case. It was a
+    # bare boolean: the system could propose a researched price and had no
+    # route to dispose of one, and nothing recorded who had. Entity
+    # confirmation and promotion both carry a name; this is at least as
+    # consequential and carried none.
+    Column("approved_by", String(120)), Column("approved_at", DateTime(timezone=True)),
     # The speed pair, with its basis declared. `bandwidth_mbps` above stays as
     # the derived figure the tariff keys off, so the thirty-three modules that
     # read it keep working - the pair is authoritative and the single figure is

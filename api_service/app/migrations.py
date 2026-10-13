@@ -35,7 +35,7 @@ from . import db
 log = logging.getLogger("workbench.migrations")
 
 # Bump when the physical schema changes, and add a step below.
-SCHEMA_VERSION = 69
+SCHEMA_VERSION = 70
 
 VERSION_TABLE = "schema_version"
 VERSION_SCHEMA = "audit"
@@ -1582,6 +1582,24 @@ def _migrate_v69(conn) -> None:
              "docstring.", added)
 
 
+def _migrate_v70(conn) -> None:
+    """Who approved a price into the rate card.
+
+    `approved` gates five readers and decides whether a figure prices every
+    circuit at its tier in every case. It was a bare boolean with a default
+    of True, and the system had no route to set it: research could propose a
+    price and nobody could dispose of one, with no record of who had.
+
+    Additive. Seeded rows keep approved=True and gain a null approver, which
+    reads as "arrived with the seed" - true, and visibly different from a
+    price a person admitted.
+    """
+    added = sum(_add_column(conn, db.unit_cost_prior, c)
+                for c in ("approved_by", "approved_at"))
+    log.info("v70: %d column(s) added; a price entering the rate card can "
+             "now carry who put it there", added)
+
+
 MIGRATIONS = {2: _migrate_v2, 3: _migrate_v3, 4: _migrate_v4, 5: _migrate_v5,
               6: _migrate_v6, 7: _migrate_v7, 8: _migrate_v8, 9: _migrate_v9,
               10: _migrate_v10, 11: _migrate_v11, 12: _migrate_v12,
@@ -1591,7 +1609,8 @@ MIGRATIONS = {2: _migrate_v2, 3: _migrate_v3, 4: _migrate_v4, 5: _migrate_v5,
               21: _migrate_v21, 22: _migrate_v22, 23: _migrate_v23, 24: _migrate_v24, 25: _migrate_v25, 26: _migrate_v26, 27: _migrate_v27, 28: _migrate_v28, 29: _migrate_v29, 30: _migrate_v30, 31: _migrate_v31, 32: _migrate_v32, 33: _migrate_v33, 34: _migrate_v34, 35: _migrate_v35, 36: _migrate_v36, 37: _migrate_v37, 38: _migrate_v38, 39: _migrate_v39, 40: _migrate_v40, 41: _migrate_v41, 42: _migrate_v42, 43: _migrate_v43, 44: _migrate_v44, 45: _migrate_v45, 46: _migrate_v46, 47: _migrate_v47, 48: _migrate_v48, 49: _migrate_v49, 50: _migrate_v50, 51: _migrate_v51, 52: _migrate_v52, 53: _migrate_v53, 54: _migrate_v54, 55: _migrate_v55, 56: _migrate_v56, 57: _migrate_v57, 58: _migrate_v58, 59: _migrate_v59, 60: _migrate_v60, 61: _migrate_v61, 62: _migrate_v62, 63: _migrate_v63,
               64: _migrate_v64, 65: _migrate_v65,
               66: _migrate_v66, 67: _migrate_v67,
-              68: _migrate_v68, 69: _migrate_v69}
+              68: _migrate_v68, 69: _migrate_v69,
+              70: _migrate_v70}
 
 
 class SchemaDrift(RuntimeError):
