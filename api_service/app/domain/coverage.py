@@ -51,6 +51,20 @@ def _fallback_rates(priors: dict) -> dict:
     return {k: D(median(v)) for k, v in by_product.items() if v}
 
 
+def _prior_field(prior, name):
+    """One field off a prior, whether it arrives as a dict or a row.
+
+    match_prior returns a dict and the benchmark path returns a row object,
+    and reading one with the other's accessor fails silently in both
+    directions - returning the default rather than raising.
+    """
+    if prior is None:
+        return None
+    if isinstance(prior, dict):
+        return prior.get(name)
+    return getattr(prior, name, None)
+
+
 def derive_scope(*, sim_output: dict, priors: dict,
                  # The date the estimate is priced as of. A rate past its own
                  # expiry still prices and is flagged; without a date nothing
@@ -104,13 +118,27 @@ def derive_scope(*, sim_output: dict, priors: dict,
             # figure or a steward-approved benchmark - so coverage reported
             # 100% priced on a portfolio made entirely of placeholders, which
             # measures the seed rather than the client.
-            "price_basis": (getattr(prior, "price_basis", None) or "SEED")
+            # dict access, not getattr.
+            #
+            # match_prior returns a DICT - priors is {key: {...}} - and
+            # getattr on a dict returns the default every time. So this read
+            # "SEED" and the line below read "E" for every row ever priced,
+            # whatever actually priced it. evidence_grade_mix reported
+            # {"E": 1.000} on a portfolio holding grade C rates, and
+            # unsourced_price_share reported 100% as a constant rather than
+            # a measurement.
+            #
+            # The comment that follows describes the fix for audit finding
+            # A-02. The code never implemented it: a seeded guess and a
+            # cleared benchmark did go on contributing identically, behind a
+            # metric that said they did not.
+            "price_basis": _prior_field(prior, "price_basis") or "SEED"
                            if prior is not None else None,
             # What the rate is worth as evidence. priced_spend_pct counts a
             # circuit as priced whatever stands behind the number, so a seeded
             # guess and a cleared benchmark contributed identically to baseline
             # confidence - which is the mechanism audit finding A-02 describes.
-            "evidence_grade": (getattr(prior, "evidence_grade", None) or "E")
+            "evidence_grade": _prior_field(prior, "evidence_grade") or "E"
                               if prior is not None else None,
             # Whether the rate that priced this row had passed its own expiry.
             # Reported rather than withheld: an expired price is worse evidence

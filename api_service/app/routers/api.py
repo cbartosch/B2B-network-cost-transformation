@@ -4081,6 +4081,10 @@ def run_estimate(case_id: str, payload: EstimateIn):
                       # `expires` is a column nothing reads.
                       "expires": getattr(r, "expires", None),
                       "evidence_grade": getattr(r, "evidence_grade", None),
+                      # Carried so coverage can tell a seeded rate from a
+                      # promoted one. It read price_basis off the prior and
+                      # the prior never had it.
+                      "price_basis": getattr(r, "price_basis", None),
                       "scope": r.country, "service_class":
                           getattr(r, "service_class", None),
                       "access_technology":

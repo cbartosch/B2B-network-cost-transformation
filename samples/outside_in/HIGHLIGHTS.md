@@ -1024,7 +1024,7 @@ Sources: [TelecomLead](https://telecomlead.com/broadband/germany-broadband-marke
 
 - **Industry** HOSPITAL (entity resolution)
 - **Scope** DE, ES, US, EUR, 5,729 sites (research merged with disclosure)
-- **Confidence** 0.338 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.337 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 7 source(s)
 
@@ -1160,7 +1160,7 @@ Sources: [germancompanyformation.com](https://germancompanyformation.com/guides/
 
 - **Industry** UTILITIES (entity resolution)
 - **Scope** ES, GB, EUR, 2,795 sites (research merged with disclosure)
-- **Confidence** 0.325 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.324 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 8 source(s)
 
