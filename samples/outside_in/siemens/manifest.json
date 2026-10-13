@@ -21,7 +21,7 @@
   "base_currency": "EUR",
   "case_id": "3e29f228-1016-4a3d-b0ac-bea45544106e",
   "spec_path": "/tmp/companies_fixed.json",
-  "spec_sha256": "2e45939dbcdb",
+  "spec_sha256": "bf5f7a190e05",
   "entity_resolution": {
     "resolved": null,
     "resumed": true
@@ -100,7 +100,7 @@
     {
       "country": "DE",
       "archetype": "PLANT",
-      "sites": 95,
+      "sites": 35,
       "density": "SUBURBAN"
     },
     {
@@ -172,6 +172,13 @@
   ],
   "footprint_provenance": [
     {
+      "country": "DE",
+      "archetype": "PLANT",
+      "sites": 95,
+      "origin": "EXCLUDED_BY_SCOPE",
+      "reason": "the researched 95 is a 2016 factory count labelled 'lower bound', predating the Siemens Energy spin-off in 2020 and the Healthineers listing. Ten years stale and pre-divestiture."
+    },
+    {
       "country": "AT",
       "archetype": "CAMPUS",
       "sites": 1,
@@ -232,11 +239,9 @@
     {
       "country": "DE",
       "archetype": "PLANT",
-      "sites": 95,
-      "origin": "SUPERSEDED_BY_RESEARCH",
-      "density": "SUBURBAN",
-      "research_said": 95,
-      "disclosure_said": 35
+      "sites": 35,
+      "origin": "PUBLIC_DISCLOSURE",
+      "density": "SUBURBAN"
     },
     {
       "country": "FR",
@@ -363,7 +368,7 @@
     "CAMPUS": "RESEARCHED",
     "DC": "ASSUMED_PUBLIC_DISCLOSURE",
     "LARGE_OFFICE": "ASSUMED_PUBLIC_DISCLOSURE",
-    "PLANT": "RESEARCHED"
+    "PLANT": "ASSUMED_PUBLIC_DISCLOSURE"
   },
   "fx_to_eur": {
     "rate": "1.0",
@@ -416,13 +421,13 @@
   ],
   "estimate_inputs": {
     "method": "BUILD_UP",
-    "users": 6684,
+    "users": 5964,
     "ops_cost_per_site_base": 900,
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-13T15:08:55.060421+00:00",
-  "run_seconds": 6.7,
+  "run_started": "2026-10-13T16:40:08.888952+00:00",
+  "run_seconds": 2.9,
   "preflight_conditions": 8,
   "promotion": {
     "promoted": true,

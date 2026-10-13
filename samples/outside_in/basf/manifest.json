@@ -22,7 +22,7 @@
   "base_currency": "EUR",
   "case_id": "cbf4d17f-c7e7-45be-92fe-82e7a4005752",
   "spec_path": "/tmp/companies_fixed.json",
-  "spec_sha256": "2e45939dbcdb",
+  "spec_sha256": "bf5f7a190e05",
   "entity_resolution": {
     "resolved": null,
     "resumed": true
@@ -95,7 +95,7 @@
     {
       "country": "DE",
       "archetype": "PLANT",
-      "sites": 54,
+      "sites": 40,
       "density": "SUBURBAN"
     },
     {
@@ -155,6 +155,13 @@
   ],
   "footprint_provenance": [
     {
+      "country": "DE",
+      "archetype": "PLANT",
+      "sites": 54,
+      "origin": "EXCLUDED_BY_SCOPE",
+      "reason": "the researched 54 is labelled 'all site types, Germany' and was promoted as PLANT alone, on top of the declared offices and data centres - making the German estate 73 when the source says the whole of it is 54."
+    },
+    {
       "country": "BE",
       "archetype": "PLANT",
       "sites": 12,
@@ -210,11 +217,9 @@
     {
       "country": "DE",
       "archetype": "PLANT",
-      "sites": 54,
-      "origin": "SUPERSEDED_BY_RESEARCH",
-      "density": "SUBURBAN",
-      "research_said": 54,
-      "disclosure_said": 40
+      "sites": 40,
+      "origin": "PUBLIC_DISCLOSURE",
+      "density": "SUBURBAN"
     },
     {
       "country": "ES",
@@ -354,13 +359,13 @@
   ],
   "estimate_inputs": {
     "method": "BUILD_UP",
-    "users": 3156,
+    "users": 2988,
     "ops_cost_per_site_base": 900,
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-13T15:09:22.366189+00:00",
-  "run_seconds": 8.2,
+  "run_started": "2026-10-13T16:40:05.802663+00:00",
+  "run_seconds": 3.0,
   "preflight_conditions": 8,
   "promotion": {
     "promoted": true,

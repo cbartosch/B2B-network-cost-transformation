@@ -1,13 +1,13 @@
 {
-  "simulation_run_id": "a79dd67a-217a-40c1-ac11-8d3be3b09b16",
+  "simulation_run_id": "a651bc22-265c-4b53-bdc2-7c1f0fbb816e",
   "case_id": "cbf4d17f-c7e7-45be-92fe-82e7a4005752",
   "model_version": "sim-2.7.0",
   "seed": 20260101,
   "ensemble_size": 25,
   "status": "SUCCEEDED",
-  "output_hash": "841dc02492abe13153a15a3232b5c6e69e220664f234bc8b783663c16f27b0a8",
-  "started_at": "2026-10-13 15:09:27.188838+00:00",
-  "ended_at": "2026-10-13 15:09:28.820199+00:00",
+  "output_hash": "127a41bb38eba38f3ac9c340d89369114c724c1cbaa689ab7008d691045f0e62",
+  "started_at": "2026-10-13 16:40:06.269011+00:00",
+  "ended_at": "2026-10-13 16:40:06.667096+00:00",
   "params": {
     "footprint": [
       {
@@ -69,7 +69,7 @@
       {
         "country": "DE",
         "archetype": "PLANT",
-        "sites": 54,
+        "sites": 40,
         "industry": null,
         "count_source": null,
         "density": "SUBURBAN"
@@ -2049,11 +2049,11 @@
     "model_version": "sim-2.7.0",
     "seed": 20260101,
     "ensemble_size": 25,
-    "sites": 263,
+    "sites": 249,
     "serviceability": {
       "counts": {
         "DELIVERED": 131,
-        "SUBSTITUTED": 132,
+        "SUBSTITUTED": 118,
         "UNSERVICEABLE": 0
       },
       "substitutions": [
@@ -2061,17 +2061,17 @@
           "asked_for": "ETHERNET",
           "delivered": "ETHERNET",
           "bandwidth_mbps": 500,
-          "sites": 132
+          "sites": 118
         }
       ],
       "by_access_technology": [
         {
           "access_technology": "ETHERNET_FIBRE",
-          "sites": 167
+          "sites": 153
         }
       ],
       "unserviceable": 0,
-      "note": "132 of 263 site(s) take a different product or tier from the one their type asks for, and 0 can be served by nothing at all. A uniform estate is an assumption; this is what the density bands say about it.",
+      "note": "118 of 249 site(s) take a different product or tier from the one their type asks for, and 0 can be served by nothing at all. A uniform estate is an assumption; this is what the density bands say about it.",
       "table_rows": 102,
       "table_basis": "GOVERNED"
     },
@@ -2128,21 +2128,21 @@
     ],
     "estate_truncated": 0,
     "sites_named": 0,
-    "sites_generated": 263,
+    "sites_generated": 249,
     "circuits": {
-      "low": 519,
-      "base": 524,
-      "high": 526
+      "low": 492,
+      "base": 496,
+      "high": 500
     },
     "circuits_primary": {
-      "low": 263,
-      "base": 263,
-      "high": 263
+      "low": 249,
+      "base": 249,
+      "high": 249
     },
     "circuits_backup": {
-      "low": 240,
-      "base": 245,
-      "high": 247
+      "low": 227,
+      "base": 231,
+      "high": 235
     },
     "products": [
       {
@@ -2183,7 +2183,7 @@
         "product": "BROADBAND_PON",
         "role": "BACKUP",
         "bandwidth_mbps": 1000,
-        "count": 10,
+        "count": 8,
         "service_class": "BEST_EFFORT",
         "density": "SUBURBAN",
         "bearer_mbps": 1000,
@@ -2194,7 +2194,7 @@
         "product": "DIA",
         "role": "BACKUP",
         "bandwidth_mbps": 1000,
-        "count": 4,
+        "count": 5,
         "service_class": "DIA",
         "density": "URBAN",
         "bearer_mbps": 1000,
@@ -2227,7 +2227,7 @@
         "product": "BROADBAND_PON",
         "role": "BACKUP",
         "bandwidth_mbps": 1000,
-        "count": 19,
+        "count": 22,
         "service_class": "BEST_EFFORT",
         "density": "SUBURBAN",
         "bearer_mbps": 1000,
@@ -2238,7 +2238,7 @@
         "product": "DIA",
         "role": "BACKUP",
         "bandwidth_mbps": 1000,
-        "count": 9,
+        "count": 10,
         "service_class": "DIA",
         "density": "URBAN",
         "bearer_mbps": 1000,
@@ -2271,7 +2271,7 @@
         "product": "BROADBAND_PON",
         "role": "BACKUP",
         "bandwidth_mbps": 300,
-        "count": 50,
+        "count": 35,
         "service_class": "BEST_EFFORT",
         "density": "SUBURBAN",
         "bearer_mbps": 300,
@@ -2304,7 +2304,7 @@
         "product": "ETHERNET",
         "role": "PRIMARY",
         "bandwidth_mbps": 300,
-        "count": 54,
+        "count": 40,
         "service_class": "ETHERNET",
         "density": "SUBURBAN",
         "bearer_mbps": 500,
@@ -2326,7 +2326,7 @@
         "product": "BROADBAND_PON",
         "role": "BACKUP",
         "bandwidth_mbps": 1000,
-        "count": 9,
+        "count": 8,
         "service_class": "BEST_EFFORT",
         "density": "SUBURBAN",
         "bearer_mbps": 1000,
@@ -2359,7 +2359,7 @@
         "product": "BROADBAND_PON",
         "role": "BACKUP",
         "bandwidth_mbps": 300,
-        "count": 12,
+        "count": 10,
         "service_class": "BEST_EFFORT",
         "density": "SUBURBAN",
         "bearer_mbps": 300,
@@ -2370,7 +2370,7 @@
         "product": "DIA",
         "role": "BACKUP",
         "bandwidth_mbps": 1000,
-        "count": 6,
+        "count": 4,
         "service_class": "DIA",
         "density": "URBAN",
         "bearer_mbps": 1000,
@@ -2414,7 +2414,7 @@
         "product": "DIA",
         "role": "BACKUP",
         "bandwidth_mbps": 1000,
-        "count": 5,
+        "count": 6,
         "service_class": "DIA",
         "density": "URBAN",
         "bearer_mbps": 1000,
@@ -2447,7 +2447,7 @@
         "product": "BROADBAND_PON",
         "role": "BACKUP",
         "bandwidth_mbps": 1000,
-        "count": 6,
+        "count": 7,
         "service_class": "BEST_EFFORT",
         "density": "SUBURBAN",
         "bearer_mbps": 1000,
@@ -2469,7 +2469,7 @@
         "product": "BROADBAND_PON",
         "role": "BACKUP",
         "bandwidth_mbps": 300,
-        "count": 49,
+        "count": 52,
         "service_class": "BEST_EFFORT",
         "density": "SUBURBAN",
         "bearer_mbps": 300,
@@ -2480,7 +2480,7 @@
         "product": "DIA",
         "role": "BACKUP",
         "bandwidth_mbps": 1000,
-        "count": 14,
+        "count": 11,
         "service_class": "DIA",
         "density": "URBAN",
         "bearer_mbps": 1000,
@@ -2521,18 +2521,18 @@
       }
     ],
     "dual_access_sites": {
-      "low": 240,
-      "base": 245,
-      "high": 247
+      "low": 227,
+      "base": 231,
+      "high": 235
     },
     "circuits_backbone": 16,
-    "circuits_per_site_base": 1.9087,
-    "implied_users": 94250,
+    "circuits_per_site_base": 1.8996,
+    "implied_users": 88650,
     "bandwidth_profile": {
       "PLANT": {
-        "sites": 200,
+        "sites": 186,
         "mbps_per_site": 1000,
-        "mbps_total": 200000
+        "mbps_total": 186000
       },
       "LARGE_OFFICE": {
         "sites": 57,
@@ -2545,7 +2545,7 @@
         "mbps_total": 60000
       }
     },
-    "bandwidth_mbps_total": 317000,
+    "bandwidth_mbps_total": 303000,
     "diversity_state": "SIMULATED",
     "backbone": {
       "template_version": "1.0.0",
@@ -2616,12 +2616,12 @@
       "backbone_circuits": 16,
       "note": ""
     },
-    "node_count": 263,
-    "edge_count": 502
+    "node_count": 249,
+    "edge_count": 473
   },
   "output_omitted": {
     "fields": [
-      "estate (263 rows)",
+      "estate (249 rows)",
       "sample_topology (2 rows)"
     ],
     "why": "per-site arrays, the same information the aggregates carry; tools/backfill_simulation.py --full keeps them"

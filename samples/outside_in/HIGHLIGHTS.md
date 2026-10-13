@@ -254,7 +254,7 @@ Sources: [germancompanyformation.com](https://germancompanyformation.com/guides/
 ## BASF SE
 
 - **Industry** CHEMICALS (entity resolution)
-- **Scope** DE, BE, US, CN, FR, ES, IT, BR, IN, EUR, 263 sites (research merged with disclosure)
+- **Scope** DE, BE, US, CN, FR, ES, IT, BR, IN, EUR, 249 sites (research merged with disclosure)
 - **Confidence** 0.346 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 6 source(s)
@@ -2393,7 +2393,7 @@ Sources: [ServNet UK (trade press)](https://www.servnetuk.com/insights/sd-wan-vs
 ## Siemens AG
 
 - **Industry** INDUSTRIAL_CONGLOMERATE (entity resolution)
-- **Scope** DE, AT, US, CN, IN, GB, FR, IT, EUR, 557 sites (research merged with disclosure)
+- **Scope** DE, AT, US, CN, IN, GB, FR, IT, EUR, 497 sites (research merged with disclosure)
 - **Confidence** 0.346 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 10 source(s)
@@ -2801,8 +2801,8 @@ Sources: [ComReg (Commission for Communications Regulation](https://comreg.ie/me
 ## United Natural Foods, Inc.
 
 - **Industry** WHOLESALE_DISTRIBUTION (entity resolution)
-- **Scope** US, CA, USD, 136 sites (research merged with disclosure)
-- **Confidence** 0.345 (D - Indicative), coverage COMPLETE
+- **Scope** US, CA, USD, 134 sites (research merged with disclosure)
+- **Confidence** 0.344 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 7 source(s)
 

@@ -162,3 +162,40 @@ def test_a_disqualified_finding_that_lost_is_not_warned_about(tool):
     pairs = {(w["slug"], w["country"], w["archetype"]) for w in warned}
     assert ("bnp-paribas", "BE", "BRANCH") not in pairs
     assert ("nestle", "CH", "DC") not in pairs
+
+
+def test_referred_is_a_disposition_a_person_still_owes_a_decision_on(tool):
+    """Three changes are sound counts whose membership of the estate is a
+    scope judgement, not a fact: Shell's dealer-owned Dutch forecourts,
+    DHL's drop-off counters inside third-party shops, and Allianz's
+    tied-agent offices. Deciding any of them from a label would be inventing
+    a policy, so they are recorded as REFERRED and stay in the estate."""
+    assert "REFERRED" in tool.DISPOSITIONS
+    register = tool.load_register(REGISTER)
+    referred = [e for e in register.values() if e["disposition"] == "REFERRED"]
+    assert referred, "no referred entries"
+    for e in referred:
+        assert e["note"], f"{e['slug']}: REFERRED with no note saying why"
+
+
+def test_a_count_of_closures_is_not_a_count_of_sites():
+    """UNFI's US/DC went 2 -> 4 on a finding labelled "DC closures and
+    consolidations in FY2026". Sites being shut, added as sites gained."""
+    import json
+    spec = json.loads((ROOT / "samples" / "companies.json").read_text("utf-8"))
+    unfi = next(c for c in spec["companies"] if c["slug"] == "unfi")
+    assert any(r.get("country") == "US" and r.get("archetype") == "DC"
+               for r in (unfi.get("excluded") or [])), (
+        "country is optional in an exclusion - omitted means every country - "
+        "so this must not subscript it")
+
+
+def test_an_all_site_types_total_is_not_one_archetype():
+    """BASF's researched 54 is labelled "all site types, Germany" and was
+    promoted as PLANT on top of declared offices and DCs, making the German
+    estate 73 against a source that says the whole of it is 54."""
+    import json
+    spec = json.loads((ROOT / "samples" / "companies.json").read_text("utf-8"))
+    basf = next(c for c in spec["companies"] if c["slug"] == "basf")
+    assert any(r.get("country") == "DE" and r.get("archetype") == "PLANT"
+               for r in (basf.get("excluded") or []))

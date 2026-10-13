@@ -34,6 +34,12 @@ DISPOSITIONS = {
     "EXCLUDED",
     # The evidence was too inconsistent to accept; the declared figure holds.
     "DECLINED",
+    # The count is sound and whether these sites are the company's estate is
+    # a scope judgement for the owner, not a fact to be checked. A dealer-
+    # operated forecourt and a drop-off counter inside somebody else's shop
+    # are real sites that may or may not be this company's cost, and
+    # deciding either way from a label would be inventing a policy.
+    "REFERRED",
 }
 
 

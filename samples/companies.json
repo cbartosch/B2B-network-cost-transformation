@@ -861,7 +861,14 @@
           "density": "SUBURBAN"
         }
       ],
-      "scope_note_cr02b": "Countries widened under CR-02b. The per-country split is an apportionment of a published group total, not a published per-country figure; research supersedes any pair where it finds a sourced count at least as large."
+      "scope_note_cr02b": "Countries widened under CR-02b. The per-country split is an apportionment of a published group total, not a published per-country figure; research supersedes any pair where it finds a sourced count at least as large.",
+      "excluded": [
+        {
+          "country": "DE",
+          "archetype": "PLANT",
+          "reason": "the researched 54 is labelled 'all site types, Germany' and was promoted as PLANT alone, on top of the declared offices and data centres - making the German estate 73 when the source says the whole of it is 54."
+        }
+      ]
     },
     {
       "slug": "nestle",
@@ -1175,7 +1182,14 @@
           "density": "SUBURBAN"
         }
       ],
-      "scope_note_cr02b": "Countries widened under CR-02b. The per-country split is an apportionment of a published group total, not a published per-country figure; research supersedes any pair where it finds a sourced count at least as large."
+      "scope_note_cr02b": "Countries widened under CR-02b. The per-country split is an apportionment of a published group total, not a published per-country figure; research supersedes any pair where it finds a sourced count at least as large.",
+      "excluded": [
+        {
+          "country": "DE",
+          "archetype": "PLANT",
+          "reason": "the researched 95 is a 2016 factory count labelled 'lower bound', predating the Siemens Energy spin-off in 2020 and the Healthineers listing. Ten years stale and pre-divestiture."
+        }
+      ]
     },
     {
       "slug": "saint-gobain",
@@ -1613,6 +1627,11 @@
         {
           "archetype": "STORE",
           "reason": "UNFI's 10-K states the ~60,000 customer locations it SUPPLIES - independent retailers buying from it, not sites it operates. Its own retail banners (Cub Foods, Shoppers) are declared explicitly instead."
+        },
+        {
+          "country": "US",
+          "archetype": "DC",
+          "reason": "the researched 4 is a count of DC CLOSURES and consolidations in FY2026 - Allentown PA, a west-region DC, Racine/Sturtevant WI. Sites being shut, added as sites."
         }
       ]
     },
