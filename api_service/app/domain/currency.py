@@ -135,6 +135,175 @@ def reconcile(figures: list, *, to: str, rates: dict) -> dict:
     }
 
 
+def _pivot_currency(fx_rows: list) -> str | None:
+    """The currency this rate table is built around.
+
+    Read off the rows rather than assumed to be USD: the table is a star
+    and the centre of it is whatever appears most often on the from side.
+    Hardcoding the pivot would be right today and silently wrong the first
+    time somebody seeds a EUR-centred table.
+    """
+    counts: dict = {}
+    for row in fx_rows:
+        code = normalise(row.get("from_currency"))
+        if code:
+            counts[code] = counts.get(code, 0) + 1
+    return max(counts, key=lambda c: counts[c]) if counts else None
+
+
+def _cross(fx_rows: list, *, frm: str, to: str, convention, as_of):
+    """A two-leg conversion through the table's pivot, or None."""
+    pivot = _pivot_currency(fx_rows)
+    if pivot is None or pivot in (frm, to):
+        return None
+    first = select_rate(fx_rows, frm=frm, to=pivot,
+                        convention=convention, as_of=as_of)
+    second = select_rate(fx_rows, frm=pivot, to=to,
+                         convention=convention, as_of=as_of)
+    if first is None or second is None:
+        return None
+
+    def _factor(picked):
+        rate = Decimal(str(picked["rate"]))
+        return Decimal(1) / rate if picked.get("inverted") else rate
+
+    factor = _factor(first) * _factor(second)
+    return {
+        "factor": factor,
+        "picked": {
+            "rate": str(factor), "inverted": False,
+            "via": pivot,
+            "legs": [{"from": frm, "to": pivot, "rate": str(first["rate"]),
+                      "inverted": first.get("inverted"),
+                      "source": first.get("source"),
+                      "evidence_grade": first.get("evidence_grade")},
+                     {"from": pivot, "to": to, "rate": str(second["rate"]),
+                      "inverted": second.get("inverted"),
+                      "source": second.get("source"),
+                      "evidence_grade": second.get("evidence_grade")}],
+            "convention": first.get("convention"),
+            "as_of": first.get("as_of"),
+            # The weaker of the two legs, because a chain is as good as its
+            # worst link and reporting the better one would overstate it.
+            "evidence_grade": max(
+                str(first.get("evidence_grade") or "E"),
+                str(second.get("evidence_grade") or "E")),
+            "exact": False,
+            "source": f"cross-rate via {pivot}",
+            "note": (f"no {frm}->{to} rate exists; converted through "
+                     f"{pivot}, so this figure crossed two indicative "
+                     f"rates rather than one"),
+        },
+    }
+
+
+def rate_table(fx_rows: list, *, currencies, to: str, convention, as_of):
+    """A conversion factor per source currency, or a refusal naming the gaps.
+
+    The rate card was one currency for as long as every row in it was
+    seeded. A researched price is stored in the currency its source quoted -
+    deliberately, because stamping every promoted price USD once put a EUR
+    tariff into the card as dollars, a 7-8% error before anything else
+    happened - so the moment one is approved the card holds two.
+
+    `assert_single_currency` refused that, and was right to while a mix
+    could only mean a mistake. It is not a mistake any more: a card holding
+    GBP, EUR and USD rows is a card that knows what each price was quoted
+    in, which is strictly more than one that pretends they are all dollars.
+
+    So each currency gets its own factor and each row converts at its own.
+    Still a refusal where a rate is genuinely absent, naming every currency
+    it could not convert rather than the first - a steward adding rates
+    wants the list, not one at a time.
+    """
+    target = normalise(to)
+    factors, detail, missing = {target: Decimal(1)}, {}, []
+    for code in sorted({normalise(c) for c in currencies if normalise(c)}):
+        if code == target:
+            continue
+        picked = select_rate(fx_rows, frm=code, to=target,
+                             convention=convention, as_of=as_of)
+        if picked is not None:
+            rate = Decimal(str(picked["rate"]))
+            factors[code] = (Decimal(1) / rate if picked.get("inverted")
+                             else rate)
+        else:
+            # Through the table's own pivot.
+            #
+            # reference.fx_rate is a star: every row is USD -> X. So EUR to
+            # CHF is not a pair it holds and never will be, and refusing it
+            # means the card can only ever be USD or the case's own
+            # currency - the same blockage in a new shape, and it stopped
+            # Novartis and Nestle pricing at all.
+            #
+            # Not an invention: using a star table as a star table. It does
+            # compound two rates, and both are recorded, because a figure
+            # that crossed two indicative rates is weaker than one that
+            # crossed one and the result should say so.
+            legs = _cross(fx_rows, frm=code, to=target,
+                          convention=convention, as_of=as_of)
+            if legs is None:
+                missing.append(code)
+                continue
+            picked, factors[code] = legs["picked"], legs["factor"]
+        # Pinned per currency, because a baseline that moved on an exchange
+        # rate has to say which one, and a rerun next week must use the same
+        # rate or the same case gives a different answer for a reason nobody
+        # chose. One global `fx` block could not express a card holding three.
+        detail[code] = {"rate": str(picked["rate"]),
+                        "factor": str(factors[code]),
+                        "via": picked.get("via"),
+                        "legs": picked.get("legs"),
+                        "inverted": picked.get("inverted"),
+                        "convention": picked.get("convention"),
+                        "as_of": picked.get("as_of"),
+                        "evidence_grade": picked.get("evidence_grade"),
+                        "as_asked": picked.get("exact"),
+                        "source": picked.get("source"),
+                        "note": picked.get("note")}
+    if missing:
+        raise CurrencyMismatch(
+            f"the rate card holds prices in {missing} and this case is "
+            f"priced in {target}, and reference.fx_rate has no rate for "
+            f"{'those pairs' if len(missing) > 1 else 'that pair'}. Refused "
+            f"rather than assumed: a missing rate treated as parity would be "
+            f"invisible in the result. A steward adds the rate, or the "
+            f"prices in {missing} are revoked from the card.")
+    return {"to": target, "factors": factors, "detail": detail}
+
+
+#: The only fields on a prior that are money.
+#:
+#: A bandwidth is not money and a price year is not money. Multiplying a
+#: field because it happens to be numeric is how a unit error gets in, so
+#: the set is named rather than inferred.
+PRICED_BOUNDS = ("low", "base", "high")
+
+
+def convert_prior(prior: dict, *, factors: dict) -> dict:
+    """Move one rate-card row into the case currency, in place.
+
+    Lifted out of the estimate route so it can be tested by calling it. It
+    lived inline, and the tests that guarded it had to scan the route's
+    source text for the string `if _fx is not None:` - which made them
+    assertions about how the code is written rather than what it does, and
+    they broke the moment the card went multi-currency even though every
+    behaviour they describe still held.
+
+    A row already in the case currency has a factor of one and records
+    nothing, so a single-currency card is untouched.
+    """
+    factor = factors.get(normalise(prior.get("currency")))
+    if factor is None or factor == 1:
+        return prior
+    for bound in PRICED_BOUNDS:
+        if prior.get(bound) is not None:
+            prior[bound] = Decimal(str(prior[bound])) * factor
+    prior["converted_from"] = prior.get("currency")
+    prior["fx_rate"] = str(factor)
+    return prior
+
+
 def assert_single_currency(rows: list, *, field: str = "currency") -> str | None:
     """The currency every row shares, or a refusal.
 

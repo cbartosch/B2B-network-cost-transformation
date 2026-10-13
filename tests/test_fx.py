@@ -146,39 +146,81 @@ def _api():
     return (app / "routers" / "api.py").read_text()
 
 
-def test_the_conversion_happens_once_before_anything_prices():
-    """Converting at the point of use would mean every consumer carrying the
-    rate, and one of them eventually not."""
+def test_the_conversion_happens_before_anything_prices():
+    """Converting at the point of use would mean every consumer carrying
+    the rate, and one of them eventually not.
+
+    Asserted on the route's order of operations rather than on a string in
+    its source. The previous version scanned for `if _fx is not None:` and
+    broke when the card went multi-currency, even though every behaviour it
+    describes still held - an assertion about how the code is written, not
+    what it does.
+    """
     api = _api()
-    conversion = api.index("if _fx is not None:")
+    conversion = api.index("currency.convert_prior(_prior")
     assert api.index("priors = {(r.country") < conversion
     assert api.index("sizing_priors = {") < conversion
     assert conversion < api.index("scope = coverage.derive_scope(")
 
 
 def test_only_money_is_converted():
-    """A bandwidth is not money and a price year is not money. Multiplying a
-    field because it happens to be numeric is how a unit error gets in."""
-    api = _api()
-    block = api[api.index("if _fx is not None:"):][:1400]
-    assert 'for _bound in ("low", "base", "high")' in block
-    for never in ("bandwidth_mbps", "price_year", "expires"):
-        assert f'_prior["{never}"] =' not in block
+    """A bandwidth is not money and a price year is not money. Multiplying
+    a field because it happens to be numeric is how a unit error gets in."""
+    from decimal import Decimal
+
+    from app.domain import currency
+    prior = {"currency": "EUR", "low": "80", "base": "100", "high": "120",
+             "bandwidth_mbps": 100, "price_year": 2026, "expires": "2026-12-31"}
+    currency.convert_prior(prior, factors={"EUR": Decimal("2")})
+    assert prior["base"] == Decimal("200")
+    assert prior["bandwidth_mbps"] == 100
+    assert prior["price_year"] == 2026
+    assert prior["expires"] == "2026-12-31"
+
+
+def test_a_row_already_in_the_case_currency_is_untouched():
+    """A single-currency card must behave exactly as it did, or this change
+    reprices every estimate that was already right."""
+    from decimal import Decimal
+
+    from app.domain import currency
+    prior = {"currency": "USD", "low": "80", "base": "100", "high": "120"}
+    currency.convert_prior(prior, factors={"USD": Decimal(1)})
+    assert prior["base"] == "100"
+    assert "converted_from" not in prior and "fx_rate" not in prior
+
+
+def test_a_converted_row_records_what_moved_it():
+    from decimal import Decimal
+
+    from app.domain import currency
+    prior = {"currency": "GBP", "base": "100"}
+    currency.convert_prior(prior, factors={"GBP": Decimal("1.34")})
+    assert prior["converted_from"] == "GBP" and prior["fx_rate"] == "1.34"
 
 
 def test_a_missing_rate_still_refuses():
     """The behaviour that was right before any of this existed, and still
-    is."""
-    api = _api()
-    assert "holds\\n                        f\"no rate for that pair" in api \
-        or "no rate for that pair" in api
-    assert "treated as parity would be invisible" in api
+    is - now raised by currency.rate_table rather than inline."""
+    from app.domain import currency
+    import pytest as _pytest
+    with _pytest.raises(currency.CurrencyMismatch) as exc:
+        currency.rate_table([], currencies=["JPY"], to="USD",
+                            convention="SPOT", as_of="2026-12-31")
+    assert "treated as parity would be invisible" in str(exc.value)
 
 
 def test_the_conversion_is_pinned_for_reproducibility():
     """A rerun next week must use the same rate, or the same case gives a
-    different answer for a reason nobody chose."""
-    api = _api()
-    assert '"fx": ({"from": _prior_ccy' in api
-    for field in ("rate", "convention", "as_of", "evidence_grade"):
-        assert f'"{field}":' in api[api.index('"fx": ({"from"'):][:700]
+    different answer for a reason nobody chose. One entry per currency,
+    because the card can hold several."""
+    from app.domain import currency
+    out = currency.rate_table(
+        [{"from_currency": "USD", "to_currency": "EUR", "rate": "0.871",
+          "as_of": "2026-01-01", "convention": "SPOT", "source": "seed",
+          "evidence_grade": "E"}],
+        currencies=["EUR"], to="USD", convention="SPOT", as_of="2026-12-31")
+    pinned = out["detail"]["EUR"]
+    for field in ("rate", "factor", "convention", "as_of", "evidence_grade",
+                  "source"):
+        assert field in pinned, field

@@ -85,11 +85,27 @@ def test_the_estimate_refuses_a_rate_card_it_cannot_convert():
     treated as parity would be invisible in the result."""
     from pathlib import Path
 
+    from app.domain import currency as _currency
+
+    # The refusal itself, by calling it. This scanned api.py for the string
+    # "currency.assert_single_currency" and so asserted which function the
+    # route happens to call rather than that it refuses - it broke when the
+    # card went multi-currency and the control moved to rate_table, while
+    # the behaviour it names was still exactly right.
+    try:
+        _currency.rate_table([], currencies=["JPY"], to="USD",
+                             convention="SPOT", as_of="2026-12-31")
+    except _currency.CurrencyMismatch as exc:
+        assert "JPY" in str(exc)
+        assert "treated as parity would be invisible" in str(exc)
+    else:
+        raise AssertionError("a card holding a currency with no rate must "
+                             "be refused, not converted at parity")
+
     root = Path(__file__).resolve().parents[1]
     app = next(c for c in (root / "api_service" / "app", root / "app")
                if (c / "routers").exists())
     api = (app / "routers" / "api.py").read_text()
-    assert "currency.assert_single_currency" in api
     assert "currencies do not reconcile" in api
 
 

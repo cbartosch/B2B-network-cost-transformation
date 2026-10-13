@@ -4008,30 +4008,28 @@ def run_estimate(case_id: str, payload: EstimateIn):
         # Converted here, once, before anything reads `priors`. Converting at
         # the point of use would mean every consumer carrying the rate, and
         # one of them eventually not.
-        _fx = None
+        # ONE FACTOR PER CURRENCY, not one for the card.
+        #
+        # The card was single-currency for as long as every row was seeded,
+        # and a mix could only mean a mistake - which is what
+        # assert_single_currency refused. A promoted price is stored in the
+        # currency its source quoted, so approving one makes the mix
+        # correct, and the refusal started blocking 11 of 26 companies on
+        # two approved EUR rows.
+        _case_ccy = currency.normalise(case_row.base_currency)
+        _fx = {"to": _case_ccy, "factors": {}, "detail": {}}
         try:
-            _prior_ccy = currency.assert_single_currency(
-                [{"currency": r.currency} for r in prior_rows])
-            _case_ccy = currency.normalise(case_row.base_currency)
-            if _prior_ccy and _case_ccy and _prior_ccy != _case_ccy:
-                _fx = currency.select_rate(
-                    [{"from_currency": r.from_currency,
-                      "to_currency": r.to_currency, "rate": r.rate,
-                      "as_of": str(r.as_of) if r.as_of else None,
-                      "convention": r.convention, "source": r.source,
-                      "evidence_grade": r.evidence_grade}
-                     for r in s.execute(select(db.fx_rate)).all()],
-                    frm=_prior_ccy, to=_case_ccy,
-                    convention=getattr(case_row, "fx_convention", None),
-                    as_of=f"{case_row.price_year or 2026}-12-31")
-                if _fx is None:
-                    raise currency.CurrencyMismatch(
-                        f"the rate card is {_prior_ccy} and this case is "
-                        f"priced in {_case_ccy}, and reference.fx_rate holds "
-                        f"no rate for that pair. Refused rather than assumed: "
-                        f"a missing rate treated as parity would be invisible "
-                        f"in the result. A steward adds the rate, or the case "
-                        f"prices in {_prior_ccy}.")
+            _fx = currency.rate_table(
+                [{"from_currency": r.from_currency,
+                  "to_currency": r.to_currency, "rate": r.rate,
+                  "as_of": str(r.as_of) if r.as_of else None,
+                  "convention": r.convention, "source": r.source,
+                  "evidence_grade": r.evidence_grade}
+                 for r in s.execute(select(db.fx_rate)).all()],
+                currencies=[r.currency for r in prior_rows],
+                to=_case_ccy,
+                convention=getattr(case_row, "fx_convention", None),
+                as_of=f"{case_row.price_year or 2026}-12-31")
         except (currency.CurrencyMismatch, currency.UnknownCurrency) as exc:
             raise HTTPException(422, {"error": "currencies do not reconcile",
                                       "detail": str(exc)})
@@ -4052,6 +4050,9 @@ def run_estimate(case_id: str, payload: EstimateIn):
                 "scope": r.country, "density_band": r.density_band,
                 "service_class": getattr(r, "service_class", None),
                 "access_technology": getattr(r, "access_technology", None),
+                # Carried so the row converts at its own rate. A promoted
+                # price is stored in the currency its source quoted.
+                "currency": r.currency,
                 "bandwidth_mbps": r.bandwidth_mbps}
             for r in prior_rows if getattr(r, "density_band", None)}
         prior_rows = [r for r in prior_rows
@@ -4076,36 +4077,34 @@ def run_estimate(case_id: str, payload: EstimateIn):
                           getattr(r, "service_class", None),
                       "access_technology":
                           getattr(r, "access_technology", None),
+                      "currency": r.currency,
                       "bandwidth_mbps": r.bandwidth_mbps}
                   for r in prior_rows}
 
         # Every approved prior, any country. Used only to *size* scope for the
         # coverage denominator - never to price a component (see derive_scope).
         sizing_priors = {(r.country, r.product, r.bandwidth_mbps): {"low": r.low, "base": r.base,
-                                                  "high": r.high, "price_year": r.price_year}
+                                                  "high": r.high, "price_year": r.price_year,
+                                                  "currency": r.currency}
                          for r in s.execute(select(db.unit_cost_prior).where(
                              db.unit_cost_prior.c.approved.is_(True))).all()}
 
-        if _fx is not None:
-            # Applied to the three band bounds and nothing else. A bandwidth
-            # is not money and a price year is not money; multiplying a field
-            # because it happens to be numeric is how a unit error gets in.
-            _rate = _fx["rate"]
-            _inverse = D("1") / _rate if _fx.get("inverted") else None
-            _factor = _inverse if _inverse is not None else _rate
-            for _key, _prior in priors.items():
-                for _bound in ("low", "base", "high"):
-                    if _prior.get(_bound) is not None:
-                        _prior[_bound] = D(str(_prior[_bound])) * _factor
-                _prior["converted_from"] = _prior_ccy
-                _prior["fx_rate"] = str(_factor)
-            # Sizing priors price nothing, so they are left alone - but they
-            # are compared against converted ones in the coverage denominator,
-            # so they have to move too or the comparison is across units.
-            for _prior in sizing_priors.values():
-                for _bound in ("low", "base", "high"):
-                    if _prior.get(_bound) is not None:
-                        _prior[_bound] = D(str(_prior[_bound])) * _factor
+        # Applied to the three band bounds and nothing else. A bandwidth is
+        # not money and a price year is not money; multiplying a field
+        # because it happens to be numeric is how a unit error gets in.
+        #
+        # Each row converts at ITS OWN currency's factor. A row already in
+        # the case currency has a factor of one and records nothing, so a
+        # single-currency card behaves exactly as it did.
+        for _prior in priors.values():
+            currency.convert_prior(_prior, factors=_fx["factors"])
+        for _prior in band_priors.values():
+            currency.convert_prior(_prior, factors=_fx["factors"])
+        # Sizing priors price nothing, so they are left alone - but they
+        # are compared against converted ones in the coverage denominator,
+        # so they have to move too or the comparison is across units.
+        for _prior in sizing_priors.values():
+            currency.convert_prior(_prior, factors=_fx["factors"])
         platform = {r.product: {"low": r.low, "base": r.base, "high": r.high}
                     for r in s.execute(select(db.platform_unit_cost).where(
                         db.platform_unit_cost.c.approved.is_(True))).all()}
@@ -4371,16 +4370,13 @@ def run_estimate(case_id: str, payload: EstimateIn):
                   # rate has to say so where a reader looks - and a rerun next
                   # week must use the same rate, or the same case gives a
                   # different answer for a reason nobody chose.
-                  "fx": ({"from": _prior_ccy, "to": case_row.base_currency,
-                          "rate": str(_fx["rate"]),
-                          "inverted": _fx.get("inverted"),
-                          "convention": _fx.get("convention"),
-                          "as_of": _fx.get("as_of"),
-                          "evidence_grade": _fx.get("evidence_grade"),
-                          "as_asked": _fx.get("exact"),
-                          "source": _fx.get("source"),
-                          "note": _fx.get("note")}
-                         if _fx is not None else None),
+                  # One entry per source currency the card held, because a
+                  # card can now hold several: a researched price keeps the
+                  # currency its source quoted. Null when nothing needed
+                  # converting, which is what a single-currency card in the
+                  # case's own currency looks like.
+                  "fx": ({"to": _fx["to"], "rates": _fx["detail"]}
+                         if _fx["detail"] else None),
                   "price_year": case_row.price_year,
                   "analysis_horizon_years": case_row.analysis_horizon_years,
                   "confidence_policy_set": confidence_policy.set_name,
