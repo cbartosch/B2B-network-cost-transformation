@@ -531,7 +531,7 @@ Sources: [Selectra](https://en.selectra.info/broadband-phone-france/guides/mobil
 
 ## Boots UK Limited
 
-- **Industry** DRUG_RETAIL (spec fallback)
+- **Industry** DRUG_RETAIL (entity resolution)
 - **Scope** GB, IE, GBP, 1,851 sites (research merged with disclosure)
 - **Confidence** 0.347 (D - Indicative), coverage COMPLETE
 
@@ -2534,9 +2534,9 @@ Sources: [Siemens AG](https://press.siemens.com/global/en/pressrelease/siemens-e
 
 ## Simmons First National Corporation
 
-- **Industry** RETAIL_BANKING (spec fallback)
-- **Scope** US, USD, 239 sites (research merged with disclosure)
-- **Confidence** 0.345 (D - Indicative), coverage COMPLETE
+- **Industry** RETAIL_BANKING (entity resolution)
+- **Scope** US, USD, 235 sites (research merged with disclosure)
+- **Confidence** 0.346 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 10 source(s)
 
@@ -3177,7 +3177,7 @@ Sources: [Vertical Systems Group](https://verticalsystems.com/2026/09/02/mid-202
 
 ## Victoria's Secret & Co.
 
-- **Industry** SPECIALTY_RETAIL (spec fallback)
+- **Industry** SPECIALTY_RETAIL (entity resolution)
 - **Scope** US, CA, USD, 834 sites (research merged with disclosure)
 - **Confidence** 0.334 (D - Indicative), coverage COMPLETE
 

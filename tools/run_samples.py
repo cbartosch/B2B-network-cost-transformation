@@ -541,6 +541,24 @@ def _excluded_by(rules, country, archetype):
     return None
 
 
+def _promotion_record(prom: dict) -> dict:
+    """The promotion outcome as the manifest should carry it.
+
+    Counts, and every decline with its reason. `promote` already returns
+    both; only the summary was being kept.
+    """
+    result = (prom or {}).get("result") or {}
+    declined = result.get("declined") or []
+    return {
+        "promoted": (prom or {}).get("promoted"),
+        "detail": (prom or {}).get("detail"),
+        "offered": len((prom or {}).get("ids") or []),
+        "accepted": len(result.get("promoted_footprint") or []),
+        "declined": [{"reason": d.get("reason")} for d in declined],
+        "declined_count": len(declined),
+    }
+
+
 def footprint_for_simulation(case_id, spec):
     """Researched counts where research spoke, disclosed counts where it did
     not, merged on (country, archetype).
@@ -1218,8 +1236,16 @@ def run_one(spec, outdir, domains, force, repair=False, repromote=False):
         "run_started": datetime.fromtimestamp(t0, timezone.utc).isoformat(),
         "run_seconds": round(time.time() - t0, 1),
         "preflight_conditions": len(pf.get("conditions") or []),
-        "promotion": {"promoted": prom.get("promoted"),
-                      "detail": prom.get("detail")},
+        # What promotion accepted AND what it refused, with the reasons.
+        #
+        # This recorded only {promoted: true, detail: null} and dropped the
+        # result, so a candidate research had found and promotion had
+        # declined left no trace anywhere. Boots is the case: research
+        # returned 2,164 GB stores, no GB/STORE row reached the footprint,
+        # and nothing in the artifact said whether it was a conflict, a
+        # duplicate or a bug. A decline is a decision about evidence and has
+        # to be as visible as an acceptance.
+        "promotion": _promotion_record(prom),
         "domains_benchmark_disposed": [n for n, _ in dispositions.DOMAINS
                                        if n not in set(domains)],
         "domains_with_no_agent": ANALYST_DOMAINS,

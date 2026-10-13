@@ -150,3 +150,34 @@ def test_unfi_bars_researched_stores_while_keeping_its_own():
     assert any(r["archetype"] == "STORE"
                for r in unfi["declared_footprint"]), (
         "the Cub Foods stores UNFI does operate must survive the exclusion")
+
+
+# ------------------------------------------- what promotion refused
+
+def test_the_manifest_carries_promotion_declines(driver):
+    """A decline is a decision about evidence and has to be as visible as an
+    acceptance.
+
+    The manifest recorded {promoted, detail} and dropped the rest, so a
+    candidate research found and promotion refused left no trace. Boots is
+    the case: research returned 2,164 GB stores, no GB/STORE row reached the
+    footprint, and nothing in the artifact said whether that was a conflict,
+    a duplicate or a bug.
+    """
+    rec = driver._promotion_record({
+        "promoted": True, "ids": ["a", "b", "c"],
+        "result": {"promoted_footprint": [{"country": "IE"}],
+                   "declined": [{"candidate_id": "b",
+                                 "reason": "sources disagree by 31%"}]}})
+    assert rec["offered"] == 3
+    assert rec["accepted"] == 1
+    assert rec["declined_count"] == 1
+    assert "disagree" in rec["declined"][0]["reason"]
+
+
+def test_a_promotion_that_returned_nothing_is_not_an_error(driver):
+    """A company with no footprint candidates records zeroes, not a crash."""
+    rec = driver._promotion_record({"promoted": False,
+                                    "detail": "no footprint candidates"})
+    assert rec["offered"] == 0 and rec["declined_count"] == 0
+    assert rec["detail"] == "no footprint candidates"
