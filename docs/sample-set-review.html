@@ -1,0 +1,278 @@
+<title>Outside-In Estimate Review</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{--paper:#fbfcfd;--raise:#fff;--ink:#11161c;--muted:#5a6675;
+--line:#dfe5ec;--line-soft:#eef2f6;--dim:#9aa6b4;
+--caution:#b45309;--caution-bg:#fdf5e9;--caution-line:#e8cfa6;--good:#0f766e;
+--shadow:0 1px 2px rgba(17,22,28,.05),0 8px 24px -16px rgba(17,22,28,.25)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+--paper:#0d1115;--raise:#141a21;--ink:#e7edf3;--muted:#93a1b1;
+--line:#242e39;--line-soft:#1b232c;--dim:#5d6b7a;
+--caution:#e9a23b;--caution-bg:#241c0f;--caution-line:#4d3a1c;--good:#4fc4b4;
+--shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px -16px rgba(0,0,0,.8)}}
+:root[data-theme="dark"]{--paper:#0d1115;--raise:#141a21;--ink:#e7edf3;
+--muted:#93a1b1;--line:#242e39;--line-soft:#1b232c;--dim:#5d6b7a;
+--caution:#e9a23b;--caution-bg:#241c0f;--caution-line:#4d3a1c;--good:#4fc4b4;
+--shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px -16px rgba(0,0,0,.8)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+font:400 16px/1.6 "IBM Plex Sans",ui-sans-serif,system-ui,sans-serif;
+-webkit-font-smoothing:antialiased}
+.wrap{max-width:1120px;margin:0 auto;padding:56px 24px 96px}
+header{border-bottom:1px solid var(--line);padding-bottom:28px;margin-bottom:40px}
+.eyebrow{font:500 12px/1 "IBM Plex Mono",ui-monospace,monospace;
+letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+h1{font:600 clamp(32px,5vw,46px)/1.1 "Newsreader",Georgia,serif;
+margin:14px 0 10px;letter-spacing:-.015em;text-wrap:balance}
+.sub{color:var(--muted);max-width:62ch;margin:0;font-size:17px}
+h2{font:600 clamp(21px,2.6vw,26px)/1.25 "Newsreader",Georgia,serif;
+margin:56px 0 6px;letter-spacing:-.01em;text-wrap:balance}
+.lede{color:var(--muted);margin:0 0 22px;max-width:68ch}
+h3{font:600 16px/1.3 "IBM Plex Sans",sans-serif;margin:28px 0 8px}
+p{max-width:72ch}
+.verdict{background:var(--raise);border:1px solid var(--line);
+border-left:3px solid var(--good);border-radius:3px;padding:22px 26px;
+box-shadow:var(--shadow)}
+.verdict p{margin:0 0 10px}.verdict p:last-child{margin:0}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+gap:1px;background:var(--line);border:1px solid var(--line);border-radius:3px;
+margin:28px 0 8px;overflow:hidden}
+.kpi{background:var(--raise);padding:16px 18px}
+.kpi .v{font:500 25px/1.1 "IBM Plex Mono",monospace;letter-spacing:-.02em;
+font-variant-numeric:tabular-nums}
+.kpi .k{font-size:12.5px;color:var(--muted);margin-top:5px;line-height:1.4}
+.kpi.bad .v{color:var(--caution)}.kpi.ok .v{color:var(--good)}
+.scroll{overflow-x:auto;border:1px solid var(--line);border-radius:3px;
+background:var(--raise);margin:20px 0}
+table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:900px}
+th,td{padding:9px 12px;text-align:left;border-bottom:1px solid var(--line-soft);
+white-space:nowrap}
+thead th{font:500 11px/1.3 "IBM Plex Mono",monospace;letter-spacing:.07em;
+text-transform:uppercase;color:var(--muted);background:var(--paper);
+position:sticky;top:0;border-bottom:1px solid var(--line)}
+tbody th{font-weight:500;white-space:normal;min-width:170px}
+tbody th em{display:block;font:400 11.5px/1.3 "IBM Plex Sans",sans-serif;
+color:var(--muted);font-style:normal;margin-top:2px}
+td.n{text-align:right;font-family:"IBM Plex Mono",monospace;
+font-variant-numeric:tabular-nums;font-size:13px}
+td.strong{font-weight:500}td.good{color:var(--good);font-weight:500}
+td.dim{color:var(--dim)}
+tbody tr:last-child td,tbody tr:last-child th{border-bottom:none}
+.flag{display:inline-block;font:500 10.5px/1 "IBM Plex Mono",monospace;
+letter-spacing:.06em;padding:3px 6px;border-radius:2px;
+background:var(--caution-bg);color:var(--caution);
+border:1px solid var(--caution-line);margin-right:4px}
+.warn{color:var(--caution)}
+.note{font-size:13.5px;color:var(--muted);margin-top:8px}
+ul{max-width:72ch;padding-left:20px}li{margin:9px 0}
+.find{border-top:1px solid var(--line);padding:18px 0 4px}
+.find h3{margin:0 0 4px}
+.find p{margin:0;color:var(--muted);font-size:14.5px}
+code{font:400 13px/1 "IBM Plex Mono",monospace;background:var(--line-soft);
+padding:2px 5px;border-radius:2px}
+footer{margin-top:64px;padding-top:20px;border-top:1px solid var(--line);
+color:var(--muted);font-size:13px}
+</style>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow">B2B network cost transformation &middot; sample set review</div>
+  <h1>Twenty-six outside-in estimates</h1>
+  <p class="sub">What the set says, where each number comes from, and how much
+  of it now rests on observed prices rather than seeded assumptions.</p>
+</header>
+
+<div class="verdict">
+  <p><strong>The cost side has its first observed evidence, and it is thin but
+  real.</strong> Twenty-six companies price without error and every gate passes.
+  Ten researched market prices now reach the estimates;
+  <strong>10 of 26 companies carry grade&nbsp;C value</strong>, and Boots
+  rests 85% on it.</p>
+  <p>Across the set, value-weighted, that is <strong>12.4% grade&nbsp;C
+  against 87.6% grade&nbsp;E</strong> &mdash; an expert assumption
+  with no transaction, quote or published benchmark behind it. Sixteen companies
+  remain entirely seeded.</p>
+  <p>Research determines <em>how many sites</em>; the rate card determines
+  <em>what they cost</em>. What changed is that ten cells of that card are now
+  observed rather than assumed.</p>
+</div>
+
+<div class="kpis">
+  <div class="kpi"><div class="v">26</div><div class="k">companies, all priced</div></div>
+  <div class="kpi"><div class="v">&euro;426m</div><div class="k">baseline, EUR-normalised</div></div>
+  <div class="kpi"><div class="v">19.2%</div><div class="k">best-scenario saving</div></div>
+  <div class="kpi ok"><div class="v">10/26</div><div class="k">carry observed prices</div></div>
+  <div class="kpi bad"><div class="v">87.6%</div><div class="k">still grade E, value-weighted</div></div>
+  <div class="kpi"><div class="v">0.27&ndash;0.38</div><div class="k">confidence, all band D</div></div>
+</div>
+<p class="note">Band D &mdash; Indicative &mdash; is a property of the method:
+outside-in, public evidence only, <code>NO_CONTACT</code>. No parameter change
+moves it.</p>
+
+<h2>What the observed prices did</h2>
+<p class="lede">Ten researched rates, nine of them below the card.</p>
+<p>The GB estates fall hardest, because that is where the researched prices
+disagree most with the seed: GB MPLS at &pound;200 against a seeded $1,000, GB
+DIA at &pound;185 against $335.</p>
+<div class="scroll"><table style="min-width:400px">
+<thead><tr><th scope="col">Company</th>
+<th scope="col" class="n">Baseline change</th></tr></thead>
+<tbody>
+<tr><th scope="row">Boots</th><td class="n">&minus;7.3%</td></tr>
+<tr><th scope="row">Tesco</th><td class="n">&minus;6.6%</td></tr>
+<tr><th scope="row">Iberdrola</th><td class="n">&minus;3.4%</td></tr>
+<tr><th scope="row">Saint-Gobain</th><td class="n">&minus;2.8%</td></tr>
+<tr><th scope="row">McDonald&rsquo;s</th><td class="n">&minus;1.4%</td></tr>
+<tr><th scope="row">Volkswagen</th><td class="n">&minus;0.8%</td></tr>
+<tr><th scope="row">Unilever</th><td class="n">&minus;0.2%</td></tr>
+<tr><th scope="row">Fresenius</th><td class="n">+1.9%</td></tr>
+</tbody></table></div>
+<p>Fresenius <em>rises</em> because <code>US/DIA 100</code> at $503 is the one
+row of the ten priced <em>above</em> its seed &mdash; the only place the card
+was too low. That asymmetry is the finding: on the six rows comparable to a
+seeded figure the card runs 26&ndash;73% high outside the US and agrees within
+5% inside it, which is what a card calibrated on US figures looks like.</p>
+
+<h2>The twenty-six</h2>
+<p class="lede">Sorted by baseline. Grade&nbsp;C is the share of priced value
+resting on an observed market price rather than a seeded assumption.</p>
+<div class="scroll">
+<table>
+<thead><tr>
+<th scope="col">Company</th><th scope="col" class="n">Sites</th>
+<th scope="col" class="n">Baseline &euro;m</th><th scope="col" class="n">Saving &euro;m</th>
+<th scope="col" class="n">Save&nbsp;%</th><th scope="col" class="n">Payback</th>
+<th scope="col" class="n">Conf.</th><th scope="col" class="n">Domains</th>
+<th scope="col" class="n">Grade&nbsp;C</th><th scope="col">Flags</th>
+</tr></thead>
+<tbody>
+<tr><th scope="row">McDonald&#x27;s Corporation<em>Qsr Restaurants</em></th><td class="n">16,670</td><td class="n strong">75.8</td><td class="n">13.6</td><td class="n">18%</td><td class="n">26</td><td class="n">0.33</td><td class="n">17/17</td><td class="n good">4%</td><td class="st"></td></tr>
+<tr><th scope="row">Fresenius SE &amp; Co. KGaA<em>Hospital</em></th><td class="n">5,729</td><td class="n strong">41.9</td><td class="n">8.6</td><td class="n">21%</td><td class="n">18</td><td class="n">0.34</td><td class="n"><span class="warn">15/17</span></td><td class="n good">66%</td><td class="st"></td></tr>
+<tr><th scope="row">BNP Paribas SA<em>Universal Banking</em></th><td class="n">4,404</td><td class="n strong">38.2</td><td class="n">8.3</td><td class="n">22%</td><td class="n">15</td><td class="n">0.34</td><td class="n">17/17</td><td class="n dim">&mdash;</td><td class="st"></td></tr>
+<tr><th scope="row">Allianz SE<em>Insurance</em></th><td class="n">6,585</td><td class="n strong">36.3</td><td class="n">6.7</td><td class="n">18%</td><td class="n">25</td><td class="n">0.33</td><td class="n">17/17</td><td class="n dim">&mdash;</td><td class="st"></td></tr>
+<tr><th scope="row">Compagnie de Saint-Gobain SA<em>Building Materials</em></th><td class="n">4,685</td><td class="n strong">27.9</td><td class="n">5.2</td><td class="n">19%</td><td class="n">23</td><td class="n">0.33</td><td class="n">17/17</td><td class="n good">15%</td><td class="st"></td></tr>
+<tr><th scope="row">Deutsche Bahn AG<em>Railways</em></th><td class="n">5,586</td><td class="n strong">25.4</td><td class="n">4.1</td><td class="n">16%</td><td class="n">32</td><td class="n">0.33</td><td class="n"><span class="warn">14/17</span></td><td class="n dim">&mdash;</td><td class="st"></td></tr>
+<tr><th scope="row">United Parcel Service, Inc.<em>Parcel Logistics</em></th><td class="n">1,089</td><td class="n strong">21.8</td><td class="n">5.5</td><td class="n">25%</td><td class="n">8</td><td class="n">0.35</td><td class="n">17/17</td><td class="n dim">&mdash;</td><td class="st"><span class="flag">HIGH</span></td></tr>
+<tr><th scope="row">Shell plc<em>Integrated Oil Gas</em></th><td class="n">5,995</td><td class="n strong">21.0</td><td class="n">3.1</td><td class="n">15%</td><td class="n">38</td><td class="n">0.34</td><td class="n">17/17</td><td class="n dim">&mdash;</td><td class="st"></td></tr>
+<tr><th scope="row">Tesco PLC<em>Grocery Retail</em></th><td class="n">3,922</td><td class="n strong">19.4</td><td class="n">3.6</td><td class="n">18%</td><td class="n">31</td><td class="n">0.38</td><td class="n">17/17</td><td class="n good">48%</td><td class="st"></td></tr>
+<tr><th scope="row">Deutsche Post AG<em>Parcel Logistics</em></th><td class="n">3,961</td><td class="n strong">17.4</td><td class="n">2.8</td><td class="n">16%</td><td class="n">33</td><td class="n">0.32</td><td class="n">17/17</td><td class="n good">0%</td><td class="st"></td></tr>
+<tr><th scope="row">Siemens AG<em>Industrial Conglomerate</em></th><td class="n">557</td><td class="n strong">13.5</td><td class="n">3.3</td><td class="n">25%</td><td class="n">9</td><td class="n">0.35</td><td class="n">17/17</td><td class="n dim">&mdash;</td><td class="st"></td></tr>
+<tr><th scope="row">Iberdrola SA<em>Utilities</em></th><td class="n">2,795</td><td class="n strong">12.1</td><td class="n">1.9</td><td class="n">16%</td><td class="n">31</td><td class="n">0.32</td><td class="n">17/17</td><td class="n good">16%</td><td class="st"></td></tr>
+<tr><th scope="row">Industria de Diseno Textil SA<em>Specialty Retail</em></th><td class="n">1,695</td><td class="n strong">9.3</td><td class="n">1.7</td><td class="n">18%</td><td class="n">21</td><td class="n">0.33</td><td class="n"><span class="warn">16/17</span></td><td class="n dim">&mdash;</td><td class="st"></td></tr>
+<tr><th scope="row">Accor SA<em>Hotels</em></th><td class="n">2,255</td><td class="n strong">8.5</td><td class="n">1.2</td><td class="n">14%</td><td class="n">34</td><td class="n">0.33</td><td class="n"><span class="warn">14/17</span></td><td class="n dim">&mdash;</td><td class="st"></td></tr>
+<tr><th scope="row">Boots UK Limited<em>Drug Retail</em></th><td class="n">1,851</td><td class="n strong">8.0</td><td class="n">1.3</td><td class="n">16%</td><td class="n">29</td><td class="n">0.35</td><td class="n">17/17</td><td class="n good">85%</td><td class="st"></td></tr>
+<tr><th scope="row">Nestle SA<em>Food Manufacturing</em></th><td class="n">310</td><td class="n strong">7.9</td><td class="n">1.9</td><td class="n">24%</td><td class="n">13</td><td class="n">0.28</td><td class="n">17/17</td><td class="n dim">&mdash;</td><td class="st"><span class="flag">PARTIAL</span></td></tr>
+<tr><th scope="row">Douglas AG<em>Specialty Retail</em></th><td class="n">1,339</td><td class="n strong">6.1</td><td class="n">0.9</td><td class="n">16%</td><td class="n">25</td><td class="n">0.33</td><td class="n">17/17</td><td class="n dim">&mdash;</td><td class="st"></td></tr>
+<tr><th scope="row">BASF SE<em>Chemicals</em></th><td class="n">263</td><td class="n strong">6.0</td><td class="n">1.4</td><td class="n">24%</td><td class="n">11</td><td class="n">0.35</td><td class="n">17/17</td><td class="n dim">&mdash;</td><td class="st"></td></tr>
+<tr><th scope="row">Volkswagen AG<em>Automotive Oem</em></th><td class="n">183</td><td class="n strong">5.9</td><td class="n">1.4</td><td class="n">24%</td><td class="n">12</td><td class="n">0.35</td><td class="n">17/17</td><td class="n good">1%</td><td class="st"></td></tr>
+<tr><th scope="row">Unilever PLC<em>Household Personal Care</em></th><td class="n">216</td><td class="n strong">4.8</td><td class="n">1.1</td><td class="n">23%</td><td class="n">12</td><td class="n">0.34</td><td class="n">17/17</td><td class="n good">1%</td><td class="st"></td></tr>
+<tr><th scope="row">Simmons First National Corporation<em>Retail Banking</em></th><td class="n">235</td><td class="n strong">4.5</td><td class="n">1.1</td><td class="n">24%</td><td class="n">11</td><td class="n">0.35</td><td class="n">17/17</td><td class="n dim">&mdash;</td><td class="st"></td></tr>
+<tr><th scope="row">Victoria&#x27;s Secret &amp; Co.<em>Specialty Retail</em></th><td class="n">834</td><td class="n strong">4.4</td><td class="n">0.8</td><td class="n">18%</td><td class="n">17</td><td class="n">0.33</td><td class="n">17/17</td><td class="n good">0%</td><td class="st"></td></tr>
+<tr><th scope="row">Novartis AG<em>Pharmaceuticals</em></th><td class="n">125</td><td class="n strong">4.3</td><td class="n">1.0</td><td class="n">23%</td><td class="n">16</td><td class="n">0.35</td><td class="n">17/17</td><td class="n dim">&mdash;</td><td class="st"></td></tr>
+<tr><th scope="row">United Natural Foods, Inc.<em>Wholesale Distribution</em></th><td class="n">136</td><td class="n strong">2.2</td><td class="n">0.5</td><td class="n">23%</td><td class="n">16</td><td class="n">0.34</td><td class="n">17/17</td><td class="n dim">&mdash;</td><td class="st"></td></tr>
+<tr><th scope="row">Deutsche Lufthansa AG<em>Airlines</em></th><td class="n">223</td><td class="n strong">2.1</td><td class="n">0.4</td><td class="n">20%</td><td class="n">18</td><td class="n">0.27</td><td class="n">17/17</td><td class="n dim">&mdash;</td><td class="st"><span class="flag">PARTIAL</span></td></tr>
+<tr><th scope="row">Rio Tinto plc<em>Diversified Mining</em></th><td class="n">106</td><td class="n strong">1.6</td><td class="n">0.3</td><td class="n">22%</td><td class="n">19</td><td class="n">0.28</td><td class="n"><span class="warn">16/17</span></td><td class="n dim">&mdash;</td><td class="st"><span class="flag">PARTIAL</span></td></tr>
+</tbody>
+</table>
+</div>
+<p class="note">Totals &euro;426.1m baseline, &euro;81.9m
+saving. Savings range 14&ndash;25%; payback 8&ndash;31 months.</p>
+
+<h2>What is actually evidenced</h2>
+<p class="lede">Two questions, often conflated: how many sites, and what each
+one costs.</p>
+<ul>
+<li><strong>Quantities are part-evidenced.</strong> Site counts start from a
+declared footprint and research supersedes where it finds a sourced count at
+least as large &mdash; 46 rows changed out of 1,012 findings, a 4.5% promotion
+yield. The declared base is <code>ANALYST_ENTERED_SCOPE</code>, so
+<code>evidenced_share</code> stays 0: it measures the <em>origin</em> of a
+quantity, and that origin is a specification rather than a discovery.</li>
+<li><strong>Unit costs are 12.4% evidenced, value-weighted.</strong> Ten
+grade&nbsp;C researched prices against a card otherwise grade&nbsp;E:
+<em>&ldquo;indicative starting position set at seed time; no transaction, quote
+or published benchmark behind it.&rdquo;</em></li>
+<li><strong>So 19.2% savings still rests mostly on
+assumption</strong> &mdash; less so than before, and not yet a claim about what
+these companies spend.</li>
+</ul>
+
+<h2>Numbers I introduced that move money and are not sourced</h2>
+<p class="lede">Net effect on the set <strong>+2.8%</strong>. Each is defensible
+in direction and invented in magnitude.</p>
+<div class="find"><h3>24 density cost multipliers</h3>
+<p>93% of L0 spend prices through one. The direction is tested &mdash; cost
+follows the local loop, Ethernet rural &times;2.00 against mobile &times;1.05
+&mdash; and the magnitudes have nothing behind them.</p></div>
+<div class="find"><h3>Four authored sector shapes</h3>
+<p><code>forecourt-network</code>, <code>clinic-network</code>,
+<code>merchant-network</code>, <code>agency-network</code>. Shares invented; the
+orderings they encode are the defensible part. <code>agency-network</code>
+assumes a tied-agent insurer, <code>clinic-network</code> makes a healthcare
+estate 78% small sites.</p></div>
+<div class="find"><h3>The metric that could not see its own subject</h3>
+<p>Ten grade&nbsp;C prices went live and <code>unsourced_price_share</code>
+stayed at exactly 100%. The cause was
+<code>getattr(prior, "evidence_grade", None)</code> applied to a value
+<code>match_prior</code> returns as a <em>dict</em> &mdash; so it took the
+default every time, and every row reported grade&nbsp;E whatever priced it. The
+comment above that line describes the fix for audit finding A-02, that a seeded
+guess and a cleared benchmark contributed identically to confidence. The code
+never implemented it, and every figure in the Grade&nbsp;C column above was
+invisible until it was corrected.</p></div>
+<div class="find"><h3>89 interpolated rate-card rows</h3>
+<p>The 1&ndash;10&nbsp;Gbps gap, filled geometrically from each country&rsquo;s
+own anchors. The method is checkable &mdash; it reproduces tiers the card
+already holds to within 0.7% &mdash; but it remains grade&nbsp;E derived from
+grade&nbsp;E.</p></div>
+
+<h2>Scope, and what the flags mean</h2>
+<ul>
+<li><strong>All 26 are <code>PARTIAL_COUNTRIES</code></strong> and the
+denominator is <code>DECLARED_UNKNOWN</code>. This is not &ldquo;three of twenty
+modelled&rdquo;, it is &ldquo;three modelled, total unknown&rdquo;.</li>
+<li><strong>Three are <code>PARTIAL</code> at v0</strong>: Lufthansa,
+Nestl&eacute;, Rio&nbsp;Tinto.</li>
+<li><strong>One plausibility flag.</strong> UPS reads HIGH against a
+grade&nbsp;F tripwire that only catches order-of-magnitude error &mdash; a
+prompt to look, not a finding.</li>
+<li><strong>Five are short of 17 domains</strong>: Deutsche Bahn and Accor at
+14, Fresenius at 15, Inditex and Rio Tinto at 16.</li>
+</ul>
+
+<h2>The recurring defect</h2>
+<p>Nearly everything found in this set was a guard that existed and checked the
+weaker property. <code>set_industry_if_absent</code> asked whether an industry
+code was <em>a</em> code, never <em>this entity&rsquo;s</em>. The footprint
+merge could not tell &ldquo;not listed&rdquo; from &ldquo;excluded&rdquo;.
+Promotion let write order choose between a national total and a state breakdown.
+The rate card let query order choose between a researched price and the seed it
+displaced. The evidence metric read a dict with <code>getattr</code> and
+reported a constant.</p>
+<p>In every case the output looked normal, which is why reading the code found
+none of them and running it found all of them &mdash; usually as an expected
+movement that did not happen.</p>
+
+<h2>Before any of this leaves the room</h2>
+<ul>
+<li><strong>Sixteen companies carry no observed price at all.</strong> The ten
+that do are those with GB, ES, NL or US circuits at a researched tier. Every
+other market is still entirely seeded.</li>
+<li><strong>Ten prices is not a rate card.</strong> The evidence is real and
+narrow &mdash; four countries, four products, single observations each, widened
+to the card&rsquo;s own &plusmn;25% rather than to anything measured.</li>
+<li><strong>CR-03 plausibility ranges, CR-05 wave parameters, CR-01 coverage
+thresholds</strong> still need values.</li>
+<li><strong>Nothing here is safe for external use</strong> on the strength of
+the gate alone. A clean gate is necessary and not sufficient, and the tooling
+says so on every run.</li>
+</ul>
+
+<footer>
+Generated from <code>samples/outside_in/summary.csv</code> &mdash; 26 companies,
+build 4.291.0. Suite 3,090 passing at commit <code>d0c79f3</code>. Figures
+EUR-normalised at seeded indicative FX, itself grade&nbsp;E.
+</footer>
+</div>
