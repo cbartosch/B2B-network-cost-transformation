@@ -35,7 +35,7 @@ from . import db
 log = logging.getLogger("workbench.migrations")
 
 # Bump when the physical schema changes, and add a step below.
-SCHEMA_VERSION = 68
+SCHEMA_VERSION = 69
 
 VERSION_TABLE = "schema_version"
 VERSION_SCHEMA = "audit"
@@ -1547,6 +1547,41 @@ def _migrate_v68(conn) -> None:
              "create_all and seeded", added)
 
 
+def _migrate_v69(conn) -> None:
+    """case.industry_as_resolved - what the resolver called the sector.
+
+    The taxonomy code drives archetype_bandwidth, archetype_resilience and
+    the estate shape, and nothing compared it to the entity that was
+    actually resolved. UNFI ran as WAREHOUSING - third-party storage - when
+    it is a wholesale grocery distributor, which is a tenfold difference in
+    warehouse bandwidth, and the resolving agent had already written
+    "Grocery and Food Wholesale Distribution" onto the candidate row.
+
+    Additive and advisory. Nothing reads this to decide anything; it exists
+    so a disagreement can be reported.
+
+    THE COLUMN ONLY. The first version also backfilled it from
+    entity_candidate, wrapped in a try/except because "an advisory backfill
+    must not stop a migration". In PostgreSQL a failed statement aborts the
+    surrounding transaction, so catching the error changed nothing: the
+    schema_version read that followed returned InFailedSqlTransaction, the
+    migration died with the real error swallowed, and the API refused to
+    start. The guard added to make it safe is what made the failure
+    unreadable.
+
+    A savepoint would make the try/except honest, and the deeper point is
+    that it should not be here at all: a migration is a deterministic schema
+    change, and a best-effort data copy has no business sharing its
+    transaction. The backfill is tools/backfill_resolved_industry.py, run
+    deliberately, where failing is allowed to mean something.
+    """
+    added = _add_column(conn, db.case, "industry_as_resolved")
+
+    log.info("v69: %d column(s) added. Existing cases are backfilled by "
+             "tools/backfill_resolved_industry.py, not here - see the "
+             "docstring.", added)
+
+
 MIGRATIONS = {2: _migrate_v2, 3: _migrate_v3, 4: _migrate_v4, 5: _migrate_v5,
               6: _migrate_v6, 7: _migrate_v7, 8: _migrate_v8, 9: _migrate_v9,
               10: _migrate_v10, 11: _migrate_v11, 12: _migrate_v12,
@@ -1556,7 +1591,7 @@ MIGRATIONS = {2: _migrate_v2, 3: _migrate_v3, 4: _migrate_v4, 5: _migrate_v5,
               21: _migrate_v21, 22: _migrate_v22, 23: _migrate_v23, 24: _migrate_v24, 25: _migrate_v25, 26: _migrate_v26, 27: _migrate_v27, 28: _migrate_v28, 29: _migrate_v29, 30: _migrate_v30, 31: _migrate_v31, 32: _migrate_v32, 33: _migrate_v33, 34: _migrate_v34, 35: _migrate_v35, 36: _migrate_v36, 37: _migrate_v37, 38: _migrate_v38, 39: _migrate_v39, 40: _migrate_v40, 41: _migrate_v41, 42: _migrate_v42, 43: _migrate_v43, 44: _migrate_v44, 45: _migrate_v45, 46: _migrate_v46, 47: _migrate_v47, 48: _migrate_v48, 49: _migrate_v49, 50: _migrate_v50, 51: _migrate_v51, 52: _migrate_v52, 53: _migrate_v53, 54: _migrate_v54, 55: _migrate_v55, 56: _migrate_v56, 57: _migrate_v57, 58: _migrate_v58, 59: _migrate_v59, 60: _migrate_v60, 61: _migrate_v61, 62: _migrate_v62, 63: _migrate_v63,
               64: _migrate_v64, 65: _migrate_v65,
               66: _migrate_v66, 67: _migrate_v67,
-              68: _migrate_v68}
+              68: _migrate_v68, 69: _migrate_v69}
 
 
 class SchemaDrift(RuntimeError):

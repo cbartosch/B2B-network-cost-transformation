@@ -104,6 +104,21 @@ case = Table(
     # type: the archetype says what shape a site is, the industry says what
     # happens inside it.
     Column("industry", String(64)),
+    # What the RESOLVER called this entity's sector, in its own words.
+    #
+    # `industry` above is a taxonomy code and drives archetype_bandwidth,
+    # archetype_resilience and the estate shape. It arrives from the case
+    # spec or an analyst, and nothing checked it against the entity that was
+    # actually resolved - so UNFI, a wholesale grocery distributor, ran
+    # seventeen research calls and an estimate as WAREHOUSING, which prices
+    # a warehouse at 100 Mbps instead of 1,000.
+    #
+    # The resolving agent had already written "Grocery and Food Wholesale
+    # Distribution" onto entity_candidate.industry. Nothing carried it here,
+    # so nothing could disagree with the code. Free text cannot settle which
+    # is right - see bics.industry_text_agrees - but it can put the question
+    # in front of a person.
+    Column("industry_as_resolved", Text),
     # Choices an analyst makes about how to run, kept so they are not silently
     # reverted to a default on the next visit. A seed is pinned for
     # reproducibility and an estimation method decides which question the

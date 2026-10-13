@@ -170,6 +170,11 @@ def confirm(session, *, case_id: str, candidate_id: str, confirmed_by: str,
     session.execute(update(db.case).where(db.case.c.case_id == case_id).values(
         resolved_entity_id=candidate_id,
         subject_entity_legal_name=cand.legal_name,
+        # Carried, not applied. The taxonomy code stays whatever the case
+        # already holds; this records what the resolver called the sector so
+        # the two can be compared. Copying seven fields and not this one is
+        # why a mislabelled industry survived a full run.
+        industry_as_resolved=cand.industry,
         entity_identifier=identifier,
         country_of_domicile=cand.domicile or (
             case_row.country_of_domicile if case_row else None),

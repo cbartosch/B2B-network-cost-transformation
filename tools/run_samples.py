@@ -230,19 +230,34 @@ def set_industry_if_absent(case_id, spec):
     this is not a cosmetic field.
     """
     from sqlalchemy import update
+    from app.domain import bics
     with db.SessionLocal() as s:
         row = s.execute(select(db.case.c.industry).where(
+            db.case.c.case_id == case_id)).scalar()
+        resolved_text = s.execute(select(db.case.c.industry_as_resolved).where(
             db.case.c.case_id == case_id)).scalar()
         known = {r[0] for r in s.execute(
             select(db.archetype_bandwidth.c.industry)).all()}
         if row and row.upper() in known:
-            return {"industry": row, "origin": "ENTITY_RESOLUTION"}
-        s.execute(update(db.case).where(db.case.c.case_id == case_id)
-                  .values(industry=spec["industry"]))
-        s.commit()
-        return {"industry": spec["industry"],
-                "origin": "SPEC_FALLBACK",
-                "resolution_said": row}
+            out = {"industry": row, "origin": "ENTITY_RESOLUTION"}
+        else:
+            s.execute(update(db.case).where(db.case.c.case_id == case_id)
+                      .values(industry=spec["industry"]))
+            s.commit()
+            out = {"industry": spec["industry"], "origin": "SPEC_FALLBACK"}
+
+    # The cross-check. The membership test above asks whether the code is A
+    # code; this asks whether it is THIS ENTITY'S code, which is the question
+    # that went unasked while UNFI ran as WAREHOUSING.
+    #
+    # Reported, never applied. Free text cannot settle a taxonomy, and a
+    # check that silently re-labelled a case would be worse than the gap it
+    # closes - the code drives bandwidth, resilience and the estate shape,
+    # and being wrong in either direction is expensive.
+    out["resolution_said"] = resolved_text
+    out["agrees_with_resolution"] = bics.industry_text_agrees(
+        out["industry"], resolved_text)
+    return out
 
 
 def preflight(case_id):
@@ -1130,6 +1145,13 @@ def run_one(spec, outdir, domains, force, repair=False, repromote=False):
 
     ind = set_industry_if_absent(case_id, spec)
     log(slug, f"industry {ind['industry']} ({ind['origin']})")
+    if ind.get("agrees_with_resolution") is False:
+        # Loud, because the quiet version of this cost seventeen research
+        # calls and an estimate priced on the wrong archetype bandwidth.
+        log(slug, f"!! INDUSTRY DISAGREEMENT: the case is "
+                  f"{ind['industry']} and the resolver called this entity "
+                  f"{ind['resolution_said']!r}. One of them is wrong and "
+                  f"the code is what prices the estate.")
 
     disp_out = dispose_analyst_domains(case_id, slug, domains)
     # Research skips these itself, but asking for them anyway would still

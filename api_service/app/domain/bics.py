@@ -332,6 +332,76 @@ BAND_LAYER_SYNONYM = {
 }
 
 
+# Words that carry no sector meaning, so an overlap on one means nothing.
+#
+# "Retail" is not here and "Services" is: the first distinguishes sectors and
+# the second appears in half of them.
+_INDUSTRY_STOPWORDS = frozenset({
+    "and", "or", "of", "the", "a", "an", "for", "in", "to",
+    "services", "service", "group", "holding", "holdings", "company",
+    "companies", "corporation", "corp", "inc", "plc", "sa", "ag", "nv",
+    "other", "general", "various", "diversified", "international",
+    "global", "national", "regional", "business", "businesses",
+})
+
+
+def _industry_tokens(text: str) -> set:
+    """Significant words in an industry label, lightly stemmed.
+
+    Stemmed because the resolver writes prose and the taxonomy writes codes:
+    "Offices of Bank Holding Companies" has to match RETAIL_BANKING on
+    bank/banking, and no amount of exact matching will do that.
+    """
+    words = "".join(ch if ch.isalnum() else " " for ch in str(text or "")).split()
+    out = set()
+    for word in words:
+        word = word.lower()
+        if len(word) < 3 or word in _INDUSTRY_STOPWORDS:
+            continue
+        for suffix in ("ing", "ies", "es", "s"):
+            if word.endswith(suffix) and len(word) - len(suffix) >= 4:
+                word = word[: -len(suffix)]
+                break
+        out.add(word)
+    return out
+
+
+def industry_text_agrees(code: str | None, text: str | None):
+    """Does a resolved sector description look like this taxonomy code?
+
+    True, False, or None when there is nothing to compare.
+
+    DELIBERATELY A HEURISTIC THAT ONLY REPORTS. Free text against a taxonomy
+    cannot decide which is right, and a check that silently re-labelled a
+    case would be worse than the gap it closes: the code drives
+    archetype_bandwidth, archetype_resilience and the estate shape, and a
+    wrong one is expensive in both directions. This exists to put a
+    disagreement in front of a person.
+
+    The gap it closes: `entity_candidate.industry` holds what the resolving
+    agent wrote - for UNFI, "Grocery and Food Wholesale Distribution" - and
+    nothing read it, so a spec saying WAREHOUSING went unchallenged through
+    seventeen research calls and an estimate. On the six companies that
+    found this, token overlap separates the five that agree from the one
+    that does not.
+    """
+    code_tokens = _industry_tokens(str(code or "").replace("_", " "))
+    text_tokens = _industry_tokens(text)
+    if not code_tokens or not text_tokens:
+        return None
+    if code_tokens & text_tokens:
+        return True
+    # One token being a prefix of the other, at four characters or more.
+    #
+    # Stemming suffixes is not enough across two vocabularies: RAILWAYS
+    # stems to "railway" and the resolver wrote "Rail transport", which
+    # share no whole token and plainly agree. Four characters because three
+    # starts matching things that merely begin alike.
+    return any(a.startswith(b) or b.startswith(a)
+               for a in code_tokens for b in text_tokens
+               if min(len(a), len(b)) >= 4)
+
+
 def band_layer_synonym(industry: str | None, archetype: str | None):
     """The name this sector's density mix uses for the same estate layer."""
     return BAND_LAYER_SYNONYM.get(
