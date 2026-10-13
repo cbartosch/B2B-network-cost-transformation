@@ -226,8 +226,8 @@ def main():
         out.append("")
 
         # Anything that is newly reported rather than newly different.
-        new_fields = [k for k in ("saving_on_evidenced_baseline",
-                                  "saving_on_unevidenced_baseline",
+        new_fields = [k for k in ("saving_on_specified_baseline",
+                                  "saving_on_simulated_baseline",
                                   "confidence_weights", "best_scenario_reason")
                       if not (b.get(k) or "").strip()
                       and (a.get(k) or "").strip()]

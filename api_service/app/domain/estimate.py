@@ -794,6 +794,26 @@ def lever_stage_mix(scenario: dict, levers_by_id: dict) -> dict:
 #
 # Taken on either axis: a drawn quantity priced from a real card is still
 # drawn, and a counted site priced from a drawn rate is still drawn.
+# Origins that mean "the model put this here", as against anything a person
+# or a source stated.
+#
+# The split these drive used to be exported as saving_on_evidenced_baseline
+# and saving_on_unevidenced_baseline, and an external audit raised it as a
+# contradiction six times over: the export reported millions of saving on an
+# "evidenced" baseline while every value-evidence share on the same row was
+# zero.
+#
+# The audit was right. This set contains SIMULATED and DECLARED_UNKNOWN and
+# nothing else, so a footprint an analyst typed (ANALYST_ENTERED_SCOPE) and a
+# rate nobody sourced (BENCHMARK_PRIOR) both counted as evidenced. UPS
+# reported 6.0m of saving on an "evidenced" baseline that was a declared site
+# count priced from a grade E card.
+#
+# Renamed rather than recomputed: the split is useful and the word was wrong.
+# `specified` is what the test actually asks - did something outside the
+# simulation state this quantity - and it claims nothing about evidence.
+# Price evidence is a different question, answered by
+# coverage.evidence_grade_mix, and quantity evidence by origin_breakdown.
 UNEVIDENCED_ORIGINS = frozenset({"SIMULATED", "DECLARED_UNKNOWN"})
 
 
@@ -1101,9 +1121,9 @@ def scenarios(components: list[Component], levers: list[dict],
                                 "saving_low": as_str(cut_low),
                                 "saving_base": as_str(cut_total),
                                 "saving_high": as_str(cut_high),
-                                "saving_on_unevidenced_baseline":
+                                "saving_on_simulated_baseline":
                                     as_str(cut_unev_base),
-                                "saving_on_evidenced_baseline":
+                                "saving_on_specified_baseline":
                                     as_str(cut_total - cut_unev_base)})
             elif constraints and not layer_missing:
                 # Only when the layer IS priced. A lever failing on both its
@@ -1219,11 +1239,11 @@ def scenarios(components: list[Component], levers: list[dict],
             # CR-07: the headline split by what it rests on. A saving on
             # drawn value is reported, never hidden - and never mixed into
             # the figure a reader takes as the answer.
-            "saving_on_evidenced_baseline": as_str(
-                sum((D(l["saving_on_evidenced_baseline"]) for l in applied),
+            "saving_on_specified_baseline": as_str(
+                sum((D(l["saving_on_specified_baseline"]) for l in applied),
                     D(0))),
-            "saving_on_unevidenced_baseline": as_str(
-                sum((D(l["saving_on_unevidenced_baseline"]) for l in applied),
+            "saving_on_simulated_baseline": as_str(
+                sum((D(l["saving_on_simulated_baseline"]) for l in applied),
                     D(0))),
             "savings_pct_base": (f"{(saving.base / current.base):.3f}"
                                  if current.base else "0.000"),

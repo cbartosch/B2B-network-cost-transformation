@@ -247,15 +247,15 @@ def c8_headline(rows, out):
     r = Result(8, "headline excludes unevidenced baseline (CR-07)")
     missing = 0
     for slug, row in rows.items():
-        unev = row.get("saving_on_unevidenced_baseline")
+        unev = row.get("saving_on_simulated_baseline")
         if unev in (None, ""):
             missing += 1
             continue
         if _num(unev) is None:
-            r.fail(f"{slug}: saving_on_unevidenced_baseline is {unev!r}")
+            r.fail(f"{slug}: saving_on_simulated_baseline is {unev!r}")
             continue
         headline, ev = _num(row.get("best_saving_base")), _num(
-            row.get("saving_on_evidenced_baseline"))
+            row.get("saving_on_specified_baseline"))
         if headline is None or ev is None:
             continue
         if abs((ev + _num(unev)) - headline) > TOL:

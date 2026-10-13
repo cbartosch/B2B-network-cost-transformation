@@ -80,11 +80,11 @@ def test_the_evidence_split_sums_to_the_lever_total():
     unevidenced saving and still overstate itself."""
     sc = _run()
     for lev in sc["levers"]:
-        parts = (D(lev["saving_on_evidenced_baseline"])
-                 + D(lev["saving_on_unevidenced_baseline"]))
+        parts = (D(lev["saving_on_specified_baseline"])
+                 + D(lev["saving_on_simulated_baseline"]))
         assert abs(parts - D(lev["saving_base"])) < TOL, lev["lever_id"]
-    total = (D(sc["saving_on_evidenced_baseline"])
-             + D(sc["saving_on_unevidenced_baseline"]))
+    total = (D(sc["saving_on_specified_baseline"])
+             + D(sc["saving_on_simulated_baseline"]))
     assert abs(total - D(sc["gross_run_rate_savings"]["base"])) < TOL
 
 
@@ -150,8 +150,8 @@ def test_every_property_holds_in_every_scenario(scenario):
     lever_sum = sum((D(l["saving_base"]) for l in sc["levers"]), D(0))
     assert abs(lever_sum - D(sc["gross_run_rate_savings"]["base"])) < TOL
 
-    split = (D(sc["saving_on_evidenced_baseline"])
-             + D(sc["saving_on_unevidenced_baseline"]))
+    split = (D(sc["saving_on_specified_baseline"])
+             + D(sc["saving_on_simulated_baseline"]))
     assert abs(split - D(sc["gross_run_rate_savings"]["base"])) < TOL
 
     stronger = _levers(scenario)
@@ -180,8 +180,8 @@ def test_a_saving_on_drawn_value_is_reported_separately():
              _component("L0_drawn", "L0", "1000000", origin="SIMULATED")]
     sc = _run(components=mixed,
               levers=[_lever("LEV-A", ["L0"], "0.05", "0.10", "0.15")])
-    assert D(sc["saving_on_unevidenced_baseline"]) > 0
-    assert D(sc["saving_on_evidenced_baseline"]) > 0
-    assert (abs(D(sc["saving_on_unevidenced_baseline"])
-                - D(sc["saving_on_evidenced_baseline"])) < TOL), (
+    assert D(sc["saving_on_simulated_baseline"]) > 0
+    assert D(sc["saving_on_specified_baseline"]) > 0
+    assert (abs(D(sc["saving_on_simulated_baseline"])
+                - D(sc["saving_on_specified_baseline"])) < TOL), (
         "half the baseline is drawn, so half the saving should be")

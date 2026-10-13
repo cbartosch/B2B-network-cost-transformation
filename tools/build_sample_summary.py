@@ -37,10 +37,10 @@ FIELDS = [
     ("best_saving_base", lambda m, s, e, r: _best(e)[1]),
     # The headline split by what it rests on. A saving on drawn value is
     # reported, never mixed into the figure a reader takes as the answer.
-    ("saving_on_evidenced_baseline",
-     lambda m, s, e, r: _scen(e, "saving_on_evidenced_baseline")),
-    ("saving_on_unevidenced_baseline",
-     lambda m, s, e, r: _scen(e, "saving_on_unevidenced_baseline")),
+    ("saving_on_specified_baseline",
+     lambda m, s, e, r: _scen(e, "saving_on_specified_baseline")),
+    ("saving_on_simulated_baseline",
+     lambda m, s, e, r: _scen(e, "saving_on_simulated_baseline")),
     ("one_time_cost_base", lambda m, s, e, r: _trans(e, "one_time_cost")),
     ("payback_months_base", lambda m, s, e, r: _payback(e)),
     ("programme_months", lambda m, s, e, r: _prog(e)),
@@ -257,7 +257,7 @@ def _best_reason(e):
     runner, second = ranked[1]
     margin = float(val or 0) - float(second or 0)
     pct = (margin / float(second)) * 100 if float(second) else 0
-    unev = _scen(e, "saving_on_unevidenced_baseline")
+    unev = _scen(e, "saving_on_simulated_baseline")
     tail = ""
     if unev and float(unev) > 0 and float(val or 0):
         tail = (f"; {float(unev) / float(val) * 100:.0f}% of it rests on "

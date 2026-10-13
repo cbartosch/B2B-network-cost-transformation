@@ -1035,8 +1035,13 @@ def scope_report(spec, foot, foot_prov):
     }
 
 
-def harvest(case_id, research_raw):
-    """The research, as findings rather than as agent runs."""
+def harvest(case_id, research_raw, prior_timings=None):
+    """The research, as findings rather than as agent runs.
+
+    `prior_timings` is what a previous run recorded for this company, so a
+    resumed or repromoted run reports the case's research time rather than
+    this session's - which is zero whenever no domain was called.
+    """
     with db.SessionLocal() as s:
         disp = [dict(r._mapping) for r in s.execute(
             select(db.domain_disposition).where(
@@ -1085,8 +1090,20 @@ def harvest(case_id, research_raw):
         "dispositions": disp,
         "known_facts": facts,
         "evidenced_footprint": foot,
-        "timings_seconds": {str(k): v["seconds"]
-                            for k, v in research_raw.items()},
+        # Cumulative for the case, not for this session.
+        #
+        # research_raw holds what THIS run researched, and a --repromote run
+        # researches nothing - so a company with 48 sources exported zero
+        # minutes beside them, which an audit flagged on five of six rows.
+        # The number was accurate about the session and wrong about the
+        # question a reader asks next to a source count.
+        #
+        # Prior timings are carried forward and this run's overwrite per
+        # domain, so a repaired domain reports its new time and the rest keep
+        # theirs.
+        "timings_seconds": {**(prior_timings or {}),
+                            **{str(k): v["seconds"]
+                               for k, v in research_raw.items()}},
     }
 
 
@@ -1196,7 +1213,17 @@ def run_one(spec, outdir, domains, force, repair=False, repromote=False):
 
     sim_id, sim = simulate(case_id, slug, foot)
     est = estimate(case_id, slug, sim_id, foot)
-    res = harvest(case_id, raw)
+    # What a previous run already recorded, so a repromote does not report
+    # zero minutes beside a source count it did not gather this session.
+    _prior = {}
+    _existing = outdir / slug / "research.json"
+    if _existing.exists():
+        try:
+            _prior = (json.loads(_existing.read_text("utf-8"))
+                      .get("timings_seconds") or {})
+        except (OSError, ValueError):
+            _prior = {}
+    res = harvest(case_id, raw, prior_timings=_prior)
 
     manifest = {
         "slug": slug,
