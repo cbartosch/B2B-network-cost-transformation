@@ -124,3 +124,41 @@ def test_most_changes_are_still_unverified_and_that_is_the_point(tool):
     assert 0 < covered < len(found), (
         f"{covered} of {len(found)} covered - a register covering everything "
         f"has stopped being evidence")
+
+
+# ------------------- findings that disqualify themselves in their own label
+
+def test_a_divested_estate_is_detected_from_the_finding_label(tool):
+    """The verification exercise's real finding. Saint-Gobain's German and
+    UK builders' merchants were labelled "DIVESTED to STARK Group" in 2019
+    and 2023, and promotion carried only (country, archetype, sites) - so
+    820 sites it had sold were priced as its estate. BNP's Belgian row said
+    "Fintro franchise branches" and read exactly like the UPS Store network.
+
+    Research wrote the disqualification down. Nothing read it.
+    """
+    warned = tool.label_warnings(ROOT / "samples" / "outside_in")
+    pairs = {(w["slug"], w["country"], w["archetype"]) for w in warned}
+    assert ("saint-gobain", "DE", "STORE") in pairs
+    assert ("saint-gobain", "GB", "STORE") in pairs
+    assert ("bnp-paribas", "BE", "STORE") in pairs
+
+
+def test_every_flagged_pair_has_been_addressed(tool):
+    """A warning nobody acts on is noise. Each flagged pair must carry a
+    register entry saying what was decided."""
+    register = tool.load_register(REGISTER)
+    warned = tool.label_warnings(ROOT / "samples" / "outside_in")
+    live = [w for w in warned
+            if (w["slug"], w["country"], w["archetype"]) not in register]
+    assert not live, f"unaddressed disqualifying labels: {live}"
+
+
+def test_a_disqualified_finding_that_lost_is_not_warned_about(tool):
+    """BNP's Fintro franchise also appears under BRANCH and Nestle has a DC
+    sold to Orllati - both promoted, both beaten by the declared figure, so
+    neither is priced. Warning about them trains a reader to skim."""
+    warned = tool.label_warnings(ROOT / "samples" / "outside_in")
+    pairs = {(w["slug"], w["country"], w["archetype"]) for w in warned}
+    assert ("bnp-paribas", "BE", "BRANCH") not in pairs
+    assert ("nestle", "CH", "DC") not in pairs

@@ -94,6 +94,63 @@ def changes(outdir: pathlib.Path, spec_path: pathlib.Path) -> list:
     return found
 
 
+#: Words in a finding's own label that disqualify it as this company's estate.
+#:
+#: Research writes the disqualification down and promotion carries only
+#: (country, archetype, sites), so the words are discarded. Saint-Gobain's
+#: German and UK merchants were labelled "DIVESTED to STARK Group" in 2019
+#: and 2023 and were priced as its estate anyway - 820 sites. BNP's Belgian
+#: row said "Fintro franchise branches". Both read like the UPS Store
+#: network, which took a person noticing.
+#:
+#: Reported, never acted on. "Closed" in a label can mean a sub-unit of a
+#: site that still exists, and "customer" can be a legitimate site type, so
+#: this surfaces rows for a reader rather than dropping them.
+DISQUALIFYING = (
+    "divest", "sold to", "disposed", "no longer", "franchis", "licensee",
+    "partner-operated", "third-party", "not operated", "customer location",
+)
+
+
+def label_warnings(outdir: pathlib.Path) -> list:
+    """Promoted pairs whose originating finding label disqualifies them."""
+    out = []
+    for d in sorted(outdir.iterdir()):
+        f = d / "research.json"
+        if not (d.is_dir() and f.exists()):
+            continue
+        r = json.loads(f.read_text("utf-8"))
+        # Only pairs where the researched figure actually WON.
+        #
+        # A disqualified finding that was promoted and then lost to the
+        # declared count is not priced, so warning about it trains a reader
+        # to skim. BNP's Fintro franchise lost to its own 420 Belgian
+        # branches; Nestle's sold Bussigny DC lost to a declared 3.
+        man = json.loads((d / "manifest.json").read_text("utf-8"))
+        promoted = {
+            (p.get("country"), p.get("archetype"))
+            for p in (man.get("footprint_provenance") or [])
+            if p.get("origin") in ("RESEARCHED", "SUPERSEDED_BY_RESEARCH",
+                                   "EXCLUDED_BY_SCOPE")}
+        seen = set()
+        for disp in (r.get("dispositions") or []):
+            for q in ((disp.get("evidence") or {}).get("quantities") or []):
+                label = str(q.get("label") or "")
+                if not label:
+                    continue
+                hit = next((w for w in DISQUALIFYING
+                            if w in label.lower()), None)
+                if not hit:
+                    continue
+                key = (q.get("country"), label.split()[0].upper())
+                if key in promoted and (d.name, key) not in seen:
+                    seen.add((d.name, key))
+                    out.append({"slug": d.name, "country": key[0],
+                                "archetype": key[1], "marker": hit,
+                                "label": label})
+    return out
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", default="samples/outside_in")
@@ -153,7 +210,19 @@ def main() -> int:
     if bare:
         print("A change without one is explained by footprint_provenance and "
               "not independently checkable.")
-    if args.strict and bare:
+    warnings = label_warnings(pathlib.Path(args.out))
+    live = [w for w in warnings
+            if (w["slug"], w["country"], w["archetype"]) not in register]
+    if warnings:
+        print(f"\nfinding labels that disqualify a promoted pair "
+              f"({len(warnings)}, {len(live)} with no register entry):")
+        for w in warnings:
+            mark = "" if (w["slug"], w["country"],
+                          w["archetype"]) in register else "  <- UNADDRESSED"
+            print(f"  {w['slug']:<16}{w['country']}/{w['archetype']:<13}"
+                  f"[{w['marker']}] {w['label'][:46]}{mark}")
+
+    if args.strict and (bare or live):
         return 1
     return 0
 

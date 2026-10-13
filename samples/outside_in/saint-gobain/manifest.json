@@ -16,7 +16,7 @@
   "base_currency": "EUR",
   "case_id": "fab3cb28-e3ff-4c9e-a9d1-a220efeb3ac0",
   "spec_path": "/tmp/companies_fixed.json",
-  "spec_sha256": "2e45939dbcdb",
+  "spec_sha256": "9e81eef8a1f4",
   "entity_resolution": {
     "resolved": null,
     "resumed": true
@@ -49,30 +49,6 @@
       "archetype": "DC",
       "sites": 1,
       "density": "DENSE_URBAN"
-    },
-    {
-      "country": "DE",
-      "archetype": "STORE",
-      "sites": 3,
-      "density": "DENSE_URBAN"
-    },
-    {
-      "country": "DE",
-      "archetype": "STORE",
-      "sites": 51,
-      "density": "RURAL"
-    },
-    {
-      "country": "DE",
-      "archetype": "STORE",
-      "sites": 118,
-      "density": "SUBURBAN"
-    },
-    {
-      "country": "DE",
-      "archetype": "STORE",
-      "sites": 48,
-      "density": "URBAN"
     },
     {
       "country": "DE",
@@ -130,30 +106,6 @@
     },
     {
       "country": "GB",
-      "archetype": "STORE",
-      "sites": 8,
-      "density": "DENSE_URBAN"
-    },
-    {
-      "country": "GB",
-      "archetype": "STORE",
-      "sites": 138,
-      "density": "RURAL"
-    },
-    {
-      "country": "GB",
-      "archetype": "STORE",
-      "sites": 323,
-      "density": "SUBURBAN"
-    },
-    {
-      "country": "GB",
-      "archetype": "STORE",
-      "sites": 131,
-      "density": "URBAN"
-    },
-    {
-      "country": "GB",
       "archetype": "WAREHOUSE",
       "sites": 700,
       "density": "SUBURBAN"
@@ -161,16 +113,23 @@
   ],
   "footprint_provenance": [
     {
-      "country": "BR",
-      "archetype": "DC",
-      "sites": 1,
-      "origin": "RESEARCHED",
-      "density": null
-    },
-    {
       "country": "DE",
       "archetype": "STORE",
       "sites": 220,
+      "origin": "EXCLUDED_BY_SCOPE",
+      "reason": "the German distribution branches were DIVESTED to STARK Group in 2019 and are no longer Saint-Gobain sites. Research labels them so and the label is not carried past promotion."
+    },
+    {
+      "country": "GB",
+      "archetype": "STORE",
+      "sites": 600,
+      "origin": "EXCLUDED_BY_SCOPE",
+      "reason": "the UK distribution branches were DIVESTED to STARK Group in 2023. The French builders' merchants are retained and stay declared."
+    },
+    {
+      "country": "BR",
+      "archetype": "DC",
+      "sites": 1,
       "origin": "RESEARCHED",
       "density": null
     },
@@ -220,13 +179,6 @@
     },
     {
       "country": "GB",
-      "archetype": "STORE",
-      "sites": 600,
-      "origin": "RESEARCHED",
-      "density": null
-    },
-    {
-      "country": "GB",
       "archetype": "WAREHOUSE",
       "sites": 700,
       "origin": "PUBLIC_DISCLOSURE",
@@ -234,8 +186,8 @@
     },
     {
       "origin": "DENSITY_FROM_MIX",
-      "rows": 5,
-      "sites": 2822,
+      "rows": 3,
+      "sites": 2002,
       "filled": [
         {
           "country": "BR",
@@ -245,19 +197,6 @@
           "mix_industry": "BUILDING_MATERIALS",
           "bands": {
             "DENSE_URBAN": 1
-          }
-        },
-        {
-          "country": "DE",
-          "archetype": "STORE",
-          "sites": 220,
-          "basis": "INDUSTRY_DEFAULT",
-          "mix_industry": "BUILDING_MATERIALS",
-          "bands": {
-            "DENSE_URBAN": 3,
-            "RURAL": 51,
-            "SUBURBAN": 118,
-            "URBAN": 48
           }
         },
         {
@@ -281,19 +220,6 @@
             "RURAL": 461,
             "SUBURBAN": 1077,
             "URBAN": 436
-          }
-        },
-        {
-          "country": "GB",
-          "archetype": "STORE",
-          "sites": 600,
-          "basis": "INDUSTRY_DEFAULT",
-          "mix_industry": "BUILDING_MATERIALS",
-          "bands": {
-            "DENSE_URBAN": 8,
-            "RURAL": 138,
-            "SUBURBAN": 323,
-            "URBAN": 131
           }
         }
       ],
@@ -367,13 +293,13 @@
   ],
   "estimate_inputs": {
     "method": "BUILD_UP",
-    "users": 56220,
+    "users": 46380,
     "ops_cost_per_site_base": 900,
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-13T15:09:01.828616+00:00",
-  "run_seconds": 15.4,
+  "run_started": "2026-10-13T16:25:37.834300+00:00",
+  "run_seconds": 7.2,
   "preflight_conditions": 8,
   "promotion": {
     "promoted": true,

@@ -16,7 +16,7 @@
   "base_currency": "EUR",
   "case_id": "7af28f40-a494-461a-b6dd-da0b42200b72",
   "spec_path": "/tmp/companies_fixed.json",
-  "spec_sha256": "2e45939dbcdb",
+  "spec_sha256": "9e81eef8a1f4",
   "entity_resolution": {
     "resolved": null,
     "resumed": true
@@ -48,24 +48,6 @@
       "country": "BE",
       "archetype": "BRANCH",
       "sites": 420,
-      "density": "URBAN"
-    },
-    {
-      "country": "BE",
-      "archetype": "STORE",
-      "sites": 34,
-      "density": "RURAL"
-    },
-    {
-      "country": "BE",
-      "archetype": "STORE",
-      "sites": 59,
-      "density": "SUBURBAN"
-    },
-    {
-      "country": "BE",
-      "archetype": "STORE",
-      "sites": 89,
       "density": "URBAN"
     },
     {
@@ -114,19 +96,19 @@
   "footprint_provenance": [
     {
       "country": "BE",
+      "archetype": "STORE",
+      "sites": 182,
+      "origin": "EXCLUDED_BY_SCOPE",
+      "reason": "Fintro is a franchise network - independently operated agents, so the connectivity is not BNP's cost. The retained Belgian branches are declared separately."
+    },
+    {
+      "country": "BE",
       "archetype": "BRANCH",
       "sites": 420,
       "origin": "DISCLOSURE_KEPT_RESEARCH_FOUND_FEWER",
       "density": "URBAN",
       "research_said": 275,
       "disclosure_said": 420
-    },
-    {
-      "country": "BE",
-      "archetype": "STORE",
-      "sites": 182,
-      "origin": "RESEARCHED",
-      "density": null
     },
     {
       "country": "FR",
@@ -169,22 +151,9 @@
     },
     {
       "origin": "DENSITY_FROM_MIX",
-      "rows": 2,
-      "sites": 1656,
+      "rows": 1,
+      "sites": 1474,
       "filled": [
-        {
-          "country": "BE",
-          "archetype": "STORE",
-          "sites": 182,
-          "basis": "SECTOR_LAYER_SYNONYM",
-          "mix_industry": "UNIVERSAL_BANKING",
-          "bands": {
-            "RURAL": 34,
-            "SUBURBAN": 59,
-            "URBAN": 89
-          },
-          "via_layer": "BRANCH"
-        },
         {
           "country": "FR",
           "archetype": "STORE",
@@ -267,13 +236,13 @@
   ],
   "estimate_inputs": {
     "method": "BUILD_UP",
-    "users": 52848,
+    "users": 50664,
     "ops_cost_per_site_base": 900,
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-13T15:09:08.161790+00:00",
-  "run_seconds": 12.4,
+  "run_started": "2026-10-13T16:25:30.120029+00:00",
+  "run_seconds": 7.7,
   "preflight_conditions": 8,
   "promotion": {
     "promoted": true,

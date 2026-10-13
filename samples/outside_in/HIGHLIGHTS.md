@@ -396,7 +396,7 @@ Sources: [germancompanyformation.com](https://germancompanyformation.com/guides/
 ## BNP Paribas SA
 
 - **Industry** UNIVERSAL_BANKING (entity resolution)
-- **Scope** FR, BE, IT, EUR, 4,404 sites (research merged with disclosure)
+- **Scope** FR, BE, IT, EUR, 4,222 sites (research merged with disclosure)
 - **Confidence** 0.340 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 8 source(s)
@@ -2133,8 +2133,8 @@ Sources: [leasedlineandmpls.co.uk](https://www.leasedlineandmpls.co.uk/top-100gb
 ## Compagnie de Saint-Gobain SA
 
 - **Industry** BUILDING_MATERIALS (entity resolution)
-- **Scope** FR, DE, GB, EUR, 4,685 sites (research merged with disclosure)
-- **Confidence** 0.334 (D - Indicative), coverage COMPLETE
+- **Scope** FR, DE, GB, EUR, 3,865 sites (research merged with disclosure)
+- **Confidence** 0.335 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 9 source(s)
 
