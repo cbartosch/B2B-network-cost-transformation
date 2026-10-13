@@ -1,0 +1,234 @@
+{
+  "slug": "simmons-bank",
+  "legal_name": "Simmons First National Corporation",
+  "industry": {
+    "industry": "RETAIL_BANKING",
+    "origin": "SPEC_FALLBACK",
+    "resolution_said": null
+  },
+  "domicile": "US",
+  "in_scope_countries": [
+    "US"
+  ],
+  "base_currency": "USD",
+  "case_id": "86cf9a66-2ac8-4195-ae4f-c6fe920a375e",
+  "spec_path": "/app/samples/companies.json",
+  "spec_sha256": "0262dcedde7a",
+  "entity_resolution": {
+    "resolved": true,
+    "candidate": {
+      "candidate_id": "8289f1be-c28e-445e-923f-ba84aa9d98ea",
+      "case_id": "86cf9a66-2ac8-4195-ae4f-c6fe920a375e",
+      "legal_name": "Simmons First National Corporation",
+      "identifier": "549300IVR5AJKUVOGN05",
+      "domicile": "US",
+      "industry": "Offices of Bank Holding Companies (Financial Holding Company – Domestic)",
+      "revenue": "",
+      "employees": "",
+      "group_parent": null,
+      "website": "https://www.simmonsbank.com",
+      "match_score": 1.0,
+      "sources": {
+        "differentiators": [
+          "Top-level publicly traded financial holding company; no group parent above it",
+          "Incorporated in Arkansas on 1968-10-22 as an Arkansas corporation",
+          "Registered under the Bank Holding Company Act of 1956, as amended",
+          "SEC EDGAR CIK: 0000090498; Commission file number: 000-06253",
+          "IRS EIN: 71-0407808",
+          "FFIEC RSSD ID: 1094828",
+          "CUSIP (common stock): 828730200",
+          "NASDAQ ticker: SFNC",
+          "Registered address: 501 Main Street, Pine Bluff, Arkansas 71601 (historic); current registered address also shown as 601 E. 3rd Street, 12th Floor, Little Rock, Arkansas 72201",
+          "As of 31-Dec-2023: approximately USD 27.35 billion in consolidated assets (source: SEC 10-K FY2023, PRIMARY_FILING, FULL_PAGE, STATED)",
+          "Institution type per FFIEC: Financial Holding Company – Domestic; primary federal regulator: Federal Reserve System",
+          "LEI status: ACTIVE; LEI issuance date: 2017-10-19; last confirmed: 2024-09-10 (source: Bloomberg LEI / FFIEC, REGULATOR, FULL_PAGE, STATED)",
+          "Primary subsidiary is Simmons Bank (Arkansas state-chartered bank, FDIC certificate #3890, RSSD ID 663245)",
+          "Operations in Arkansas, Kansas, Missouri, Oklahoma, Tennessee, and Texas through subsidiaries"
+        ],
+        "unresolved_attributes": [
+          "Current principal registered office address (Pine Bluff vs. Little Rock) – two addresses appear across filings at different dates; analyst should confirm current registered agent address",
+          "Exact current consolidated asset figure as of filing date later than 31-Dec-2023",
+          "Full list of active legal subsidiaries below Simmons Bank"
+        ],
+        "prompt_id": "entity.resolve.candidates",
+        "prompt_version": "2.0.0",
+        "provider_response_id": "msg_011CfyeSWKxEEpdXH5tAQH7x"
+      },
+      "agent_run_id": "0ae6d32b-478e-4c51-be97-f35461a1ac68"
+    },
+    "candidates_considered": 2
+  },
+  "resumed_existing_case": false,
+  "mode": "run",
+  "domains_already_researched_on_resume": [],
+  "footprint_origin": "RESEARCH_MERGED_WITH_DISCLOSURE",
+  "footprint_used": [
+    {
+      "country": "US",
+      "archetype": "BRANCH",
+      "sites": 230,
+      "density": "SUBURBAN"
+    },
+    {
+      "country": "US",
+      "archetype": "DC",
+      "sites": 2,
+      "density": "SUBURBAN"
+    },
+    {
+      "country": "US",
+      "archetype": "LARGE_OFFICE",
+      "sites": 3,
+      "density": "URBAN"
+    },
+    {
+      "country": "US",
+      "archetype": "STORE",
+      "sites": 4,
+      "density": null
+    }
+  ],
+  "footprint_provenance": [
+    {
+      "country": "US",
+      "archetype": "BRANCH",
+      "sites": 230,
+      "origin": "DISCLOSURE_KEPT_RESEARCH_FOUND_FEWER",
+      "density": "SUBURBAN",
+      "research_said": 26,
+      "disclosure_said": 230
+    },
+    {
+      "country": "US",
+      "archetype": "DC",
+      "sites": 2,
+      "origin": "DISCLOSURE_KEPT_RESEARCH_FOUND_FEWER",
+      "density": "SUBURBAN",
+      "research_said": 1,
+      "disclosure_said": 2
+    },
+    {
+      "country": "US",
+      "archetype": "LARGE_OFFICE",
+      "sites": 3,
+      "origin": "DISCLOSURE_KEPT_RESEARCH_FOUND_FEWER",
+      "density": "URBAN",
+      "research_said": 1,
+      "disclosure_said": 3
+    },
+    {
+      "country": "US",
+      "archetype": "STORE",
+      "sites": 4,
+      "origin": "RESEARCHED",
+      "density": null
+    },
+    {
+      "origin": "NO_DENSITY_BAND",
+      "rows": 1,
+      "sites": 4,
+      "reasons": {
+        "STORE": "no governed band mix for STORE in RETAIL_BANKING, so the band is left unknown - borrowing another site type's bands would re-price these 4 sites against a shape nobody established for them"
+      },
+      "note": "these rows carry no density band, so serviceability cannot be resolved for them and their sites are treated as deliverable. The sector mix has no row for their site type, and another type's bands are not borrowed."
+    }
+  ],
+  "scope_countries_modelled": [
+    "US"
+  ],
+  "scope_countries_company_total": "DECLARED_UNKNOWN",
+  "scope_status": "PARTIAL_COUNTRIES",
+  "scope_note": "Baseline covers 1 country(ies) (US) and the site types listed in sites_origin. The group's full country and site-type count is not sourced, so the share of the group this represents is DECLARED_UNKNOWN. This is baseline_in_scope, not a group baseline.",
+  "sites_origin": {
+    "BRANCH": "ASSUMED_PUBLIC_DISCLOSURE",
+    "DC": "ASSUMED_PUBLIC_DISCLOSURE",
+    "LARGE_OFFICE": "ASSUMED_PUBLIC_DISCLOSURE",
+    "STORE": "RESEARCHED"
+  },
+  "fx_to_eur": {
+    "rate": "0.87110000",
+    "as_of": "2026-09-17",
+    "basis": "USD->EUR",
+    "evidence_grade": "B",
+    "source": "mid-market EUR/USD 1.1480 inverted, 17 September 2026; the rate used to read a German quote against this card",
+    "convention": "SPOT"
+  },
+  "seed": 20260101,
+  "ensemble_size": 25,
+  "domains_declared_unknown": [],
+  "domains_requested": [
+    1,
+    2,
+    6,
+    7,
+    8,
+    9,
+    10,
+    12,
+    13,
+    14,
+    15,
+    16,
+    18,
+    19,
+    20,
+    21,
+    22
+  ],
+  "domains_fell_back_unanswered": [],
+  "domains_researched": [
+    1,
+    2,
+    6,
+    7,
+    8,
+    9,
+    10,
+    12,
+    13,
+    14,
+    15,
+    16,
+    18,
+    19,
+    20,
+    21,
+    22
+  ],
+  "estimate_inputs": {
+    "method": "BUILD_UP",
+    "users": 2868,
+    "ops_cost_per_site_base": 900,
+    "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
+  },
+  "build": "4.272.0",
+  "run_started": "2026-10-13T04:59:39.700667+00:00",
+  "run_seconds": 3541.3,
+  "preflight_conditions": 8,
+  "promotion": {
+    "promoted": true,
+    "detail": null
+  },
+  "domains_benchmark_disposed": [
+    3,
+    4,
+    5,
+    11,
+    17,
+    23,
+    24
+  ],
+  "domains_with_no_agent": [
+    3,
+    4,
+    5,
+    11,
+    17,
+    23,
+    24
+  ],
+  "analyst_disposition_response": {
+    "stored": 7,
+    "provenance_dropped": []
+  }
+}

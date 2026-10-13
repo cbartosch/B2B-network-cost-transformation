@@ -1,0 +1,253 @@
+{
+  "slug": "victorias-secret",
+  "legal_name": "Victoria's Secret & Co.",
+  "industry": {
+    "industry": "SPECIALTY_RETAIL",
+    "origin": "SPEC_FALLBACK",
+    "resolution_said": null
+  },
+  "domicile": "US",
+  "in_scope_countries": [
+    "US",
+    "CA"
+  ],
+  "base_currency": "USD",
+  "case_id": "63048804-2cbf-468f-a16f-2d1921d7af1f",
+  "spec_path": "/app/samples/companies.json",
+  "spec_sha256": "0262dcedde7a",
+  "entity_resolution": {
+    "resolved": true,
+    "candidate": {
+      "candidate_id": "49959876-5ac7-4908-a1e4-fb4e5b944160",
+      "case_id": "63048804-2cbf-468f-a16f-2d1921d7af1f",
+      "legal_name": "Victoria's Secret & Co.",
+      "identifier": "0001856437",
+      "domicile": "US",
+      "industry": "Retail – Women's Clothing Stores (SIC 5621)",
+      "revenue": "",
+      "employees": "",
+      "group_parent": null,
+      "website": "https://www.victoriassecretandco.com",
+      "match_score": 1.0,
+      "sources": {
+        "differentiators": [
+          "Top-level publicly traded holding corporation; exact registrant name on SEC filings",
+          "Incorporated in Delaware on 2021-04-09; spun off from Bath & Body Works, Inc. (formerly L Brands, Inc.) effective 2021-08-03",
+          "Listed on New York Stock Exchange under ticker symbol VSCO",
+          "SEC File No. 001-40515; IRS EIN 86-3167653",
+          "LEI 5493006T3O70U3UWVF17 (GLEIF status: ACTIVE entity; LEI registration status: LAPSED as of last renewal date 2024-06-01)",
+          "Delaware state registration authority entity ID 5622307",
+          "Principal executive offices: 4 Limited Parkway East, Reynoldsburg, Ohio 43068",
+          "Operates Victoria's Secret Lingerie, PINK and Victoria's Secret Beauty brands",
+          "As of Feb 2025 10-K: 880+ company-operated stores in US, Canada and China; 500+ franchise/license/wholesale stores in ~70 countries",
+          "Acquired Adore Me brand (also operates DailyLook)",
+          "Described in filings as a holding company; operating subsidiaries hold assets"
+        ],
+        "unresolved_attributes": [
+          "Current LEI renewal / active status post June 2024 not confirmed in sources reviewed",
+          "Exact current share count and market capitalisation not researched",
+          "NYSE:VSCO current trading status (active/suspended/delisted) not confirmed as of research date"
+        ],
+        "prompt_id": "entity.resolve.candidates",
+        "prompt_version": "2.0.0",
+        "provider_response_id": "msg_011CfyeSWLCNMG6cwrxETq5n"
+      },
+      "agent_run_id": "a3751363-b8f1-49f1-8475-b1633d2097a2"
+    },
+    "candidates_considered": 7
+  },
+  "resumed_existing_case": false,
+  "mode": "run",
+  "domains_already_researched_on_resume": [],
+  "footprint_origin": "RESEARCH_MERGED_WITH_DISCLOSURE",
+  "footprint_used": [
+    {
+      "country": "CA",
+      "archetype": "STORE",
+      "sites": 30,
+      "density": "SUBURBAN"
+    },
+    {
+      "country": "US",
+      "archetype": "DC",
+      "sites": 2,
+      "density": "SUBURBAN"
+    },
+    {
+      "country": "US",
+      "archetype": "LARGE_OFFICE",
+      "sites": 1,
+      "density": "SUBURBAN"
+    },
+    {
+      "country": "US",
+      "archetype": "STORE",
+      "sites": 800,
+      "density": "SUBURBAN"
+    },
+    {
+      "country": "US",
+      "archetype": "WAREHOUSE",
+      "sites": 1,
+      "density": "SUBURBAN"
+    }
+  ],
+  "footprint_provenance": [
+    {
+      "country": "CA",
+      "archetype": "STORE",
+      "sites": 30,
+      "origin": "DISCLOSURE_KEPT_RESEARCH_FOUND_FEWER",
+      "density": "SUBURBAN",
+      "research_said": 24,
+      "disclosure_said": 30
+    },
+    {
+      "country": "US",
+      "archetype": "DC",
+      "sites": 2,
+      "origin": "PUBLIC_DISCLOSURE",
+      "density": "SUBURBAN"
+    },
+    {
+      "country": "US",
+      "archetype": "LARGE_OFFICE",
+      "sites": 1,
+      "origin": "SUPERSEDED_BY_RESEARCH",
+      "density": "SUBURBAN"
+    },
+    {
+      "country": "US",
+      "archetype": "STORE",
+      "sites": 800,
+      "origin": "DISCLOSURE_KEPT_RESEARCH_FOUND_FEWER",
+      "density": "SUBURBAN",
+      "research_said": 790,
+      "disclosure_said": 800
+    },
+    {
+      "country": "US",
+      "archetype": "WAREHOUSE",
+      "sites": 1,
+      "origin": "RESEARCHED",
+      "density": null
+    },
+    {
+      "origin": "DENSITY_FROM_MIX",
+      "rows": 1,
+      "sites": 1,
+      "filled": [
+        {
+          "country": "US",
+          "archetype": "WAREHOUSE",
+          "sites": 1,
+          "basis": "INDUSTRY_DEFAULT",
+          "mix_industry": "SPECIALTY_RETAIL",
+          "bands": {
+            "SUBURBAN": 1
+          }
+        }
+      ],
+      "note": "the count and the site type are evidenced; the band is a governed sector default from reference.density_mix, not a finding about this client. It decides which bearers are tested, so it is worth replacing with what the client actually has."
+    }
+  ],
+  "scope_countries_modelled": [
+    "CA",
+    "US"
+  ],
+  "scope_countries_company_total": "DECLARED_UNKNOWN",
+  "scope_status": "PARTIAL_COUNTRIES",
+  "scope_note": "Baseline covers 2 country(ies) (CA, US) and the site types listed in sites_origin. The group's full country and site-type count is not sourced, so the share of the group this represents is DECLARED_UNKNOWN. This is baseline_in_scope, not a group baseline.",
+  "sites_origin": {
+    "DC": "ASSUMED_PUBLIC_DISCLOSURE",
+    "LARGE_OFFICE": "RESEARCHED",
+    "STORE": "ASSUMED_PUBLIC_DISCLOSURE",
+    "WAREHOUSE": "RESEARCHED"
+  },
+  "fx_to_eur": {
+    "rate": "0.87110000",
+    "as_of": "2026-09-17",
+    "basis": "USD->EUR",
+    "evidence_grade": "B",
+    "source": "mid-market EUR/USD 1.1480 inverted, 17 September 2026; the rate used to read a German quote against this card",
+    "convention": "SPOT"
+  },
+  "seed": 20260101,
+  "ensemble_size": 25,
+  "domains_declared_unknown": [],
+  "domains_requested": [
+    1,
+    2,
+    6,
+    7,
+    8,
+    9,
+    10,
+    12,
+    13,
+    14,
+    15,
+    16,
+    18,
+    19,
+    20,
+    21,
+    22
+  ],
+  "domains_fell_back_unanswered": [],
+  "domains_researched": [
+    1,
+    2,
+    6,
+    7,
+    8,
+    9,
+    10,
+    12,
+    13,
+    14,
+    15,
+    16,
+    18,
+    19,
+    20,
+    21,
+    22
+  ],
+  "estimate_inputs": {
+    "method": "BUILD_UP",
+    "users": 10008,
+    "ops_cost_per_site_base": 900,
+    "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
+  },
+  "build": "4.272.0",
+  "run_started": "2026-10-13T04:59:39.739518+00:00",
+  "run_seconds": 3655.7,
+  "preflight_conditions": 8,
+  "promotion": {
+    "promoted": true,
+    "detail": null
+  },
+  "domains_benchmark_disposed": [
+    3,
+    4,
+    5,
+    11,
+    17,
+    23,
+    24
+  ],
+  "domains_with_no_agent": [
+    3,
+    4,
+    5,
+    11,
+    17,
+    23,
+    24
+  ],
+  "analyst_disposition_response": {
+    "stored": 7,
+    "provenance_dropped": []
+  }
+}

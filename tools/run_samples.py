@@ -492,6 +492,55 @@ def resolve_spec(explicit: str, outdir: pathlib.Path) -> pathlib.Path:
     return found
 
 
+def _scope_exclusions(spec) -> list:
+    """Normalised `excluded` entries from a company spec.
+
+    Each is {country, archetype, reason}. `country` omitted or "*" means
+    every country - a franchise or dealer network is rarely excluded in one
+    market and included in the next.
+
+    A reason is required. An exclusion without one is indistinguishable from
+    a typo six months later, and this drops evidence.
+    """
+    out = []
+    for i, rule in enumerate(spec.get("excluded") or []):
+        archetype = str(rule.get("archetype") or "").strip().upper()
+        reason = str(rule.get("reason") or "").strip()
+        if not archetype:
+            raise SystemExit(
+                f"{spec['slug']}: excluded[{i}] names no archetype")
+        if not reason:
+            raise SystemExit(
+                f"{spec['slug']}: excluded[{i}] ({archetype}) gives no "
+                f"reason. An exclusion drops researched evidence, so it has "
+                f"to say why.")
+        country = str(rule.get("country") or "*").strip().upper() or "*"
+        out.append({"country": country, "archetype": archetype,
+                    "reason": reason})
+
+    # An exclusion bars RESEARCH from contributing a site type. It does not
+    # touch the declared footprint, and the two are not in conflict.
+    #
+    # This refused the combination at first, on the reasoning that one of
+    # them had to be a mistake. UNFI showed otherwise: it operates about 75
+    # Cub Foods and Shoppers stores, and its 10-K also states the ~60,000
+    # customer locations it SUPPLIES. Both are true, both are STORE, and
+    # only one is UNFI's estate. "I operate these, and research will find
+    # those" is a coherent thing for a spec to say, so the declared count
+    # stands and research is barred from the pair.
+    return out
+
+
+def _excluded_by(rules, country, archetype):
+    """The reason this pair is out of scope, or None."""
+    country = str(country or "").upper()
+    archetype = str(archetype or "").upper()
+    for rule in rules:
+        if rule["archetype"] == archetype and rule["country"] in ("*", country):
+            return rule["reason"]
+    return None
+
+
 def footprint_for_simulation(case_id, spec):
     """Researched counts where research spoke, disclosed counts where it did
     not, merged on (country, archetype).
@@ -547,6 +596,45 @@ def footprint_for_simulation(case_id, spec):
                   f"{', '.join(repr(u) for u in unknown[:3])}")
     promoted = [r for r in promoted if r.archetype in ARCHETYPES]
 
+    # Site types this company's scope deliberately excludes.
+    #
+    # A declared footprint says what is IN. It had no way to say what is OUT,
+    # and the merge cannot tell "the disclosure does not list this" from "the
+    # disclosure excludes this" - it adds any researched pair the disclosure
+    # lacks, which is right for a layer nobody published and wrong for one
+    # somebody ruled out.
+    #
+    # UPS is the case that found it. Its spec excluded the franchised UPS
+    # Store network in a comment - those are independently owned, and their
+    # connectivity is not UPS's cost - and research promoted 5,603 of them,
+    # taking the estate from 1,038 sites to 6,692 and pricing retail circuits
+    # UPS does not buy. The exclusion was prose in a JSON file; nothing read
+    # it.
+    #
+    # Never silent. What research found is reported with the reason it was
+    # not priced, because "we looked and ruled it out" is a finding and
+    # dropping it quietly would look identical to never having searched.
+    excluded, dropped, excluded_provenance = _scope_exclusions(spec), [], []
+    if excluded:
+        kept = []
+        for r in promoted:
+            rule = _excluded_by(excluded, r.country, r.archetype)
+            (dropped if rule else kept).append((r, rule) if rule else r)
+        promoted = kept
+        by_rule = {}
+        for r, rule in dropped:
+            agg = by_rule.setdefault(
+                (r.country, r.archetype), {"sites": 0, "reason": rule})
+            agg["sites"] += int(r.sites)
+        for (country, archetype), agg in sorted(by_rule.items()):
+            excluded_provenance.append({
+                "country": country, "archetype": archetype,
+                "sites": agg["sites"], "origin": "EXCLUDED_BY_SCOPE",
+                "reason": agg["reason"]})
+            log(spec["slug"],
+                f"excluded {agg['sites']} {country}/{archetype} site(s) "
+                f"research found: {agg['reason']}")
+
     researched = {}
     for r in promoted:
         key = (r.country, r.archetype)
@@ -568,7 +656,9 @@ def footprint_for_simulation(case_id, spec):
     declared_density = {(r["country"], r["archetype"]): r.get("density")
                         for r in spec["declared_footprint"]}
 
-    merged, provenance = [], []
+    # Seeded with what scope ruled out, so an excluded layer is reported
+    # beside the rows that were kept rather than only in the run log.
+    merged, provenance = [], list(excluded_provenance)
     for key in sorted(set(researched) | set(disclosed)):
         country, archetype = key
         found = researched.get(key)

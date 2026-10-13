@@ -529,6 +529,139 @@ Sources: [Selectra](https://en.selectra.info/broadband-phone-france/guides/mobil
 
 ---
 
+## Boots UK Limited
+
+- **Industry** DRUG_RETAIL (spec fallback)
+- **Scope** GB, IE, GBP, 1,851 sites (research merged with disclosure)
+- **Confidence** 0.347 (D - Indicative), coverage COMPLETE
+
+**Profile** - EVIDENCED_PUBLIC, 7 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| EMPLOYEES — BOOTS IRELAND (IE) | IE | 2000 | 2200 | 2400 | 2024 |
+| EMPLOYEES — BOOTS UK SEGMENT (WBA 10-K, UK-BASED) | GB | 32674 | 51000 | 66400 | 2026 |
+| NUMBER OF STORES — BOOTS IRELAND (IE) | IE | 89 | 92 | 95 | 2024 |
+| NUMBER OF STORES — BOOTS UK (GB) | GB | 1824 | 1900 | 2000 | 2025 |
+| PHARMACY REVENUE SHARE — BOOTS UK | GB | 0.302 | 0.302 | 0.302 | 2025 |
+| PRE-TAX PROFIT — BOOTS UK LIMITED (ENTITY ONLY) | GB | 261000000 | 299000000 | 337000000 | 2025 |
+| REVENUE — BOOTS UK LIMITED (ENTITY ONLY) | GB | 7313000000 | 7429000000 | 7545000000 | 2025 |
+| STAFF COSTS — BOOTS UK LIMITED (ENTITY ONLY) | GB | 1220000000 | 1221500000 | 1223000000 | 2025 |
+| WBA INTERNATIONAL SEGMENT REVENUE (BOOTS-LED) |  | 23600000000 | 23600000000 | 23600000000 | 2024 |
+| WBA UK GEOGRAPHIC REVENUE (10-K SEGMENT GEOGRAPHIC SPLIT) | GB | 9550000000 | 9550000000 | 9550000000 | 2024 |
+
+*3 conflict(s) flagged: EMPLOYEES — BOOTS IRELAND (IE), EMPLOYEES — BOOTS UK SEGMENT (WBA 10-K, UK-BASED), PRE-TAX PROFIT — BOOTS UK LIMITED (ENTITY ONLY)*
+
+Sources: [spark-intel.co.uk](https://www.spark-intel.co.uk/companies/boots/); [Pharmacy Magazine](https://www.pharmacymagazine.co.uk/news/boots-sees-annual-profit-rise-by-24-to-260m-despite-dip-in-pharmacy-revenue); [SEC EDGAR — WBA Form 10-K FY2024](https://www.sec.gov/Archives/edgar/data/1618921/000161892124000084/wba-20240831.htm); [Business in the Community Ireland](https://bitc.ie/member/boots-ireland/) and 3 more
+
+**Locations** - EVIDENCED_PUBLIC, 8 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| LARGE_OFFICE | GB | 1 | 1 | 1 | 2025 |
+| STORE | GB | 1452 | 1767 | 2164 | 2026 |
+| STORE | IE | 89 | 95 | 95 | 2024 |
+| WAREHOUSE | GB | 1 | 1 | 4 | 2024 |
+
+*2 conflict(s) flagged: STORE, WAREHOUSE*
+
+Sources: [Walgreens Boots Alliance (SEC Annual Report / 10](https://www.sec.gov/Archives/edgar/data/1618921/000119312524277846/d896007dars.pdf); [Boots UK (official company website)](https://www.boots-uk.com/about-boots-uk/our-purpose-and-values/boots-in-numbers/); [StoreLocators.com (aggregator)](https://www.storelocators.com/store-lists/boots); [ScrapeHero (aggregator)](https://www.scrapehero.com/location-reports/Boots%20Pharmacy-UK/) and 4 more
+
+**Data centres and cloud** - EVIDENCED_PUBLIC, 6 source(s)
+
+- Cloud provider — primary (WBA group, includes Boots UK): Microsoft Azure
+- Cloud provider — e-commerce / boots.com (Boots UK): IBM Cloud (Red Hat OpenShift)
+- On-premises DC count — Boots UK GB (prior to cloud migration): unknown
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| BOOTS UK HQ CAMPUS — NOTTINGHAM (ANCHOR IT SITE) | GB | 1 | 1 | 1 | 2024 |
+| SAP LANDSCAPE SIZE MIGRATED TO AZURE (WBA GROUP, INCLUDES BO | GB | 100 | 100 | 100 | 2020 |
+
+Sources: [Microsoft / WBA joint press release](https://news.microsoft.com/source/2019/01/15/walgreens-boots-alliance-and-microsoft-establish-strategic-partnership-to-transform-health-care-delivery/); [SEC / WBA Form 8-K](https://www.sec.gov/Archives/edgar/data/1618921/000119312519009437/d572424dex991.htm); [IBM case study](https://www.ibm.com/case-studies/boots-uk-ibm-consulting); [IBM UK newsroom](https://uk.newsroom.ibm.com/2016-Jun-22-Boots-UK-Creates-Unique-Digital-Shopping-Experience-by-Developing-Mobile-App-with-IBM) and 2 more
+
+**Current architecture** - EVIDENCED_PUBLIC, 6 source(s)
+
+- Sites on BT-managed Cisco Meraki SD-WAN (GB and IE): not stated
+- BT contract term — 2021 renewal (GB and IE network partner): multi-year
+- Azure ExpressRoute circuits — WBA on-premises to Azure cloud interconnect: ExpressRoute
+- Boots UK flagship store access technology: dedicated fibre Ethernet
+- Boots UK standard store access technology mix: EFM, superfast broadband, copper broadband
+- Mobile/5G connectivity — planned for service resilience across Boots stores: 5G planned
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| BT CONNECT INTELLIGENCE IWAN (CISCO IWAN SD-WAN) COUNTRIES D | GB + ~19 OTHERS | None | None | None |  |
+| WBA EUROPEAN + ASIA NETWORK SITES UNDER BT 5-YEAR CONTRACT ( | GB, IE, NO, TH AND OTHERS | 3500 | 3500 | 3500 | 2016 |
+
+Sources: [Computer Weekly](https://www.computerweekly.com/news/252496087/BT-claims-24bn-value-as-it-enables-new-customer-experience-for-Walgreens-Boots); [Telecompaper](https://www.telecompaper.com/news/bt-to-upgrade-network-connectivity-for-walgreens-boots-in-uk-ireland--1371729); [365 Retail](https://365retail.co.uk/bt-to-support-transformation-of-walgreens-boots-alliances-customer-experience-in-the-uk-and-ireland/); [Pharmiweb](https://www.pharmiweb.com/pwtoday-story/bt-to-support-transformation-of-walgreens-boots-alliance-s-customer-experience-in-the-uk-and-ireland) and 2 more
+
+**Current providers and products** - EVIDENCED_PUBLIC, 6 source(s)
+
+- WAN carrier / managed network provider — BT Global Services: BT Global Services
+- Store connectivity — BT fibre Ethernet (flagship UK stores): Dedicated fibre Ethernet
+- IT managed services provider (Run & Operations) — TCS (WBA group-level contract): Tata Consultancy Services (TCS)
+- Previous WAN carrier — Cable & Wireless Worldwide (pre-BT): Cable & Wireless Worldwide
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| SITES COVERED BY BT MANAGED NETWORK (BOOTS + ALLIANCE HEALTH | GB | 3500 | 3500 | 3500 | 2016 |
+
+Sources: [BT (via MyNewsdesk)](https://www.mynewsdesk.com/uk/bt/pressreleases/bt-builds-new-it-network-for-walgreens-boots-alliance-1322279); [Retail Systems](https://www.retail-systems.com/rs/BT_Builds_Network_For_Walgreens_Boots_Alliance.php); [Computing.co.uk](https://www.computing.co.uk/news/2447958/first-phase-of-boots-network-infrastructure-overhaul-completed); [Telecompaper](https://www.telecompaper.com/news/bt-connects-first-network-sites-for-walgreens-boots--1129393) and 2 more
+
+**Contract and sourcing events** - EVIDENCED_PUBLIC, 4 source(s)
+
+- BT–WBA multi-year SD-WAN renewal agreement: contract duration: multi-year
+- BT–WBA SD-WAN renewal: technology scope: Cisco Meraki SD-WAN, voice transformation, cyber security, mobile/5G
+- BT–WBA first SD-WAN contract (Connect Intelligence IWAN): countries in scope: UK + ~20 other countries
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| BT–WBA MANAGED NETWORK: SITES COVERED (GB + IE + EUROPE + TH | GB | 3500 | 3500 | 3500 | 2014 |
+| TCS–WBA IT OUTSOURCING CONTRACT VALUE (GLOBAL, INCLUDES DIGI | GB | 1500000000 | 1500000000 | 1500000000 | 2019 |
+
+Sources: [BT Newsroom](https://newsroom.bt.com/bt-to-support-transformation-of-walgreens-boots-alliances-customer-experience-in-the-uk-and-ireland/); [Computer Weekly](https://www.computerweekly.com/news/252496087/BT-claims-24bn-value-as-it-enables-new-customer-experience-for-Walgreens-Boots); [Light Reading](https://www.lightreading.com/sd-wan/bt-enters-sd-wan-fray-with-cisco); [IBEF (citing TCS BSE filing)](https://www.ibef.org/news/tcs-bags-us-15-billion-contract-from-us-drug-firm-walgreens-boots-alliance)
+
+**Transformation announcements** - EVIDENCED_PUBLIC, 9 source(s)
+
+- WBA–TCS global IT managed services deal — scope (Run & Operational, incl. infrastructure and security operations): not quantified
+- Boots Group standalone company — Sycamore Partners acquisition (ownership change, Aug 2025): not quantified
+- Boots UK — nationwide network rollout across store estate (qualitative, no budget stated): not quantified
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| BOOTS UK STORE CLOSURES APPROVED UNDER TCMP (UK NETWORK FOOT | GB | 650 | 650 | 650 | 2024 |
+| TCMP 'OTHER IT TRANSFORMATION COSTS' — CUMULATIVE (GROUP-WID |  | 351000000 | 351000000 | 351000000 | 2024 |
+| TCMP ANNUAL COST SAVINGS TARGET — FINAL (GROUP-WIDE, WBA) |  | 4500000000 | 4500000000 | 4500000000 | 2024 |
+| TCMP ANNUAL COST SAVINGS TARGET — ORIGINAL ANNOUNCEMENT (GRO |  | 2000000000 | 2000000000 | 2000000000 | 2022 |
+| TCMP CUMULATIVE IT TRANSFORMATION CHARGES (EXIT/DISPOSAL, GR |  | 324000000 | 324000000 | 324000000 | 2024 |
+| TCMP CUMULATIVE TOTAL PRE-TAX GAAP CHARGES — GROUP-WIDE (ALL |  | 4316000000 | 4316000000 | 4316000000 | 2024 |
+| WBA DIGITALIZATION INVESTMENT (GROUP-WIDE, ANNOUNCED ~2019-2 |  | 300000000 | 300000000 | 300000000 | 2019 |
+
+*2 conflict(s) flagged: BOOTS UK STORE CLOSURES APPROVED UNDER TCMP (UK NETWORK FOOTPRINT REDUCTION), TCMP CUMULATIVE TOTAL PRE-TAX GAAP CHARGES — GROUP-WIDE (ALL CATEGORIES)*
+
+Sources: [Walgreens Boots Alliance (SEC EDGAR)](https://www.sec.gov/Archives/edgar/data/1618921/000161892124000084/wba-20240831.htm); [Walgreens Boots Alliance (SEC ARS FY2024)](https://www.sec.gov/Archives/edgar/data/1618921/000119312524277846/d896007dars.pdf); [Walgreens Boots Alliance (SEC 10-K FY2021)](https://www.sec.gov/Archives/edgar/data/1618921/000161892121000085/wba-20210831.htm); [TCS Newsroom](https://www.tcs.com/who-we-are/newsroom/press-release/walgreens-boots-alliance-tcs) and 5 more
+
+**Market serviceability** - EVIDENCED_PUBLIC, 8 source(s)
+
+- Credible enterprise carriers (GB) — major/national: 5+
+- UK leased line (DIA) provisioning lead time — urban: 30–45
+- UK leased line (DIA) provisioning lead time — typical/planning assumption: 45–90
+- UK leased line (DIA) indicative monthly price: 250–1200
+- UK business broadband indicative monthly price: 30–70
+- UK leased line SLA uptime: 99.9–100
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| CITYFIBRE ENTERPRISE ETHERNET (LEASED LINE) REACH — UK BUSIN | GB | 260000 | 260000 | 260000 | 2026 |
+| UK BUSINESS BROADBAND (SOGEA/PART-FIBRE) COVERAGE | GB | None | None | None |  |
+| UK FULL-FIBRE (FTTP) PREMISES COVERAGE | GB | 59 | 59 | 59 | 2025 |
+| UK GIGABIT-CAPABLE BROADBAND PREMISES COVERAGE | GB | 89 | 89 | 89 | 2025 |
+
+Sources: [businessbroadbandhub.co.uk](https://www.businessbroadbandhub.co.uk/business-broadband-availability/); [ISPreview UK](https://www.ispreview.co.uk/index.php/2026/01/cityfibre-make-business-fttp-broadband-available-to-4-5-million-uk-premises.html); [cloudswitched.com](https://www.cloudswitched.com/blog/leased-line-vs-broadband-uk-business-uptime-cost-guide-2026); [Cirrus Technology Solutions](https://cirrustechnologysolutions.co.uk/2026/08/20/how-long-does-a-leased-line-take-to-install-uk-guide-for-new-site-openings/) and 4 more
+
+---
+
 ## Deutsche Bahn AG
 
 - **Industry** RAILWAYS (entity resolution)
@@ -770,6 +903,120 @@ Sources: [DHL Group](https://group.dhl.com/en/media-relations/press-releases/201
 | NETHERLANDS LEASED LINE STANDARD AVAILABILITY SLA | NL | None | None | None |  |
 
 Sources: [germancompanyformation.com](https://germancompanyformation.com/guides/telecommunication-companies-in-germany); [VATM / Dialog Consult](https://www.vatm.de/wp-content/uploads/2025/06/VATM-Market-Analysis-Germany-2025.pdf); [connectednetworks.io](https://www.connectednetworks.io/countries/holland-the-netherlands-business-internet-connectivity); [amvia.co.uk](https://amvia.co.uk/leased-lines/questions/leased-line-installation-time) and 3 more
+
+---
+
+## Douglas AG
+
+- **Industry** SPECIALTY_RETAIL (spec fallback)
+- **Scope** DE, FR, IT, NL, PL, EUR, 1,339 sites (research merged with disclosure)
+- **Confidence** 0.325 (D - Indicative), coverage COMPLETE
+
+**Profile** - EVIDENCED_PUBLIC, 10 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| GROUP EMPLOYEES (HEADCOUNT) | DE | 19000 | 19200 | 19900 | 2024 |
+| GROUP REVENUE (NET SALES) | DE | 4450000000 | 4451000000 | 4580000000 | 2024 |
+| NUMBER OF OMNICHANNEL COUNTRIES |  | 22 | 22 | 22 | 2024 |
+| SEGMENT REVENUE – CENTRAL EASTERN EUROPE (INCL. POLAND) | PL | 652000000 | 685500000 | 719000000 | 2024 |
+| SEGMENT REVENUE – DACHNL (DE, AT, CH, NL, BE) |  | 2070000000 | 2095000000 | 2120000000 | 2024 |
+| SEGMENT REVENUE – FRANCE (FR, MONACO; BRAND: NOCIBÉ) | FR | 838000000 | 839000000 | 840000000 | 2024 |
+| STANDALONE DOUGLAS AG (HOLDING ENTITY) EMPLOYEES | DE | 27 | 27 | 27 | 2023 |
+| TOTAL STORES (GROUP, INCLUDING FRANCHISE) |  | 1884 | 1903 | 1959 | 2025 |
+
+Sources: [Douglas AG](https://douglas.group/fileadmin/05_Investoren/Veroeffentlichungen/2024/20241219_DOUGLAS_Group_FY_23-24_Annual_Report.pdf); [Douglas AG (standalone entity financial statemen](https://douglas.group/fileadmin/05_Investoren/Hauptversammlung/2025/EN/Douglas_AG__09-30-2024_--_Annual_FS___Notes_incl_Appendix___CombMgmtRep___ResponsibilityStatem___Auditor_sReport_EN.pdf); [Douglas AG via EQS-News](https://www.eqs-news.com/news/corporate/douglas-group-achieves-solid-sales-growth-and-doubles-net-income-in-volatile-financial-year-2024-25/15613020-0c26-40fe-af63-29cb174e6fdf); [Douglas AG (official press release)](https://douglas.group/en/newsroom/press-releases/douglas-group-achieves-strong-results-and-strategic-progress-in-financial-year-202324) and 6 more
+
+**Locations** - EVIDENCED_PUBLIC, 9 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| STORE – GERMANY (DE) ONLY | DE | 398 | 414 | 430 | 2025 |
+| STORE – GROUP TOTAL (OWN STORES) |  | 1756 | 1921.5 | 1972 | 2025 |
+| STORE – POLAND (PL) | PL | 170 | 170 | 170 | 2025 |
+| STORE – SEGMENT DACHNL (DE+AT+CH+NL+BE) |  | 466 | 468 | 470 | 2024 |
+| STORE – SEGMENT FRANCE (FR+MONACO) | FR | 427 | 429.5 | 432 | 2024 |
+| WAREHOUSE – DE: BÖNEN (NICHE BEAUTY WAREHOUSE) | DE | 1 | 1 | 1 | 2025 |
+| WAREHOUSE – DE: HAMM OWAC (DACH OMNICHANNEL WAREHOUSE) | DE | 1 | 1 | 1 | 2025 |
+| WAREHOUSE – FR: LILLE OWAC (FRANCE OMNICHANNEL WAREHOUSE) | FR | 1 | 1 | 1 | 2025 |
+| WAREHOUSE – IT: BOLOGNA OWAC (ITALY/SOUTHERN EUROPE OMNICHAN | IT | 1 | 1 | 1 | 2025 |
+| WAREHOUSE – PL: MSZCZONÓW/WARSAW OWAC (POLAND OMNICHANNEL WA | PL | 1 | 1 | 1 | 2025 |
+
+Sources: [Douglas AG](https://douglas.group/fileadmin/05_Investoren/Veroeffentlichungen/2024/20241219_DOUGLAS_Group_FY_23-24_Annual_Report.pdf); [Douglas AG](https://douglas.group/fileadmin/05_Investoren/Hauptversammlung/2025/EN/20241219_DOUGLAS_Group_FY_23-24_Annual_Report.pdf); [EQS News / Douglas AG](https://www.eqs-news.com/news/corporate/douglas-group-achieves-solid-sales-growth-and-doubles-net-income-in-volatile-financial-year-2024-25/15613020-0c26-40fe-af63-29cb174e6fdf); [Douglas AG](https://douglas.group/en/newsroom/press-releases/douglas-group-starts-with-solid-growth-into-financial-year-202425) and 5 more
+
+**Data centres and cloud** - EVIDENCED_PUBLIC, 7 source(s)
+
+- Cloud provider – Google Cloud (CRM platform, AI workloads): confirmed
+- Cloud provider – Microsoft Azure (prior CRM host, residual): prior/residual
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| DC – INTERNAL/CO-LOCATED (DOUGLAS GROUP TECHNOLOGY GMBH, HAG | DE | None | None | None |  |
+| DC – IT SUBSIDIARY AS NUMBER (AS50407, GERMANY) | DE | None | None | None |  |
+
+Sources: [evia GmbH (technology partner)](https://www.evia.de/en/cloud-to-cloud-migration-at-douglas/); [Douglas AG / mynewsdesk](https://www.mynewsdesk.com/douglasgroup/pressreleases/douglas-group-tests-ai-powered-beauty-advisor-chatbot-developed-with-google-cloud-3387302); [Douglas AG official newsroom](https://douglas.group/en/newsroom/press-releases/douglas-group-elevates-digital-shopping-experience-with-ai-powered-beauty-advisor-chatbot-anna); [Douglas AG (official press release PDF)](https://douglas.group/fileadmin/04_Newsroom/00_Pressemitteilungen/2026/20260616_-_Launch_ANNA/20260616_DOUGLAS_Group_PR_AI_Beauty_Advisor_Chatbot.pdf) and 3 more
+
+**Current architecture** - EVIDENCED_PUBLIC, 5 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| COUNTRIES OF BGP OPERATION – AS50407 | DE | None | None | None |  |
+| INTERNET UPSTREAM TRANSIT PROVIDERS – AS50407 | DE | 1 | 1 | 1 | 2025 |
+| IPV4 ADDRESS SPACE – DOUGLAS GROUP TECHNOLOGY GMBH & CO. KG  | DE | 768 | 768 | 768 | 2025 |
+| IT LANDSCAPE HARMONISATION ROLLOUT – COUNTRIES ON FULL GROUP | DE | 10 | 10 | 10 | 2025 |
+
+Sources: [IPinfo.io](https://ipinfo.io/AS50407); [bgp.tools](https://bgp.tools/as/50407); [Hurricane Electric BGP Toolkit](https://bgp.he.net/AS50407); [ip2location.com](https://www.ip2location.com/as50407) and 1 more
+
+**Current providers and products** - EVIDENCED_PUBLIC, 4 source(s)
+
+- Internet upstream transit provider (current): WIIT AG
+- Internet upstream transit provider (historical / former): Deutsche Telekom AG
+- Douglas IT-subsidiary ASN origin country: DE
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| IPV4 ADDRESSES ORIGINATED BY AS50407 | DE | 768 | 768 | 768 | 2025 |
+
+Sources: [bgp.tools](https://bgp.tools/as/50407); [IPinfo.io](https://ipinfo.io/AS50407); [Hurricane Electric BGP Toolkit](https://bgp.he.net/AS50407); [IPLocate.io](https://www.iplocate.io/AS50407)
+
+**Contract and sourcing events** - DECLARED_UNKNOWN: NO_PUBLIC_EVIDENCE
+
+**Transformation announcements** - EVIDENCED_PUBLIC, 9 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| EBITDA ADJUSTMENTS FOR STRATEGIC PROJECTS – H1 FY2025/26 |  | 3800000 | 6150000 | 8500000 | 2025 |
+| GROUP CAPEX (EXCL. LEASES) – FY2025/26 GUIDANCE |  | 150000000 | 150000000 | 150000000 | 2025 |
+| GROUP CAPEX – 9 MONTHS FY2023/24 |  | 80000000 | 80000000 | 80000000 | 2023 |
+| GROUP CAPEX – H1 FY2023/24 |  | 44200000 | 44200000 | 44200000 | 2023 |
+| IT TECH STACK ROLLOUT – COUNTRIES ON FULL GROUP TECH STACK |  | 10 | 10 | 10 | 2026 |
+| LET IT BLOOM – DOUGLAS 2026: NET SALES TARGET |  | 5000000000 | 5000000000 | 5000000000 | 2026 |
+| OWAC NETWORK – PLANNED TOTAL OMNICHANNEL WAREHOUSE SITES |  | 7 | 7 | 7 | 2026 |
+| OWAC SITES OPERATIONAL – IN-SCOPE COUNTRIES |  | 5 | 5 | 5 | 2026 |
+
+*1 conflict(s) flagged: EBITDA ADJUSTMENTS FOR STRATEGIC PROJECTS – H1 FY2025/26*
+
+Sources: [Douglas AG](https://douglas.group/fileadmin/04_Newsroom/00_Pressemitteilungen/2023/20230322_Let_it_Bloom_-_DOUGLAS_2026/20230322_DOUGLAS_PR_Strategy.pdf); [Douglas AG](https://douglas.group/fileadmin/05_Investoren/Veroeffentlichungen/2024/20240814_DOUGLAS_Group_Q3_FY_23-24_Interim_Financial_Report__EN_.pdf); [Douglas AG](https://douglas.group/fileadmin/05_Investoren/Veroeffentlichungen/2024/20240529_DOUGLAS_Group_Half-Year_Report_FY_2023-24.pdf); [EQS-News / Douglas AG](https://www.eqs-news.com/news/corporate/douglas-group-delivers-solid-performance-amid-challenging-market-and-economic-environment/cd62cbf1-3797-4d66-9d62-ec83bcadd3c1_en) and 5 more
+
+**Market serviceability** - EVIDENCED_PUBLIC, 8 source(s)
+
+- credible enterprise carriers – DE: 6+
+- credible enterprise carriers – FR: 5+
+- credible enterprise carriers – IT: 5+
+- credible enterprise carriers – NL: 4+
+- credible enterprise carriers – PL: 4+
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| DEUTSCHE TELEKOM BROADBAND MARKET SHARE – DE | DE | 41 | 41 | 41 | 2026 |
+| DIA PRICE – NL, 200 MBPS (EUROFIBER INDICATIVE) | NL | 348 | 348 | 348 | 2025 |
+| GERMANY FTTH/B HOMES PASSED – DE | DE | 61.6 | 61.6 | 61.6 | 2025 |
+| LEASED-LINE PROVISIONING LEAD TIME – FR (FIBRED PREMISES) | FR | 56 | 56 | 56 | 2015 |
+| TIM (TELECOM ITALIA) BROADBAND MARKET SHARE – IT | IT | 35 | 35 | 35 | 2026 |
+
+*1 conflict(s) flagged: GERMANY FTTH/B HOMES PASSED – DE*
+
+Sources: [TelecomLead](https://telecomlead.com/broadband/germany-broadband-market-2026-best-isps-fiber-expansion-gigabit-speeds-drive-internet-competition-126187); [VATM (German telecoms industry association)](https://www.vatm.de/wp-content/uploads/2025/06/VATM-Market-Analysis-Germany-2025.pdf); [Omdia](https://omdia.tech.informa.com/om128296/germanys-fiber-rollout-falls-short-putting-2025-targets-at-risk); [ISG / BusinessWire](https://www.businesswire.com/news/home/20221118005078/en) and 4 more
 
 ---
 
@@ -2285,6 +2532,127 @@ Sources: [Siemens AG](https://press.siemens.com/global/en/pressrelease/siemens-e
 
 ---
 
+## Simmons First National Corporation
+
+- **Industry** RETAIL_BANKING (spec fallback)
+- **Scope** US, USD, 239 sites (research merged with disclosure)
+- **Confidence** 0.345 (D - Indicative), coverage COMPLETE
+
+**Profile** - EVIDENCED_PUBLIC, 10 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| FULL-TIME EQUIVALENT (FTE) EMPLOYEES | US | 2909 | 2927.5 | 2946 | 2026 |
+| NET INCOME AVAILABLE TO COMMON SHAREHOLDERS | US | 152700000 | 275150000 | 397600000 | 2025 |
+| NUMBER OF FINANCIAL CENTERS (BRANCHES) | US | 220 | 222 | 234 | 2026 |
+| NUMBER OF REPORTABLE BUSINESS SEGMENTS | US | 1 | 1 | 1 | 2025 |
+| NUMBER OF US STATES OF OPERATION | US | 6 | 6 | 6 | 2026 |
+| TOTAL ASSETS | US | 25541000000 | 26208500000 | 26876000000 | 2025 |
+| TOTAL DEPOSITS | US | 20184000000 | 21037000000 | 21890000000 | 2025 |
+| TOTAL REVENUE (NET INTEREST INCOME + NONINTEREST INCOME) | US | 248600000 | 728850000 | 904700000 | 2026 |
+
+*3 conflict(s) flagged: FULL-TIME EQUIVALENT (FTE) EMPLOYEES, NET INCOME AVAILABLE TO COMMON SHAREHOLDERS, TOTAL REVENUE (NET INTEREST INCOME + NONINTEREST INCOME)*
+
+Sources: [SEC EDGAR / Simmons First National Corporation](https://www.sec.gov/Archives/edgar/data/90498/000162828025008639/sfnc-20241231.htm); [SEC EDGAR / Simmons First National Corporation (](https://www.sec.gov/Archives/edgar/data/90498/000162828025008639/Financial_Report.xlsx); [Simmons Bank Newsroom (official)](https://newsroom.simmonsbank.com/2025-01-21-Simmons-First-National-Corporation-Reports-Fourth-Quarter-2024-Results); [PR Newswire / Simmons First National Corporation](https://www.prnewswire.com/news-releases/simmons-first-national-corporation-reports-second-quarter-results-302827995.html) and 6 more
+
+**Locations** - EVIDENCED_PUBLIC, 10 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| LARGE_OFFICE — CORPORATE HQ AND DISTINCT CORPORATE OFFICE BU | US | 2 | 2 | 2 | 2024 |
+| STORE — BRANCHES IN ARKANSAS (AR), US | US | 64 | 64.5 | 65 | 2025 |
+| STORE — BRANCHES IN KANSAS (KS), US | US | 4 | 4 | 4 |  |
+| STORE — BRANCHES IN MISSOURI (MO), US | US | 47 | 47 | 47 |  |
+| STORE — BRANCHES IN OKLAHOMA (OK), US | US | 19 | 19 | 19 |  |
+| STORE — BRANCHES IN TENNESSEE (TN), US | US | 45 | 45 | 45 | 2024 |
+| STORE — BRANCHES IN TEXAS (TX), US | US | 57 | 57 | 57 |  |
+| STORE — TOTAL FINANCIAL CENTRES / BRANCHES, US (ALL STATES) | US | 220 | 222 | 237 | 2026 |
+
+Sources: [Simmons First National Corporation via SEC EDGAR](https://www.sec.gov/Archives/edgar/data/90498/000162828025008639/sfnc-20241231.htm); [Simmons First National Corporation newsroom (Q4 ](https://newsroom.simmonsbank.com/2025-01-21-Simmons-First-National-Corporation-Reports-Fourth-Quarter-2024-Results); [Simmons Bank Investor Relations (official IR web](https://ir.simmonsbank.com/); [bankbranchlocator.com (FDIC call-report derived ](https://www.bankbranchlocator.com/simmons-bank/) and 6 more
+
+**Data centres and cloud** - EVIDENCED_PUBLIC, 8 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| DC — PRIMARY IT/OPERATIONS SITE (PINE BLUFF HQ) | US | 1 | 1 | 1 | 2024 |
+| DC — SECONDARY IT/OPERATIONS SITE (LITTLE ROCK, FORMER ACXIO | US | 1 | 1 | 1 | 2018 |
+| LARGE_OFFICE — WEST LITTLE ROCK SATELLITE OFFICE (17901 CHEN | US | 1 | 1 | 1 | 2021 |
+| NAMED CLOUD PROVIDER RELATIONSHIPS (AWS / AZURE / GOOGLE CLO | US | 0 | 0 | 0 | 2024 |
+| NAMED COLOCATION PROVIDER RELATIONSHIPS (EQUINIX / DIGITAL R | US | 0 | 0 | 0 | 2024 |
+
+Sources: [SEC / Simmons First National Corporation](https://www.sec.gov/Archives/edgar/data/90498/000162828025008639/sfnc-20241231.htm); [Simmons First National Corporation (investor rel](https://filecache.investorroom.com/mr5ir_simmons/973/SFNC%202024%20Company%20Report.pdf); [Simmons Bank Investor Relations](https://ir.simmonsbank.com/Simmons-Bank-to-Consolidate-Central-Arkansas-Locations-March-10,-2017); [Arkansas Business](https://www.arkansasbusiness.com/article/121494/simmons-bank-staff-takes-over-acxioms-former-hq) and 4 more
+
+**Current architecture** - EVIDENCED_PUBLIC, 2 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| SITES MIGRATED TO NEXTIVA CLOUD COMMUNICATIONS (UCAAS/VOIP) | US | 240 | 240 | 240 | 2023 |
+| USERS COVERED BY NEXTIVA CLOUD COMMUNICATIONS DEPLOYMENT | US | 3200 | 3200 | 3200 | 2023 |
+
+Sources: [Nextiva](https://www.nextiva.com/customer-story/simmons-bank-case-study); [Simmons First National Corporation (investor rel](https://filecache.investorroom.com/mr5ir_simmons/973/SFNC%202024%20Company%20Report.pdf)
+
+**Current providers and products** - EVIDENCED_PUBLIC, 4 source(s)
+
+- ITSM platform: Freshservice (Freshworks)
+- Web server platform: Microsoft IIS
+- Cybersecurity — IAM purchase event (vendor paywalled): unknown vendor
+- Cybersecurity — Secure Email Gateway purchase event (vendor paywalled): unknown vendor
+- Microsoft Azure API Management — evaluated (not necessarily purchased): Microsoft Azure API Management
+
+Sources: [AppsRunTheWorld](https://www.appsruntheworld.com/customers-database/customers/view/simmons-first-national-bank-usa); [Simmons Bank Investor Relations](https://ir.simmonsbank.com/2025-05-20-Simmons-Bank-hires-David-Kennedy-as-Chief-Technology-Officer); [SEC / Simmons First National Corporation](https://www.sec.gov/Archives/edgar/data/90498/000162828026011618/sfnc-20251231.htm); [SEC / Simmons First National Corporation](https://www.sec.gov/Archives/edgar/data/90498/000162828025008639/sfnc-20241231.htm)
+
+**Contract and sourcing events** - EVIDENCED_PUBLIC, 5 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| NEXTIVA CLOUD COMMUNICATIONS ENGAGEMENT — LOCATIONS IN SCOPE | US | None | None | None |  |
+| NEXTIVA CLOUD COMMUNICATIONS ENGAGEMENT — USERS IN SCOPE | US | None | None | None |  |
+| TELEPHONE EXPENSE (ANNUAL, REPORTED IN OTHER OPERATING EXPEN | US | 2957 | 4278 | 5947 | 2018 |
+
+*1 conflict(s) flagged: TELEPHONE EXPENSE (ANNUAL, REPORTED IN OTHER OPERATING EXPENSES)*
+
+Sources: [Nextiva](https://www.nextiva.com/customer-story/simmons-bank-case-study); [Nextiva](https://nextiva.com/solutions/financial-services-business-communication.html); [Simmons First National Corporation (SEC EDGAR)](https://www.sec.gov/Archives/edgar/data/90498/000162828019002125/Financial_Report.xlsx); [Simmons First National Corporation (SEC EDGAR)](https://www.sec.gov/Archives/edgar/data/0000090498/000117184315001449/Financial_Report.xlsx) and 1 more
+
+**Transformation announcements** - EVIDENCED_PUBLIC, 10 source(s)
+
+- 2026 Initiatives — annual PPNR improvement target (once fully implemented): 37000000–42000000
+- 2026 Initiatives — one-time pre-tax restructuring charges (Q3 2026): 40000000–45000000
+- Investor Day — scheduled date (strategic priorities and financial plans to be disclosed): 2026-12-10
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| 4Q22 ANNUALISED NONINTEREST EXPENSE BASE (BENCHMARK FOR BETT | US | 566000000 | 566000000 | 566000000 | 2022 |
+| BETTER BANK INITIATIVE — CUMULATIVE ANNUALISED COST SAVINGS  | US | 18000000 | 18000000 | 24000000 | 2025 |
+| BETTER BANK INITIATIVE — ORIGINAL ANNUALISED SAVINGS TARGET | US | 15000000 | 15000000 | 15000000 | 2023 |
+| BRANCH CLOSURES ANNOUNCED SEPTEMBER 2026 (NETWORK FOOTPRINT  | US | 26 | 26 | 26 | 2026 |
+| CLOUD COMMUNICATIONS MIGRATION — LOCATIONS MIGRATED TO CLOUD | US | 240 | 240 | 240 |  |
+| IMPLIED PEER-RELATIVE EXPENSE SAVINGS FROM BETTER BANK (VS P | US | 97000000 | 97000000 | 97000000 | 2025 |
+| SIMMONS BANK TOTAL BRANCHES (PRE-CLOSURE BASELINE, 2026) | US | 220 | 227 | 234 | 2026 |
+
+*1 conflict(s) flagged: BETTER BANK INITIATIVE — CUMULATIVE ANNUALISED COST SAVINGS (AS OF MID-2025)*
+
+Sources: [Simmons First National Corporation / SEC EDGAR](https://www.sec.gov/Archives/edgar/data/0000090498/000119312526381967/d489413d8k.htm); [Simmons First National Corporation / SEC EDGAR (](https://www.sec.gov/Archives/edgar/data/90498/000119312525198866/d17304dfwp.htm); [Simmons First National Corporation / SEC EDGAR (](https://www.sec.gov/Archives/edgar/data/90498/000119312524013592/d736506dex992.htm); [Simmons First National Corporation / SEC EDGAR (](https://www.sec.gov/Archives/edgar/data/90498/000117494724000372/ea0201239-01.htm) and 6 more
+
+**Market serviceability** - EVIDENCED_PUBLIC, 9 source(s)
+
+- Credible national enterprise carriers (US B2B WAN/Internet): 6+
+- DIA provisioning lead time (on-net to off-net range) — US: 30–120
+- Business broadband provisioning lead time — US: 7–14
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| DIA MTTR SLA — US ENTERPRISE STANDARD | US | 4 | 4 | 4 | 2026 |
+| DIA SITE SHARE VS MPLS — ENTERPRISE WAN (GLOBAL SURVEY, US-R | US | 49 | 49 | 49 | 2024 |
+| DIA UPTIME SLA — US ENTERPRISE STANDARD | US | None | None | None |  |
+| FIBER INTERNET COVERAGE — ARKANSAS (ALL LOCATIONS, RESIDENTI | US | 10 | 10 | 10 | 2026 |
+| FIBER INTERNET COVERAGE — KANSAS | US | 18 | 18 | 18 | 2026 |
+| MPLS SITE SHARE IN ENTERPRISE WAN | US | 41 | 41 | 41 | 2024 |
+| STANDARD ENTERPRISE DIA/MPLS CONTRACT TERM — US | US | None | None | None |  |
+
+Sources: [Pallas Digital](https://pall.as/the-state-of-enterprise-wan/); [Socium IT](https://www.sociumit.com/resources/blog/enterprise-connectivity-options-2026); [Lightyear.ai](https://lightyear.ai/tips/leased-line-internet-connection); [DefendMyBusiness.com](https://defendmybusiness.com/dedicated-internet-access-pricing-in-us/) and 5 more
+
+---
+
 ## Tesco PLC
 
 - **Industry** GROCERY_RETAIL (entity resolution)
@@ -2427,6 +2795,141 @@ Sources: [Tesco PLC](https://www.tescoplc.com/media/ch1fbgss/tesco-plc-prelimina
 | OPENREACH WHOLESALE FTTP 1 GBPS BROADBAND ANNUAL RENTAL – GB | GB | 1173.36 | 1173.36 | 1173.36 | 2025 |
 
 Sources: [ComReg (Commission for Communications Regulation](https://comreg.ie/media/2025/12/Quarterly-Key-Data-Report-Q3-2025.pdf?G-RB4EH5DG40=); [BT Ireland](https://www.btireland.com/news/article/2025/09/01/bt-completes-the-sale-of-its-wholesale-and-enterprise-business-unit-in-ireland-to-speed-fibre-group); [Irish Times](https://www.irishtimes.com/business/2025/09/01/enet-owner-buys-bt-irelands-wholesale-fibre-business-for-22m/); [eir Business](https://www.eirbusiness.ie/mobile-and-connectivity) and 3 more
+
+---
+
+## United Natural Foods, Inc.
+
+- **Industry** WHOLESALE_DISTRIBUTION (entity resolution)
+- **Scope** US, CA, USD, 136 sites (research merged with disclosure)
+- **Confidence** 0.345 (D - Indicative), coverage COMPLETE
+
+**Profile** - EVIDENCED_PUBLIC, 7 source(s)
+
+- Canada (UNFI Canada) share of total net sales: ~1%
+- Customer locations served: 30000+
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| CONVENTIONAL SEGMENT NET SALES | US | 13000 | 13000 | 13000 | 2026 |
+| NATURAL SEGMENT NET SALES | US | 16000 | 16550 | 17100 | 2026 |
+| NET SALES (REVENUE) — CONSOLIDATED GROUP | US | 30980 | 31176 | 31784 | 2026 |
+| NUMBER OF DISTRIBUTION CENTERS / WAREHOUSES | US | 46 | 49 | 52 | 2026 |
+| NUMBER OF EMPLOYEES — CONSOLIDATED GROUP | US | 23431 | 25600 | 28333 | 2026 |
+| PRODUCTS OFFERED (SKUS/PRODUCT COUNT) | US | 230000 | 230000 | 230000 | 2025 |
+| RETAIL STORES OPERATED (CUB FOODS + SHOPPERS BANNERS) | US | 75 | 75 | 75 | 2025 |
+| WAREHOUSE SQUARE FOOTAGE (TOTAL NETWORK) | US | 26000000 | 28000000 | 30000000 | 2026 |
+
+*2 conflict(s) flagged: NUMBER OF EMPLOYEES — CONSOLIDATED GROUP, WAREHOUSE SQUARE FOOTAGE (TOTAL NETWORK)*
+
+Sources: [SEC EDGAR — UNFI 10-K FY2025](https://www.sec.gov/Archives/edgar/data/1020859/000102085925000054/unfi-20250802.htm); [SEC EDGAR — UNFI 10-K FY2024](https://www.sec.gov/Archives/edgar/data/1020859/000102085924000045/unfi-20240803.htm); [United Natural Foods — Investor Relations (offic](https://ir.unfi.com/overview/default.aspx); [UNFI IR — FY2026 Earnings Press Release](https://ir.unfi.com/news/press-release-details/2026/United-Natural-Foods-Inc--Reports-Fourth-Quarter-and-Full-Year-Fiscal-2026-Results/default.aspx) and 3 more
+
+**Locations** - EVIDENCED_PUBLIC, 8 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| LARGE_OFFICE — CORPORATE HEADQUARTERS, US | US | 1 | 1 | 1 | 2026 |
+| STORE — COMPANY-OPERATED RETAIL GROCERY STORES (CUB FOODS +  | US | 65 | 66 | 75 | 2026 |
+| STORE — CUB FOODS STORES ONLY (COMPANY-OPERATED, US) | US | 53 | 53.5 | 54 | 2026 |
+| STORE — RETAIL STORE FOOTPRINT (SQ FT PER STORE, TYPICAL) | US | None | None | None |  |
+| STORE — SHOPPERS STORES ONLY (COMPANY-OPERATED, US) | US | 13 | 17 | 21 | 2026 |
+| WAREHOUSE — DISTRIBUTION CENTRES AND WAREHOUSES, TOTAL (US + |  | 46 | 50.5 | 52 | 2026 |
+| WAREHOUSE — DISTRIBUTION CENTRES, CANADA ONLY | CA | None | None | None |  |
+| WAREHOUSE — DISTRIBUTION CENTRES, US ONLY (CALCULATED FROM T | US | 40 | 40 | 40 | 2024 |
+| WAREHOUSE — TOTAL WAREHOUSE SPACE (SQ FT, US + CA COMBINED) |  | 26000000 | 28000000 | 30000000 | 2026 |
+| WAREHOUSE — WAREHOUSE SPACE (SQ FT) TOTAL RETAIL STORES | US | 4881000 | 4881000 | 4881000 | 2025 |
+
+*4 conflict(s) flagged: STORE — COMPANY-OPERATED RETAIL GROCERY STORES (CUB FOODS + SHOPPERS), US ONLY, STORE — SHOPPERS STORES ONLY (COMPANY-OPERATED, US), WAREHOUSE — DISTRIBUTION CENTRES, US ONLY (CALCULATED FROM TOTAL MINUS CANADA ESTIMATE), WAREHOUSE — TOTAL WAREHOUSE SPACE (SQ FT, US + CA COMBINED)*
+
+Sources: [UNFI / SEC EDGAR](https://www.sec.gov/Archives/edgar/data/0001020859/000102085926000025/unfi-20260801.htm); [UNFI / SEC EDGAR](https://www.sec.gov/Archives/edgar/data/1020859/000102085925000054/unfi-20250802.htm); [UNFI / SEC EDGAR (FY2026 Q1 10-Q)](https://www.sec.gov/Archives/edgar/data/1020859/000102085925000065/unfi-20251101.htm); [UNFI / SEC EDGAR (FY2022 10-K)](https://www.sec.gov/Archives/edgar/data/1020859/000102085922000054/unfi-20220730.htm) and 4 more
+
+**Data centres and cloud** - EVIDENCED_PUBLIC, 7 source(s)
+
+- Named cloud/analytics platforms in UNFI data ecosystem (partner-facing): Google Cloud, Microsoft Azure, Databricks, Snowflake
+- IT/compute data centre count (owned or co-located): unknown
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| CLOUD TECHNOLOGY IMPLEMENTATION EXPENDITURES | US | 7 | 30 | 35 | 2026 |
+| TOTAL CAPITAL AND CLOUD IMPLEMENTATION EXPENDITURE (FY2026 A | US | 252 | 252 | 252 | 2026 |
+| TOTAL CAPITAL AND CLOUD IMPLEMENTATION EXPENDITURE BUDGET (F | US | 300 | 300 | 300 | 2027 |
+
+*1 conflict(s) flagged: CLOUD TECHNOLOGY IMPLEMENTATION EXPENDITURES*
+
+Sources: [ir.unfi.com (UNFI investor relations)](https://ir.unfi.com/news/press-release-details/2026/United-Natural-Foods-Inc--Reports-Fourth-Quarter-and-Full-Year-Fiscal-2026-Results/default.aspx); [SEC EDGAR / UNFI 10-K FY2025](https://www.sec.gov/Archives/edgar/data/1020859/000102085925000054/unfi-20250802.htm); [Distribution Strategy Group](http://distributionstrategy.com/2026/09/unfi-expands-ai-and-automation-across-food-distribution-network/); [Mass Market Retailers](https://massmarketretailers.com/unfi-expands-ai-automation-investments-as-fiscal-2026-profitability-supports-supply-chain-transformation/) and 3 more
+
+**Current architecture** - EVIDENCED_PUBLIC, 3 source(s)
+
+- Zero Trust Architecture adoption (policy stated): adopted as policy
+- SASE/ZTNA migration — replacing legacy VPN (job posting signal): in progress
+- Cloud interconnect technology — AWS Direct Connect: in use
+- WAN transport — MPLS still referenced in engineering skills: present in estate or expected knowledge
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| JUNE 2025 CYBERSECURITY INCIDENT — ENTIRE NETWORK SHUT DOWN | US | None | None | None |  |
+
+Sources: [board-cybersecurity.com (aggregating UNFI 10-K I](https://www.board-cybersecurity.com/annual-reports/tracker/20260911-united-natural-foods-cybersecurity-10k); [LinkedIn (UNFI Cloud Network Engineer job postin](https://www.linkedin.com/jobs/view/cloud-network-engineer-remote-at-unfi-3550796682); [SecureWorld](https://www.secureworld.io/industry-news/united-natural-foods-breach)
+
+**Current providers and products** - EVIDENCED_PUBLIC, 3 source(s)
+
+- Cloud security platform (SSE/SASE): Zscaler (ZIA, ZPA)
+- Cloud platform for network infrastructure: Microsoft Azure
+- Branch/site networking platform (SD-WAN / firewall): Cisco Meraki
+- Firewall platform: Palo Alto Networks
+- Fleet telematics / IoT vendor: Samsara
+
+Sources: [Samsara (vendor case study)](https://www.samsara.com/customers/unfi); [GlobalData](https://www.globaldata.com/company-profile/united-natural-foods-inc/); [Digital Commerce 360](https://www.digitalcommerce360.com/2025/12/02/unfi-ai-digital-overhaul-q1-fiscal-2026/)
+
+**Contract and sourcing events** - EVIDENCED_PUBLIC, 3 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| AT&T FIBER-ACCESS NETWORK CONTRACT — TERM | US | 3 | 3 | 3 | 2010 |
+| AT&T FIBER-ACCESS NETWORK CONTRACT — TOTAL CONTRACT VALUE | US | 1200000 | 1200000 | 1200000 | 2010 |
+| CAPITAL AND CLOUD IMPLEMENTATION EXPENDITURES — FY2026 FULL  | US | 238000000 | 245000000 | 252000000 | 2026 |
+| NON-CANCELABLE FUTURE PURCHASE OBLIGATIONS (SUPPLY + IT SERV | US | 436000000 | 436000000 | 436000000 | 2025 |
+
+Sources: [Progressive Grocer](https://progressivegrocer.com/att-update-unfis-network-services); [SEC / UNFI Form 10-K FY2025](https://www.sec.gov/Archives/edgar/data/1020859/000102085925000054/unfi-20250802.htm); [UNFI Investor Relations](https://ir.unfi.com/news/press-release-details/2026/United-Natural-Foods-Inc--Reports-Fourth-Quarter-and-Full-Year-Fiscal-2026-Results/default.aspx)
+
+**Transformation announcements** - EVIDENCED_PUBLIC, 7 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| ADJUSTED EBITDA TARGET — FY2028 (2025 INVESTOR DAY) | US | 800000000 | 800000000 | 800000000 | 2028 |
+| CAPITAL AND CLOUD IMPLEMENTATION SPEND — FY2023 (TRANSFORMAT | US | 290 | 290 | 290 | 2023 |
+| CAPITAL AND CLOUD IMPLEMENTATION SPEND — FY2024 (TRANSFORMAT | US | 370 | 200000185 | 400000000 | 2024 |
+| CAPITAL AND CLOUD IMPLEMENTATION SPEND — FY2025 (TRANSFORMAT | US | 238 | 238 | 238 | 2025 |
+| CAPITAL AND CLOUD IMPLEMENTATION SPEND — FY2026 | US | 252 | 252 | 252 | 2026 |
+| FORWARD CAPITAL AND CLOUD SPEND GUIDANCE — FY2027 | US | 300000000 | 300000000 | 300000000 | 2027 |
+| FREE CASH FLOW TARGET — FY2026–FY2028 (2025 INVESTOR DAY) | US | None | None | None |  |
+| LED LIGHTING INFRASTRUCTURE SAVINGS — ALL DISTRIBUTION CENTR | US | 15000000 | 15000000 | 15000000 | 2023 |
+| NEAR-TERM RUN-RATE SAVINGS ACTIONED — 'ONE UNFI' VALUE CREAT | US | None | None | None |  |
+| RESTRUCTURING, ACQUISITION AND INTEGRATION CHARGES — FY2025 | US | 94 | 94 | 94 | 2025 |
+
+*1 conflict(s) flagged: CAPITAL AND CLOUD IMPLEMENTATION SPEND — FY2024 (TRANSFORMATION PROGRAMME)*
+
+Sources: [UNFI Investor Relations](https://ir.unfi.com/news/press-release-details/2025/UNFI-Provides-Details-Underlying-Its-Value-Creation-Strategy-and-Long-Term-Financial-Targets/default.aspx); [SEC EDGAR (UNFI 8-K Exhibit 99.1)](https://www.sec.gov/Archives/edgar/data/1020859/000102085925000070/a2025investordaypressrelea.htm); [SEC EDGAR (UNFI 10-K FY2025)](https://www.sec.gov/Archives/edgar/data/1020859/000102085925000054/unfi-20250802.htm); [UNFI Investor Relations](https://ir.unfi.com/news/press-release-details/2023/United-Natural-Foods-Inc.-Reports-First-Quarter-Fiscal-2024-Results/default.aspx) and 3 more
+
+**Market serviceability** - EVIDENCED_PUBLIC, 9 source(s)
+
+- DIA provisioning / installation lead time — US: 30–90 days
+- Enterprise DIA contract term — US standard: 36 months
+- Canada DIA monthly price range — urban vs rural: 500–7500+ CAD/month
+- Canada DIA price — 1 Gbps, Toronto vs Saskatchewan: 1000–2200 CAD/month
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| CANADA TELECOM MARKET CONCENTRATION — BIG THREE REVENUE SHAR | CA | 85.6 | 85.6 | 85.6 | 2023 |
+| CANADA WIRELESS MARKET CONCENTRATION — BIG THREE SUBSCRIBER  | CA | 86.9 | 86.9 | 86.9 | 2023 |
+| CREDIBLE ENTERPRISE WAN CARRIERS — CANADA (BIG THREE + REGIO | CA | 6 | 6 | 6 | 2025 |
+| CREDIBLE ENTERPRISE WAN CARRIERS — US (CARRIER ETHERNET LEAD | US | 6 | 6 | 6 | 2025 |
+| SHARE OF ENTERPRISE SITES CONNECTED VIA DIA (GLOBAL, ENTERPR |  | 53.88 | 53.88 | 53.88 | 2025 |
+| SHARE OF ENTERPRISE SITES CONNECTED VIA MPLS (GLOBAL, ENTERP |  | 22 | 22 | 22 | 2025 |
+
+*1 conflict(s) flagged: CREDIBLE ENTERPRISE WAN CARRIERS — CANADA (BIG THREE + REGIONAL)*
+
+Sources: [Vertical Systems Group](https://verticalsystems.com/2026/02/18/2025-us-carrier-ethernet-leaderboard/); [TeleGeography](https://resources.telegeography.com/the-rise-of-dia-over-mpls); [cancomco.ca](https://cancomco.ca/dedicated-internet-access-pricing-in-canada/); [cancomco.ca](https://cancomco.ca/your-guide-to-dedicated-internet-access-providers-in-canada/) and 5 more
 
 ---
 
@@ -2577,6 +3080,218 @@ Sources: [Unilever PLC via SEC (6-K, GAP announcement)](https://www.sec.gov/Arch
 *1 conflict(s) flagged: UK FULL-FIBRE PREMISES COVERAGE*
 
 Sources: [servnetuk.com](https://www.servnetuk.com/insights/sd-wan-vs-mpls-uk-2026); [connection-technologies.co.uk](https://connection-technologies.co.uk/blog/multi-site-business-connectivity-uk-2026-sd-wan-leased-lines-mpls); [comparenet.co.uk](https://comparenet.co.uk/dedicated-fibre-leased-lines); [TeleGeography](https://resources.telegeography.com/the-rise-of-dia-over-mpls) and 2 more
+
+---
+
+## United Parcel Service, Inc.
+
+- **Industry** PARCEL_LOGISTICS (entity resolution)
+- **Scope** US, DE, GB, USD, 1,089 sites (research merged with disclosure)
+- **Confidence** 0.346 (D - Indicative), coverage COMPLETE
+
+**Profile** - EVIDENCED_PUBLIC, 9 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| GLOBAL OPERATING FACILITIES |  | None | None | None |  |
+| INTERNATIONAL PACKAGE SEGMENT REVENUE |  | 17960000000 | 17980000000 | 18000000000 | 2024 |
+| NUMBER OF COUNTRIES AND TERRITORIES SERVED |  | None | None | None |  |
+| SUPPLY CHAIN SOLUTIONS SEGMENT REVENUE |  | 12700000000 | 12717000000 | 12734000000 | 2024 |
+| TOTAL CONSOLIDATED REVENUE | US | 88660000000 | 89885000000 | 91100000000 | 2025 |
+| TOTAL EMPLOYEES (EXCL. TEMPORARY SEASONAL) | US | 460000 | 460000 | 490000 | 2025 |
+| US DOMESTIC PACKAGE SEGMENT REVENUE | US | 59519000000 | 60376000000 | 60400000000 | 2025 |
+
+Sources: [United Parcel Service, Inc. — SEC 10-K FY2024](https://www.sec.gov/Archives/edgar/data/1090727/000109072725000019/ups-20241231.htm); [United Parcel Service, Inc. — SEC 10-K FY2024 (P](https://investors.ups.com/sec-filings/all-sec-filings/content/0001090727-25-000019/0001090727-25-000019.pdf); [United Parcel Service, Inc. — Q4 2025 Earnings P](https://www.sec.gov/Archives/edgar/data/1090727/000162828026003510/exhibit991-earningspressre.htm); [United Parcel Service, Inc. — Investor Relations](https://investors.ups.com/) and 5 more
+
+**Locations** - EVIDENCED_PUBLIC, 8 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| LARGE_OFFICE — CORPORATE HEADQUARTERS (US, ATLANTA GA) | US | 1 | 1 | 1 | 2024 |
+| STORE — THE UPS STORE RETAIL LOCATIONS (US) | US | 5380 | 5552 | 5603 | 2026 |
+| TERMINAL — EUROPEAN AIR HUB (GERMANY, DE) | DE | None | None | None |  |
+| WAREHOUSE — INTERNATIONAL PACKAGE OPERATING FACILITIES (ALL  |  | None | None | None |  |
+| WAREHOUSE — SUPPLY CHAIN / FORWARDING / LOGISTICS FACILITIES |  | None | None | None |  |
+| WAREHOUSE — US PACKAGE OPERATING FACILITIES | US | None | None | None |  |
+| WAREHOUSE/TERMINAL — TOTAL WORLDWIDE OPERATING FACILITIES (A |  | None | None | None |  |
+
+Sources: [UPS / SEC EDGAR](https://www.sec.gov/Archives/edgar/data/1090727/000109072725000019/ups-20241231.htm); [UPS / SEC EDGAR](https://www.sec.gov/Archives/edgar/data/1090727/000109072724000008/ups-20231231.htm); [UPS GRI 2024 Report](https://about.ups.com/content/dam/upsstories/images/our-impact/reporting/2024-UPS-GRI-Report.pdf); [UPS GRI 2025 Report](https://about.ups.com/content/dam/upsstories/images/our-impact/reporting/2025-ups-gri.pdf) and 4 more
+
+**Data centres and cloud** - EVIDENCED_PUBLIC, 7 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| DC FLOOR AREA — RAMAPO RIDGE, MAHWAH NJ | US | 435000 | 443600 | 470600 | 2015 |
+| DC FLOOR AREA — WINDWARD, ALPHARETTA GA | US | 175000 | 175000 | 175000 | 2015 |
+| DC — RAMAPO RIDGE, MAHWAH NJ (PRIMARY IT OPERATIONS) | US | 1 | 1 | 1 | 2015 |
+| DC — WINDWARD / ALPHARETTA GA (BACKUP IT OPERATIONS) | US | 1 | 1 | 1 | 2015 |
+| NAMED CLOUD PROVIDER — GOOGLE CLOUD (STRATEGIC PARTNERSHIP) | US | 1 | 1 | 1 | 2022 |
+| TOTAL PRIMARY OWNED DCS — US (BOTH SITES COMBINED) | US | 2 | 2 | 2 | 2015 |
+
+Sources: [SEC / United Parcel Service, Inc.](https://www.sec.gov/Archives/edgar/data/1090727/000109072716000053/ups-12312015x10k.htm); [SEC / United Parcel Service, Inc.](https://investors.ups.com/sec-filings/all-sec-filings/content/0001193125-11-049356/d10k.htm); [JMA (UPS World Technology Headquarters project p](https://jma.phgtestsite.com/ups-world-technology-headquarters); [UPS Pressroom (IHMC public mirror)](https://cmapspublic3.ihmc.us/rid=1JZJLM798-8KX16S-ZSW/UPS%20Data%20Centers%20Fact%20Sheet%20-%20UPS%20Pressroom.pdf) and 3 more
+
+**Current architecture** - DECLARED_UNKNOWN: NO_PUBLIC_EVIDENCE
+
+**Current providers and products** - DECLARED_UNKNOWN: BUDGET_EXHAUSTED
+
+**Contract and sourcing events** - DECLARED_UNKNOWN: NO_PUBLIC_EVIDENCE
+
+**Transformation announcements** - EVIDENCED_PUBLIC, 10 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| EFFICIENCY REIMAGINED — ANNUALISED SAVINGS TARGET | US | 1000000000 | 1000000000 | 1000000000 | 2025 |
+| NETWORK OF THE FUTURE — ANNUAL SAVINGS TARGET BY END OF 2028 | US | 3000000000 | 3000000000 | 3000000000 | 2024 |
+| NETWORK OF THE FUTURE — TOTAL INVESTMENT BUDGET (63 AUTOMATI | US | 9000000000 | 9000000000 | 9000000000 | 2024 |
+| NETWORK RECONFIGURATION + EFFICIENCY REIMAGINED — 2025 PROGR | US | None | None | None |  |
+| NETWORK RECONFIGURATION + EFFICIENCY REIMAGINED — EXPECTED C | US | 3000000000 | 3000000000 | 3000000000 | 2026 |
+| NETWORK RECONFIGURATION + EFFICIENCY REIMAGINED — TOTAL COST | US | 3500000000 | 3500000000 | 3500000000 | 2025 |
+| TRANSFORMATION 2.0 — ACHIEVED SAVINGS VIA COMPENSATION AND B | US | 1000000000 | 1000000000 | 1000000000 | 2025 |
+| TRANSFORMATION 2.0 — ADDITIONAL MANAGEMENT-LAYER SAVINGS POT | US | 240000000 | 240000000 | 240000000 | 2024 |
+| TRANSFORMATION 2.0 — MANAGEMENT-LAYER SAVINGS INITIAL TARGET | US | 400000000 | 400000000 | 400000000 | 2024 |
+| TRANSFORMATION 2.0 — TOTAL CUMULATIVE PROGRAMME COSTS INCURR | US | 798000000 | 811000000 | 824000000 | 2025 |
+
+Sources: [UPS (SEC Form 10-K FY2024)](https://www.sec.gov/Archives/edgar/data/1090727/000109072725000019/ups-20241231.htm); [UPS (SEC Annual Report FY2024)](https://www.sec.gov/Archives/edgar/data/1090727/000109072725000041/ups2024ars.pdf); [UPS (SEC Form 10-Q Q3 FY2025)](https://www.sec.gov/Archives/edgar/data/1090727/000162828025049661/ups-20250930.htm); [UPS (SEC Form 10-Q Q2 FY2025)](https://www.sec.gov/Archives/edgar/data/1090727/000109072725000064/ups-20250630.htm) and 6 more
+
+**Market serviceability** - EVIDENCED_PUBLIC, 9 source(s)
+
+- DE Deutsche Telekom Wholesale DIA bandwidth range: 2 Mbps to 10 Gbps
+- GB credible enterprise leased line carriers (2026): 9+
+- GB leased line install lead time — standard brownfield EAD: 30–90 working days
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| DE FIXED-LINE MARKET SHARE — DEUTSCHE TELEKOM | DE | 81.5 | 81.5 | 81.5 |  |
+| DE FIXED-LINE MARKET SHARE — VODAFONE GERMANY | DE | 10.1 | 10.1 | 10.1 |  |
+| DE FTTH FIBRE COVERAGE RATE (HOMES CONNECTED TAKE-UP) | DE | 21.7 | 21.7 | 21.7 | 2025 |
+| DE FTTH/B HOUSEHOLDS/SMES PASSED (HOMES PASSED) | DE | 24300000 | 24550000 | 24800000 | 2025 |
+| GB CITYFIBRE ENTERPRISE ETHERNET BUSINESSES REACHED | GB | 260000 | 260000 | 260000 | 2025 |
+| GB OPENREACH FULL FIBRE (FTTP) PREMISES PASSED | GB | 20000000 | 21000000 | 22000000 | 2026 |
+| US CARRIER ETHERNET LEADERBOARD — CREDIBLE ENTERPRISE CARRIE | US | 6 | 6.5 | 7 | 2026 |
+
+*1 conflict(s) flagged: US CARRIER ETHERNET LEADERBOARD — CREDIBLE ENTERPRISE CARRIERS (MID-2026)*
+
+Sources: [Vertical Systems Group](https://verticalsystems.com/2026/09/02/mid-2026-us-carrier-ethernet-leaderboard/); [Vertical Systems Group](https://verticalsystems.com/2026/02/18/2025-us-carrier-ethernet-leaderboard/); [VATM — 26th Telecommunications Market Analysis G](https://www.vatm.de/wp-content/uploads/2025/06/VATM-Market-Analysis-Germany-2025.pdf); [Deutsche Telekom Wholesale](https://wholesale.telekom.com/global-connectivity/our-solutions/sd-wan-enabling-transport/internet-access) and 5 more
+
+---
+
+## Victoria's Secret & Co.
+
+- **Industry** SPECIALTY_RETAIL (spec fallback)
+- **Scope** US, CA, USD, 834 sites (research merged with disclosure)
+- **Confidence** 0.334 (D - Indicative), coverage COMPLETE
+
+**Profile** - EVIDENCED_PUBLIC, 10 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| DIGITAL CHANNEL NET SALES | US | 2042000000 | 2042000000 | 2042000000 | 2025 |
+| INTERNATIONAL CHANNEL NET SALES |  | 760000000 | 863500000 | 967000000 | 2025 |
+| NORTH AMERICA SELLING SPACE (STORE FLEET SQ FT) | US | 5500000 | 5550000 | 5600000 | 2025 |
+| NORTH AMERICA STORE COUNT — CANADA COMPANY-OPERATED STORES | CA | 23 | 24 | 24 | 2025 |
+| NORTH AMERICA STORE COUNT — US COMPANY-OPERATED STORES | US | 766 | 782 | 808 | 2025 |
+| NORTH AMERICAN STORES CHANNEL NET SALES | US | 3428000000 | 3486000000 | 3544000000 | 2025 |
+| PARTNER/FRANCHISE STORES INTERNATIONALLY (OUTSIDE US/CANADA/ |  | None | None | None |  |
+| TOTAL COMPANY-OPERATED RETAIL STORES (US + CANADA + CHINA JV |  | 858 | 870 | 882 | 2025 |
+| TOTAL EMPLOYEES (ASSOCIATES) | US | 30000 | 31000 | 33000 | 2025 |
+| TOTAL NET SALES (FULL YEAR) | US | 6182000000 | 6230000000 | 6553000000 | 2025 |
+
+*1 conflict(s) flagged: INTERNATIONAL CHANNEL NET SALES*
+
+Sources: [Victoria's Secret & Co. / SEC EDGAR](https://www.sec.gov/Archives/edgar/data/1856437/000185643726000004/vsco-20260131.htm); [Victoria's Secret & Co. (official IR site — Form](https://www.victoriassecretandco.com/static-files/67c5a8b1-37fc-46dd-8d30-27a417b481d7); [Victoria's Secret & Co. / SEC EDGAR (8-K Q4 FY20](https://www.sec.gov/Archives/edgar/data/1856437/000185643725000004/ex991vscoq42024earningsrel.htm); [Victoria's Secret & Co. (official IR site — Form](https://www.victoriassecretandco.com/static-files/48070697-c350-4fb1-b792-896b36efc77f) and 6 more
+
+**Locations** - EVIDENCED_PUBLIC, 10 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| LARGE_OFFICE — NEW YORK OFFICE (SOURCING, PRODUCT DEVELOPMEN | US | None | None | None |  |
+| STORE — CANADA COMPANY-OPERATED RETAIL STORES | CA | 23 | 24 | 26 | 2026 |
+| STORE — NORTH AMERICA (US + CA) COMPANY-OPERATED TOTAL | US | 790 | 790 | 806 | 2026 |
+| STORE — US COMPANY-OPERATED RETAIL STORES | US | 762 | 774 | 808 | 2026 |
+| WAREHOUSE — US DISTRIBUTION AND SHIPPING FACILITIES (COLUMBU | US | None | None | None |  |
+| WAREHOUSE — US DISTRIBUTION AND SHIPPING FACILITY (NEW JERSE | US | None | None | None |  |
+
+Sources: [Victoria's Secret & Co. (SEC EDGAR primary filin](https://www.sec.gov/Archives/edgar/data/1856437/000185643726000004/vsco-20260131.htm); [Victoria's Secret & Co. (company-published 10-K,](https://www.victoriassecretandco.com/static-files/a96fe147-824e-40c7-8c1a-ae4f44f6cb0a); [Victoria's Secret & Co. Q4/FY2025 earnings press](https://www.victoriassecretandco.com/static-files/874a08cc-e877-4c72-9f31-599584cc542d); [Victoria's Secret & Co. Q2 FY2026 earnings press](https://www.victoriassecretandco.com/static-files/b695cccf-8a35-46f4-b9be-923b084ba308) and 6 more
+
+**Data centres and cloud** - EVIDENCED_PUBLIC, 7 source(s)
+
+- Technology separation from former parent (Bath & Body Works) — completion: summer 2024
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| ANALYTICS CLOUD MIGRATION — COMPUTE COST REDUCTION ACHIEVED | US | 34 | 34 | 34 | 2024 |
+| CLOUD PROVIDER — GOOGLE CLOUD (AI/GENERATIVE AI, MULTI-YEAR  | US | None | None | None |  |
+| CLOUD PROVIDER — MICROSOFT AZURE (PRIMARY, MULTI-REGION) | US | None | None | None |  |
+| CLOUD PROVIDER — SNOWFLAKE (DATA WAREHOUSING) | US | None | None | None |  |
+| DC SITES (OWNED/CO-LOCATED, STANDALONE) — US | US | 0 | 0 | 0 | 2026 |
+| DC SITES — CANADA | CA | 0 | 0 | 0 | 2026 |
+| ON-PREMISES DATA CENTRE FLOOR AREA — POST-AZURE MIGRATION (R | US | 1500 | 1500 | 1500 | 2023 |
+| ON-PREMISES DATA CENTRE FLOOR AREA — PRE-AZURE MIGRATION | US | 15000 | 15000 | 15000 | 2022 |
+
+Sources: [Microsoft](https://www.microsoft.com/en/customers/story/1787500273963263731-victoriassecret-azure-kubernetes-service-other-unsegmented-en-united-states); [Tiger Analytics](https://www.tigeranalytics.com/perspectives/case-study/migrating-and-modernizing-victorias-secret-co-analytics-and-reporting-workloads-from-on-prem-to-azure-and-snowflake-stack/); [Victoria's Secret & Co.](https://www.victoriassecretandco.com/news-releases/news-release-details/victorias-secret-co-create-new-ai-powered-shopping-experiences); [MongoDB](https://www.mongodb.com/solutions/customer-case-studies/victorias-secret) and 3 more
+
+**Current architecture** - EVIDENCED_PUBLIC, 5 source(s)
+
+- Primary cloud platform — compute and application hosting: Microsoft Azure (Azure Kubernetes Service)
+- Secondary cloud platform — AI/generative AI partnership: Google Cloud
+- IT infrastructure separation from L Brands (Bath & Body Works) — completion date: Summer 2024
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| CANADA COMPANY-OPERATED RETAIL STORE COUNT (POTENTIAL WAN SI | CA | 24 | 24 | 24 | 2026 |
+| ON-PREMISES DATA CENTRE FOOTPRINT — POST-AZURE MIGRATION (RE | US | 1500 | 1500 | 1500 | 2023 |
+| US COMPANY-OPERATED RETAIL STORE COUNT (POTENTIAL WAN SITES) | US | 766 | 766 | 766 | 2026 |
+
+Sources: [Microsoft (customer story)](https://www.microsoft.com/en/customers/story/1787500273963263731-victoriassecret-azure-kubernetes-service-other-unsegmented-en-united-states); [Tiger Analytics](https://www.tigeranalytics.com/perspectives/case-study/migrating-and-modernizing-victorias-secret-co-analytics-and-reporting-workloads-from-on-prem-to-azure-and-snowflake-stack/); [Victoria's Secret & Co. (press release)](https://www.victoriassecretandco.com/news-releases/news-release-details/victorias-secret-co-create-new-ai-powered-shopping-experiences); [Victoria's Secret & Co. DEF 14A (SEC filing)](https://www.sec.gov/Archives/edgar/data/1856437/000119312524130736/d540996ddef14a.htm) and 1 more
+
+**Current providers and products** - EVIDENCED_PUBLIC, 9 source(s)
+
+- Primary cloud platform (internet egress / WAN anchor): Microsoft Azure
+- Secondary cloud platform (AI / internet workloads): Google Cloud
+- SASE platform (inferred from job posting — vendor unnamed): SASE (vendor unknown)
+- Managed cybersecurity monitoring services firm (unnamed): unnamed managed services firm
+- Third-party cybersecurity assessment exchange service (unnamed): unnamed cybersecurity assessment exchange
+- Technology independence from L Brands / separation completion: full technology split completed
+
+Sources: [Microsoft](https://www.microsoft.com/en/customers/story/1787500273963263731-victoriassecret-azure-kubernetes-service-other-unsegmented-en-united-states); [Google Cloud](https://cloud.google.com/transform/victorias-secret-gen-ai-digital-retail-customer-experience); [Victoria's Secret & Co.](https://www.victoriassecretandco.com/news-releases/news-release-details/victorias-secret-co-create-new-ai-powered-shopping-experiences); [Victoria's Secret & Co. (SEC EDGAR)](https://www.sec.gov/Archives/edgar/data/1856437/000185643726000004/vsco-20260131.htm) and 5 more
+
+**Contract and sourcing events** - DECLARED_UNKNOWN: BUDGET_EXHAUSTED
+
+**Transformation announcements** - EVIDENCED_PUBLIC, 10 source(s)
+
+- Technology split from Bath & Body Works — completion date: summer 2024
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| 2022 ORG RESTRUCTURING — ESTIMATED ANNUALISED COST REDUCTION | US | 40000000 | 40000000 | 40000000 | 2022 |
+| PATH TO POTENTIAL — DIGITAL CHANNEL NET SALES (FY2025, INDIC | US | 2042000000 | 2042000000 | 2042000000 | 2025 |
+| RESTRUCTURING CHARGES — FY2025 (PRE-TAX SEVERANCE, RELOCATIO | US | 13000000 | 13000000 | 13000000 | 2025 |
+| RESTRUCTURING CHARGES — FY2026 YTD H1 (PRE-TAX SEVERANCE, RE | US | 10000000 | 10000000 | 10000000 | 2026 |
+| TOTAL CAPEX GUIDANCE — FY2026 | US | 220000000 | 230000000 | 240000000 | 2026 |
+| TOTAL CAPEX — FY2025 ACTUAL | US | 187000000 | 187000000 | 187000000 | 2025 |
+| TRANSFORM THE FOUNDATION — SAVINGS EXPECTED IN FY2024 | US | 120000000 | 120000000 | 120000000 | 2024 |
+| TRANSFORM THE FOUNDATION — SAVINGS REALISED IN FY2023 | US | 90000000 | 90000000 | 90000000 | 2023 |
+| TRANSFORM THE FOUNDATION — TOTAL CUMULATIVE SAVINGS GOAL (IN | US | 250000000 | 250000000 | 250000000 | 2022 |
+
+Sources: [SEC / Victoria's Secret & Co. DEF 14A Proxy FY20](https://www.sec.gov/Archives/edgar/data/1856437/000119312524130736/d540996ddef14a.htm); [SEC / Victoria's Secret & Co. Form 10-K FY2025 (](https://www.sec.gov/Archives/edgar/data/1856437/000185643726000004/vsco-20260131.htm); [Victoria's Secret & Co. Form 10-K FY2025 (IR web](https://www.victoriassecretandco.com/static-files/a96fe147-824e-40c7-8c1a-ae4f44f6cb0a); [SEC / Victoria's Secret & Co. Form 10-Q Q2 FY202](https://www.sec.gov/Archives/edgar/data/0001856437/000185643726000021/vsco-20260801.htm) and 6 more
+
+**Market serviceability** - EVIDENCED_PUBLIC, 8 source(s)
+
+- Credible enterprise DIA/MPLS/Ethernet carriers — US (named): AT&T, Lumen, Spectrum Business, Verizon, Comcast Business, Cox Business, Zayo, Crown Castle Fiber, T-Mobile Business
+- DIA provisioning lead time — US on-net sites: 15–45
+- DIA provisioning lead time — US off-net sites: 60–120
+- Credible enterprise DIA/MPLS carriers — Canada (national incumbents): Bell Canada, Rogers Business, TELUS
+- DIA provisioning lead time — Canada (on-net vs off-net): a few weeks (on-net) to several months (off-net/new build)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| BUSINESS FIBER INTERNET PROVIDERS — MONTRÉAL, QUÉBEC (DIA-CA | CA | 50 | 50 | 50 | 2024 |
+| BUSINESS FIBER INTERNET PROVIDERS — TORONTO, ONTARIO (DIA-CA | CA | 84 | 84 | 84 | 2024 |
+| CREDIBLE ENTERPRISE WAN/INTERNET CARRIERS — US CARRIER ETHER | US | 6 | 6 | 6 | 2025 |
+| STANDARD ENTERPRISE DIA CONTRACT TERM — US | US | 36 | 36 | 36 | 2026 |
+| TOP-3 CARRIER SHARE OF CANADIAN TELECOM REVENUE | CA | 85.6 | 85.6 | 85.6 | 2023 |
+
+Sources: [Vertical Systems Group](https://verticalsystems.com/2026/02/18/2025-us-carrier-ethernet-leaderboard/); [SociumIT](https://www.sociumit.com/resources/blog/dia-providers-comparison-2026); [Lightyear.ai](https://lightyear.ai/blogs/dedicated-internet-access-dia-buyers-guide-features-options-and-pricing); [DefendMyBusiness](https://defendmybusiness.com/dedicated-internet-access-pricing-in-us/) and 4 more
 
 ---
 
