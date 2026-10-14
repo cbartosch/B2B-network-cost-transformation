@@ -15,7 +15,7 @@
   "base_currency": "EUR",
   "case_id": "2ad772a6-f0e2-424e-8fc1-75ded97aad7f",
   "spec_path": "/tmp/companies.json",
-  "spec_sha256": "a30ce5addcbe",
+  "spec_sha256": "1728910bb736",
   "entity_resolution": {
     "resolved": null,
     "resumed": true
@@ -81,30 +81,19 @@
     },
     {
       "country": "GB",
-      "archetype": "PLANT",
-      "sites": 9,
-      "density": "RURAL"
-    },
-    {
-      "country": "GB",
-      "archetype": "PLANT",
-      "sites": 14,
-      "density": "SUBURBAN"
-    },
-    {
-      "country": "GB",
-      "archetype": "PLANT",
-      "sites": 17,
-      "density": "URBAN"
-    },
-    {
-      "country": "GB",
       "archetype": "WAREHOUSE",
       "sites": 17,
       "density": null
     }
   ],
   "footprint_provenance": [
+    {
+      "country": "GB",
+      "archetype": "PLANT",
+      "sites": 40,
+      "origin": "EXCLUDED_BY_SCOPE",
+      "reason": "not because the wind farms are not Iberdrola's - they are, and they do carry a connection it pays for - but because pricing 40 of them at the PLANT profile asserts a factory of 60 users on a 100 Mbps dual-access circuit where there is an unmanned SCADA link. That is operational-technology connectivity, a different cost pool from the enterprise access layer this model prices, and consistent with the substations, nodes and towers already refused. If OT connectivity enters scope they return under their own archetype, not PLANT."
+    },
     {
       "country": "ES",
       "archetype": "CONTROL_CENTER",
@@ -149,13 +138,6 @@
     },
     {
       "country": "GB",
-      "archetype": "PLANT",
-      "sites": 40,
-      "origin": "RESEARCHED",
-      "density": null
-    },
-    {
-      "country": "GB",
       "archetype": "WAREHOUSE",
       "sites": 17,
       "origin": "RESEARCHED",
@@ -163,8 +145,8 @@
     },
     {
       "origin": "DENSITY_FROM_MIX",
-      "rows": 2,
-      "sites": 41,
+      "rows": 1,
+      "sites": 1,
       "filled": [
         {
           "country": "GB",
@@ -175,19 +157,6 @@
           "bands": {
             "URBAN": 1
           }
-        },
-        {
-          "country": "GB",
-          "archetype": "PLANT",
-          "sites": 40,
-          "basis": "SECTOR_LAYER_SYNONYM",
-          "mix_industry": "UTILITIES",
-          "bands": {
-            "RURAL": 9,
-            "SUBURBAN": 14,
-            "URBAN": 17
-          },
-          "via_layer": "CONTROL_CENTER"
         }
       ],
       "note": "the count and the site type are evidenced; the band is a governed sector default from reference.density_mix, not a finding about this client. It decides which bearers are tested, so it is worth replacing with what the client actually has."
@@ -214,7 +183,7 @@
     "DC": "RESEARCHED",
     "LARGE_OFFICE": "ASSUMED_PUBLIC_DISCLOSURE",
     "NETWORK_SITE": "ASSUMED_PUBLIC_DISCLOSURE",
-    "PLANT": "RESEARCHED",
+    "PLANT": "ASSUMED_PUBLIC_DISCLOSURE",
     "WAREHOUSE": "RESEARCHED"
   },
   "fx_to_eur": {
@@ -268,13 +237,13 @@
   ],
   "estimate_inputs": {
     "method": "BUILD_UP",
-    "users": 33552,
+    "users": 33072,
     "ops_cost_per_site_base": 900,
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-14T20:30:01.418303+00:00",
-  "run_seconds": 3.2,
+  "run_started": "2026-10-14T20:55:35.036592+00:00",
+  "run_seconds": 3.5,
   "preflight_conditions": 8,
   "promotion": {
     "promoted": true,

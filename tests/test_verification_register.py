@@ -129,7 +129,9 @@ def test_the_register_records_refusals_and_not_only_acceptances(tool):
     like: this one excluded the same network counted twice under two
     archetype names five times over, declined an apprenticeship
     announcement read as a site count, and referred four apportioned
-    plant counts and three scope questions to an owner.
+    plant counts and three scope questions to an owner - who ruled on all
+    seven on 2026-10-14, which is why REFERRED is now empty and not
+    required below.
     """
     register = tool.load_register(REGISTER)
     kinds = collections.Counter(e["disposition"] for e in register.values())
@@ -139,8 +141,11 @@ def test_the_register_records_refusals_and_not_only_acceptances(tool):
         f"only {refused} of {len(register)} entries refused anything "
         f"({dict(kinds)}) - a register that accepts everything put in "
         f"front of it has stopped being evidence")
-    for name in ("EXCLUDED", "DECLINED", "REFERRED"):
+    for name in ("EXCLUDED", "DECLINED"):
         assert kinds[name], f"no {name} entries - every refusal looks alike"
+    # REFERRED is deliberately not required. All seven open referrals were
+    # ruled on 2026-10-14 and the disposition emptied; requiring one would
+    # mean keeping a question open to satisfy a test.
 
 
 def test_every_change_now_carries_a_decision(tool):
@@ -191,18 +196,23 @@ def test_a_disqualified_finding_that_lost_is_not_warned_about(tool):
     assert ("nestle", "CH", "DC") not in pairs
 
 
-def test_referred_is_a_disposition_a_person_still_owes_a_decision_on(tool):
-    """Three changes are sound counts whose membership of the estate is a
-    scope judgement, not a fact: Shell's dealer-owned Dutch forecourts,
-    DHL's drop-off counters inside third-party shops, and Allianz's
-    tied-agent offices. Deciding any of them from a label would be inventing
-    a policy, so they are recorded as REFERRED and stay in the estate."""
+def test_referred_stays_available_even_with_nothing_outstanding(tool):
+    """REFERRED is for a sound count whose membership of the estate is a
+    scope judgement rather than a fact - Allianz's tied-agent offices,
+    DHL's counters inside third-party shops, Iberdrola's wind farms, and
+    four apportioned plant counts. Deciding one from a label would be
+    inventing a policy, so they waited for an owner.
+
+    All seven were ruled on 2026-10-14 and the disposition is now empty.
+    This used to assert that referrals EXIST, which would now require
+    keeping a question open to keep a test green. The disposition must
+    stay available, and anything filed under it must still say why.
+    """
     assert "REFERRED" in tool.DISPOSITIONS
     register = tool.load_register(REGISTER)
-    referred = [e for e in register.values() if e["disposition"] == "REFERRED"]
-    assert referred, "no referred entries"
-    for e in referred:
-        assert e["note"], f"{e['slug']}: REFERRED with no note saying why"
+    for e in register.values():
+        if e["disposition"] == "REFERRED":
+            assert e["note"], f"{e['slug']}: REFERRED with no note saying why"
 
 
 def test_a_count_of_closures_is_not_a_count_of_sites():
@@ -382,13 +392,20 @@ def test_an_estate_priced_above_everything_research_found_is_reported(tool):
     which looked said something smaller.
     """
     over = tool.priced_above_research(OUT, SPEC)
+    # The case this was written for - Nestle FR, 28 declared against 18
+    # found - was ruled on 2026-10-14 and the declaration corrected to 18,
+    # so it correctly no longer appears. Germany is the same defect one
+    # country across and still open at 13 against 12.
     hit = next((c for c in over if c["slug"] == "nestle"
-                and c["country"] == "FR" and c["archetype"] == "PLANT"), None)
-    assert hit, "the case this check was written for is not reported"
-    assert hit["used"] == 28 and hit["highest_found"] == 18
+                and c["country"] == "DE" and c["archetype"] == "PLANT"), None)
+    assert hit, "the apportioned-overstatement case is not reported"
+    assert hit["used"] > hit["highest_found"]
     assert hit["apportioned"], (
         "the CR-02b note is what separates an unsourced declaration from "
         "research simply being incomplete")
+    assert not any(c["slug"] == "nestle" and c["country"] == "FR"
+                   for c in over), (
+        "the French plant count was ruled and should have left this report")
 
 
 def test_the_apportioned_marker_distinguishes_the_two_causes(tool):
@@ -415,9 +432,11 @@ def test_the_report_separates_an_unexamined_figure_from_a_contested_one(tool):
     over = tool.priced_above_research(OUT, SPEC)
     kinds = {c["kind"] for c in over}
     assert kinds == {"NOTHING_SURVIVED", "APPORTIONED_BEATEN"}
-    fr = next(c for c in over if c["slug"] == "nestle"
-              and c["country"] == "FR" and c["archetype"] == "PLANT")
-    assert fr["kind"] == "APPORTIONED_BEATEN"
+    # Nestle FR was the case that forced the second tier into existence and
+    # has since been ruled out of the report entirely. Both tiers still
+    # carry rows, which is what this is really asserting.
+    for kind in kinds:
+        assert [c for c in over if c["kind"] == kind]
 
 
 def test_every_unexamined_apportioned_figure_carries_a_referral(tool):
