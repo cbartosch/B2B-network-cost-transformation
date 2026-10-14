@@ -152,6 +152,32 @@ def test_every_agent_routed_domain_survives_the_pipeline():
     assert "All 17 agent-routed domains" in result.stdout
 
 
+def test_the_verifier_runs_the_real_modules_not_a_copy_of_them():
+    """What the harness is for.
+
+    triangulate, reliability and promotion were read as text, stripped of
+    their import lines and exec'd in a namespace assembled by hand. It
+    broke loudly when promotion.py grew a regex - "name 're' is not
+    defined", on the first domain - and would have broken quietly the
+    first time a fixture named a PLANT, because the hand-built namespace
+    supplied five of the fifteen archetypes.
+
+    A harness checking a reconstruction of the code instead of the code
+    is worth less than no harness, because it is trusted.
+    """
+    src = ((Path(__file__).resolve().parents[1] / "tools" /
+            "verify_domains.py").read_text())
+    downstream = src[src.index("# ---", src.index("downstream")):
+                     src.index("# ------------------------------------"
+                               "------------------------- the 17 domains")]
+    assert "importlib.import_module" in downstream
+    assert "exec(" not in downstream, (
+        "the domain modules are imported, not exec'd from source")
+    assert '"ARCHETYPES":' not in downstream, (
+        "ARCHETYPES comes from the module; a literal here is a second "
+        "copy that drifts without saying so")
+
+
 # ------------------------------------------------------- efficiency and yield
 def test_a_domain_inherits_what_earlier_domains_found():
     """The largest waste in the build. Every domain call started from nothing

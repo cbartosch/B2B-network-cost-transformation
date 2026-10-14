@@ -9,11 +9,16 @@ the model does not declare, a required field left null, an enum value outside
 its set - without pretending to be pydantic.
 
 Everything downstream is the real code: triangulate, reliability and the
-promotion classifier are pure Python and are imported and run, not simulated.
+promotion classifier are imported and run, not simulated. That sentence
+was here before it was true - they were read as text, stripped of their
+imports and exec'd in a namespace assembled by hand, which among other
+things supplied five of the fifteen archetypes. See _domain.
+
 The evidence blob each domain would store is JSON-serialised at the end,
 because that is where two releases died.
 """
 import ast
+import importlib
 import json
 import pathlib
 import re
@@ -87,49 +92,63 @@ def validate(model_name, payload, path="") -> None:
 
 
 # ------------------------------------------------------- downstream, for real
+#: Both roots: `app` lives under api_service, and `contract` - which the
+#: domain modules import - sits beside it at the repository root. The
+#: existing line supplied only the first, which is why nobody could import
+#: these and the namespace was assembled by hand instead.
 sys.path.insert(0, str(APP.parent))
+sys.path.insert(0, str(ROOT))
 
 
-def _load(module):
-    """Import a pure-Python domain module without its package."""
-    src = (APP / "domain" / f"{module}.py").read_text()
-    ns = {"Decimal": D, "statistics": __import__("statistics"),
-          "uuid": __import__("uuid"), "re": re, "D": lambda v: D(str(v))}
-    body = src[src.index("\n\n", src.index('"""', src.index('"""') + 3)):]
-    body = "\n".join(l for l in body.splitlines()
-                     if not l.startswith(("from ", "import ")))
-    exec(body, ns)
-    return ns
+def _domain(module):
+    """A domain module, imported.
+
+    These used to be read as text, stripped of their import lines and
+    exec'd in a namespace assembled by hand, on the reasoning that a pure-
+    Python module can be lifted out of its package. It can, until it
+    cannot, and both ways it fails are quiet:
+
+    The namespace has to be guessed. Every module the lifted code imports
+    has to be handed to it, so the harness broke when promotion.py grew a
+    regex - "name 're' is not defined", on the first domain, in a tool
+    whose job is to notice breakage. A comment recorded the previous one,
+    a slice that started below a function the classifier calls.
+
+    The constants have to be guessed too, and that one was waiting.
+    ARCHETYPES was supplied as a five-member set; the real one has
+    fifteen and is a class rather than a literal. No fixture below
+    happens to use the missing ten - they are all BRANCH, DC,
+    LARGE_OFFICE or STORE - so the routing column was right, by
+    coincidence rather than by construction. The first fixture naming a
+    PLANT or a TERMINAL would have read `unclassified` here and
+    `footprint` everywhere else, and a harness that is accidentally
+    correct reports nothing when it stops being so.
+
+    pydantic is genuinely absent from this sandbox and the schema models
+    above are genuinely reconstructed from the AST. Nothing of the sort
+    was ever true of these: api_service is already on sys.path two lines
+    above, and has been the whole time.
+    """
+    try:
+        return importlib.import_module(f"app.domain.{module}")
+    except ImportError as exc:                      # pragma: no cover
+        # Said out loud rather than fallen back from. A harness quietly
+        # checking a reconstruction of the code instead of the code is
+        # the failure this function exists to end.
+        raise SystemExit(
+            f"verify_domains needs app.domain.{module} and could not "
+            f"import it ({exc}). Run it where the application runs - "
+            f"`make test-all`, or python tools/verify_domains.py inside "
+            f"the api container - not on the host.") from exc
 
 
-TRI = _load("triangulate")
-REL = _load("reliability")
+TRI = _domain("triangulate")
+REL = _domain("reliability")
+PROMOTION = _domain("promotion")
 
 POLICY = types.SimpleNamespace(
     material_spread_share=D("0.15"), stale_after_years=3,
     min_independent_sources_material_fact=2)
-
-
-def _classify(q):
-    """The real classifier, with its module constants supplied."""
-    src = (APP / "domain" / "promotion.py").read_text()
-    ns = {"triangulate": types.SimpleNamespace(parse_value=TRI["parse_value"]),
-          # The slice is executed in a bare namespace, so every module the
-          # sliced code uses has to be handed to it. The delta-and-closure
-          # gate compiles a regex at import time and this died on the first
-          # domain with "name 're' is not defined" - the same class of
-          # breakage the comment below records, one import along.
-          "re": re,
-          "ARCHETYPES": {"BRANCH", "STORE", "WAREHOUSE", "LARGE_OFFICE", "DC"},
-          "PRODUCTS": {"DIA", "MPLS", "ETHERNET", "BROADBAND_HFC",
-                       "BROADBAND_PON", "MOBILE_5G"}}
-    # From ARCHETYPE_FIELDS, not from def _classify: the classifier now calls
-    # archetype_field, which is declared above it. Slicing from the narrower
-    # point left that undefined and the harness died on the first domain -
-    # a harness that breaks when the code it checks is extended is worse than
-    # none, because it stops being run.
-    exec(src[src.index("ARCHETYPE_FIELDS = {"):src.index("def candidates")], ns)
-    return ns["_classify"](q)
 
 
 # ------------------------------------------------------------- the 17 domains
@@ -239,19 +258,19 @@ def main() -> int:
             print(f"{no:>3}  {name:34} {'REJECT':8} {'-':14} {'-':18} -")
             continue
 
-        banded = TRI["triangulate"](quantities, policy=POLICY, price_year=2026)
-        graded = REL["grade"](
+        banded = TRI.triangulate(quantities, policy=POLICY, price_year=2026)
+        graded = REL.grade(
             verified_sources=sources, claimed_sources=len(sources),
             band=banded[0] if banded else None, policy=POLICY,
             price_year=2026,
             value_parsed=bool([q for q in quantities
-                               if TRI["parse_value"](q["value"]) is not None]))
-        disposition, reason = REL["disposition_for"](graded["grade"])
-        routing = sorted({_classify(q) for q in quantities}) or ["-"]
+                               if TRI.parse_value(q["value"]) is not None]))
+        disposition, reason = REL.disposition_for(graded["grade"])
+        routing = sorted({PROMOTION._classify(q) for q in quantities}) or ["-"]
 
         blob = {"sources": sources, "quantities": quantities,
                 "triangulated": banded,
-                "conflicts": TRI["review_queue"](banded),
+                "conflicts": TRI.review_queue(banded),
                 "reliability": graded}
         try:
             json.dumps(blob)
