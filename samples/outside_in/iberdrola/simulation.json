@@ -1,13 +1,13 @@
 {
-  "simulation_run_id": "27d8899b-6f79-4eab-b8ab-dde8545439d3",
+  "simulation_run_id": "ec1557fc-e105-4640-9f49-48ead7ba5a5c",
   "case_id": "2ad772a6-f0e2-424e-8fc1-75ded97aad7f",
   "model_version": "sim-2.7.0",
   "seed": 20260101,
   "ensemble_size": 25,
   "status": "SUCCEEDED",
-  "output_hash": "2585dc17b1d69db5e6525fe2cc80a1098c803b520e3433eb7fbcf477e9a9ee28",
-  "started_at": "2026-10-13 15:09:01.852334+00:00",
-  "ended_at": "2026-10-13 15:09:05.760525+00:00",
+  "output_hash": "e207e30356a5c090d3242a7bb4cdaff8e3cfaa0d95ec33200d0a6010c0f46039",
+  "started_at": "2026-10-14 17:15:12.304834+00:00",
+  "ended_at": "2026-10-14 17:15:13.694782+00:00",
   "params": {
     "footprint": [
       {
@@ -41,6 +41,14 @@
         "industry": null,
         "count_source": null,
         "density": "RURAL"
+      },
+      {
+        "country": "GB",
+        "archetype": "DC",
+        "sites": 1,
+        "industry": null,
+        "count_source": null,
+        "density": "URBAN"
       },
       {
         "country": "GB",
@@ -102,7 +110,8 @@
         ]
       },
       "hub_regions": [
-        "EUROPE_SOUTH"
+        "EUROPE_SOUTH",
+        "EUROPE_WEST"
       ],
       "links": [
         {
@@ -113,11 +122,38 @@
           "bandwidth_mbps": 10000,
           "dual": true,
           "note": "4 data centre(s) in EUROPE_SOUTH to the EUROPE_SOUTH hub"
+        },
+        {
+          "tier": "DC_TO_REGION",
+          "region": "EUROPE_WEST",
+          "count": 1,
+          "product": "ETHERNET",
+          "bandwidth_mbps": 10000,
+          "dual": true,
+          "note": "1 data centre(s) in EUROPE_WEST to the EUROPE_WEST hub"
+        },
+        {
+          "tier": "REGION_TO_CORE",
+          "region": "EUROPE_SOUTH",
+          "count": 1,
+          "product": "ETHERNET",
+          "bandwidth_mbps": 10000,
+          "dual": true,
+          "note": "EUROPE_SOUTH hub to the global core"
+        },
+        {
+          "tier": "REGION_TO_CORE",
+          "region": "EUROPE_WEST",
+          "count": 1,
+          "product": "ETHERNET",
+          "bandwidth_mbps": 10000,
+          "dual": true,
+          "note": "EUROPE_WEST hub to the global core"
         }
       ],
       "unmapped_countries": [],
-      "backbone_circuits": 8,
-      "note": "One region with data centres (EUROPE_SOUTH), so there is no global core tier - a hub has nothing to reach across."
+      "backbone_circuits": 14,
+      "note": ""
     },
     "site_rule": {
       "basis": null,
@@ -1298,7 +1334,8 @@
         ]
       },
       "hub_regions": [
-        "EUROPE_SOUTH"
+        "EUROPE_SOUTH",
+        "EUROPE_WEST"
       ],
       "links": [
         {
@@ -1309,22 +1346,49 @@
           "bandwidth_mbps": 10000,
           "dual": true,
           "note": "4 data centre(s) in EUROPE_SOUTH to the EUROPE_SOUTH hub"
+        },
+        {
+          "tier": "DC_TO_REGION",
+          "region": "EUROPE_WEST",
+          "count": 1,
+          "product": "ETHERNET",
+          "bandwidth_mbps": 10000,
+          "dual": true,
+          "note": "1 data centre(s) in EUROPE_WEST to the EUROPE_WEST hub"
+        },
+        {
+          "tier": "REGION_TO_CORE",
+          "region": "EUROPE_SOUTH",
+          "count": 1,
+          "product": "ETHERNET",
+          "bandwidth_mbps": 10000,
+          "dual": true,
+          "note": "EUROPE_SOUTH hub to the global core"
+        },
+        {
+          "tier": "REGION_TO_CORE",
+          "region": "EUROPE_WEST",
+          "count": 1,
+          "product": "ETHERNET",
+          "bandwidth_mbps": 10000,
+          "dual": true,
+          "note": "EUROPE_WEST hub to the global core"
         }
       ],
       "unmapped_countries": [],
-      "backbone_circuits": 8,
-      "note": "One region with data centres (EUROPE_SOUTH), so there is no global core tier - a hub has nothing to reach across."
+      "backbone_circuits": 14,
+      "note": ""
     }
   },
   "output": {
     "model_version": "sim-2.7.0",
     "seed": 20260101,
     "ensemble_size": 25,
-    "sites": 2786,
+    "sites": 2787,
     "serviceability": {
       "counts": {
         "DELIVERED": 2772,
-        "SUBSTITUTED": 14,
+        "SUBSTITUTED": 15,
         "UNSERVICEABLE": 0
       },
       "substitutions": [
@@ -1333,6 +1397,12 @@
           "delivered": "ETHERNET",
           "bandwidth_mbps": 500,
           "sites": 14
+        },
+        {
+          "asked_for": "ETHERNET",
+          "delivered": "ETHERNET",
+          "bandwidth_mbps": 1000,
+          "sites": 1
         }
       ],
       "by_access_technology": [
@@ -1342,11 +1412,11 @@
         },
         {
           "access_technology": "ETHERNET_FIBRE",
-          "sites": 31
+          "sites": 32
         }
       ],
       "unserviceable": 0,
-      "note": "14 of 2786 site(s) take a different product or tier from the one their type asks for, and 0 can be served by nothing at all. 31 of 2786 are delivered over a bearer other than PON (31 on ETHERNET_FIBRE), which is a different circuit at a different rate. A uniform estate is an assumption; this is what the density bands say about it.",
+      "note": "15 of 2787 site(s) take a different product or tier from the one their type asks for, and 0 can be served by nothing at all. 32 of 2787 are delivered over a bearer other than PON (32 on ETHERNET_FIBRE), which is a different circuit at a different rate. A uniform estate is an assumption; this is what the density bands say about it.",
       "table_rows": 34,
       "table_basis": "GOVERNED"
     },
@@ -1504,23 +1574,31 @@
         "density": "SUBURBAN",
         "asked_for": "ETHERNET",
         "reason": "the only backup deliverable in SUBURBAN ES is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "GB",
+        "archetype": "DC",
+        "density": "URBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in URBAN GB is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
       }
     ],
     "estate_truncated": 0,
     "sites_named": 0,
-    "sites_generated": 2786,
+    "sites_generated": 2787,
     "circuits": {
-      "low": 3629,
-      "base": 3656,
-      "high": 3683
+      "low": 3638,
+      "base": 3663,
+      "high": 3690
     },
     "circuits_primary": {
-      "low": 2786,
-      "base": 2786,
-      "high": 2786
+      "low": 2787,
+      "base": 2787,
+      "high": 2787
     },
     "circuits_backup": {
-      "low": 835,
+      "low": 837,
       "base": 862,
       "high": 889
     },
@@ -1585,7 +1663,7 @@
         "product": "MOBILE_5G",
         "role": "BACKUP",
         "bandwidth_mbps": 100,
-        "count": 554,
+        "count": 532,
         "service_class": "BEST_EFFORT",
         "density": "RURAL",
         "bearer_mbps": 100,
@@ -1596,7 +1674,18 @@
         "product": "ETHERNET",
         "role": "BACKBONE",
         "bandwidth_mbps": 10000,
-        "count": 8,
+        "count": 10,
+        "service_class": "ETHERNET",
+        "density": null,
+        "bearer_mbps": 10000,
+        "access_technology": "ETHERNET_FIBRE"
+      },
+      {
+        "country": "EUROPE_WEST",
+        "product": "ETHERNET",
+        "role": "BACKBONE",
+        "bandwidth_mbps": 10000,
+        "count": 4,
         "service_class": "ETHERNET",
         "density": null,
         "bearer_mbps": 10000,
@@ -1618,7 +1707,7 @@
         "product": "BROADBAND_PON",
         "role": "BACKUP",
         "bandwidth_mbps": 1000,
-        "count": 14,
+        "count": 17,
         "service_class": "BEST_EFFORT",
         "density": "URBAN",
         "bearer_mbps": 1000,
@@ -1629,7 +1718,7 @@
         "product": "BROADBAND_PON",
         "role": "BACKUP",
         "bandwidth_mbps": 300,
-        "count": 13,
+        "count": 10,
         "service_class": "BEST_EFFORT",
         "density": "SUBURBAN",
         "bearer_mbps": 300,
@@ -1662,6 +1751,17 @@
         "product": "ETHERNET",
         "role": "PRIMARY",
         "bandwidth_mbps": 300,
+        "count": 1,
+        "service_class": "ETHERNET",
+        "density": "URBAN",
+        "bearer_mbps": 1000,
+        "access_technology": "ETHERNET_FIBRE"
+      },
+      {
+        "country": "GB",
+        "product": "ETHERNET",
+        "role": "PRIMARY",
+        "bandwidth_mbps": 300,
         "count": 14,
         "service_class": "ETHERNET",
         "density": "SUBURBAN",
@@ -1684,7 +1784,7 @@
         "product": "MOBILE_5G",
         "role": "BACKUP",
         "bandwidth_mbps": 100,
-        "count": 253,
+        "count": 275,
         "service_class": "BEST_EFFORT",
         "density": "RURAL",
         "bearer_mbps": 100,
@@ -1692,12 +1792,12 @@
       }
     ],
     "dual_access_sites": {
-      "low": 835,
+      "low": 837,
       "base": 862,
       "high": 889
     },
-    "circuits_backbone": 8,
-    "circuits_per_site_base": 1.3123,
+    "circuits_backbone": 14,
+    "circuits_per_site_base": 1.3143,
     "implied_users": 23700,
     "bandwidth_profile": {
       "CONTROL_CENTER": {
@@ -1706,9 +1806,9 @@
         "mbps_total": 77000
       },
       "DC": {
-        "sites": 4,
+        "sites": 5,
         "mbps_per_site": 10000,
-        "mbps_total": 40000
+        "mbps_total": 50000
       },
       "LARGE_OFFICE": {
         "sites": 20,
@@ -1731,7 +1831,7 @@
         "mbps_total": 1700
       }
     },
-    "bandwidth_mbps_total": 448700,
+    "bandwidth_mbps_total": 458700,
     "diversity_state": "SIMULATED",
     "backbone": {
       "template_version": "1.0.0",
@@ -1744,7 +1844,8 @@
         ]
       },
       "hub_regions": [
-        "EUROPE_SOUTH"
+        "EUROPE_SOUTH",
+        "EUROPE_WEST"
       ],
       "links": [
         {
@@ -1755,18 +1856,45 @@
           "bandwidth_mbps": 10000,
           "dual": true,
           "note": "4 data centre(s) in EUROPE_SOUTH to the EUROPE_SOUTH hub"
+        },
+        {
+          "tier": "DC_TO_REGION",
+          "region": "EUROPE_WEST",
+          "count": 1,
+          "product": "ETHERNET",
+          "bandwidth_mbps": 10000,
+          "dual": true,
+          "note": "1 data centre(s) in EUROPE_WEST to the EUROPE_WEST hub"
+        },
+        {
+          "tier": "REGION_TO_CORE",
+          "region": "EUROPE_SOUTH",
+          "count": 1,
+          "product": "ETHERNET",
+          "bandwidth_mbps": 10000,
+          "dual": true,
+          "note": "EUROPE_SOUTH hub to the global core"
+        },
+        {
+          "tier": "REGION_TO_CORE",
+          "region": "EUROPE_WEST",
+          "count": 1,
+          "product": "ETHERNET",
+          "bandwidth_mbps": 10000,
+          "dual": true,
+          "note": "EUROPE_WEST hub to the global core"
         }
       ],
       "unmapped_countries": [],
-      "backbone_circuits": 8,
-      "note": "One region with data centres (EUROPE_SOUTH), so there is no global core tier - a hub has nothing to reach across."
+      "backbone_circuits": 14,
+      "note": ""
     },
-    "node_count": 2786,
-    "edge_count": 3656
+    "node_count": 2787,
+    "edge_count": 3663
   },
   "output_omitted": {
     "fields": [
-      "estate (2786 rows)",
+      "estate (2787 rows)",
       "sample_topology (2 rows)"
     ],
     "why": "per-site arrays, the same information the aggregates carry; tools/backfill_simulation.py --full keeps them"

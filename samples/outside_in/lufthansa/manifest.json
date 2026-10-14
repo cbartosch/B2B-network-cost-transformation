@@ -15,8 +15,8 @@
   ],
   "base_currency": "EUR",
   "case_id": "f29aa37f-2c3f-476f-8176-b4704fe1d6c6",
-  "spec_path": "/tmp/companies_fixed.json",
-  "spec_sha256": "2e45939dbcdb",
+  "spec_path": "/tmp/companies.json",
+  "spec_sha256": "a30ce5addcbe",
   "entity_resolution": {
     "resolved": null,
     "resumed": true
@@ -85,15 +85,16 @@
       "archetype": "REMOTE_SITE",
       "sites": 120,
       "density": "SUBURBAN"
-    },
+    }
+  ],
+  "footprint_provenance": [
     {
       "country": "DE",
       "archetype": "WAREHOUSE",
       "sites": 5,
-      "density": null
-    }
-  ],
-  "footprint_provenance": [
+      "origin": "EXCLUDED_BY_SCOPE",
+      "reason": "the five comes from an apprenticeship announcement - 287 apprentices across five German facilities - which counts sites taking apprentices rather than sites. The group reports 34 facilities worldwide with no German split."
+    },
     {
       "country": "AT",
       "archetype": "LARGE_OFFICE",
@@ -148,13 +149,6 @@
       "density": "SUBURBAN"
     },
     {
-      "country": "DE",
-      "archetype": "WAREHOUSE",
-      "sites": 5,
-      "origin": "RESEARCHED",
-      "density": null
-    },
-    {
       "origin": "DENSITY_FROM_MIX",
       "rows": 2,
       "sites": 5,
@@ -181,15 +175,6 @@
         }
       ],
       "note": "the count and the site type are evidenced; the band is a governed sector default from reference.density_mix, not a finding about this client. It decides which bearers are tested, so it is worth replacing with what the client actually has."
-    },
-    {
-      "origin": "NO_DENSITY_BAND",
-      "rows": 1,
-      "sites": 5,
-      "reasons": {
-        "WAREHOUSE": "no governed band mix for WAREHOUSE in AIRLINES, so the band is left unknown - borrowing another site type's bands would re-price these 5 sites against a shape nobody established for them"
-      },
-      "note": "these rows carry no density band, so serviceability cannot be resolved for them and their sites are treated as deliverable. The sector mix has no row for their site type, and another type's bands are not borrowed."
     }
   ],
   "scope_countries_modelled": [
@@ -204,7 +189,7 @@
     "DC": "ASSUMED_PUBLIC_DISCLOSURE",
     "LARGE_OFFICE": "RESEARCHED",
     "REMOTE_SITE": "ASSUMED_PUBLIC_DISCLOSURE",
-    "WAREHOUSE": "RESEARCHED"
+    "WAREHOUSE": "ASSUMED_PUBLIC_DISCLOSURE"
   },
   "fx_to_eur": {
     "rate": "1.0",
@@ -257,13 +242,13 @@
   ],
   "estimate_inputs": {
     "method": "BUILD_UP",
-    "users": 2676,
+    "users": 2616,
     "ops_cost_per_site_base": 900,
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-13T15:09:19.011572+00:00",
-  "run_seconds": 3.3,
+  "run_started": "2026-10-14T18:06:30.188025+00:00",
+  "run_seconds": 2.5,
   "preflight_conditions": 8,
   "promotion": {
     "promoted": true,

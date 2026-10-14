@@ -27,6 +27,7 @@ Every promoted row carries the agent_run_id that produced it, so the chain
 from a number in the estimate back through the disposition, the provider call,
 its liveness proof and the fetched source fragment stays unbroken.
 """
+import re
 import uuid
 from datetime import datetime, timezone
 
@@ -143,6 +144,37 @@ def _triangulated_index(evidence: dict) -> dict:
     return out
 
 
+def _quantity_sources(q: dict) -> list[str]:
+    """The URLs behind THIS quantity, in the order the agent ranked them.
+
+    Every promoted row used to carry the whole research domain's source
+    pool - `evidence.sources`, which is what the agent read across all of
+    its findings - so a site count and a revenue figure from the same
+    domain cited the same seven or eight documents. Nestle's French office
+    row cited a swissinfo piece about a German factory closing. The list
+    was not wrong, it just did not answer the question anyone asks of it:
+    which document says this number?
+
+    A candidate does answer it. Across the published set the pool averages
+    7.7 URLs and a quantity's own candidates average 1.8.
+
+    A finding with no candidate URL cites nothing, and that is recorded
+    rather than papered over with the pool - those findings are structural
+    ("DE, FR and IT are all eurozone, so EUR/EUR is 1.0"), derived ("3% of
+    FY2024 net sales"), or an explicit negative ("no public evidence of an
+    Inditex DC in France"). None of them has a document behind it, and
+    lending them the pool's would make them look sourced.
+    """
+    out = []
+    for c in (q.get("candidates") or []):
+        if not isinstance(c, dict):
+            continue
+        url = str(c.get("source_url") or "").strip()
+        if url and url not in out:
+            out.append(url)
+    return out
+
+
 def _quantities_for_case(session, case_id: str) -> list[dict]:
     """Every researched quantity on this case, with the disposition and agent
     run that produced it."""
@@ -166,8 +198,9 @@ def _quantities_for_case(session, case_id: str) -> list[dict]:
                 "reliability": (evidence or {}).get("reliability"),
                 "domain_no": r.domain_no, "domain_name": r.domain_name,
                 "disposition": r.disposition, "agent_run_id": r.agent_run_id,
-                "sources": [s.get("url") for s in (evidence.get("sources") or [])
-                            if isinstance(s, dict)],
+                # This quantity's own citation, not the domain's pool. See
+                # _quantity_sources for what the pool cost a reader.
+                "sources": _quantity_sources(q),
                 "quantity": q,
             })
     return out
@@ -345,6 +378,14 @@ def is_premises_unit(unit) -> bool:
     # cannot be rescued by a premises noun sitting beside it.
     if any(w in NOT_PREMISES for w in words):
         return False
+    # "X per Y" and "X/Y" are ratios, and a premises noun in the
+    # DENOMINATOR makes it a measure per site rather than a count of
+    # sites. BNP's "internet access lines per branch" is 1, and reading
+    # the branch as the thing being counted put a single French branch
+    # into the estate beside the 1,600 declared.
+    numerator = re.split(r"\s+per\s+|/", text, maxsplit=1)[0]
+    words = [_singular(w) for w in "".join(
+        ch if ch.isalpha() else " " for ch in numerator).split() if w]
     return any(w in PREMISES_UNITS for w in words)
 
 
@@ -395,14 +436,107 @@ def product_in(label) -> str | None:
     return next(iter(found)) if len(found) == 1 else None
 
 
+#: Label wording that marks a finding as a CHANGE rather than a COUNT.
+#:
+#: The gate that lets archetype_of read past the leading token. Research
+#: writes both "FR production sites (PLANT-type)" and "DE net PLANT site
+#: closures announced 2025", and only the first is an estate. Without this,
+#: reading an archetype from anywhere in the label admits 45 findings across
+#: the sample set of which most are movements: "Net store change - Spain
+#: (ES) FY2025" at MINUS 62, "Total branch closings since January 2020" at
+#: 91, a planned DC at London Gateway, and "Kelsterbach DC building -
+#: sold/exited, lease expiry" at 2025 - a year read as a site count.
+#:
+#: Matched on the label because that is where research says what it counted.
+#: The unit gate cannot help: these say "sites", "sites opening", "branches
+#: closed", and NOT_YET_BUILT keeps "opened" deliberately as a count of
+#: things that exist, which is right for a unit and wrong for these labels.
+#: Not "consolidation": Iberdrola's Glasgow DC is labelled
+#: "post-consolidation" and is the site that survived one, while its
+#: Cathcart DC is "pre-consolidation, decommissioned 2017" and is not a
+#: site at all. The word marks the event, and only the qualifier says
+#: which side of it the row sits on - so the end states are matched
+#: instead.
+NOT_A_COUNT = re.compile(
+    r"\b(net|new|closur\w*|closing\w*|closed|open(?:ing\w*|ed)|planned"
+    r"|proposed|at[-\s]risk|relocat\w*|exit\w*|expiry|decommission\w*"
+    r"|cessation|ceased|completed|reduction|movement|transferred|proxy"
+    r"|divest\w*|pipeline"
+    # A vendor's contract scope is not an estate. BNP's "retail branch
+    # sites covered by OBS SD-WAN deployment" is 1,800 from a 2021 Orange
+    # press release; BNP's own registration document says 1,474 French
+    # branches and it is closing about 500 more by 2030. Promoting the
+    # deployment count raised the estate above both the declaration and
+    # the company's own figure.
+    r"|covered|deployment|rollout|contract)\b",
+    re.IGNORECASE)
+
+#: A mention that denies the archetype rather than counting it.
+#:
+#: Shell's "R&D centre - Germany (smaller specialised centre, no DC
+#: co-location)" names DC only to say there is not one. Reading an archetype
+#: from anywhere in a label makes a negated mention look like a finding.
+_NEGATED = ("NO", "NOT", "WITHOUT", "NEITHER", "ZERO")
+
+
+def archetypes_named(label) -> list:
+    """Every archetype this label names, in order, without repeats."""
+    out = []
+    for word in re.split(r"[^A-Za-z_]+", str(label or "").upper()):
+        if word in ARCHETYPES and word not in out:
+            out.append(word)
+    return out
+
+
+def names_a_change(label) -> bool:
+    """Does this label describe a movement rather than an estate?
+
+    A NEGATED movement is not one. Volkswagen's "ES active PLANT count
+    (SEAT/CUPRA Martorell + Pamplona) - no closures imminent" is a count
+    of two plants that says nothing is closing, and reading the word
+    "closures" alone threw away the figure for the reassurance attached
+    to it.
+    """
+    text = str(label or "")
+    for m in NOT_A_COUNT.finditer(text):
+        before = re.split(r"[^A-Za-z_]+", text[:m.start()].upper())
+        before = [w for w in before if w]
+        if before and before[-1] in _NEGATED:
+            continue
+        return True
+    return False
+
+
+def _negated(label, archetype: str) -> bool:
+    """Is the archetype named only to deny it?"""
+    words = [w for w in re.split(r"[^A-Za-z_]+", str(label or "").upper()) if w]
+    return any(words[i - 1] in _NEGATED
+               for i, w in enumerate(words) if w == archetype and i)
+
+
 def archetype_of(label) -> str:
-    """The archetype a finding's label names: its leading token.
+    """The archetype a finding's label names.
+
+    Its leading token, unless the label names exactly one archetype
+    somewhere else - "FR production sites (PLANT-type)" is PLANT, and
+    reading only the leading token made it "FR" and lost Nestle's French
+    plant count entirely.
+
+    Falls back to the leading token when the label names SEVERAL, which
+    keeps the existing refusal of "WAREHOUSE/BRANCH - ..." and
+    "LARGE_OFFICE+PLANT+BRANCH - ...": those name two or three archetypes
+    and there is nothing to key a single row on. The fallback is not in
+    ARCHETYPES for such a label, so _classify declines it as before.
 
     The one place that decides this, because _classify matching on one thing
     and promote() storing another is how a 56-character description ended up
     being written into archetype varchar(48).
     """
-    return (str(label or "").strip().upper().split() or [""])[0]
+    head = (str(label or "").strip().upper().split() or [""])[0]
+    if head in ARCHETYPES:
+        return head
+    named = archetypes_named(label)
+    return named[0] if len(named) == 1 else head
 
 
 def _classify(q: dict) -> str:
@@ -452,6 +586,12 @@ def _classify(q: dict) -> str:
     # person disposes, so widening this cannot put a number into an estimate
     # on its own.
     head = archetype_of(label)
+    # A movement is not an estate, and a denial is not a finding. Both are
+    # read off the label, which is the only place that distinguishes "FR
+    # production sites (PLANT-type)" from "DE net PLANT site closures
+    # announced 2025" - the units are "sites" either way.
+    if head in ARCHETYPES and (names_a_change(label) or _negated(label, head)):
+        return "unclassified"
     if head in ARCHETYPES and len(country) == 2 and (
             is_premises_unit(unit)
             or (head == "ATM" and names_standalone_atms(label, unit))):
@@ -612,8 +752,8 @@ def compare_to_benchmark(session, *, country: str, product: str, value: float,
     }
 
 
-def _one_row_per_pair(entries: list) -> tuple:
-    """One footprint row per (country, archetype): the largest.
+def _one_row_per_pair(entries: list, *, accept_conflicts: bool = False) -> tuple:
+    """One footprint row per (country, archetype): the largest PROMOTABLE one.
 
     evidenced_footprint holds one row per pair - promote deletes and
     reinserts - so when several candidates share a pair, write order decided
@@ -637,10 +777,27 @@ def _one_row_per_pair(entries: list) -> tuple:
     partition with no total, and summing one of these double-counts the same
     sites under two descriptions.
 
+    LARGEST AMONG THOSE THE CONFLICT GATE WILL ACCEPT, because this used to
+    run before that gate and the two together could lose a usable row.
+    Nestle's French plants: research returned a conflicted 13-18 band and a
+    clean single-source 12. The 18 won the pair, the gate below then refused
+    it on a 38% spread, and the 12 had already been discarded as superseded
+    - so the pair ended up empty and the declared 28 stood unchallenged, an
+    apportionment of a group total that every source which looked came in
+    below.
+
+    Falling back to the largest overall when nothing is promotable, so a
+    wholly conflicted pair still reaches the gate and is still refused out
+    loud rather than vanishing here without a record.
+
     What is displaced is returned, not dropped: the alternatives research
     found are part of what it found.
     """
     import collections
+
+    def promotable(e) -> bool:
+        return accept_conflicts or not (e.get("band") or {}).get(
+            "review_required")
 
     by_pair, out, superseded = collections.defaultdict(list), [], []
     for e in entries:
@@ -653,15 +810,25 @@ def _one_row_per_pair(entries: list) -> tuple:
 
     for (country, archetype), group in sorted(by_pair.items()):
         group.sort(key=lambda e: _sites_from(e["quantity"]) or 0)
-        winner = group[-1]
+        usable = [e for e in group if promotable(e)]
+        winner = (usable or group)[-1]
         out.append(winner)
         if len(group) == 1:
             continue
         kept = _sites_from(winner["quantity"]) or 0
-        rest = [(_sites_from(e["quantity"]) or 0) for e in group[:-1]]
+        rest = [(_sites_from(e["quantity"]) or 0)
+                for e in group if e is not winner]
         superseded.append({
             "country": country, "archetype": archetype,
             "kept": kept, "also_found": sorted(rest),
+            # Larger figures passed over because the gate would refuse them.
+            # Worth naming: the pair is carrying a smaller number than
+            # research's highest, and the reason is a conflict rather than
+            # a judgement that the bigger figure was wrong.
+            "larger_but_conflicted": sorted(
+                v for v, e in ((_sites_from(e["quantity"]) or 0, e)
+                               for e in group)
+                if e is not winner and not promotable(e) and v > kept),
             # A genuine disjoint partition - several regions and no total -
             # is the one shape where the largest undercounts. Nothing in the
             # sample looks like it (the closest is 1.07x), so it is reported
@@ -695,7 +862,8 @@ def promote(session, *, case_id: str, candidate_ids: list[str],
     now = datetime.now(timezone.utc)
     promoted_footprint, proposed_prices, declined = [], [], []
     promoted_archetype, promoted_anchor = [], []
-    entries, superseded = _one_row_per_pair(entries)
+    entries, superseded = _one_row_per_pair(
+        entries, accept_conflicts=accept_conflicts)
 
     for e in entries:
         q, target = e["quantity"], _classify(e["quantity"])
@@ -707,12 +875,30 @@ def promote(session, *, case_id: str, candidate_ids: list[str],
             # is the outcome conflict retention exists to prevent. The
             # promotion is refused with the spread named; an analyst who has
             # looked and decided can pass accept_conflicts.
+            # Name the finding and the reason it actually failed.
+            #
+            # This said "sources disagree by {spread}" whatever the flag
+            # was, and review_required fires on three of them. Nestle's
+            # German plant count is a UNIT_MISMATCH between two sources
+            # both stating 12, so the refusal read "sources disagree by 0%
+            # (12 to 12)" - a sentence that invites an analyst to dismiss
+            # it as noise. It also named no label and no country, so a
+            # reader could not tell which of eleven findings was refused.
+            why = {
+                "MATERIAL_SPREAD": (
+                    f"sources disagree by {band.get('spread_share', 0):.0%} "
+                    f"({band.get('low')} to {band.get('high')})"),
+                "UNIT_MISMATCH": "sources state this in units that disagree",
+                "NEWEST_DIVERGES": ("the newest source diverges from the "
+                                    "others"),
+            }
+            fired = [f for f in (band.get("flags") or []) if f in why]
             declined.append({
                 "candidate_id": e["candidate_id"],
-                "reason": (f"sources disagree by "
-                           f"{band.get('spread_share', 0):.0%} "
-                           f"({band.get('low')} to {band.get('high')}) and the "
-                           f"conflict has not been reviewed. Look at it and "
+                "label": q.get("label"), "country": q.get("country"),
+                "flags": fired,
+                "reason": (f"{'; '.join(why[f] for f in fired) or 'the band is marked for review'}"
+                           f", and this has not been reviewed. Look at it and "
                            f"promote with accept_conflicts, or research the "
                            f"domain again.")})
             continue

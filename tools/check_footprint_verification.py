@@ -19,8 +19,10 @@ no entry, which is the true state and the useful thing to see.
 """
 import argparse
 import csv
+import datetime
 import json
 import pathlib
+import re
 import sys
 
 REGISTER = pathlib.Path("samples") / "verification_register.csv"
@@ -115,6 +117,15 @@ def changes(outdir: pathlib.Path, spec_path: pathlib.Path) -> list:
 DISQUALIFYING = (
     "divest", "sold to", "disposed", "no longer", "franchis", "licensee",
     "partner-operated", "third-party", "not operated", "customer location",
+    # A room of equipment inside a building the company already occupies.
+    # Tesco's Irish DC was one: "Smart Hands call-outs to satellite IT rooms
+    # in Slough, Dundee, and Dublin", promoted as a site at DC bandwidth.
+    # The unit gate cannot catch these - the unit says "sites" and the
+    # disqualification is in the label, which is the same shape as DIVESTED.
+    # Matched as "it room" rather than "room" or "satellite", both of which
+    # have legitimate premises in this set: Accor counts hotel rooms and
+    # Simmons Bank has a West Little Rock satellite OFFICE.
+    "it room",
 )
 
 
@@ -155,6 +166,213 @@ def label_warnings(outdir: pathlib.Path) -> list:
                                 "archetype": key[1], "marker": hit,
                                 "label": label})
     return out
+
+
+#: How old a footprint figure can be before its age is worth reporting.
+#:
+#: There is no equivalent of a price's `expires` for a site count: as_of is
+#: recorded on every promoted row and nothing reads it, so a count from 2002
+#: contributes exactly as one from 2026 and the estimate says nothing. Three
+#: years is one reporting cycle plus a margin - old enough that a restructure
+#: or a disposal would usually have happened, recent enough not to flag a
+#: stable estate every run.
+STALE_YEARS = 3
+
+
+def dated_changes(outdir: pathlib.Path, spec_path: pathlib.Path,
+                  as_of_year: int) -> tuple:
+    """(stale, undated) - changes too old to trust, and changes with no date.
+
+    An undated row is the worse of the two and the easier to miss: with no
+    as_of there is no age to compare, so a staleness check that skipped it
+    would report a clean bill on the one row it could say least about.
+    """
+    stale, undated = [], []
+    for change in changes(outdir, spec_path):
+        res = outdir / change["slug"] / "research.json"
+        if not res.exists():
+            continue
+        r = json.loads(res.read_text("utf-8"))
+        row = next((e for e in (r.get("evidenced_footprint") or [])
+                    if e.get("country") == change["country"]
+                    and e.get("archetype") == change["archetype"]), None)
+        raw = str((row or {}).get("as_of") or "")
+        # Not every date is an ISO date. Research writes fiscal years too -
+        # "FY2025", "FY2026 (Aug 2025 - Aug 2026)" - and reading the first
+        # four characters called both of those undated, which would have
+        # buried two real dates in the list of rows that have none.
+        year = re.search(r"(19|20)\d{2}", raw)
+        if not year:
+            if row is not None:
+                undated.append({**change, "as_of": raw or "(none)"})
+            continue
+        age = as_of_year - int(year.group(0))
+        if age >= STALE_YEARS:
+            stale.append({**change, "as_of": raw[:10], "age": age})
+    return (sorted(stale, key=lambda c: -c["age"]),
+            sorted(undated, key=lambda c: (c["slug"], c["country"])))
+
+
+def stale_evidence(outdir: pathlib.Path, spec_path: pathlib.Path,
+                   as_of_year: int) -> list:
+    """Changes priced on evidence older than STALE_YEARS."""
+    return dated_changes(outdir, spec_path, as_of_year)[0]
+
+
+#: Leading token of a finding's label, which is how an archetype is named.
+_ARCH = re.compile(r"^([A-Z_]+)")
+
+
+def priced_above_research(outdir: pathlib.Path, spec_path: pathlib.Path) -> list:
+    """Pairs where the estate's figure exceeds every count research found.
+
+    The opposite failure to a changed count, and invisible to the register
+    because nothing changed. Research is refused or superseded, the
+    declared figure stands unchallenged, and nobody sees that every source
+    which looked said something smaller.
+
+    Nestle's French plants are the case. Three sources - the Office
+    francais de la biodiversite at 18, nestle.fr at 13, an aggregator at
+    12 - and the estate prices 28, which is an apportionment of a
+    published group factory total across ten countries, not a figure
+    anybody published about France.
+
+    Two separate things kept all three out, and only one is a defect. The
+    18 and the 13 were banded together at a 38% spread and refused as a
+    conflict, which is correct - promoting the midpoint would settle a
+    disagreement by arithmetic. The 12 never reached that gate at all:
+    its label reads "FR production sites (PLANT-type)", and archetype_of
+    takes the leading token, so it resolved to "FR" and was never
+    classified as a footprint. That narrow read is mostly a filter rather
+    than a miss - see test_a_mid_label_archetype_is_still_not_a_footprint
+    _count for what a wider one would admit - so the 28 stands on a
+    correct refusal and a deliberate one, and the referral in the
+    register is the only honest resolution.
+
+    Mostly this reports research being incomplete rather than a
+    declaration being wrong - one office found against twelve declared is
+    research's limit, not the company's estate. The ratio and the CR-02b
+    marker are what separate the two.
+    """
+    spec = {c["slug"]: c for c in
+            json.loads(spec_path.read_text("utf-8"))["companies"]}
+    out = []
+    for d in sorted(outdir.iterdir()):
+        f = d / "research.json"
+        if not (d.is_dir() and f.exists()):
+            continue
+        r = json.loads(f.read_text("utf-8"))
+        man = json.loads((d / "manifest.json").read_text("utf-8"))
+        used = {}
+        for row in (man.get("footprint_used") or []):
+            key = (row["country"], row["archetype"])
+            used[key] = used.get(key, 0) + row["sites"]
+        # Two tiers, because reporting every pair the estate prices above
+        # research gives 58 rows and buries the signal: Allianz's 800
+        # declared German branches against the 3 research found is a 267x
+        # ratio that says nothing except that research stopped at three.
+        #
+        #   NOTHING_SURVIVED   - research produced no usable row at all,
+        #                        so the declared figure stands unexamined.
+        #   APPORTIONED_BEATEN - research produced one and lost to a
+        #                        declaration that is itself an
+        #                        apportionment of a group total.
+        #
+        # The second tier exists because the delta-and-closure gate moved
+        # Nestle's French plants from the first into it: the aggregator's
+        # 12 now classifies and promotes, and then loses to the declared
+        # 28. Same question, different origin, and dropping it when the
+        # row started being promoted would have quietly retired the case
+        # this check was written for.
+        apportioned = bool(spec.get(d.name, {}).get("scope_note_cr02b"))
+        promoted = {(e["country"], e["archetype"])
+                    for e in (r.get("evidenced_footprint") or [])}
+        highest = {}
+        for disp in (r.get("dispositions") or []):
+            for t in ((disp.get("evidence") or {}).get("triangulated") or []):
+                country, label = t.get("country"), str(t.get("label") or "")
+                match = _ARCH.match(label)
+                if not country or not match:
+                    continue
+                key = (country, match.group(1))
+                if key not in used or (key in promoted and not apportioned):
+                    continue
+                try:
+                    value = float(t["high"])
+                except (TypeError, ValueError, KeyError):
+                    continue
+                highest[key] = max(highest.get(key, 0.0), value)
+        for key, found in highest.items():
+            if found and used[key] > found:
+                out.append({
+                    "slug": d.name, "country": key[0], "archetype": key[1],
+                    "used": used[key], "highest_found": int(found),
+                    "apportioned": apportioned,
+                    "kind": ("APPORTIONED_BEATEN" if key in promoted
+                             else "NOTHING_SURVIVED")})
+    return sorted(out, key=lambda c: -(c["used"] / max(c["highest_found"], 1)))
+
+
+#: Archetype pairs that name the same premises under two words.
+#:
+#: Not a general synonym table - a warehouse is not a shop. Each pair is
+#: here because the sample set shows one network counted both ways:
+#:
+#:   STORE/BRANCH         a bank branch and a "financial centre" (Simmons
+#:                        Bank), a retail branch (BNP), a dialysis clinic
+#:                        that the filing calls a clinic and the
+#:                        declaration calls a branch (Fresenius).
+#:   STORE/SERVICE_POINT  a fuel forecourt (Shell, DE and NL).
+#:   STORE/WAREHOUSE      a builders' merchant, which is a trade counter
+#:                        and a yard at one address (Saint-Gobain, in
+#:                        three countries independently).
+SAME_PREMISES = (frozenset({"STORE", "BRANCH"}),
+                 frozenset({"STORE", "SERVICE_POINT"}),
+                 frozenset({"STORE", "WAREHOUSE"}))
+
+#: How far two counts of one network may differ and still be one network.
+#: Saint-Gobain's French merchants are the widest real case at 2.2x - the
+#: declaration says 900 and the company's own site says over 2,000 - and
+#: the gap is the finding rather than a reason to call them different.
+COLLISION_RATIO = 2.5
+
+
+def archetype_collisions(outdir: pathlib.Path, spec_path: pathlib.Path) -> list:
+    """One network counted twice under two archetype names.
+
+    The merge keys on (country, archetype), so research typing a network
+    differently from the declaration adds it instead of reconciling it.
+    Simmons Bank's 222 "financial centres" beside its 230 declared
+    branches was caught by hand; this is the same shape and it is not
+    rare. Across the set it accounts for more phantom sites than every
+    other footprint defect together.
+    """
+    spec = {c["slug"]: c for c in
+            json.loads(spec_path.read_text("utf-8"))["companies"]}
+    out = []
+    for d in sorted(outdir.iterdir()):
+        f = d / "research.json"
+        if not (d.is_dir() and f.exists()) or d.name not in spec:
+            continue
+        declared = {}
+        for row in spec[d.name]["declared_footprint"]:
+            declared.setdefault(row["country"], {})[row["archetype"]] = \
+                row["sites"]
+        for e in (json.loads(f.read_text("utf-8")).get(
+                "evidenced_footprint") or []):
+            country, arch, found = e["country"], e["archetype"], e["sites"]
+            here = declared.get(country, {})
+            # Same archetype is an ordinary merge, not a collision.
+            if found <= 0 or arch in here:
+                continue
+            for darch, dn in here.items():
+                if dn <= 0 or frozenset({arch, darch}) not in SAME_PREMISES:
+                    continue
+                if max(found, dn) / min(found, dn) <= COLLISION_RATIO:
+                    out.append({"slug": d.name, "country": country,
+                                "archetype": arch, "found": found,
+                                "declared_as": darch, "declared": dn})
+    return sorted(out, key=lambda c: -c["found"])
 
 
 def main() -> int:
@@ -205,9 +423,16 @@ def main() -> int:
     if standing:
         print(f"\nrecorded, no change in the set ({len(standing)}):")
         for e in sorted(standing, key=lambda e: e["slug"]):
-            tail = ("the declared figure stands"
-                    if e["disposition"] == "DECLINED"
-                    else "VERIFIED with nothing to verify - stale?")
+            tail = {
+                # Declining is a decision about evidence that did not win,
+                # so there is nothing in the change list by design.
+                "DECLINED": "the declared figure stands",
+                # Likewise a referral about a figure research never moved:
+                # Nestle's French plants are declared at an apportioned 28
+                # against three sources between 12 and 18.
+                "REFERRED": "awaiting an owner's ruling",
+            }.get(e["disposition"],
+                  "VERIFIED with nothing to verify - stale?")
             print(f"  {e['slug']:<16}{e['country']}/{e['archetype']:<14}"
                   f"{e['disposition']:<9}{tail}")
 
@@ -216,6 +441,56 @@ def main() -> int:
     if bare:
         print("A change without one is explained by footprint_provenance and "
               "not independently checkable.")
+    stale, undated = dated_changes(pathlib.Path(args.out),
+                                   pathlib.Path(args.spec),
+                                   datetime.date.today().year)
+    if undated:
+        print(f"\nno as_of on the promoted row ({len(undated)}) - age cannot "
+              f"be judged at all:")
+        for c in undated:
+            print(f"  {c['slug']:<16}{c['country']}/{c['archetype']:<14}"
+                  f"{c['used']:>7,} sites  as_of {c['as_of']}")
+    if stale:
+        unaddressed = [c for c in stale if (c["slug"], c["country"],
+                                            c["archetype"]) not in register]
+        print(f"\nevidence older than {STALE_YEARS} years "
+              f"({len(stale)}, {len(unaddressed)} with no register entry):")
+        for c in stale:
+            mark = "" if (c["slug"], c["country"],
+                          c["archetype"]) in register else "  <- UNADDRESSED"
+            print(f"  {c['slug']:<16}{c['country']}/{c['archetype']:<14}"
+                  f"{c['used']:>7,} sites  as of {c['as_of']}  "
+                  f"{c['age']:>2}y{mark}")
+
+    collisions = archetype_collisions(pathlib.Path(args.out),
+                                      pathlib.Path(args.spec))
+    if collisions:
+        live = [c for c in collisions
+                if (c["slug"], c["country"], c["archetype"]) not in register]
+        print(f"\none network counted twice under two archetypes "
+              f"({len(collisions)}, {len(live)} with no register entry):")
+        for c in collisions:
+            mark = "" if (c["slug"], c["country"],
+                          c["archetype"]) in register else "  <- UNADDRESSED"
+            print(f"  {c['slug']:<16}{c['country']}  researched "
+                  f"{c['archetype']} {c['found']:,} beside declared "
+                  f"{c['declared_as']} {c['declared']:,}{mark}")
+
+    over = priced_above_research(pathlib.Path(args.out),
+                                 pathlib.Path(args.spec))
+    if over:
+        apportioned = [c for c in over if c["apportioned"]]
+        print(f"\npriced above every count research found ({len(over)}, "
+              f"{len(apportioned)} on an apportioned declaration):")
+        for c in over:
+            mark = (" <- apportioned, research promoted and lost"
+                    if c["kind"] == "APPORTIONED_BEATEN"
+                    else " <- apportioned, not published"
+                    if c["apportioned"] else "")
+            print(f"  {c['slug']:<16}{c['country']}/{c['archetype']:<14}"
+                  f"{c['used']:>7,} in estate, {c['highest_found']:>6,} "
+                  f"found  {c['used']/max(c['highest_found'],1):>4.1f}x{mark}")
+
     warnings = label_warnings(pathlib.Path(args.out))
     live = [w for w in warnings
             if (w["slug"], w["country"], w["archetype"]) not in register]

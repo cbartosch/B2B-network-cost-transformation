@@ -59,6 +59,18 @@
           "sites": 170,
           "density": "SUBURBAN"
         }
+      ],
+      "excluded": [
+        {
+          "country": "IE",
+          "archetype": "DC",
+          "reason": "the finding counts a satellite IT room in Dublin, named in an IT contractor's project page alongside Slough and Dundee. A room of equipment inside a building Tesco already occupies is not a site, and pricing it as a DC both invents a building and gives it a data centre's bandwidth."
+        },
+        {
+          "country": "IE",
+          "archetype": "WAREHOUSE",
+          "reason": "the only source is a warehouse fit-out company's listicle of large buildings, which names one Dublin facility and states no count. The finding's own note says the total Irish DC count was not found."
+        }
       ]
     },
     {
@@ -208,6 +220,11 @@
           "country": "BE",
           "archetype": "STORE",
           "reason": "Fintro is a franchise network - independently operated agents, so the connectivity is not BNP's cost. The retained Belgian branches are declared separately."
+        },
+        {
+          "country": "FR",
+          "archetype": "STORE",
+          "reason": "the 1,474 retail branches in the registration document are the same network this spec declares as 1,600 FR BRANCH sites."
         }
       ]
     },
@@ -255,6 +272,18 @@
           "archetype": "DC",
           "sites": 5,
           "density": "SUBURBAN"
+        }
+      ],
+      "excluded": [
+        {
+          "country": "DE",
+          "archetype": "STORE",
+          "reason": "the 2,500 agencies are the Nordost sales region alone - the sources say 'in den neuen Bundeslaendern' and 'im Vertriebsgebiet Nordost' - promoted as a German national count, and the figure is a pre-closure baseline against which 430 agencies were due to shut in 2025. Whether a tied agent's connectivity is Allianz's cost is the separate question referred on the French agencies."
+        },
+        {
+          "country": "IT",
+          "archetype": "STORE",
+          "reason": "31 branches of Allianz Bank Financial Advisors from a single aggregator, with no evidence settling whether the 400 declared Italian branches already include them."
         }
       ]
     },
@@ -598,6 +627,18 @@
           "sites": 3,
           "density": "RURAL"
         }
+      ],
+      "excluded": [
+        {
+          "country": "DE",
+          "archetype": "STORE",
+          "reason": "the 1,916 branded retail fuel sites are the same forecourts this spec declares as 1,900 DE SERVICE_POINT sites. Separately, branded is not operated - the question referred on the Dutch forecourts - but the double count stands whichever way that is ruled."
+        },
+        {
+          "country": "NL",
+          "archetype": "STORE",
+          "reason": "the 662 branded forecourts are the same sites this spec declares as 500 NL SERVICE_POINT. Referred first on whether a dealer-owned forecourt is Shell's cost, which is still an open question; the double count is a second and sufficient reason to keep the row out whichever way that is ruled."
+        }
       ]
     },
     {
@@ -735,6 +776,13 @@
           "sites": 5,
           "density": "SUBURBAN"
         }
+      ],
+      "excluded": [
+        {
+          "country": "DE",
+          "archetype": "WAREHOUSE",
+          "reason": "the five comes from an apprenticeship announcement - 287 apprentices across five German facilities - which counts sites taking apprentices rather than sites. The group reports 34 facilities worldwide with no German split."
+        }
       ]
     },
     {
@@ -867,6 +915,11 @@
           "country": "DE",
           "archetype": "PLANT",
           "reason": "the researched 54 is labelled 'all site types, Germany' and was promoted as PLANT alone, on top of the declared offices and data centres - making the German estate 73 when the source says the whole of it is 54."
+        },
+        {
+          "country": "US",
+          "archetype": "PLANT",
+          "reason": "the researched 60 is labelled all site types across North America - plants, offices and laboratories for the US, Canada and Puerto Rico together. An all-types total in one archetype is why the German PLANT row is excluded, and a North American total is not a US one."
         }
       ]
     },
@@ -1002,7 +1055,14 @@
           "density": "SUBURBAN"
         }
       ],
-      "scope_note_cr02b": "Countries widened under CR-02b. The per-country split is an apportionment of a published group total, not a published per-country figure; research supersedes any pair where it finds a sourced count at least as large."
+      "scope_note_cr02b": "Countries widened under CR-02b. The per-country split is an apportionment of a published group total, not a published per-country figure; research supersedes any pair where it finds a sourced count at least as large.",
+      "excluded": [
+        {
+          "country": "DE",
+          "archetype": "DC",
+          "reason": "the only German DC finding is dated 2002 and labelled 'IBM-era regional DC'. Its Swiss sibling at Bussigny carries the same 2002 date and the words 'sold to Orllati', and a third finding records no Nestle-owned DC in France at all - so the DC evidence for this company describes an outsourcing estate that has been disposed of."
+        }
+      ]
     },
     {
       "slug": "fresenius",
@@ -1050,6 +1110,13 @@
           "archetype": "DC",
           "sites": 4,
           "density": "SUBURBAN"
+        }
+      ],
+      "excluded": [
+        {
+          "country": "US",
+          "archetype": "STORE",
+          "reason": "the 2,624 dialysis clinics the 20-F reports are the same network this spec declares as 2,600 US BRANCH sites. The merge keys on (country, archetype), so a second archetype adds them rather than reconciling them, and the US estate would carry both."
         }
       ]
     },
@@ -1247,6 +1314,11 @@
           "country": "GB",
           "archetype": "STORE",
           "reason": "the UK distribution branches were DIVESTED to STARK Group in 2023. The French builders' merchants are retained and stay declared."
+        },
+        {
+          "country": "FR",
+          "archetype": "STORE",
+          "reason": "SGDB France's points de vente are the same builders' merchant network this spec declares as 900 FR WAREHOUSE sites - a trade counter and a yard at one address. The German and British merchants show the same pairing and were excluded as divested; the French ones are retained, so the collision is visible here instead."
         }
       ]
     },

@@ -15,8 +15,8 @@
   ],
   "base_currency": "EUR",
   "case_id": "fab3cb28-e3ff-4c9e-a9d1-a220efeb3ac0",
-  "spec_path": "/tmp/companies_fixed.json",
-  "spec_sha256": "9e81eef8a1f4",
+  "spec_path": "/tmp/companies.json",
+  "spec_sha256": "2d6507402309",
   "entity_resolution": {
     "resolved": null,
     "resumed": true
@@ -76,30 +76,6 @@
     },
     {
       "country": "FR",
-      "archetype": "STORE",
-      "sites": 26,
-      "density": "DENSE_URBAN"
-    },
-    {
-      "country": "FR",
-      "archetype": "STORE",
-      "sites": 461,
-      "density": "RURAL"
-    },
-    {
-      "country": "FR",
-      "archetype": "STORE",
-      "sites": 1077,
-      "density": "SUBURBAN"
-    },
-    {
-      "country": "FR",
-      "archetype": "STORE",
-      "sites": 436,
-      "density": "URBAN"
-    },
-    {
-      "country": "FR",
       "archetype": "WAREHOUSE",
       "sites": 900,
       "density": "SUBURBAN"
@@ -118,6 +94,13 @@
       "sites": 220,
       "origin": "EXCLUDED_BY_SCOPE",
       "reason": "the German distribution branches were DIVESTED to STARK Group in 2019 and are no longer Saint-Gobain sites. Research labels them so and the label is not carried past promotion."
+    },
+    {
+      "country": "FR",
+      "archetype": "STORE",
+      "sites": 2000,
+      "origin": "EXCLUDED_BY_SCOPE",
+      "reason": "SGDB France's points de vente are the same builders' merchant network this spec declares as 900 FR WAREHOUSE sites - a trade counter and a yard at one address. The German and British merchants show the same pairing and were excluded as divested; the French ones are retained, so the collision is visible here instead."
     },
     {
       "country": "GB",
@@ -163,13 +146,6 @@
     },
     {
       "country": "FR",
-      "archetype": "STORE",
-      "sites": 2000,
-      "origin": "RESEARCHED",
-      "density": null
-    },
-    {
-      "country": "FR",
       "archetype": "WAREHOUSE",
       "sites": 900,
       "origin": "DISCLOSURE_KEPT_RESEARCH_FOUND_FEWER",
@@ -186,8 +162,8 @@
     },
     {
       "origin": "DENSITY_FROM_MIX",
-      "rows": 3,
-      "sites": 2002,
+      "rows": 2,
+      "sites": 2,
       "filled": [
         {
           "country": "BR",
@@ -208,19 +184,6 @@
           "bands": {
             "DENSE_URBAN": 1
           }
-        },
-        {
-          "country": "FR",
-          "archetype": "STORE",
-          "sites": 2000,
-          "basis": "INDUSTRY_DEFAULT",
-          "mix_industry": "BUILDING_MATERIALS",
-          "bands": {
-            "DENSE_URBAN": 26,
-            "RURAL": 461,
-            "SUBURBAN": 1077,
-            "URBAN": 436
-          }
         }
       ],
       "note": "the count and the site type are evidenced; the band is a governed sector default from reference.density_mix, not a finding about this client. It decides which bearers are tested, so it is worth replacing with what the client actually has."
@@ -239,7 +202,7 @@
     "DC": "RESEARCHED",
     "LARGE_OFFICE": "RESEARCHED",
     "PLANT": "ASSUMED_PUBLIC_DISCLOSURE",
-    "STORE": "RESEARCHED",
+    "STORE": "ASSUMED_PUBLIC_DISCLOSURE",
     "WAREHOUSE": "ASSUMED_PUBLIC_DISCLOSURE"
   },
   "fx_to_eur": {
@@ -293,19 +256,19 @@
   ],
   "estimate_inputs": {
     "method": "BUILD_UP",
-    "users": 46380,
+    "users": 22380,
     "ops_cost_per_site_base": 900,
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-13T16:25:37.834300+00:00",
-  "run_seconds": 7.2,
+  "run_started": "2026-10-14T18:00:05.608083+00:00",
+  "run_seconds": 3.0,
   "preflight_conditions": 8,
   "promotion": {
     "promoted": true,
     "detail": null,
-    "offered": 6,
-    "accepted": 6,
+    "offered": 4,
+    "accepted": 4,
     "declined": [],
     "declined_count": 0
   },

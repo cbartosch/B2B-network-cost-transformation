@@ -15,8 +15,8 @@
   ],
   "base_currency": "EUR",
   "case_id": "e71dd642-34f1-44b8-8bc1-8c2a230f9cae",
-  "spec_path": "/tmp/companies_fixed.json",
-  "spec_sha256": "2e45939dbcdb",
+  "spec_path": "/tmp/companies.json",
+  "spec_sha256": "2d6507402309",
   "entity_resolution": {
     "resolved": null,
     "resumed": true
@@ -74,36 +74,19 @@
     },
     {
       "country": "US",
-      "archetype": "STORE",
-      "sites": 269,
-      "density": "DENSE_URBAN"
-    },
-    {
-      "country": "US",
-      "archetype": "STORE",
-      "sites": 404,
-      "density": "RURAL"
-    },
-    {
-      "country": "US",
-      "archetype": "STORE",
-      "sites": 942,
-      "density": "SUBURBAN"
-    },
-    {
-      "country": "US",
-      "archetype": "STORE",
-      "sites": 1009,
-      "density": "URBAN"
-    },
-    {
-      "country": "US",
       "archetype": "WAREHOUSE",
       "sites": 3,
       "density": "SUBURBAN"
     }
   ],
   "footprint_provenance": [
+    {
+      "country": "US",
+      "archetype": "STORE",
+      "sites": 2624,
+      "origin": "EXCLUDED_BY_SCOPE",
+      "reason": "the 2,624 dialysis clinics the 20-F reports are the same network this spec declares as 2,600 US BRANCH sites. The merge keys on (country, archetype), so a second archetype adds them rather than reconciling them, and the US estate would carry both."
+    },
     {
       "country": "DE",
       "archetype": "BRANCH",
@@ -141,13 +124,6 @@
     },
     {
       "country": "US",
-      "archetype": "STORE",
-      "sites": 2624,
-      "origin": "RESEARCHED",
-      "density": null
-    },
-    {
-      "country": "US",
       "archetype": "WAREHOUSE",
       "sites": 3,
       "origin": "RESEARCHED",
@@ -155,22 +131,9 @@
     },
     {
       "origin": "DENSITY_FROM_MIX",
-      "rows": 2,
-      "sites": 2627,
+      "rows": 1,
+      "sites": 3,
       "filled": [
-        {
-          "country": "US",
-          "archetype": "STORE",
-          "sites": 2624,
-          "basis": "INDUSTRY_DEFAULT",
-          "mix_industry": "HOSPITAL",
-          "bands": {
-            "DENSE_URBAN": 269,
-            "RURAL": 404,
-            "SUBURBAN": 942,
-            "URBAN": 1009
-          }
-        },
         {
           "country": "US",
           "archetype": "WAREHOUSE",
@@ -197,7 +160,7 @@
     "BRANCH": "ASSUMED_PUBLIC_DISCLOSURE",
     "DC": "RESEARCHED",
     "LARGE_OFFICE": "ASSUMED_PUBLIC_DISCLOSURE",
-    "STORE": "RESEARCHED",
+    "STORE": "ASSUMED_PUBLIC_DISCLOSURE",
     "WAREHOUSE": "RESEARCHED"
   },
   "fx_to_eur": {
@@ -252,13 +215,13 @@
   ],
   "estimate_inputs": {
     "method": "BUILD_UP",
-    "users": 68748,
+    "users": 37260,
     "ops_cost_per_site_base": 900,
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-13T15:08:36.102110+00:00",
-  "run_seconds": 18.9,
+  "run_started": "2026-10-14T17:59:59.606483+00:00",
+  "run_seconds": 3.4,
   "preflight_conditions": 8,
   "promotion": {
     "promoted": true,
@@ -267,13 +230,28 @@
     "accepted": 3,
     "declined": [
       {
-        "reason": "sources disagree by 0% (220 to 220) and the conflict has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again."
+        "reason": "sources state this in units that disagree, and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
+        "label": "BRANCH (outpatient medical care centers/MVZ) — DE (Helios Germany)",
+        "country": "DE",
+        "flags": [
+          "UNIT_MISMATCH"
+        ]
       },
       {
-        "reason": "sources disagree by 0% (130 to 130) and the conflict has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again."
+        "reason": "sources state this in units that disagree, and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
+        "label": "BRANCH (outpatient health centers) — ES (Quirónsalud / Helios Spain)",
+        "country": "ES",
+        "flags": [
+          "UNIT_MISMATCH"
+        ]
       },
       {
-        "reason": "sources disagree by 0% (58 to 58) and the conflict has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again."
+        "reason": "sources state this in units that disagree, and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
+        "label": "LARGE_OFFICE (hospitals) — ES (Quirónsalud / Helios Spain)",
+        "country": "ES",
+        "flags": [
+          "UNIT_MISMATCH"
+        ]
       }
     ],
     "declined_count": 3

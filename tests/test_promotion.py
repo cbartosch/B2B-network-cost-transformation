@@ -21,6 +21,13 @@ def _case_with_finding(session, quantity, disposition="EVIDENCED_PUBLIC"):
     session.execute(insert(db.case).values(
         case_id=case_id, created_by="tester",
         subject_entity_legal_name="Acme Global Logistics"))
+    # A real quantity carries the candidates it was triangulated from, and
+    # each candidate names the document it was read out of. The fixture
+    # omitted them, so it could not have caught a promoted row citing the
+    # domain's whole source pool instead of its own evidence.
+    quantity = {"candidates": [{"value": quantity.get("value"),
+                                "source_url": "https://example.com/ar"}],
+                **quantity}
     session.execute(insert(db.domain_disposition).values(
         id=str(uuid.uuid4()), case_id=case_id, estimate_snapshot_id=None,
         domain_no=2, domain_name="Location footprint",
@@ -54,6 +61,299 @@ def test_a_site_count_reaches_the_footprint_the_simulation_reads(session):
                    "promoted_by": "Priya Raman", "domain_no": 2,
                    "band_low": None, "band_high": None, "source_count": None,
                    "source_urls": ["https://example.com/ar"]}]
+
+
+def test_a_row_cites_its_own_evidence_not_the_domains_pool(session):
+    """Which document says this number.
+
+    Every promoted row used to carry `evidence.sources` - everything the
+    research domain read, across all of its findings - so two site counts
+    from one domain cited the same list. In the published set that averaged
+    7.7 URLs against 1.8 actually behind the figure, and Nestle's French
+    office row cited a swissinfo piece about a German factory closing. A
+    reader checking the number had no way to tell which link to open, which
+    is most of why verifying a changed count is hand work.
+    """
+    case_id = str(uuid.uuid4())
+    run_id = str(uuid.uuid4())
+    session.execute(insert(db.case).values(
+        case_id=case_id, created_by="tester",
+        subject_entity_legal_name="Acme Global Logistics"))
+    session.execute(insert(db.domain_disposition).values(
+        id=str(uuid.uuid4()), case_id=case_id, estimate_snapshot_id=None,
+        domain_no=2, domain_name="Location footprint",
+        disposition="EVIDENCED_PUBLIC", reason=None, agent_run_id=run_id,
+        evidence={"quantities": [
+            {"label": "WAREHOUSE", "value": 12, "unit": "sites",
+             "country": "DE", "as_of": "2025",
+             "candidates": [{"value": 12,
+                             "source_url": "https://example.com/warehouses"}]},
+            {"label": "STORE", "value": 400, "unit": "sites",
+             "country": "FR", "as_of": "2025",
+             "candidates": [{"value": 400,
+                             "source_url": "https://example.com/stores"}]}],
+            "sources": [{"url": "https://example.com/warehouses"},
+                        {"url": "https://example.com/stores"},
+                        {"url": "https://example.com/unrelated-press"}]}))
+    session.commit()
+
+    cands = promotion.candidates(session, case_id)["footprint_candidates"]
+    promotion.promote(session, case_id=case_id,
+                      candidate_ids=[c["candidate_id"] for c in cands],
+                      promoted_by="Priya Raman")
+
+    cited = {r["archetype"]: r["source_urls"]
+             for r in promotion.evidenced_footprint(session, case_id)}
+    assert cited["WAREHOUSE"] == ["https://example.com/warehouses"]
+    assert cited["STORE"] == ["https://example.com/stores"]
+    for urls in cited.values():
+        assert "https://example.com/unrelated-press" not in urls
+
+
+def test_a_finding_with_no_document_cites_nothing(session):
+    """Six findings in the published set have no candidate URL at all, and
+    none of them has a document behind it: EUR/EUR is 1.0 because the
+    countries are all eurozone, three IT-spend proxies are 3/4/5% of net
+    sales, and two are explicit negatives - no Inditex DC found in France or
+    Germany. Lending those the domain's pool would make a derivation and a
+    dead end look sourced."""
+    case_id = str(uuid.uuid4())
+    run_id = str(uuid.uuid4())
+    session.execute(insert(db.case).values(
+        case_id=case_id, created_by="tester",
+        subject_entity_legal_name="Acme Global Logistics"))
+    session.execute(insert(db.domain_disposition).values(
+        id=str(uuid.uuid4()), case_id=case_id, estimate_snapshot_id=None,
+        domain_no=2, domain_name="Location footprint",
+        disposition="EVIDENCED_PUBLIC", reason=None, agent_run_id=run_id,
+        evidence={"quantities": [
+            {"label": "DC", "value": 0, "unit": "sites", "country": "FR",
+             "as_of": "2024",
+             "candidates": [{"value": 0, "source_url": None,
+                             "publisher": "No source found"}]}],
+            "sources": [{"url": "https://example.com/ar"}]}))
+    session.commit()
+
+    cid = promotion.candidates(
+        session, case_id)["footprint_candidates"][0]["candidate_id"]
+    promotion.promote(session, case_id=case_id, candidate_ids=[cid],
+                      promoted_by="Priya Raman")
+    row = promotion.evidenced_footprint(session, case_id)[0]
+    assert row["source_urls"] == []
+
+
+def _case_with_band(session, quantity, triangulated):
+    case_id, run_id = str(uuid.uuid4()), str(uuid.uuid4())
+    session.execute(insert(db.case).values(
+        case_id=case_id, created_by="tester",
+        subject_entity_legal_name="Acme Global Logistics"))
+    session.execute(insert(db.domain_disposition).values(
+        id=str(uuid.uuid4()), case_id=case_id, estimate_snapshot_id=None,
+        domain_no=2, domain_name="Location footprint",
+        disposition="EVIDENCED_PUBLIC", reason=None, agent_run_id=run_id,
+        evidence={"quantities": [quantity], "triangulated": [triangulated],
+                  "sources": [{"url": "https://example.com/ar"}]}))
+    session.commit()
+    return case_id
+
+
+def test_a_refusal_names_the_reason_it_actually_failed(session):
+    """review_required fires on three flags and the refusal reported one.
+
+    Nestle's German plant count is a unit mismatch between two sources
+    both stating 12, so the refusal read "sources disagree by 0% (12 to
+    12)" - a sentence that invites an analyst to dismiss it as noise.
+    """
+    q = {"label": "PLANT", "value": 12, "unit": "sites", "country": "DE",
+         "as_of": "2024",
+         "candidates": [{"value": 12, "source_url": "https://example.com/a"}]}
+    case_id = _case_with_band(session, q, {
+        "label": "PLANT", "country": "DE", "low": "12", "high": "12",
+        "base": "12", "spread_share": 0.0, "candidate_count": 2,
+        "flags": ["UNIT_MISMATCH", "SINGLE_SOURCE"], "review_required": True})
+    cid = promotion.candidates(
+        session, case_id)["footprint_candidates"][0]["candidate_id"]
+    out = promotion.promote(session, case_id=case_id, candidate_ids=[cid],
+                            promoted_by="Priya Raman")
+    assert len(out["declined"]) == 1
+    reason = out["declined"][0]["reason"]
+    assert "units" in reason, reason
+    assert "disagree by 0%" not in reason, reason
+
+
+def test_a_refusal_names_what_was_refused(session):
+    """A manifest reading "sources disagree by 38% (13 to 18)" beside no
+    subject cannot be acted on. Nestle's was its French plant count, and
+    finding that out meant re-deriving it from the triangulated bands."""
+    q = {"label": "PLANT (industrial sites) - France", "value": 18,
+         "unit": "sites", "country": "FR", "as_of": "2024",
+         "candidates": [{"value": 18, "source_url": "https://example.com/a"}]}
+    case_id = _case_with_band(session, q, {
+        "label": "PLANT (INDUSTRIAL SITES) - FRANCE", "country": "FR",
+        "low": "13", "high": "18", "base": "15.5", "spread_share": 0.3846,
+        "candidate_count": 2, "flags": ["MATERIAL_SPREAD"],
+        "review_required": True})
+    cid = promotion.candidates(
+        session, case_id)["footprint_candidates"][0]["candidate_id"]
+    out = promotion.promote(session, case_id=case_id, candidate_ids=[cid],
+                            promoted_by="Priya Raman")
+    row = out["declined"][0]
+    assert row["country"] == "FR"
+    assert "PLANT" in row["label"]
+    assert row["flags"] == ["MATERIAL_SPREAD"]
+    assert "38%" in row["reason"]
+
+
+def _pair_entry(label, country, sites, *, conflicted):
+    """One offered entry, with the band the conflict gate reads."""
+    band = {"label": label.upper(), "country": country, "low": str(sites),
+            "high": str(sites), "base": str(sites), "spread_share": 0.0,
+            "candidate_count": 1, "flags": [], "review_required": False}
+    if conflicted:
+        band.update({"low": str(sites - 5), "spread_share": 0.38,
+                     "flags": ["MATERIAL_SPREAD"], "review_required": True})
+    return {"candidate_id": f"2:{label}:{sites}", "band": band,
+            "reliability": None, "domain_no": 2, "domain_name": "Footprint",
+            "disposition": "EVIDENCED_PUBLIC", "agent_run_id": None,
+            "sources": [], "quantity": {
+                "label": label, "value": sites, "unit": "sites",
+                "country": country, "as_of": "2025"}}
+
+
+def test_a_clean_row_is_not_lost_to_a_larger_conflicted_one():
+    """Supersession used to run before the conflict gate.
+
+    The largest candidate won its pair, the gate then refused it, and the
+    smaller promotable row had already been discarded - so the pair ended
+    up empty and the declared figure stood unchallenged. Keeping the
+    largest among those the gate will accept costs nothing when there is
+    no conflict and keeps a usable row when there is.
+    """
+    kept, superseded = promotion._one_row_per_pair([
+        _pair_entry("PLANT", "FR", 18, conflicted=True),
+        _pair_entry("PLANT", "FR", 12, conflicted=False)])
+    assert [e["quantity"]["value"] for e in kept] == [12]
+    assert superseded[0]["larger_but_conflicted"] == [18]
+
+
+def test_a_wholly_conflicted_pair_still_reaches_the_gate():
+    """Falling back to the largest when nothing is promotable, so the pair
+    is refused out loud rather than vanishing in supersession with no
+    record of why."""
+    kept, _ = promotion._one_row_per_pair([
+        _pair_entry("PLANT", "FR", 18, conflicted=True),
+        _pair_entry("PLANT", "FR", 13, conflicted=True)])
+    assert [e["quantity"]["value"] for e in kept] == [18]
+
+
+def test_largest_still_wins_when_nothing_conflicts():
+    """The rule this must not break. Simmons Bank's locations domain
+    returned a 222-branch national total and a six-state breakdown of the
+    same network, and the estate kept Kansas's 4."""
+    kept, _ = promotion._one_row_per_pair([
+        _pair_entry("STORE", "US", 4, conflicted=False),
+        _pair_entry("STORE", "US", 222, conflicted=False),
+        _pair_entry("STORE", "US", 57, conflicted=False)])
+    assert [e["quantity"]["value"] for e in kept] == [222]
+
+
+def test_accepting_conflicts_restores_largest_wins():
+    """An analyst who has looked at the conflict and decided gets the
+    original behaviour - otherwise accept_conflicts would silently keep
+    handing back the smaller row it was passed to override."""
+    kept, _ = promotion._one_row_per_pair(
+        [_pair_entry("PLANT", "FR", 18, conflicted=True),
+         _pair_entry("PLANT", "FR", 12, conflicted=False)],
+        accept_conflicts=True)
+    assert [e["quantity"]["value"] for e in kept] == [18]
+
+
+def _fp(label, unit="sites", country="FR", value=12):
+    return promotion._classify({"label": label, "value": value,
+                                "unit": unit, "country": country})
+
+
+def test_an_archetype_named_past_the_leading_token_is_found():
+    """`archetype_of` read only the leading token, so "FR production
+    sites (PLANT-type)" resolved to "FR" and Nestle's French plant count
+    was never classified at all."""
+    assert promotion.archetype_of(
+        "FR production sites (PLANT-type) - aggregator estimate") == "PLANT"
+    assert _fp("FR production sites (PLANT-type) - aggregator estimate") \
+        == "footprint"
+
+
+def test_a_label_naming_several_archetypes_is_still_refused():
+    """The behaviour reading past the leading token must not break.
+    "WAREHOUSE/BRANCH - ..." names two and there is nothing to key a
+    single row on, so it falls back to the leading token and declines."""
+    for label in ("WAREHOUSE/BRANCH - SP Energy Networks operational offices",
+                  "LARGE_OFFICE+PLANT+BRANCH (United States, total detected)"):
+        assert _fp(label) == "unclassified", label
+
+
+@pytest.mark.parametrize("label", [
+    "Net store change - Spain (ES) FY2025",
+    "Total branch closings since January 2020 (FDIC-tracked)",
+    "Net branch openings since January 2020 (FDIC-tracked)",
+    "New DC planned - DP World London Gateway (Essex, GB)",
+    "Tesco Ireland planned store openings (net new)",
+    "Kelsterbach DC building - sold/exited, lease expiry",
+    "DE PLANT sites closing - Neuss plant closure",
+    "DE - Wehr plant closure (PLANT exit)",
+    "AT - Salzburg branch relocation to new site (2024)",
+    "US - new PLANT opened, Fort Worth TX",
+    "ScottishPower primary DC - old Cathcart HQ (pre-consolidation, "
+    "decommissioned 2017)",
+    "DE PLANT at-risk closures (Osnabruck) - production end planned",
+])
+def test_a_movement_is_not_an_estate(label):
+    """What the gate exists to keep out. Reading an archetype from
+    anywhere in the label admits 45 findings across the sample set and
+    most are movements rather than counts - including a year, 2025, read
+    as a DC count off a lease expiry."""
+    assert _fp(label) == "unclassified", label
+
+
+@pytest.mark.parametrize("label", [
+    "FR production sites (PLANT-type) - aggregator estimate",
+    "Nestle production sites (PLANT-type) in Germany",
+    "CZ active Skoda PLANT count - Mlada Boleslav, Kvasiny, Vrchlabi",
+    "DHL Freight terminal locations in DE",
+    "Boots Ireland (IE) store count",
+    "US company-operated retail store count (potential WAN sites)",
+    "Owned DC sites",
+])
+def test_a_count_of_what_exists_still_gets_through(label):
+    """The gate has to let the estate past. These are the findings the
+    leading-token read was losing."""
+    assert _fp(label) == "footprint", label
+
+
+def test_a_negated_movement_is_not_a_movement():
+    """Volkswagen's "ES active PLANT count (SEAT/CUPRA Martorell +
+    Pamplona) - no closures imminent" is a count of two plants that says
+    nothing is closing. Reading "closures" alone threw the figure away
+    for the reassurance attached to it."""
+    assert _fp("ES active PLANT count (SEAT/CUPRA Martorell + Pamplona) "
+               "- no closures imminent", country="ES") == "footprint"
+
+
+def test_an_archetype_named_only_to_deny_it_is_not_a_finding():
+    """Shell's "R&D centre - Germany (smaller specialised centre, no DC
+    confirmed)" names DC only to say there is not one."""
+    assert _fp("R&D centre - Germany (smaller specialised centre, no DC "
+               "confirmed)", country="DE") == "unclassified"
+
+
+def test_a_per_site_ratio_is_not_a_count_of_sites():
+    """BNP's "internet access lines per branch" is 1, and the branch in
+    the denominator made it look like one French branch. A premises noun
+    under the line is a measure per site, not a count of them."""
+    assert not promotion.is_premises_unit("lines per branch")
+    assert not promotion.is_premises_unit("circuits/site")
+    assert promotion.is_premises_unit("distribution centres")
+    assert promotion.is_premises_unit("agencies (points de vente)")
 
 
 def test_promotion_requires_a_named_person(session):

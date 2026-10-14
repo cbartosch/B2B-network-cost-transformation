@@ -10,6 +10,7 @@ AUDITABLE - the explanation lives in the output of the run that made it, so a
 reader has only the run's own word for it. A register is a separate, dated
 statement a person signed.
 """
+import collections
 import csv
 import importlib.util
 import pathlib
@@ -112,18 +113,44 @@ def test_an_exclusion_counts_as_a_change_needing_a_record(tool):
     assert "EXCLUDED" in kinds and "CHANGED" in kinds
 
 
-def test_most_changes_are_still_unverified_and_that_is_the_point(tool):
-    """The register's value is showing what is NOT verified. A checker that
-    reported everything covered would mean the register had been written to
-    match the output rather than the evidence."""
+def test_the_register_records_refusals_and_not_only_acceptances(tool):
+    """What this used to assert, and why it had to change.
+
+    It required that MOST changes be unverified - the reasoning being
+    that a register covering everything would have been written to match
+    the output rather than the evidence. That was true while the register
+    was 14 entries against 61 changes. Every change now carries a dated
+    decision, so the shape of the guard has to move rather than be
+    dropped.
+
+    The thing actually worth protecting is that verifying was not a
+    rubber stamp. A register where every entry says VERIFIED would mean
+    nobody refused anything, which is not what checking 67 changes looks
+    like: this one excluded the same network counted twice under two
+    archetype names five times over, declined an apprenticeship
+    announcement read as a site count, and referred four apportioned
+    plant counts and three scope questions to an owner.
+    """
+    register = tool.load_register(REGISTER)
+    kinds = collections.Counter(e["disposition"] for e in register.values())
+    refused = sum(n for d, n in kinds.items() if d != "VERIFIED")
+    assert kinds["VERIFIED"], "nothing verified"
+    assert refused >= len(register) // 4, (
+        f"only {refused} of {len(register)} entries refused anything "
+        f"({dict(kinds)}) - a register that accepts everything put in "
+        f"front of it has stopped being evidence")
+    for name in ("EXCLUDED", "DECLINED", "REFERRED"):
+        assert kinds[name], f"no {name} entries - every refusal looks alike"
+
+
+def test_every_change_now_carries_a_decision(tool):
+    """The gap the external audit raised, closed. --strict exits 0."""
     register = tool.load_register(REGISTER)
     found = tool.changes(ROOT / "samples" / "outside_in",
                          ROOT / "samples" / "companies.json")
-    covered = sum(1 for c in found
-                  if (c["slug"], c["country"], c["archetype"]) in register)
-    assert 0 < covered < len(found), (
-        f"{covered} of {len(found)} covered - a register covering everything "
-        f"has stopped being evidence")
+    bare = [(c["slug"], c["country"], c["archetype"]) for c in found
+            if (c["slug"], c["country"], c["archetype"]) not in register]
+    assert not bare, f"{len(bare)} changes with no dated entry: {bare[:5]}"
 
 
 # ------------------- findings that disqualify themselves in their own label
@@ -188,6 +215,279 @@ def test_a_count_of_closures_is_not_a_count_of_sites():
                for r in (unfi.get("excluded") or [])), (
         "country is optional in an exclusion - omitted means every country - "
         "so this must not subscript it")
+
+
+# ------------------------------------------- how old the evidence is
+
+OUT = ROOT / "samples" / "outside_in"
+SPEC = ROOT / "samples" / "companies.json"
+
+
+def test_a_site_count_carries_an_as_of_that_nothing_prices_on(tool):
+    """The gap this check exists to close.
+
+    A price has `expires`, and `coverage.expired_price_share` reports how
+    much of the estate is priced on a rate past it. A site count has `as_of`
+    and no equivalent: a promoted row records when the figure was true and
+    nothing reads it, so a count from 2002 enters the estate weighted
+    exactly like one from this year and no output says which is which.
+    """
+    import json
+    dated = undated = 0
+    for d in sorted(OUT.iterdir()):
+        f = d / "research.json"
+        if not (d.is_dir() and f.exists()):
+            continue
+        for row in (json.loads(f.read_text("utf-8")).get(
+                "evidenced_footprint") or []):
+            if row.get("as_of"):
+                dated += 1
+            else:
+                undated += 1
+    assert dated > 50, "as_of is recorded on most rows - the data is there"
+    assert undated, (
+        "every row is dated now; fold the undated branch of dated_changes "
+        "into a hard failure rather than a report")
+
+
+def test_a_row_with_no_date_is_reported_rather_than_skipped(tool):
+    """The hole the first version of this check fell into.
+
+    Tesco's Irish DC carries no as_of at all. Comparing a missing date
+    against a cutoff silently passes, so the row nothing can be said about
+    was the row nothing was said about. It is reported separately instead.
+    """
+    stale, undated = tool.dated_changes(OUT, SPEC, 2026)
+    pairs = {(c["slug"], c["country"], c["archetype"]) for c in undated}
+    assert ("tesco", "IE", "DC") in pairs
+    assert not ({(c["slug"], c["country"], c["archetype"]) for c in stale}
+                & pairs), "a change cannot be both dated and undated"
+
+
+def test_a_fiscal_year_counts_as_a_date(tool):
+    """Research writes "FY2025" and "FY2026 (Aug 2025 - Aug 2026)" as well as
+    ISO dates. Reading the first four characters called both undated, which
+    put two perfectly good dates in the list of rows that have none."""
+    _, undated = tool.dated_changes(OUT, SPEC, 2026)
+    pairs = {(c["slug"], c["country"], c["archetype"]) for c in undated}
+    assert ("shell", "DE", "PLANT") not in pairs
+    assert ("unfi", "US", "DC") not in pairs
+
+
+def test_the_twenty_four_year_old_data_centre_is_found(tool):
+    """Nestle's German DC entered the estate on a finding dated 2002 and
+    labelled an IBM-era regional DC. Its Swiss sibling carries the same date
+    and the words "sold to Orllati", and a third finding records no
+    Nestle-owned DC in France at all - so the company's DC evidence
+    describes an outsourcing estate since disposed of."""
+    stale = tool.stale_evidence(OUT, SPEC, 2026)
+    hit = next((c for c in stale if c["slug"] == "nestle"
+                and c["country"] == "DE" and c["archetype"] == "DC"), None)
+    assert hit, "the oldest evidence in the set is not being reported"
+    assert hit["age"] >= 20
+
+
+def test_the_stale_data_centre_was_excluded_not_merely_noted():
+    import json
+    spec = json.loads(SPEC.read_text("utf-8"))
+    nestle = next(c for c in spec["companies"] if c["slug"] == "nestle")
+    assert any(r.get("country") == "DE" and r.get("archetype") == "DC"
+               for r in (nestle.get("excluded") or []))
+
+
+def test_recent_evidence_is_not_flagged(tool):
+    """Most of the set is current. A staleness check that fired on
+    everything would be a count of changes wearing a different name."""
+    stale = tool.stale_evidence(OUT, SPEC, 2026)
+    found = tool.changes(OUT, SPEC)
+    assert 0 < len(stale) < len(found), (
+        f"{len(stale)} of {len(found)} flagged stale")
+
+
+def test_every_stale_row_is_reported_oldest_first(tool):
+    ages = [c["age"] for c in tool.stale_evidence(OUT, SPEC, 2026)]
+    assert ages == sorted(ages, reverse=True)
+
+
+def test_an_opening_date_is_not_the_same_as_a_stale_count(tool):
+    """Shell's Amsterdam campus was flagged at four years old because its
+    as_of is when the campus opened, not when somebody last counted it. The
+    check cannot tell those apart, so a flag is a question for a reader
+    rather than a defect - this one was answered VERIFIED."""
+    register = tool.load_register(REGISTER)
+    entry = register.get(("shell", "NL", "CAMPUS"))
+    assert entry and entry["disposition"] == "VERIFIED"
+
+
+def test_a_room_of_equipment_inside_a_building_is_not_a_site(tool):
+    """Found by chasing a stale date and arriving somewhere worse.
+
+    Tesco's Irish DC rested on an IT contractor's project page reading
+    "Smart Hands call-outs to satellite IT rooms in Slough, Dundee, and
+    Dublin". A room of equipment inside a building Tesco already occupies
+    was promoted as a site, which invented an Irish building and gave it a
+    data centre's bandwidth. The unit gate cannot catch it - the unit says
+    "sites" and the disqualification is in the label, the same shape as
+    the DIVESTED merchants.
+    """
+    warned = tool.label_warnings(OUT)
+    pairs = {(w["slug"], w["country"], w["archetype"]) for w in warned}
+    assert ("tesco", "IE", "DC") in pairs
+
+
+def test_the_room_rule_does_not_catch_real_premises(tool):
+    """"room" would match Accor's hotel rooms and "satellite" would match
+    Simmons Bank's West Little Rock satellite OFFICE, which is a building."""
+    warned = tool.label_warnings(OUT)
+    pairs = {(w["slug"], w["country"], w["archetype"]) for w in warned}
+    assert ("accor", "FR", "HOTEL") not in pairs
+    assert ("simmons-bank", "US", "LARGE_OFFICE") not in pairs
+
+
+def test_every_change_old_enough_to_flag_carries_a_decision(tool):
+    """The staleness report is only worth running if somebody answers it.
+    Eight changes are three to twenty-four years old and each now has a
+    disposition - two excluded, one declined, five verified or referred."""
+    register = tool.load_register(REGISTER)
+    stale, _ = tool.dated_changes(OUT, SPEC, 2026)
+    missing = [(c["slug"], c["country"], c["archetype"]) for c in stale
+               if (c["slug"], c["country"], c["archetype"]) not in register]
+    assert not missing, f"stale changes with nobody's decision on them: {missing}"
+
+
+def test_a_figure_the_company_still_publishes_is_verified_not_aged_out():
+    """Nestle's French R&D and distribution centres were flagged at five
+    years old. The cited page still states "4 centres de Recherche &
+    Developpement" and "12 centres de distribution", so the age was a
+    question and the answer was that the figures stand. A staleness check
+    that excluded on age alone would have removed sixteen real sites."""
+    rows = {(r["slug"], r["country"], r["archetype"]): r for r in _rows()}
+    for arch in ("LARGE_OFFICE", "WAREHOUSE"):
+        entry = rows.get(("nestle", "FR", arch))
+        assert entry and entry["disposition"] == "VERIFIED", (
+            f"nestle FR/{arch} has no verification")
+        assert entry["evidence_ref"].startswith("https://www.nestle.fr")
+
+
+def test_an_estate_priced_above_everything_research_found_is_reported(tool):
+    """The opposite failure to a changed count, and invisible to the
+    register because nothing changed.
+
+    Nestle's French plants: three sources looked - the Office francais de
+    la biodiversite at 18, nestle.fr at 13, an aggregator at 12 - and the
+    estate prices 28, which is an apportionment of a published group
+    factory total across ten countries rather than a figure anybody
+    published about France. Research was refused on a 38% spread, the
+    declared figure stood unchallenged, and nothing said that every source
+    which looked said something smaller.
+    """
+    over = tool.priced_above_research(OUT, SPEC)
+    hit = next((c for c in over if c["slug"] == "nestle"
+                and c["country"] == "FR" and c["archetype"] == "PLANT"), None)
+    assert hit, "the case this check was written for is not reported"
+    assert hit["used"] == 28 and hit["highest_found"] == 18
+    assert hit["apportioned"], (
+        "the CR-02b note is what separates an unsourced declaration from "
+        "research simply being incomplete")
+
+
+def test_the_apportioned_marker_distinguishes_the_two_causes(tool):
+    """Most rows here are research being incomplete, not a declaration
+    being wrong: one Tesco office found against twelve declared is
+    research's limit. The marker is what makes the list readable."""
+    over = tool.priced_above_research(OUT, SPEC)
+    assert any(not c["apportioned"] for c in over), "no incomplete-research rows"
+    assert any(c["apportioned"] for c in over), "no apportioned rows"
+
+
+def test_the_report_separates_an_unexamined_figure_from_a_contested_one(tool):
+    """Two tiers, because they ask different questions.
+
+    NOTHING_SURVIVED means research produced no usable row and the
+    declaration stands unexamined. APPORTIONED_BEATEN means research did
+    produce one and lost to a declaration that is itself an apportionment
+    of a group total. The delta-and-closure gate moved Nestle's French
+    plants from the first tier into the second - the aggregator's 12 now
+    classifies and promotes, then loses to the declared 28 - and a check
+    that only reported the first would have quietly retired the case it
+    was written for.
+    """
+    over = tool.priced_above_research(OUT, SPEC)
+    kinds = {c["kind"] for c in over}
+    assert kinds == {"NOTHING_SURVIVED", "APPORTIONED_BEATEN"}
+    fr = next(c for c in over if c["slug"] == "nestle"
+              and c["country"] == "FR" and c["archetype"] == "PLANT")
+    assert fr["kind"] == "APPORTIONED_BEATEN"
+
+
+def test_every_unexamined_apportioned_figure_carries_a_referral(tool):
+    """An unsourced figure standing above every source that looked, with
+    nothing research found surviving to argue with it, is a decision for
+    an owner - which legal entities count as Nestle France - not
+    something the model may settle.
+
+    Gated on the NOTHING_SURVIVED tier only. Requiring a referral for
+    every apportioned row would demand twenty-one of them, and a register
+    filled to satisfy a check has stopped being evidence.
+    """
+    register = tool.load_register(REGISTER)
+    over = [c for c in tool.priced_above_research(OUT, SPEC)
+            if c["apportioned"] and c["kind"] == "NOTHING_SURVIVED"]
+    assert over, "the tier this gates on is empty"
+    missing = [(c["slug"], c["country"], c["archetype"]) for c in over
+               if (c["slug"], c["country"], c["archetype"]) not in register]
+    assert not missing, f"apportioned overstatements with no referral: {missing}"
+
+
+def test_one_network_counted_twice_under_two_archetypes_is_found(tool):
+    """The largest footprint defect in the set, and the last one found.
+
+    The merge keys on (country, archetype), so research typing a network
+    differently from the declaration ADDS it rather than reconciling it.
+    Simmons Bank's 222 "financial centres" beside its 230 declared
+    branches was caught by hand months earlier; nobody looked for the
+    same shape elsewhere. It was everywhere:
+
+        fresenius    US  STORE 2,624 beside BRANCH 2,600
+        saint-gobain FR  STORE 2,000 beside WAREHOUSE 900
+        shell        DE  STORE 1,916 beside SERVICE_POINT 1,900
+        bnp-paribas  FR  STORE 1,474 beside BRANCH 1,600
+        shell        NL  STORE   662 beside SERVICE_POINT 500
+
+    Eleven thousand phantom sites, a tenth of the set's baseline, and
+    every one of them evidenced: the research is right and the
+    declaration is right and they are the same buildings.
+    """
+    found = tool.archetype_collisions(OUT, SPEC)
+    pairs = {(c["slug"], c["country"]) for c in found}
+    for expected in (("fresenius", "US"), ("saint-gobain", "FR"),
+                     ("shell", "DE"), ("bnp-paribas", "FR"),
+                     ("simmons-bank", "US")):
+        assert expected in pairs, f"{expected} not detected"
+
+
+def test_the_collision_check_does_not_fire_on_different_buildings(tool):
+    """A warehouse is not a shop, and the pairs are listed rather than
+    inferred. Without that constraint the check returns 22 rows including
+    a one-site warehouse beside a one-site data centre, which is two
+    buildings and not one network."""
+    found = tool.archetype_collisions(OUT, SPEC)
+    for c in found:
+        assert frozenset({c["archetype"], c["declared_as"]}) \
+            in tool.SAME_PREMISES
+    pairs = {(c["slug"], c["country"], c["archetype"]) for c in found}
+    assert ("lufthansa", "DE", "WAREHOUSE") not in pairs
+    assert ("victorias-secret", "US", "WAREHOUSE") not in pairs
+
+
+def test_every_collision_carries_a_decision(tool):
+    """Nine found, nine recorded. A detector whose output nobody acts on
+    is the condition this whole register exists to end."""
+    register = tool.load_register(REGISTER)
+    live = [(c["slug"], c["country"], c["archetype"])
+            for c in tool.archetype_collisions(OUT, SPEC)
+            if (c["slug"], c["country"], c["archetype"]) not in register]
+    assert not live, f"collisions with no register entry: {live}"
 
 
 def test_an_all_site_types_total_is_not_one_archetype():

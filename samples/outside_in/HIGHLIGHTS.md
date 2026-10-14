@@ -134,8 +134,8 @@ Sources: [ARCEP (French telecom regulator)](https://en.arcep.fr/news/press-relea
 ## Allianz SE
 
 - **Industry** INSURANCE (entity resolution)
-- **Scope** DE, FR, IT, EUR, 6,585 sites (research merged with disclosure)
-- **Confidence** 0.332 (D - Indicative), coverage COMPLETE
+- **Scope** DE, FR, IT, EUR, 4,054 sites (research merged with disclosure)
+- **Confidence** 0.336 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 2 source(s)
 
@@ -254,7 +254,7 @@ Sources: [germancompanyformation.com](https://germancompanyformation.com/guides/
 ## BASF SE
 
 - **Industry** CHEMICALS (entity resolution)
-- **Scope** DE, BE, US, CN, FR, ES, IT, BR, IN, EUR, 249 sites (research merged with disclosure)
+- **Scope** DE, BE, US, CN, FR, ES, IT, BR, IN, EUR, 219 sites (research merged with disclosure)
 - **Confidence** 0.346 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 6 source(s)
@@ -396,8 +396,8 @@ Sources: [germancompanyformation.com](https://germancompanyformation.com/guides/
 ## BNP Paribas SA
 
 - **Industry** UNIVERSAL_BANKING (entity resolution)
-- **Scope** FR, BE, IT, EUR, 4,222 sites (research merged with disclosure)
-- **Confidence** 0.340 (D - Indicative), coverage COMPLETE
+- **Scope** FR, BE, IT, EUR, 2,748 sites (research merged with disclosure)
+- **Confidence** 0.342 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 8 source(s)
 
@@ -532,7 +532,7 @@ Sources: [Selectra](https://en.selectra.info/broadband-phone-france/guides/mobil
 ## Boots UK Limited
 
 - **Industry** DRUG_RETAIL (entity resolution)
-- **Scope** GB, IE, GBP, 1,851 sites (research merged with disclosure)
+- **Scope** GB, IE, GBP, 1,852 sites (research merged with disclosure)
 - **Confidence** 0.347 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 7 source(s)
@@ -665,8 +665,8 @@ Sources: [businessbroadbandhub.co.uk](https://www.businessbroadbandhub.co.uk/bus
 ## Deutsche Bahn AG
 
 - **Industry** RAILWAYS (entity resolution)
-- **Scope** DE, EUR, 5,586 sites (public disclosure only)
-- **Confidence** 0.326 (D - Indicative), coverage COMPLETE
+- **Scope** DE, EUR, 5,599 sites (research merged with disclosure)
+- **Confidence** 0.327 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 10 source(s)
 
@@ -767,8 +767,8 @@ Sources: [Deutsche Bahn AG (Investor Relations)](https://ir.deutschebahn.com/en/
 ## Deutsche Post AG
 
 - **Industry** PARCEL_LOGISTICS (entity resolution)
-- **Scope** DE, NL, GB, EUR, 3,961 sites (research merged with disclosure)
-- **Confidence** 0.324 (D - Indicative), coverage COMPLETE
+- **Scope** DE, NL, GB, EUR, 4,016 sites (research merged with disclosure)
+- **Confidence** 0.326 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 6 source(s)
 
@@ -1023,8 +1023,8 @@ Sources: [TelecomLead](https://telecomlead.com/broadband/germany-broadband-marke
 ## Fresenius SE & Co. KGaA
 
 - **Industry** HOSPITAL (entity resolution)
-- **Scope** DE, ES, US, EUR, 5,729 sites (research merged with disclosure)
-- **Confidence** 0.337 (D - Indicative), coverage COMPLETE
+- **Scope** DE, ES, US, EUR, 3,105 sites (research merged with disclosure)
+- **Confidence** 0.341 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 7 source(s)
 
@@ -1159,8 +1159,8 @@ Sources: [germancompanyformation.com](https://germancompanyformation.com/guides/
 ## Iberdrola SA
 
 - **Industry** UTILITIES (entity resolution)
-- **Scope** ES, GB, EUR, 2,795 sites (research merged with disclosure)
-- **Confidence** 0.324 (D - Indicative), coverage COMPLETE
+- **Scope** ES, GB, EUR, 2,796 sites (research merged with disclosure)
+- **Confidence** 0.325 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 8 source(s)
 
@@ -1424,7 +1424,7 @@ Sources: [Telecom Review Europe](https://www.telecomrevieweurope.com/articles/te
 ## Deutsche Lufthansa AG
 
 - **Industry** AIRLINES (entity resolution)
-- **Scope** DE, CH, AT, EUR, 223 sites (research merged with disclosure)
+- **Scope** DE, CH, AT, EUR, 218 sites (research merged with disclosure)
 - **Confidence** 0.271 (D - Indicative), coverage PARTIAL
 
 **Profile** - EVIDENCED_PUBLIC, 9 source(s)
@@ -1707,7 +1707,7 @@ Sources: [TeleGeography](https://resources.telegeography.com/the-rise-of-dia-ove
 ## Nestle SA
 
 - **Industry** FOOD_MANUFACTURING (entity resolution)
-- **Scope** CH, DE, FR, US, GB, ES, IT, BR, MX, CN, CHF, 310 sites (research merged with disclosure)
+- **Scope** CH, DE, FR, US, GB, ES, IT, BR, MX, CN, CHF, 309 sites (research merged with disclosure)
 - **Confidence** 0.277 (D - Indicative), coverage PARTIAL
 
 **Profile** - EVIDENCED_PUBLIC, 8 source(s)
@@ -2133,8 +2133,8 @@ Sources: [leasedlineandmpls.co.uk](https://www.leasedlineandmpls.co.uk/top-100gb
 ## Compagnie de Saint-Gobain SA
 
 - **Industry** BUILDING_MATERIALS (entity resolution)
-- **Scope** FR, DE, GB, EUR, 3,865 sites (research merged with disclosure)
-- **Confidence** 0.335 (D - Indicative), coverage COMPLETE
+- **Scope** FR, DE, GB, EUR, 1,865 sites (research merged with disclosure)
+- **Confidence** 0.341 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 9 source(s)
 
@@ -2270,8 +2270,8 @@ Sources: [ARCEP (French telecom regulator)](https://en.arcep.fr/fileadmin/user_u
 ## Shell plc
 
 - **Industry** INTEGRATED_OIL_GAS (entity resolution)
-- **Scope** GB, NL, DE, USD, 5,995 sites (research merged with disclosure)
-- **Confidence** 0.345 (D - Indicative), coverage COMPLETE
+- **Scope** GB, NL, DE, USD, 3,417 sites (research merged with disclosure)
+- **Confidence** 0.358 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 9 source(s)
 
@@ -2656,8 +2656,8 @@ Sources: [Pallas Digital](https://pall.as/the-state-of-enterprise-wan/); [Socium
 ## Tesco PLC
 
 - **Industry** GROCERY_RETAIL (entity resolution)
-- **Scope** GB, IE, GBP, 3,922 sites (research merged with disclosure)
-- **Confidence** 0.381 (D - Indicative), coverage COMPLETE
+- **Scope** GB, IE, GBP, 3,920 sites (research merged with disclosure)
+- **Confidence** 0.380 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 9 source(s)
 

@@ -569,7 +569,14 @@ def _promotion_record(prom: dict) -> dict:
         "detail": (prom or {}).get("detail"),
         "offered": len((prom or {}).get("ids") or []),
         "accepted": len(result.get("promoted_footprint") or []),
-        "declined": [{"reason": d.get("reason")} for d in declined],
+        # The label and country too, not the reason alone. A manifest
+        # reading "sources disagree by 38% (13 to 18)" beside no subject
+        # cannot be acted on: Nestle's was its French plant count, and
+        # finding that out meant re-deriving it from the triangulated
+        # bands.
+        "declined": [{"reason": d.get("reason"), "label": d.get("label"),
+                      "country": d.get("country"), "flags": d.get("flags")}
+                     for d in declined],
         "declined_count": len(declined),
     }
 

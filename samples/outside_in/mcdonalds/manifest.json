@@ -15,8 +15,8 @@
   ],
   "base_currency": "USD",
   "case_id": "71da5c68-a0e5-4d8d-b1cf-f69c8c388689",
-  "spec_path": "/tmp/companies_fixed.json",
-  "spec_sha256": "2e45939dbcdb",
+  "spec_path": "/tmp/companies.json",
+  "spec_sha256": "1335e7fdd958",
   "entity_resolution": {
     "resolved": null,
     "resumed": true
@@ -205,8 +205,8 @@
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-13T15:09:33.754098+00:00",
-  "run_seconds": 27.7,
+  "run_started": "2026-10-14T17:14:34.977733+00:00",
+  "run_seconds": 23.8,
   "preflight_conditions": 8,
   "promotion": {
     "promoted": true,
@@ -215,10 +215,20 @@
     "accepted": 4,
     "declined": [
       {
-        "reason": "sources disagree by 0% (1 to 1) and the conflict has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again."
+        "reason": "sources state this in units that disagree, and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
+        "label": "LARGE_OFFICE",
+        "country": "GB",
+        "flags": [
+          "UNIT_MISMATCH"
+        ]
       },
       {
-        "reason": "sources disagree by 0% (1 to 1) and the conflict has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again."
+        "reason": "sources state this in units that disagree, and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
+        "label": "LARGE_OFFICE",
+        "country": "US",
+        "flags": [
+          "UNIT_MISMATCH"
+        ]
       }
     ],
     "declined_count": 2

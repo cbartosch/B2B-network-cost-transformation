@@ -22,8 +22,8 @@
   ],
   "base_currency": "CHF",
   "case_id": "c06346b4-5fad-4862-8004-16e63cb1e199",
-  "spec_path": "/tmp/companies_fixed.json",
-  "spec_sha256": "2e45939dbcdb",
+  "spec_path": "/tmp/companies.json",
+  "spec_sha256": "1335e7fdd958",
   "entity_resolution": {
     "resolved": null,
     "resumed": true
@@ -98,12 +98,6 @@
       "archetype": "PLANT",
       "sites": 31,
       "density": "RURAL"
-    },
-    {
-      "country": "DE",
-      "archetype": "DC",
-      "sites": 1,
-      "density": "URBAN"
     },
     {
       "country": "DE",
@@ -192,6 +186,13 @@
   ],
   "footprint_provenance": [
     {
+      "country": "DE",
+      "archetype": "DC",
+      "sites": 1,
+      "origin": "EXCLUDED_BY_SCOPE",
+      "reason": "the only German DC finding is dated 2002 and labelled 'IBM-era regional DC'. Its Swiss sibling at Bussigny carries the same 2002 date and the words 'sold to Orllati', and a third finding records no Nestle-owned DC in France at all - so the DC evidence for this company describes an outsourcing estate that has been disposed of."
+    },
+    {
       "country": "BR",
       "archetype": "LARGE_OFFICE",
       "sites": 8,
@@ -255,13 +256,6 @@
     },
     {
       "country": "DE",
-      "archetype": "DC",
-      "sites": 1,
-      "origin": "RESEARCHED",
-      "density": null
-    },
-    {
-      "country": "DE",
       "archetype": "LARGE_OFFICE",
       "sites": 1,
       "origin": "RESEARCHED",
@@ -292,8 +286,10 @@
       "country": "FR",
       "archetype": "PLANT",
       "sites": 28,
-      "origin": "PUBLIC_DISCLOSURE",
-      "density": "RURAL"
+      "origin": "DISCLOSURE_KEPT_RESEARCH_FOUND_FEWER",
+      "density": "RURAL",
+      "research_said": 12,
+      "disclosure_said": 28
     },
     {
       "country": "FR",
@@ -360,19 +356,9 @@
     },
     {
       "origin": "DENSITY_FROM_MIX",
-      "rows": 3,
-      "sites": 6,
+      "rows": 2,
+      "sites": 5,
       "filled": [
-        {
-          "country": "DE",
-          "archetype": "DC",
-          "sites": 1,
-          "basis": "INDUSTRY_DEFAULT",
-          "mix_industry": "FOOD_MANUFACTURING",
-          "bands": {
-            "URBAN": 1
-          }
-        },
         {
           "country": "DE",
           "archetype": "LARGE_OFFICE",
@@ -422,7 +408,7 @@
   "scope_status": "PARTIAL_COUNTRIES",
   "scope_note": "Baseline covers 10 country(ies) (BR, CH, CN, DE, ES, FR, GB, IT, MX, US) and the site types listed in sites_origin. The group's full country and site-type count is not sourced, so the share of the group this represents is DECLARED_UNKNOWN. This is baseline_in_scope, not a group baseline.",
   "sites_origin": {
-    "DC": "RESEARCHED",
+    "DC": "ASSUMED_PUBLIC_DISCLOSURE",
     "LARGE_OFFICE": "RESEARCHED",
     "PLANT": "ASSUMED_PUBLIC_DISCLOSURE",
     "WAREHOUSE": "RESEARCHED"
@@ -483,28 +469,30 @@
   ],
   "estimate_inputs": {
     "method": "BUILD_UP",
-    "users": 3720,
+    "users": 3708,
     "ops_cost_per_site_base": 900,
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-13T15:09:30.635728+00:00",
-  "run_seconds": 3.1,
+  "run_started": "2026-10-14T17:15:23.655917+00:00",
+  "run_seconds": 2.4,
   "preflight_conditions": 8,
   "promotion": {
     "promoted": true,
     "detail": null,
-    "offered": 11,
-    "accepted": 9,
+    "offered": 13,
+    "accepted": 10,
     "declined": [
       {
-        "reason": "sources disagree by 0% (12 to 12) and the conflict has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again."
-      },
-      {
-        "reason": "sources disagree by 38% (13 to 18) and the conflict has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again."
+        "reason": "sources state this in units that disagree, and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
+        "label": "PLANT (factories/production sites, total sites) — Germany (DE)",
+        "country": "DE",
+        "flags": [
+          "UNIT_MISMATCH"
+        ]
       }
     ],
-    "declined_count": 2
+    "declined_count": 1
   },
   "domains_benchmark_disposed": [
     3,

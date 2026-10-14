@@ -15,8 +15,8 @@
   ],
   "base_currency": "EUR",
   "case_id": "7af28f40-a494-461a-b6dd-da0b42200b72",
-  "spec_path": "/tmp/companies_fixed.json",
-  "spec_sha256": "9e81eef8a1f4",
+  "spec_path": "/tmp/companies.json",
+  "spec_sha256": "2d6507402309",
   "entity_resolution": {
     "resolved": null,
     "resumed": true
@@ -69,24 +69,6 @@
       "density": "URBAN"
     },
     {
-      "country": "FR",
-      "archetype": "STORE",
-      "sites": 272,
-      "density": "RURAL"
-    },
-    {
-      "country": "FR",
-      "archetype": "STORE",
-      "sites": 481,
-      "density": "SUBURBAN"
-    },
-    {
-      "country": "FR",
-      "archetype": "STORE",
-      "sites": 721,
-      "density": "URBAN"
-    },
-    {
       "country": "IT",
       "archetype": "BRANCH",
       "sites": 700,
@@ -100,6 +82,13 @@
       "sites": 182,
       "origin": "EXCLUDED_BY_SCOPE",
       "reason": "Fintro is a franchise network - independently operated agents, so the connectivity is not BNP's cost. The retained Belgian branches are declared separately."
+    },
+    {
+      "country": "FR",
+      "archetype": "STORE",
+      "sites": 1474,
+      "origin": "EXCLUDED_BY_SCOPE",
+      "reason": "the 1,474 retail branches in the registration document are the same network this spec declares as 1,600 FR BRANCH sites."
     },
     {
       "country": "BE",
@@ -134,13 +123,6 @@
       "density": "URBAN"
     },
     {
-      "country": "FR",
-      "archetype": "STORE",
-      "sites": 1474,
-      "origin": "RESEARCHED",
-      "density": null
-    },
-    {
       "country": "IT",
       "archetype": "BRANCH",
       "sites": 700,
@@ -148,27 +130,6 @@
       "density": "URBAN",
       "research_said": 564,
       "disclosure_said": 700
-    },
-    {
-      "origin": "DENSITY_FROM_MIX",
-      "rows": 1,
-      "sites": 1474,
-      "filled": [
-        {
-          "country": "FR",
-          "archetype": "STORE",
-          "sites": 1474,
-          "basis": "SECTOR_LAYER_SYNONYM",
-          "mix_industry": "UNIVERSAL_BANKING",
-          "bands": {
-            "RURAL": 272,
-            "SUBURBAN": 481,
-            "URBAN": 721
-          },
-          "via_layer": "BRANCH"
-        }
-      ],
-      "note": "the count and the site type are evidenced; the band is a governed sector default from reference.density_mix, not a finding about this client. It decides which bearers are tested, so it is worth replacing with what the client actually has."
     }
   ],
   "scope_countries_modelled": [
@@ -183,7 +144,7 @@
     "BRANCH": "ASSUMED_PUBLIC_DISCLOSURE",
     "DC": "ASSUMED_PUBLIC_DISCLOSURE",
     "LARGE_OFFICE": "ASSUMED_PUBLIC_DISCLOSURE",
-    "STORE": "RESEARCHED"
+    "STORE": "ASSUMED_PUBLIC_DISCLOSURE"
   },
   "fx_to_eur": {
     "rate": "1.0",
@@ -236,28 +197,30 @@
   ],
   "estimate_inputs": {
     "method": "BUILD_UP",
-    "users": 50664,
+    "users": 32976,
     "ops_cost_per_site_base": 900,
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-13T16:25:30.120029+00:00",
-  "run_seconds": 7.7,
+  "run_started": "2026-10-14T17:59:53.585258+00:00",
+  "run_seconds": 3.3,
   "preflight_conditions": 8,
   "promotion": {
     "promoted": true,
     "detail": null,
-    "offered": 13,
-    "accepted": 4,
+    "offered": 9,
+    "accepted": 5,
     "declined": [
       {
-        "reason": "sources disagree by 25% (247 to 308) and the conflict has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again."
-      },
-      {
-        "reason": "sources disagree by 24% (564 to 700) and the conflict has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again."
+        "reason": "sources disagree by 24% (564 to 700), and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
+        "label": "STORE (retail branches, BNL) — Italy",
+        "country": "IT",
+        "flags": [
+          "MATERIAL_SPREAD"
+        ]
       }
     ],
-    "declined_count": 2
+    "declined_count": 1
   },
   "domains_benchmark_disposed": [
     3,

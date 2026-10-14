@@ -1,13 +1,13 @@
 {
-  "simulation_run_id": "8624224c-9623-4256-aa2c-bb94b63f5d16",
+  "simulation_run_id": "676462c3-bbe6-4956-857a-2d6f29699f7a",
   "case_id": "1acf16ce-b58d-437f-8c30-60d47bbf86d2",
   "model_version": "sim-2.7.0",
   "seed": 20260101,
   "ensemble_size": 25,
   "status": "SUCCEEDED",
-  "output_hash": "9ef0d2521499dbc3718a116bdea656aec6ed944b764ab025948d79d86e60c851",
-  "started_at": "2026-10-13 15:08:36.895787+00:00",
-  "ended_at": "2026-10-13 15:08:40.691324+00:00",
+  "output_hash": "e7672c1177ee5d29bc45a3383c0b13ad40ec9e4b3254357dae557b6627800bf5",
+  "started_at": "2026-10-14 17:14:01.863773+00:00",
+  "ended_at": "2026-10-14 17:14:04.093969+00:00",
   "params": {
     "footprint": [
       {
@@ -36,14 +36,6 @@
       },
       {
         "country": "IE",
-        "archetype": "DC",
-        "sites": 1,
-        "industry": null,
-        "count_source": null,
-        "density": "URBAN"
-      },
-      {
-        "country": "IE",
         "archetype": "LARGE_OFFICE",
         "sites": 1,
         "industry": null,
@@ -54,14 +46,6 @@
         "country": "IE",
         "archetype": "STORE",
         "sites": 182,
-        "industry": null,
-        "count_source": null,
-        "density": "SUBURBAN"
-      },
-      {
-        "country": "IE",
-        "archetype": "WAREHOUSE",
-        "sites": 1,
         "industry": null,
         "count_source": null,
         "density": "SUBURBAN"
@@ -90,15 +74,15 @@
         {
           "tier": "DC_TO_REGION",
           "region": "EUROPE_WEST",
-          "count": 26,
+          "count": 25,
           "product": "ETHERNET",
           "bandwidth_mbps": 10000,
           "dual": true,
-          "note": "26 data centre(s) in EUROPE_WEST to the EUROPE_WEST hub"
+          "note": "25 data centre(s) in EUROPE_WEST to the EUROPE_WEST hub"
         }
       ],
       "unmapped_countries": [],
-      "backbone_circuits": 52,
+      "backbone_circuits": 50,
       "note": "One region with data centres (EUROPE_WEST), so there is no global core tier - a hub has nothing to reach across."
     },
     "site_rule": {
@@ -1468,15 +1452,15 @@
         {
           "tier": "DC_TO_REGION",
           "region": "EUROPE_WEST",
-          "count": 26,
+          "count": 25,
           "product": "ETHERNET",
           "bandwidth_mbps": 10000,
           "dual": true,
-          "note": "26 data centre(s) in EUROPE_WEST to the EUROPE_WEST hub"
+          "note": "25 data centre(s) in EUROPE_WEST to the EUROPE_WEST hub"
         }
       ],
       "unmapped_countries": [],
-      "backbone_circuits": 52,
+      "backbone_circuits": 50,
       "note": "One region with data centres (EUROPE_WEST), so there is no global core tier - a hub has nothing to reach across."
     }
   },
@@ -1484,10 +1468,10 @@
     "model_version": "sim-2.7.0",
     "seed": 20260101,
     "ensemble_size": 25,
-    "sites": 3922,
+    "sites": 3920,
     "serviceability": {
       "counts": {
-        "DELIVERED": 3897,
+        "DELIVERED": 3895,
         "SUBSTITUTED": 25,
         "UNSERVICEABLE": 0
       },
@@ -1510,7 +1494,7 @@
         }
       ],
       "unserviceable": 0,
-      "note": "25 of 3922 site(s) take a different product or tier from the one their type asks for, and 0 can be served by nothing at all. 37 of 3922 are delivered over a bearer other than PON (37 on ETHERNET_FIBRE), which is a different circuit at a different rate. A uniform estate is an assumption; this is what the density bands say about it.",
+      "note": "25 of 3920 site(s) take a different product or tier from the one their type asks for, and 0 can be served by nothing at all. 37 of 3920 are delivered over a bearer other than PON (37 on ETHERNET_FIBRE), which is a different circuit at a different rate. A uniform estate is an assumption; this is what the density bands say about it.",
       "table_rows": 34,
       "table_basis": "GOVERNED"
     },
@@ -1715,32 +1699,24 @@
         "density": "SUBURBAN",
         "asked_for": "ETHERNET",
         "reason": "the only backup deliverable in SUBURBAN GB is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
-      },
-      {
-        "because": "NOT_DELIVERABLE",
-        "country": "IE",
-        "archetype": "DC",
-        "density": "URBAN",
-        "asked_for": "ETHERNET",
-        "reason": "the only backup deliverable in URBAN IE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
       }
     ],
     "estate_truncated": 0,
     "sites_named": 0,
-    "sites_generated": 3922,
+    "sites_generated": 3920,
     "circuits": {
-      "low": 5318,
-      "base": 5343,
-      "high": 5370
+      "low": 5313,
+      "base": 5338,
+      "high": 5366
     },
     "circuits_primary": {
-      "low": 3922,
-      "base": 3922,
-      "high": 3922
+      "low": 3920,
+      "base": 3920,
+      "high": 3920
     },
     "circuits_backup": {
-      "low": 1344,
-      "base": 1369,
+      "low": 1343,
+      "base": 1368,
       "high": 1396
     },
     "products": [
@@ -1749,7 +1725,7 @@
         "product": "ETHERNET",
         "role": "BACKBONE",
         "bandwidth_mbps": 10000,
-        "count": 52,
+        "count": 50,
         "service_class": "ETHERNET",
         "density": null,
         "bearer_mbps": 10000,
@@ -1834,17 +1810,6 @@
       },
       {
         "country": "IE",
-        "product": "DIA",
-        "role": "PRIMARY",
-        "bandwidth_mbps": 100,
-        "count": 1,
-        "service_class": "DIA",
-        "density": "SUBURBAN",
-        "bearer_mbps": 100,
-        "access_technology": null
-      },
-      {
-        "country": "IE",
         "product": "ETHERNET",
         "role": "PRIMARY",
         "bandwidth_mbps": 250,
@@ -1856,21 +1821,10 @@
       },
       {
         "country": "IE",
-        "product": "ETHERNET",
-        "role": "PRIMARY",
-        "bandwidth_mbps": 3000,
-        "count": 1,
-        "service_class": "ETHERNET",
-        "density": "URBAN",
-        "bearer_mbps": 10000,
-        "access_technology": "ETHERNET_FIBRE"
-      },
-      {
-        "country": "IE",
         "product": "MOBILE_5G",
         "role": "BACKUP",
         "bandwidth_mbps": 110,
-        "count": 60,
+        "count": 59,
         "service_class": "BEST_EFFORT",
         "density": "SUBURBAN",
         "bearer_mbps": 110,
@@ -1878,18 +1832,18 @@
       }
     ],
     "dual_access_sites": {
-      "low": 1344,
-      "base": 1369,
+      "low": 1343,
+      "base": 1368,
       "high": 1396
     },
-    "circuits_backbone": 52,
-    "circuits_per_site_base": 1.3623,
-    "implied_users": 49894,
+    "circuits_backbone": 50,
+    "circuits_per_site_base": 1.3617,
+    "implied_users": 49834,
     "bandwidth_profile": {
       "DC": {
-        "sites": 26,
+        "sites": 25,
         "mbps_per_site": 10000,
-        "mbps_total": 260000
+        "mbps_total": 250000
       },
       "LARGE_OFFICE": {
         "sites": 13,
@@ -1900,14 +1854,9 @@
         "sites": 3882,
         "mbps_per_site": 110,
         "mbps_total": 427020
-      },
-      "WAREHOUSE": {
-        "sites": 1,
-        "mbps_per_site": 100,
-        "mbps_total": 100
       }
     },
-    "bandwidth_mbps_total": 693620,
+    "bandwidth_mbps_total": 683520,
     "diversity_state": "SIMULATED",
     "backbone": {
       "template_version": "1.0.0",
@@ -1924,23 +1873,23 @@
         {
           "tier": "DC_TO_REGION",
           "region": "EUROPE_WEST",
-          "count": 26,
+          "count": 25,
           "product": "ETHERNET",
           "bandwidth_mbps": 10000,
           "dual": true,
-          "note": "26 data centre(s) in EUROPE_WEST to the EUROPE_WEST hub"
+          "note": "25 data centre(s) in EUROPE_WEST to the EUROPE_WEST hub"
         }
       ],
       "unmapped_countries": [],
-      "backbone_circuits": 52,
+      "backbone_circuits": 50,
       "note": "One region with data centres (EUROPE_WEST), so there is no global core tier - a hub has nothing to reach across."
     },
-    "node_count": 3922,
-    "edge_count": 5343
+    "node_count": 3920,
+    "edge_count": 5338
   },
   "output_omitted": {
     "fields": [
-      "estate (3922 rows)",
+      "estate (3920 rows)",
       "sample_topology (2 rows)"
     ],
     "why": "per-site arrays, the same information the aggregates carry; tools/backfill_simulation.py --full keeps them"

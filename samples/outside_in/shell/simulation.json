@@ -1,13 +1,13 @@
 {
-  "simulation_run_id": "399ff2b3-8aec-4d59-bd59-11d668e288bc",
+  "simulation_run_id": "8c05bc2e-4a7d-4b0e-b602-2182c0ce3cd9",
   "case_id": "4ceb19bd-c331-45c1-8220-87db66ff9103",
   "model_version": "sim-2.7.0",
   "seed": 20260101,
   "ensemble_size": 25,
   "status": "SUCCEEDED",
-  "output_hash": "d96fca22dc7fd0a8df216a775dffa2e2258c6886ec70e8bb18f7fdb3d9a008b3",
-  "started_at": "2026-10-13 15:08:43.516663+00:00",
-  "ended_at": "2026-10-13 15:08:52.298993+00:00",
+  "output_hash": "da6471678f5e725e52573c27822b88b2f762adf3cb7c69bcaac96067760445e5",
+  "started_at": "2026-10-14 18:00:11.852911+00:00",
+  "ended_at": "2026-10-14 18:00:13.410063+00:00",
   "params": {
     "footprint": [
       {
@@ -25,38 +25,6 @@
         "industry": null,
         "count_source": null,
         "density": "SUBURBAN"
-      },
-      {
-        "country": "DE",
-        "archetype": "STORE",
-        "sites": 67,
-        "industry": null,
-        "count_source": null,
-        "density": "DENSE_URBAN"
-      },
-      {
-        "country": "DE",
-        "archetype": "STORE",
-        "sites": 535,
-        "industry": null,
-        "count_source": null,
-        "density": "RURAL"
-      },
-      {
-        "country": "DE",
-        "archetype": "STORE",
-        "sites": 891,
-        "industry": null,
-        "count_source": null,
-        "density": "SUBURBAN"
-      },
-      {
-        "country": "DE",
-        "archetype": "STORE",
-        "sites": 423,
-        "industry": null,
-        "count_source": null,
-        "density": "URBAN"
       },
       {
         "country": "GB",
@@ -113,38 +81,6 @@
         "industry": null,
         "count_source": null,
         "density": "SUBURBAN"
-      },
-      {
-        "country": "NL",
-        "archetype": "STORE",
-        "sites": 23,
-        "industry": null,
-        "count_source": null,
-        "density": "DENSE_URBAN"
-      },
-      {
-        "country": "NL",
-        "archetype": "STORE",
-        "sites": 185,
-        "industry": null,
-        "count_source": null,
-        "density": "RURAL"
-      },
-      {
-        "country": "NL",
-        "archetype": "STORE",
-        "sites": 308,
-        "industry": null,
-        "count_source": null,
-        "density": "SUBURBAN"
-      },
-      {
-        "country": "NL",
-        "archetype": "STORE",
-        "sites": 146,
-        "industry": null,
-        "count_source": null,
-        "density": "URBAN"
       },
       {
         "country": "US",
@@ -2097,10 +2033,10 @@
     "model_version": "sim-2.7.0",
     "seed": 20260101,
     "ensemble_size": 25,
-    "sites": 5991,
+    "sites": 3413,
     "serviceability": {
       "counts": {
-        "DELIVERED": 5990,
+        "DELIVERED": 3412,
         "SUBSTITUTED": 1,
         "UNSERVICEABLE": 0
       },
@@ -2115,7 +2051,7 @@
       "by_access_technology": [
         {
           "access_technology": "PON",
-          "sites": 5978
+          "sites": 3400
         },
         {
           "access_technology": "ETHERNET_FIBRE",
@@ -2123,7 +2059,7 @@
         }
       ],
       "unserviceable": 0,
-      "note": "1 of 5991 site(s) take a different product or tier from the one their type asks for, and 0 can be served by nothing at all. 11 of 5991 are delivered over a bearer other than PON (11 on ETHERNET_FIBRE), which is a different circuit at a different rate. A uniform estate is an assumption; this is what the density bands say about it.",
+      "note": "1 of 3413 site(s) take a different product or tier from the one their type asks for, and 0 can be served by nothing at all. 11 of 3413 are delivered over a bearer other than PON (11 on ETHERNET_FIBRE), which is a different circuit at a different rate. A uniform estate is an assumption; this is what the density bands say about it.",
       "table_rows": 102,
       "table_basis": "GOVERNED"
     },
@@ -2179,23 +2115,23 @@
         "reason": "the only backup deliverable in DENSE_URBAN US is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
       }
     ],
-    "estate_truncated": 991,
+    "estate_truncated": 0,
     "sites_named": 0,
-    "sites_generated": 5991,
+    "sites_generated": 3413,
     "circuits": {
-      "low": 8059,
-      "base": 8116,
-      "high": 8138
+      "low": 4078,
+      "base": 4113,
+      "high": 4142
     },
     "circuits_primary": {
-      "low": 5991,
-      "base": 5991,
-      "high": 5991
+      "low": 3413,
+      "base": 3413,
+      "high": 3413
     },
     "circuits_backup": {
-      "low": 2060,
-      "base": 2117,
-      "high": 2139
+      "low": 657,
+      "base": 692,
+      "high": 721
     },
     "products": [
       {
@@ -2208,50 +2144,6 @@
         "density": null,
         "bearer_mbps": 10000,
         "access_technology": "ETHERNET_FIBRE"
-      },
-      {
-        "country": "DE",
-        "product": "BROADBAND_HFC",
-        "role": "PRIMARY",
-        "bandwidth_mbps": 50,
-        "count": 67,
-        "service_class": "BEST_EFFORT",
-        "density": "DENSE_URBAN",
-        "bearer_mbps": 50,
-        "access_technology": "HFC"
-      },
-      {
-        "country": "DE",
-        "product": "BROADBAND_HFC",
-        "role": "PRIMARY",
-        "bandwidth_mbps": 50,
-        "count": 535,
-        "service_class": "BEST_EFFORT",
-        "density": "RURAL",
-        "bearer_mbps": 50,
-        "access_technology": "HFC"
-      },
-      {
-        "country": "DE",
-        "product": "BROADBAND_HFC",
-        "role": "PRIMARY",
-        "bandwidth_mbps": 50,
-        "count": 891,
-        "service_class": "BEST_EFFORT",
-        "density": "SUBURBAN",
-        "bearer_mbps": 50,
-        "access_technology": "HFC"
-      },
-      {
-        "country": "DE",
-        "product": "BROADBAND_HFC",
-        "role": "PRIMARY",
-        "bandwidth_mbps": 50,
-        "count": 423,
-        "service_class": "BEST_EFFORT",
-        "density": "URBAN",
-        "bearer_mbps": 50,
-        "access_technology": "HFC"
       },
       {
         "country": "DE",
@@ -2269,42 +2161,9 @@
         "product": "MOBILE_5G",
         "role": "BACKUP",
         "bandwidth_mbps": 50,
-        "count": 20,
-        "service_class": "BEST_EFFORT",
-        "density": "DENSE_URBAN",
-        "bearer_mbps": 50,
-        "access_technology": "MOBILE_5G"
-      },
-      {
-        "country": "DE",
-        "product": "MOBILE_5G",
-        "role": "BACKUP",
-        "bandwidth_mbps": 50,
-        "count": 195,
-        "service_class": "BEST_EFFORT",
-        "density": "RURAL",
-        "bearer_mbps": 50,
-        "access_technology": "MOBILE_5G"
-      },
-      {
-        "country": "DE",
-        "product": "MOBILE_5G",
-        "role": "BACKUP",
-        "bandwidth_mbps": 50,
-        "count": 682,
+        "count": 361,
         "service_class": "BEST_EFFORT",
         "density": "SUBURBAN",
-        "bearer_mbps": 50,
-        "access_technology": "MOBILE_5G"
-      },
-      {
-        "country": "DE",
-        "product": "MOBILE_5G",
-        "role": "BACKUP",
-        "bandwidth_mbps": 50,
-        "count": 153,
-        "service_class": "BEST_EFFORT",
-        "density": "URBAN",
         "bearer_mbps": 50,
         "access_technology": "MOBILE_5G"
       },
@@ -2357,55 +2216,11 @@
         "product": "MOBILE_5G",
         "role": "BACKUP",
         "bandwidth_mbps": 50,
-        "count": 185,
+        "count": 198,
         "service_class": "BEST_EFFORT",
         "density": "SUBURBAN",
         "bearer_mbps": 50,
         "access_technology": "MOBILE_5G"
-      },
-      {
-        "country": "NL",
-        "product": "BROADBAND_HFC",
-        "role": "PRIMARY",
-        "bandwidth_mbps": 50,
-        "count": 23,
-        "service_class": "BEST_EFFORT",
-        "density": "DENSE_URBAN",
-        "bearer_mbps": 50,
-        "access_technology": "HFC"
-      },
-      {
-        "country": "NL",
-        "product": "BROADBAND_HFC",
-        "role": "PRIMARY",
-        "bandwidth_mbps": 50,
-        "count": 185,
-        "service_class": "BEST_EFFORT",
-        "density": "RURAL",
-        "bearer_mbps": 50,
-        "access_technology": "HFC"
-      },
-      {
-        "country": "NL",
-        "product": "BROADBAND_HFC",
-        "role": "PRIMARY",
-        "bandwidth_mbps": 50,
-        "count": 308,
-        "service_class": "BEST_EFFORT",
-        "density": "SUBURBAN",
-        "bearer_mbps": 50,
-        "access_technology": "HFC"
-      },
-      {
-        "country": "NL",
-        "product": "BROADBAND_HFC",
-        "role": "PRIMARY",
-        "bandwidth_mbps": 50,
-        "count": 146,
-        "service_class": "BEST_EFFORT",
-        "density": "URBAN",
-        "bearer_mbps": 50,
-        "access_technology": "HFC"
       },
       {
         "country": "NL",
@@ -2467,42 +2282,9 @@
         "product": "MOBILE_5G",
         "role": "BACKUP",
         "bandwidth_mbps": 50,
-        "count": 6,
-        "service_class": "BEST_EFFORT",
-        "density": "DENSE_URBAN",
-        "bearer_mbps": 50,
-        "access_technology": "MOBILE_5G"
-      },
-      {
-        "country": "NL",
-        "product": "MOBILE_5G",
-        "role": "BACKUP",
-        "bandwidth_mbps": 50,
-        "count": 69,
-        "service_class": "BEST_EFFORT",
-        "density": "RURAL",
-        "bearer_mbps": 50,
-        "access_technology": "MOBILE_5G"
-      },
-      {
-        "country": "NL",
-        "product": "MOBILE_5G",
-        "role": "BACKUP",
-        "bandwidth_mbps": 50,
-        "count": 219,
+        "count": 125,
         "service_class": "BEST_EFFORT",
         "density": "SUBURBAN",
-        "bearer_mbps": 50,
-        "access_technology": "MOBILE_5G"
-      },
-      {
-        "country": "NL",
-        "product": "MOBILE_5G",
-        "role": "BACKUP",
-        "bandwidth_mbps": 50,
-        "count": 53,
-        "service_class": "BEST_EFFORT",
-        "density": "URBAN",
         "bearer_mbps": 50,
         "access_technology": "MOBILE_5G"
       },
@@ -2530,13 +2312,13 @@
       }
     ],
     "dual_access_sites": {
-      "low": 2060,
-      "base": 2117,
-      "high": 2139
+      "low": 657,
+      "base": 692,
+      "high": 721
     },
     "circuits_backbone": 8,
-    "circuits_per_site_base": 1.2667,
-    "implied_users": 54986,
+    "circuits_per_site_base": 1.2051,
+    "implied_users": 24050,
     "bandwidth_profile": {
       "PLANT": {
         "sites": 4,
@@ -2547,11 +2329,6 @@
         "sites": 3400,
         "mbps_per_site": 50,
         "mbps_total": 170000
-      },
-      "STORE": {
-        "sites": 2578,
-        "mbps_per_site": 50,
-        "mbps_total": 128900
       },
       "LARGE_OFFICE": {
         "sites": 9,
@@ -2569,7 +2346,7 @@
         "mbps_total": 20000
       }
     },
-    "bandwidth_mbps_total": 351900,
+    "bandwidth_mbps_total": 223000,
     "diversity_state": "SIMULATED",
     "backbone": {
       "template_version": "1.0.0",
@@ -2631,12 +2408,12 @@
       "backbone_circuits": 8,
       "note": ""
     },
-    "node_count": 5991,
-    "edge_count": 7589
+    "node_count": 3413,
+    "edge_count": 4113
   },
   "output_omitted": {
     "fields": [
-      "estate (5000 rows)",
+      "estate (3413 rows)",
       "sample_topology (2 rows)"
     ],
     "why": "per-site arrays, the same information the aggregates carry; tools/backfill_simulation.py --full keeps them"
