@@ -15,7 +15,7 @@
   "base_currency": "GBP",
   "case_id": "1acf16ce-b58d-437f-8c30-60d47bbf86d2",
   "spec_path": "/tmp/companies.json",
-  "spec_sha256": "88e4886935cd",
+  "spec_sha256": "1335e7fdd958",
   "entity_resolution": {
     "resolved": null,
     "resumed": true
@@ -63,12 +63,6 @@
     },
     {
       "country": "IE",
-      "archetype": "DC",
-      "sites": 1,
-      "density": "URBAN"
-    },
-    {
-      "country": "IE",
       "archetype": "LARGE_OFFICE",
       "sites": 1,
       "density": "URBAN"
@@ -78,15 +72,23 @@
       "archetype": "STORE",
       "sites": 182,
       "density": "SUBURBAN"
+    }
+  ],
+  "footprint_provenance": [
+    {
+      "country": "IE",
+      "archetype": "DC",
+      "sites": 1,
+      "origin": "EXCLUDED_BY_SCOPE",
+      "reason": "the finding counts a satellite IT room in Dublin, named in an IT contractor's project page alongside Slough and Dundee. A room of equipment inside a building Tesco already occupies is not a site, and pricing it as a DC both invents a building and gives it a data centre's bandwidth."
     },
     {
       "country": "IE",
       "archetype": "WAREHOUSE",
       "sites": 1,
-      "density": "SUBURBAN"
-    }
-  ],
-  "footprint_provenance": [
+      "origin": "EXCLUDED_BY_SCOPE",
+      "reason": "the only source is a warehouse fit-out company's listicle of large buildings, which names one Dublin facility and states no count. The finding's own note says the total Irish DC count was not found."
+    },
     {
       "country": "GB",
       "archetype": "DC",
@@ -114,13 +116,6 @@
     },
     {
       "country": "IE",
-      "archetype": "DC",
-      "sites": 1,
-      "origin": "RESEARCHED",
-      "density": null
-    },
-    {
-      "country": "IE",
       "archetype": "LARGE_OFFICE",
       "sites": 1,
       "origin": "RESEARCHED",
@@ -136,27 +131,10 @@
       "disclosure_said": 170
     },
     {
-      "country": "IE",
-      "archetype": "WAREHOUSE",
-      "sites": 1,
-      "origin": "RESEARCHED",
-      "density": null
-    },
-    {
       "origin": "DENSITY_FROM_MIX",
-      "rows": 3,
-      "sites": 3,
+      "rows": 1,
+      "sites": 1,
       "filled": [
-        {
-          "country": "IE",
-          "archetype": "DC",
-          "sites": 1,
-          "basis": "INDUSTRY_DEFAULT",
-          "mix_industry": "GROCERY_RETAIL",
-          "bands": {
-            "URBAN": 1
-          }
-        },
         {
           "country": "IE",
           "archetype": "LARGE_OFFICE",
@@ -165,16 +143,6 @@
           "mix_industry": "GROCERY_RETAIL",
           "bands": {
             "URBAN": 1
-          }
-        },
-        {
-          "country": "IE",
-          "archetype": "WAREHOUSE",
-          "sites": 1,
-          "basis": "INDUSTRY_DEFAULT",
-          "mix_industry": "GROCERY_RETAIL",
-          "bands": {
-            "SUBURBAN": 1
           }
         }
       ],
@@ -189,10 +157,10 @@
   "scope_status": "PARTIAL_COUNTRIES",
   "scope_note": "Baseline covers 2 country(ies) (GB, IE) and the site types listed in sites_origin. The group's full country and site-type count is not sourced, so the share of the group this represents is DECLARED_UNKNOWN. This is baseline_in_scope, not a group baseline.",
   "sites_origin": {
-    "DC": "RESEARCHED",
+    "DC": "ASSUMED_PUBLIC_DISCLOSURE",
     "LARGE_OFFICE": "RESEARCHED",
     "STORE": "RESEARCHED",
-    "WAREHOUSE": "RESEARCHED"
+    "WAREHOUSE": "ASSUMED_PUBLIC_DISCLOSURE"
   },
   "fx_to_eur": {
     "rate": "1.167224976550984858635937291",
@@ -250,13 +218,13 @@
   ],
   "estimate_inputs": {
     "method": "BUILD_UP",
-    "users": 47064,
+    "users": 47040,
     "ops_cost_per_site_base": 900,
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-14T07:24:30.109740+00:00",
-  "run_seconds": 7.2,
+  "run_started": "2026-10-14T07:40:11.691633+00:00",
+  "run_seconds": 6.6,
   "preflight_conditions": 8,
   "promotion": {
     "promoted": true,

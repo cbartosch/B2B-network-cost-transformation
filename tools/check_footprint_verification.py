@@ -117,6 +117,15 @@ def changes(outdir: pathlib.Path, spec_path: pathlib.Path) -> list:
 DISQUALIFYING = (
     "divest", "sold to", "disposed", "no longer", "franchis", "licensee",
     "partner-operated", "third-party", "not operated", "customer location",
+    # A room of equipment inside a building the company already occupies.
+    # Tesco's Irish DC was one: "Smart Hands call-outs to satellite IT rooms
+    # in Slough, Dundee, and Dublin", promoted as a site at DC bandwidth.
+    # The unit gate cannot catch these - the unit says "sites" and the
+    # disqualification is in the label, which is the same shape as DIVESTED.
+    # Matched as "it room" rather than "room" or "satellite", both of which
+    # have legitimate premises in this set: Accor counts hotel rooms and
+    # Simmons Bank has a West Little Rock satellite OFFICE.
+    "it room",
 )
 
 

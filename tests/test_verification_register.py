@@ -292,6 +292,56 @@ def test_an_opening_date_is_not_the_same_as_a_stale_count(tool):
     assert entry and entry["disposition"] == "VERIFIED"
 
 
+def test_a_room_of_equipment_inside_a_building_is_not_a_site(tool):
+    """Found by chasing a stale date and arriving somewhere worse.
+
+    Tesco's Irish DC rested on an IT contractor's project page reading
+    "Smart Hands call-outs to satellite IT rooms in Slough, Dundee, and
+    Dublin". A room of equipment inside a building Tesco already occupies
+    was promoted as a site, which invented an Irish building and gave it a
+    data centre's bandwidth. The unit gate cannot catch it - the unit says
+    "sites" and the disqualification is in the label, the same shape as
+    the DIVESTED merchants.
+    """
+    warned = tool.label_warnings(OUT)
+    pairs = {(w["slug"], w["country"], w["archetype"]) for w in warned}
+    assert ("tesco", "IE", "DC") in pairs
+
+
+def test_the_room_rule_does_not_catch_real_premises(tool):
+    """"room" would match Accor's hotel rooms and "satellite" would match
+    Simmons Bank's West Little Rock satellite OFFICE, which is a building."""
+    warned = tool.label_warnings(OUT)
+    pairs = {(w["slug"], w["country"], w["archetype"]) for w in warned}
+    assert ("accor", "FR", "HOTEL") not in pairs
+    assert ("simmons-bank", "US", "LARGE_OFFICE") not in pairs
+
+
+def test_every_change_old_enough_to_flag_carries_a_decision(tool):
+    """The staleness report is only worth running if somebody answers it.
+    Eight changes are three to twenty-four years old and each now has a
+    disposition - two excluded, one declined, five verified or referred."""
+    register = tool.load_register(REGISTER)
+    stale, _ = tool.dated_changes(OUT, SPEC, 2026)
+    missing = [(c["slug"], c["country"], c["archetype"]) for c in stale
+               if (c["slug"], c["country"], c["archetype"]) not in register]
+    assert not missing, f"stale changes with nobody's decision on them: {missing}"
+
+
+def test_a_figure_the_company_still_publishes_is_verified_not_aged_out():
+    """Nestle's French R&D and distribution centres were flagged at five
+    years old. The cited page still states "4 centres de Recherche &
+    Developpement" and "12 centres de distribution", so the age was a
+    question and the answer was that the figures stand. A staleness check
+    that excluded on age alone would have removed sixteen real sites."""
+    rows = {(r["slug"], r["country"], r["archetype"]): r for r in _rows()}
+    for arch in ("LARGE_OFFICE", "WAREHOUSE"):
+        entry = rows.get(("nestle", "FR", arch))
+        assert entry and entry["disposition"] == "VERIFIED", (
+            f"nestle FR/{arch} has no verification")
+        assert entry["evidence_ref"].startswith("https://www.nestle.fr")
+
+
 def test_an_all_site_types_total_is_not_one_archetype():
     """BASF's researched 54 is labelled "all site types, Germany" and was
     promoted as PLANT on top of declared offices and DCs, making the German

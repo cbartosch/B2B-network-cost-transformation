@@ -2656,8 +2656,8 @@ Sources: [Pallas Digital](https://pall.as/the-state-of-enterprise-wan/); [Socium
 ## Tesco PLC
 
 - **Industry** GROCERY_RETAIL (entity resolution)
-- **Scope** GB, IE, GBP, 3,922 sites (research merged with disclosure)
-- **Confidence** 0.381 (D - Indicative), coverage COMPLETE
+- **Scope** GB, IE, GBP, 3,920 sites (research merged with disclosure)
+- **Confidence** 0.380 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 9 source(s)
 
