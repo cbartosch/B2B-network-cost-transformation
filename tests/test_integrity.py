@@ -1217,18 +1217,40 @@ def test_every_seeded_prior_declares_its_evidence_grade_and_basis():
 
     Graded E - expert assumption - not F. F implies a claim to a source that
     cannot be produced; these claim none. Calling them F would overstate the
-    failure as much as leaving them ungraded understated it."""
-    from app.seed import _rows
+    failure as much as leaving them ungraded understated it.
+
+    E UNLESS THE ROW HAS A SOURCE. This asserted E unconditionally, which
+    was true while the seed threw away the grade and citation of the six
+    rows that came from a UK leased-line market survey - and stamped them
+    "no transaction, quote or published benchmark behind it", which was a
+    false statement about those six. A row with real provenance carries
+    its real grade; a row without one is still E, and there are 1,392 of
+    those.
+    """
+    from app.seed import _rows, SOURCED_PROVENANCE
 
     for table, build in _rows():
         if getattr(table, "name", "") != "unit_cost_prior":
             continue
-        for row in build():
-            assert row["evidence_grade"] == "E", row["id"]
+        rows = build()
+        sourced = 0
+        for row in rows:
+            key = (row["country"], row["product"], int(row["bandwidth_mbps"]))
             assert row["source"], row["id"]
+            if key in SOURCED_PROVENANCE:
+                sourced += 1
+                assert row["evidence_grade"] == SOURCED_PROVENANCE[key][0]
+                assert "no transaction" not in row["source"], (
+                    f"{row['id']} has a source and denies having one")
+            else:
+                assert row["evidence_grade"] == "E", row["id"]
             for field in ("term_months", "sla", "taxes_included",
                           "equipment_included", "managed_services_included",
                           "expires"):
                 assert field in row, f"{row['id']} does not declare {field}"
+        assert sourced == len(SOURCED_PROVENANCE), (
+            f"{sourced} seeded rows carry provenance, "
+            f"{len(SOURCED_PROVENANCE)} were carried in")
+        assert len(rows) - sourced > 1000, "the card is still mostly assumption"
         return
     raise AssertionError("unit_cost_prior is not seeded")

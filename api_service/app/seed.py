@@ -934,6 +934,23 @@ SOURCED_FX_NOTE = ("GBP/USD 1.34, mid-market 16 September 2026. A rate this "
                    "case's own fx_convention governs a live estimate.")
 
 
+#: Grade and citation for the rate-card rows that have one, keyed by
+#: (country, product, bandwidth).
+#:
+#: PRIORS is a list of seven-tuples threaded through a dozen transformations -
+#: rescaling, repricing, consumer and FWA tiers, country fill, interpolation,
+#: regional medians - none of which has an opinion about provenance. Widening
+#: the tuple would mean touching every one of them to carry two fields they
+#: do not read, so the provenance travels beside it instead.
+#:
+#: It exists because it was being thrown away. `_sourced_priors` bound the
+#: grade and the source to `_grade` and `_source` and returned neither, and
+#: the seed then stamped every row grade E with the words "no transaction,
+#: quote or published benchmark behind it" - false for the six rows that came
+#: from a UK leased-line market survey and a published Virgin Media tariff.
+SOURCED_PROVENANCE: dict = {}
+
+
 def _sourced_priors(rows):
     """Sourced rates in the seed's tuple shape, converted to USD.
 
@@ -968,11 +985,11 @@ def _sourced_priors(rows):
     for key in sorted(set(bands) | set(anchors)):
         country, product, mbps = key
         if key in bands:
-            low, high, currency, _grade, _source = bands[key]
+            low, high, currency, grade, source = bands[key]
         else:
             # Only a point, so the band is that point - honest about having
             # one observation rather than inventing a spread around it.
-            low, currency, _grade, _source = anchors[key]
+            low, currency, grade, source = anchors[key]
             high = low
         fx = _D(SOURCED_FX.get(currency, "1"))
         lo, hi = _D(low) * fx, _D(high) * fx
@@ -983,6 +1000,15 @@ def _sourced_priors(rows):
             anchor_low = _D(anchors[key][0]) * _D(
                 SOURCED_FX.get(anchors[key][1], "1"))
             lo = min(lo, anchor_low)
+            # The band's grade, not the anchor's, even when the anchor is
+            # finer. The anchor only moved the floor; base and high still
+            # come from the survey, so the row is worth what the survey is
+            # worth. Claiming the tariff's grade B for a number the tariff
+            # did not set would be the overstatement this whole exercise
+            # keeps finding.
+            source = (f"{source}; floor set by "
+                      f"{anchors[key][3]}")
+        SOURCED_PROVENANCE[(country, product, int(mbps))] = (grade, source)
         out.append((country, product, "L0", int(mbps),
                     int(lo), int((lo + hi) / 2), int(hi)))
     return out
@@ -2429,8 +2455,18 @@ def _rows():
              # quote: a 36-month price with equipment included is a different
              # number from a 12-month price without, and an audit cannot
              # normalise what was never declared.
-             "evidence_grade": "E",
+             #
+             # E unless the row actually has a source, which six of them do.
+             # This was an unconditional "E" beside a source line reading "no
+             # transaction, quote or published benchmark behind it" - a
+             # sentence that was true of 1,391 rows and false of the six that
+             # came from a UK leased-line market survey. The card understated
+             # its own evidence and said so in writing.
+             "evidence_grade": SOURCED_PROVENANCE.get(
+                 (c, p, int(bw)), (None, None))[0] or "E",
              "source": (
+                 SOURCED_PROVENANCE[(c, p, int(bw))][1]
+                 if (c, p, int(bw)) in SOURCED_PROVENANCE else
                  "interpolated between this country and product's own 1 Gbps "
                  "and 10 Gbps rows, geometric in bandwidth and price; the "
                  "method reproduces tiers the card already holds to within "
@@ -2484,6 +2520,24 @@ def _rows():
     ]
 
 
+#: Rows in a seeded table that the seed did not write and must not delete.
+#:
+#: --force prunes every primary key the builder no longer produces. That is
+#: right for a threshold the code dropped, and destructive for a price a
+#: person approved: promoted rates carry ids ending "-researched", which no
+#: builder emits, so all ten of them read as stale. The documented operator
+#: command for applying a rate-card change - `make seed` - would have deleted
+#: the entire output of the research-to-rate-card path, the two approved
+#: prices included, and reported it as routine tidying.
+#:
+#: Keyed by table, because the marker differs: here it is price_basis. A
+#: table with no entry keeps the old behaviour, which is correct for tables
+#: nothing but the seed ever writes to.
+NOT_SEEDED = {
+    "reference.unit_cost_prior": lambda t: t.c.price_basis == "PROMOTED",
+}
+
+
 def seed(force: bool = False):
     """Idempotent per row, not per table.
 
@@ -2523,6 +2577,19 @@ def seed(force: bool = False):
                 s.execute(select(*[table.c[c] for c in pk_cols])).all()}
 
             stale_pks = existing_pks - set(wanted)
+            # A row this seed could never have written is not stale, it is
+            # somebody else's. See NOT_SEEDED.
+            guard = NOT_SEEDED.get(name)
+            if force and stale_pks and guard is not None:
+                protected = {
+                    tuple(row) for row in s.execute(
+                        select(*[table.c[c] for c in pk_cols])
+                        .where(guard(table))).all()}
+                kept = stale_pks & protected
+                if kept:
+                    print(f"kept {len(kept)} analyst row(s) in {name} that "
+                          f"this seed does not produce")
+                stale_pks -= protected
             if force and stale_pks:
                 for pk in stale_pks:
                     cond = [table.c[c] == v for c, v in zip(pk_cols, pk)]
