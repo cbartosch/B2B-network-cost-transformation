@@ -204,6 +204,90 @@ def test_a_refusal_names_what_was_refused(session):
     assert "38%" in row["reason"]
 
 
+def _pair_entry(label, country, sites, *, conflicted):
+    """One offered entry, with the band the conflict gate reads."""
+    band = {"label": label.upper(), "country": country, "low": str(sites),
+            "high": str(sites), "base": str(sites), "spread_share": 0.0,
+            "candidate_count": 1, "flags": [], "review_required": False}
+    if conflicted:
+        band.update({"low": str(sites - 5), "spread_share": 0.38,
+                     "flags": ["MATERIAL_SPREAD"], "review_required": True})
+    return {"candidate_id": f"2:{label}:{sites}", "band": band,
+            "reliability": None, "domain_no": 2, "domain_name": "Footprint",
+            "disposition": "EVIDENCED_PUBLIC", "agent_run_id": None,
+            "sources": [], "quantity": {
+                "label": label, "value": sites, "unit": "sites",
+                "country": country, "as_of": "2025"}}
+
+
+def test_a_clean_row_is_not_lost_to_a_larger_conflicted_one():
+    """Supersession used to run before the conflict gate.
+
+    The largest candidate won its pair, the gate then refused it, and the
+    smaller promotable row had already been discarded - so the pair ended
+    up empty and the declared figure stood unchallenged. Keeping the
+    largest among those the gate will accept costs nothing when there is
+    no conflict and keeps a usable row when there is.
+    """
+    kept, superseded = promotion._one_row_per_pair([
+        _pair_entry("PLANT", "FR", 18, conflicted=True),
+        _pair_entry("PLANT", "FR", 12, conflicted=False)])
+    assert [e["quantity"]["value"] for e in kept] == [12]
+    assert superseded[0]["larger_but_conflicted"] == [18]
+
+
+def test_a_wholly_conflicted_pair_still_reaches_the_gate():
+    """Falling back to the largest when nothing is promotable, so the pair
+    is refused out loud rather than vanishing in supersession with no
+    record of why."""
+    kept, _ = promotion._one_row_per_pair([
+        _pair_entry("PLANT", "FR", 18, conflicted=True),
+        _pair_entry("PLANT", "FR", 13, conflicted=True)])
+    assert [e["quantity"]["value"] for e in kept] == [18]
+
+
+def test_largest_still_wins_when_nothing_conflicts():
+    """The rule this must not break. Simmons Bank's locations domain
+    returned a 222-branch national total and a six-state breakdown of the
+    same network, and the estate kept Kansas's 4."""
+    kept, _ = promotion._one_row_per_pair([
+        _pair_entry("STORE", "US", 4, conflicted=False),
+        _pair_entry("STORE", "US", 222, conflicted=False),
+        _pair_entry("STORE", "US", 57, conflicted=False)])
+    assert [e["quantity"]["value"] for e in kept] == [222]
+
+
+def test_accepting_conflicts_restores_largest_wins():
+    """An analyst who has looked at the conflict and decided gets the
+    original behaviour - otherwise accept_conflicts would silently keep
+    handing back the smaller row it was passed to override."""
+    kept, _ = promotion._one_row_per_pair(
+        [_pair_entry("PLANT", "FR", 18, conflicted=True),
+         _pair_entry("PLANT", "FR", 12, conflicted=False)],
+        accept_conflicts=True)
+    assert [e["quantity"]["value"] for e in kept] == [18]
+
+
+def test_a_mid_label_archetype_is_still_not_a_footprint_count():
+    """Why the clean 12 was never in that pair to begin with, and why
+    widening the resolver would be wrong.
+
+    `archetype_of` reads the leading token, so "FR production sites
+    (PLANT-type)" resolves to "FR" and is unclassified. That looks like a
+    miss and is mostly a filter: of 45 quantities a widened resolver would
+    admit across the sample set, the great majority are not counts of an
+    estate - "Net store change - Spain" at MINUS 62, "Total branch
+    closings since January 2020" at 91, a planned DC at London Gateway,
+    and "Kelsterbach DC building - sold/exited, lease expiry" at 2025,
+    which is a year being read as a site count.
+    """
+    for label in ("FR production sites (PLANT-type) - aggregator estimate",
+                  "Nestle production sites (PLANT-type) in Germany",
+                  "Net store change - Spain (ES) FY2025"):
+        q = {"label": label, "value": 12, "unit": "sites", "country": "FR"}
+        assert promotion._classify(q) == "unclassified", label
+
+
 def test_promotion_requires_a_named_person(session):
     q = {"label": "WAREHOUSE", "value": 12, "unit": "sites", "country": "GB"}
     case_id, _ = _case_with_finding(session, q)

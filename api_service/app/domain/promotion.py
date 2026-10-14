@@ -644,8 +644,8 @@ def compare_to_benchmark(session, *, country: str, product: str, value: float,
     }
 
 
-def _one_row_per_pair(entries: list) -> tuple:
-    """One footprint row per (country, archetype): the largest.
+def _one_row_per_pair(entries: list, *, accept_conflicts: bool = False) -> tuple:
+    """One footprint row per (country, archetype): the largest PROMOTABLE one.
 
     evidenced_footprint holds one row per pair - promote deletes and
     reinserts - so when several candidates share a pair, write order decided
@@ -669,10 +669,27 @@ def _one_row_per_pair(entries: list) -> tuple:
     partition with no total, and summing one of these double-counts the same
     sites under two descriptions.
 
+    LARGEST AMONG THOSE THE CONFLICT GATE WILL ACCEPT, because this used to
+    run before that gate and the two together could lose a usable row.
+    Nestle's French plants: research returned a conflicted 13-18 band and a
+    clean single-source 12. The 18 won the pair, the gate below then refused
+    it on a 38% spread, and the 12 had already been discarded as superseded
+    - so the pair ended up empty and the declared 28 stood unchallenged, an
+    apportionment of a group total that every source which looked came in
+    below.
+
+    Falling back to the largest overall when nothing is promotable, so a
+    wholly conflicted pair still reaches the gate and is still refused out
+    loud rather than vanishing here without a record.
+
     What is displaced is returned, not dropped: the alternatives research
     found are part of what it found.
     """
     import collections
+
+    def promotable(e) -> bool:
+        return accept_conflicts or not (e.get("band") or {}).get(
+            "review_required")
 
     by_pair, out, superseded = collections.defaultdict(list), [], []
     for e in entries:
@@ -685,15 +702,25 @@ def _one_row_per_pair(entries: list) -> tuple:
 
     for (country, archetype), group in sorted(by_pair.items()):
         group.sort(key=lambda e: _sites_from(e["quantity"]) or 0)
-        winner = group[-1]
+        usable = [e for e in group if promotable(e)]
+        winner = (usable or group)[-1]
         out.append(winner)
         if len(group) == 1:
             continue
         kept = _sites_from(winner["quantity"]) or 0
-        rest = [(_sites_from(e["quantity"]) or 0) for e in group[:-1]]
+        rest = [(_sites_from(e["quantity"]) or 0)
+                for e in group if e is not winner]
         superseded.append({
             "country": country, "archetype": archetype,
             "kept": kept, "also_found": sorted(rest),
+            # Larger figures passed over because the gate would refuse them.
+            # Worth naming: the pair is carrying a smaller number than
+            # research's highest, and the reason is a conflict rather than
+            # a judgement that the bigger figure was wrong.
+            "larger_but_conflicted": sorted(
+                v for v, e in ((_sites_from(e["quantity"]) or 0, e)
+                               for e in group)
+                if e is not winner and not promotable(e) and v > kept),
             # A genuine disjoint partition - several regions and no total -
             # is the one shape where the largest undercounts. Nothing in the
             # sample looks like it (the closest is 1.07x), so it is reported
@@ -727,7 +754,8 @@ def promote(session, *, case_id: str, candidate_ids: list[str],
     now = datetime.now(timezone.utc)
     promoted_footprint, proposed_prices, declined = [], [], []
     promoted_archetype, promoted_anchor = [], []
-    entries, superseded = _one_row_per_pair(entries)
+    entries, superseded = _one_row_per_pair(
+        entries, accept_conflicts=accept_conflicts)
 
     for e in entries:
         q, target = e["quantity"], _classify(e["quantity"])

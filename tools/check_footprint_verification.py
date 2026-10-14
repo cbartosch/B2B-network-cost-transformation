@@ -235,10 +235,19 @@ def priced_above_research(outdir: pathlib.Path, spec_path: pathlib.Path) -> list
     francais de la biodiversite at 18, nestle.fr at 13, an aggregator at
     12 - and the estate prices 28, which is an apportionment of a
     published group factory total across ten countries, not a figure
-    anybody published about France. The 18 and the 13 were banded
-    together at a 38% spread and refused as a conflict, correctly; the
-    clean 12 was superseded by the larger conflicted row before the
-    refusal, so nothing survived to argue with the 28.
+    anybody published about France.
+
+    Two separate things kept all three out, and only one is a defect. The
+    18 and the 13 were banded together at a 38% spread and refused as a
+    conflict, which is correct - promoting the midpoint would settle a
+    disagreement by arithmetic. The 12 never reached that gate at all:
+    its label reads "FR production sites (PLANT-type)", and archetype_of
+    takes the leading token, so it resolved to "FR" and was never
+    classified as a footprint. That narrow read is mostly a filter rather
+    than a miss - see test_a_mid_label_archetype_is_still_not_a_footprint
+    _count for what a wider one would admit - so the 28 stands on a
+    correct refusal and a deliberate one, and the referral in the
+    register is the only honest resolution.
 
     Mostly this reports research being incomplete rather than a
     declaration being wrong - one office found against twelve declared is
@@ -258,6 +267,15 @@ def priced_above_research(outdir: pathlib.Path, spec_path: pathlib.Path) -> list
         for row in (man.get("footprint_used") or []):
             key = (row["country"], row["archetype"])
             used[key] = used.get(key, 0) + row["sites"]
+        # Only pairs where nothing research found survived promotion.
+        #
+        # Widening this to every pair the estate prices above research
+        # takes the list from 12 rows to 58 and buries the signal:
+        # Allianz's 800 declared German branches against the 3 research
+        # found is a 267x ratio and says nothing except that research
+        # stopped at three. The sharp condition is that research produced
+        # NO usable row for this pair and the declared figure stands
+        # unexamined - which is Nestle's French plants exactly.
         promoted = {(e["country"], e["archetype"])
                     for e in (r.get("evidenced_footprint") or [])}
         highest = {}
