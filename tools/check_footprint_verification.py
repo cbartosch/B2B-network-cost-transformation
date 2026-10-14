@@ -19,8 +19,10 @@ no entry, which is the true state and the useful thing to see.
 """
 import argparse
 import csv
+import datetime
 import json
 import pathlib
+import re
 import sys
 
 REGISTER = pathlib.Path("samples") / "verification_register.csv"
@@ -157,6 +159,57 @@ def label_warnings(outdir: pathlib.Path) -> list:
     return out
 
 
+#: How old a footprint figure can be before its age is worth reporting.
+#:
+#: There is no equivalent of a price's `expires` for a site count: as_of is
+#: recorded on every promoted row and nothing reads it, so a count from 2002
+#: contributes exactly as one from 2026 and the estimate says nothing. Three
+#: years is one reporting cycle plus a margin - old enough that a restructure
+#: or a disposal would usually have happened, recent enough not to flag a
+#: stable estate every run.
+STALE_YEARS = 3
+
+
+def dated_changes(outdir: pathlib.Path, spec_path: pathlib.Path,
+                  as_of_year: int) -> tuple:
+    """(stale, undated) - changes too old to trust, and changes with no date.
+
+    An undated row is the worse of the two and the easier to miss: with no
+    as_of there is no age to compare, so a staleness check that skipped it
+    would report a clean bill on the one row it could say least about.
+    """
+    stale, undated = [], []
+    for change in changes(outdir, spec_path):
+        res = outdir / change["slug"] / "research.json"
+        if not res.exists():
+            continue
+        r = json.loads(res.read_text("utf-8"))
+        row = next((e for e in (r.get("evidenced_footprint") or [])
+                    if e.get("country") == change["country"]
+                    and e.get("archetype") == change["archetype"]), None)
+        raw = str((row or {}).get("as_of") or "")
+        # Not every date is an ISO date. Research writes fiscal years too -
+        # "FY2025", "FY2026 (Aug 2025 - Aug 2026)" - and reading the first
+        # four characters called both of those undated, which would have
+        # buried two real dates in the list of rows that have none.
+        year = re.search(r"(19|20)\d{2}", raw)
+        if not year:
+            if row is not None:
+                undated.append({**change, "as_of": raw or "(none)"})
+            continue
+        age = as_of_year - int(year.group(0))
+        if age >= STALE_YEARS:
+            stale.append({**change, "as_of": raw[:10], "age": age})
+    return (sorted(stale, key=lambda c: -c["age"]),
+            sorted(undated, key=lambda c: (c["slug"], c["country"])))
+
+
+def stale_evidence(outdir: pathlib.Path, spec_path: pathlib.Path,
+                   as_of_year: int) -> list:
+    """Changes priced on evidence older than STALE_YEARS."""
+    return dated_changes(outdir, spec_path, as_of_year)[0]
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", default="samples/outside_in")
@@ -216,6 +269,27 @@ def main() -> int:
     if bare:
         print("A change without one is explained by footprint_provenance and "
               "not independently checkable.")
+    stale, undated = dated_changes(pathlib.Path(args.out),
+                                   pathlib.Path(args.spec),
+                                   datetime.date.today().year)
+    if undated:
+        print(f"\nno as_of on the promoted row ({len(undated)}) - age cannot "
+              f"be judged at all:")
+        for c in undated:
+            print(f"  {c['slug']:<16}{c['country']}/{c['archetype']:<14}"
+                  f"{c['used']:>7,} sites  as_of {c['as_of']}")
+    if stale:
+        unaddressed = [c for c in stale if (c["slug"], c["country"],
+                                            c["archetype"]) not in register]
+        print(f"\nevidence older than {STALE_YEARS} years "
+              f"({len(stale)}, {len(unaddressed)} with no register entry):")
+        for c in stale:
+            mark = "" if (c["slug"], c["country"],
+                          c["archetype"]) in register else "  <- UNADDRESSED"
+            print(f"  {c['slug']:<16}{c['country']}/{c['archetype']:<14}"
+                  f"{c['used']:>7,} sites  as of {c['as_of']}  "
+                  f"{c['age']:>2}y{mark}")
+
     warnings = label_warnings(pathlib.Path(args.out))
     live = [w for w in warnings
             if (w["slug"], w["country"], w["archetype"]) not in register]

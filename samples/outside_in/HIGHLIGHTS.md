@@ -1707,7 +1707,7 @@ Sources: [TeleGeography](https://resources.telegeography.com/the-rise-of-dia-ove
 ## Nestle SA
 
 - **Industry** FOOD_MANUFACTURING (entity resolution)
-- **Scope** CH, DE, FR, US, GB, ES, IT, BR, MX, CN, CHF, 310 sites (research merged with disclosure)
+- **Scope** CH, DE, FR, US, GB, ES, IT, BR, MX, CN, CHF, 309 sites (research merged with disclosure)
 - **Confidence** 0.277 (D - Indicative), coverage PARTIAL
 
 **Profile** - EVIDENCED_PUBLIC, 8 source(s)

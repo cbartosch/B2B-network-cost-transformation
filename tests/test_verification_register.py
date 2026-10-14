@@ -190,6 +190,108 @@ def test_a_count_of_closures_is_not_a_count_of_sites():
         "so this must not subscript it")
 
 
+# ------------------------------------------- how old the evidence is
+
+OUT = ROOT / "samples" / "outside_in"
+SPEC = ROOT / "samples" / "companies.json"
+
+
+def test_a_site_count_carries_an_as_of_that_nothing_prices_on(tool):
+    """The gap this check exists to close.
+
+    A price has `expires`, and `coverage.expired_price_share` reports how
+    much of the estate is priced on a rate past it. A site count has `as_of`
+    and no equivalent: a promoted row records when the figure was true and
+    nothing reads it, so a count from 2002 enters the estate weighted
+    exactly like one from this year and no output says which is which.
+    """
+    import json
+    dated = undated = 0
+    for d in sorted(OUT.iterdir()):
+        f = d / "research.json"
+        if not (d.is_dir() and f.exists()):
+            continue
+        for row in (json.loads(f.read_text("utf-8")).get(
+                "evidenced_footprint") or []):
+            if row.get("as_of"):
+                dated += 1
+            else:
+                undated += 1
+    assert dated > 50, "as_of is recorded on most rows - the data is there"
+    assert undated, (
+        "every row is dated now; fold the undated branch of dated_changes "
+        "into a hard failure rather than a report")
+
+
+def test_a_row_with_no_date_is_reported_rather_than_skipped(tool):
+    """The hole the first version of this check fell into.
+
+    Tesco's Irish DC carries no as_of at all. Comparing a missing date
+    against a cutoff silently passes, so the row nothing can be said about
+    was the row nothing was said about. It is reported separately instead.
+    """
+    stale, undated = tool.dated_changes(OUT, SPEC, 2026)
+    pairs = {(c["slug"], c["country"], c["archetype"]) for c in undated}
+    assert ("tesco", "IE", "DC") in pairs
+    assert not ({(c["slug"], c["country"], c["archetype"]) for c in stale}
+                & pairs), "a change cannot be both dated and undated"
+
+
+def test_a_fiscal_year_counts_as_a_date(tool):
+    """Research writes "FY2025" and "FY2026 (Aug 2025 - Aug 2026)" as well as
+    ISO dates. Reading the first four characters called both undated, which
+    put two perfectly good dates in the list of rows that have none."""
+    _, undated = tool.dated_changes(OUT, SPEC, 2026)
+    pairs = {(c["slug"], c["country"], c["archetype"]) for c in undated}
+    assert ("shell", "DE", "PLANT") not in pairs
+    assert ("unfi", "US", "DC") not in pairs
+
+
+def test_the_twenty_four_year_old_data_centre_is_found(tool):
+    """Nestle's German DC entered the estate on a finding dated 2002 and
+    labelled an IBM-era regional DC. Its Swiss sibling carries the same date
+    and the words "sold to Orllati", and a third finding records no
+    Nestle-owned DC in France at all - so the company's DC evidence
+    describes an outsourcing estate since disposed of."""
+    stale = tool.stale_evidence(OUT, SPEC, 2026)
+    hit = next((c for c in stale if c["slug"] == "nestle"
+                and c["country"] == "DE" and c["archetype"] == "DC"), None)
+    assert hit, "the oldest evidence in the set is not being reported"
+    assert hit["age"] >= 20
+
+
+def test_the_stale_data_centre_was_excluded_not_merely_noted():
+    import json
+    spec = json.loads(SPEC.read_text("utf-8"))
+    nestle = next(c for c in spec["companies"] if c["slug"] == "nestle")
+    assert any(r.get("country") == "DE" and r.get("archetype") == "DC"
+               for r in (nestle.get("excluded") or []))
+
+
+def test_recent_evidence_is_not_flagged(tool):
+    """Most of the set is current. A staleness check that fired on
+    everything would be a count of changes wearing a different name."""
+    stale = tool.stale_evidence(OUT, SPEC, 2026)
+    found = tool.changes(OUT, SPEC)
+    assert 0 < len(stale) < len(found), (
+        f"{len(stale)} of {len(found)} flagged stale")
+
+
+def test_every_stale_row_is_reported_oldest_first(tool):
+    ages = [c["age"] for c in tool.stale_evidence(OUT, SPEC, 2026)]
+    assert ages == sorted(ages, reverse=True)
+
+
+def test_an_opening_date_is_not_the_same_as_a_stale_count(tool):
+    """Shell's Amsterdam campus was flagged at four years old because its
+    as_of is when the campus opened, not when somebody last counted it. The
+    check cannot tell those apart, so a flag is a question for a reader
+    rather than a defect - this one was answered VERIFIED."""
+    register = tool.load_register(REGISTER)
+    entry = register.get(("shell", "NL", "CAMPUS"))
+    assert entry and entry["disposition"] == "VERIFIED"
+
+
 def test_an_all_site_types_total_is_not_one_archetype():
     """BASF's researched 54 is labelled "all site types, Germany" and was
     promoted as PLANT on top of declared offices and DCs, making the German
