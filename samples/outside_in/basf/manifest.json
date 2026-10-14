@@ -22,7 +22,7 @@
   "base_currency": "EUR",
   "case_id": "cbf4d17f-c7e7-45be-92fe-82e7a4005752",
   "spec_path": "/tmp/companies.json",
-  "spec_sha256": "1335e7fdd958",
+  "spec_sha256": "a30ce5addcbe",
   "entity_resolution": {
     "resolved": null,
     "resumed": true
@@ -149,7 +149,7 @@
     {
       "country": "US",
       "archetype": "PLANT",
-      "sites": 60,
+      "sites": 30,
       "density": "SUBURBAN"
     }
   ],
@@ -160,6 +160,13 @@
       "sites": 54,
       "origin": "EXCLUDED_BY_SCOPE",
       "reason": "the researched 54 is labelled 'all site types, Germany' and was promoted as PLANT alone, on top of the declared offices and data centres - making the German estate 73 when the source says the whole of it is 54."
+    },
+    {
+      "country": "US",
+      "archetype": "PLANT",
+      "sites": 60,
+      "origin": "EXCLUDED_BY_SCOPE",
+      "reason": "the researched 60 is labelled all site types across North America - plants, offices and laboratories for the US, Canada and Puerto Rico together. An all-types total in one archetype is why the German PLANT row is excluded, and a North American total is not a US one."
     },
     {
       "country": "BE",
@@ -282,11 +289,9 @@
     {
       "country": "US",
       "archetype": "PLANT",
-      "sites": 60,
-      "origin": "SUPERSEDED_BY_RESEARCH",
-      "density": "SUBURBAN",
-      "research_said": 60,
-      "disclosure_said": 30
+      "sites": 30,
+      "origin": "PUBLIC_DISCLOSURE",
+      "density": "SUBURBAN"
     }
   ],
   "scope_countries_modelled": [
@@ -306,7 +311,7 @@
   "sites_origin": {
     "DC": "ASSUMED_PUBLIC_DISCLOSURE",
     "LARGE_OFFICE": "ASSUMED_PUBLIC_DISCLOSURE",
-    "PLANT": "RESEARCHED"
+    "PLANT": "ASSUMED_PUBLIC_DISCLOSURE"
   },
   "fx_to_eur": {
     "rate": "1.0",
@@ -359,13 +364,13 @@
   ],
   "estimate_inputs": {
     "method": "BUILD_UP",
-    "users": 2988,
+    "users": 2628,
     "ops_cost_per_site_base": 900,
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-14T17:15:21.173919+00:00",
-  "run_seconds": 2.5,
+  "run_started": "2026-10-14T18:06:16.137454+00:00",
+  "run_seconds": 2.4,
   "preflight_conditions": 8,
   "promotion": {
     "promoted": true,

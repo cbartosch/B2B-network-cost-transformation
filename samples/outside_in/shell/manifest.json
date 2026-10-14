@@ -16,7 +16,7 @@
   "base_currency": "USD",
   "case_id": "4ceb19bd-c331-45c1-8220-87db66ff9103",
   "spec_path": "/tmp/companies.json",
-  "spec_sha256": "1335e7fdd958",
+  "spec_sha256": "2d6507402309",
   "entity_resolution": {
     "resolved": null,
     "resumed": true
@@ -55,30 +55,6 @@
       "archetype": "SERVICE_POINT",
       "sites": 1900,
       "density": "SUBURBAN"
-    },
-    {
-      "country": "DE",
-      "archetype": "STORE",
-      "sites": 67,
-      "density": "DENSE_URBAN"
-    },
-    {
-      "country": "DE",
-      "archetype": "STORE",
-      "sites": 535,
-      "density": "RURAL"
-    },
-    {
-      "country": "DE",
-      "archetype": "STORE",
-      "sites": 891,
-      "density": "SUBURBAN"
-    },
-    {
-      "country": "DE",
-      "archetype": "STORE",
-      "sites": 423,
-      "density": "URBAN"
     },
     {
       "country": "GB",
@@ -123,30 +99,6 @@
       "density": "SUBURBAN"
     },
     {
-      "country": "NL",
-      "archetype": "STORE",
-      "sites": 23,
-      "density": "DENSE_URBAN"
-    },
-    {
-      "country": "NL",
-      "archetype": "STORE",
-      "sites": 185,
-      "density": "RURAL"
-    },
-    {
-      "country": "NL",
-      "archetype": "STORE",
-      "sites": 308,
-      "density": "SUBURBAN"
-    },
-    {
-      "country": "NL",
-      "archetype": "STORE",
-      "sites": 146,
-      "density": "URBAN"
-    },
-    {
       "country": "US",
       "archetype": "CAMPUS",
       "sites": 1,
@@ -162,6 +114,20 @@
   "footprint_provenance": [
     {
       "country": "DE",
+      "archetype": "STORE",
+      "sites": 1916,
+      "origin": "EXCLUDED_BY_SCOPE",
+      "reason": "the 1,916 branded retail fuel sites are the same forecourts this spec declares as 1,900 DE SERVICE_POINT sites. Separately, branded is not operated - the question referred on the Dutch forecourts - but the double count stands whichever way that is ruled."
+    },
+    {
+      "country": "NL",
+      "archetype": "STORE",
+      "sites": 662,
+      "origin": "EXCLUDED_BY_SCOPE",
+      "reason": "the 662 branded forecourts are the same sites this spec declares as 500 NL SERVICE_POINT. Referred first on whether a dealer-owned forecourt is Shell's cost, which is still an open question; the double count is a second and sufficient reason to keep the row out whichever way that is ruled."
+    },
+    {
+      "country": "DE",
       "archetype": "PLANT",
       "sites": 1,
       "origin": "RESEARCHED",
@@ -173,13 +139,6 @@
       "sites": 1900,
       "origin": "PUBLIC_DISCLOSURE",
       "density": "SUBURBAN"
-    },
-    {
-      "country": "DE",
-      "archetype": "STORE",
-      "sites": 1916,
-      "origin": "RESEARCHED",
-      "density": null
     },
     {
       "country": "GB",
@@ -233,13 +192,6 @@
       "density": "SUBURBAN"
     },
     {
-      "country": "NL",
-      "archetype": "STORE",
-      "sites": 662,
-      "origin": "RESEARCHED",
-      "density": null
-    },
-    {
       "country": "US",
       "archetype": "CAMPUS",
       "sites": 1,
@@ -255,8 +207,8 @@
     },
     {
       "origin": "DENSITY_FROM_MIX",
-      "rows": 8,
-      "sites": 2584,
+      "rows": 6,
+      "sites": 6,
       "filled": [
         {
           "country": "DE",
@@ -266,19 +218,6 @@
           "mix_industry": "INTEGRATED_OIL_GAS",
           "bands": {
             "RURAL": 1
-          }
-        },
-        {
-          "country": "DE",
-          "archetype": "STORE",
-          "sites": 1916,
-          "basis": "INDUSTRY_DEFAULT",
-          "mix_industry": "INTEGRATED_OIL_GAS",
-          "bands": {
-            "DENSE_URBAN": 67,
-            "RURAL": 535,
-            "SUBURBAN": 891,
-            "URBAN": 423
           }
         },
         {
@@ -309,19 +248,6 @@
           "mix_industry": "INTEGRATED_OIL_GAS",
           "bands": {
             "DENSE_URBAN": 1
-          }
-        },
-        {
-          "country": "NL",
-          "archetype": "STORE",
-          "sites": 662,
-          "basis": "INDUSTRY_DEFAULT",
-          "mix_industry": "INTEGRATED_OIL_GAS",
-          "bands": {
-            "DENSE_URBAN": 23,
-            "RURAL": 185,
-            "SUBURBAN": 308,
-            "URBAN": 146
           }
         },
         {
@@ -363,7 +289,7 @@
     "LARGE_OFFICE": "RESEARCHED",
     "PLANT": "RESEARCHED",
     "SERVICE_POINT": "ASSUMED_PUBLIC_DISCLOSURE",
-    "STORE": "RESEARCHED"
+    "STORE": "ASSUMED_PUBLIC_DISCLOSURE"
   },
   "fx_to_eur": {
     "rate": "0.87110000",
@@ -417,13 +343,13 @@
   ],
   "estimate_inputs": {
     "method": "BUILD_UP",
-    "users": 71940,
+    "users": 41004,
     "ops_cost_per_site_base": 900,
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-14T17:15:03.695850+00:00",
-  "run_seconds": 8.4,
+  "run_started": "2026-10-14T18:00:11.585925+00:00",
+  "run_seconds": 5.9,
   "preflight_conditions": 8,
   "promotion": {
     "promoted": true,

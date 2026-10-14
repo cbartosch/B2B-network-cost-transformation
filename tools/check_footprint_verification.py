@@ -313,6 +313,68 @@ def priced_above_research(outdir: pathlib.Path, spec_path: pathlib.Path) -> list
     return sorted(out, key=lambda c: -(c["used"] / max(c["highest_found"], 1)))
 
 
+#: Archetype pairs that name the same premises under two words.
+#:
+#: Not a general synonym table - a warehouse is not a shop. Each pair is
+#: here because the sample set shows one network counted both ways:
+#:
+#:   STORE/BRANCH         a bank branch and a "financial centre" (Simmons
+#:                        Bank), a retail branch (BNP), a dialysis clinic
+#:                        that the filing calls a clinic and the
+#:                        declaration calls a branch (Fresenius).
+#:   STORE/SERVICE_POINT  a fuel forecourt (Shell, DE and NL).
+#:   STORE/WAREHOUSE      a builders' merchant, which is a trade counter
+#:                        and a yard at one address (Saint-Gobain, in
+#:                        three countries independently).
+SAME_PREMISES = (frozenset({"STORE", "BRANCH"}),
+                 frozenset({"STORE", "SERVICE_POINT"}),
+                 frozenset({"STORE", "WAREHOUSE"}))
+
+#: How far two counts of one network may differ and still be one network.
+#: Saint-Gobain's French merchants are the widest real case at 2.2x - the
+#: declaration says 900 and the company's own site says over 2,000 - and
+#: the gap is the finding rather than a reason to call them different.
+COLLISION_RATIO = 2.5
+
+
+def archetype_collisions(outdir: pathlib.Path, spec_path: pathlib.Path) -> list:
+    """One network counted twice under two archetype names.
+
+    The merge keys on (country, archetype), so research typing a network
+    differently from the declaration adds it instead of reconciling it.
+    Simmons Bank's 222 "financial centres" beside its 230 declared
+    branches was caught by hand; this is the same shape and it is not
+    rare. Across the set it accounts for more phantom sites than every
+    other footprint defect together.
+    """
+    spec = {c["slug"]: c for c in
+            json.loads(spec_path.read_text("utf-8"))["companies"]}
+    out = []
+    for d in sorted(outdir.iterdir()):
+        f = d / "research.json"
+        if not (d.is_dir() and f.exists()) or d.name not in spec:
+            continue
+        declared = {}
+        for row in spec[d.name]["declared_footprint"]:
+            declared.setdefault(row["country"], {})[row["archetype"]] = \
+                row["sites"]
+        for e in (json.loads(f.read_text("utf-8")).get(
+                "evidenced_footprint") or []):
+            country, arch, found = e["country"], e["archetype"], e["sites"]
+            here = declared.get(country, {})
+            # Same archetype is an ordinary merge, not a collision.
+            if found <= 0 or arch in here:
+                continue
+            for darch, dn in here.items():
+                if dn <= 0 or frozenset({arch, darch}) not in SAME_PREMISES:
+                    continue
+                if max(found, dn) / min(found, dn) <= COLLISION_RATIO:
+                    out.append({"slug": d.name, "country": country,
+                                "archetype": arch, "found": found,
+                                "declared_as": darch, "declared": dn})
+    return sorted(out, key=lambda c: -c["found"])
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", default="samples/outside_in")
@@ -399,6 +461,20 @@ def main() -> int:
             print(f"  {c['slug']:<16}{c['country']}/{c['archetype']:<14}"
                   f"{c['used']:>7,} sites  as of {c['as_of']}  "
                   f"{c['age']:>2}y{mark}")
+
+    collisions = archetype_collisions(pathlib.Path(args.out),
+                                      pathlib.Path(args.spec))
+    if collisions:
+        live = [c for c in collisions
+                if (c["slug"], c["country"], c["archetype"]) not in register]
+        print(f"\none network counted twice under two archetypes "
+              f"({len(collisions)}, {len(live)} with no register entry):")
+        for c in collisions:
+            mark = "" if (c["slug"], c["country"],
+                          c["archetype"]) in register else "  <- UNADDRESSED"
+            print(f"  {c['slug']:<16}{c['country']}  researched "
+                  f"{c['archetype']} {c['found']:,} beside declared "
+                  f"{c['declared_as']} {c['declared']:,}{mark}")
 
     over = priced_above_research(pathlib.Path(args.out),
                                  pathlib.Path(args.spec))

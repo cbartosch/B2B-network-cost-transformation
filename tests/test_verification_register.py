@@ -10,6 +10,7 @@ AUDITABLE - the explanation lives in the output of the run that made it, so a
 reader has only the run's own word for it. A register is a separate, dated
 statement a person signed.
 """
+import collections
 import csv
 import importlib.util
 import pathlib
@@ -112,18 +113,44 @@ def test_an_exclusion_counts_as_a_change_needing_a_record(tool):
     assert "EXCLUDED" in kinds and "CHANGED" in kinds
 
 
-def test_most_changes_are_still_unverified_and_that_is_the_point(tool):
-    """The register's value is showing what is NOT verified. A checker that
-    reported everything covered would mean the register had been written to
-    match the output rather than the evidence."""
+def test_the_register_records_refusals_and_not_only_acceptances(tool):
+    """What this used to assert, and why it had to change.
+
+    It required that MOST changes be unverified - the reasoning being
+    that a register covering everything would have been written to match
+    the output rather than the evidence. That was true while the register
+    was 14 entries against 61 changes. Every change now carries a dated
+    decision, so the shape of the guard has to move rather than be
+    dropped.
+
+    The thing actually worth protecting is that verifying was not a
+    rubber stamp. A register where every entry says VERIFIED would mean
+    nobody refused anything, which is not what checking 67 changes looks
+    like: this one excluded the same network counted twice under two
+    archetype names five times over, declined an apprenticeship
+    announcement read as a site count, and referred four apportioned
+    plant counts and three scope questions to an owner.
+    """
+    register = tool.load_register(REGISTER)
+    kinds = collections.Counter(e["disposition"] for e in register.values())
+    refused = sum(n for d, n in kinds.items() if d != "VERIFIED")
+    assert kinds["VERIFIED"], "nothing verified"
+    assert refused >= len(register) // 4, (
+        f"only {refused} of {len(register)} entries refused anything "
+        f"({dict(kinds)}) - a register that accepts everything put in "
+        f"front of it has stopped being evidence")
+    for name in ("EXCLUDED", "DECLINED", "REFERRED"):
+        assert kinds[name], f"no {name} entries - every refusal looks alike"
+
+
+def test_every_change_now_carries_a_decision(tool):
+    """The gap the external audit raised, closed. --strict exits 0."""
     register = tool.load_register(REGISTER)
     found = tool.changes(ROOT / "samples" / "outside_in",
                          ROOT / "samples" / "companies.json")
-    covered = sum(1 for c in found
-                  if (c["slug"], c["country"], c["archetype"]) in register)
-    assert 0 < covered < len(found), (
-        f"{covered} of {len(found)} covered - a register covering everything "
-        f"has stopped being evidence")
+    bare = [(c["slug"], c["country"], c["archetype"]) for c in found
+            if (c["slug"], c["country"], c["archetype"]) not in register]
+    assert not bare, f"{len(bare)} changes with no dated entry: {bare[:5]}"
 
 
 # ------------------- findings that disqualify themselves in their own label
@@ -410,6 +437,57 @@ def test_every_unexamined_apportioned_figure_carries_a_referral(tool):
     missing = [(c["slug"], c["country"], c["archetype"]) for c in over
                if (c["slug"], c["country"], c["archetype"]) not in register]
     assert not missing, f"apportioned overstatements with no referral: {missing}"
+
+
+def test_one_network_counted_twice_under_two_archetypes_is_found(tool):
+    """The largest footprint defect in the set, and the last one found.
+
+    The merge keys on (country, archetype), so research typing a network
+    differently from the declaration ADDS it rather than reconciling it.
+    Simmons Bank's 222 "financial centres" beside its 230 declared
+    branches was caught by hand months earlier; nobody looked for the
+    same shape elsewhere. It was everywhere:
+
+        fresenius    US  STORE 2,624 beside BRANCH 2,600
+        saint-gobain FR  STORE 2,000 beside WAREHOUSE 900
+        shell        DE  STORE 1,916 beside SERVICE_POINT 1,900
+        bnp-paribas  FR  STORE 1,474 beside BRANCH 1,600
+        shell        NL  STORE   662 beside SERVICE_POINT 500
+
+    Eleven thousand phantom sites, a tenth of the set's baseline, and
+    every one of them evidenced: the research is right and the
+    declaration is right and they are the same buildings.
+    """
+    found = tool.archetype_collisions(OUT, SPEC)
+    pairs = {(c["slug"], c["country"]) for c in found}
+    for expected in (("fresenius", "US"), ("saint-gobain", "FR"),
+                     ("shell", "DE"), ("bnp-paribas", "FR"),
+                     ("simmons-bank", "US")):
+        assert expected in pairs, f"{expected} not detected"
+
+
+def test_the_collision_check_does_not_fire_on_different_buildings(tool):
+    """A warehouse is not a shop, and the pairs are listed rather than
+    inferred. Without that constraint the check returns 22 rows including
+    a one-site warehouse beside a one-site data centre, which is two
+    buildings and not one network."""
+    found = tool.archetype_collisions(OUT, SPEC)
+    for c in found:
+        assert frozenset({c["archetype"], c["declared_as"]}) \
+            in tool.SAME_PREMISES
+    pairs = {(c["slug"], c["country"], c["archetype"]) for c in found}
+    assert ("lufthansa", "DE", "WAREHOUSE") not in pairs
+    assert ("victorias-secret", "US", "WAREHOUSE") not in pairs
+
+
+def test_every_collision_carries_a_decision(tool):
+    """Nine found, nine recorded. A detector whose output nobody acts on
+    is the condition this whole register exists to end."""
+    register = tool.load_register(REGISTER)
+    live = [(c["slug"], c["country"], c["archetype"])
+            for c in tool.archetype_collisions(OUT, SPEC)
+            if (c["slug"], c["country"], c["archetype"]) not in register]
+    assert not live, f"collisions with no register entry: {live}"
 
 
 def test_an_all_site_types_total_is_not_one_archetype():

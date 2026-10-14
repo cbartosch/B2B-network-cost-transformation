@@ -16,7 +16,7 @@
   "base_currency": "EUR",
   "case_id": "d306c1b6-5c12-4709-b0b8-bda47b7763d1",
   "spec_path": "/tmp/companies.json",
-  "spec_sha256": "1335e7fdd958",
+  "spec_sha256": "a30ce5addcbe",
   "entity_resolution": {
     "resolved": null,
     "resumed": true
@@ -60,30 +60,6 @@
       "country": "DE",
       "archetype": "LARGE_OFFICE",
       "sites": 30,
-      "density": "URBAN"
-    },
-    {
-      "country": "DE",
-      "archetype": "STORE",
-      "sites": 271,
-      "density": "DENSE_URBAN"
-    },
-    {
-      "country": "DE",
-      "archetype": "STORE",
-      "sites": 362,
-      "density": "RURAL"
-    },
-    {
-      "country": "DE",
-      "archetype": "STORE",
-      "sites": 843,
-      "density": "SUBURBAN"
-    },
-    {
-      "country": "DE",
-      "archetype": "STORE",
-      "sites": 1024,
       "density": "URBAN"
     },
     {
@@ -139,33 +115,23 @@
       "archetype": "LARGE_OFFICE",
       "sites": 1,
       "density": "URBAN"
-    },
-    {
-      "country": "IT",
-      "archetype": "STORE",
-      "sites": 3,
-      "density": "DENSE_URBAN"
-    },
-    {
-      "country": "IT",
-      "archetype": "STORE",
-      "sites": 5,
-      "density": "RURAL"
-    },
-    {
-      "country": "IT",
-      "archetype": "STORE",
-      "sites": 10,
-      "density": "SUBURBAN"
-    },
-    {
-      "country": "IT",
-      "archetype": "STORE",
-      "sites": 13,
-      "density": "URBAN"
     }
   ],
   "footprint_provenance": [
+    {
+      "country": "DE",
+      "archetype": "STORE",
+      "sites": 2500,
+      "origin": "EXCLUDED_BY_SCOPE",
+      "reason": "the 2,500 agencies are the Nordost sales region alone - the sources say 'in den neuen Bundeslaendern' and 'im Vertriebsgebiet Nordost' - promoted as a German national count, and the figure is a pre-closure baseline against which 430 agencies were due to shut in 2025. Whether a tied agent's connectivity is Allianz's cost is the separate question referred on the French agencies."
+    },
+    {
+      "country": "IT",
+      "archetype": "STORE",
+      "sites": 31,
+      "origin": "EXCLUDED_BY_SCOPE",
+      "reason": "31 branches of Allianz Bank Financial Advisors from a single aggregator, with no evidence settling whether the 400 declared Italian branches already include them."
+    },
     {
       "country": "DE",
       "archetype": "BRANCH",
@@ -190,13 +156,6 @@
       "density": "URBAN",
       "research_said": 11,
       "disclosure_said": 30
-    },
-    {
-      "country": "DE",
-      "archetype": "STORE",
-      "sites": 2500,
-      "origin": "RESEARCHED",
-      "density": null
     },
     {
       "country": "FR",
@@ -236,30 +195,10 @@
       "density": null
     },
     {
-      "country": "IT",
-      "archetype": "STORE",
-      "sites": 31,
-      "origin": "RESEARCHED",
-      "density": null
-    },
-    {
       "origin": "DENSITY_FROM_MIX",
-      "rows": 5,
-      "sites": 5050,
+      "rows": 3,
+      "sites": 2519,
       "filled": [
-        {
-          "country": "DE",
-          "archetype": "STORE",
-          "sites": 2500,
-          "basis": "INDUSTRY_DEFAULT",
-          "mix_industry": "INSURANCE",
-          "bands": {
-            "DENSE_URBAN": 271,
-            "RURAL": 362,
-            "SUBURBAN": 843,
-            "URBAN": 1024
-          }
-        },
         {
           "country": "FR",
           "archetype": "LARGE_OFFICE",
@@ -292,19 +231,6 @@
           "bands": {
             "DENSE_URBAN": 1,
             "URBAN": 1
-          }
-        },
-        {
-          "country": "IT",
-          "archetype": "STORE",
-          "sites": 31,
-          "basis": "INDUSTRY_DEFAULT",
-          "mix_industry": "INSURANCE",
-          "bands": {
-            "DENSE_URBAN": 3,
-            "RURAL": 5,
-            "SUBURBAN": 10,
-            "URBAN": 13
           }
         }
       ],
@@ -376,13 +302,13 @@
   ],
   "estimate_inputs": {
     "method": "BUILD_UP",
-    "users": 79020,
+    "users": 48648,
     "ops_cost_per_site_base": 900,
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-14T17:14:24.890221+00:00",
-  "run_seconds": 10.1,
+  "run_started": "2026-10-14T18:06:21.254791+00:00",
+  "run_seconds": 6.2,
   "preflight_conditions": 8,
   "promotion": {
     "promoted": true,
