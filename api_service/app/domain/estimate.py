@@ -228,6 +228,16 @@ def expired_share(scope: list) -> str:
 #: Evidence grades, best first. A is a transaction, E is an assumption.
 EVIDENCE_RANK = {"A": 0, "B": 1, "C": 2, "D": 3, "E": 4, "F": 5}
 
+#: Who set the row, for when evidence grade cannot separate two of them.
+#:
+#: A steward approving a price for this market is a deliberate act about
+#: this market, so it wins. A seeded row is a position somebody set for
+#: that key, which is less than an approval and more than nothing. An
+#: interpolation is last: it inherits its anchors' grade, so it can tie
+#: with them, but nobody chose its value - it is the only one of the three
+#: that no person ever looked at.
+_BASIS_RANK = {"PROMOTED": 0, "SEED": 1, "INTERPOLATED": 2}
+
 
 def best_priced_rows(rows: list) -> list:
     """One rate-card row per (country, product, bandwidth): best-evidenced.
@@ -244,14 +254,31 @@ def best_priced_rows(rows: list) -> list:
 
     Evidence grade decides, which is the same rule the rest of the model
     applies: a researched market price is grade C, a seed is grade E, and C
-    beats E. Where grades tie the row is chosen by id so the answer is at
-    least stable between runs rather than following query order.
+    beats E.
+
+    WHERE GRADES TIE, WHO SET THE ROW DECIDES, and an id was not good
+    enough. The seed used to stamp every rate grade E, so a grade tie
+    between a promoted price and a seeded one could not happen and sorting
+    by id was harmless. Then the seed began carrying the real grade of the
+    five rows that came from a UK market survey - and GB DIA at 100 Mbps
+    had two grade C rows, the survey-derived seed at USD 335 and the
+    approved Virgin Media price at GBP 185. "GB-DIA-100" sorts before
+    "GB-DIA-100-researched", so the assumption displaced the approved
+    price and the British estates got more expensive.
+
+    That is this function's own bug coming back by another road: it exists
+    because six approved prices each lost to the seed they were meant to
+    replace. A price a steward approved for this market beats a position
+    the seed wrote, at equal evidence, every time. The id remains as the
+    last tiebreak so the answer is stable between runs.
     """
     best: dict = {}
     for row in rows:
         key = (row.country, row.product, row.bandwidth_mbps)
         rank = (EVIDENCE_RANK.get(
             str(getattr(row, "evidence_grade", "") or "").upper(), 9),
+            _BASIS_RANK.get(
+                str(getattr(row, "price_basis", "") or "").upper(), 9),
             str(getattr(row, "id", "")))
         if key not in best or rank < best[key][0]:
             best[key] = (rank, row)
