@@ -16,7 +16,7 @@
   "base_currency": "USD",
   "case_id": "db96b5a3-5939-434d-97bf-79df14ddeba4",
   "spec_path": "/tmp/companies.json",
-  "spec_sha256": "88e4886935cd",
+  "spec_sha256": "1335e7fdd958",
   "entity_resolution": {
     "resolved": null,
     "resumed": true
@@ -232,8 +232,8 @@
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-14T07:26:27.794746+00:00",
-  "run_seconds": 2.5,
+  "run_started": "2026-10-14T07:57:03.670762+00:00",
+  "run_seconds": 2.3,
   "preflight_conditions": 8,
   "promotion": {
     "promoted": true,
@@ -242,13 +242,28 @@
     "accepted": 2,
     "declined": [
       {
-        "reason": "sources disagree by 0% (3 to 3) and the conflict has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again."
+        "reason": "sources state this in units that disagree, and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
+        "label": "LARGE_OFFICE – Regional offices, Australia (AU)",
+        "country": "AU",
+        "flags": [
+          "UNIT_MISMATCH"
+        ]
       },
       {
-        "reason": "sources disagree by 0% (10 to 10) and the conflict has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again."
+        "reason": "sources state this in units that disagree, and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
+        "label": "PLANT – Aluminium smelters and refinery, Canada (CA)",
+        "country": "CA",
+        "flags": [
+          "UNIT_MISMATCH"
+        ]
       },
       {
-        "reason": "sources disagree by 0% (1 to 1) and the conflict has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again."
+        "reason": "sources state this in units that disagree, and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
+        "label": "LARGE_OFFICE – Corporate HQ, United Kingdom (GB)",
+        "country": "GB",
+        "flags": [
+          "UNIT_MISMATCH"
+        ]
       }
     ],
     "declined_count": 3

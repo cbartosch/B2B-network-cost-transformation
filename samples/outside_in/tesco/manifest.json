@@ -223,8 +223,8 @@
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-14T07:40:11.691633+00:00",
-  "run_seconds": 6.6,
+  "run_started": "2026-10-14T07:55:31.296297+00:00",
+  "run_seconds": 7.2,
   "preflight_conditions": 8,
   "promotion": {
     "promoted": true,
@@ -233,13 +233,28 @@
     "accepted": 5,
     "declined": [
       {
-        "reason": "sources disagree by 0% (1 to 1) and the conflict has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again."
+        "reason": "sources state this in units that disagree, and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
+        "label": "LARGE_OFFICE – GB (group HQ)",
+        "country": "GB",
+        "flags": [
+          "UNIT_MISMATCH"
+        ]
       },
       {
-        "reason": "sources disagree by 29% (2958 to 3829) and the conflict has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again."
+        "reason": "sources disagree by 29% (2958 to 3829), and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
+        "label": "STORE – GB (UK)",
+        "country": "GB",
+        "flags": [
+          "MATERIAL_SPREAD"
+        ]
       },
       {
-        "reason": "sources disagree by 0% (23 to 23) and the conflict has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again."
+        "reason": "sources state this in units that disagree, and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
+        "label": "WAREHOUSE – GB (distribution/logistics centres)",
+        "country": "GB",
+        "flags": [
+          "UNIT_MISMATCH"
+        ]
       }
     ],
     "declined_count": 3

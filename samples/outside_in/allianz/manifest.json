@@ -16,7 +16,7 @@
   "base_currency": "EUR",
   "case_id": "d306c1b6-5c12-4709-b0b8-bda47b7763d1",
   "spec_path": "/tmp/companies.json",
-  "spec_sha256": "88e4886935cd",
+  "spec_sha256": "1335e7fdd958",
   "entity_resolution": {
     "resolved": null,
     "resumed": true
@@ -381,8 +381,8 @@
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-14T07:24:55.240461+00:00",
-  "run_seconds": 11.1,
+  "run_started": "2026-10-14T07:55:54.831203+00:00",
+  "run_seconds": 7.2,
   "preflight_conditions": 8,
   "promotion": {
     "promoted": true,
@@ -391,7 +391,12 @@
     "accepted": 7,
     "declined": [
       {
-        "reason": "sources disagree by 3% (2516 to 2601) and the conflict has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again."
+        "reason": "sources state this in units that disagree, and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
+        "label": "STORE",
+        "country": "FR",
+        "flags": [
+          "UNIT_MISMATCH"
+        ]
       }
     ],
     "declined_count": 1

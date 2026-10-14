@@ -16,7 +16,7 @@
   "base_currency": "EUR",
   "case_id": "0fad5c9a-1959-4583-845f-a7cc722e8f60",
   "spec_path": "/tmp/companies.json",
-  "spec_sha256": "88e4886935cd",
+  "spec_sha256": "1335e7fdd958",
   "entity_resolution": {
     "resolved": null,
     "resumed": true
@@ -230,8 +230,8 @@
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-14T07:24:40.620340+00:00",
-  "run_seconds": 7.4,
+  "run_started": "2026-10-14T07:55:41.792997+00:00",
+  "run_seconds": 6.6,
   "preflight_conditions": 8,
   "promotion": {
     "promoted": true,
@@ -240,7 +240,12 @@
     "accepted": 3,
     "declined": [
       {
-        "reason": "sources disagree by 0% (13000 to 13000) and the conflict has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again."
+        "reason": "sources state this in units that disagree, and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
+        "label": "SERVICE_POINT – Person-operated sales points / post offices (DE)",
+        "country": "DE",
+        "flags": [
+          "UNIT_MISMATCH"
+        ]
       }
     ],
     "declined_count": 1

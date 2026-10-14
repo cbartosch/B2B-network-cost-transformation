@@ -219,6 +219,72 @@ def stale_evidence(outdir: pathlib.Path, spec_path: pathlib.Path,
     return dated_changes(outdir, spec_path, as_of_year)[0]
 
 
+#: Leading token of a finding's label, which is how an archetype is named.
+_ARCH = re.compile(r"^([A-Z_]+)")
+
+
+def priced_above_research(outdir: pathlib.Path, spec_path: pathlib.Path) -> list:
+    """Pairs where the estate's figure exceeds every count research found.
+
+    The opposite failure to a changed count, and invisible to the register
+    because nothing changed. Research is refused or superseded, the
+    declared figure stands unchallenged, and nobody sees that every source
+    which looked said something smaller.
+
+    Nestle's French plants are the case. Three sources - the Office
+    francais de la biodiversite at 18, nestle.fr at 13, an aggregator at
+    12 - and the estate prices 28, which is an apportionment of a
+    published group factory total across ten countries, not a figure
+    anybody published about France. The 18 and the 13 were banded
+    together at a 38% spread and refused as a conflict, correctly; the
+    clean 12 was superseded by the larger conflicted row before the
+    refusal, so nothing survived to argue with the 28.
+
+    Mostly this reports research being incomplete rather than a
+    declaration being wrong - one office found against twelve declared is
+    research's limit, not the company's estate. The ratio and the CR-02b
+    marker are what separate the two.
+    """
+    spec = {c["slug"]: c for c in
+            json.loads(spec_path.read_text("utf-8"))["companies"]}
+    out = []
+    for d in sorted(outdir.iterdir()):
+        f = d / "research.json"
+        if not (d.is_dir() and f.exists()):
+            continue
+        r = json.loads(f.read_text("utf-8"))
+        man = json.loads((d / "manifest.json").read_text("utf-8"))
+        used = {}
+        for row in (man.get("footprint_used") or []):
+            key = (row["country"], row["archetype"])
+            used[key] = used.get(key, 0) + row["sites"]
+        promoted = {(e["country"], e["archetype"])
+                    for e in (r.get("evidenced_footprint") or [])}
+        highest = {}
+        for disp in (r.get("dispositions") or []):
+            for t in ((disp.get("evidence") or {}).get("triangulated") or []):
+                country, label = t.get("country"), str(t.get("label") or "")
+                match = _ARCH.match(label)
+                if not country or not match:
+                    continue
+                key = (country, match.group(1))
+                if key not in used or key in promoted:
+                    continue
+                try:
+                    value = float(t["high"])
+                except (TypeError, ValueError, KeyError):
+                    continue
+                highest[key] = max(highest.get(key, 0.0), value)
+        for key, found in highest.items():
+            if found and used[key] > found:
+                out.append({
+                    "slug": d.name, "country": key[0], "archetype": key[1],
+                    "used": used[key], "highest_found": int(found),
+                    "apportioned": bool(
+                        spec.get(d.name, {}).get("scope_note_cr02b"))})
+    return sorted(out, key=lambda c: -(c["used"] / max(c["highest_found"], 1)))
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", default="samples/outside_in")
@@ -267,9 +333,16 @@ def main() -> int:
     if standing:
         print(f"\nrecorded, no change in the set ({len(standing)}):")
         for e in sorted(standing, key=lambda e: e["slug"]):
-            tail = ("the declared figure stands"
-                    if e["disposition"] == "DECLINED"
-                    else "VERIFIED with nothing to verify - stale?")
+            tail = {
+                # Declining is a decision about evidence that did not win,
+                # so there is nothing in the change list by design.
+                "DECLINED": "the declared figure stands",
+                # Likewise a referral about a figure research never moved:
+                # Nestle's French plants are declared at an apportioned 28
+                # against three sources between 12 and 18.
+                "REFERRED": "awaiting an owner's ruling",
+            }.get(e["disposition"],
+                  "VERIFIED with nothing to verify - stale?")
             print(f"  {e['slug']:<16}{e['country']}/{e['archetype']:<14}"
                   f"{e['disposition']:<9}{tail}")
 
@@ -298,6 +371,18 @@ def main() -> int:
             print(f"  {c['slug']:<16}{c['country']}/{c['archetype']:<14}"
                   f"{c['used']:>7,} sites  as of {c['as_of']}  "
                   f"{c['age']:>2}y{mark}")
+
+    over = priced_above_research(pathlib.Path(args.out),
+                                 pathlib.Path(args.spec))
+    if over:
+        apportioned = [c for c in over if c["apportioned"]]
+        print(f"\npriced above every count research found ({len(over)}, "
+              f"{len(apportioned)} on an apportioned declaration):")
+        for c in over:
+            mark = " <- apportioned, not published" if c["apportioned"] else ""
+            print(f"  {c['slug']:<16}{c['country']}/{c['archetype']:<14}"
+                  f"{c['used']:>7,} in estate, {c['highest_found']:>6,} "
+                  f"found  {c['used']/max(c['highest_found'],1):>4.1f}x{mark}")
 
     warnings = label_warnings(pathlib.Path(args.out))
     live = [w for w in warnings

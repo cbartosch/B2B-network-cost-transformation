@@ -15,7 +15,7 @@
   "base_currency": "EUR",
   "case_id": "2ad772a6-f0e2-424e-8fc1-75ded97aad7f",
   "spec_path": "/tmp/companies.json",
-  "spec_sha256": "88e4886935cd",
+  "spec_sha256": "1335e7fdd958",
   "entity_resolution": {
     "resolved": null,
     "resumed": true
@@ -250,8 +250,8 @@
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-14T07:25:49.357048+00:00",
-  "run_seconds": 6.2,
+  "run_started": "2026-10-14T07:56:34.510722+00:00",
+  "run_seconds": 3.3,
   "preflight_conditions": 8,
   "promotion": {
     "promoted": true,
@@ -260,10 +260,20 @@
     "accepted": 2,
     "declined": [
       {
-        "reason": "sources disagree by 30% (500 to 650) and the conflict has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again."
+        "reason": "sources disagree by 30% (500 to 650), and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
+        "label": "SERVICE_POINT — Iberdrola customer service and sales points",
+        "country": "ES",
+        "flags": [
+          "MATERIAL_SPREAD"
+        ]
       },
       {
-        "reason": "sources disagree by 0% (6 to 6) and the conflict has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again."
+        "reason": "sources state this in units that disagree, and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
+        "label": "LARGE_OFFICE — ScottishPower corporate offices",
+        "country": "GB",
+        "flags": [
+          "UNIT_MISMATCH"
+        ]
       }
     ],
     "declined_count": 2

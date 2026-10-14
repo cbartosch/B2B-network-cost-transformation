@@ -342,6 +342,54 @@ def test_a_figure_the_company_still_publishes_is_verified_not_aged_out():
         assert entry["evidence_ref"].startswith("https://www.nestle.fr")
 
 
+def test_an_estate_priced_above_everything_research_found_is_reported(tool):
+    """The opposite failure to a changed count, and invisible to the
+    register because nothing changed.
+
+    Nestle's French plants: three sources looked - the Office francais de
+    la biodiversite at 18, nestle.fr at 13, an aggregator at 12 - and the
+    estate prices 28, which is an apportionment of a published group
+    factory total across ten countries rather than a figure anybody
+    published about France. Research was refused on a 38% spread, the
+    declared figure stood unchallenged, and nothing said that every source
+    which looked said something smaller.
+    """
+    over = tool.priced_above_research(OUT, SPEC)
+    hit = next((c for c in over if c["slug"] == "nestle"
+                and c["country"] == "FR" and c["archetype"] == "PLANT"), None)
+    assert hit, "the case this check was written for is not reported"
+    assert hit["used"] == 28 and hit["highest_found"] == 18
+    assert hit["apportioned"], (
+        "the CR-02b note is what separates an unsourced declaration from "
+        "research simply being incomplete")
+
+
+def test_the_apportioned_marker_distinguishes_the_two_causes(tool):
+    """Most rows here are research being incomplete, not a declaration
+    being wrong: one Tesco office found against twelve declared is
+    research's limit. The marker is what makes the list readable."""
+    over = tool.priced_above_research(OUT, SPEC)
+    assert any(not c["apportioned"] for c in over), "no incomplete-research rows"
+    assert any(c["apportioned"] for c in over), "no apportioned rows"
+    for c in over:
+        if c["apportioned"]:
+            assert c["archetype"] == "PLANT", (
+                "every apportioned overstatement in this set is a plant "
+                "count; a new archetype here is worth looking at")
+
+
+def test_every_apportioned_overstatement_carries_a_referral(tool):
+    """An unsourced figure standing above every source that looked is a
+    decision for an owner - which legal entities count as Nestle France -
+    not something the model may settle."""
+    register = tool.load_register(REGISTER)
+    over = [c for c in tool.priced_above_research(OUT, SPEC)
+            if c["apportioned"]]
+    missing = [(c["slug"], c["country"], c["archetype"]) for c in over
+               if (c["slug"], c["country"], c["archetype"]) not in register]
+    assert not missing, f"apportioned overstatements with no referral: {missing}"
+
+
 def test_an_all_site_types_total_is_not_one_archetype():
     """BASF's researched 54 is labelled "all site types, Germany" and was
     promoted as PLANT on top of declared offices and DCs, making the German

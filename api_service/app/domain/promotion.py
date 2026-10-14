@@ -739,12 +739,30 @@ def promote(session, *, case_id: str, candidate_ids: list[str],
             # is the outcome conflict retention exists to prevent. The
             # promotion is refused with the spread named; an analyst who has
             # looked and decided can pass accept_conflicts.
+            # Name the finding and the reason it actually failed.
+            #
+            # This said "sources disagree by {spread}" whatever the flag
+            # was, and review_required fires on three of them. Nestle's
+            # German plant count is a UNIT_MISMATCH between two sources
+            # both stating 12, so the refusal read "sources disagree by 0%
+            # (12 to 12)" - a sentence that invites an analyst to dismiss
+            # it as noise. It also named no label and no country, so a
+            # reader could not tell which of eleven findings was refused.
+            why = {
+                "MATERIAL_SPREAD": (
+                    f"sources disagree by {band.get('spread_share', 0):.0%} "
+                    f"({band.get('low')} to {band.get('high')})"),
+                "UNIT_MISMATCH": "sources state this in units that disagree",
+                "NEWEST_DIVERGES": ("the newest source diverges from the "
+                                    "others"),
+            }
+            fired = [f for f in (band.get("flags") or []) if f in why]
             declined.append({
                 "candidate_id": e["candidate_id"],
-                "reason": (f"sources disagree by "
-                           f"{band.get('spread_share', 0):.0%} "
-                           f"({band.get('low')} to {band.get('high')}) and the "
-                           f"conflict has not been reviewed. Look at it and "
+                "label": q.get("label"), "country": q.get("country"),
+                "flags": fired,
+                "reason": (f"{'; '.join(why[f] for f in fired) or 'the band is marked for review'}"
+                           f", and this has not been reviewed. Look at it and "
                            f"promote with accept_conflicts, or research the "
                            f"domain again.")})
             continue

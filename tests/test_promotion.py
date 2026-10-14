@@ -142,6 +142,68 @@ def test_a_finding_with_no_document_cites_nothing(session):
     assert row["source_urls"] == []
 
 
+def _case_with_band(session, quantity, triangulated):
+    case_id, run_id = str(uuid.uuid4()), str(uuid.uuid4())
+    session.execute(insert(db.case).values(
+        case_id=case_id, created_by="tester",
+        subject_entity_legal_name="Acme Global Logistics"))
+    session.execute(insert(db.domain_disposition).values(
+        id=str(uuid.uuid4()), case_id=case_id, estimate_snapshot_id=None,
+        domain_no=2, domain_name="Location footprint",
+        disposition="EVIDENCED_PUBLIC", reason=None, agent_run_id=run_id,
+        evidence={"quantities": [quantity], "triangulated": [triangulated],
+                  "sources": [{"url": "https://example.com/ar"}]}))
+    session.commit()
+    return case_id
+
+
+def test_a_refusal_names_the_reason_it_actually_failed(session):
+    """review_required fires on three flags and the refusal reported one.
+
+    Nestle's German plant count is a unit mismatch between two sources
+    both stating 12, so the refusal read "sources disagree by 0% (12 to
+    12)" - a sentence that invites an analyst to dismiss it as noise.
+    """
+    q = {"label": "PLANT", "value": 12, "unit": "sites", "country": "DE",
+         "as_of": "2024",
+         "candidates": [{"value": 12, "source_url": "https://example.com/a"}]}
+    case_id = _case_with_band(session, q, {
+        "label": "PLANT", "country": "DE", "low": "12", "high": "12",
+        "base": "12", "spread_share": 0.0, "candidate_count": 2,
+        "flags": ["UNIT_MISMATCH", "SINGLE_SOURCE"], "review_required": True})
+    cid = promotion.candidates(
+        session, case_id)["footprint_candidates"][0]["candidate_id"]
+    out = promotion.promote(session, case_id=case_id, candidate_ids=[cid],
+                            promoted_by="Priya Raman")
+    assert len(out["declined"]) == 1
+    reason = out["declined"][0]["reason"]
+    assert "units" in reason, reason
+    assert "disagree by 0%" not in reason, reason
+
+
+def test_a_refusal_names_what_was_refused(session):
+    """A manifest reading "sources disagree by 38% (13 to 18)" beside no
+    subject cannot be acted on. Nestle's was its French plant count, and
+    finding that out meant re-deriving it from the triangulated bands."""
+    q = {"label": "PLANT (industrial sites) - France", "value": 18,
+         "unit": "sites", "country": "FR", "as_of": "2024",
+         "candidates": [{"value": 18, "source_url": "https://example.com/a"}]}
+    case_id = _case_with_band(session, q, {
+        "label": "PLANT (INDUSTRIAL SITES) - FRANCE", "country": "FR",
+        "low": "13", "high": "18", "base": "15.5", "spread_share": 0.3846,
+        "candidate_count": 2, "flags": ["MATERIAL_SPREAD"],
+        "review_required": True})
+    cid = promotion.candidates(
+        session, case_id)["footprint_candidates"][0]["candidate_id"]
+    out = promotion.promote(session, case_id=case_id, candidate_ids=[cid],
+                            promoted_by="Priya Raman")
+    row = out["declined"][0]
+    assert row["country"] == "FR"
+    assert "PLANT" in row["label"]
+    assert row["flags"] == ["MATERIAL_SPREAD"]
+    assert "38%" in row["reason"]
+
+
 def test_promotion_requires_a_named_person(session):
     q = {"label": "WAREHOUSE", "value": 12, "unit": "sites", "country": "GB"}
     case_id, _ = _case_with_finding(session, q)
