@@ -16,7 +16,7 @@
   "base_currency": "EUR",
   "case_id": "d306c1b6-5c12-4709-b0b8-bda47b7763d1",
   "spec_path": "/tmp/companies.json",
-  "spec_sha256": "a30ce5addcbe",
+  "spec_sha256": "1728910bb736",
   "entity_resolution": {
     "resolved": null,
     "resumed": true
@@ -75,30 +75,6 @@
       "density": "URBAN"
     },
     {
-      "country": "FR",
-      "archetype": "STORE",
-      "sites": 273,
-      "density": "DENSE_URBAN"
-    },
-    {
-      "country": "FR",
-      "archetype": "STORE",
-      "sites": 364,
-      "density": "RURAL"
-    },
-    {
-      "country": "FR",
-      "archetype": "STORE",
-      "sites": 849,
-      "density": "SUBURBAN"
-    },
-    {
-      "country": "FR",
-      "archetype": "STORE",
-      "sites": 1030,
-      "density": "URBAN"
-    },
-    {
       "country": "IT",
       "archetype": "BRANCH",
       "sites": 400,
@@ -124,6 +100,13 @@
       "sites": 2500,
       "origin": "EXCLUDED_BY_SCOPE",
       "reason": "the 2,500 agencies are the Nordost sales region alone - the sources say 'in den neuen Bundeslaendern' and 'im Vertriebsgebiet Nordost' - promoted as a German national count, and the figure is a pre-closure baseline against which 430 agencies were due to shut in 2025. Whether a tied agent's connectivity is Allianz's cost is the separate question referred on the French agencies."
+    },
+    {
+      "country": "FR",
+      "archetype": "STORE",
+      "sites": 2516,
+      "origin": "EXCLUDED_BY_SCOPE",
+      "reason": "an agent general is self-employed, leases their own premises and buys their own access line; Allianz reaches them over it. The STORE archetype buys a broadband circuit with 5G backup and Allianz does not buy 2,516 of those. Same basis as the UPS Store network and BNP's Fintro branches, both already excluded."
     },
     {
       "country": "IT",
@@ -174,13 +157,6 @@
       "density": null
     },
     {
-      "country": "FR",
-      "archetype": "STORE",
-      "sites": 2516,
-      "origin": "RESEARCHED",
-      "density": null
-    },
-    {
       "country": "IT",
       "archetype": "BRANCH",
       "sites": 400,
@@ -196,8 +172,8 @@
     },
     {
       "origin": "DENSITY_FROM_MIX",
-      "rows": 3,
-      "sites": 2519,
+      "rows": 2,
+      "sites": 3,
       "filled": [
         {
           "country": "FR",
@@ -207,19 +183,6 @@
           "mix_industry": "INSURANCE",
           "bands": {
             "URBAN": 1
-          }
-        },
-        {
-          "country": "FR",
-          "archetype": "STORE",
-          "sites": 2516,
-          "basis": "INDUSTRY_DEFAULT",
-          "mix_industry": "INSURANCE",
-          "bands": {
-            "DENSE_URBAN": 273,
-            "RURAL": 364,
-            "SUBURBAN": 849,
-            "URBAN": 1030
           }
         },
         {
@@ -249,7 +212,7 @@
     "BRANCH": "ASSUMED_PUBLIC_DISCLOSURE",
     "DC": "ASSUMED_PUBLIC_DISCLOSURE",
     "LARGE_OFFICE": "RESEARCHED",
-    "STORE": "RESEARCHED"
+    "STORE": "ASSUMED_PUBLIC_DISCLOSURE"
   },
   "fx_to_eur": {
     "rate": "1.0",
@@ -302,13 +265,13 @@
   ],
   "estimate_inputs": {
     "method": "BUILD_UP",
-    "users": 48648,
+    "users": 18456,
     "ops_cost_per_site_base": 900,
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-14T20:29:27.711420+00:00",
-  "run_seconds": 6.3,
+  "run_started": "2026-10-14T20:55:22.530607+00:00",
+  "run_seconds": 3.2,
   "preflight_conditions": 8,
   "promotion": {
     "promoted": true,

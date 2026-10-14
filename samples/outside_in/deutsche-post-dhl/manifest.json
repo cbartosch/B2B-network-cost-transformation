@@ -16,7 +16,7 @@
   "base_currency": "EUR",
   "case_id": "0fad5c9a-1959-4583-845f-a7cc722e8f60",
   "spec_path": "/tmp/companies.json",
-  "spec_sha256": "a30ce5addcbe",
+  "spec_sha256": "1728910bb736",
   "entity_resolution": {
     "resolved": null,
     "resumed": true
@@ -76,24 +76,6 @@
     },
     {
       "country": "GB",
-      "archetype": "SERVICE_POINT",
-      "sites": 204,
-      "density": "RURAL"
-    },
-    {
-      "country": "GB",
-      "archetype": "SERVICE_POINT",
-      "sites": 553,
-      "density": "SUBURBAN"
-    },
-    {
-      "country": "GB",
-      "archetype": "SERVICE_POINT",
-      "sites": 843,
-      "density": "URBAN"
-    },
-    {
-      "country": "GB",
       "archetype": "TERMINAL",
       "sites": 4,
       "density": "SUBURBAN"
@@ -131,6 +113,13 @@
   ],
   "footprint_provenance": [
     {
+      "country": "GB",
+      "archetype": "SERVICE_POINT",
+      "sites": 1600,
+      "origin": "EXCLUDED_BY_SCOPE",
+      "reason": "a drop-off counter inside a third-party retailer. The premises are the host's and so is the access line; a DHL scanner on cellular is a device cost, not a site circuit. Same basis as the UPS Store network."
+    },
+    {
       "country": "DE",
       "archetype": "DC",
       "sites": 6,
@@ -159,13 +148,6 @@
       "density": "SUBURBAN",
       "research_said": 81,
       "disclosure_said": 90
-    },
-    {
-      "country": "GB",
-      "archetype": "SERVICE_POINT",
-      "sites": 1600,
-      "origin": "RESEARCHED",
-      "density": null
     },
     {
       "country": "GB",
@@ -199,8 +181,8 @@
     },
     {
       "origin": "DENSITY_FROM_MIX",
-      "rows": 4,
-      "sites": 1655,
+      "rows": 3,
+      "sites": 55,
       "filled": [
         {
           "country": "DE",
@@ -211,18 +193,6 @@
           "bands": {
             "SUBURBAN": 28,
             "URBAN": 18
-          }
-        },
-        {
-          "country": "GB",
-          "archetype": "SERVICE_POINT",
-          "sites": 1600,
-          "basis": "INDUSTRY_DEFAULT",
-          "mix_industry": "POSTAL_AND_PARCEL_NETWORK",
-          "bands": {
-            "RURAL": 204,
-            "SUBURBAN": 553,
-            "URBAN": 843
           }
         },
         {
@@ -261,7 +231,7 @@
   "scope_note": "Baseline covers 3 country(ies) (DE, GB, NL) and the site types listed in sites_origin. The group's full country and site-type count is not sourced, so the share of the group this represents is DECLARED_UNKNOWN. This is baseline_in_scope, not a group baseline.",
   "sites_origin": {
     "DC": "ASSUMED_PUBLIC_DISCLOSURE",
-    "SERVICE_POINT": "RESEARCHED",
+    "SERVICE_POINT": "ASSUMED_PUBLIC_DISCLOSURE",
     "TERMINAL": "RESEARCHED",
     "WAREHOUSE": "ASSUMED_PUBLIC_DISCLOSURE"
   },
@@ -316,13 +286,13 @@
   ],
   "estimate_inputs": {
     "method": "BUILD_UP",
-    "users": 48192,
+    "users": 28992,
     "ops_cost_per_site_base": 900,
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-14T20:29:18.350184+00:00",
-  "run_seconds": 6.2,
+  "run_started": "2026-10-14T20:55:28.817040+00:00",
+  "run_seconds": 3.4,
   "preflight_conditions": 8,
   "promotion": {
     "promoted": true,

@@ -167,6 +167,13 @@
           "sites": 6,
           "density": "URBAN"
         }
+      ],
+      "excluded": [
+        {
+          "country": "GB",
+          "archetype": "SERVICE_POINT",
+          "reason": "a drop-off counter inside a third-party retailer. The premises are the host's and so is the access line; a DHL scanner on cellular is a device cost, not a site circuit. Same basis as the UPS Store network."
+        }
       ]
     },
     {
@@ -284,6 +291,11 @@
           "country": "IT",
           "archetype": "STORE",
           "reason": "31 branches of Allianz Bank Financial Advisors from a single aggregator, with no evidence settling whether the 400 declared Italian branches already include them."
+        },
+        {
+          "country": "FR",
+          "archetype": "STORE",
+          "reason": "an agent general is self-employed, leases their own premises and buys their own access line; Allianz reaches them over it. The STORE archetype buys a broadband circuit with 5G backup and Allianz does not buy 2,516 of those. Same basis as the UPS Store network and BNP's Fintro branches, both already excluded."
         }
       ]
     },
@@ -360,7 +372,7 @@
         {
           "country": "ES",
           "archetype": "PLANT",
-          "sites": 5,
+          "sites": 3,
           "density": "SUBURBAN"
         },
         {
@@ -686,6 +698,13 @@
           "sites": 4,
           "density": "SUBURBAN"
         }
+      ],
+      "excluded": [
+        {
+          "country": "GB",
+          "archetype": "PLANT",
+          "reason": "not because the wind farms are not Iberdrola's - they are, and they do carry a connection it pays for - but because pricing 40 of them at the PLANT profile asserts a factory of 60 users on a 100 Mbps dual-access circuit where there is an unmanned SCADA link. That is operational-technology connectivity, a different cost pool from the enterprise access layer this model prices, and consistent with the substations, nodes and towers already refused. If OT connectivity enters scope they return under their own archetype, not PLANT."
+        }
       ]
     },
     {
@@ -955,13 +974,13 @@
         {
           "country": "DE",
           "archetype": "PLANT",
-          "sites": 20,
+          "sites": 13,
           "density": "RURAL"
         },
         {
           "country": "FR",
           "archetype": "PLANT",
-          "sites": 28,
+          "sites": 18,
           "density": "RURAL"
         },
         {
@@ -1452,7 +1471,7 @@
         {
           "country": "DE",
           "archetype": "PLANT",
-          "sites": 10,
+          "sites": 5,
           "density": "SUBURBAN"
         },
         {

@@ -134,8 +134,8 @@ Sources: [ARCEP (French telecom regulator)](https://en.arcep.fr/news/press-relea
 ## Allianz SE
 
 - **Industry** INSURANCE (entity resolution)
-- **Scope** DE, FR, IT, EUR, 4,054 sites (research merged with disclosure)
-- **Confidence** 0.336 (D - Indicative), coverage COMPLETE
+- **Scope** DE, FR, IT, EUR, 1,538 sites (research merged with disclosure)
+- **Confidence** 0.342 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 2 source(s)
 
@@ -767,8 +767,8 @@ Sources: [Deutsche Bahn AG (Investor Relations)](https://ir.deutschebahn.com/en/
 ## Deutsche Post AG
 
 - **Industry** PARCEL_LOGISTICS (entity resolution)
-- **Scope** DE, NL, GB, EUR, 4,016 sites (research merged with disclosure)
-- **Confidence** 0.326 (D - Indicative), coverage COMPLETE
+- **Scope** DE, NL, GB, EUR, 2,416 sites (research merged with disclosure)
+- **Confidence** 0.330 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 6 source(s)
 
@@ -1159,8 +1159,8 @@ Sources: [germancompanyformation.com](https://germancompanyformation.com/guides/
 ## Iberdrola SA
 
 - **Industry** UTILITIES (entity resolution)
-- **Scope** ES, GB, EUR, 2,796 sites (research merged with disclosure)
-- **Confidence** 0.325 (D - Indicative), coverage COMPLETE
+- **Scope** ES, GB, EUR, 2,756 sites (research merged with disclosure)
+- **Confidence** 0.368 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 8 source(s)
 
@@ -1707,7 +1707,7 @@ Sources: [TeleGeography](https://resources.telegeography.com/the-rise-of-dia-ove
 ## Nestle SA
 
 - **Industry** FOOD_MANUFACTURING (entity resolution)
-- **Scope** CH, DE, FR, US, GB, ES, IT, BR, MX, CN, CHF, 309 sites (research merged with disclosure)
+- **Scope** CH, DE, FR, US, GB, ES, IT, BR, MX, CN, CHF, 292 sites (research merged with disclosure)
 - **Confidence** 0.277 (D - Indicative), coverage PARTIAL
 
 **Profile** - EVIDENCED_PUBLIC, 8 source(s)
@@ -2936,7 +2936,7 @@ Sources: [Vertical Systems Group](https://verticalsystems.com/2026/02/18/2025-us
 ## Unilever PLC
 
 - **Industry** HOUSEHOLD_PERSONAL_CARE (entity resolution)
-- **Scope** GB, NL, DE, US, IN, BR, MX, PL, IT, FR, EUR, 216 sites (research merged with disclosure)
+- **Scope** GB, NL, DE, US, IN, BR, MX, PL, IT, FR, EUR, 211 sites (research merged with disclosure)
 - **Confidence** 0.345 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 6 source(s)
@@ -3298,7 +3298,7 @@ Sources: [Vertical Systems Group](https://verticalsystems.com/2026/02/18/2025-us
 ## Volkswagen AG
 
 - **Industry** AUTOMOTIVE_OEM (entity resolution)
-- **Scope** DE, ES, CZ, CN, MX, BR, SK, PT, PL, US, EUR, 183 sites (research merged with disclosure)
+- **Scope** DE, ES, CZ, CN, MX, BR, SK, PT, PL, US, EUR, 181 sites (research merged with disclosure)
 - **Confidence** 0.347 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 9 source(s)
