@@ -21,6 +21,13 @@ def _case_with_finding(session, quantity, disposition="EVIDENCED_PUBLIC"):
     session.execute(insert(db.case).values(
         case_id=case_id, created_by="tester",
         subject_entity_legal_name="Acme Global Logistics"))
+    # A real quantity carries the candidates it was triangulated from, and
+    # each candidate names the document it was read out of. The fixture
+    # omitted them, so it could not have caught a promoted row citing the
+    # domain's whole source pool instead of its own evidence.
+    quantity = {"candidates": [{"value": quantity.get("value"),
+                                "source_url": "https://example.com/ar"}],
+                **quantity}
     session.execute(insert(db.domain_disposition).values(
         id=str(uuid.uuid4()), case_id=case_id, estimate_snapshot_id=None,
         domain_no=2, domain_name="Location footprint",
@@ -54,6 +61,85 @@ def test_a_site_count_reaches_the_footprint_the_simulation_reads(session):
                    "promoted_by": "Priya Raman", "domain_no": 2,
                    "band_low": None, "band_high": None, "source_count": None,
                    "source_urls": ["https://example.com/ar"]}]
+
+
+def test_a_row_cites_its_own_evidence_not_the_domains_pool(session):
+    """Which document says this number.
+
+    Every promoted row used to carry `evidence.sources` - everything the
+    research domain read, across all of its findings - so two site counts
+    from one domain cited the same list. In the published set that averaged
+    7.7 URLs against 1.8 actually behind the figure, and Nestle's French
+    office row cited a swissinfo piece about a German factory closing. A
+    reader checking the number had no way to tell which link to open, which
+    is most of why verifying a changed count is hand work.
+    """
+    case_id = str(uuid.uuid4())
+    run_id = str(uuid.uuid4())
+    session.execute(insert(db.case).values(
+        case_id=case_id, created_by="tester",
+        subject_entity_legal_name="Acme Global Logistics"))
+    session.execute(insert(db.domain_disposition).values(
+        id=str(uuid.uuid4()), case_id=case_id, estimate_snapshot_id=None,
+        domain_no=2, domain_name="Location footprint",
+        disposition="EVIDENCED_PUBLIC", reason=None, agent_run_id=run_id,
+        evidence={"quantities": [
+            {"label": "WAREHOUSE", "value": 12, "unit": "sites",
+             "country": "DE", "as_of": "2025",
+             "candidates": [{"value": 12,
+                             "source_url": "https://example.com/warehouses"}]},
+            {"label": "STORE", "value": 400, "unit": "sites",
+             "country": "FR", "as_of": "2025",
+             "candidates": [{"value": 400,
+                             "source_url": "https://example.com/stores"}]}],
+            "sources": [{"url": "https://example.com/warehouses"},
+                        {"url": "https://example.com/stores"},
+                        {"url": "https://example.com/unrelated-press"}]}))
+    session.commit()
+
+    cands = promotion.candidates(session, case_id)["footprint_candidates"]
+    promotion.promote(session, case_id=case_id,
+                      candidate_ids=[c["candidate_id"] for c in cands],
+                      promoted_by="Priya Raman")
+
+    cited = {r["archetype"]: r["source_urls"]
+             for r in promotion.evidenced_footprint(session, case_id)}
+    assert cited["WAREHOUSE"] == ["https://example.com/warehouses"]
+    assert cited["STORE"] == ["https://example.com/stores"]
+    for urls in cited.values():
+        assert "https://example.com/unrelated-press" not in urls
+
+
+def test_a_finding_with_no_document_cites_nothing(session):
+    """Six findings in the published set have no candidate URL at all, and
+    none of them has a document behind it: EUR/EUR is 1.0 because the
+    countries are all eurozone, three IT-spend proxies are 3/4/5% of net
+    sales, and two are explicit negatives - no Inditex DC found in France or
+    Germany. Lending those the domain's pool would make a derivation and a
+    dead end look sourced."""
+    case_id = str(uuid.uuid4())
+    run_id = str(uuid.uuid4())
+    session.execute(insert(db.case).values(
+        case_id=case_id, created_by="tester",
+        subject_entity_legal_name="Acme Global Logistics"))
+    session.execute(insert(db.domain_disposition).values(
+        id=str(uuid.uuid4()), case_id=case_id, estimate_snapshot_id=None,
+        domain_no=2, domain_name="Location footprint",
+        disposition="EVIDENCED_PUBLIC", reason=None, agent_run_id=run_id,
+        evidence={"quantities": [
+            {"label": "DC", "value": 0, "unit": "sites", "country": "FR",
+             "as_of": "2024",
+             "candidates": [{"value": 0, "source_url": None,
+                             "publisher": "No source found"}]}],
+            "sources": [{"url": "https://example.com/ar"}]}))
+    session.commit()
+
+    cid = promotion.candidates(
+        session, case_id)["footprint_candidates"][0]["candidate_id"]
+    promotion.promote(session, case_id=case_id, candidate_ids=[cid],
+                      promoted_by="Priya Raman")
+    row = promotion.evidenced_footprint(session, case_id)[0]
+    assert row["source_urls"] == []
 
 
 def test_promotion_requires_a_named_person(session):

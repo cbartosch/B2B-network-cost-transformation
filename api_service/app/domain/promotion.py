@@ -143,6 +143,37 @@ def _triangulated_index(evidence: dict) -> dict:
     return out
 
 
+def _quantity_sources(q: dict) -> list[str]:
+    """The URLs behind THIS quantity, in the order the agent ranked them.
+
+    Every promoted row used to carry the whole research domain's source
+    pool - `evidence.sources`, which is what the agent read across all of
+    its findings - so a site count and a revenue figure from the same
+    domain cited the same seven or eight documents. Nestle's French office
+    row cited a swissinfo piece about a German factory closing. The list
+    was not wrong, it just did not answer the question anyone asks of it:
+    which document says this number?
+
+    A candidate does answer it. Across the published set the pool averages
+    7.7 URLs and a quantity's own candidates average 1.8.
+
+    A finding with no candidate URL cites nothing, and that is recorded
+    rather than papered over with the pool - those findings are structural
+    ("DE, FR and IT are all eurozone, so EUR/EUR is 1.0"), derived ("3% of
+    FY2024 net sales"), or an explicit negative ("no public evidence of an
+    Inditex DC in France"). None of them has a document behind it, and
+    lending them the pool's would make them look sourced.
+    """
+    out = []
+    for c in (q.get("candidates") or []):
+        if not isinstance(c, dict):
+            continue
+        url = str(c.get("source_url") or "").strip()
+        if url and url not in out:
+            out.append(url)
+    return out
+
+
 def _quantities_for_case(session, case_id: str) -> list[dict]:
     """Every researched quantity on this case, with the disposition and agent
     run that produced it."""
@@ -166,8 +197,9 @@ def _quantities_for_case(session, case_id: str) -> list[dict]:
                 "reliability": (evidence or {}).get("reliability"),
                 "domain_no": r.domain_no, "domain_name": r.domain_name,
                 "disposition": r.disposition, "agent_run_id": r.agent_run_id,
-                "sources": [s.get("url") for s in (evidence.get("sources") or [])
-                            if isinstance(s, dict)],
+                # This quantity's own citation, not the domain's pool. See
+                # _quantity_sources for what the pool cost a reader.
+                "sources": _quantity_sources(q),
                 "quantity": q,
             })
     return out
