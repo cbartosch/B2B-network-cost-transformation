@@ -452,15 +452,23 @@
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-14T09:50:21.969126+00:00",
+  "run_started": "2026-10-14T17:15:55.179134+00:00",
   "run_seconds": 2.4,
   "preflight_conditions": 8,
   "promotion": {
     "promoted": true,
     "detail": null,
-    "offered": 7,
+    "offered": 8,
     "accepted": 6,
     "declined": [
+      {
+        "reason": "sources state this in units that disagree, and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
+        "label": "DE active Unilever manufacturing + DC site – Mannheim (factory + large European DC)",
+        "country": "DE",
+        "flags": [
+          "UNIT_MISMATCH"
+        ]
+      },
       {
         "reason": "sources disagree by 25% (4 to 5), and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
         "label": "PLANT – manufacturing sites, DE (Germany)",
@@ -470,7 +478,7 @@
         ]
       }
     ],
-    "declined_count": 1
+    "declined_count": 2
   },
   "domains_benchmark_disposed": [
     3,

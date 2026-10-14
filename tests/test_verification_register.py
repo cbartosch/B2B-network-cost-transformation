@@ -371,20 +371,42 @@ def test_the_apportioned_marker_distinguishes_the_two_causes(tool):
     over = tool.priced_above_research(OUT, SPEC)
     assert any(not c["apportioned"] for c in over), "no incomplete-research rows"
     assert any(c["apportioned"] for c in over), "no apportioned rows"
-    for c in over:
-        if c["apportioned"]:
-            assert c["archetype"] == "PLANT", (
-                "every apportioned overstatement in this set is a plant "
-                "count; a new archetype here is worth looking at")
 
 
-def test_every_apportioned_overstatement_carries_a_referral(tool):
-    """An unsourced figure standing above every source that looked is a
-    decision for an owner - which legal entities count as Nestle France -
-    not something the model may settle."""
+def test_the_report_separates_an_unexamined_figure_from_a_contested_one(tool):
+    """Two tiers, because they ask different questions.
+
+    NOTHING_SURVIVED means research produced no usable row and the
+    declaration stands unexamined. APPORTIONED_BEATEN means research did
+    produce one and lost to a declaration that is itself an apportionment
+    of a group total. The delta-and-closure gate moved Nestle's French
+    plants from the first tier into the second - the aggregator's 12 now
+    classifies and promotes, then loses to the declared 28 - and a check
+    that only reported the first would have quietly retired the case it
+    was written for.
+    """
+    over = tool.priced_above_research(OUT, SPEC)
+    kinds = {c["kind"] for c in over}
+    assert kinds == {"NOTHING_SURVIVED", "APPORTIONED_BEATEN"}
+    fr = next(c for c in over if c["slug"] == "nestle"
+              and c["country"] == "FR" and c["archetype"] == "PLANT")
+    assert fr["kind"] == "APPORTIONED_BEATEN"
+
+
+def test_every_unexamined_apportioned_figure_carries_a_referral(tool):
+    """An unsourced figure standing above every source that looked, with
+    nothing research found surviving to argue with it, is a decision for
+    an owner - which legal entities count as Nestle France - not
+    something the model may settle.
+
+    Gated on the NOTHING_SURVIVED tier only. Requiring a referral for
+    every apportioned row would demand twenty-one of them, and a register
+    filled to satisfy a check has stopped being evidence.
+    """
     register = tool.load_register(REGISTER)
     over = [c for c in tool.priced_above_research(OUT, SPEC)
-            if c["apportioned"]]
+            if c["apportioned"] and c["kind"] == "NOTHING_SURVIVED"]
+    assert over, "the tier this gates on is empty"
     missing = [(c["slug"], c["country"], c["archetype"]) for c in over
                if (c["slug"], c["country"], c["archetype"]) not in register]
     assert not missing, f"apportioned overstatements with no referral: {missing}"

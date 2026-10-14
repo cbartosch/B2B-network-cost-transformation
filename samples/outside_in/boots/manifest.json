@@ -45,6 +45,12 @@
   "footprint_used": [
     {
       "country": "GB",
+      "archetype": "CAMPUS",
+      "sites": 1,
+      "density": null
+    },
+    {
+      "country": "GB",
       "archetype": "DC",
       "sites": 1,
       "density": "SUBURBAN"
@@ -75,6 +81,13 @@
     }
   ],
   "footprint_provenance": [
+    {
+      "country": "GB",
+      "archetype": "CAMPUS",
+      "sites": 1,
+      "origin": "RESEARCHED",
+      "density": null
+    },
     {
       "country": "GB",
       "archetype": "DC",
@@ -113,6 +126,15 @@
       "density": "URBAN",
       "research_said": 95,
       "disclosure_said": 85
+    },
+    {
+      "origin": "NO_DENSITY_BAND",
+      "rows": 1,
+      "sites": 1,
+      "reasons": {
+        "CAMPUS": "no governed band mix for CAMPUS in DRUG_RETAIL, so the band is left unknown - borrowing another site type's bands would re-price these 1 sites against a shape nobody established for them"
+      },
+      "note": "these rows carry no density band, so serviceability cannot be resolved for them and their sites are treated as deliverable. The sector mix has no row for their site type, and another type's bands are not borrowed."
     }
   ],
   "scope_countries_modelled": [
@@ -123,6 +145,7 @@
   "scope_status": "PARTIAL_COUNTRIES",
   "scope_note": "Baseline covers 2 country(ies) (GB, IE) and the site types listed in sites_origin. The group's full country and site-type count is not sourced, so the share of the group this represents is DECLARED_UNKNOWN. This is baseline_in_scope, not a group baseline.",
   "sites_origin": {
+    "CAMPUS": "RESEARCHED",
     "DC": "ASSUMED_PUBLIC_DISCLOSURE",
     "LARGE_OFFICE": "ASSUMED_PUBLIC_DISCLOSURE",
     "STORE": "RESEARCHED",
@@ -184,19 +207,19 @@
   ],
   "estimate_inputs": {
     "method": "BUILD_UP",
-    "users": 22212,
+    "users": 22224,
     "ops_cost_per_site_base": 900,
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-14T09:50:24.367976+00:00",
+  "run_started": "2026-10-14T17:15:57.625950+00:00",
   "run_seconds": 2.9,
   "preflight_conditions": 8,
   "promotion": {
     "promoted": true,
     "detail": null,
-    "offered": 4,
-    "accepted": 2,
+    "offered": 6,
+    "accepted": 3,
     "declined": [
       {
         "reason": "sources disagree by 49% (1452 to 2164), and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",

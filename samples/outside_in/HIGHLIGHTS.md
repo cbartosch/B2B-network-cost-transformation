@@ -532,7 +532,7 @@ Sources: [Selectra](https://en.selectra.info/broadband-phone-france/guides/mobil
 ## Boots UK Limited
 
 - **Industry** DRUG_RETAIL (entity resolution)
-- **Scope** GB, IE, GBP, 1,851 sites (research merged with disclosure)
+- **Scope** GB, IE, GBP, 1,852 sites (research merged with disclosure)
 - **Confidence** 0.347 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 7 source(s)
@@ -665,8 +665,8 @@ Sources: [businessbroadbandhub.co.uk](https://www.businessbroadbandhub.co.uk/bus
 ## Deutsche Bahn AG
 
 - **Industry** RAILWAYS (entity resolution)
-- **Scope** DE, EUR, 5,586 sites (public disclosure only)
-- **Confidence** 0.326 (D - Indicative), coverage COMPLETE
+- **Scope** DE, EUR, 5,599 sites (research merged with disclosure)
+- **Confidence** 0.327 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 10 source(s)
 
@@ -767,8 +767,8 @@ Sources: [Deutsche Bahn AG (Investor Relations)](https://ir.deutschebahn.com/en/
 ## Deutsche Post AG
 
 - **Industry** PARCEL_LOGISTICS (entity resolution)
-- **Scope** DE, NL, GB, EUR, 3,961 sites (research merged with disclosure)
-- **Confidence** 0.324 (D - Indicative), coverage COMPLETE
+- **Scope** DE, NL, GB, EUR, 4,016 sites (research merged with disclosure)
+- **Confidence** 0.326 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 6 source(s)
 
@@ -1159,8 +1159,8 @@ Sources: [germancompanyformation.com](https://germancompanyformation.com/guides/
 ## Iberdrola SA
 
 - **Industry** UTILITIES (entity resolution)
-- **Scope** ES, GB, EUR, 2,795 sites (research merged with disclosure)
-- **Confidence** 0.324 (D - Indicative), coverage COMPLETE
+- **Scope** ES, GB, EUR, 2,796 sites (research merged with disclosure)
+- **Confidence** 0.325 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 8 source(s)
 

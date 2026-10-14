@@ -114,6 +114,12 @@ def _classify(q):
     """The real classifier, with its module constants supplied."""
     src = (APP / "domain" / "promotion.py").read_text()
     ns = {"triangulate": types.SimpleNamespace(parse_value=TRI["parse_value"]),
+          # The slice is executed in a bare namespace, so every module the
+          # sliced code uses has to be handed to it. The delta-and-closure
+          # gate compiles a regex at import time and this died on the first
+          # domain with "name 're' is not defined" - the same class of
+          # breakage the comment below records, one import along.
+          "re": re,
           "ARCHETYPES": {"BRANCH", "STORE", "WAREHOUSE", "LARGE_OFFICE", "DC"},
           "PRODUCTS": {"DIA", "MPLS", "ETHERNET", "BROADBAND_HFC",
                        "BROADBAND_PON", "MOBILE_5G"}}

@@ -268,24 +268,92 @@ def test_accepting_conflicts_restores_largest_wins():
     assert [e["quantity"]["value"] for e in kept] == [18]
 
 
-def test_a_mid_label_archetype_is_still_not_a_footprint_count():
-    """Why the clean 12 was never in that pair to begin with, and why
-    widening the resolver would be wrong.
+def _fp(label, unit="sites", country="FR", value=12):
+    return promotion._classify({"label": label, "value": value,
+                                "unit": unit, "country": country})
 
-    `archetype_of` reads the leading token, so "FR production sites
-    (PLANT-type)" resolves to "FR" and is unclassified. That looks like a
-    miss and is mostly a filter: of 45 quantities a widened resolver would
-    admit across the sample set, the great majority are not counts of an
-    estate - "Net store change - Spain" at MINUS 62, "Total branch
-    closings since January 2020" at 91, a planned DC at London Gateway,
-    and "Kelsterbach DC building - sold/exited, lease expiry" at 2025,
-    which is a year being read as a site count.
-    """
-    for label in ("FR production sites (PLANT-type) - aggregator estimate",
-                  "Nestle production sites (PLANT-type) in Germany",
-                  "Net store change - Spain (ES) FY2025"):
-        q = {"label": label, "value": 12, "unit": "sites", "country": "FR"}
-        assert promotion._classify(q) == "unclassified", label
+
+def test_an_archetype_named_past_the_leading_token_is_found():
+    """`archetype_of` read only the leading token, so "FR production
+    sites (PLANT-type)" resolved to "FR" and Nestle's French plant count
+    was never classified at all."""
+    assert promotion.archetype_of(
+        "FR production sites (PLANT-type) - aggregator estimate") == "PLANT"
+    assert _fp("FR production sites (PLANT-type) - aggregator estimate") \
+        == "footprint"
+
+
+def test_a_label_naming_several_archetypes_is_still_refused():
+    """The behaviour reading past the leading token must not break.
+    "WAREHOUSE/BRANCH - ..." names two and there is nothing to key a
+    single row on, so it falls back to the leading token and declines."""
+    for label in ("WAREHOUSE/BRANCH - SP Energy Networks operational offices",
+                  "LARGE_OFFICE+PLANT+BRANCH (United States, total detected)"):
+        assert _fp(label) == "unclassified", label
+
+
+@pytest.mark.parametrize("label", [
+    "Net store change - Spain (ES) FY2025",
+    "Total branch closings since January 2020 (FDIC-tracked)",
+    "Net branch openings since January 2020 (FDIC-tracked)",
+    "New DC planned - DP World London Gateway (Essex, GB)",
+    "Tesco Ireland planned store openings (net new)",
+    "Kelsterbach DC building - sold/exited, lease expiry",
+    "DE PLANT sites closing - Neuss plant closure",
+    "DE - Wehr plant closure (PLANT exit)",
+    "AT - Salzburg branch relocation to new site (2024)",
+    "US - new PLANT opened, Fort Worth TX",
+    "ScottishPower primary DC - old Cathcart HQ (pre-consolidation, "
+    "decommissioned 2017)",
+    "DE PLANT at-risk closures (Osnabruck) - production end planned",
+])
+def test_a_movement_is_not_an_estate(label):
+    """What the gate exists to keep out. Reading an archetype from
+    anywhere in the label admits 45 findings across the sample set and
+    most are movements rather than counts - including a year, 2025, read
+    as a DC count off a lease expiry."""
+    assert _fp(label) == "unclassified", label
+
+
+@pytest.mark.parametrize("label", [
+    "FR production sites (PLANT-type) - aggregator estimate",
+    "Nestle production sites (PLANT-type) in Germany",
+    "CZ active Skoda PLANT count - Mlada Boleslav, Kvasiny, Vrchlabi",
+    "DHL Freight terminal locations in DE",
+    "Boots Ireland (IE) store count",
+    "US company-operated retail store count (potential WAN sites)",
+    "Owned DC sites",
+])
+def test_a_count_of_what_exists_still_gets_through(label):
+    """The gate has to let the estate past. These are the findings the
+    leading-token read was losing."""
+    assert _fp(label) == "footprint", label
+
+
+def test_a_negated_movement_is_not_a_movement():
+    """Volkswagen's "ES active PLANT count (SEAT/CUPRA Martorell +
+    Pamplona) - no closures imminent" is a count of two plants that says
+    nothing is closing. Reading "closures" alone threw the figure away
+    for the reassurance attached to it."""
+    assert _fp("ES active PLANT count (SEAT/CUPRA Martorell + Pamplona) "
+               "- no closures imminent", country="ES") == "footprint"
+
+
+def test_an_archetype_named_only_to_deny_it_is_not_a_finding():
+    """Shell's "R&D centre - Germany (smaller specialised centre, no DC
+    confirmed)" names DC only to say there is not one."""
+    assert _fp("R&D centre - Germany (smaller specialised centre, no DC "
+               "confirmed)", country="DE") == "unclassified"
+
+
+def test_a_per_site_ratio_is_not_a_count_of_sites():
+    """BNP's "internet access lines per branch" is 1, and the branch in
+    the denominator made it look like one French branch. A premises noun
+    under the line is a measure per site, not a count of them."""
+    assert not promotion.is_premises_unit("lines per branch")
+    assert not promotion.is_premises_unit("circuits/site")
+    assert promotion.is_premises_unit("distribution centres")
+    assert promotion.is_premises_unit("agencies (points de vente)")
 
 
 def test_promotion_requires_a_named_person(session):

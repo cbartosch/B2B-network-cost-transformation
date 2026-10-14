@@ -267,15 +267,24 @@ def priced_above_research(outdir: pathlib.Path, spec_path: pathlib.Path) -> list
         for row in (man.get("footprint_used") or []):
             key = (row["country"], row["archetype"])
             used[key] = used.get(key, 0) + row["sites"]
-        # Only pairs where nothing research found survived promotion.
+        # Two tiers, because reporting every pair the estate prices above
+        # research gives 58 rows and buries the signal: Allianz's 800
+        # declared German branches against the 3 research found is a 267x
+        # ratio that says nothing except that research stopped at three.
         #
-        # Widening this to every pair the estate prices above research
-        # takes the list from 12 rows to 58 and buries the signal:
-        # Allianz's 800 declared German branches against the 3 research
-        # found is a 267x ratio and says nothing except that research
-        # stopped at three. The sharp condition is that research produced
-        # NO usable row for this pair and the declared figure stands
-        # unexamined - which is Nestle's French plants exactly.
+        #   NOTHING_SURVIVED   - research produced no usable row at all,
+        #                        so the declared figure stands unexamined.
+        #   APPORTIONED_BEATEN - research produced one and lost to a
+        #                        declaration that is itself an
+        #                        apportionment of a group total.
+        #
+        # The second tier exists because the delta-and-closure gate moved
+        # Nestle's French plants from the first into it: the aggregator's
+        # 12 now classifies and promotes, and then loses to the declared
+        # 28. Same question, different origin, and dropping it when the
+        # row started being promoted would have quietly retired the case
+        # this check was written for.
+        apportioned = bool(spec.get(d.name, {}).get("scope_note_cr02b"))
         promoted = {(e["country"], e["archetype"])
                     for e in (r.get("evidenced_footprint") or [])}
         highest = {}
@@ -286,7 +295,7 @@ def priced_above_research(outdir: pathlib.Path, spec_path: pathlib.Path) -> list
                 if not country or not match:
                     continue
                 key = (country, match.group(1))
-                if key not in used or key in promoted:
+                if key not in used or (key in promoted and not apportioned):
                     continue
                 try:
                     value = float(t["high"])
@@ -298,8 +307,9 @@ def priced_above_research(outdir: pathlib.Path, spec_path: pathlib.Path) -> list
                 out.append({
                     "slug": d.name, "country": key[0], "archetype": key[1],
                     "used": used[key], "highest_found": int(found),
-                    "apportioned": bool(
-                        spec.get(d.name, {}).get("scope_note_cr02b"))})
+                    "apportioned": apportioned,
+                    "kind": ("APPORTIONED_BEATEN" if key in promoted
+                             else "NOTHING_SURVIVED")})
     return sorted(out, key=lambda c: -(c["used"] / max(c["highest_found"], 1)))
 
 
@@ -397,7 +407,10 @@ def main() -> int:
         print(f"\npriced above every count research found ({len(over)}, "
               f"{len(apportioned)} on an apportioned declaration):")
         for c in over:
-            mark = " <- apportioned, not published" if c["apportioned"] else ""
+            mark = (" <- apportioned, research promoted and lost"
+                    if c["kind"] == "APPORTIONED_BEATEN"
+                    else " <- apportioned, not published"
+                    if c["apportioned"] else "")
             print(f"  {c['slug']:<16}{c['country']}/{c['archetype']:<14}"
                   f"{c['used']:>7,} in estate, {c['highest_found']:>6,} "
                   f"found  {c['used']/max(c['highest_found'],1):>4.1f}x{mark}")

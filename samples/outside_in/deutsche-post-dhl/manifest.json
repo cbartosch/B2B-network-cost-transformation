@@ -58,6 +58,18 @@
     },
     {
       "country": "DE",
+      "archetype": "TERMINAL",
+      "sites": 28,
+      "density": "SUBURBAN"
+    },
+    {
+      "country": "DE",
+      "archetype": "TERMINAL",
+      "sites": 18,
+      "density": "URBAN"
+    },
+    {
+      "country": "DE",
       "archetype": "WAREHOUSE",
       "sites": 90,
       "density": "SUBURBAN"
@@ -82,9 +94,33 @@
     },
     {
       "country": "GB",
+      "archetype": "TERMINAL",
+      "sites": 4,
+      "density": "SUBURBAN"
+    },
+    {
+      "country": "GB",
+      "archetype": "TERMINAL",
+      "sites": 2,
+      "density": "URBAN"
+    },
+    {
+      "country": "GB",
       "archetype": "WAREHOUSE",
       "sites": 40,
       "density": "SUBURBAN"
+    },
+    {
+      "country": "NL",
+      "archetype": "TERMINAL",
+      "sites": 2,
+      "density": "SUBURBAN"
+    },
+    {
+      "country": "NL",
+      "archetype": "TERMINAL",
+      "sites": 1,
+      "density": "URBAN"
     },
     {
       "country": "NL",
@@ -110,6 +146,13 @@
     },
     {
       "country": "DE",
+      "archetype": "TERMINAL",
+      "sites": 46,
+      "origin": "RESEARCHED",
+      "density": null
+    },
+    {
+      "country": "DE",
       "archetype": "WAREHOUSE",
       "sites": 90,
       "origin": "DISCLOSURE_KEPT_RESEARCH_FOUND_FEWER",
@@ -126,10 +169,24 @@
     },
     {
       "country": "GB",
+      "archetype": "TERMINAL",
+      "sites": 6,
+      "origin": "RESEARCHED",
+      "density": null
+    },
+    {
+      "country": "GB",
       "archetype": "WAREHOUSE",
       "sites": 40,
       "origin": "PUBLIC_DISCLOSURE",
       "density": "SUBURBAN"
+    },
+    {
+      "country": "NL",
+      "archetype": "TERMINAL",
+      "sites": 3,
+      "origin": "RESEARCHED",
+      "density": null
     },
     {
       "country": "NL",
@@ -142,9 +199,20 @@
     },
     {
       "origin": "DENSITY_FROM_MIX",
-      "rows": 1,
-      "sites": 1600,
+      "rows": 4,
+      "sites": 1655,
       "filled": [
+        {
+          "country": "DE",
+          "archetype": "TERMINAL",
+          "sites": 46,
+          "basis": "INDUSTRY_DEFAULT",
+          "mix_industry": "POSTAL_AND_PARCEL_NETWORK",
+          "bands": {
+            "SUBURBAN": 28,
+            "URBAN": 18
+          }
+        },
         {
           "country": "GB",
           "archetype": "SERVICE_POINT",
@@ -155,6 +223,28 @@
             "RURAL": 204,
             "SUBURBAN": 553,
             "URBAN": 843
+          }
+        },
+        {
+          "country": "GB",
+          "archetype": "TERMINAL",
+          "sites": 6,
+          "basis": "INDUSTRY_DEFAULT",
+          "mix_industry": "POSTAL_AND_PARCEL_NETWORK",
+          "bands": {
+            "SUBURBAN": 4,
+            "URBAN": 2
+          }
+        },
+        {
+          "country": "NL",
+          "archetype": "TERMINAL",
+          "sites": 3,
+          "basis": "INDUSTRY_DEFAULT",
+          "mix_industry": "POSTAL_AND_PARCEL_NETWORK",
+          "bands": {
+            "SUBURBAN": 2,
+            "URBAN": 1
           }
         }
       ],
@@ -172,6 +262,7 @@
   "sites_origin": {
     "DC": "ASSUMED_PUBLIC_DISCLOSURE",
     "SERVICE_POINT": "RESEARCHED",
+    "TERMINAL": "RESEARCHED",
     "WAREHOUSE": "ASSUMED_PUBLIC_DISCLOSURE"
   },
   "fx_to_eur": {
@@ -225,19 +316,19 @@
   ],
   "estimate_inputs": {
     "method": "BUILD_UP",
-    "users": 47532,
+    "users": 48192,
     "ops_cost_per_site_base": 900,
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-14T09:48:52.387096+00:00",
-  "run_seconds": 6.3,
+  "run_started": "2026-10-14T17:14:11.695994+00:00",
+  "run_seconds": 6.7,
   "preflight_conditions": 8,
   "promotion": {
     "promoted": true,
     "detail": null,
-    "offered": 7,
-    "accepted": 3,
+    "offered": 10,
+    "accepted": 6,
     "declined": [
       {
         "reason": "sources state this in units that disagree, and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",

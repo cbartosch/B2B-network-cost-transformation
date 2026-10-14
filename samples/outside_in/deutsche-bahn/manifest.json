@@ -37,7 +37,7 @@
     21,
     22
   ],
-  "footprint_origin": "PUBLIC_DISCLOSURE_ONLY",
+  "footprint_origin": "RESEARCH_MERGED_WITH_DISCLOSURE",
   "footprint_used": [
     {
       "country": "DE",
@@ -62,6 +62,12 @@
       "archetype": "NETWORK_SITE",
       "sites": 5400,
       "density": "RURAL"
+    },
+    {
+      "country": "DE",
+      "archetype": "TERMINAL",
+      "sites": 13,
+      "density": null
     },
     {
       "country": "DE",
@@ -101,10 +107,26 @@
     },
     {
       "country": "DE",
+      "archetype": "TERMINAL",
+      "sites": 13,
+      "origin": "RESEARCHED",
+      "density": null
+    },
+    {
+      "country": "DE",
       "archetype": "WAREHOUSE",
       "sites": 90,
       "origin": "PUBLIC_DISCLOSURE",
       "density": "SUBURBAN"
+    },
+    {
+      "origin": "NO_DENSITY_BAND",
+      "rows": 1,
+      "sites": 13,
+      "reasons": {
+        "TERMINAL": "no governed band mix for TERMINAL in RAILWAYS, so the band is left unknown - borrowing another site type's bands would re-price these 13 sites against a shape nobody established for them"
+      },
+      "note": "these rows carry no density band, so serviceability cannot be resolved for them and their sites are treated as deliverable. The sector mix has no row for their site type, and another type's bands are not borrowed."
     }
   ],
   "scope_countries_modelled": [
@@ -118,6 +140,7 @@
     "DC": "ASSUMED_PUBLIC_DISCLOSURE",
     "LARGE_OFFICE": "ASSUMED_PUBLIC_DISCLOSURE",
     "NETWORK_SITE": "ASSUMED_PUBLIC_DISCLOSURE",
+    "TERMINAL": "RESEARCHED",
     "WAREHOUSE": "ASSUMED_PUBLIC_DISCLOSURE"
   },
   "fx_to_eur": {
@@ -172,19 +195,19 @@
   ],
   "estimate_inputs": {
     "method": "BUILD_UP",
-    "users": 67032,
+    "users": 67188,
     "ops_cost_per_site_base": 900,
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-14T09:50:14.923076+00:00",
-  "run_seconds": 7.0,
+  "run_started": "2026-10-14T17:15:45.637098+00:00",
+  "run_seconds": 9.5,
   "preflight_conditions": 8,
   "promotion": {
-    "promoted": false,
-    "detail": "no footprint candidates",
-    "offered": 0,
-    "accepted": 0,
+    "promoted": true,
+    "detail": null,
+    "offered": 1,
+    "accepted": 1,
     "declined": [],
     "declined_count": 0
   },
