@@ -333,7 +333,7 @@ def do_research(case_id, slug, domains, overwrite=False):
     return out
 
 
-def dispose_analyst_domains(case_id, slug, researching):
+def dispose_analyst_domains(case_id, slug, researching, keep=()):
     """The seven domains no agent covers.
 
     BEFORE research, and the ordering is load-bearing. PUT
@@ -360,7 +360,24 @@ def dispose_analyst_domains(case_id, slug, researching):
     # of the 24 is undisposed, and a domain nobody researched resting on the
     # seeded prior is exactly what BENCHMARK_PRIOR means. The manifest records
     # which domains were researched, so the two are never confused.
-    todo = [n for n, _ in dispositions.DOMAINS if n not in set(researching)]
+    # ... AND NOT A DOMAIN THAT ALREADY HOLDS A VERDICT.
+    #
+    # The paragraph above describes losing two researched domains to this
+    # function. It happened again, larger: a --redo run asked for domain 19
+    # alone, so `researching` was [19] and this disposed the other
+    # twenty-three - including the sixteen that held paid agent verdicts -
+    # on three companies at once. Forty-eight researched domains, with
+    # their evidence blobs and agent_run_ids, replaced by BENCHMARK_PRIOR
+    # before the new research even started. The log said "disposed 23
+    # domain(s)" and nothing said what twenty-three meant.
+    #
+    # Disposing a researched domain as BENCHMARK_PRIOR is always wrong: it
+    # asserts the estimate rests on a seeded prior for something an agent
+    # actually answered. On a fresh case `keep` is empty and this is the
+    # behaviour it always had.
+    keep = set(keep)
+    todo = [n for n, _ in dispositions.DOMAINS
+            if n not in set(researching) and n not in keep]
     st, out = call("PUT",
                    f"/v1/outside-in/cases/{case_id}/domain-dispositions",
                    [{"domain_no": n, "domain_name": names[n],
@@ -373,7 +390,8 @@ def dispose_analyst_domains(case_id, slug, researching):
     # so a seven-record PUT reports the other seventeen as missing whatever
     # the case actually holds. The estimate call is what tells us.
     log(slug, f"disposed {len(todo)} domain(s) BENCHMARK_PRIOR "
-              f"ahead of research")
+              f"ahead of research"
+              + (f", keeping {len(keep)} already researched" if keep else ""))
     return out
 
 
@@ -1178,7 +1196,8 @@ def run_one(spec, outdir, domains, force, repair=False, repromote=False, redo=Fa
                   f"{ind['resolution_said']!r}. One of them is wrong and "
                   f"the code is what prices the estate.")
 
-    disp_out = dispose_analyst_domains(case_id, slug, domains)
+    disp_out = dispose_analyst_domains(case_id, slug, domains,
+                                       keep=done_before)
     # Research skips these itself, but asking for them anyway would still
     # cost a round trip each and muddy the log.
     if repromote:
