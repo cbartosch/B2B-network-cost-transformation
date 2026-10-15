@@ -62,7 +62,7 @@ def read_set(outdir: pathlib.Path) -> list:
             "dom": int(_f(r, "domains_researched")),
             "v0": r.get("v0_status", ""),
             "plaus": r.get("plausibility_flag", ""),
-            "payback": int(_f(r, "payback_months_base")),
+            "payback": int(_f(r, "steady_state_payback_months_base")),
             "build": r.get("build", ""),
             # Share of priced value at each evidence grade. The sourced share
             # is everything that is not an assumption, so a grade the card
@@ -284,7 +284,7 @@ def render(recs: list, f: dict, moved: list, rev: str) -> str:
 <div class="kpis">
   <div class="kpi"><div class="v">{f["n"]}</div><div class="k">companies, all priced</div></div>
   <div class="kpi"><div class="v">&euro;{f["total"] / 1e6:,.0f}m</div><div class="k">baseline, EUR-normalised</div></div>
-  <div class="kpi"><div class="v">{f["saving_pct"]:.1f}%</div><div class="k">best-scenario saving</div></div>
+  <div class="kpi"><div class="v">{f["saving_pct"]:.1f}%</div><div class="k">max base-case saving</div></div>
   <div class="kpi ok"><div class="v">{f["with_sourced"]}/{f["n"]}</div><div class="k">carry observed prices</div></div>
   <div class="kpi bad"><div class="v">{100 - f["vw_sourced"]:.1f}%</div><div class="k">assumption, value-weighted</div></div>
   <div class="kpi"><div class="v">{f["conf_lo"]:.2f}&ndash;{f["conf_hi"]:.2f}</div><div class="k">confidence, all {html.escape(band)}</div></div>

@@ -25,11 +25,27 @@ FIELDS = [
     ("sites", lambda m, s, e, r: sum(int(x["sites"])
                                      for x in m["footprint_used"])),
     ("footprint_origin", lambda m, s, e, r: m["footprint_origin"]),
-    ("v0_status", lambda m, s, e, r: e.get("v0_status")),
+    # COMPLETE, qualified by what it is complete OF.
+    #
+    # External audit, EVIDENCE_LABEL_CONTRADICTION family:
+    # COMPLETE_LABEL_WITH_PARTIAL_ENTERPRISE_SCOPE, raised on 6 of 6 rows.
+    # `v0_status=COMPLETE` sat beside `scope_status=PARTIAL_COUNTRIES` in
+    # the same row, and a reader taking the first word at face value reads
+    # "we have the whole company". It is complete for the countries the
+    # engagement declared, which is a different and smaller claim.
+    ("v0_status", lambda m, s, e, r: _qualified_v0_status(m, e)),
     ("baseline_base", lambda m, s, e, r: _g(e, "current_tco", "base")),
     ("baseline_low", lambda m, s, e, r: _g(e, "current_tco", "low")),
     ("baseline_high", lambda m, s, e, r: _g(e, "current_tco", "high")),
-    ("best_scenario", lambda m, s, e, r: _best(e)[0]),
+    # Named for the objective it actually optimises.
+    #
+    # External audit: SCENARIO_SELECTION_OBJECTIVE_LIMITED. It was called
+    # `best_scenario` and selects on the largest base-case GROSS saving -
+    # not net of one-time cost, not risk-adjusted, not client value. "Best"
+    # is a judgement the column does not make and cannot make without a
+    # client's own weighting of risk against return. The audit asked for
+    # this name specifically.
+    ("max_base_savings_scenario", lambda m, s, e, r: _best(e)[0]),
     # CR-07 / F11: why that one. It was picked here as the largest base
     # saving and the reason was recorded nowhere, so a reader comparing two
     # companies could not tell whether the choice meant anything.
@@ -42,7 +58,17 @@ FIELDS = [
     ("saving_on_simulated_baseline",
      lambda m, s, e, r: _scen(e, "saving_on_simulated_baseline")),
     ("one_time_cost_base", lambda m, s, e, r: _trans(e, "one_time_cost")),
-    ("payback_months_base", lambda m, s, e, r: _payback(e)),
+    # Steady-state, and the name now says so.
+    #
+    # External audit: PAYBACK_BEFORE_PROGRAMME_COMPLETION, raised on UPS -
+    # payback at 8 months against an 11-month programme, which reads as
+    # impossible and is not. This divides one-time cost by the FULL
+    # run-rate saving, so it answers "once the programme is done, how long
+    # to repay it" and not "when does cumulative cash turn positive". The
+    # second needs a period-by-period migration cash flow the model does
+    # not build. Renaming states which question was answered; computing the
+    # other one is a modelling change, not a label fix.
+    ("steady_state_payback_months_base", lambda m, s, e, r: _payback(e)),
     ("programme_months", lambda m, s, e, r: _prog(e)),
     # The number that says how much to trust the rest of the row.
     ("confidence_overall", lambda m, s, e, r: _g(e, "confidence", "overall")),
@@ -82,7 +108,12 @@ FIELDS = [
     # Beside a domain count in one row, "coverage COMPLETE" read as "we know
     # a lot about this company". The evidence columns below are the other
     # axis, and they are the ones that were missing.
-    ("priced_scope_status", lambda m, s, e, r: _g(e, "coverage", "status")),
+    # Also qualified. External audit: COMPLETE_WITH_PARTIAL_PRICED_SPEND,
+    # three rows carrying `COMPLETE` at 77-91% of spend priced. COMPLETE is
+    # the coverage GATE's verdict - it means the estimate cleared the
+    # threshold, not that everything is priced - and the word alone does not
+    # say so. The adjacent priced_spend_pct has always carried the number.
+    ("priced_scope_status", lambda m, s, e, r: _qualified_priced_status(e)),
     ("priced_spend_pct", lambda m, s, e, r: _g(e, "coverage", "priced_spend_pct")),
     ("unsourced_price_share",
      lambda m, s, e, r: _g(e, "coverage", "unsourced_price_share")),
@@ -210,6 +241,38 @@ def _eur(m, value):
     if value in (None, "") or not fx:
         return "DECLARED_UNKNOWN"
     return f"{float(value) * float(fx):.2f}"
+
+
+#: Scope statuses that mean the estimate does not cover the whole company.
+_PARTIAL_SCOPE = ("PARTIAL", "UNKNOWN")
+
+
+def _qualified_v0_status(m, e):
+    """COMPLETE, said about the thing it is complete for.
+
+    Only the word changes, and only when it would otherwise over-claim: a
+    run that covers the declared countries and no more reports
+    COMPLETE_FOR_DECLARED_SCOPE. A run whose scope is the whole company
+    still reports COMPLETE, because then the two words mean the same.
+    """
+    status = e.get("v0_status")
+    scope = str(m.get("scope_status") or "")
+    if status == "COMPLETE" and any(p in scope for p in _PARTIAL_SCOPE):
+        return "COMPLETE_FOR_DECLARED_SCOPE"
+    return status
+
+
+def _qualified_priced_status(e):
+    """COMPLETE means the coverage gate passed, not that all spend is priced."""
+    status = _g(e, "coverage", "status")
+    pct = _g(e, "coverage", "priced_spend_pct")
+    try:
+        whole = pct is not None and float(pct) >= 100
+    except (TypeError, ValueError):
+        whole = False
+    if status == "COMPLETE" and not whole:
+        return "COMPLETE_ABOVE_THRESHOLD"
+    return status
 
 
 def _best(e):

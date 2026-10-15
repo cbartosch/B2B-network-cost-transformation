@@ -37,7 +37,7 @@ CAUSE = {
         ("CR-05", "capacity in circuits where the estate mix is known, "
                   "instead of ceil(sites / 120)"),
     ],
-    "payback_months_base": [
+    "steady_state_payback_months_base": [
         ("CR-05", "first month cumulative net turns positive against the "
                   "rollout, instead of cost divided by the full-year saving"),
         ("CR-04", "the one-time cost it is measured against changed"),
@@ -46,7 +46,7 @@ CAUSE = {
 
 FIGURES = ["baseline_base", "baseline_low", "baseline_high",
            "best_saving_base", "one_time_cost_base",
-           "programme_months", "payback_months_base"]
+           "programme_months", "steady_state_payback_months_base"]
 
 
 def _load(path):

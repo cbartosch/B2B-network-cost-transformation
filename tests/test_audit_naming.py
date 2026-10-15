@@ -73,3 +73,76 @@ def test_research_timings_survive_a_run_that_researches_nothing():
     merged = {**prior, **{str(k): v for k, v in fresh.items()}}
     assert merged == {"1": 120.0, "2": 45.0}
     assert sum(merged.values()) > 0
+
+
+# ------------------- the four the same audit raised and nobody had fixed
+
+def _summary():
+    """The export module, loaded without importing the app package."""
+    import importlib.util
+    f = pathlib.Path(__file__).resolve().parents[1] / "tools" / \
+        "build_sample_summary.py"
+    if not f.exists():
+        pytest.skip("summary builder not present")
+    spec = importlib.util.spec_from_file_location("_bss", f)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def test_complete_says_what_it_is_complete_of():
+    """COMPLETE_LABEL_WITH_PARTIAL_ENTERPRISE_SCOPE, 6 of 6 rows.
+
+    `v0_status=COMPLETE` sat beside `scope_status=PARTIAL_COUNTRIES` in the
+    same row. Both were true and the first word, read alone, says the
+    estimate covers the company. It covers the countries the engagement
+    declared.
+    """
+    s = _summary()
+    partial = {"scope_status": "PARTIAL_COUNTRIES"}
+    whole = {"scope_status": "FULL"}
+    assert s._qualified_v0_status(partial, {"v0_status": "COMPLETE"}) == \
+        "COMPLETE_FOR_DECLARED_SCOPE"
+    # Unqualified where the two words mean the same thing.
+    assert s._qualified_v0_status(whole, {"v0_status": "COMPLETE"}) == \
+        "COMPLETE"
+    # And a status that never over-claimed is left alone.
+    assert s._qualified_v0_status(partial, {"v0_status": "PARTIAL"}) == \
+        "PARTIAL"
+
+
+def test_a_coverage_gate_passing_is_not_all_spend_priced():
+    """COMPLETE_WITH_PARTIAL_PRICED_SPEND, three rows at 77-91%."""
+    s = _summary()
+    at_91 = {"coverage": {"status": "COMPLETE", "priced_spend_pct": "91.0"}}
+    at_100 = {"coverage": {"status": "COMPLETE", "priced_spend_pct": "100"}}
+    assert s._qualified_priced_status(at_91) == "COMPLETE_ABOVE_THRESHOLD"
+    assert s._qualified_priced_status(at_100) == "COMPLETE"
+
+
+def test_the_scenario_column_names_the_objective_it_optimises():
+    """SCENARIO_SELECTION_OBJECTIVE_LIMITED. It selects on the largest
+    base-case gross saving - not net of one-time cost, not risk-adjusted,
+    not client value. "Best" is a judgement the column cannot make."""
+    s = _summary()
+    cols = [c for c, _ in s.FIELDS]
+    assert "max_base_savings_scenario" in cols
+    assert "best_scenario" not in cols
+    # The selection itself is unchanged: largest base gross saving wins.
+    e = {"scenarios": {
+        "C": {"gross_run_rate_savings": {"base": "10"}},
+        "D": {"gross_run_rate_savings": {"base": "25"}}}}
+    assert s._best(e)[0] == "D"
+
+
+def test_payback_says_which_question_it_answers():
+    """PAYBACK_BEFORE_PROGRAMME_COMPLETION, raised on UPS at 8 months
+    against an 11-month programme - and true of 8 of the 26 companies, not
+    one. It divides one-time cost by the FULL run-rate saving, so it
+    answers "once the programme is done, how long to repay it". When
+    cumulative cash turns positive needs a period-by-period migration cash
+    flow this model does not build, and renaming does not pretend to."""
+    s = _summary()
+    cols = [c for c, _ in s.FIELDS]
+    assert "steady_state_payback_months_base" in cols
+    assert "payback_months_base" not in cols
