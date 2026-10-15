@@ -295,6 +295,18 @@ def _render_brief(domain_no: int, entity_name: str,
 _TAG_RE = re.compile(r"<[^>]+>")
 _WS_RE = re.compile(r"\s+")
 
+#: Non-text/* media types whose bytes a tag-strip can still usefully read.
+#:
+#: Everything outside this and text/* is fetched and reported rather than
+#: quoted - see _fetch_source_fragment. Deliberately short: the test is
+#: whether a naive tag-strip produces something a person can check a figure
+#: against, and for a PDF or a spreadsheet it does not.
+_TEXT_TYPES = frozenset({
+    "application/json", "application/xml", "application/xhtml+xml",
+    "application/ld+json", "application/rss+xml", "application/atom+xml",
+    "application/javascript", "application/x-ndjson",
+})
+
 
 def _grading_policy(research_policy, triangulation_policy):
     """The two governed sets grading needs, as one object.
@@ -453,7 +465,41 @@ def _fetch_source_fragment(url: str, timeout: float = 10.0) -> dict | None:
         raise SourceUnreachable(f"{type(exc).__name__}: {exc}") from exc
     if resp.status_code != 200:
         return None
+    # A PDF is not text, and `resp.text` will decode one anyway.
+    #
+    # httpx guesses an encoding for whatever bytes arrive, so fetching an
+    # annual report produced 600 characters of "%PDF-1.7 endstream obj"
+    # mojibake, stored as the source fragment that spec 0.3A requires for
+    # EVIDENCED_PUBLIC. It satisfied the letter of that rule - a fragment
+    # was stored - and proved nothing, because no one can read it.
+    #
+    # Worse, the same bytes went to _claim_in_body as the page text. Across
+    # the sample set 395 captures are unreadable, 342 of them PDFs and 16
+    # spreadsheets, and 36 of those carry claim_verified=True: a figure
+    # marked independently verified because its digits happened to occur
+    # inside compressed binary.
+    #
+    # Kept as a capture, because the fetch is real and the URL did resolve.
+    # The fragment says what arrived instead of pretending to quote it, and
+    # the body is empty so the claim check reports honestly that nothing
+    # was verified rather than matching against noise.
+    ctype = (resp.headers.get("content-type") or "").split(";")[0].strip().lower()
+    readable = (not ctype) or ctype.startswith("text/") or ctype in _TEXT_TYPES
     text = _WS_RE.sub(" ", _TAG_RE.sub(" ", resp.text[:20_000])).strip()
+    if readable:
+        # A server may serve a PDF as text/html, so the bytes get a vote too.
+        noise = sum(1 for c in text if ord(c) < 32 or ord(c) == 0xFFFD)
+        readable = not (text[:50].lstrip().startswith("%PDF")
+                        or "endstream" in text[:2000]
+                        or (text and noise / len(text) > 0.10))
+    if not readable:
+        return {"url": url, "status_code": resp.status_code,
+                "fragment": (f"[{ctype or 'unknown content type'}, "
+                             f"{len(resp.content):,} bytes] fetched, and no "
+                             f"text extracted: this workflow has no parser "
+                             f"for this format. The source is real and its "
+                             f"contents were not read."),
+                "_body": ""}
     if not text:
         return None
     # The full stripped text is returned as well as the display fragment: a
