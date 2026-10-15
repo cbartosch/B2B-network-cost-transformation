@@ -132,13 +132,46 @@ switch ($Target) {
         are left copying files over the top and hoping nothing silently
         disappears - which is exactly the failure mode this replaces.
         #>
+        # Named refs, not --all.
+        #
+        # The paragraph above has always said "the CURRENT branch plus main".
+        # The command said `--all`, which ships every ref in refs/ - ten of
+        # them here, six being refs/remotes/* - so a receiver got the whole
+        # branch topology including work long abandoned. The worst of it was
+        # feat/initial-workbench-scaffold, seven commits carrying an entire
+        # parallel src/network_cost_workbench/ tree that main replaced with
+        # api_service/app: a reviewer opening the bundle found two
+        # application layouts and nothing saying which was real.
+        #
+        # Two refs give the receiver everything the rest of this paragraph
+        # promises - the work, and the ancestry to build a descendant of it.
         $branch = (& git rev-parse --abbrev-ref HEAD).Trim()
         $out = if ($Path) { $Path } else { Join-Path $PSScriptRoot "wb-repo.bundle" }
-        Invoke-Checked 'git' @('bundle', 'create', $out, '--all')
+
+        if ($branch -eq 'HEAD') {
+            throw @"
+HEAD is detached, so there is no branch to send.
+Check out the branch you mean to share first:  git switch <branch>
+"@
+        }
+        if (-not (& git rev-parse --verify --quiet 'refs/heads/main')) {
+            throw "No local main to carry as ancestry. Fetch it first: git fetch origin main:main"
+        }
+
+        # HEAD last, so a `git clone` of the bundle lands on the work rather
+        # than on main.
+        $refs = if ($branch -eq 'main') { @('main', 'HEAD') }
+                else { @('main', $branch, 'HEAD') }
+        Invoke-Checked 'git' (@('bundle', 'create', $out) + $refs)
         & git bundle verify $out
         Write-Host ""
         Write-Host "Wrote $out" -ForegroundColor Green
         Write-Host "Current branch: $branch  ($((& git rev-parse --short HEAD).Trim()))"
+        Write-Host "Carries: $($refs -join ', ')" -ForegroundColor DarkGray
+        $behind = (& git rev-list --count "main..$branch").Trim()
+        if ($branch -ne 'main' -and $behind -eq '0') {
+            Write-Host "Note: $branch has no commits main does not already have." -ForegroundColor Yellow
+        }
         Write-Host ""
         Write-Host "A bundle is a normal file with normal contents. If this history" -ForegroundColor Yellow
         Write-Host "holds anything sensitive, it travels with it." -ForegroundColor Yellow
