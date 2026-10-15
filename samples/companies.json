@@ -472,7 +472,14 @@
           "density": "SUBURBAN"
         }
       ],
-      "scope_note_cr02b": "Countries widened under CR-02b. The per-country split is an apportionment of a published group total, not a published per-country figure; research supersedes any pair where it finds a sourced count at least as large."
+      "scope_note_cr02b": "Countries widened under CR-02b. The per-country split is an apportionment of a published group total, not a published per-country figure; research supersedes any pair where it finds a sourced count at least as large.",
+      "excluded": [
+        {
+          "country": "CN",
+          "archetype": "PLANT",
+          "reason": "the finding is labelled 'CN total plants (vehicle + component, incl. all JVs)' and the breakdown names 6 SAIC-Volkswagen and 6 FAW-Volkswagen vehicle plants. Both are 50/50 joint ventures - separate companies, equity-accounted rather than consolidated - and this case's perimeter is GROUP_CONSOLIDATED. A JV buys its own connectivity, which is the basis that excluded UPS franchises, Fintro branches, Allianz tied agents and Shell's dealer forecourts."
+        }
+      ]
     },
     {
       "slug": "novartis",
@@ -933,12 +940,17 @@
         {
           "country": "DE",
           "archetype": "PLANT",
-          "reason": "the researched 54 is labelled 'all site types, Germany' and was promoted as PLANT alone, on top of the declared offices and data centres - making the German estate 73 when the source says the whole of it is 54."
+          "reason": "research now returns 200 for this pair, on a unit reading 'production plants at Ludwigshafen site' - the ~200 production plants on BASF's single Ludwigshafen Verbund site, promoted as 200 German premises. Identical in kind to the Antwerp row excluded at 50, and NOT caught by the within/inside unit guard, because this one says 'at' a named site rather than 'within' one. That is why this exclusion is load-bearing rather than belt-and-braces. The earlier reason described a researched 54 labelled 'all site types, Germany'; that finding is no longer what this pair returns, and the text is replaced rather than left citing a figure that no longer exists."
         },
         {
-          "country": "US",
+          "country": "BE",
           "archetype": "PLANT",
-          "reason": "the researched 60 is labelled all site types across North America - plants, offices and laboratories for the US, Canada and Puerto Rico together. An all-types total in one archetype is why the German PLANT row is excluded, and a North American total is not a US one."
+          "reason": "the finding's own unit reads 'production facilities within Antwerp site' and its source says about 50 Produktionsbetriebe on one 6 square kilometre site. Fifty production units inside a single Verbund site are not fifty Belgian premises, and pricing them at the PLANT profile asserts fifty access circuits BASF does not buy. Same basis as Tesco's satellite IT room and the substations this workflow already refuses."
+        },
+        {
+          "country": "DE",
+          "archetype": "CAMPUS",
+          "reason": "the finding is 'Private 5G campus network - Schwarzheide site (OT layer)'. A 5G campus network is a private on-premises mobile network, not a campus: the word is a telecom term and the CAMPUS archetype means a research or manufacturing campus carrying thousands of people. Schwarzheide is an existing BASF German site already inside the declared estate, so this adds a network deployment as though it were a premises."
         }
       ]
     },

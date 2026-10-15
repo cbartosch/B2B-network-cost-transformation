@@ -378,6 +378,22 @@ def is_premises_unit(unit) -> bool:
     # cannot be rescued by a premises noun sitting beside it.
     if any(w in NOT_PREMISES for w in words):
         return False
+    # A thing counted WITHIN something else is a part, not a place.
+    #
+    # BASF's Antwerp row is the case: 50 sites on a unit reading
+    # "production facilities within Antwerp site", from a source saying
+    # "auf ueber 6 km2 Flaeche sind dort rund 50 Produktionsbetriebe
+    # angesiedelt" - about fifty production plants on ONE six-square-
+    # kilometre site. Promoted as fifty Belgian premises, each priced at
+    # the PLANT profile with its own access circuit and backup.
+    #
+    # Both premises nouns in that unit are real - "facilities" and "site" -
+    # which is why the word test passes it. The disqualifying word is
+    # "within", and it is in the unit rather than the label, so the label
+    # rules cannot see it either. Ludwigshafen carries the same shape at
+    # 200.
+    if re.search(r"\b(within|inside)\b", text):
+        return False
     # "X per Y" and "X/Y" are ratios, and a premises noun in the
     # DENOMINATOR makes it a measure per site rather than a count of
     # sites. BNP's "internet access lines per branch" is 1, and reading

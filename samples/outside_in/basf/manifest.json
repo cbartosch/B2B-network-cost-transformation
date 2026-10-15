@@ -22,7 +22,7 @@
   "base_currency": "EUR",
   "case_id": "cbf4d17f-c7e7-45be-92fe-82e7a4005752",
   "spec_path": "/tmp/companies.json",
-  "spec_sha256": "a30ce5addcbe",
+  "spec_sha256": "3b06f619abce",
   "entity_resolution": {
     "resolved": null,
     "resumed": true
@@ -77,7 +77,7 @@
     {
       "country": "CN",
       "archetype": "PLANT",
-      "sites": 26,
+      "sites": 29,
       "density": "SUBURBAN"
     },
     {
@@ -119,7 +119,7 @@
     {
       "country": "IN",
       "archetype": "LARGE_OFFICE",
-      "sites": 6,
+      "sites": 16,
       "density": "URBAN"
     },
     {
@@ -155,27 +155,32 @@
   ],
   "footprint_provenance": [
     {
-      "country": "DE",
+      "country": "BE",
       "archetype": "PLANT",
-      "sites": 54,
+      "sites": 50,
       "origin": "EXCLUDED_BY_SCOPE",
-      "reason": "the researched 54 is labelled 'all site types, Germany' and was promoted as PLANT alone, on top of the declared offices and data centres - making the German estate 73 when the source says the whole of it is 54."
+      "reason": "the finding's own unit reads 'production facilities within Antwerp site' and its source says about 50 Produktionsbetriebe on one 6 square kilometre site. Fifty production units inside a single Verbund site are not fifty Belgian premises, and pricing them at the PLANT profile asserts fifty access circuits BASF does not buy. Same basis as Tesco's satellite IT room and the substations this workflow already refuses."
     },
     {
-      "country": "US",
-      "archetype": "PLANT",
-      "sites": 60,
+      "country": "DE",
+      "archetype": "CAMPUS",
+      "sites": 1,
       "origin": "EXCLUDED_BY_SCOPE",
-      "reason": "the researched 60 is labelled all site types across North America - plants, offices and laboratories for the US, Canada and Puerto Rico together. An all-types total in one archetype is why the German PLANT row is excluded, and a North American total is not a US one."
+      "reason": "the finding is 'Private 5G campus network - Schwarzheide site (OT layer)'. A 5G campus network is a private on-premises mobile network, not a campus: the word is a telecom term and the CAMPUS archetype means a research or manufacturing campus carrying thousands of people. Schwarzheide is an existing BASF German site already inside the declared estate, so this adds a network deployment as though it were a premises."
+    },
+    {
+      "country": "DE",
+      "archetype": "PLANT",
+      "sites": 200,
+      "origin": "EXCLUDED_BY_SCOPE",
+      "reason": "research now returns 200 for this pair, on a unit reading 'production plants at Ludwigshafen site' - the ~200 production plants on BASF's single Ludwigshafen Verbund site, promoted as 200 German premises. Identical in kind to the Antwerp row excluded at 50, and NOT caught by the within/inside unit guard, because this one says 'at' a named site rather than 'within' one. That is why this exclusion is load-bearing rather than belt-and-braces. The earlier reason described a researched 54 labelled 'all site types, Germany'; that finding is no longer what this pair returns, and the text is replaced rather than left citing a figure that no longer exists."
     },
     {
       "country": "BE",
       "archetype": "PLANT",
       "sites": 12,
-      "origin": "DISCLOSURE_KEPT_RESEARCH_FOUND_FEWER",
-      "density": "SUBURBAN",
-      "research_said": 1,
-      "disclosure_said": 12
+      "origin": "PUBLIC_DISCLOSURE",
+      "density": "SUBURBAN"
     },
     {
       "country": "BR",
@@ -201,9 +206,11 @@
     {
       "country": "CN",
       "archetype": "PLANT",
-      "sites": 26,
-      "origin": "PUBLIC_DISCLOSURE",
-      "density": "SUBURBAN"
+      "sites": 29,
+      "origin": "SUPERSEDED_BY_RESEARCH",
+      "density": "SUBURBAN",
+      "research_said": 29,
+      "disclosure_said": 26
     },
     {
       "country": "DE",
@@ -252,16 +259,20 @@
     {
       "country": "IN",
       "archetype": "LARGE_OFFICE",
-      "sites": 6,
-      "origin": "PUBLIC_DISCLOSURE",
-      "density": "URBAN"
+      "sites": 16,
+      "origin": "SUPERSEDED_BY_RESEARCH",
+      "density": "URBAN",
+      "research_said": 16,
+      "disclosure_said": 6
     },
     {
       "country": "IN",
       "archetype": "PLANT",
       "sites": 8,
-      "origin": "PUBLIC_DISCLOSURE",
-      "density": "SUBURBAN"
+      "origin": "DISCLOSURE_KEPT_RESEARCH_FOUND_FEWER",
+      "density": "SUBURBAN",
+      "research_said": 4,
+      "disclosure_said": 8
     },
     {
       "country": "IT",
@@ -290,8 +301,10 @@
       "country": "US",
       "archetype": "PLANT",
       "sites": 30,
-      "origin": "PUBLIC_DISCLOSURE",
-      "density": "SUBURBAN"
+      "origin": "DISCLOSURE_KEPT_RESEARCH_FOUND_FEWER",
+      "density": "SUBURBAN",
+      "research_said": 2,
+      "disclosure_said": 30
     }
   ],
   "scope_countries_modelled": [
@@ -309,9 +322,10 @@
   "scope_status": "PARTIAL_COUNTRIES",
   "scope_note": "Baseline covers 9 country(ies) (BE, BR, CN, DE, ES, FR, IN, IT, US) and the site types listed in sites_origin. The group's full country and site-type count is not sourced, so the share of the group this represents is DECLARED_UNKNOWN. This is baseline_in_scope, not a group baseline.",
   "sites_origin": {
+    "CAMPUS": "ASSUMED_PUBLIC_DISCLOSURE",
     "DC": "ASSUMED_PUBLIC_DISCLOSURE",
-    "LARGE_OFFICE": "ASSUMED_PUBLIC_DISCLOSURE",
-    "PLANT": "ASSUMED_PUBLIC_DISCLOSURE"
+    "LARGE_OFFICE": "RESEARCHED",
+    "PLANT": "RESEARCHED"
   },
   "fx_to_eur": {
     "rate": "1.0",
@@ -364,19 +378,19 @@
   ],
   "estimate_inputs": {
     "method": "BUILD_UP",
-    "users": 2628,
+    "users": 2784,
     "ops_cost_per_site_base": 900,
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-14T20:30:10.017609+00:00",
-  "run_seconds": 2.4,
+  "run_started": "2026-10-15T15:36:09.159763+00:00",
+  "run_seconds": 2.6,
   "preflight_conditions": 8,
   "promotion": {
     "promoted": true,
     "detail": null,
-    "offered": 8,
-    "accepted": 5,
+    "offered": 7,
+    "accepted": 7,
     "declined": [],
     "declined_count": 0
   },
