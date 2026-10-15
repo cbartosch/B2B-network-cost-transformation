@@ -254,142 +254,133 @@ Sources: [germancompanyformation.com](https://germancompanyformation.com/guides/
 ## BASF SE
 
 - **Industry** CHEMICALS (entity resolution)
-- **Scope** DE, BE, US, CN, FR, ES, IT, BR, IN, EUR, 219 sites (research merged with disclosure)
+- **Scope** DE, BE, US, CN, FR, ES, IT, BR, IN, EUR, 232 sites (research merged with disclosure)
 - **Confidence** 0.346 (D - Indicative), coverage COMPLETE
 
-**Profile** - EVIDENCED_PUBLIC, 6 source(s)
+**Profile** - EVIDENCED_PUBLIC, 7 source(s)
 
 | what | country | low | base | high | as of |
 | --- | --- | --- | --- | --- | --- |
-| BASF GROUP CONSOLIDATED SALES REVENUE |  | 59660000000 | 65260000000 | 65260000000 | 2025 |
-| BASF GROUP EMPLOYEES AT YEAR-END |  | 108251 | 111822 | 111991 | 2025 |
-| BASF GROUP EUROPE SALES REVENUE | DE | 26200000000 | 26200000000 | 26200000000 | 2024 |
-| BASF GROUP NORTH AMERICA SALES REVENUE | US | 18200000000 | 18200000000 | 18200000000 | 2024 |
-| BASF GROUP NUMBER OF BUSINESS SEGMENTS |  | 6 | 6 | 6 | 2025 |
-| BASF GROUP NUMBER OF COUNTRIES OF OPERATION |  | 92 | 92.5 | 93 | 2025 |
-| BASF GROUP NUMBER OF PRODUCTION SITES WORLDWIDE |  | 234 | 234.5 | 235 | 2025 |
-| BASF SE (HGB) EUROPE SALES REVENUE (INCLUDING GERMANY) | DE | 14876000000 | 15220000000 | 15564000000 | 2025 |
-| BASF SE AVERAGE EMPLOYEES (HGB LEGAL ENTITY) | DE | 32598 | 33096.5 | 33595 | 2025 |
-| BASF SE STANDALONE SALES REVENUE (HGB LEGAL ENTITY) | DE | 21040000000 | 21415500000 | 21791000000 | 2025 |
+| BASF SE (LEGAL ENTITY, HGB) SALES REVENUE | DE | 21791 | 21791 | 21791 | 2024 |
+| GROUP EMPLOYEES AT YEAR-END |  | 108251 | 110036.5 | 111822 | 2025 |
+| GROUP SALES REVENUE |  | 61440 | 65260 | 65300 | 2024 |
+| GROUP SALES REVENUE (FY2025) |  | 59660 | 59680 | 59700 | 2025 |
+| GROUP SALES — ASIA PACIFIC (BY LOCATION OF COMPANY) | CN | 15886 | 15886 | 15886 | 2024 |
+| GROUP SALES — EUROPE REGION (BY LOCATION OF COMPANY) | EU/EUROPE | 26169 | 26184.5 | 26200 | 2024 |
+| GROUP SALES — GERMANY (BY LOCATION OF COMPANY) | DE | 11016 | 11016 | 11016 | 2024 |
+| GROUP SALES — NORTH AMERICA (BY LOCATION OF COMPANY) | US | 18168 | 18184 | 18200 | 2024 |
+| NUMBER OF COUNTRIES OF OPERATION |  | 92 | 92.5 | 93 | 2025 |
+| NUMBER OF PRODUCTION SITES WORLDWIDE |  | 234 | 234.5 | 235 | 2025 |
 
-Sources: [BASF SE](https://www.basf.com/dam/jcr:a0caf160-c019-40b1-a4ea-eaedb29b0685/basf/www/global/documents/en/investor-relations/calendar-and-publications/reports/2025/BASF_Report_2024.pdf); [BASF SE – report.basf.com](https://report.basf.com/2024/en/financial-statements/statement-of-income.html); [BASF SE – Financial Statements BASF SE 2024 (HGB](https://www.basf.com/dam/jcr:575f461c-7cd1-40c8-b00f-6562fe0bb143/Financial_Statements_BASF_SE_2024.pdf); [BASF SE – basf.com investor page](https://www.basf.com/global/en/investors/basf-at-a-glance) and 2 more
+Sources: [BASF SE — BASF Report 2024 (official annual repo](https://report.basf.com/2024/en/financial-statements/statement-of-income.html); [BASF SE — Press Release, Publication of BASF Rep](https://www.basf.com/global/en/media/news-releases/2025/03/p-25-045); [BASF SE — BASF Report 2024 (At a Glance page)](https://report.basf.com/2024/en/overviews/2024-at-a-glance.html); [BASF SE — Financial Statements BASF SE 2024 (HGB](https://www.basf.com/dam/jcr:575f461c-7cd1-40c8-b00f-6562fe0bb143/Financial_Statements_BASF_SE_2024.pdf) and 3 more
 
-**Locations** - EVIDENCED_PUBLIC, 7 source(s)
-
-| what | country | low | base | high | as of |
-| --- | --- | --- | --- | --- | --- |
-| LARGE_OFFICE – GLOBAL OFFICE LOCATIONS (ALL COUNTRIES, ALL T |  | 370 | 370 | 370 |  |
-| LARGE_OFFICE – US REGIONAL HEADQUARTERS, FLORHAM PARK NJ | US | 1 | 1 | 1 | 2024 |
-| PLANT / LARGE_OFFICE – ALL SITE TYPES, GERMANY (DE) | DE | 54 | 54 | 54 | 2024 |
-| PLANT / LARGE_OFFICE – ALL SITE TYPES, NORTH AMERICA (US + C | US | 55 | 57.5 | 60 | 2025 |
-| PLANT – EMPLOYEES IN GERMANY (PROXY FOR DE SITE SCALE) | DE | 50602 | 50602 | 50602 | 2024 |
-| PLANT – EMPLOYEES IN NORTH AMERICA / US (PROXY FOR US SITE S | US | 13500 | 13500 | 13500 | 2024 |
-| PLANT – PRODUCTION SITES WORLDWIDE (GLOBAL TOTAL) |  | 234 | 235 | 396 | 2025 |
-| PLANT – VERBUND SITE, ANTWERP, BELGIUM | BE | 1 | 1 | 1 | 2024 |
-| PLANT – VERBUND SITE, LUDWIGSHAFEN (HEADQUARTERS + LARGEST P | DE | 1 | 1 | 1 | 2024 |
-| PLANT – VERBUND SITES, UNITED STATES (FREEPORT TX + GEISMAR  | US | 2 | 2 | 2 | 2024 |
-
-*1 conflict(s) flagged: PLANT – PRODUCTION SITES WORLDWIDE (GLOBAL TOTAL)*
-
-Sources: [BASF SE (BASF Report 2024 – online)](https://report.basf.com/2024/en/combined-managements-report/fundamentals-of-the-group/basf-group/sites-and-business-environment.html); [BASF SE – location finder, Germany](https://www.basf.com/global/en/who-we-are/organization/locations/europe/german-sites); [BASF SE – Verbund sites worldwide](https://www.basf.com/global/en/investors/basf-at-a-glance/verbund/sites-worldwide); [BASF SE – global careers/locations page](https://www.basf.com/global/en/careers/locations) and 3 more
-
-**Data centres and cloud** - EVIDENCED_PUBLIC, 5 source(s)
+**Locations** - EVIDENCED_PUBLIC, 10 source(s)
 
 | what | country | low | base | high | as of |
 | --- | --- | --- | --- | --- | --- |
-| BASF IT EMPLOYEES IN LUDWIGSHAFEN (PROXY FOR DC SCALE) | DE | 1630 | 1630 | 1630 | 2025 |
-| CLOUD PROVIDER – AWS (DIGITAL FARMING / XARVIO WORKLOADS) |  | 1 | 1 | 1 | 2024 |
-| CLOUD PROVIDER – SAP S/4HANA CLOUD PRIVATE EDITION (HYBRID E |  | 1 | 1 | 1 | 2025 |
-| DC – PRIMARY IT HUB (BASF DIGITAL SOLUTIONS GMBH, LUDWIGSHAF | DE | 1 | 1 | 1 | 2025 |
-| DC – SECONDARY IT NODE (BASF DIGITAL SOLUTIONS GMBH, SCHWARZ | DE | 1 | 1 | 1 | 2025 |
+| LARGE_OFFICE (INDIA – OFFICES, BASF INDIA LTD) | IN | 16 | 16 | 16 | 2024 |
+| PLANT (BELGIUM – ANTWERP VERBUND SITE PRODUCTION FACILITIES) | BE | 50 | 50 | 50 | 2024 |
+| PLANT (DE – GERMAN SITES IN 9 FEDERAL STATES) | DE | 9 | 9 | 9 | 2024 |
+| PLANT (DE – LUDWIGSHAFEN PRODUCTION PLANTS COUNT) | DE | 200 | 200 | 200 | 2024 |
+| PLANT (GLOBAL PRODUCTION SITES, WORLDWIDE TOTAL) |  | 234 | 234 | 235 | 2025 |
+| PLANT (INDIA – MANUFACTURING PLANTS, BASF INDIA LTD) | IN | 4 | 4 | 4 | 2024 |
+| PLANT (PRODUCTION SITES, GREATER CHINA / CN) | CN | 29 | 29 | 29 | 2025 |
+| PLANT (US NORTH AMERICA – VERBUND SITES: FREEPORT TX AND GEI | US | 2 | 2 | 2 | 2024 |
+| PLANT (VERBUND SITES, CHINA – NAMED LARGE SITES) | CN | 4 | 4 | 4 | 2025 |
+| PLANT+LARGE_OFFICE (US – TOTAL NORTH AMERICA LOCATIONS) | US | 150 | 150 | 150 | 2024 |
 
-Sources: [BASF SE](https://www.basf.com/global/de/who-we-are/organization/locations/europe/german-companies/BASF-Digital-Solutions-GmbH); [Tata Consultancy Services](https://www.tcs.com/what-we-do/services/cloud/aws/case-study/basf-digital-farming-aws-cloud); [SAP SE](https://news.sap.com/2025/05/basf-digital-transformation-sap-s4hana-cloud/); [Computer Weekly](https://www.computerweekly.com/news/366625052/Sapphire-2025-BASF-evolves-business-with-move-to-SAP-S-4Hana) and 1 more
+Sources: [BASF SE](https://report.basf.com/2024/en/combined-managements-report/fundamentals-of-the-group/basf-group/sites-and-business-environment.html); [BASF SE](https://bericht.basf.com/2025/de/_assets/downloads/zusammengefasster-lagebericht-basf-gb25.pdf); [BASF India Limited](https://www.basf.com/dam/jcr:90743a96-8b19-47dd-93e3-c620e841f2d1/basf/www/in/documents/en/investor-relations/annual-reports/2024/Annual-Report-2023-24.pdf); [BASF SE (China)](https://www.basf.com/cn/en/who-we-are/organization/key-production-sites) and 6 more
 
-**Current architecture** - EVIDENCED_PUBLIC, 7 source(s)
-
-| what | country | low | base | high | as of |
-| --- | --- | --- | --- | --- | --- |
-| BT ASIA-PACIFIC WAN SITES (BASF, HISTORICAL) |  | 234 | 234 | 234 | 2006 |
-| BT WAN CONTRACT VALUE (7-YEAR GLOBAL MPLS MANAGED NETWORK) |  | 200000000 | 200000000 | 200000000 | 2009 |
-| BT-MANAGED WAN SITES IN AMERICAS AND ASIA WITH MANAGED LAN S |  | 300 | 300 | 300 | 2009 |
-| COUNTRIES COVERED BY BT-MANAGED BASF WAN |  | 80 | 80 | 80 | 2006 |
-| INDUSTRY 4.0 USE CASES SUPPORTED BY VODAFONE 5G CAMPUS – BAS | DE | 60 | 60 | 60 | 2023 |
-| PRIVATE 5G CAMPUS NETWORK – BASF ANTWERP (BE), CITYMESH | BE | 1 | 1 | 1 | 2024 |
-| PRIVATE 5G CAMPUS NETWORK – BASF SCHWARZHEIDE (DE), VODAFONE | DE | 1 | 1 | 1 | 2023 |
-| PRODUCTION FACILITIES COVERED BY BASF ANTWERP PRIVATE 5G (BE | BE | None | None | None |  |
-| WAN SITES MANAGED BY BT ON MPLS (GLOBAL) |  | 750 | 900 | 900 | 2009 |
-
-*1 conflict(s) flagged: WAN SITES MANAGED BY BT ON MPLS (GLOBAL)*
-
-Sources: [Computer Weekly](https://www.computerweekly.com/news/2240105676/BASF-extends-BT-network-contract); [Silicon Republic](https://www.siliconrepublic.com/business/chemical-group-basf-chooses-bt-as-networking-partner); [CIO.de](https://www.cio.de/article/3664109/basf-vereinheitlicht-wan-weltweit.html); [Vodafone Business](https://www.vodafone.com/business/news-and-insights/case-studies/basf-digital-thinking-to-modernise-global-manufacturing) and 3 more
-
-**Current providers and products** - EVIDENCED_PUBLIC, 4 source(s)
-
-- WAN managed network carrier (global, including DE/BE/US): BT Global Services
-- WAN carrier successor context – BT International / Verizon JV (forward signal): BT International + Verizon (50:50 JV)
+**Data centres and cloud** - EVIDENCED_PUBLIC, 10 source(s)
 
 | what | country | low | base | high | as of |
 | --- | --- | --- | --- | --- | --- |
-| BT RELATIONSHIP START DATE (INITIAL BASF NETWORK CONTRACT) |  | 2003 | 2003.5 | 2004 | 2009 |
-| SITES COVERED BY BT WAN CONTRACT (GLOBAL) |  | 900 | 900 | 900 | 2009 |
-| SITES WITH MANAGED LAN + IP TELEPHONY SERVICES (AMERICAS + A | US | 300 | 300 | 300 | 2009 |
-| WAN MANAGED NETWORK CONTRACT VALUE (7-YEAR GLOBAL) |  | 200000000 | 200000000 | 200000000 | 2009 |
+| BASF BUSINESS SERVICES IT SITES IN EUROPE (SERVICE/OFFICE, N | DE | 14 | 14 | 14 | 2015 |
+| CLOUD WORKLOAD: ALIBABA CLOUD LANDING ZONE (CHINA OPERATIONS | CN | 1 | 1 | 1 | 2024 |
+| CLOUD WORKLOAD: AWS (DIGITAL FARMING / XARVIO PLATFORM) | DE | 1 | 1 | 1 | 2024 |
+| ERP CLOUD MIGRATION: SAP S/4HANA CLOUD PRIVATE EDITION (GLOB | DE | None | None | None |  |
+| GLOBAL BUSINESS SERVICES HUBS (SERVICE CONSOLIDATION, INCLUD |  | 3 | 3 | 3 | 2025 |
+| ON-PREMISES IT INFRASTRUCTURE SITE (SUPERCOMPUTER / DC-CLASS | DE | 1 | 1 | 1 | 2025 |
+| VERBUND SITES IN CN (ON-PREMISES IT NODE IMPLIED) | CN | 1 | 1 | 1 | 2024 |
+| VERBUND SITES IN DE (ON-PREMISES IT NODE IMPLIED) | DE | 1 | 1 | 1 | 2024 |
+| VERBUND SITES IN US (ON-PREMISES IT NODE IMPLIED) | US | 2 | 2 | 2 | 2024 |
+| VERBUND SITES WITH IMPLIED ON-PREMISES IT INFRASTRUCTURE (WO |  | 6 | 6 | 6 | 2024 |
 
-Sources: [Silicon Republic](https://www.siliconrepublic.com/business/chemical-group-basf-chooses-bt-as-networking-partner); [Computer Weekly](https://www.computerweekly.com/news/2240105676/BASF-extends-BT-network-contract); [Verizon](https://www.verizon.com/about/news/verizon-bt-group-international-joint-venture); [Fierce Network](https://www.fierce-network.com/broadband/verizon-bt-merge-international-enterprise-operations-5050-jv-worth-4b)
+Sources: [BASF SE (company website)](https://www.basf.com/global/en/legal/credits); [BASF SE (company website)](https://www.basf.com/global/en/who-we-are/digitalization); [BASF SE Annual Report 2024](https://report.basf.com/2024/en/_assets/downloads/basf-group-basf-ar24.pdf); [BASF Factbook 2025](https://www.basf.com/dam/jcr:3ac6d42f-b06c-432d-9edf-94a12882bd40/basf-factbook-2025.pdf) and 6 more
 
-**Contract and sourcing events** - EVIDENCED_PUBLIC, 4 source(s)
-
-| what | country | low | base | high | as of |
-| --- | --- | --- | --- | --- | --- |
-| BASF INVESTMENT IN 5G CAMPUS NETWORK BUILD-OUT – SCHWARZHEID | DE | 10000000 | 10000000 | 10000000 | 2024 |
-| BT GLOBAL NETWORK CONTRACT – IMPLIED ANNUAL RUN-RATE |  | 28571429 | 28571429 | 28571429 | 2011 |
-| BT GLOBAL NETWORK CONTRACT – SITES COVERED |  | 900 | 900 | 900 | 2011 |
-| BT GLOBAL NETWORK CONTRACT – TERM |  | 7 | 7 | 7 | 2011 |
-| BT GLOBAL NETWORK CONTRACT – TOTAL VALUE |  | 200000000 | 200000000 | 200000000 | 2011 |
-| BT MANAGED LAN / IP TELEPHONY SITES – AMERICAS & ASIA | US | 300 | 300 | 300 | 2011 |
-| VODAFONE / BASF SCHWARZHEIDE 5G CAMPUS – ANTENNA MASTS | DE | 6 | 6 | 6 | 2023 |
-
-*2 conflict(s) flagged: BASF INVESTMENT IN 5G CAMPUS NETWORK BUILD-OUT – SCHWARZHEIDE, VODAFONE / BASF SCHWARZHEIDE 5G CAMPUS – ANTENNA MASTS*
-
-Sources: [SiliconRepublic](https://www.siliconrepublic.com/business/chemical-group-basf-chooses-bt-as-networking-partner); [Computer Weekly](https://www.computerweekly.com/news/2240105676/BASF-extends-BT-network-contract); [RCR Wireless](https://www.rcrwireless.com/20231109/private-networks/vodafone-germany-basf-start-construction-5g-campus-networks); [TelcoTitans](https://www.telcotitans.com/deutsche-telekomwatch/deutsche-telekom-finds-on-campus-chemistry-with-basf/1566.article)
-
-**Transformation announcements** - EVIDENCED_PUBLIC, 10 source(s)
-
-- SAP S/4HANA Cloud (RISE) migration – strategic partnership signed; ERP transformation commenced: 2024-12-01
+**Current architecture** - EVIDENCED_PUBLIC, 6 source(s)
 
 | what | country | low | base | high | as of |
 | --- | --- | --- | --- | --- | --- |
-| ANNUAL COST SAVINGS ACHIEVED RUN RATE – END OF 2025 |  | 1700000000 | 1700000000 | 1700000000 | 2025 |
-| COMBINED ANNUAL COST SAVINGS TARGET – ALL PROGRAMMES, GROUP  |  | 2100000000 | 2100000000 | 2100000000 | 2026 |
-| CORESHIFT – CASH FIXED COST REDUCTION TARGET IN CORE BUSINES |  | 20 | 20 | 20 | 2029 |
-| CORESHIFT – CORE BUSINESS SALES BASE (SCOPE OF THE 20% COST  |  | 40000000000 | 40000000000 | 40000000000 | 2024 |
-| COST SAVINGS TARGET – NON-PRODUCTION AREAS (SERVICE, OPERATI | DE | 500000000 | 500000000 | 500000000 | 2024 |
-| FIXED COST REDUCTION TARGET – LUDWIGSHAFEN SITE STRUCTURAL M | DE | 200000000 | 200000000 | 200000000 | 2026 |
-| GLOBAL DIGITAL SERVICES – INTERNAL IT DIVISION HEADCOUNT (SU |  | 8500 | 8500 | 8500 | 2026 |
-| REVISED COMBINED ANNUAL COST SAVINGS TARGET (ALL PROGRAMMES, |  | 2300000000 | 2300000000 | 2300000000 | 2026 |
-| TRANSFORMATION-RELATED SPENDING (GREEN/SUSTAINABILITY TRANSF |  | 600000000 | 600000000 | 600000000 | 2025 |
+| 5G CELL MASTS DEPLOYED AT SCHWARZHEIDE CAMPUS | DE | 6 | 6 | 6 | 2023 |
+| DEUTSCHE TELEKOM 5G CAMPUS PILOT – BASF MAJOR PLANT (DE) | DE | 1 | 1 | 1 | 2025 |
+| INDUSTRY 4.0 USE CASES SUPPORTED BY SCHWARZHEIDE 5G CAMPUS | DE | 60 | 60 | 60 | 2024 |
+| PRIVATE 5G CAMPUS NETWORK – SCHWARZHEIDE SITE (OT LAYER) | DE | 1 | 1 | 1 | 2024 |
 
-Sources: [BASF SE](https://www.basf.com/global/en/media/news-releases/2023/02/p-23-131); [BASF SE](https://www.basf.com/dam/jcr:70628be4-2a7c-4df1-8313-049417e62eb8/basf/www/global/documents/en/news-and-media/news-releases/2024/10/P308e_BASF-News-Release-Q3-2024.pdf); [BASF SE](https://www.basf.com/global/en/media/news-releases/2024/09/p-24-288); [BASF SE](https://www.basf.com/global/en/media/news-releases/2026/05/p-26-105) and 6 more
+Sources: [RCR Wireless News](https://www.rcrwireless.com/20231109/private-networks/vodafone-germany-basf-start-construction-5g-campus-networks); [Vodafone Business](https://www.vodafone.com/business/news-and-insights/case-studies/basf-digital-thinking-to-modernise-global-manufacturing); [Vodafone Germany](https://www.vodafone.de/business/featured-digitale-vorreiter/business-cases/en/network-future/innovative-digitalisation-thanks-5g-campus-networks/); [5gantennas.org](https://5gantennas.org/vodafone-germany-and-basf-begin-building-5g-campus-network/) and 2 more
 
-**Market serviceability** - EVIDENCED_PUBLIC, 10 source(s)
+**Current providers and products** - EVIDENCED_PUBLIC, 5 source(s)
 
-- Proximus market share – Belgium (total telecom, end-2024): 40–50
-- Belgian dedicated business fibre provisioning lead time: 60–120
-- MPLS 1 Gbps monthly price – Western Europe benchmark: 1100–1300
+- Global WAN / managed network carrier: BT Global Services
+- Private 5G campus network operator – Schwarzheide, DE: Vodafone Germany
 
 | what | country | low | base | high | as of |
 | --- | --- | --- | --- | --- | --- |
-| BELGIAN TELECOM TOTAL MARKET REVENUE | BE | 8.64 | 8.64 | 8.64 | 2024 |
-| CREDIBLE ENTERPRISE WAN CARRIERS | DE | None | None | None |  |
-| CREDIBLE ENTERPRISE WAN CARRIERS – BELGIUM | BE | None | None | None |  |
-| CREDIBLE ENTERPRISE WAN CARRIERS – UNITED STATES | US | None | None | None |  |
-| DEUTSCHE TELEKOM RETAIL BROADBAND MARKET SHARE (DE) | DE | 40.6 | 45.4 | 50.2 | 2024 |
-| LEASED LINE SLA AVAILABILITY – GERMANY (FIBRE ACCESS) | DE | None | None | None |  |
-| LEASED LINE STANDARD PROVISIONING LEAD TIME – GERMANY (WHERE | DE | None | None | None |  |
+| CONTRACT VALUE – BT GLOBAL SERVICES MANAGED WAN |  | 200 | 200 | 200 | 2009 |
+| SITES COVERED BY BT MANAGED WAN CONTRACT |  | 900 | 900 | 900 | 2009 |
+| SITES WITH MANAGED LAN / IP TELEPHONY (AMERICAS + ASIA) |  | 300 | 300 | 300 | 2009 |
 
-*1 conflict(s) flagged: DEUTSCHE TELEKOM RETAIL BROADBAND MARKET SHARE (DE)*
+Sources: [ComputerWeekly](https://www.computerweekly.com/news/2240105676/BASF-extends-BT-network-contract); [SiliconRepublic](https://www.siliconrepublic.com/business/chemical-group-basf-chooses-bt-as-networking-partner); [Vodafone Business](https://www.vodafone.com/business/news-and-insights/case-studies/basf-digital-thinking-to-modernise-global-manufacturing); [Critical Communications Review](https://www.criticalcommunicationsreview.com/ccr/news/111912/vodafone-to-deliver-private-5g-based-campus-network-to-basf) and 1 more
 
-Sources: [germancompanyformation.com](https://germancompanyformation.com/guides/telecommunication-companies-in-germany); [VATM / Dialog Consult – 26th Telecom Market Anal](https://www.vatm.de/wp-content/uploads/2025/06/VATM-Market-Analysis-Germany-2025.pdf); [BIPT – Belgian Institute for Postal Services and](https://www.bipt.be/consumers/telephone-internet-tv/comparing-operators/comparing-offers/list-of-fixed-and-convergent-operators); [Telecompaper (citing BIPT annual market research](https://www.telecompaper.com/news/proximus-grows-market-share-in-2024-at-expense-of-orange-telenet--1542475) and 6 more
+**Contract and sourcing events** - EVIDENCED_PUBLIC, 6 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| BASF SCHWARZHEIDE–VODAFONE GERMANY 5G CAMPUS NETWORK CELL MA | DE | 6 | 6 | 6 | 2023 |
+| BASF–BT CONTRACT COUNTRY COUNT |  | 80 | 80 | 80 | 2011 |
+| BASF–BT CONTRACT SITE COUNT (GLOBAL) |  | 900 | 900 | 900 | 2011 |
+| BASF–BT CONTRACT TERM |  | 7 | 7 | 7 | 2011 |
+| BASF–BT GLOBAL MANAGED NETWORK CONTRACT TOTAL VALUE |  | 200000000 | 200000000 | 200000000 | 2011 |
+| BASF–BT MANAGED LAN SERVICES SITE COUNT (AMERICAS + ASIA) |  | 300 | 300 | 300 | 2011 |
+| BASF–BT RELATIONSHIP START YEAR (FIRST NETWORK CONTRACT) |  | 2003 | 2003.5 | 2004 | 2011 |
+
+Sources: [Computer Weekly](https://www.computerweekly.com/news/2240105676/BASF-extends-BT-network-contract); [Silicon Republic](https://www.siliconrepublic.com/business/chemical-group-basf-chooses-bt-as-networking-partner); [Critical Communications Review](https://www.criticalcommunicationsreview.com/ccr/news/111912/vodafone-to-deliver-private-5g-based-campus-network-to-basf); [RCR Wireless](https://www.rcrwireless.com/20231109/private-networks/vodafone-germany-basf-start-construction-5g-campus-networks) and 2 more
+
+**Transformation announcements** - EVIDENCED_PUBLIC, 7 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| CORESHIFT – ACHIEVED SAVINGS VS. 2.3BN TARGET (Q2 2026 EARNI |  | 2000000000 | 2000000000 | 2000000000 | 2026 |
+| CORESHIFT – IT ENABLERS: DEDICATED ERP (SAP S/4HANA) FOR COR |  | 1 | 1 | 1 | 2025 |
+| CORESHIFT – NET CASH FIXED COST SAVINGS TARGET (% OF 2024 BA |  | 20 | 20 | 20 | 2029 |
+| CORESHIFT – REVENUE BASE OF IN-SCOPE CORE BUSINESSES |  | 40000000000 | 40000000000 | 40000000000 | 2025 |
+| EXISTING COST SAVINGS – ACHIEVED RUN-RATE END Q3 2024 |  | 800000000 | 800000000 | 800000000 | 2024 |
+| EXISTING COST-SAVINGS PROGRAMME – ANNUAL RUN-RATE TARGET BY  |  | 2100000000 | 2100000000 | 2100000000 | 2026 |
+| EXISTING COST-SAVINGS PROGRAMME – REVISED ANNUAL RUN-RATE TA |  | 2300000000 | 2300000000 | 2300000000 | 2026 |
+| EXISTING COST-SAVINGS – ACHIEVED RUN-RATE BY END 2025 |  | 1700000000 | 1700000000 | 1700000000 | 2025 |
+| WINNING WAYS – EBITDA BEFORE SPECIAL ITEMS TARGET 2028 |  | None | None | None |  |
+| WINNING WAYS – TRANSFORMATION-RELATED SPENDING (ANNUAL AVERA |  | 600000000 | 600000000 | 600000000 | 2025 |
+
+Sources: [BASF SE](https://www.basf.com/global/en/media/news-releases/2026/05/p-26-105); [BASF SE (Q3 2024 News Release)](https://www.basf.com/dam/jcr:70628be4-2a7c-4df1-8313-049417e62eb8/basf/www/global/documents/en/news-and-media/news-releases/2024/10/P308e_BASF-News-Release-Q3-2024.pdf); [BASF SE (CMD Keynote September 2024)](https://www.basf.com/dam/jcr:12f68ca0-6a8d-4334-80b7-9475636d5f00/basf/www/global/documents/en/investor-relations/calendar-and-publications/cmd/20240926_BASF-CMD-Keynote_Transcript_Speech.pdf); [BASF SE (Annual Report 2025)](https://report.basf.com/2025/en/combined-managements-report/fundamentals-of-the-group/strategy/our-strategic-levers.html) and 3 more
+
+**Market serviceability** - EVIDENCED_PUBLIC, 7 source(s)
+
+- MPLS leased-line standard provisioning lead time – Germany (on-net): 30–50
+- DIA/fibre provisioning lead time – Belgium: 60–120
+- Proximus copper (Ethernet over Copper) end-of-sale date: 1 January 2025
+- Credible enterprise WAN carriers – US: 6+
+- China – provisioning constraint flag: MATERIALLY CONSTRAINED
+- Credible enterprise carriers – France: 4+
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| APPROVED ENTERPRISE CROSS-BORDER WAN CARRIERS – CHINA | CN | None | None | None |  |
+| CREDIBLE ENTERPRISE CARRIERS (MNOS + ENTERPRISE ISPS) | DE | 4 | 4 | 4 | 2025 |
+| DEUTSCHE TELEKOM FIXED-LINE MARKET SHARE | DE | 81.5 | 81.5 | 81.5 |  |
+
+*2 conflict(s) flagged: CREDIBLE ENTERPRISE CARRIERS (MNOS + ENTERPRISE ISPS), DEUTSCHE TELEKOM FIXED-LINE MARKET SHARE*
+
+Sources: [germancompanyformation.com](https://germancompanyformation.com/guides/telecommunication-companies-in-germany); [ISG / BusinessWire](https://www.businesswire.com/news/home/20250807539187/en); [jimber.io](https://jimber.io/blog/mpls-replacement-exit-playbook/); [TeleGeography](https://resources.telegeography.com/enterprise-network-trends-strategy-wan-manager-survey) and 3 more
 
 ---
 

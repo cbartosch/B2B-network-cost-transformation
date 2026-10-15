@@ -518,3 +518,29 @@ def test_an_all_site_types_total_is_not_one_archetype():
     basf = next(c for c in spec["companies"] if c["slug"] == "basf")
     assert any(r.get("country") == "DE" and r.get("archetype") == "PLANT"
                for r in (basf.get("excluded") or []))
+
+
+def test_a_divestment_is_not_a_measurement_of_the_estate(tool):
+    """What priced_above_research asks is: what is the highest figure
+    research found for this pair? A divestment is not that.
+
+    BASF's Brazilian row is the case. The only (BR, PLANT) finding is
+    "PLANT sites divested in Brazil - sale of decorative paints business
+    to Sherwin-Williams" at 2 - the Demarchi and Jaboatao plants it SOLD.
+    Read as a count it made the declared 11 look like a 5.5x
+    overstatement of something research had measured, when research had
+    measured nothing, and the referral test then demanded an owner ruling
+    on a non-issue.
+    """
+    over = tool.priced_above_research(OUT, SPEC)
+    pairs = {(c["slug"], c["country"], c["archetype"]) for c in over}
+    assert ("basf", "BR", "PLANT") not in pairs
+
+
+def test_the_check_still_reports_real_overstatements(tool):
+    """The filter must not empty the report. Nestle's German plants are
+    still 13 in the estate against 12 found."""
+    over = tool.priced_above_research(OUT, SPEC)
+    assert len(over) > 10
+    assert any(c["slug"] == "nestle" and c["archetype"] == "PLANT"
+               for c in over)

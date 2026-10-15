@@ -126,6 +126,13 @@ DISQUALIFYING = (
     # have legitimate premises in this set: Accor counts hotel rooms and
     # Simmons Bank has a West Little Rock satellite OFFICE.
     "it room",
+    # A joint venture is a separate company that buys its own
+    # connectivity. Volkswagen's Chinese estate is the case: a finding
+    # labelled "CN total plants (vehicle + component, incl. all JVs)"
+    # at 39, where 12 of the named plants are SAIC-VW and FAW-VW - two
+    # 50/50 ventures that are equity-accounted and not consolidated,
+    # against a case whose perimeter is GROUP_CONSOLIDATED.
+    "joint venture", "jvs", "all jv",
 )
 
 
@@ -222,6 +229,23 @@ def stale_evidence(outdir: pathlib.Path, spec_path: pathlib.Path,
 #: Leading token of a finding's label, which is how an archetype is named.
 _ARCH = re.compile(r"^([A-Z_]+)")
 
+#: A finding that is not a count of an estate, so not evidence of its size.
+#:
+#: This check asks what the highest figure research found for a pair was.
+#: A divestment, a closure or a net movement is not that. BASF's Brazilian
+#: row is the case: the only (BR, PLANT) finding is "PLANT sites divested
+#: in Brazil - sale of decorative paints business to Sherwin-Williams" at
+#: 2, the Demarchi and Jaboatao plants it SOLD. Read as a count, it made
+#: the declared 11 look like a 5.5x overstatement of something research
+#: had measured, when research had measured nothing.
+#:
+#: The same vocabulary as promotion.NOT_A_COUNT, kept separate because
+#: this tool deliberately does not import the application.
+_NOT_AN_ESTATE = re.compile(
+    r"\b(divest\w*|sold|closur\w*|closing\w*|closed|net|opening\w*|opened"
+    r"|planned|proposed|exit\w*|reduction|movement|decommission\w*)\b",
+    re.IGNORECASE)
+
 
 def priced_above_research(outdir: pathlib.Path, spec_path: pathlib.Path) -> list:
     """Pairs where the estate's figure exceeds every count research found.
@@ -296,6 +320,9 @@ def priced_above_research(outdir: pathlib.Path, spec_path: pathlib.Path) -> list
                     continue
                 key = (country, match.group(1))
                 if key not in used or (key in promoted and not apportioned):
+                    continue
+                # A divestment is not a measurement of the estate.
+                if _NOT_AN_ESTATE.search(label):
                     continue
                 try:
                     value = float(t["high"])
