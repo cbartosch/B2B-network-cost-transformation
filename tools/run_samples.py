@@ -1124,10 +1124,11 @@ def write(outdir, slug, payload):
     return d
 
 
-def run_one(spec, outdir, domains, force, repair=False, repromote=False):
+def run_one(spec, outdir, domains, force, repair=False, repromote=False, redo=False):
     slug = spec["slug"]
     done = outdir / slug / "estimate_v0.json"
-    if done.exists() and not force and not repair and not repromote:
+    if (done.exists() and not force and not repair and not repromote
+            and not redo):
         print(f"[skip] {slug}: already has results")
         return json.loads((outdir / slug / "manifest.json").read_text("utf-8"))
 
@@ -1202,6 +1203,20 @@ def run_one(spec, outdir, domains, force, repair=False, repromote=False):
         log(slug, f"repair: re-researching {len(todo)} domain(s) the "
                   f"fallback disposed, keeping {len(done_before)} researched")
         raw = do_research(case_id, slug, todo, overwrite=True)
+    elif redo:
+        # Re-buy the domains named on --domains, whatever they already hold.
+        #
+        # --repair re-researches only what the fallback disposed, and the
+        # default path skips anything already carrying a verdict. Neither
+        # can ask a domain the same question twice, which is what you want
+        # when the brief was tightened or the answers came back unusable:
+        # domain 19 held German and French prices of 29.95 and 29.99 a
+        # month, consumer fibre promotions with no bandwidth tier, which
+        # its own brief discards on sight. The domain was answered and the
+        # answer was worthless, and nothing could ask again.
+        log(slug, f"redo: re-researching {len(domains)} domain(s) "
+                  f"{sorted(domains)} over whatever they already hold")
+        raw = do_research(case_id, slug, domains, overwrite=True)
     else:
         todo = [n for n in domains if n not in done_before]
         if len(todo) != len(domains):
@@ -1326,6 +1341,10 @@ def main():
     ap.add_argument("--out", required=True)
     ap.add_argument("--only", default="")
     ap.add_argument("--domains", default="")
+    ap.add_argument("--redo", action="store_true",
+                    help="re-research the domains given in --domains, "
+                         "overwriting what they already hold. For when the "
+                         "brief changed or the answers were unusable.")
     ap.add_argument("--repair", action="store_true",
                     help="re-research only domains the fallback disposed")
     ap.add_argument("--repromote", action="store_true",
@@ -1357,7 +1376,7 @@ def main():
     results, failures = [], []
     for spec in specs:
         try:
-            results.append(run_one(spec, outdir, domains, args.force, repair=args.repair, repromote=args.repromote))
+            results.append(run_one(spec, outdir, domains, args.force, repair=args.repair, repromote=args.repromote, redo=args.redo))
         except Exception as exc:                             # noqa: BLE001
             # One company failing is one company, not the run. Named and
             # carried so the set can be completed and the gap is visible.

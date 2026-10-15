@@ -22,13 +22,13 @@
   "base_currency": "EUR",
   "case_id": "cbf4d17f-c7e7-45be-92fe-82e7a4005752",
   "spec_path": "/tmp/companies.json",
-  "spec_sha256": "a30ce5addcbe",
+  "spec_sha256": "1728910bb736",
   "entity_resolution": {
     "resolved": null,
     "resumed": true
   },
   "resumed_existing_case": true,
-  "mode": "repromote",
+  "mode": "run",
   "domains_already_researched_on_resume": [
     1,
     2,
@@ -324,43 +324,11 @@
   "ensemble_size": 25,
   "domains_declared_unknown": [],
   "domains_requested": [
-    1,
-    2,
-    6,
-    7,
-    8,
-    9,
-    10,
-    12,
-    13,
-    14,
-    15,
-    16,
-    18,
-    19,
-    20,
-    21,
-    22
+    19
   ],
   "domains_fell_back_unanswered": [],
   "domains_researched": [
-    1,
-    2,
-    6,
-    7,
-    8,
-    9,
-    10,
-    12,
-    13,
-    14,
-    15,
-    16,
-    18,
-    19,
-    20,
-    21,
-    22
+    19
   ],
   "estimate_inputs": {
     "method": "BUILD_UP",
@@ -369,23 +337,39 @@
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-14T20:30:10.017609+00:00",
-  "run_seconds": 2.4,
+  "run_started": "2026-10-15T08:06:43.148333+00:00",
+  "run_seconds": 147.9,
   "preflight_conditions": 8,
   "promotion": {
-    "promoted": true,
-    "detail": null,
-    "offered": 8,
-    "accepted": 5,
+    "promoted": false,
+    "detail": "no footprint candidates",
+    "offered": 0,
+    "accepted": 0,
     "declined": [],
     "declined_count": 0
   },
   "domains_benchmark_disposed": [
+    1,
+    2,
     3,
     4,
     5,
+    6,
+    7,
+    8,
+    9,
+    10,
     11,
+    12,
+    13,
+    14,
+    15,
+    16,
     17,
+    18,
+    20,
+    21,
+    22,
     23,
     24
   ],
@@ -399,7 +383,120 @@
     24
   ],
   "analyst_disposition_response": {
-    "stored": 7,
-    "provenance_dropped": []
+    "stored": 23,
+    "provenance_dropped": [
+      {
+        "domain_no": 1,
+        "was": "EVIDENCED_PUBLIC",
+        "now": "BENCHMARK_PRIOR",
+        "had_evidence": true,
+        "had_agent_run": true
+      },
+      {
+        "domain_no": 2,
+        "was": "EVIDENCED_PUBLIC",
+        "now": "BENCHMARK_PRIOR",
+        "had_evidence": true,
+        "had_agent_run": true
+      },
+      {
+        "domain_no": 6,
+        "was": "EVIDENCED_PUBLIC",
+        "now": "BENCHMARK_PRIOR",
+        "had_evidence": true,
+        "had_agent_run": true
+      },
+      {
+        "domain_no": 7,
+        "was": "EVIDENCED_PUBLIC",
+        "now": "BENCHMARK_PRIOR",
+        "had_evidence": true,
+        "had_agent_run": true
+      },
+      {
+        "domain_no": 8,
+        "was": "EVIDENCED_PUBLIC",
+        "now": "BENCHMARK_PRIOR",
+        "had_evidence": true,
+        "had_agent_run": true
+      },
+      {
+        "domain_no": 9,
+        "was": "EVIDENCED_PUBLIC",
+        "now": "BENCHMARK_PRIOR",
+        "had_evidence": true,
+        "had_agent_run": true
+      },
+      {
+        "domain_no": 10,
+        "was": "EVIDENCED_PUBLIC",
+        "now": "BENCHMARK_PRIOR",
+        "had_evidence": true,
+        "had_agent_run": true
+      },
+      {
+        "domain_no": 12,
+        "was": "EVIDENCED_PUBLIC",
+        "now": "BENCHMARK_PRIOR",
+        "had_evidence": true,
+        "had_agent_run": true
+      },
+      {
+        "domain_no": 13,
+        "was": "EVIDENCED_PUBLIC",
+        "now": "BENCHMARK_PRIOR",
+        "had_evidence": true,
+        "had_agent_run": true
+      },
+      {
+        "domain_no": 14,
+        "was": "EVIDENCED_PUBLIC",
+        "now": "BENCHMARK_PRIOR",
+        "had_evidence": true,
+        "had_agent_run": true
+      },
+      {
+        "domain_no": 15,
+        "was": "EVIDENCED_PUBLIC",
+        "now": "BENCHMARK_PRIOR",
+        "had_evidence": true,
+        "had_agent_run": true
+      },
+      {
+        "domain_no": 16,
+        "was": "EVIDENCED_PUBLIC",
+        "now": "BENCHMARK_PRIOR",
+        "had_evidence": true,
+        "had_agent_run": true
+      },
+      {
+        "domain_no": 18,
+        "was": "EVIDENCED_PUBLIC",
+        "now": "BENCHMARK_PRIOR",
+        "had_evidence": true,
+        "had_agent_run": true
+      },
+      {
+        "domain_no": 20,
+        "was": "EVIDENCED_PUBLIC",
+        "now": "BENCHMARK_PRIOR",
+        "had_evidence": true,
+        "had_agent_run": true
+      },
+      {
+        "domain_no": 21,
+        "was": "EVIDENCED_PUBLIC",
+        "now": "BENCHMARK_PRIOR",
+        "had_evidence": true,
+        "had_agent_run": true
+      },
+      {
+        "domain_no": 22,
+        "was": "EVIDENCED_PUBLIC",
+        "now": "BENCHMARK_PRIOR",
+        "had_evidence": true,
+        "had_agent_run": true
+      }
+    ]
   }
 }
