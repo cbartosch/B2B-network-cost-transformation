@@ -333,7 +333,7 @@ def do_research(case_id, slug, domains, overwrite=False):
     return out
 
 
-def dispose_analyst_domains(case_id, slug, researching):
+def dispose_analyst_domains(case_id, slug, researching, keep=()):
     """The seven domains no agent covers.
 
     BEFORE research, and the ordering is load-bearing. PUT
@@ -360,7 +360,24 @@ def dispose_analyst_domains(case_id, slug, researching):
     # of the 24 is undisposed, and a domain nobody researched resting on the
     # seeded prior is exactly what BENCHMARK_PRIOR means. The manifest records
     # which domains were researched, so the two are never confused.
-    todo = [n for n, _ in dispositions.DOMAINS if n not in set(researching)]
+    # ... AND NOT A DOMAIN THAT ALREADY HOLDS A VERDICT.
+    #
+    # The paragraph above describes losing two researched domains to this
+    # function. It happened again, larger: a --redo run asked for domain 19
+    # alone, so `researching` was [19] and this disposed the other
+    # twenty-three - including the sixteen that held paid agent verdicts -
+    # on three companies at once. Forty-eight researched domains, with
+    # their evidence blobs and agent_run_ids, replaced by BENCHMARK_PRIOR
+    # before the new research even started. The log said "disposed 23
+    # domain(s)" and nothing said what twenty-three meant.
+    #
+    # Disposing a researched domain as BENCHMARK_PRIOR is always wrong: it
+    # asserts the estimate rests on a seeded prior for something an agent
+    # actually answered. On a fresh case `keep` is empty and this is the
+    # behaviour it always had.
+    keep = set(keep)
+    todo = [n for n, _ in dispositions.DOMAINS
+            if n not in set(researching) and n not in keep]
     st, out = call("PUT",
                    f"/v1/outside-in/cases/{case_id}/domain-dispositions",
                    [{"domain_no": n, "domain_name": names[n],
@@ -373,7 +390,8 @@ def dispose_analyst_domains(case_id, slug, researching):
     # so a seven-record PUT reports the other seventeen as missing whatever
     # the case actually holds. The estimate call is what tells us.
     log(slug, f"disposed {len(todo)} domain(s) BENCHMARK_PRIOR "
-              f"ahead of research")
+              f"ahead of research"
+              + (f", keeping {len(keep)} already researched" if keep else ""))
     return out
 
 
@@ -1124,10 +1142,11 @@ def write(outdir, slug, payload):
     return d
 
 
-def run_one(spec, outdir, domains, force, repair=False, repromote=False):
+def run_one(spec, outdir, domains, force, repair=False, repromote=False, redo=False):
     slug = spec["slug"]
     done = outdir / slug / "estimate_v0.json"
-    if done.exists() and not force and not repair and not repromote:
+    if (done.exists() and not force and not repair and not repromote
+            and not redo):
         print(f"[skip] {slug}: already has results")
         return json.loads((outdir / slug / "manifest.json").read_text("utf-8"))
 
@@ -1177,7 +1196,8 @@ def run_one(spec, outdir, domains, force, repair=False, repromote=False):
                   f"{ind['resolution_said']!r}. One of them is wrong and "
                   f"the code is what prices the estate.")
 
-    disp_out = dispose_analyst_domains(case_id, slug, domains)
+    disp_out = dispose_analyst_domains(case_id, slug, domains,
+                                       keep=done_before)
     # Research skips these itself, but asking for them anyway would still
     # cost a round trip each and muddy the log.
     if repromote:
@@ -1202,6 +1222,20 @@ def run_one(spec, outdir, domains, force, repair=False, repromote=False):
         log(slug, f"repair: re-researching {len(todo)} domain(s) the "
                   f"fallback disposed, keeping {len(done_before)} researched")
         raw = do_research(case_id, slug, todo, overwrite=True)
+    elif redo:
+        # Re-buy the domains named on --domains, whatever they already hold.
+        #
+        # --repair re-researches only what the fallback disposed, and the
+        # default path skips anything already carrying a verdict. Neither
+        # can ask a domain the same question twice, which is what you want
+        # when the brief was tightened or the answers came back unusable:
+        # domain 19 held German and French prices of 29.95 and 29.99 a
+        # month, consumer fibre promotions with no bandwidth tier, which
+        # its own brief discards on sight. The domain was answered and the
+        # answer was worthless, and nothing could ask again.
+        log(slug, f"redo: re-researching {len(domains)} domain(s) "
+                  f"{sorted(domains)} over whatever they already hold")
+        raw = do_research(case_id, slug, domains, overwrite=True)
     else:
         todo = [n for n in domains if n not in done_before]
         if len(todo) != len(domains):
@@ -1326,6 +1360,10 @@ def main():
     ap.add_argument("--out", required=True)
     ap.add_argument("--only", default="")
     ap.add_argument("--domains", default="")
+    ap.add_argument("--redo", action="store_true",
+                    help="re-research the domains given in --domains, "
+                         "overwriting what they already hold. For when the "
+                         "brief changed or the answers were unusable.")
     ap.add_argument("--repair", action="store_true",
                     help="re-research only domains the fallback disposed")
     ap.add_argument("--repromote", action="store_true",
@@ -1357,7 +1395,7 @@ def main():
     results, failures = [], []
     for spec in specs:
         try:
-            results.append(run_one(spec, outdir, domains, args.force, repair=args.repair, repromote=args.repromote))
+            results.append(run_one(spec, outdir, domains, args.force, repair=args.repair, repromote=args.repromote, redo=args.redo))
         except Exception as exc:                             # noqa: BLE001
             # One company failing is one company, not the run. Named and
             # carried so the set can be completed and the gap is visible.

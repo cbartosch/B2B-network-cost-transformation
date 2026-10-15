@@ -93,14 +93,40 @@ def test_a_well_formed_market_price_classifies():
     assert _classify(_q()) == "price"
 
 
-def test_the_four_declined_medians_now_classify():
+def test_the_declined_medians_now_classify():
+    """Three of the original four. A Lightyear dataset median is a US
+    figure stated with the market first, which is all this was ever
+    about."""
     for label, value, mbps in [
             ("US DIA 100 Mbps MRC - Lightyear dataset median", "492", 100),
             ("US DIA 1 Gbps MRC - Lightyear dataset median", "901", 1000),
-            ("US DIA 10 Gbps MRC - Lightyear dataset median", "1987", 10000),
-            ("US MPLS 1 Gbps MRC - North America median", "1439", 1000)]:
+            ("US DIA 10 Gbps MRC - Lightyear dataset median", "1987", 10000)]:
         assert _classify(_q(label=label, value=value,
                             bandwidth_mbps=mbps)) == "price", label
+
+
+def test_the_fourth_was_a_north_america_median_and_no_longer_classifies():
+    """The one that changed, and why.
+
+    This test swept in "US MPLS 1 Gbps MRC - North America median" with
+    three Lightyear medians. The fix it was written for was about word
+    order - the classifier read the product from the leading token and the
+    agent led with the market - and the regional scope of this one rode
+    along unexamined.
+
+    It is the same shape as the two findings that came back when domain 19
+    was asked for European prices: "MPLS 100 Mbps MRC - Western Europe /
+    Benelux" tagged DE, and a Western Europe business average tagged DE.
+    North America is the US, Canada and Mexico; carving it out because the
+    US dominates the volume would be the special pleading this codebase
+    keeps finding elsewhere.
+
+    The already-approved US/MPLS 1 Gbps row at 1,439 rests on this median.
+    Declining it here governs what is promoted next, not what was approved
+    before - that row is recorded and stands until somebody revisits it.
+    """
+    assert _classify(_q(label="US MPLS 1 Gbps MRC - North America median",
+                        value="1439", bandwidth_mbps=1000)) == "unclassified"
 
 
 def test_a_contract_term_is_not_a_price():

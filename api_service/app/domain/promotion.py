@@ -479,6 +479,26 @@ NOT_A_COUNT = re.compile(
 _NEGATED = ("NO", "NOT", "WITHOUT", "NEITHER", "ZERO")
 
 
+#: Multi-country scopes a price label can name while its country field
+#: carries a single country code.
+#:
+#: Matched as whole words so "EU" does not fire on "EUR/month" and "APAC"
+#: does not fire inside a vendor name. "Benelux" and "Nordics" are here for
+#: the same reason as the continents: a Benelux average is three markets.
+_REGION_RE = re.compile(
+    r"\b(western|eastern|southern|northern|central)\s+europe\b"
+    r"|\b(europe|emea|apac|latam|benelux|nordics?|iberia|dach|anz|mena)\b"
+    r"|\bnorth\s+america\b|\blatin\s+america\b|\bmiddle\s+east\b"
+    r"|\bsouth[\- ]east\s+asia\b|\basia[\- ]pacific\b"
+    r"|\beuropean\s+(average|union)\b|\bworldwide\b|\bglobal\s+average\b",
+    re.IGNORECASE)
+
+
+def names_a_region(label) -> bool:
+    """Does this label state a multi-country scope?"""
+    return bool(_REGION_RE.search(str(label or "")))
+
+
 def archetypes_named(label) -> list:
     """Every archetype this label names, in order, without repeats."""
     out = []
@@ -612,7 +632,23 @@ def _classify(q: dict) -> str:
     # 1 Gbps MRC" passed - word order. And the unit test accepted any string
     # containing "month", which a contract term of "36 months" does.
     priced = product_in(label)
+    # A regional average is not a country price, whatever the country says.
+    #
+    # The research brief forbids `country: "EMEA"` - "a region such as
+    # 'North America' or 'EMEA' cannot be priced" - and the country field is
+    # the only thing it checks. Asking domain 19 for European prices returned
+    # two findings tagged DE: "MPLS 100 Mbps MRC - Western Europe / Benelux"
+    # at EUR 1,000, and "100 Mbps MRC - Western Europe business (avg)" at USD
+    # 148 PPP. Both passed rule (3) by putting a country code on a regional
+    # average, which is the rule's own failure mode: it polices the field and
+    # the label is where the scope is actually stated.
+    #
+    # Declined rather than dropped - the label still reaches a reader through
+    # unclassified, and a regional benchmark is worth seeing. It is just not
+    # a German price.
     if priced and len(country) == 2 and is_monthly_rate_unit(unit):
+        if names_a_region(label):
+            return "unclassified"
         return "price"
     return "unclassified"
 
