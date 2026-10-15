@@ -26,3 +26,24 @@ _samples_backup/
 _s[0-9]*/
 _samples_new*/
 _delta/
+
+# Real operator performance-management exports, and anything shaped like one.
+#
+# A carrier PM extract carries device names, resource names and collection
+# timestamps for live network elements. It is the operator's data, not ours
+# to hold and not ours to distribute, and `make bundle-out` carries every
+# byte of this history to whoever receives it.
+#
+# One such file - 6.5 MB of core trunk counters - sat in a working tree
+# beside this repository and was kept out by hand. Nothing stopped it: it
+# was untracked but not ignored, so a single `git add -A` would have
+# committed it, and removing it afterwards would not remove it from the
+# history a bundle ships.
+#
+# Matched by shape rather than by that one filename, because the next
+# export will carry a different date. Deliberately NOT `*.csv` - the
+# verification register and the sample summary are tracked CSVs and
+# hiding them from `git add` would be its own quiet failure.
+pm_core*
+*_trunks_*.csv
+/operator-data/
