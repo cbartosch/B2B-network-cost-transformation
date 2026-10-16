@@ -131,6 +131,151 @@ Sources: [ARCEP (French telecom regulator)](https://en.arcep.fr/news/press-relea
 
 ---
 
+## Aena S.M.E., S.A.
+
+- **Industry** AIRPORTS (entity resolution)
+- **Scope** ES, GB, BR, MX, EUR, 78 sites (research merged with disclosure)
+- **Confidence** 0.348 (D - Indicative), coverage COMPLETE
+
+**Profile** - EVIDENCED_PUBLIC, 9 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| EBITDA (CONSOLIDATED GROUP) |  | 3510300000 | 3647650000 | 3785000000 | 2025 |
+| EMPLOYEES (CONSOLIDATED GROUP, ANNUAL FILING) | ES | 9511 | 10608 | 10978 | 2026 |
+| INTERNATIONAL SEGMENT REVENUE (CONSOLIDATED, LUTON + BRAZIL) |  | 727300000 | 820500000 | 913700000 | 2025 |
+| MEXICO MINORITY STAKE — AEROPUERTOS MEXICANOS DEL PACÍFICO ( | MX | 33.4 | 33.4 | 33.4 | 2024 |
+| NET PROFIT (CONSOLIDATED GROUP) |  | 1934200000 | 2035450000 | 2136700000 | 2025 |
+| NUMBER OF AIRPORTS OPERATED IN BRAZIL (AENA BRASIL) | BR | 17 | 17 | 17 | 2025 |
+| NUMBER OF AIRPORTS OPERATED IN SPAIN | ES | 46 | 46 | 46 | 2025 |
+| TOTAL PASSENGERS (AENA GROUP NETWORK) |  | 369444029 | 377140606 | 384837183 | 2025 |
+| TOTAL REVENUE (CONSOLIDATED GROUP) | ES | 5827800000 | 6339600000 | 6379200000 | 2025 |
+| UK STAKE — LONDON LUTON AIRPORT (CONTROLLING INTEREST) | GB | 51 | 51 | 51 | 2024 |
+
+*2 conflict(s) flagged: EMPLOYEES (CONSOLIDATED GROUP, ANNUAL FILING), INTERNATIONAL SEGMENT REVENUE (CONSOLIDATED, LUTON + BRAZIL)*
+
+Sources: [Aena S.M.E., S.A.](https://www.aena.es/sites/Satellite?blobcol=urldata&blobkey=id&blobtable=MungoBlobs&blobwhere=1576873875427&ssbinary=true); [Aena S.M.E., S.A.](https://www.aena.es/sites/Satellite?blobcol=urldata&blobkey=id&blobtable=MungoBlobs&blobwhere=1576870825655&ssbinary=true); [Aena S.M.E., S.A. (official website)](https://www.aena.es/en/corporative/about-aena/annual-figures.html); [Aena S.M.E., S.A. (investor relations page)](https://www.aena.es/en/shareholders-and-investors.html) and 5 more
+
+**Locations** - EVIDENCED_PUBLIC, 8 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| BRANCH — HELIPORTS IN SPAIN (ES) | ES | 2 | 2 | 2 | 2025 |
+| LARGE_OFFICE — CORPORATE HEADQUARTERS, SPAIN (ES) | ES | 1 | 1 | 1 | 2024 |
+| TERMINAL — AIRPORTS IN BRAZIL (BR), CONFIRMED OPERATIONAL | BR | 17 | 17 | 18 | 2026 |
+| TERMINAL — AIRPORTS IN MEXICO (MX) VIA GAP MINORITY STAKE (I | MX | 12 | 12 | 12 | 2026 |
+| TERMINAL — AIRPORTS IN SPAIN (ES) | ES | 46 | 46 | 46 | 2025 |
+| TERMINAL — AIRPORTS IN UNITED KINGDOM (GB) | GB | 1 | 3 | 3 | 2025 |
+| TERMINAL — GLOBAL AENA GROUP AIRPORT COUNT (ALL COUNTRIES CO |  | 80 | 80 | 80 | 2024 |
+
+*3 conflict(s) flagged: LARGE_OFFICE — CORPORATE HEADQUARTERS, SPAIN (ES), TERMINAL — AIRPORTS IN UNITED KINGDOM (GB), TERMINAL — GLOBAL AENA GROUP AIRPORT COUNT (ALL COUNTRIES COMBINED)*
+
+Sources: [Aena S.M.E., S.A. (official corporate website)](https://www.aena.es/en/corporative/about-aena/annual-figures.html); [Aena S.M.E., S.A. — press release (2024 annual t](https://www.aena.es/en/press/aena-group-airports-recorded-over-369.4-million-passengers-in-2024.html&p=1575086693589); [Aena S.M.E., S.A. — international operations pag](https://www.aena.es/en/corporative/aena-subsidiaries/aena-international/what-we-do.html); [Aena Brasil (official subsidiary website)](https://www.aenabrasil.com.br/en/corporative/sobre-nos.html) and 4 more
+
+**Data centres and cloud** - EVIDENCED_PUBLIC, 6 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| AIRPORT PORTALS MIGRATED TO PAAS CLOUD (LIFERAY DXP / AZURE  | ES | 142 | 142 | 142 | 2025 |
+| DC INFRASTRUCTURE PROCUREMENT SPEND — SPAIN (2025) | ES | 8130000 | 8130000 | 8133358 | 2025 |
+| IT OUTSOURCING PROCUREMENT LEADERSHIP — SPAIN (LATEST REPORT | ES | 170000000 | 170000000 | 170000000 |  |
+
+Sources: [Diario Siglo XXI / Servimedia](https://www.diariosigloxxi.com/texto-s/mostrar/653453/adif-aena-copan-licitaciones-infraestructura-centros-datos); [Data Center Market ES](https://www.datacentermarket.es/datacenter-infrastructure/adif-aena-y-cesga-lideran-las-contrataciones-publicas-de-centros-de-datos/); [El Economista](https://www.eleconomista.es/transportes-turismo/noticias/13895916/04/26/adif-y-aena-lideran-la-contratacion-publica-de-centros-de-datos-en-espana.html); [Revista Byte](https://revistabyte.es/actualidad-it/aena-ecosistema-digital/) and 2 more
+
+**Current architecture** - EVIDENCED_PUBLIC, 9 source(s)
+
+- VPN-IP backup circuits for MPLS (ES): in use
+- Cloud interconnect from MPLS — CSP connections (ES): in use and growing
+- Mobile network (4G/5G public) capacity improvement — 1st and 2nd level airports (ES): in procurement
+- SD-WAN tender/transformation intent (RECOA transition) — ES: in scope
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| DMR/TETRA CRITICAL RADIO-COMMS RENEWAL — 10 AIRPORTS (ES) | ES | None | None | None |  |
+| IOT LORAWAN NETWORK DEPLOYMENT — ALL AIRPORTS (ES) | ES | 3450000 | 3450000 | 3450000 | 2025 |
+| IP/MPLS NODES AT MADRID-BARAJAS AND SANTANDER AIRPORTS — INS | ES | None | None | None |  |
+| NETWORK PORT SECURITY PROJECT — ALL AIRPORTS AND HELIPORTS ( | ES | 1568039 | 1568039 | 1568039 | 2025 |
+| RECOA WAN — MPLS/IP (EXISTING, BEING SUPERSEDED) | ES | None | None | None |  |
+| SD-WAN SERVICES CONTRACT VALUE (LOT 1, 2026–2030, ES) | ES | 18418554 | 18418554 | 18418554 | 2026 |
+
+*1 conflict(s) flagged: IOT LORAWAN NETWORK DEPLOYMENT — ALL AIRPORTS (ES)*
+
+Sources: [TED / Official Journal of the EU](https://ted.europa.eu/es/notice/142218-2026/pdfs); [TED / Official Journal of the EU](https://ted.europa.eu/es/notice/88501-2026/pdf); [TED / Official Journal of the EU](https://ted.europa.eu/es/notice/230531-2025/pdf); [Ambar Telecomunicaciones](https://ambar.es/2025/07/09/ambar-telecomunicaciones-mejorara-la-seguridad-de-las-tomas-de-red-en-todos-los-aeropuertos-de-aena/) and 5 more
+
+**Current providers and products** - EVIDENCED_PUBLIC, 8 source(s)
+
+- Mobile telephony operator — Spain: Vodafone España
+- Critical communications carrier (DMR/TETRA) — Spain: Telefónica Spain + Amper
+- Radio communications hardware vendor (DMR lot) — Spain: Motorola
+- 5G private network infrastructure vendor — Spain (pilot): Cellnex Telecom (network) + Nokia (5G RAN) + Inetum (operations)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| DMR/TETRA RENEWAL CONTRACT ESTIMATED VALUE — SPAIN | ES | 7299250 | 7299250 | 7299250 | 2025 |
+| MOBILE NETWORK COVERAGE INFRASTRUCTURE TENDER VALUE — SPAIN  | ES | 125325627 | 125325627 | 125325627 | 2026 |
+| MOBILE TELEPHONY CONTRACT VALUE — SPAIN (2024 AWARD) | ES | 2410907.58 | 2410907.58 | 2410907.58 | 2024 |
+| TELECOMS PROCUREMENT SPEND — CPV 32500000 (TELECOM EQUIPMENT | ES | 223020000 | 223020000 | 223020000 | 2024 |
+
+Sources: [El Español / Invertia](https://www.elespanol.com/invertia/empresas/tecnologia/20240702/vodafone-impone-telefonica-adjudica-contrato-telefonia-movil-aena-millones/867163658_0.html); [Telecompaper](https://www.telecompaper.com/news/telcos-compete-for-aena-telecoms-contract--481020); [Telefónica press room](https://www.telefonica.com/en/communication-room/press-room/telefonica-amper-upgrade-critical-communications-networks-ten-aena-airports/); [The Fast Mode](https://www.thefastmode.com/technology-solutions/49525-telefonica-amper-upgrade-critical-communications-networks-at-ten-aena-airports) and 4 more
+
+**Contract and sourcing events** - EVIDENCED_PUBLIC, 9 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| COMMUNICATIONS INFRASTRUCTURE FRAMEWORK 2024–2027 — CALL-OFF | ES | 3300000 | 3300000 | 3300000 | 2026 |
+| COMMUNICATIONS INFRASTRUCTURE FRAMEWORK AGREEMENT 2024–2027  | ES | 34103850 | 37684754.5 | 41265659 | 2024 |
+| CONTACT CENTER TELEPHONE AND DATA TRANSMISSION SERVICES 2025 | ES | 2234743 | 2234743 | 2234743 | 2025 |
+| CONTACT CENTER TELEPHONE AND DATA TRANSMISSION SERVICES 2025 | ES | 5750000 | 5750000 | 5750000 | 2025 |
+| MOBILE NETWORK INFRASTRUCTURE DEPLOYMENT — FIRST AND SECOND  | ES | 73000000 | 99162813.5 | 125325627 | 2026 |
+| MOBILE NETWORK INFRASTRUCTURE DEPLOYMENT — NUMBER OF AIRPORT | ES | 16 | 16 | 16 | 2026 |
+| PMO & SUPERVISION SERVICES FOR MOBILE COVERAGE IMPROVEMENT — | ES | 3588042 | 3588042 | 3588042 | 2026 |
+| TOTAL AENA TELECOM COMPETITION VALUE (HISTORICAL, ES) — 2004 | ES | 47590000 | 47590000 | 47590000 | 2004 |
+
+*2 conflict(s) flagged: COMMUNICATIONS INFRASTRUCTURE FRAMEWORK AGREEMENT 2024–2027 — GROSS ADJUDICATION VALUE (ES), MOBILE NETWORK INFRASTRUCTURE DEPLOYMENT — FIRST AND SECOND TIER AIRPORTS (ES) — ESTIMATED CONTRACT VALUE (TED)*
+
+Sources: [TED / EU Official Journal](https://ted.europa.eu/es/notice/157257-2026/pdf); [TED / EU Official Journal](https://ted.europa.eu/es/notice/88501-2026/pdf); [Aena procurement portal (contratacion.aena.es)](https://contratacion.aena.es/contratacion/principal?portal=infocontrato&idexp=9610164178&tipoexp=417); [contratos.gobierto.es / PLACSP](https://contratos.gobierto.es/licitaciones/4581746) and 5 more
+
+**Transformation announcements** - EVIDENCED_PUBLIC, 9 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| ADDITIONAL DORA II APPROVED INVESTMENT — CYBERSECURITY (ES,  | ES | 62000000 | 62000000 | 62000000 | 2025 |
+| ADDITIONAL DORA II APPROVED INVESTMENT — DIGITALISATION & PR | ES | 65000000 | 65000000 | 65000000 | 2025 |
+| ADDITIONAL DORA II APPROVED INVESTMENT — TOTAL ADDITIONAL EN | ES | 351000000 | 351000000 | 351000000 | 2025 |
+| AENA IT OUTSOURCING SPEND (SPANISH NETWORK, MAR–AUG 2025) | ES | 88780000 | 88780000 | 88780000 | 2025 |
+| AENA SUSTAINABILITY INVESTMENT (2021–2030, ES) | ES | 750000000 | 750000000 | 750000000 | 2024 |
+| BRAZIL (BOAB) — INFRASTRUCTURE MODERNISATION INVESTMENT (BR, | BR | 4500000000 | 4500000000 | 4500000000 | 2023 |
+| DORA II TOTAL RECOGNISED INVESTMENT (SPANISH AIRPORT NETWORK | ES | 2250000000 | 2250000000 | 2250000000 | 2021 |
+| DORA III PROPOSED TOTAL INVESTMENT — SPANISH AIRPORTS (ES, 2 | ES | 9991000000 | 12888000000 | 12888000000 | 2026 |
+| EIB LOAN FACILITY FOR AENA DORA II — SAFETY, RESILIENCE, IT  | ES | 140000000 | 470000000 | 800000000 | 2024 |
+| INNOVATION & DIGITAL TRANSFORMATION STRATEGIC PLAN — STRUCTU | ES | 84 | 84 | 84 | 2024 |
+
+*2 conflict(s) flagged: DORA III PROPOSED TOTAL INVESTMENT — SPANISH AIRPORTS (ES, 2027-2031), EIB LOAN FACILITY FOR AENA DORA II — SAFETY, RESILIENCE, IT & INNOVATION (ES)*
+
+Sources: [Aena S.M.E., S.A.](https://www.aena.es/en/corporative/innovation/strategy.html); [European Investment Bank](https://www.eib.org/en/projects/all/20200928); [European Investment Bank](https://www.eib.org/en/press/all/2024-048-spain-eib-and-aena-sign-eur140-million-loan-to-finance-investments-in-safety-and-innovation-projects-at-spanish-airports); [Aena S.M.E., S.A.](https://www.aena.es/en/press/aena-realizara-inversiones-adicionales-de-351-millones-de-euros-hasta-2026---en-los-aeropuertos-espanoles.html&p=1575086693589) and 5 more
+
+**Market serviceability** - EVIDENCED_PUBLIC, 8 source(s)
+
+- Spain leased line provisioning lead time — provincial capitals: 50+
+- Credible enterprise WAN/Internet carriers — United Kingdom (GB): 10+
+- UK leased line provisioning lead time — typical: 45–90
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| CREDIBLE ENTERPRISE WAN/INTERNET CARRIERS — SPAIN (ES) | ES | 4 | 4 | 4 | 2025 |
+| FTTH SHARE OF SPANISH FIXED BROADBAND LINES | ES | None | None | None |  |
+| SPAIN FIXED BROADBAND SUBSCRIPTIONS (TOTAL LINES) | ES | 19000000 | 19400000 | 19800000 | 2025 |
+| SPAIN INSTALLED FTTH ACCESSES (TOTAL NATIONAL) | ES | 80800000 | 80800000 | 80800000 | 2025 |
+| SPAIN LEASED LINE AVAILABILITY SLA — PROVINCIAL CAPITALS | ES | 99.93 | 99.93 | 99.93 | 2014 |
+| UK 1 GBPS LEASED LINE PRICE FORECAST — METRO AREAS | GB | 200 | 325 | 450 | 2026 |
+| UK FTTP PREMISES COVERAGE | GB | 79.5 | 79.5 | 79.5 | 2025 |
+
+*2 conflict(s) flagged: UK 1 GBPS LEASED LINE PRICE FORECAST — METRO AREAS, UK FTTP PREMISES COVERAGE*
+
+Sources: [OpenSignal](https://insights.opensignal.com/reports/2025/10/spain/fixed-broadband-experience); [TelecomLead](https://telecomlead.com/broadband/best-isps-in-spain-for-fiber-broadband-customers-in-2026-126062); [Verified Market Research](https://www.verifiedmarketresearch.com/product/spain-telecom-market/); [KenResearch](https://www.kenresearch.com/industry-reports/spain-telecom-market) and 4 more
+
+---
+
 ## Koninklijke Ahold Delhaize N.V.
 
 - **Industry** GROCERY_RETAIL (spec fallback)
@@ -1785,6 +1930,46 @@ Sources: [Analysys Mason](https://www.analysysmason.com/research/content/reports
 
 ---
 
+## Fraport AG
+
+- **Industry** AIRPORTS (spec fallback)
+- **Scope** DE, GR, BR, PE, TR, BG, EUR, 40 sites (public disclosure only)
+- **Confidence** 0.347 (D - Indicative), coverage COMPLETE
+
+**Profile** - BENCHMARK_PRIOR: research returned no verdict
+
+**Locations** - BENCHMARK_PRIOR: research returned no verdict
+
+**Data centres and cloud** - BENCHMARK_PRIOR: research returned no verdict
+
+**Current architecture** - BENCHMARK_PRIOR: research returned no verdict
+
+**Current providers and products** - BENCHMARK_PRIOR: research returned no verdict
+
+**Contract and sourcing events** - BENCHMARK_PRIOR: research returned no verdict
+
+**Transformation announcements** - BENCHMARK_PRIOR: research returned no verdict
+
+**Market serviceability** - EVIDENCED_PUBLIC, 10 source(s)
+
+- Deutsche Telekom fixed broadband market share – Germany: 39-40
+- Enterprise DIA / leased line provisioning lead time – general (Europe benchmark): 60-120
+- Enterprise WAN contract term norm – general: 36-60
+- Credible enterprise carriers – Greece (Athens): 40+
+- FTTH premises passed – Greece (OTE/Cosmote target): 2.5+ million
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| CREDIBLE ENTERPRISE CONNECTIVITY CARRIERS – GERMANY | DE | 24 | 24 | 24 | 2024 |
+| DIA 1 GBPS AVERAGE MONTHLY COST BENCHMARK |  | 966 | 966 | 966 | 2025 |
+| GERMANY MPLS WAN MARKET SIZE | DE | 3.4 | 3.4 | 3.4 | 2024 |
+| GREEK FIBRE SUBSCRIPTION GROWTH 2020–2025 | GR | 162 | 162 | 162 | 2025 |
+| MPLS 1 GBPS AVERAGE MONTHLY COST BENCHMARK |  | 1439 | 1439 | 1439 | 2025 |
+
+Sources: [ts2.tech](https://ts2.tech/en/internet-access-in-germany-2025-dsl-cable-fiber-5g-and-satellite-connectivity/); [Lightyear.ai](https://lightyear.ai/tips/business-fiber-internet-berlin); [Deutsche Telekom Wholesale](https://wholesale.telekom.com/german-connectivity/access-for-b2c/fiber-broadband/broadband-of-the-future); [connectednetworks.io](https://www.connectednetworks.io/countries/greece-business-internet-connectivity-provider) and 6 more
+
+---
+
 ## Fresenius SE & Co. KGaA
 
 - **Industry** HOSPITAL (entity resolution)
@@ -2607,6 +2792,147 @@ Sources: [TeleGeography](https://resources.telegeography.com/the-rise-of-dia-ove
 
 ---
 
+## Compagnie Generale des Etablissements Michelin SCA
+
+- **Industry** AUTOMOTIVE_PARTS (spec fallback)
+- **Scope** FR, DE, US, BR, CN, PL, ES, IN, EUR, 98 sites (research merged with disclosure)
+- **Confidence** 0.346 (D - Indicative), coverage COMPLETE
+
+**Profile** - EVIDENCED_PUBLIC, 7 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| BUSINESS SEGMENTS (COUNT) |  | 3 | 3 | 3 | 2025 |
+| COUNTRIES WITH MANUFACTURING (GLOBAL TIRE PRODUCTION NETWORK |  | 26 | 26 | 26 |  |
+| GLOBAL TIRE MARKET SHARE |  | 14 | 14 | 14 |  |
+| GROUP EMPLOYEES ON PAYROLL |  | 122600 | 126200 | 132000 | 2025 |
+| GROUP REVENUE |  | 25992 | 26596.5 | 28590 | 2025 |
+| GROUP SEGMENT OPERATING INCOME |  | 2719 | 3048.5 | 3378 | 2025 |
+| NUMBER OF COUNTRIES WITH EMPLOYEES / OPERATIONS |  | 63 | 63 | 63 | 2025 |
+| NUMBER OF PRODUCTION FACILITIES (GLOBAL) |  | 128 | 128 | 128 | 2024 |
+| US EMPLOYEES (MICHELIN NORTH AMERICA) | US | 23000 | 23250 | 23500 | 2023 |
+| US MANUFACTURING PLANTS (MICHELIN NORTH AMERICA) | US | 35 | 35 | 35 | 2023 |
+
+*4 conflict(s) flagged: COUNTRIES WITH MANUFACTURING (GLOBAL TIRE PRODUCTION NETWORK), GROUP SEGMENT OPERATING INCOME, NUMBER OF COUNTRIES WITH EMPLOYEES / OPERATIONS, NUMBER OF PRODUCTION FACILITIES (GLOBAL)*
+
+Sources: [Yahoo Finance / Michelin FY2025 press release](https://uk.finance.yahoo.com/news/michelin-delivered-segment-operating-income-164500920.html); [Lightsource.ai (Michelin supplier profile, verif](https://lightsource.ai/m/suppliers/michelin); [michelin.com (official group overview page)](https://www.michelin.com/en/group); [Michelin North America 2024 Fact Sheet (michelin](https://michelinmedia.com/site/user/files/1/2024-Fact-Sheet-EN.pdf) and 3 more
+
+**Locations** - EVIDENCED_PUBLIC, 9 source(s)
+
+- PLANT – Spain production facilities (presence confirmed, count not stated): unknown
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| LARGE_OFFICE – GLOBAL HQ CAMPUS, CLERMONT-FERRAND | FR | 1 | 1 | 1 | 2024 |
+| LARGE_OFFICE – NORTH AMERICA HQ, GREENVILLE SC | US | 1 | 1 | 1 | 2024 |
+| PLANT – BRAZIL PRODUCTION FACILITIES | BR | 2 | 2.5 | 3 |  |
+| PLANT – CHINA PRODUCTION FACILITIES | CN | 4 | 6 | 8 | 2026 |
+| PLANT – FRANCE PRODUCTION PLANTS | FR | 15 | 15 | 15 | 2024 |
+| PLANT – GLOBAL PRODUCTION FACILITIES (ALL COUNTRIES) |  | 69 | 119 | 128 | 2025 |
+| PLANT – POLAND PRODUCTION FACILITIES | PL | 1 | 1 | 1 | 2024 |
+| PLANT – UNITED STATES PRODUCTION FACILITIES | US | 34 | 35 | 36 | 2024 |
+| WAREHOUSE – GLOBAL DISTRIBUTION CENTRES (GROUP-LEVEL CLAIM) |  | 7600 | 7600 | 7600 | 2022 |
+
+*3 conflict(s) flagged: PLANT – BRAZIL PRODUCTION FACILITIES, PLANT – CHINA PRODUCTION FACILITIES, PLANT – GLOBAL PRODUCTION FACILITIES (ALL COUNTRIES)*
+
+Sources: [Michelin Group (official)](https://www.michelin.com/en/group); [Michelin North America careers site](https://jobs.michelinman.com/discover-michelin); [Michelin North America Fact Sheet 2024](https://michelinmedia.com/site/user/files/1/2024-Fact-Sheet-EN.pdf); [Michelin North America press release (Sept 2024)](https://michelinmedia.com/pages/blog/detail/article/c/a1370/) and 5 more
+
+**Data centres and cloud** - EVIDENCED_PUBLIC, 10 source(s)
+
+- IS & Digital country footprint: 20+
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| APPLICATIONS DEPLOYED ON MKS KUBERNETES PLATFORM |  | 450 | 450 | 450 | 2025 |
+| IS & DIGITAL STAFF (MICHELIN IT FUNCTION SIZE) |  | 5200 | 5200 | 5200 | 2023 |
+| KUBERNETES CLUSTERS IN MKS PLATFORM |  | 62 | 62 | 62 | 2025 |
+| MKS PLATFORM LOCATIONS (KUBERNETES CLUSTERS, HYBRID ON-PREM  |  | 42 | 42 | 42 | 2025 |
+| NAMED IS & DIGITAL HUB LOCATIONS (DC-CLASS OR CAMPUS ANCHORS | FR | 3 | 3 | 3 | 2023 |
+| NAMED IS & DIGITAL HUB LOCATIONS – CN | CN | 1 | 1 | 1 | 2023 |
+| NAMED IS & DIGITAL HUB LOCATIONS – IN | IN | 1 | 1 | 1 | 2023 |
+| NAMED IS & DIGITAL HUB LOCATIONS – US | US | 2 | 2 | 2 | 2023 |
+| PLATFORM COST REDUCTION – VMWARE TANZU TO MKS OPEN-SOURCE MI |  | 44 | 44 | 44 | 2025 |
+
+Sources: [Cloud Native Computing Foundation (CNCF)](https://www.cncf.io/case-studies/michelin/); [CIO Dive](https://www.ciodive.com/news/michelin-kubernetes-vmware-tanzu-migration-open-source/750700/); [Confluent (vendor case study)](https://www.confluent.io/customers/michelin/); [Microsoft (customer story)](https://www.microsoft.com/en/customers/story/20836-michelin-azure-open-ai-service) and 6 more
+
+**Current architecture** - EVIDENCED_PUBLIC, 3 source(s)
+
+- Sites on VMware SD-WAN (global): 200+
+- WAN transport mix: MPLS retained alongside Internet (hybrid): hybrid MPLS + DIA
+- Prior WAN architecture (pre-SD-WAN): MPLS only: MPLS only
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| SD-WAN DEPLOYMENT DURATION (SITES TO LIVE) |  | 16 | 16 | 16 | 2023 |
+| USERS SERVED BY SD-WAN (GLOBAL) |  | 120000 | 120000 | 120000 | 2023 |
+
+Sources: [VMware (VeloCloud/SASE blog)](https://blogs.vmware.com/sase/2023/01/10/michelin-connects-200-sites-achieves-roi-in-16-months-with-vmware-sd-wan/); [Light Reading](https://www.lightreading.com/sd-wan/michelin-signs-up-for-atandts-sd-wan/d/d-id/770420); [FabianTechTips](https://www.fabiantechtips.com/post/vmware-sd-wan-usage-configuration-and-case-scenario)
+
+**Current providers and products** - EVIDENCED_PUBLIC, 6 source(s)
+
+- SD-WAN platform vendor: VMware SD-WAN (Broadcom VeloCloud)
+- WAN managed service provider / carrier: AT&T
+- Prior WAN technology replaced by SD-WAN: MPLS (dual link)
+- Cloud platform (WAN/network integration): Microsoft Azure
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| SD-WAN DEPLOYMENT ROI PERIOD |  | None | None | None |  |
+| SD-WAN SITES CONNECTED |  | 200 | 200 | 200 | 2022 |
+| USERS SERVED BY SD-WAN |  | None | None | None |  |
+
+Sources: [VMware (Broadcom) – SASE blog](https://blogs.vmware.com/sase/2023/01/10/michelin-connects-200-sites-achieves-roi-in-16-months-with-vmware-sd-wan/); [Michelin IT Engineering Blog](https://blogit.michelin.io/vmware-sd-wan-in-microsoft-azure-vwan/); [Michelin IT Engineering Blog](https://blogit.michelin.io/tag/network/); [MarketScreener (VMware IR syndication)](https://www.marketscreener.com/quote/stock/VMWARE-INC-58476/news/VMware-Michelin-Connects-200-Sites-Achieves-ROI-in-16-Months-with-VMware-SD-WAN-36540550/) and 2 more
+
+**Contract and sourcing events** - EVIDENCED_PUBLIC, 2 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| BANDWIDTH GROWTH RATE REQUIRED BY MICHELIN EVERY 12–18 MONTH |  | 100 | 100 | 100 | 2023 |
+| SD-WAN DEPLOYMENT DURATION (SITES TO ROI) |  | 16 | 16 | 16 | 2023 |
+| SD-WAN SITES CONNECTED UNDER AT&T/VMWARE CONTRACT |  | 200 | 200 | 200 | 2023 |
+| USERS SERVED BY SD-WAN UNDER AT&T/VMWARE CONTRACT |  | 120000 | 120000 | 120000 | 2023 |
+
+Sources: [Light Reading](https://www.lightreading.com/sd-wan/michelin-signs-up-for-atandts-sd-wan/d/d-id/770420); [VMware (Broadcom) SASE Blog](https://blogs.vmware.com/sase/2023/01/10/michelin-connects-200-sites-achieves-roi-in-16-months-with-vmware-sd-wan/)
+
+**Transformation announcements** - EVIDENCED_PUBLIC, 7 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| ANNUAL COMPETITIVENESS SAVINGS TARGET (DIGITAL MANUFACTURING |  | 80000000 | 80000000 | 80000000 | 2020 |
+| BT GLOBAL SERVICES MANAGED NETWORK CONTRACT – COUNTRIES COVE |  | 43 | 43 | 43 | 2017 |
+| BT GLOBAL SERVICES MANAGED NETWORK CONTRACT – SITES COVERED |  | 216 | 216 | 216 | 2017 |
+| MANUFACTURING PLANT CLOSURES (DE) – EMPLOYEES AFFECTED, KARL | DE | 1530 | 1531 | 1532 | 2023 |
+| MANUFACTURING PLANT CLOSURES (FR) – EMPLOYEES AFFECTED, CHOL | FR | 1250 | 1252 | 1254 | 2024 |
+| MICHELIN 'MICHELIN IN MOTION' STRATEGY SALES CAGR TARGET (20 |  | 5 | 5 | 5 | 2021 |
+| MICHELIN 2026 FREE CASH FLOW TARGET (BEFORE M&A) |  | 1600000000 | 1600000000 | 1600000000 | 2026 |
+| MICHELIN 2026 SEGMENT OPERATING INCOME TARGET (CITI/TRADE PR |  | 4200000000 | 4200000000 | 4200000000 | 2026 |
+| MICHELIN 2026 SHARE BUYBACK PROGRAMME |  | 2000000000 | 2000000000 | 2000000000 | 2026 |
+| RESTRUCTURING EBIT UPLIFT BY FY2026 VS FY2024 – CITI ANALYST |  | 300000000 | 300000000 | 300000000 | 2026 |
+
+Sources: [Michelin (official)](https://www.michelin.com/en/publications/presentations-to-investors/michelin-capital-markets-day-2024); [Michelin (press release via Cision)](https://mb.cision.com/Public/55/3323543/9ec01a3c8af1e196.pdf); [European Rubber Journal](https://www.european-rubber-journal.com/article/2070980/michelin-targets-around-beyond-tires-in-new-strategy); [Silicon.co.uk](https://www.silicon.co.uk/networks/networks-management/btgs-michelin-networks-207502) and 3 more
+
+**Market serviceability** - EVIDENCED_PUBLIC, 10 source(s)
+
+- MPLS circuit provisioning lead time (Europe): 4 to 12
+- Credible enterprise carriers (FR): 4+
+- Credible enterprise carriers (DE): 4+
+- Credible enterprise carriers (US): 6+
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| ENTERPRISE WAN SITES USING DIA (GLOBAL SHARE) |  | 49 | 51.44 | 53.88 | 2025 |
+| ENTERPRISE WAN SITES USING MPLS (GLOBAL SHARE) |  | 22 | 31.5 | 41 | 2025 |
+| FRANCE FIBRE SUBSCRIPTION SHARE | FR | None | None | None |  |
+| GERMANY FIBRE SUBSCRIPTION SHARE | DE | 13 | 13 | 13 | 2024 |
+| GIGABIT-CAPABLE PREMISES COVERAGE (US) | US | None | None | None |  |
+| US MANAGED MPLS CIRCUITS IN OPERATION | US | 290000 | 290000 | 290000 | 2024 |
+
+*2 conflict(s) flagged: ENTERPRISE WAN SITES USING MPLS (GLOBAL SHARE), GERMANY FIBRE SUBSCRIPTION SHARE*
+
+Sources: [TeleGeography](https://resources.telegeography.com/the-rise-of-dia-over-mpls); [Pallas Digital](https://pall.as/the-state-of-enterprise-wan/); [Jimber.io](https://jimber.io/blog/mpls-network-explained-and-why-sd-wan-is-replacing-it/); [PwC](https://www.pwc.com/gx/en/1/industries/technology-media-telecom/telecom-outlook-perspectives.html) and 6 more
+
+---
+
 ## Nestle SA
 
 - **Industry** FOOD_MANUFACTURING (entity resolution)
@@ -2760,6 +3086,281 @@ Sources: [Nestlé S.A.](https://www.nestle.com/sites/default/files/2024-11/capit
 *1 conflict(s) flagged: CREDIBLE ENTERPRISE WAN/INTERNET CARRIERS*
 
 Sources: [Swiss Federal Office of Communications / ComCom](https://www.comcom.admin.ch/en/market-share); [Swiss Federal Office of Communications / ComCom](https://www.comcom.admin.ch/en/fibre-connections-in-switzerland); [Swisscom AG](https://www.swisscom.ch/en/about/network/fibre-optics-network-expansion-map.html); [Swisscom AG](https://www.swisscom.ch/en/business/enterprise/themen/connectivity/enterprise-connect.html) and 6 more
+
+---
+
+## Network Rail Infrastructure Limited
+
+- **Industry** RAILWAYS (entity resolution)
+- **Scope** GB, GBP, 899 sites (research merged with disclosure)
+- **Confidence** 0.327 (D - Indicative), coverage COMPLETE
+
+**Profile** - EVIDENCED_PUBLIC, 4 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| AVERAGE EMPLOYEE HEADCOUNT (GROUP, NETWORK RAIL LIMITED) | GB | 41252 | 41477 | 41702 | 2024 |
+| NET DEBT (GROUP, NETWORK RAIL LIMITED) | GB | 60145000000 | 60534000000 | 60923000000 | 2025 |
+| NUMBER OF GEOGRAPHICAL REGIONS (GREAT BRITAIN) | GB | 5 | 5 | 5 | 2026 |
+| NUMBER OF OPERATIONAL ROUTES (GREAT BRITAIN) | GB | 14 | 14 | 14 | 2024 |
+| OPERATING COSTS (GROUP, NETWORK RAIL LIMITED) | GB | 8103000000 | 8103000000 | 8103000000 | 2024 |
+| OPERATING PROFIT (GROUP, NETWORK RAIL LIMITED) | GB | 3242000000 | 3242000000 | 3242000000 | 2024 |
+| RAIL NETWORK TRACK (MILES) | GB | 20000 | 20000 | 20000 | 2026 |
+| REVENUE (GROUP, NETWORK RAIL LIMITED) | GB | 10014000000 | 11462500000 | 11700000000 | 2024 |
+| TOTAL ASSETS (GROUP, NETWORK RAIL LIMITED) | GB | 90177000000 | 91627500000 | 93078000000 | 2025 |
+| TOTAL STAFF COSTS (GROUP, NETWORK RAIL LIMITED) | GB | 3000000000 | 3000000000 | 3000000000 | 2024 |
+
+*2 conflict(s) flagged: AVERAGE EMPLOYEE HEADCOUNT (GROUP, NETWORK RAIL LIMITED), REVENUE (GROUP, NETWORK RAIL LIMITED)*
+
+Sources: [Investegate / Network Rail Limited RNS (21 July ](https://www.investegate.co.uk/announcement/rns/network-rail-infrastructure-finance-plc--71ej/annual-report-and-accounts/8989925); [Office of Rail and Road (ORR) — Annual Efficienc](https://www.orr.gov.uk/annual-efficiency-and-finance-assessment-network-rail-2025/2-network-rails-financial-performance-efficiency); [Office of Rail and Road (ORR) — Annual Efficienc](https://www.orr.gov.uk/annual-efficiency-and-finance-assessment-network-rail-2024/2-network-rails-financial-performance); [Zavia.ai (citing Companies House)](https://zavia.ai/companies/network-rail-infrastructure-limited-gb-21006657/)
+
+**Locations** - EVIDENCED_PUBLIC, 2 source(s)
+
+- PLANT: 50+
+- WAREHOUSE: unknown
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| LARGE_OFFICE | GB | 32 | 32 | 32 | 2024 |
+| SERVICE_POINT | GB | 2570 | 2581.5 | 2593 | 2024 |
+| TERMINAL | GB | 20 | 20 | 20 | 2024 |
+
+*1 conflict(s) flagged: LARGE_OFFICE*
+
+Sources: [Rail Sentinel](https://info.railsentinel.co.uk/wp-content/uploads/2021/02/Sentinel-Location-Type-Directory.pdf); [Office of Rail and Road](https://dataportal.orr.gov.uk/media/xw4f0ohl/rail-environment-2024-25.pdf)
+
+**Data centres and cloud** - EVIDENCED_PUBLIC, 3 source(s)
+
+- DCIS contract consolidation target date (new single MSP start): 2027-01-04
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| DC CORE MANAGED-SERVICE CONTRACTS CURRENTLY IN OPERATION | GB | 4 | 4 | 4 | 2025 |
+| DC MANAGED SERVICES CONTRACT VALUE (DCIS, EX-VAT) | GB | 185000000 | 203500000 | 222000000 | 2025 |
+| PHYSICAL DC COLOCATION PROVIDER (CROWN HOSTING / ARK DATA CE | GB | None | None | None |  |
+| PRIVATE DC COMPUTE TECHNOLOGY (DELL EMC / VMWARE) | GB | None | None | None |  |
+| PUBLIC CLOUD PROVIDER – PRIMARY (MICROSOFT AZURE) | GB | None | None | None |  |
+
+*1 conflict(s) flagged: DC MANAGED SERVICES CONTRACT VALUE (DCIS, EX-VAT)*
+
+Sources: [Data Center Dynamics](https://www.datacenterdynamics.com/en/news/uks-network-rail-seeks-to-unify-data-center-services/); [GOV.UK (UK Government)](https://www.gov.uk/government/case-studies/how-network-rail-implemented-its-hybrid-cloud-strategy); [Microsoft (customer case study)](https://www.microsoft.com/en/customers/story/1796987311720019561-network-rail-azure-databricks-travel-and-transportation-en-united-kingdom)
+
+**Current architecture** - EVIDENCED_PUBLIC, 3 source(s)
+
+- Sites covered by 2008 BT IP network contract (historical): several hundred
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| LEGACY BT IP NETWORK CONTRACT VALUE (2008, HISTORICAL) | GB | 30000000 | 30000000 | 30000000 | 2008 |
+| MEGASTREAM P2P CIRCUIT REPLACEMENT CONTRACT VALUE (OPENREACH | GB | 2200000 | 2200000 | 2200000 | 2025 |
+| MOBILE CONNECTIVITY & SERVICES CONTRACT TERM (CORPORATE ESTA | GB | 3 | 3 | 3 | 2023 |
+
+Sources: [find-tender.service.gov.uk (UK Government)](https://www.find-tender.service.gov.uk/procurement/ocds-h6vhtk-055171); [Telecompaper](https://www.telecompaper.com/news/bt-wins-gbp-30-million-ip-communications-contract-from-network-rail--623552); [Microsoft](https://www.microsoft.com/en/customers/story/1796987311720019561-network-rail-azure-databricks-travel-and-transportation-en-united-kingdom)
+
+**Current providers and products** - EVIDENCED_PUBLIC, 9 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| DCIS UNIFIED MANAGED-SERVICES CONTRACT SCOPE – INCLUDES LAN  | GB | 222000000 | 222000000 | 222000000 | 2025 |
+| PROJECT REACH – 4G/5G MOBILE COVERAGE ROLLOUT AT MAJOR STATI | GB | 12 | 12 | 12 | 2025 |
+| PROJECT REACH – CONCESSION TERM | GB | None | None | None |  |
+| PROJECT REACH – INITIAL FIBRE DEPLOYMENT (PHASE 1) | GB | 1000 | 1000 | 1000 | 2025 |
+| PROJECT REACH – NR CAPITAL CONTRIBUTION TO CONCESSION | GB | 100000000 | 100000000 | 100000000 | 2025 |
+| PROJECT REACH – NR ESTIMATED SERVICE PAYMENTS TO CONSORTIUM  | GB | None | None | None |  |
+| PROJECT REACH – TELECOMS INFRASTRUCTURE CONCESSION CONTRACT  | GB | 935000000 | 935000000 | 935000000 | 2025 |
+| TCS – IT SYSTEMS INTEGRATION FRAMEWORK WITH NETWORK RAIL INF | GB | None | None | None |  |
+
+*1 conflict(s) flagged: PROJECT REACH – TELECOMS INFRASTRUCTURE CONCESSION CONTRACT VALUE (TOTAL AWARD)*
+
+Sources: [Network Rail Media Centre](https://www.networkrailmediacentre.co.uk/news/major-boost-for-rail-passengers-say-goodbye-to-mobile-signal-blackspots); [Neos Networks](https://neosnetworks.com/resources/press-releases/major-boost-for-rail-passengers-say-goodbye-to-mobile-signal-blackspots/); [Railway Gazette](https://www.railwaygazette.com/uk/network-rail-signs-project-reach-ppp-deal-to-upgrade-communications/69087.article); [Railway Supply](https://www.railway.supply/project-reach-rail-connectivity-upgrade-to-boost-uk-network/) and 5 more
+
+**Contract and sourcing events** - EVIDENCED_PUBLIC, 4 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| EASTERN ROUTES PARTNERSHIP — LOT 2A (GENERALIST SIGNALLING & | GB | 852000000 | 852000000 | 852000000 | 2024 |
+| EASTERN ROUTES PARTNERSHIP — LOT 2C (SPECIALIST TELECOMS) ES | GB | 70000000 | 70000000 | 70000000 | 2024 |
+| NETWORK RAIL TELECOMS PROFESSIONAL SERVICES FRAMEWORK — TOTA | GB | 80000000 | 80000000 | 80000000 | 2023 |
+| PROJECT REACH CONCESSION — TOTAL PROCUREMENT VALUE (EX-VAT) | GB | 935000000 | 935000000 | 935000000 | 2025 |
+| PROJECT REACH — CONCESSION INITIAL TERM | GB | 37 | 37 | 37 | 2025 |
+| PROJECT REACH — NR CAPITAL CONTRIBUTION TO FIBRE DEPLOYMENT | GB | 100000000 | 100000000 | 100000000 | 2025 |
+| PROJECT REACH — NR SERVICE PAYMENTS FOR ELECTRONIC COMMUNICA | GB | None | None | None |  |
+| SOUTHERN REGION CP7 — TELECOMS RENEWAL ALLOCATION (CUSTOMER  | GB | 106000000 | 106000000 | 106000000 | 2024 |
+| WALES & WESTERN CP7 TELECOMS RENEWALS FRAMEWORK — AWARDED VA | GB | 38000000 | 40020099.5 | 42040199 | 2025 |
+| WALES & WESTERN CP7 TELECOMS RENEWALS FRAMEWORK — CONTRACT T | GB | 4.5 | 4.5 | 4.5 | 2024 |
+
+Sources: [Railway Gazette / Rail Business UK](https://www.railwaygazette.com/uk/network-rail-signs-project-reach-ppp-deal-to-upgrade-communications/69087.article); [Railway Supply](https://www.railway.supply/project-reach-rail-connectivity-upgrade-to-boost-uk-network/); [Yahoo Finance (sourcing Telent press release)](https://finance.yahoo.com/news/telent-wins-telecoms-renewal-contract-152829448.html); [Ground Engineering Plus](https://www.geplus.co.uk/news/network-rail-appoints-15-suppliers-to-3-5bn-eastern-region-partnership-framework-10-05-2024/)
+
+**Transformation announcements** - EVIDENCED_PUBLIC, 5 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| CP6 TOTAL EFFICIENCY SAVINGS DELIVERED | GB | 4000000000 | 4000000000 | 4000000000 | 2024 |
+| CP7 CAPEX EFFICIENCY SAVINGS TARGET (ENGLAND & WALES) | GB | 2480000000 | 2490000000 | 2500000000 | 2025 |
+| CP7 DIGITAL TOOLKITS (INTELLIGENT INFRASTRUCTURE CONTINUATIO | GB | 132000000 | 132000000 | 132000000 | 2025 |
+| CP7 OPEX EFFICIENCY SAVINGS TARGET (ENGLAND & WALES) | GB | 1360000000 | 1430000000 | 1500000000 | 2025 |
+| CP7 TOTAL EFFICIENCY SAVINGS TARGET (ENGLAND & WALES, REVISE | GB | 3800000000 | 4000000000 | 4100000000 | 2025 |
+| CP7 YEAR 1 (2024/25) ACTUAL EFFICIENCY SAVINGS DELIVERED | GB | 325000000 | 325000000 | 325000000 | 2025 |
+| INSIGHT TOOL EXPECTED ANNUAL SAVING (CP7) | GB | 30000000 | 30000000 | 30000000 | 2026 |
+| IT OPEX EFFICIENCIES (ROUTE SERVICES DDAT, CP7 TARGET) | GB | 33000000 | 33000000 | 33000000 | 2024 |
+| ROUTE SERVICES ADDITIONAL IT SAVINGS (TECHNOLOGY PROJECTS, R | GB | 100000000 | 100000000 | 100000000 | 2023 |
+| ROUTE SERVICES ANNUAL SPEND (CP7) | GB | 1500000000 | 1500000000 | 1500000000 | 2024 |
+
+Sources: [Network Rail Infrastructure Finance PLC via Inve](https://www.investegate.co.uk/announcement/rns/network-rail-infrastructure-finance-plc--71ej/annual-financial-report-/9671000); [Office of Rail and Road (ORR)](https://www.orr.gov.uk/sites/default/files/2024-07/annual-assessment-of-network-rail-2023-24.pdf); [Office of Rail and Road (ORR)](https://www.orr.gov.uk/annual-assessment-network-rail-2024-2025/finance-and-efficiency); [ORR / Network Rail (PR23 response)](https://www.orr.gov.uk/sites/default/files/2023-10/40-nr-pr23-draft-determination-response-route-services.pdf) and 1 more
+
+**Market serviceability** - EVIDENCED_PUBLIC, 4 source(s)
+
+- Network providers using Openreach physical infrastructure (altnets): 150+
+- SoGEA (part-fibre) business broadband coverage: 95+
+- Leased line installation lead time – typical range (GB): 45–90
+- Annual price escalation clause – leased line contracts: CPI + 3.9% typical
+- Installation charge (leased line, waived on 36-month term) – GB: 0–3000
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| CITYFIBRE ENTERPRISE-GRADE ETHERNET BUSINESSES REACHABLE | GB | 260000 | 260000 | 260000 | 2025 |
+| CREDIBLE ENTERPRISE WAN/LEASED-LINE CARRIERS GB | GB | 7 | 7 | 7 | 2026 |
+| SHARE OF UK BUSINESS INTERNET CONNECTIONS THAT ARE FIXED LEA | GB | 39 | 39 | 39 | 2024 |
+| STANDARD LEASED LINE CONTRACT TERM (GB) | GB | 36 | 36 | 36 | 2025 |
+| UK SME FULL-FIBRE BROADBAND COVERAGE | GB | None | None | None |  |
+
+*2 conflict(s) flagged: CREDIBLE ENTERPRISE WAN/LEASED-LINE CARRIERS GB, STANDARD LEASED LINE CONTRACT TERM (GB)*
+
+Sources: [Amvia](https://amvia.co.uk/leased-lines/compare/uk-leased-line-providers); [Spitfire Network Services](https://www.spitfire.co.uk/connectivity/fibre-ethernet-leased-line/); [Business Broadband Hub](https://www.businessbroadbandhub.co.uk/business-broadband-availability/); [Netify](https://netify.co.uk/insights/top-best-mpls-network-providers/)
+
+---
+
+## NHS England
+
+- **Industry** HOSPITAL (entity resolution)
+- **Scope** GB, GBP, 1,491 sites (research merged with disclosure)
+- **Confidence** 0.336 (D - Indicative), coverage COMPLETE
+
+**Profile** - EVIDENCED_PUBLIC, 5 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| ACTIVE GP PRACTICES IN ENGLAND | GB | 6143 | 6214.5 | 6375 | 2026 |
+| INTEGRATED CARE BOARDS (ICBS) — NHS COMMISSIONING BODIES | GB | 42 | 42 | 42 | 2024 |
+| NHS ENGLAND (PARENT ENTITY) EMPLOYEES — WTE | GB | 13500 | 15300 | 40000 | 2024 |
+| NHS ENGLAND GROUP REVENUE LIMIT (RDEL, NON-RINGFENCED) | GB | 180000000000 | 184400000000 | 190990000000 | 2024 |
+| NHS ENGLAND REGIONAL TEAMS | GB | 7 | 7 | 7 | 2026 |
+| NHS TOTAL WAGE BILL (ENGLAND, ALL PROVIDERS) | GB | 89900000000 | 89900000000 | 89900000000 | 2024 |
+| NHS TRUSTS (HOSPITAL/PROVIDER ORGANISATIONS) IN ENGLAND | GB | 205 | 205 | 205 | 2026 |
+| NHS WORKFORCE ENGLAND — FTE (BROADER NHS SYSTEM, HOSPITAL AN | GB | 1345047 | 1364784 | 1380000 | 2026 |
+| TOTAL NHS ORGANISATIONS OVERSEEN BY NHS ENGLAND | GB | 7000 | 7000 | 7000 | 2024 |
+| UK NHS TOTAL EXPENDITURE (ALL 4 UK NATIONS) | GB | 193200000000 | 217600000000 | 242000000000 | 2024 |
+
+*3 conflict(s) flagged: NHS ENGLAND (PARENT ENTITY) EMPLOYEES — WTE, NHS WORKFORCE ENGLAND — FTE (BROADER NHS SYSTEM, HOSPITAL AND COMMUNITY HEALTH), UK NHS TOTAL EXPENDITURE (ALL 4 UK NATIONS)*
+
+Sources: [NHS England](https://assets.publishing.service.gov.uk/media/69036ef05c84b1206832a86f/nhs-england-annual-report-and-accounts-2024-to-2025.pdf); [NHS England](https://assets.publishing.service.gov.uk/media/6709344a92bb81fcdbe7b728/nhs-england-annual-report-and-accounts-2023-to-2024.pdf); [King's Fund](https://www.kingsfund.org.uk/insight-and-analysis/data-and-charts/key-facts-figures-nhs); [Royal College of General Practitioners](https://www.rcgp.org.uk/News/Number-of-GP-practices) and 1 more
+
+**Locations** - EVIDENCED_PUBLIC, 6 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| COMMUNITY PHARMACIES — NHS CONTRACTED, ENGLAND (STORE ARCHET | GB | 9999 | 9999 | 9999 | 2025 |
+| GP PRACTICES / PRIMARY CARE SITES (STORE ARCHETYPE) — ENGLAN | GB | 6229 | 6229 | 6229 | 2025 |
+| HOSPITAL SITES (LARGE_OFFICE ARCHETYPE) — ENGLAND | GB | 1140 | 1200.5 | 1261 | 2024 |
+| NHS ENGLAND PARENT-ENTITY CENTRAL SPINE DATA CENTRES (DC ARC | GB | 0 | 0 | 0 | 2024 |
+| NHS ENGLAND PARENT-ENTITY OFFICE LOCATIONS (LARGE_OFFICE ARC | GB | 1 | 1 | 1 | 2025 |
+| NHS ERIC 2024/25 TOTAL FLOOR AREA ACROSS TRUSTS | GB | 25.4 | 25.4 | 25.4 | 2024 |
+| NHS GIGABIT-CONNECTED PRIMARY AND SECONDARY CARE SITES (WAN- | GB | 2650 | 2650 | 2650 | 2024 |
+| NHS PROPERTY SERVICES PROPERTIES (BRANCH/STORE ARCHETYPE) —  | GB | 3000 | 3000 | 3000 | 2024 |
+| NHS TRUSTS / PROVIDERS (ORGANISATIONAL COUNT, NOT SITE COUNT | GB | 205 | 205 | 205 | 2025 |
+| PRIMARY CARE FACILITIES (BROADER — INC. COMMUNITY HEALTH CEN | GB | 7500 | 7750 | 8000 | 2024 |
+
+*4 conflict(s) flagged: COMMUNITY PHARMACIES — NHS CONTRACTED, ENGLAND (STORE ARCHETYPE), GP PRACTICES / PRIMARY CARE SITES (STORE ARCHETYPE) — ENGLAND, NHS ENGLAND PARENT-ENTITY CENTRAL SPINE DATA CENTRES (DC ARCHETYPE), NHS TRUSTS / PROVIDERS (ORGANISATIONAL COUNT, NOT SITE COUNT)*
+
+Sources: [Mott MacDonald](https://www.mottmac.com/en-us/insights/topics/carbon-crunch/carbon-crunch-2024-report/client-focus-nhs-england/); [Royal College of General Practitioners](https://www.rcgp.org.uk/News/Number-of-GP-practices); [NHS Business Services Authority](https://www.nhsbsa.nhs.uk/statistical-collections/general-pharmaceutical-services-england/general-pharmaceutical-services-england-201516-202425); [The Pharmacist](https://www.thepharmacist.co.uk/in-depth/pharmacy-closures/under-10000-nhs-bricks-and-mortar-pharmacies-in-england/) and 2 more
+
+**Data centres and cloud** - EVIDENCED_PUBLIC, 5 source(s)
+
+- Spine Futures cloud migration completion (NHS England central DCs decommissioned): 2023-10
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| AVERAGE ANNUAL CLOUD SPEND PER NHS TRUST USING CLOUD | GB | 2195926 | 2195926 | 2195926 | 2024 |
+| CROWN HOSTING CAMPUS LOCATIONS (GB SITES) | GB | 2 | 2 | 2 | 2025 |
+| CROWN HOSTING DATA CENTRE BUILDINGS (NATIONAL COLOCATION PLA | GB | 11 | 11 | 11 | 2025 |
+| CROWN HOSTING DATA HALLS (NATIONAL COLOCATION PLATFORM USED  | GB | 55 | 55 | 55 | 2025 |
+| NAMED CLOUD PROVIDERS FOR NHS ENGLAND FEDERATED DATA PLATFOR | GB | None | None | None |  |
+| NHS CCOE CLOUD PROVIDERS CITED BY NHS ENGLAND CIO (URGED AS  | GB | None | None | None |  |
+| NHS ENGLAND CENTRAL DATA CENTRES DECOMMISSIONED (SPINE MIGRA | GB | 0 | 0 | 0 | 2024 |
+| NHS TRUSTS IN ENGLAND CONFIRMED USING CLOUD (DIGITAL HEALTH  | GB | 82 | 82 | 82 | 2024 |
+| NHS TRUSTS USING CROWN HOSTING COLOCATION (AS SHARE OF TOTAL | GB | 15 | 15 | 15 | 2025 |
+
+Sources: [Data Center Dynamics](https://www.datacenterdynamics.com/en/news/uks-nhs-decommissions-data-centers-after-cloud-migration/); [Crown Hosting Data Centres](https://crownhostingdc.co.uk/nhs/); [Data Center Dynamics](https://www.datacenterdynamics.com/en/news/nhs-england-cio-calls-for-nhs-trusts-to-move-to-the-cloud/); [Crown Hosting Data Centres (LinkedIn)](https://uk.linkedin.com/company/crown-hosting-data-centres-limited) and 1 more
+
+**Current architecture** - EVIDENCED_PUBLIC, 6 source(s)
+
+- WAN cost reduction reported by NHS trusts migrating from legacy MPLS to SD-WAN: 40-60
+- HSCN MPLS provisioning lead time (legacy, pre-SD-WAN): 90-120
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| EXPONENTIAL-E NHS LONDON MARKET SHARE (NHS ORGANISATIONS USI | GB | 65 | 65 | 65 | 2024 |
+| HSCN CN-SP SUPPLIER COUNT (COMPETITIVE MARKETPLACE) | GB | 21 | 21 | 21 | 2020 |
+| HSCN GO-LIVE YEAR (REPLACEMENT FOR N3) | GB | 2017 | 2017 | 2017 | 2017 |
+| HSCN-CONNECTED ORGANISATIONS (NHS + SOCIAL CARE + LOCAL AUTH | GB | 950 | 950 | 950 | 2020 |
+| HSCN-CONNECTED SITES (NHS + SOCIAL CARE + LOCAL AUTHORITY) | GB | 12000 | 12000 | 12000 | 2020 |
+| SD-WAN PER-DEVICE MONTHLY PRICE THROUGH NHS FRAMEWORKS (RM38 | GB | 60 | 60 | 60 | 2024 |
+| SD-WAN SITES – PENNINE CARE NHS FOUNDATION TRUST | GB | 88 | 88 | 88 | 2024 |
+| SD-WAN SITES – REDCENTRIC/FORTINET INTEGRATED CARE BOARD DEP | GB | 400 | 400 | 400 | 2024 |
+
+*1 conflict(s) flagged: HSCN GO-LIVE YEAR (REPLACEMENT FOR N3)*
+
+Sources: [Computer Weekly](https://www.computerweekly.com/news/252492121/NHS-completes-transition-to-HSCN); [Virgin Media O2 Business](https://www.virginmediao2business.co.uk/insights/case-studies/nhs-digital-transformations-pennine-care/); [Netify (BT Authorised Partner, trade aggregator)](https://www.netify.co.uk/the-uk-market-guide-to-sd-wan-for-healthcare/); [Netify insights (trade aggregator)](https://insights.netify.co.uk/how-to-choose-sd-wan-for-healthcare/) and 2 more
+
+**Current providers and products** - EVIDENCED_PUBLIC, 5 source(s)
+
+- HSCN Peering Exchange provider: Redcentric
+- HSCN Peering Exchange contract value (2022 re-award): multi-million GBP
+- HSCN South-East England WAN carrier (BT): BT
+- Active HSCN CNSP (Consumer Network Service Provider) 2026: Virgin Media Business
+- HSCN Yorkshire & Humber regional aggregated WAN contract: Redcentric
+- Network Services procurement framework (endorsed by NHS England): CCS Network Services 3 RM6116
+
+Sources: [Redcentric / cloudcommunications.com](https://cloudcommunications.com/hscn-peering-exchange-contract-win); [Health Tech Digital](https://healthtechdigital.com/redcentric-completes-delivery-of-new-hscn-peering-exchange/); [UK Authority](https://www.ukauthority.com/articles/hscn-south-east-deal-goes-to-bt/); [IBM](https://www.ibm.com/case-studies/nhs-digital-security-services) and 1 more
+
+**Contract and sourcing events** - DECLARED_UNKNOWN: BUDGET_EXHAUSTED
+
+**Transformation announcements** - EVIDENCED_PUBLIC, 8 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| CORE IT INFRASTRUCTURE BUDGET (INTERNAL NHSE TECH DELIVERY P | GB | 617000000 | 617000000 | 617000000 | 2026 |
+| DIGITAL APPOINTMENT BOOKING SAVINGS (10 YEAR HEALTH PLAN) | GB | 200000000 | 200000000 | 200000000 | 2025 |
+| FRONTLINE DIGITISATION & CONNECTING CARE RECORDS PROGRAMME I | GB | 600000000 | 600000000 | 600000000 | 2025 |
+| FRONTLINE DIGITISATION PROGRAMME TOTAL LIFETIME BUDGET (REVI | GB | 1900000000 | 1900000000 | 1900000000 | 2021 |
+| FRONTLINE PRODUCTIVITY SUCCESSOR PROGRAMME 4-YEAR FUNDING EN | GB | 2500000000 | 2500000000 | 2500000000 | 2026 |
+| NHS ENGLAND ADDITIONAL EFFICIENCY SAVINGS (BEYOND MERGER, FI | GB | 306000000 | 306000000 | 306000000 | 2024 |
+| NHS ENGLAND MERGER SAVINGS (NHS DIGITAL + HEE MERGER, HEADCO | GB | 490000000 | 495000000 | 500000000 | 2024 |
+| NHS INTERNAL TECH/DIGITAL/DATA DELIVERY PLAN TOTAL (2026–203 | GB | 7400000000 | 7400000000 | 7400000000 | 2026 |
+| NHS PROVIDER CORPORATE COST GROWTH REDUCTION TARGET (Q3 2025 | GB | 50 | 50 | 50 | 2025 |
+| UK SPENDING REVIEW NHS TECHNOLOGY AND DIGITAL TRANSFORMATION | GB | 10000000000 | 10000000000 | 10000000000 | 2025 |
+
+Sources: [NHS England / GOV.UK](https://assets.publishing.service.gov.uk/media/69036ef05c84b1206832a86f/nhs-england-annual-report-and-accounts-2024-to-2025.pdf); [NHS England / GOV.UK](https://assets.publishing.service.gov.uk/media/6a992bc45a0c25165ae46825/nhs-england-annual-report-and-accounts-2025-2026.pdf); [GOV.UK / DHSC](https://www.gov.uk/government/publications/10-year-health-plan-for-england-fit-for-the-future/fit-for-the-future-10-year-health-plan-for-england-accessible-version); [NHS England Board (27 March 2025)](https://www.england.nhs.uk/wp-content/uploads/2025/03/agenda-item-8-data-digital-and-technology-transformation.pdf) and 4 more
+
+**Market serviceability** - EVIDENCED_PUBLIC, 4 source(s)
+
+- Leased line installation lead time – UK standard: 30–90
+- Credible enterprise WAN/MPLS/DIA carriers active in UK market: 8+
+- Typical call-off contract term under RM6116 for NHS WAN: 3 years with optional 1–2 year extension
+- RM6116 framework end date (extended): 2027-07-17
+- UK leased line uptime SLA – market standard: 99.9–99.99
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| FULL-FIBRE BROADBAND COVERAGE – UK ALL PREMISES | GB | 78 | 78 | 78 | 2025 |
+| FULL-FIBRE COVERAGE FOR SMES – UK | GB | 63 | 63 | 63 | 2024 |
+| GIGABIT-CAPABLE BROADBAND COVERAGE – UK ALL PREMISES | GB | 87 | 87 | 87 | 2025 |
+| RM6116 NETWORK SERVICES 3 FRAMEWORK – TOTAL SUPPLIER COUNT | GB | 129 | 129 | 129 | 2025 |
+| UK BUSINESS INTERNET CONNECTIONS THAT ARE FIXED LEASED LINES | GB | 39 | 39 | 39 | 2024 |
+
+*2 conflict(s) flagged: FULL-FIBRE BROADBAND COVERAGE – UK ALL PREMISES, RM6116 NETWORK SERVICES 3 FRAMEWORK – TOTAL SUPPLIER COUNT*
+
+Sources: [techUK](https://www.techuk.org/resource/ofcom-releases-connected-nations-2024-with-positive-signs-of-progress-and-highlights-work-for-2025.html); [Government Commercial Agency (formerly Crown Com](https://www.gca.gov.uk/agreements/RM6116); [Netify](https://netify.co.uk/insights/top-best-mpls-network-providers/); [Amvia](https://amvia.co.uk/leased-lines/compare/uk-leased-line-providers)
 
 ---
 
@@ -3030,6 +3631,133 @@ Sources: [Rio Tinto plc (SEC Form 6-K – Capital Markets Da](https://www.sec.go
 *1 conflict(s) flagged: CREDIBLE ENTERPRISE WAN/INTERNET CARRIERS*
 
 Sources: [leasedlineandmpls.co.uk](https://www.leasedlineandmpls.co.uk/top-100gb-leased-line-providers-in-the-uk-2025-edition/); [leasedlineandmpls.co.uk](https://www.leasedlineandmpls.co.uk/which-leased-line-providers-offer-10gb-and-100gb-connections-in-the-uk-2025-guide/); [netify.co.uk](https://insights.netify.co.uk/top-best-mpls-network-providers/); [Cirrus Technology Solutions](https://cirrustechnologysolutions.co.uk/2026/08/20/how-long-does-a-leased-line-take-to-install-uk-guide-for-new-site-openings/) and 5 more
+
+---
+
+## Royal Mail Group Limited
+
+- **Industry** PARCEL_LOGISTICS (entity resolution)
+- **Scope** GB, GBP, 1,426 sites (research merged with disclosure)
+- **Confidence** 0.390 (D - Indicative), coverage COMPLETE
+
+**Profile** - EVIDENCED_PUBLIC, 7 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| GLS GROUP COUNTRIES OF OPERATION |  | 21 | 21 | 21 | 2024 |
+| GLS SEGMENT REVENUE |  | 4929 | 5064.5 | 5200 | 2025 |
+| IDS GROUP H1 REVENUE (HALF-YEAR, ROYAL MAIL + GLS) |  | 6450 | 6450 | 6450 | 2025 |
+| IDS GROUP OPERATING PROFIT |  | 26 | 201 | 376 | 2024 |
+| IDS GROUP REPORTED REVENUE | GB | 12679 | 13139 | 13600 | 2025 |
+| IDS GROUP TOTAL EMPLOYEES (HEADCOUNT) |  | 152582 | 153552 | 160980 | 2024 |
+| NUMBER OF ROYAL MAIL DELIVERY OFFICES IN UK | GB | 839 | 1200 | 1400 | 2025 |
+| PARCELFORCE WORLDWIDE EMPLOYEES | GB | 6500 | 6500 | 6500 | 2024 |
+| ROYAL MAIL GROUP LIMITED EMPLOYEES (GB OPERATIONS, EXCLUDING | GB | 130000 | 130000 | 130000 | 2024 |
+| ROYAL MAIL SEGMENT REVENUE (ROYAL MAIL + PARCELFORCE, GB-FOC | GB | 7411 | 8230 | 8400 | 2025 |
+
+*3 conflict(s) flagged: GLS GROUP COUNTRIES OF OPERATION, IDS GROUP OPERATING PROFIT, NUMBER OF ROYAL MAIL DELIVERY OFFICES IN UK*
+
+Sources: [International Distribution Services plc (via FCA](https://reports.ticker.app/213800TCZZU84G8Z2M70/2025-09-01/NI-000128054.pdf); [International Distribution Services plc Annual R](https://data.fca.org.uk/artefacts/NSM/Portal/NI-000099365/NI-000099365.pdf); [Royal Mail Group Limited ESG Report 2023-24](https://www.responsibilityreports.com/HostedData/ResponsibilityReports/PDF/LSE_RMG_2023.pdf); [Royal Mail Group Ltd (royalmail.com)](https://www.royalmail.com/sustainability/social) and 3 more
+
+**Locations** - EVIDENCED_PUBLIC, 8 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| PARCELFORCE AUTOMATED SORTING/PROCESSING HUBS + INTERNATIONA | GB | 3 | 3 | 3 | 2024 |
+| PARCELFORCE WORLDWIDE DEPOTS (WAREHOUSE) — GB | GB | 54 | 54 | 54 | 2025 |
+| ROYAL MAIL CUSTOMER SERVICE POINTS / PUBLIC-FACING COUNTERS  | GB | 1200 | 1200 | 1200 | 2025 |
+| ROYAL MAIL DELIVERY OFFICES (WAREHOUSE) — GB | GB | 1200 | 1200 | 1200 | 2024 |
+| ROYAL MAIL MAIL CENTRES / REGIONAL SORTING HUBS (PLANT) — GB | GB | 37 | 37 | 37 | 2025 |
+| ROYAL MAIL OUT-OF-HOME OOH PARCEL ACCESS NETWORK (TOTAL, INC | GB | None | None | None |  |
+| ROYAL MAIL RELAY DEPOTS (BRANCH) — GB | GB | 15 | 15 | 15 | 2025 |
+| ROYAL MAIL VEHICLE WORKSHOPS (BRANCH) — GB | GB | 117 | 117 | 117 | 2022 |
+| SITES WITH EV CHARGING INFRASTRUCTURE (PROXY FOR LARGE ROYAL | GB | None | None | None |  |
+| TOTAL ROYAL MAIL OPERATIONAL SITES AND OFFICES (UK ESTATE, A | GB | None | None | None |  |
+
+*3 conflict(s) flagged: PARCELFORCE AUTOMATED SORTING/PROCESSING HUBS + INTERNATIONAL HUB (PLANT) — GB, ROYAL MAIL DELIVERY OFFICES (WAREHOUSE) — GB, ROYAL MAIL MAIL CENTRES / REGIONAL SORTING HUBS (PLANT) — GB*
+
+Sources: [International Distribution Services plc via Inve](https://www.investegate.co.uk/announcement/rns/international-distributions-services--ids/half-year-report/8563184); [Royal Mail Group Ltd (official careers site)](https://careers.royalmailgroup.com/gb/en/Delivery_and_sorting); [Royal Mail Group Limited ESG Report 2023-24](https://www.responsibilityreports.com/HostedData/ResponsibilityReports/PDF/LSE_RMG_2023.pdf); [Royal Mail Group Limited ESG Report 2022-23](https://www.royalmail.com/sites/royalmail.com/files/2023-06/RoyalMail_ESG_Report_2223.pdf) and 4 more
+
+**Data centres and cloud** - EVIDENCED_PUBLIC, 5 source(s)
+
+- Cloud adoption status: active transition to cloud (no specific provider or region confirmed)
+- Royal Mail / Parcelforce systems consolidation (operational merge): June 2025
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| DC/COMPUTER-ROOM LOCATIONS (PRE-CONSOLIDATION, UK-WIDE) | GB | 10 | 10 | 10 | 2021 |
+| DEVICES AUDITED ACROSS DC/COMPUTER-ROOM ESTATE | GB | 2762 | 2762 | 2762 | 2021 |
+
+Sources: [Joyce Solutions](https://joycesolutions.co.uk/case-studies/royal-mail-group/); [DataIQ](https://www.dataiq.global/dataiq100/simon-gratton-director-of-data-products-royal-mail-group/); [GlobalData](https://www.globaldata.com/store/report/royal-mail-group-enterprise-tech-analysis/); [Elovate](https://elovate.co.uk/story/royal-mail-and-parcelforce-to-merge-operations/) and 1 more
+
+**Current architecture** - EVIDENCED_PUBLIC, 2 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| BT NETWORK PARTNER CONTRACT TERM (MOST RECENT RENEWAL) | GB | 3 | 3 | 3 | 2025 |
+| DELIVERY OFFICE LOCATIONS IN VODAFONE/CISCO MERAKI SD-WAN PI | GB | 5 | 5 | 5 |  |
+
+Sources: [Vodafone (together.vodafone.co.uk)](https://together.vodafone.co.uk/royal-mail/royal-mail-and-vodafone-the-story-so-far); [IT Pro](https://www.itpro.com/mobile/23400/royal-mail-teams-up-with-bt-to-boost-it-investment)
+
+**Current providers and products** - EVIDENCED_PUBLIC, 3 source(s)
+
+- Cloud WAN / hybrid connectivity platform: Microsoft Azure (ExpressRoute)
+- Network monitoring platform: SolarWinds
+- ITSM platform: ServiceNow
+- WAN operating model: Multi-supplier managed WAN (named suppliers not public)
+
+Sources: [LinkedIn (Royal Mail job posting — Infrastructur](https://uk.linkedin.com/jobs/view/infrastructure-manager-at-royal-mail-3838664930); [LinkedIn (Royal Mail job posting — Infrastructur](https://uk.linkedin.com/jobs/view/infrastructure-manager-at-royal-mail-3870969031); [hijobs.net (Royal Mail Senior Infrastructure Man](https://hijobs.net/job/275830/senior-infrastructure-manager)
+
+**Contract and sourcing events** - EVIDENCED_PUBLIC, 4 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| BT–ROYAL MAIL GROUP NETWORK CONNECTIVITY CONTRACT START YEAR | GB | 2026 | 2026 | 2026 | 2026 |
+| BT–ROYAL MAIL GROUP NETWORK CONNECTIVITY CONTRACT TERM | GB | 3 | 3 | 3 | 2026 |
+| BT–ROYAL MAIL IT OUTSOURCING CONTRACT VALUE (HISTORICAL, 200 | GB | 500000000 | 1000000000 | 1500000000 | 2003 |
+
+*1 conflict(s) flagged: BT–ROYAL MAIL IT OUTSOURCING CONTRACT VALUE (HISTORICAL, 2003)*
+
+Sources: [BT Group Newsroom](https://newsroom.bt.com/bt-delivered-a-solid-start-to-the-year-with-continued-strategic-momentum/); [Telecompaper](https://www.telecompaper.com/news/royal-mail-awards-it-outsourcing-contract--385975); [Telecompaper](https://www.telecompaper.com/news/bt-wins-royal-mail-accenture-outsourcing-contracts--384757); [Comms Dealer](https://www.comms-dealer.com/financial-report/bt-remains-track-solid-start-fy26)
+
+**Transformation announcements** - EVIDENCED_PUBLIC, 6 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| OFCOM-ESTIMATED ANNUAL NET COST SAVINGS FROM USO REFORM (2ND | GB | None | None | None |  |
+| ROYAL MAIL 5-YEAR INVESTMENT PLAN FOR DELIVERY PERFORMANCE I | GB | 500000000 | 500000000 | 500000000 | 2026 |
+| ROYAL MAIL COMPLETED TRANSFORMATION PLAN — PARCEL AUTOMATION | GB | 1200000000 | 1200000000 | 1200000000 | 2024 |
+| ROYAL MAIL IDS GROUP ADJUSTED OPERATING PROFIT FY2024-25 (TU | GB | 12000000 | 145000000 | 278000000 | 2025 |
+| ROYAL MAIL IT & BUSINESS TRANSFORMATION SUPPLIER FRAMEWORK ( | GB | 750000000 | 750000000 | 750000000 | 2013 |
+| ROYAL MAIL IT TRANSFORMATION PROGRAMME — HANDHELD SCANNER RO | GB | 130000000 | 130000000 | 130000000 | 2015 |
+| ROYAL MAIL PARCEL AUTOMATION RATE (TRANSFORMATION KPI) | GB | None | None | None |  |
+| ROYAL MAIL REAL OPERATING COST REDUCTION (EXCLUDING TRANSFOR | GB | None | None | None |  |
+| ROYAL MAIL TOTAL HISTORICAL MODERNISATION INVESTMENT (CUMULA | GB | 2100000000 | 2100000000 | 2100000000 | 2013 |
+| ROYAL MAIL £3BN TRANSFORMATION PROGRAMME LAUNCHED 2009 | GB | 3000000000 | 3000000000 | 3000000000 | 2009 |
+
+*1 conflict(s) flagged: ROYAL MAIL IDS GROUP ADJUSTED OPERATING PROFIT FY2024-25 (TURNAROUND MILESTONE)*
+
+Sources: [LBC](https://www.lbc.co.uk/article/daf206e528e747b3b0d7e34cf63bc74c-5HjdY4x_2/); [International Distribution Services plc](https://reports.ticker.app/213800TCZZU84G8Z2M70/2025-09-01/NI-000128054.pdf); [IPC (International Post Corporation) / IDS resul](https://www.ipc.be/news-portal/general-news/2025/09/08/13/50/international-distribution-services-plc-2024-25-results); [Computing.co.uk](https://www.computing.co.uk/news/1843856/royal-mail-seeks-suppliers-gbp750m-it-transformation-plan) and 2 more
+
+**Market serviceability** - EVIDENCED_PUBLIC, 6 source(s)
+
+- UK leased line install lead time (standard range): 45–90
+- UK leased line install lead time — urban (on-net): 6–8
+- UK leased line install lead time — rural (new civil works required): 12+
+- Enterprise MPLS contract term (typical): 3–5 years
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| CITYFIBRE ENTERPRISE ETHERNET (LEASED LINE) — UK BUSINESS PR | GB | 260000 | 260000 | 260000 | 2025 |
+| CREDIBLE ENTERPRISE WAN/INTERNET CARRIERS (NATIONAL SCOPE, G | GB | None | None | None |  |
+| UK FULL-FIBRE (FTTP) AVAILABILITY — ALL PREMISES (OFCOM) | GB | 69 | 69 | 69 | 2024 |
+| UK FULL-FIBRE (FTTP) AVAILABILITY — SMES (OFCOM) | GB | 63 | 63 | 63 | 2025 |
+| UK GIGABIT-CAPABLE BROADBAND COVERAGE (FTTP + HFC) | GB | 84 | 84 | 84 | 2024 |
+| VIRGIN MEDIA O2 BUSINESS UK POP COUNT | GB | 336 | 336 | 336 | 2026 |
+
+*3 conflict(s) flagged: CITYFIBRE ENTERPRISE ETHERNET (LEASED LINE) — UK BUSINESS PREMISES REACHED, UK FULL-FIBRE (FTTP) AVAILABILITY — ALL PREMISES (OFCOM), UK GIGABIT-CAPABLE BROADBAND COVERAGE (FTTP + HFC)*
+
+Sources: [Netify (trade press)](https://netify.co.uk/insights/top-best-mpls-network-providers/); [AMVIA (aggregator)](https://amvia.co.uk/leased-lines/compare/uk-leased-line-providers); [CityFibre (company published)](https://cityfibre.com/news/cityfibre-supercharges-business-broadband-now-available-across-nationwide-footprint); [Jimber.io (trade press)](https://jimber.io/blog/mpls-replacement-exit-playbook/) and 2 more
 
 ---
 
