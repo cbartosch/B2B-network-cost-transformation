@@ -131,6 +131,139 @@ Sources: [ARCEP (French telecom regulator)](https://en.arcep.fr/news/press-relea
 
 ---
 
+## Koninklijke Ahold Delhaize N.V.
+
+- **Industry** GROCERY_RETAIL (spec fallback)
+- **Scope** NL, BE, US, GR, RO, CZ, EUR, 6,079 sites (research merged with disclosure)
+- **Confidence** 0.324 (D - Indicative), coverage COMPLETE
+
+**Profile** - EVIDENCED_PUBLIC, 8 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| ALBERT HEIJN STORES (NL + BE) |  | 1288 | 1288.5 | 1289 | 2025 |
+| EUROPE SEGMENT FTES |  | 83000 | 84500 | 86000 | 2025 |
+| EUROPE SEGMENT NET SALES |  | 35158000000 | 37223500000 | 39289000000 | 2025 |
+| EUROPE SEGMENT STORES |  | 5748 | 6641 | 7534 | 2025 |
+| GROUP NET SALES (REVENUE) |  | 89356000000 | 89400000000 | 92352000000 | 2025 |
+| NETHERLANDS FTES (SUBSET OF EUROPE SEGMENT) | NL | 38000 | 38000 | 38000 | 2025 |
+| NUMBER OF EMPLOYEES / ASSOCIATES (GROUP) |  | 384000 | 395000 | 414000 | 2025 |
+| TOTAL NUMBER OF STORES (GROUP) |  | 7765 | 8658 | 9551 | 2025 |
+| US SEGMENT NET SALES | US | 53063000000 | 53630500000 | 54198000000 | 2025 |
+| US SEGMENT STORES | US | 2017 | 2017 | 2017 | 2025 |
+
+*2 conflict(s) flagged: EUROPE SEGMENT STORES, TOTAL NUMBER OF STORES (GROUP)*
+
+Sources: [Ahold Delhaize (company)](https://media.aholddelhaize.com/media/bkym3erk/financial-statements-annual-report-2024.pdf); [Ahold Delhaize Annual Report 2025 – financial st](https://media.aholddelhaize.com/media/xiknotj4/financial-statements-and-sustainability-notes.pdf); [Ahold Delhaize Annual Report 2024 – performance ](https://media.aholddelhaize.com/media/bwplyekm/performance-review-annual-report-2024.pdf); [Ahold Delhaize Annual Report 2025 – performance ](https://media.aholddelhaize.com/media/ujhbqgnt/performance-review-annual-report-2025.pdf) and 4 more
+
+**Locations** - EVIDENCED_PUBLIC, 7 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| STORE — BE DELHAIZE BELGIUM | BE | 818 | 819 | 834 | 2025 |
+| STORE — CZ ALBERT CZECH REPUBLIC | CZ | 334 | 335 | 349 | 2025 |
+| STORE — GR ALFA BETA (AB) | GR | 578 | 611.5 | 645 | 2025 |
+| STORE — NL ALBERT HEIJN (NETHERLANDS ONLY) | NL | 1122 | 1268 | 1288 | 2025 |
+| STORE — NL SPECIALTY (ETOS + GALL & GALL) | NL | 1139 | 1145 | 1151 | 2024 |
+| STORE — RO MEGA IMAGE (PRE-PROFI) | RO | 920 | 985 | 993 | 2025 |
+| STORE — US FOOD LION | US | 1110 | 1110 | 1110 | 2024 |
+| STORE — US STOP & SHOP | US | 362 | 363.5 | 365 | 2025 |
+| STORE — US TOTAL (ALL BRANDS) | US | 2017 | 2017 | 2017 | 2024 |
+| WAREHOUSE — US DISTRIBUTION CENTRES (ADUSA) | US | 24 | 24.5 | 25 | 2023 |
+
+Sources: [Ahold Delhaize (primary filing)](https://media.aholddelhaize.com/media/bwplyekm/performance-review-annual-report-2024.pdf); [Ahold Delhaize (primary filing — Q4 2024 interim](https://www.aholddelhaize.com/media/hcrihdg4/ahold-delhaize-interim-report-q4-2024.pdf); [MarketScreener (company profile citing Ahold Del](https://www.marketscreener.com/quote/stock/AHOLD-DELHAIZE-N-V-29752127/news/Ahold-Delhaize-N-publishes-Annual-Report-2024-and-issues-convocation-for-2025-Annual-General-Meeti-49164357/); [Ahold Delhaize (company published — careers/bran](https://careers.aholddelhaize.com/brands) and 3 more
+
+**Data centres and cloud** - EVIDENCED_PUBLIC, 6 source(s)
+
+- Primary cloud provider — US (Ahold Delhaize USA): Microsoft Azure
+- Primary cloud provider — NL (Albert Heijn / Ahold Delhaize): Microsoft Azure
+- Data analytics platform cloud (group-wide incl. NL): Azure (Databricks)
+- Edge DC nodes — store-level compute (Delhaize BE rollout from 2019): per-store
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| CLOUD VMS MIGRATED TO AZURE (US — AHOLD DELHAIZE USA E-COMME | US | None | None | None |  |
+| DC — US ON-PREMISES (HISTORICAL POST-CONSOLIDATION) | US | 1 | 1 | 1 | 2016 |
+| POSTGRESQL WORKLOADS MIGRATED TO AZURE (US — AHOLD DELHAIZE  | US | 300 | 300 | 300 | 2024 |
+
+*1 conflict(s) flagged: POSTGRESQL WORKLOADS MIGRATED TO AZURE (US — AHOLD DELHAIZE USA)*
+
+Sources: [Microsoft](https://www.microsoft.com/en/customers/story/25672-ahold-delhaize-usa-azure); [Microsoft](https://www.microsoft.com/en/customers/story/1604906625530018169-peapod-digital-labs-retailers-azure); [Microsoft](https://www.microsoft.com/en/customers/story/24372-koninklijke-ahold-delhaize-azure-openai); [Microsoft Azure Blog](https://azure.microsoft.com/en-us/blog/what-s-new-in-azure-data-ai-azure-is-built-for-generative-ai-apps/) and 2 more
+
+**Current architecture** - EVIDENCED_PUBLIC, 7 source(s)
+
+- Delhaize Belgium/Luxembourg in-store edge nodes (One Box) with Fortinet firewall: unknown site count
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| AHOLD DELHAIZE USA — DISTINCT US NETWORK (CONFIRMED BY RANSO | US | None | None | None |  |
+| ALBERT HEIJN SD-WAN PURCHASE (VENDOR PAYWALLED) | NL | 1 | 1 | 1 | 2019 |
+
+Sources: [AppsRunTheWorld](https://www.appsruntheworld.com/customers-database/customers/view/albert-heijn-netherlands); [Cisco Spaces](https://spaces.cisco.com/personalized-shopping-experiences-at-ahold-delhaize/); [Data Center Dynamics](https://www.datacenterdynamics.com/en/analysis/how-retail-giant-ahold-delhaize-embraced-the-edge/); [Data Center Dynamics](https://www.datacenterdynamics.com/en/marketwatch/ahold-delhaize-how-one-box-computing-won/) and 3 more
+
+**Current providers and products** - EVIDENCED_PUBLIC, 5 source(s)
+
+- SD-WAN platform — Albert Heijn NL stores: Cisco Meraki SD-WAN
+- Firewall platform (NGFW) — Ahold Delhaize USA: Palo Alto Networks (NGFW/Panorama) + Fortinet (FortiGate/FortiManager/FortiAnalyzer)
+- SSE / Zero Trust platform — Ahold Delhaize USA: Zscaler (ZIA, ZPA, ZDX, ZTB)
+- NAC platform — Ahold Delhaize USA: HPE Aruba ClearPass
+- Network switching / data centre fabric — Ahold Delhaize USA: Cisco ACI / Nexus, Arista
+- Security policy management / visibility — Ahold Delhaize USA: Skybox Security; SolarWinds
+
+Sources: [appsruntheworld.com](https://www.appsruntheworld.com/customers-database/products/view/cisco-meraki-sd-wan); [Built In Chicago — Ahold Delhaize USA](https://www.builtinchicago.org/company/ahold-delhaize-usa/jobs); [Built In — Ahold Delhaize USA Senior Network Sec](https://builtin.com/job/senior-network-security-engineer/6587566); [Built In Chicago — Ahold Delhaize USA Network En](https://www.builtinchicago.org/job/data-engineer-ii/6212241) and 1 more
+
+**Contract and sourcing events** - EVIDENCED_PUBLIC, 6 source(s)
+
+- KPN–Albert Heijn NL fibre contract scope (all NL stores): all stores
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| DELHAIZE BE CISCO SPACES WI-FI – UNIQUE DEVICES ONBOARDED | BE | 3600000 | 3600000 | 3600000 | 2025 |
+| KPN–ALBERT HEIJN NL FIBRE CONTRACT TERM | NL | 10 | 10 | 10 | 2025 |
+
+Sources: [Telecompaper](https://www.telecompaper.com/news/kpn-to-bring-fibre-to-albert-heijn-supermarkets--1533898); [Cisco Spaces](https://spaces.cisco.com/ahold-delhaize-cisco-spaces-win-best-wi-fi-customer-experience-2025-at-wba-industry-awards/); [Cisco Spaces](https://spaces.cisco.com/personalized-shopping-experiences-at-ahold-delhaize/); [Cisco Live EMEA 2024](https://www.ciscolive.com/c/dam/r/ciscolive/emea/docs/2024/pdf/CSSEWN-1801.pdf) and 2 more
+
+**Transformation announcements** - EVIDENCED_PUBLIC, 10 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| AD/01 TECH STUDIO (BUCHAREST, RO) — PLANNED TECH HEADCOUNT | RO | 250 | 250 | 250 | 2024 |
+| GROSS CAPITAL EXPENDITURE (STORE NETWORK, ONLINE PLATFORMS,  |  | 2300000000 | 2500000000 | 2700000000 | 2025 |
+| PREVIOUS S4OC PROGRAMME CUMULATIVE SAVINGS 2022–2025 (PREDEC |  | 4000000000 | 4000000000 | 4000000000 | 2024 |
+| PROFI ROMANIA ACQUISITION ENTERPRISE VALUE (NETWORK INTEGRAT | RO | 1300000000 | 1300000000 | 1300000000 | 2023 |
+| SAVE FOR OUR CUSTOMERS — ANNUAL SAVINGS DELIVERED 2024 |  | 1350000000 | 1350000000 | 1350000000 | 2024 |
+| SAVE FOR OUR CUSTOMERS — ANNUAL SAVINGS DELIVERED 2025 |  | 1294000000 | 1297000000 | 1300000000 | 2025 |
+| SAVE FOR OUR CUSTOMERS — ANNUAL SAVINGS TARGET 2026 |  | 1250000000 | 1250000000 | 1250000000 | 2026 |
+| SAVE FOR OUR CUSTOMERS — CUMULATIVE SAVINGS TARGET 2025–2028 |  | 5000000000 | 5000000000 | 5000000000 | 2025 |
+| STOP & SHOP REMAINING STORE COUNT POST-CLOSURE (US) | US | 390 | 390 | 390 | 2024 |
+| STOP & SHOP STORE CLOSURES (US NETWORK FOOTPRINT REDUCTION)  | US | 32 | 32 | 32 | 2024 |
+
+*2 conflict(s) flagged: GROSS CAPITAL EXPENDITURE (STORE NETWORK, ONLINE PLATFORMS, SUPPLY CHAIN, IT INFRASTRUCTURE) — ANNUAL, STOP & SHOP REMAINING STORE COUNT POST-CLOSURE (US)*
+
+Sources: [Ahold Delhaize newsroom](https://newsroom.aholddelhaize.com/ahold-delhaize-launches-its-growing-together-strategy-building-on-its-core-strengths/); [Ahold Delhaize Digital Annual Report 2024](https://aholddelhaize.com/digitalannualreport/2024/); [Ahold Delhaize — Q4 2024 Interim Report (primary](https://www.aholddelhaize.com/media/hcrihdg4/ahold-delhaize-interim-report-q4-2024.pdf); [Ahold Delhaize — Q4 2025 Summary Report (primary](https://media.aholddelhaize.com/media/bdsnpbxm/ahold-delhaize-q4-2025-summary-report.pdf) and 6 more
+
+**Market serviceability** - EVIDENCED_PUBLIC, 10 source(s)
+
+- DIA unit price — Netherlands, 1 Gbps (market range): 1000–1500
+- Leased line provisioning lead time — Netherlands: 50+
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| CREDIBLE ENTERPRISE CARRIERS — BELGIUM | BE | 4 | 4 | 4 | 2025 |
+| CREDIBLE ENTERPRISE CARRIERS — NETHERLANDS | NL | 28 | 33.5 | 39 | 2026 |
+| DIA UNIT PRICE — NETHERLANDS, 200 MBPS, EUROFIBER | NL | 348 | 348 | 348 | 2025 |
+| EUROFIBER BELGIUM ANNUAL REVENUE | BE | 38900000 | 38900000 | 38900000 | 2024 |
+| EUROFIBER ENTERPRISE FIBRE MARKET SHARE — NETHERLANDS | NL | 34 | 34 | 34 | 2024 |
+| EUROFIBER ENTERPRISE REACH — NETHERLANDS (% OF ENTERPRISE DO | NL | 70 | 70 | 70 | 2024 |
+| FIBRE AVAILABILITY SLA — NETHERLANDS/BELGIUM (STANDARD LEASE | NL | 99.9 | 99.9 | 99.9 | 2015 |
+| PROXIMUS FIBRE POPULATION COVERAGE — BELGIUM | BE | 42 | 42 | 42 | 2025 |
+
+*1 conflict(s) flagged: CREDIBLE ENTERPRISE CARRIERS — NETHERLANDS*
+
+Sources: [Connected Networks (trade press/broker)](https://www.connectednetworks.io/countries/holland-the-netherlands-business-internet-connectivity); [Connected Networks (trade press/broker)](https://www.connectednetworks.io/countries/belgium-business-internet-connectivity); [Eurofiber (company published)](https://www.eurofiber.com/sd-wan-best-way-to-connect-your-customers-in-europe); [Eurofiber (company published)](https://www.eurofiber.com/en-nl) and 6 more
+
+---
+
 ## Allianz SE
 
 - **Industry** INSURANCE (entity resolution)
@@ -381,6 +514,144 @@ Sources: [BASF SE](https://www.basf.com/global/en/media/news-releases/2026/05/p-
 *2 conflict(s) flagged: CREDIBLE ENTERPRISE CARRIERS (MNOS + ENTERPRISE ISPS), DEUTSCHE TELEKOM FIXED-LINE MARKET SHARE*
 
 Sources: [germancompanyformation.com](https://germancompanyformation.com/guides/telecommunication-companies-in-germany); [ISG / BusinessWire](https://www.businesswire.com/news/home/20250807539187/en); [jimber.io](https://jimber.io/blog/mpls-replacement-exit-playbook/); [TeleGeography](https://resources.telegeography.com/enterprise-network-trends-strategy-wan-manager-survey) and 3 more
+
+---
+
+## Bayer AG
+
+- **Industry** PHARMACEUTICALS (entity resolution)
+- **Scope** DE, US, CN, BR, IN, FR, ES, MX, EUR, 98 sites (public disclosure only)
+- **Confidence** 0.346 (D - Indicative), coverage COMPLETE
+
+**Profile** - EVIDENCED_PUBLIC, 10 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| BAYER AG (LEGAL ENTITY STANDALONE) NET SALES | DE | 14116 | 14491 | 14866 | 2025 |
+| CONSUMER HEALTH DIVISION SALES |  | 5802 | 5836 | 5870 | 2025 |
+| CROP SCIENCE DIVISION SALES |  | 21622 | 21940.5 | 22259 | 2025 |
+| FY2025 GROUP SALES — GERMANY | DE | 2584 | 2584 | 2584 | 2025 |
+| FY2025 GROUP SALES — NORTH AMERICA REGION | US | 16700 | 16700 | 16700 | 2025 |
+| GROUP EMPLOYEES (FTE) |  | 88078 | 90446.5 | 92815 | 2025 |
+| GROUP EMPLOYEES (HEADCOUNT, NOT FTE) |  | 89237 | 91659 | 94081 | 2025 |
+| GROUP SALES (REVENUE) | DE | 45575 | 46090.5 | 46610 | 2025 |
+| NUMBER OF CONSOLIDATED SUBSIDIARIES / COUNTRIES OF OPERATION |  | None | None | None |  |
+| PHARMACEUTICALS DIVISION SALES |  | 17829 | 17980 | 18131 | 2025 |
+
+*2 conflict(s) flagged: FY2025 GROUP SALES — GERMANY, FY2025 GROUP SALES — NORTH AMERICA REGION*
+
+Sources: [Bayer AG — Annual Report 2025](https://www.bayer.com/sites/default/files/2026-03/bayer-annual-report-2025.pdf); [Bayer AG — Annual Report 2025 Dashboard (reports](https://reports.bayer.com/annual-report-2025/en/services/dashboard.html); [Bayer AG — Annual Report 2025, Earnings Performa](https://reports.bayer.com/annual-report-2025/en/report-on-economic-position/earnings-asset-and-financial-position/earnings-performance.html); [Bayer AG — Annual Report 2025, Own Workforce Met](https://reports.bayer.com/annual-report-2025/en/sustainability-statement/social-information/own-workforce/metrics-and-targets.html) and 6 more
+
+**Locations** - EVIDENCED_PUBLIC, 10 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| FRANCE (FR) — NAMED SITE LOCATIONS | FR | 3 | 3 | 3 | 2024 |
+| GERMANY (DE) — ALL STANDORTE (SITES INCLUDING SUB-SITES AND  | DE | 13 | 13 | 13 | 2025 |
+| GERMANY (DE) — MAJOR PLANT/LARGE_OFFICE SITES (NAMED PRODUCT | DE | 13 | 13 | 13 | 2025 |
+| GLOBAL CONSOLIDATED COMPANIES (LEGAL ENTITIES, NOT PHYSICAL  |  | 291 | 315.5 | 340 | 2024 |
+| GLOBAL MATERIAL OPERATIONAL SITES (PRODUCTION, R&D, ADMIN) — |  | 122 | 122 | 122 | 2024 |
+| INDIA (IN) — BREEDING AND R&D SITES | IN | 5 | 5 | 5 | 2024 |
+| INDIA (IN) — MANUFACTURING SITES | IN | 7 | 7 | 7 | 2024 |
+| MEXICO (MX) — DISTINCT SITE LOCATIONS | MX | 3 | 3 | 3 | 2024 |
+| SPAIN (ES) — NAMED SITE LOCATIONS | ES | 2 | 2 | 2 | 2024 |
+| UNITED STATES (US) — NAMED LOCATION CLUSTERS (OFFICES, R&D,  | US | 8 | 8 | 8 | 2024 |
+
+*7 conflict(s) flagged: FRANCE (FR) — NAMED SITE LOCATIONS, GERMANY (DE) — ALL STANDORTE (SITES INCLUDING SUB-SITES AND SMALLER OFFICES), GLOBAL CONSOLIDATED COMPANIES (LEGAL ENTITIES, NOT PHYSICAL SITES), GLOBAL MATERIAL OPERATIONAL SITES (PRODUCTION, R&D, ADMIN) — WORLDWIDE TOTAL, MEXICO (MX) — DISTINCT SITE LOCATIONS, SPAIN (ES) — NAMED SITE LOCATIONS*
+
+Sources: [Bayer AG](https://www.bayer.com/sites/default/files/2025-03/bayer-annual-report-2024.pdf); [Bayer AG](https://www.bayer.com/sites/default/files/2025-03/bayer-impact-report-2024.pdf); [Bayer AG (Germany value-contribution report)](https://www.bayer.com/sites/default/files/bayer-wertschoepfungsbeitrag-de-2024.pdf); [Bayer AG Germany website](https://www.bayer.com/de-de/deutschland/standorte) and 6 more
+
+**Data centres and cloud** - EVIDENCED_PUBLIC, 8 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| CLOUD PROVIDER: AWS – CROSS-DIVISIONAL DATA-SCIENCE PLATFORM |  | None | None | None |  |
+| CLOUD PROVIDER: GOOGLE CLOUD – DRUG DISCOVERY COLLABORATION |  | None | None | None |  |
+| CLOUD PROVIDER: MICROSOFT AZURE – STRATEGIC PARTNERSHIP (CRO |  | None | None | None |  |
+| DC CAMPUS AREA BEING SOLD – CREVE COEUR EAST (14 BUILDINGS,  | US | None | None | None |  |
+| DC CAMPUS FOR SALE / EXIT – CREVE COEUR WEST (DATA CENTRE IN | US | 1 | 1 | 1 | 2022 |
+
+Sources: [Data Center Dynamics](https://www.datacenterdynamics.com/en/news/bayer-att-and-baptist-health-data-centers-for-sale/); [City of Creve Coeur (official city government we](https://www.crevecoeurmo.gov/1233/Bayer-East-Comp-Plan-Update); [Yahoo Finance / local TV](https://finance.yahoo.com/news/bayer-invests-100m-local-sites-193338114.html); [Bayer.com (official)](https://www.bayer.com/media/en-us/bayer-collaborates-with-microsoft-to-unveil-new-cloud-based-enterprise-solutions-advancing-innovation-and-transparency-in-the-agri-food-industry/) and 4 more
+
+**Current architecture** - EVIDENCED_PUBLIC, 8 source(s)
+
+- Sites covered by Verizon managed SD-WAN + Private IP contract: 700+
+- WAN service type: managed SD-WAN (in scope): yes
+- WAN service type: global Private IP / MPLS (in scope): yes
+- OT/ICS network security – Nozomi Networks Guardian deployed at all global production sites: all production sites
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| CONTRACT TERM – VERIZON MANAGED NETWORK FOR BAYER (BASE) |  | 5 | 5 | 5 | 2020 |
+| COUNTRIES COVERED BY VERIZON MANAGED NETWORK CONTRACT |  | 91 | 91 | 91 | 2020 |
+
+Sources: [ComputerWeekly](https://www.computerweekly.com/news/252487660/Bayer-taps-Verizon-for-global-network-infrastructure); [Fierce Network](https://www.fierce-network.com/operators/verizon-will-manage-bayer-s-global-it-network); [Verizon Business](https://www.verizon.com/business/answers/what-is-connectivity-as-a-service/); [HIT Consultant](https://hitconsultant.net/2020/08/13/bayer-verizon-partner-to-build-next-gen-global-network-infrastructure/) and 4 more
+
+**Current providers and products** - EVIDENCED_PUBLIC, 10 source(s)
+
+- Global managed WAN/SD-WAN/Private IP provider: Verizon Business
+- WAN network technologies in scope (Verizon contract): Managed SD-WAN, Global Private IP (MPLS), SDN
+- OT/IoT network security managed services provider: NTT (Global NTT / NTT DATA)
+- Cloud connectivity technology (lab/factory to AWS): AWS Direct Connect
+- OT network security product (at Bayer manufacturing sites): Nozomi Networks Guardian
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| NUMBER OF COUNTRIES COVERED BY VERIZON MANAGED NETWORK CONTR |  | 91 | 91 | 91 | 2020 |
+| NUMBER OF MANAGED WAN SITES COVERED BY VERIZON CONTRACT |  | None | None | None |  |
+| VERIZON CONTRACT INITIAL TERM |  | None | None | None |  |
+
+Sources: [GlobeNewswire (Verizon Business press release)](https://www.globenewswire.com/news-release/2020/08/13/2077953/0/en/Verizon-Business-to-create-next-generation-global-network-infrastructure-for-Bayer.html); [Computer Weekly](https://www.computerweekly.com/news/252487660/Bayer-taps-Verizon-for-global-network-infrastructure); [Fierce Network](https://www.fierce-network.com/operators/verizon-will-manage-bayer-s-global-it-network); [HIT Consultant](https://hitconsultant.net/2020/08/13/bayer-verizon-partner-to-build-next-gen-global-network-infrastructure/) and 6 more
+
+**Contract and sourcing events** - EVIDENCED_PUBLIC, 6 source(s)
+
+- Contract value – managed network services (Verizon / Bayer): undisclosed
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| COUNTRIES COVERED BY MANAGED NETWORK SERVICES CONTRACT |  | 91 | 91 | 91 | 2020 |
+| MANAGED NETWORK SERVICES CONTRACT – INITIAL TERM |  | 5 | 5 | 5 | 2020 |
+| MANAGED NETWORK SERVICES CONTRACT – OPTIONAL EXTENSION TERM |  | 2 | 2 | 2 | 2020 |
+| SITES COVERED BY MANAGED NETWORK SERVICES CONTRACT |  | None | None | None |  |
+
+Sources: [Fierce Network](https://www.fierce-network.com/operators/verizon-will-manage-bayer-s-global-it-network); [Computer Weekly](https://www.computerweekly.com/news/252487660/Bayer-taps-Verizon-for-global-network-infrastructure); [HIT Consultant](https://hitconsultant.net/2020/08/13/bayer-verizon-partner-to-build-next-gen-global-network-infrastructure/); [Yahoo Finance / Zacks](https://finance.yahoo.com/news/verizon-vz-augment-bayers-global-132001447.html) and 2 more
+
+**Transformation announcements** - EVIDENCED_PUBLIC, 10 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| DSO CUMULATIVE SAVINGS TARGET BY END-2025 (RELATIVE TO FY202 |  | 1300000000 | 1300000000 | 1300000000 | 2025 |
+| DSO HEADCOUNT REDUCTION (FTE) TO DATE |  | 7000 | 9500 | 12000 | 2025 |
+| DSO ORGANISATIONAL SAVINGS ACHIEVED IN 2024 |  | 500000000 | 500000000 | 500000000 | 2024 |
+| DSO ORGANISATIONAL SAVINGS PLANNED FOR 2025 (NEXT WAVE) |  | 800000000 | 800000000 | 800000000 | 2025 |
+| DSO ORGANISATIONAL SAVINGS TARGET BY END-2026 (RELATIVE TO F |  | 2000000000 | 2000000000 | 2000000000 | 2026 |
+| FUTURE CONCEPT GERMANY – CONSUMER HEALTH DIGITIZATION INVEST | DE | 120000000 | 120000000 | 120000000 | 2022 |
+| FUTURE CONCEPT GERMANY – CROP SCIENCE DIGITALIZATION INVESTM | DE | 386000000 | 386000000 | 386000000 | 2022 |
+| FUTURE CONCEPT GERMANY – TOTAL DIGITAL/MANUFACTURING INVESTM | DE | 1400000000 | 1400000000 | 1400000000 | 2022 |
+| GROUP EBITDA SPECIAL ITEMS (TOTAL) 2025 REVISED FORECAST |  | 3750000000 | 3750000000 | 3750000000 | 2025 |
+| RESTRUCTURING SPECIAL ITEMS (EBITDA) – GROUP Q1 2025 |  | 125000000 | 125000000 | 125000000 | 2025 |
+
+*3 conflict(s) flagged: DSO HEADCOUNT REDUCTION (FTE) TO DATE, DSO ORGANISATIONAL SAVINGS TARGET BY END-2026 (RELATIVE TO FY2023 BASE), FUTURE CONCEPT GERMANY – TOTAL DIGITAL/MANUFACTURING INVESTMENT (PHARMACEUTICALS, DE)*
+
+Sources: [Bayer AG](https://www.bayer.com/sites/default/files/2025-03/q4-fy-2024-presentation-charts-en-2025-03-05.pdf); [Bayer AG](https://www.bayer.com/sites/default/files/fy-q4-transcript-investor-call-march-2025-1.pdf); [Bayer AG](https://www.bayer.com/media/en-us/bayer-meets-adjusted-guidance-and-takes-decisive-action-to-tackle-challenges/); [Bayer AG](https://www.bayer.com/sites/default/files/2025-08/investment-case-august-2025-final.pdf) and 6 more
+
+**Market serviceability** - EVIDENCED_PUBLIC, 10 source(s)
+
+- credible enterprise carriers (incumbent + altnets): 5+
+- BR key enterprise WAN carriers: 4+ national, hundreds of regional ISPs
+- IN enterprise fibre/MPLS carriers: 4+
+- IN WAN market pricing constraint note: High cost relative to demand; projected to lose rank in global WAN market model
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| CN CHINA TELECOM GLOBAL MPLS POP COUNT | CN | 223 | 223 | 223 | 2025 |
+| CN FTTH PENETRATION OF HOME BROADBAND LINES | CN | None | None | None |  |
+| CN INCUMBENT ENTERPRISE WAN CARRIERS | CN | None | None | None |  |
+| DE FTTB/H ACTIVE TAKE-UP RATE (HOMES CONNECTED, END-2025) | DE | 21.7 | 21.7 | 21.7 | 2025 |
+| DE GIGABIT-CAPABLE COVERAGE (HOMES PASSED, END-2025) | DE | 86 | 86 | 86 | 2025 |
+| US CREDIBLE ENTERPRISE SD-WAN/WAN CARRIERS (LEADERBOARD TIER | US | None | None | None |  |
+
+Sources: [VATM (German Telecommunications Association)](https://www.vatm.de/wp-content/uploads/2025/06/VATM-Market-Analysis-Germany-2025.pdf); [ts2.tech](https://ts2.tech/en/internet-access-in-germany-2025-dsl-cable-fiber-5g-and-satellite-connectivity/); [Vertical Systems Group](https://verticalsystems.com/2026/04/08/2025-us-carrier-managed-sd-wan-leaderboard/); [RCR Wireless News](https://www.rcrwireless.com/20251209/carriers/china-fixed) and 6 more
 
 ---
 
@@ -650,6 +921,249 @@ Sources: [Walgreens Boots Alliance (SEC EDGAR)](https://www.sec.gov/Archives/edg
 | UK GIGABIT-CAPABLE BROADBAND PREMISES COVERAGE | GB | 89 | 89 | 89 | 2025 |
 
 Sources: [businessbroadbandhub.co.uk](https://www.businessbroadbandhub.co.uk/business-broadband-availability/); [ISPreview UK](https://www.ispreview.co.uk/index.php/2026/01/cityfibre-make-business-fttp-broadband-available-to-4-5-million-uk-premises.html); [cloudswitched.com](https://www.cloudswitched.com/blog/leased-line-vs-broadband-uk-business-uptime-cost-guide-2026); [Cirrus Technology Solutions](https://cirrustechnologysolutions.co.uk/2026/08/20/how-long-does-a-leased-line-take-to-install-uk-guide-for-new-site-openings/) and 4 more
+
+---
+
+## Capgemini SE
+
+- **Industry** IT_SERVICES (entity resolution)
+- **Scope** FR, IN, GB, DE, US, NL, PL, ES, EUR, 106 sites (research merged with disclosure)
+- **Confidence** 0.278 (D - Indicative), coverage PARTIAL
+
+**Profile** - EVIDENCED_PUBLIC, 9 source(s)
+
+- Number of countries of operation: 50+
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| EMPLOYEES – FRANCE (AVERAGE, H1 2025) | FR | 36432 | 36432 | 36432 | 2025 |
+| GROUP HEADCOUNT (CAPGEMINI SE CONSOLIDATED, PERIOD-END) |  | 341118 | 423400 | 424518 | 2026 |
+| GROUP REVENUE (CAPGEMINI SE CONSOLIDATED) |  | 22096 | 22465 | 22465 | 2025 |
+| ONSHORE HEADCOUNT (DEC 2025) |  | 144200 | 144200 | 144200 | 2025 |
+| REVENUE SHARE – APPLICATIONS & TECHNOLOGY BUSINESS LINE |  | 62 | 62 | 62 | 2024 |
+| REVENUE – FRANCE REGION | FR | 4199 | 4199 | 4199 | 2025 |
+| REVENUE – NORTH AMERICA REGION | US | 6188 | 6279.5 | 6371 | 2025 |
+| REVENUE – REST OF EUROPE REGION (INCLUDES DE, NL, PL, ES AND |  | 6828 | 6828 | 6828 | 2025 |
+| REVENUE – UNITED KINGDOM & IRELAND REGION | GB | 3008 | 3008 | 3008 | 2025 |
+
+*3 conflict(s) flagged: EMPLOYEES – FRANCE (AVERAGE, H1 2025), GROUP HEADCOUNT (CAPGEMINI SE CONSOLIDATED, PERIOD-END), REVENUE SHARE – APPLICATIONS & TECHNOLOGY BUSINESS LINE*
+
+Sources: [Capgemini SE (official)](https://www.capgemini.com/news/press-releases/full-year-2025-results/); [Capgemini SE – Consolidated financial statements](https://investors.capgemini.com/en/file/30106?download=1); [Capgemini SE investor relations – FY2024 results](https://investors.capgemini.com/en/publication/fy-2024-results/); [Capgemini SE – FY2024 Annual Results PDF](https://www.capgemini.com/wp-content/uploads/2025/02/Capgemini_-_2025-02-18_-_2024_Annual_Results.pdf) and 5 more
+
+**Locations** - EVIDENCED_PUBLIC, 10 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| CAMPUS – INDIA OWNED CAMPUSES (CONFIRMED BY 2024 URD) | IN | 13 | 13 | 13 | 2024 |
+| LARGE_OFFICE – FRANCE OFFICES (INFERRED FROM LOCATION FINDER | FR | 1 | 1 | 1 | 2024 |
+| LARGE_OFFICE – GERMANY OFFICES (INFERRED FROM LOCATION FINDE | DE | 1 | 1 | 1 | 2023 |
+| LARGE_OFFICE – GLOBAL OFFICES (ISO 14001 CERTIFIED ESTATE) |  | 292 | 292 | 292 | 2025 |
+| LARGE_OFFICE – NETHERLANDS OFFICES | NL | 1 | 1 | 1 | 2024 |
+| LARGE_OFFICE – POLAND OFFICES | PL | 1 | 1 | 1 | 2024 |
+| LARGE_OFFICE – SPAIN OFFICES | ES | 1 | 1 | 1 | 2024 |
+| LARGE_OFFICE – UNITED KINGDOM OFFICES (INFERRED FROM MULTIPL | GB | 10 | 10 | 10 | 2024 |
+| LARGE_OFFICE – UNITED STATES OFFICES | US | None | None | None |  |
+
+*5 conflict(s) flagged: CAMPUS – INDIA OWNED CAMPUSES (CONFIRMED BY 2024 URD), LARGE_OFFICE – FRANCE OFFICES (INFERRED FROM LOCATION FINDER), LARGE_OFFICE – GERMANY OFFICES (INFERRED FROM LOCATION FINDER), LARGE_OFFICE – GLOBAL OFFICES (ISO 14001 CERTIFIED ESTATE), LARGE_OFFICE – UNITED KINGDOM OFFICES (INFERRED FROM MULTIPLE SOURCES)*
+
+Sources: [Capgemini SE (Environmental/Sustainability Repor](https://investors.capgemini.com/en/wp-content/uploads/sites/2/2024/11/Capgemini-Environmental-Sustainability-Report-2023_2ef34d.pdf); [Capgemini SE (2024 Universal Registration Docume](https://investors.capgemini.com/en/file/28667?download=1); [Capgemini SE (official location finder)](https://www.capgemini.com/about-us/locations/); [Capgemini SE (Environmental Report 2023)](https://www.capgemini.com/wp-content/uploads/2024/07/2023-Report-published-in-July-2024.pdf) and 6 more
+
+**Data centres and cloud** - EVIDENCED_PUBLIC, 8 source(s)
+
+- Cloud hyperscaler – AWS (strategic partner, delivery and internal workloads): active partnership
+- Cloud hyperscaler – Microsoft Azure (strategic partner): active partnership
+- Cloud hyperscaler – Google Cloud (strategic partner, sovereign cloud 2026): active partnership
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| DC MERLIN – PUE (ENERGY EFFICIENCY METRIC) | GB | 1.08 | 1.095 | 1.11 | 2024 |
+| DC – GROUP MANAGED/OWNED DATA CENTRES (STATED INDUSTRIAL CAP |  | 12 | 12 | 12 | 2022 |
+| DC – MERLIN DATA CENTRE, SWINDON, UK (GB) – CAPGEMINI-OWNED | GB | 1 | 1 | 1 | 2024 |
+
+Sources: [Capgemini SE](https://investors.capgemini.com/en/file/24133?download=1); [Capgemini](https://www.capgemini.com/solutions/data-center-sustainability-assessment/); [Computerworld](https://www.computerworld.com/article/1424265/capgemini-opens-merlin-data-center-in-uk-with-pue-of-1-1.html); [Data Center Dynamics](https://www.datacenterdynamics.com/en/news/capgemini-buys-containerized-power-system-for-merlin/) and 4 more
+
+**Current architecture** - EVIDENCED_PUBLIC, 5 source(s)
+
+- WAN strategy direction – Internet as corporate network (MPLS back-haul replacement implied): internet-primary
+- Internal network security product – SSE/ZTNA vendor references in Capgemini architecture PoV (Zscaler, Palo Alto Prisma…: Zscaler; Palo Alto Prisma; Netskope
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| CAPGEMINI SD-WAN/SASE DELIVERY PARTNERSHIP – VMWARE VELOCLOU |  | None | None | None |  |
+| INTERNAL ZERO TRUST / SSE PROGRAMME – ZSCALER ZPA DEPLOYED A |  | None | None | None |  |
+| NETWORK ARCHITECTURE SIMPLIFICATION – MICRO-SEGMENTATION DEP |  | None | None | None |  |
+
+Sources: [Capgemini (own client story – Capgemini as subje](https://www.capgemini.com/wp-content/uploads/2025/11/Capgemini-Zero-Trust-client-story-case-study.pdf); [Capgemini (Zero Trust PoV)](https://www.capgemini.com/wp-content/uploads/2024/09/Zero-Trust-Security-POV-20240715a.pdf); [Capgemini (cyber resilience web page)](https://www.capgemini.com/news/client-stories/achieving-cyber-resilience-for-capgemini-today-and-tomorrow/); [Capgemini (Identity Singularity 2035 PoV)](https://www.capgemini.com/wp-content/uploads/2026/03/Capgemini-Identity-Singularity-2035-PoV1.pdf) and 1 more
+
+**Current providers and products** - EVIDENCED_PUBLIC, 7 source(s)
+
+- WAN/NIS carrier – historical European outsource to BT (UK, ES covered): BT
+- SD-WAN / SASE platform partner – VMware (Broadcom) go-to-market partnership: VMware (Broadcom)
+- Strategic cloud/connectivity partner – Orange (Bleu sovereign cloud JV, FR): Orange
+- Capgemini as MNS provider – DIA, VPN, VoIP (Capgemini is vendor, not buyer): Capgemini
+- O-RAN / mobile network technology partner – Vodafone (UK engineering services): Vodafone
+- SSE/SASE security vendor landscape per Capgemini internal research (Zscaler, Palo Alto Networks, Cisco rated as Leaders): Zscaler; Palo Alto Networks; Cisco
+
+Sources: [BT Group PLC (SEC Form 6-K, FY2007)](https://www.sec.gov/Archives/edgar/data/0000756620/000115697307000870/u52729-6k.htm); [Sicavonline (French financial news)](https://www.sicavonline.fr/index.cfm?action=m_actu&ida=27098-capgemini-transfere-une-partie-de-ses-activites-nis-en-europe-a-bt); [Capgemini (company website, IN)](https://www.capgemini.com/in-en/solutions/sase-security-and-sd-wan-solutions-vmware/); [Capgemini (press release)](https://www.capgemini.com/news/press-releases/capgemini-and-orange-are-pleased-to-announce-the-launch-of-commercial-activities-of-bleu-their-future-cloud-de-confiance-platform/) and 3 more
+
+**Contract and sourcing events** - EVIDENCED_PUBLIC, 7 source(s)
+
+- Capgemini–BT European NIS outsourcing – deal description (Capgemini as buyer of BT network services, multi-country EU): undisclosed
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| MET POLICE CORE NETWORK MAINTENANCE – CAPGEMINI ANNUAL FEE | GB | 500000 | 500000 | 500000 | 2022 |
+| MPS INFRASTRUCTURE TOWER CONTRACT – TERM (YEARS) | GB | 5 | 6 | 7 | 2021 |
+| MPS INFRASTRUCTURE TOWER CONTRACT – TOTAL VALUE (CAPGEMINI A | GB | 573340000 | 600000000 | 600000000 | 2024 |
+| MPS PRIOR ICT CONTRACT (CAPGEMINI+UNISYS+BT CONSORTIUM, INCL | GB | 350000000 | 350000000 | 350000000 | 2005 |
+
+*1 conflict(s) flagged: MPS INFRASTRUCTURE TOWER CONTRACT – TERM (YEARS)*
+
+Sources: [The Register](https://www.theregister.com/2021/03/08/capgemini_600m_metropolitan_police_it_deal/); [Data Center Dynamics](https://www.datacenterdynamics.com/en/news/capgemini-awarded-600-million-contract-to-host-and-run-london-met-polices-it-infrastructure/); [Computer Weekly](https://www.computerweekly.com/news/252497595/Met-Police-chooses-Capgemini-as-strategic-IT-infrastructure-services-provider); [ITPro](https://www.itpro.com/96480/capgemini-shifts-ownership-of-network-business) and 3 more
+
+**Transformation announcements** - EVIDENCED_PUBLIC, 10 source(s)
+
+- CMD 2026 – target Adjusted Operating Profit margin expansion by 2028: 130-150 bps
+- CMD 2026 – target constant-currency revenue CAGR through 2028: 5.5-7.5
+- Capgemini 2026 full-year operating margin target: 13.6-13.8
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| 2021 CAPITAL MARKETS DAY – OPERATING MARGIN TARGET BY 2025 |  | 14 | 14 | 14 | 2025 |
+| CAPGEMINI INTERNAL IT – CARBON EMISSIONS REDUCTION PER PERSO |  | 34 | 34 | 34 | 2024 |
+| CAPGEMINI INTERNAL IT – ON-PREMISES DATA CENTRE EQUIPMENT RE |  | 15 | 15 | 15 | 2024 |
+| CMD 2026 – CUMULATIVE ORGANIC FREE CASH FLOW TARGET 2026-202 |  | 6000000000 | 6000000000 | 6000000000 | 2026 |
+| FIT-FOR-GROWTH RESTRUCTURING ENVELOPE (2026-2027) |  | 700000000 | 700000000 | 700000000 | 2026 |
+| FIT-FOR-GROWTH – H1 2026 NET OTHER OPERATING EXPENSE (RESTRU |  | 628000000 | 628000000 | 628000000 | 2026 |
+| FIT-FOR-GROWTH – INCREMENTAL RESTRUCTURING CASH OUTFLOW IN 2 |  | 200000000 | 200000000 | 200000000 | 2026 |
+
+*1 conflict(s) flagged: CAPGEMINI INTERNAL IT – CARBON EMISSIONS REDUCTION PER PERSON VS 2021 BASELINE*
+
+Sources: [Capgemini SE](https://www.capgemini.com/news/press-releases/full-year-2025-results/); [roic.ai / Capgemini Q4 FY2025 earnings transcrip](https://www.roic.ai/quote/CAP.SW/transcripts/2025-year/4-quarter); [Capgemini SE – H1 2026 Interim Financial Report](https://investors.capgemini.com/en/file/30861?download=1); [Capgemini SE – H1 2026 Results PDF](https://www.capgemini.com/wp-content/uploads/2026/07/Capgemini_-_2026-07-30_-_2026_Half-year_Results.pdf) and 6 more
+
+**Market serviceability** - EVIDENCED_PUBLIC, 9 source(s)
+
+- Credible enterprise WAN carriers – FR: 4+
+- Credible enterprise WAN carriers – GB: 6+
+- UK leased line provisioning lead time (standard): 45–90
+- UK MPLS circuit monthly cost per site: 350–800+
+- Western Europe MPLS 1 Gbps monthly cost: 1100–1300
+- Western Europe DIA 1 Gbps monthly cost: 700–900
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| GLOBAL DIA SHARE OF ENTERPRISE WAN SITES |  | 53.88 | 53.88 | 53.88 | 2025 |
+| GLOBAL MPLS SHARE OF ENTERPRISE WAN SITES |  | 22 | 22 | 22 | 2025 |
+| UK FULL-FIBRE PREMISES COVERAGE | GB | None | None | None |  |
+
+*1 conflict(s) flagged: GLOBAL MPLS SHARE OF ENTERPRISE WAN SITES*
+
+Sources: [TeleGeography](https://resources.telegeography.com/the-rise-of-dia-over-mpls); [Analysys Mason](https://www.analysysmason.com/research/content/reports/operator-profiles-we/); [Netify](https://netify.co.uk/insights/top-best-mpls-network-providers/); [ServNet UK](https://www.servnetuk.com/insights/sd-wan-vs-mpls-uk-2026) and 5 more
+
+---
+
+## Carrefour SA
+
+- **Industry** GROCERY_RETAIL (entity resolution)
+- **Scope** FR, ES, IT, BE, PL, BR, RO, EUR, 10,382 sites (research merged with disclosure)
+- **Confidence** 0.322 (D - Indicative), coverage COMPLETE
+
+**Profile** - EVIDENCED_PUBLIC, 8 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| GROUP EMPLOYEES (INTEGRATED STORES) |  | 287106 | 298604 | 324750 | 2025 |
+| GROUP GROSS SALES INCLUDING VAT |  | 91484000000 | 93273500000 | 95063000000 | 2025 |
+| GROUP NET SALES (EX-VAT, EX-OTHER REVENUE) |  | 82102000000 | 83740000000 | 85445000000 | 2025 |
+| NET SALES — BELGIUM | BE | 4062000000 | 4112500000 | 4163000000 | 2025 |
+| NET SALES — BRAZIL | BR | 17754000000 | 18277500000 | 18801000000 | 2025 |
+| NET SALES — FRANCE | FR | 39540000000 | 40641500000 | 41743000000 | 2025 |
+| NET SALES — ITALY (LAST FULL YEAR BEFORE DISPOSAL) | IT | 3739000000 | 3739000000 | 3739000000 | 2024 |
+| NET SALES — POLAND | PL | 2090000000 | 2104000000 | 2118000000 | 2025 |
+| NET SALES — ROMANIA | RO | 2770000000 | 2787000000 | 2804000000 | 2025 |
+| NET SALES — SPAIN | ES | 10807000000 | 10882500000 | 10958000000 | 2025 |
+
+Sources: [Carrefour Group](https://www.carrefour.com/sites/default/files/2026-04/CFR2025_URD_EN_PDF_MEL_270326_0.pdf); [Carrefour Group](https://www.carrefour.com/sites/default/files/2026-02/VEN_Comptes%20consolide%CC%81s%202025%20incluant%20le%20rapport%20des%20CAC.pdf); [Carrefour Group](https://www.carrefour.com/sites/default/files/2025-04/CFR_URD_2024_EN_250328_MEL.pdf); [Carrefour Group](https://www.carrefour.com/sites/default/files/2025-02/FY%202024%20Consolidated%20financial%20statements.pdf) and 4 more
+
+**Locations** - EVIDENCED_PUBLIC, 8 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| LARGE_OFFICE (GLOBAL HQ, MASSY, FRANCE) | FR | 1 | 1 | 1 | 2025 |
+| STORE | BE | 703 | 713 | 792 | 2025 |
+| STORE | BR | 508 | 613 | 718 | 2025 |
+| STORE | ES | 1474 | 1528.5 | 1595 | 2025 |
+| STORE | FR | 5619 | 6468 | 6766 | 2025 |
+| STORE | PL | 737 | 755 | 801 | 2025 |
+| STORE | RO | 365 | 478 | 478 | 2025 |
+| STORE (FRANCE BREAKDOWN: HYPERMARKETS) | FR | 325 | 325 | 325 | 2025 |
+| STORE (ITALY - EXITED, OUT OF SCOPE FOR 2026) | IT | 0 | 595 | 1190 | 2025 |
+| WAREHOUSE (LOGISTICS/DISTRIBUTION CENTRES, ALL INTEGRATED CO |  | 127 | 127 | 127 | 2025 |
+
+*4 conflict(s) flagged: STORE, STORE (ITALY - EXITED, OUT OF SCOPE FOR 2026)*
+
+Sources: [Carrefour Group](https://www.carrefour.com/sites/default/files/2026-04/CFR2025_URD_EN_PDF_MEL_270326_0.pdf); [Carrefour Group](https://www.carrefour.com/sites/default/files/2026-02/Carrefour_FY%202025%20Presentation_3.pdf); [Carrefour Group](https://www.carrefour.com/sites/default/files/2025-04/CFR_URD_2024_EN_250328_MEL.pdf); [Carrefour Group](https://www.carrefour.com/sites/default/files/2024-10/Carrefour_Q3%202024%20Presentation.pdf) and 4 more
+
+**Data centres and cloud** - EVIDENCED_PUBLIC, 10 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| CARREFOUR GROUP ANNUAL ICT SPENDING (ESTIMATED) |  | 2000000000 | 2000000000 | 2000000000 | 2024 |
+| DATA TRANSFERRED TO GCP FRANKFURT REGION DURING FRANCE DC CL | FR | None | None | None |  |
+| GROUP CLOUD MIGRATION PROGRESS (% OF APPLICATIONS MOVED TO C |  | 30 | 30 | 30 | 2024 |
+| LEGACY APPLICATIONS CONSOLIDATED BY SAP S/4HANA ON GCP (CARR | ES | None | None | None |  |
+| MANAGED DC CLOSURES (OVH AND ACCENTURE) – FRANCE | FR | 2 | 2 | 2 | 2019 |
+| ON-PREMISES VMWARE WORKLOADS MIGRATED TO GCP (FRANCE) | FR | 100 | 100 | 100 | 2022 |
+| RE-PLATFORMING SHARE OF MIGRATED WORKLOADS (CARREFOUR SPAIN) | ES | 88 | 88 | 88 | 2022 |
+| SERVERS DECOMMISSIONED DURING CLOUD MIGRATION (GROUP, 2021) |  | 1924 | 1924 | 1924 | 2021 |
+| TARGET: 100% OF APPLICATIONS ON PUBLIC CLOUD (GROUP-WIDE) |  | 100 | 100 | 100 | 2026 |
+| TOTAL WORKLOADS TARGETED FOR GCP MIGRATION (CARREFOUR SPAIN) | ES | 382 | 382 | 382 | 2022 |
+
+Sources: [Datacentre Solutions](https://datacentre.solutions/news/13658-carrefour-france-achieves-digital-milestone); [NTT Data](https://us.nttdata.com/en/case-studies/carrefour-takes-a-cloud-first-approach-to-their-digital-transformation); [NetApp](https://bluexp.netapp.com/hubfs/Carrefour%20Case%20Study.pdf); [CIO Online (France)](https://www.cio-online.com/actualites/lire-carrefour-migre-dans-le-cloud-sans-rupture-et-en-delais-courts-13678.html) and 6 more
+
+**Current architecture** - EVIDENCED_PUBLIC, 2 source(s)
+
+- WAN SD-WAN product in use — Cato SASE Platform (programme Orion): Cato Networks SASE
+- Internet access technology mix — fibre (FTTH/FTTO) as primary, 4G/5G as backup: fibre primary + 4G/5G backup
+- In-store WiFi product (programme Lyra): Wifirst (latest-generation WiFi APs)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| ADDITIONAL STORES TARGETED FOR ORION/LYRA NETWORK MODERNISAT | FR | 1700 | 1700 | 1700 | 2026 |
+| STORES CONNECTED TO CATO SASE PLATFORM (ORION PROGRAMME) | FR | 2000 | 2000 | 2000 | 2025 |
+| STORES MODERNISED UNDER ORION/LYRA PROGRAMMES (COMPLETED 202 | FR | 1000 | 1000 | 1000 | 2025 |
+
+Sources: [Cato Networks](https://www.catonetworks.com/news/cato-exceeds-415m-arr-fueled-42-yoy-growth-and-enterprise-demand/); [Carrefour – Universal Registration Document 2025](https://www.carrefour.com/sites/default/files/2026-04/CFR2025_URD_FR_PDF_MEL_270326_0.pdf)
+
+**Current providers and products** - EVIDENCED_PUBLIC, 5 source(s)
+
+- LAN/WiFi managed network operator – France: Wifirst
+- Cloud transformation / IT partner – Spain (and global): NTT DATA
+- WAN/managed network provider – MAF-Carrefour Middle East (out of perimeter): Orange Business
+- Consumer MVNO mobile network backing – France (Carrefour Mobile): Orange
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| SITES RECEIVING FULL LAN/WIFI REDESIGN – FRANCE (HYPERMARKET | FR | 459 | 459 | 459 | 2026 |
+| SITES UNDER WIFIRST MANAGED LAN/WIFI – FRANCE | FR | 4600 | 4600 | 4600 | 2026 |
+
+Sources: [Wifirst](https://www.wifirst.com/en/press-room/carrefour); [Wireless Broadband Alliance](https://wballiance.com/wifirst-new-local-network-operator-for-carrefour/); [NTT DATA](https://us.nttdata.com/en/case-studies/carrefour-takes-a-cloud-first-approach-to-their-digital-transformation); [Orange Business](https://www.orange-business.com/en/press/orange-business-services-strengthens-its-support-to-maf-carrefour-with-new-managed-network) and 1 more
+
+**Contract and sourcing events** - EVIDENCED_PUBLIC, 5 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| WIFIRST–CARREFOUR: HYPERMARKETS IN LAN/WIFI MODERNISATION SC | FR | 216 | 216 | 216 | 2026 |
+| WIFIRST–CARREFOUR: PROMOCASH CASH-AND-CARRY STORES IN LAN/WI | FR | 123 | 123 | 123 | 2026 |
+| WIFIRST–CARREFOUR: SITES TO BE MIGRATED TO NEW LAN/WIFI IN 2 | FR | 100 | 100 | 100 | 2026 |
+| WIFIRST–CARREFOUR: SITES UNDER MANAGED LAN/WIFI OPERATIONS ( | FR | 4600 | 4600 | 4600 | 2026 |
+| WIFIRST–CARREFOUR: SUPERMARKETS IN LAN/WIFI MODERNISATION SC | FR | 120 | 120 | 120 | 2026 |
+
+Sources: [Wifirst](https://www.wifirst.com/en/press-room/carrefour); [Wireless Broadband Alliance](https://wballiance.com/wifirst-new-local-network-operator-for-carrefour/); [Telecompaper](https://www.telecompaper.com/news/carrefour-france-telecom-renew-global-network-partnership--306697); [L'Informé](https://www.linforme.com/tech-telecom/article/carrefour-se-relance-dans-la-telephonie-mobile_7523.html) and 1 more
+
+**Transformation announcements** - BENCHMARK_PRIOR: research returned no verdict
+
+**Market serviceability** - BENCHMARK_PRIOR: research returned no verdict
 
 ---
 
@@ -1140,6 +1654,134 @@ Sources: [Douglas AG](https://douglas.group/fileadmin/04_Newsroom/00_Pressemitte
 *1 conflict(s) flagged: GERMANY FTTH/B HOMES PASSED – DE*
 
 Sources: [TelecomLead](https://telecomlead.com/broadband/germany-broadband-market-2026-best-isps-fiber-expansion-gigabit-speeds-drive-internet-competition-126187); [VATM (German telecoms industry association)](https://www.vatm.de/wp-content/uploads/2025/06/VATM-Market-Analysis-Germany-2025.pdf); [Omdia](https://omdia.tech.informa.com/om128296/germanys-fiber-rollout-falls-short-putting-2025-targets-at-risk); [ISG / BusinessWire](https://www.businesswire.com/news/home/20221118005078/en) and 4 more
+
+---
+
+## E.ON SE
+
+- **Industry** UTILITIES (spec fallback)
+- **Scope** DE, GB, SE, CZ, HU, RO, PL, NL, EUR, 858 sites (research merged with disclosure)
+- **Confidence** 0.333 (D - Indicative), coverage COMPLETE
+
+**Profile** - EVIDENCED_PUBLIC, 9 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| ADJUSTED EBITDA – ENERGY NETWORKS SEGMENT |  | 6900000000 | 7300000000 | 7700000000 | 2025 |
+| ADJUSTED EBITDA – ENERGY RETAIL SEGMENT |  | 1700000000 | 1750000000 | 1800000000 | 2025 |
+| ADJUSTED GROUP EBITDA | DE | 9049000000 | 9424500000 | 9800000000 | 2025 |
+| ADJUSTED GROUP NET INCOME | DE | 2900000000 | 2950000000 | 3000000000 | 2025 |
+| CAPITAL INVESTMENTS (TOTAL GROUP) |  | 7500000000 | 8000000000 | 8500000000 | 2025 |
+| EMPLOYEES (YEAR-END, GROUP) | DE | 76566 | 78322 | 79148 | 2026 |
+| ENERGY DISTRIBUTION NETWORK LENGTH |  | 1600000 | 1600000 | 1600000 | 2024 |
+| GROUP REVENUE (SALES) | DE | 78700000000 | 80119000000 | 93686000000 | 2025 |
+| NUMBER OF COUNTRIES OF OPERATION |  | 15 | 15 | 15 | 2024 |
+| NUMBER OF CUSTOMERS (RETAIL) |  | 47000000 | 47500000 | 48000000 | 2024 |
+
+*2 conflict(s) flagged: EMPLOYEES (YEAR-END, GROUP), GROUP REVENUE (SALES)*
+
+Sources: [E.ON SE](https://annualreport.eon.com/content/dam/eon-annualreport/documents/en/GB24-gesamt-EN_final.pdf); [E.ON SE (Annual Report 2024 Notes/Appendix)](https://annualreport.eon.com/content/dam/eon-annualreport/documents/en/eon-gb24-anhang_en_final.pdf); [E.ON SE (via finanzwire/EQS investor release)](https://www.finanzwire.com/press-release/eon-se-etr-eoan-eon-continues-growth-path-in-2025-and-delivers-on-energy-transition-0cz46aQnIf8); [stockanalysis.com (S&P Global Market Intelligenc](https://stockanalysis.com/quote/etr/EOAN/employees/) and 5 more
+
+**Locations** - EVIDENCED_PUBLIC, 7 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| BRANCH – E.ON BUSINESS SERVICES / DIGITAL TECHNOLOGY GERMAN  | DE | 30 | 30 | 30 |  |
+| BRANCH – REGIONAL STANDORTE OF E.ON ENERGIE DEUTSCHLAND GMBH | DE | 28 | 30 | 32 |  |
+| COUNTRY PRESENCE – E.ON OPERATING SEGMENTS (IN-SCOPE COUNTRI |  | 8 | 8 | 8 | 2024 |
+| LARGE_OFFICE – CORPORATE HEADQUARTERS AND MAIN OFFICES (DE) | DE | 3 | 3 | 3 | 2020 |
+| LARGE_OFFICE – E.ON ENERGIE DEUTSCHLAND GMBH STANDORTE IN LI | DE | 26 | 26 | 26 |  |
+| LARGE_OFFICE – E.ON GROUP OFFICE LOCATIONS GLOBALLY (CRAFT.C |  | 19 | 19 | 19 |  |
+| WAREHOUSE – AVACON NETWORK OPERATIONS DEPOTS (DE, LOWER SAXO | DE | 14 | 14.5 | 15 | 2024 |
+
+Sources: [E.ON SE](https://annualreport.eon.com/content/dam/eon-annualreport/documents/en/GB24-gesamt-EN_final.pdf); [ZUGFeRD Community](https://www.zugferd-community.net/en/eon); [Avacon AG](https://www.avacon.de/content/dam/revu-global/avacon/documents/ee-2023/Einspeisedaten%20Standorte%202023_2024.pdf); [Avacon AG](https://www.avacon.de/content/dam/revu-global/avacon/documents/ee-2024/Einspeisedaten%20Avacon%20Standorte%202024_2025.pdf) and 3 more
+
+**Data centres and cloud** - EVIDENCED_PUBLIC, 5 source(s)
+
+- Named cloud providers (IaaS/PaaS) – Microsoft Azure: Azure (primary IaaS)
+- Named cloud providers – AWS and Google Cloud (secondary): AWS; Google Cloud
+- DC footprint reduction – Wipro contract (group, all countries): reduce
+- SAP S/4HANA Cloud (Private Edition) ERP migration – E.ON Digital Technology: S/4HANA Cloud Private Edition
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| E.ON IT BUDGET (GROUP) | DE | 1590000000 | 1590000000 | 1590000000 | 2021 |
+| E.ON IT STAFF (GROUP, E.ON DIGITAL TECHNOLOGY AND RELATED) | DE | 3500 | 3500 | 3500 | 2024 |
+| E.ON IT USERS (GROUP) | DE | 80000 | 80000 | 80000 | 2024 |
+| OWNED/OPERATED DATA CENTRES (TARGET POST-CLOUD-MIGRATION) | DE | 0 | 0 | 0 | 2024 |
+
+Sources: [CIO.de (IDG Germany)](https://www.cio.de/article/3698384/so-wechselt-eon-in-die-cloud.html); [CIO.de (IDG Germany)](https://www.cio.de/article/3700958/e-on-se-it-fakten-und-it-strategie.html); [E.ON SE (company press release)](https://www.eon.com/en/about-us/media/press-release/2021/2021-08-13-eon-deepens-collaboration-with-microsoft-and-wipro.html); [SAP News](https://news.sap.com/2025/08/eon-cloud-erp-journey-transformation-speed-trust-agility/) and 1 more
+
+**Current architecture** - EVIDENCED_PUBLIC, 2 source(s)
+
+- DSO telecom network modernisation – Nokia contract scope: optical, IP and fibre network (DSO telecom, Germany)
+- Cloud transformation – hybrid cloud hosting partnership: hybrid cloud hosting strategy
+
+Sources: [Seeking Alpha / Nokia press release](https://seekingalpha.com/pr/20281305-e-on-and-nokia-join-forces-for-a-five-year-strategic-collaboration-for-telecommunications); [SAP News](https://news.sap.com/2025/08/eon-cloud-erp-journey-transformation-speed-trust-agility/)
+
+**Current providers and products** - EVIDENCED_PUBLIC, 8 source(s)
+
+- DSO telecom network vendor (optical, IP, fiber) – group-wide frame contract: Nokia
+- Data-centre fabric / SDN vendor (DE DSO subsidiaries): Cisco (HyperFlex + ACI)
+- Nokia contract geographic scope – affiliates in scope: Germany first; model for other E.ON affiliates in Europe
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| CISCO DEPLOYMENT SCALE – DE DSO SHARED ENVIRONMENT | DE | None | None | None |  |
+| NOKIA CONTRACT DURATION | DE | None | None | None |  |
+
+Sources: [Nokia Newsroom](https://www.nokia.com/newsroom/eon-and-nokia-join-forces-for-a-five-year-strategic-collaboration-for-telecommunications-network-modernization-for-distribution-system-operators/); [Nasdaq (press release)](https://www.nasdaq.com/press-release/eon-and-nokia-join-forces-five-year-strategic-collaboration-telecommunications); [Intelligent CIO EU](https://www.intelligentcio.com/eu/2025/10/29/e-on-and-nokia-join-forces-for-a-five-year-strategic-collaboration-for-telecommunications-network-modernisation-for-distribution-system-operators/); [Enlit World](https://www.enlit.world/library/nokia-to-update-mission-critical-communications-for-eon) and 4 more
+
+**Contract and sourcing events** - EVIDENCED_PUBLIC, 4 source(s)
+
+- Nokia frame contract – geographic scope: DE (first deployment); EU affiliates to follow
+- Nokia frame contract – disclosed monetary value: not disclosed
+- Nokia frame contract – solution scope (service family): IP routing & switching, optical transport, fixed broadband access, network automation
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| NOKIA FRAME CONTRACT – CONTRACT TERM | DE | 5 | 5 | 5 | 2025 |
+
+Sources: [Nokia](https://www.nokia.com/newsroom/eon-and-nokia-join-forces-for-a-five-year-strategic-collaboration-for-telecommunications-network-modernization-for-distribution-system-operators/); [Seeking Alpha (Nokia press release syndication)](https://seekingalpha.com/pr/20281305-e-on-and-nokia-join-forces-for-a-five-year-strategic-collaboration-for-telecommunications); [Enlit.World](https://www.enlit.world/library/nokia-to-update-mission-critical-communications-for-eon); [DTAD (German procurement aggregator)](https://www.dtad.com/de/ausschreibungen/vergabestelle/eon)
+
+**Transformation announcements** - EVIDENCED_PUBLIC, 8 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| DIGITAL LIGHTHOUSE / S/4 UNITED PROGRAMME – USER SCOPE (E.ON |  | 16000 | 25500 | 35000 | 2025 |
+| E.ON ENERGY NETWORKS INVESTMENT ALLOCATION OUT OF TOTAL 2024 | DE | 34000000000 | 37000000000 | 40000000000 | 2025 |
+| E.ON ENERGY RETAIL DIGITAL INVESTMENT 2024–2028 (DIGITAL PLA |  | 2500000000 | 2500000000 | 2500000000 | 2025 |
+| E.ON GROUP TOTAL INVESTMENT PROGRAMME 2024–2028 (MOST RECENT | DE | 42000000000 | 43000000000 | 48000000000 | 2026 |
+| E.ON H1 2025 TOTAL INVESTMENTS (ACTUAL SPEND, INCLUDES NETWO |  | 2900000000 | 3050000000 | 3200000000 | 2025 |
+| E.ON Q1 2026 TOTAL GROUP INVESTMENTS (ACTUAL SPEND) |  | 1400000000 | 1400000000 | 1400000000 | 2026 |
+| FPT SAP AMS CONTRACT – NUMBER OF COUNTRIES COVERED (E.ON ERP | DE | 8 | 8 | 8 | 2021 |
+| GERMANY SHARE OF E.ON ENERGY NETWORKS RAB-EFFECTIVE INVESTME | DE | 70 | 71 | 72 | 2024 |
+| NOKIA TELECOM NETWORK MODERNISATION – STATED ENERGY EFFICIEN | DE | 50 | 50 | 50 | 2024 |
+| SHARE OF NETWORK CAPEX ALLOCATED TO DIGITALIZATION (RAB-EFFE | DE | 20 | 20 | 20 | 2025 |
+
+*2 conflict(s) flagged: DIGITAL LIGHTHOUSE / S/4 UNITED PROGRAMME – USER SCOPE (E.ON DIGITAL TECHNOLOGY CLOUD ERP TRANSFORMATION), E.ON ENERGY NETWORKS INVESTMENT ALLOCATION OUT OF TOTAL 2024–2028 PROGRAMME*
+
+Sources: [Data Center Dynamics](https://www.datacenterdynamics.com/en/news/eon-to-invest-56bn-in-european-grid-modernization-to-meet-ai-energy-demands/); [MarketScreener (E.ON Capital Markets Story March](https://www.marketscreener.com/quote/stock/EON-SE-3818998/news/EON-Capital-Markets-Story-March-2024-46750767/); [MarketScreener (E.ON Capital Markets Story, upda](https://www.marketscreener.com/news/eon-capital-markets-story-ce7c51dad08afe27); [EQS-News / E.ON H1 2025 results](https://www.eqs-news.com/news/corporate/e-on-continues-to-grow-and-increases-investments/12a4774d-60fe-475f-a4e8-d36354e5407f_en) and 4 more
+
+**Market serviceability** - EVIDENCED_PUBLIC, 8 source(s)
+
+- Credible enterprise WAN carriers – Germany: 6+
+- Credible enterprise WAN carriers – Poland: 4+
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| CREDIBLE ENTERPRISE WAN CARRIERS – CZECH REPUBLIC | CZ | 4 | 4 | 4 | 2025 |
+| CREDIBLE ENTERPRISE WAN CARRIERS – HUNGARY | HU | 5 | 5 | 5 | 2026 |
+| CREDIBLE ENTERPRISE WAN CARRIERS – NETHERLANDS | NL | 4 | 4 | 4 | 2026 |
+| CREDIBLE ENTERPRISE WAN CARRIERS – ROMANIA | RO | 4 | 4 | 4 | 2026 |
+| CREDIBLE ENTERPRISE WAN CARRIERS – SWEDEN | SE | 5 | 5 | 5 | 2026 |
+| CREDIBLE ENTERPRISE WAN CARRIERS – UNITED KINGDOM | GB | None | None | None |  |
+| DIA SHARE OF ENTERPRISE WAN SITES GLOBALLY – LATE 2025 |  | 54 | 54 | 54 | 2025 |
+| MPLS SHARE OF ENTERPRISE WAN SITES GLOBALLY – LATE 2025 |  | 22 | 31.5 | 41 | 2025 |
+
+*3 conflict(s) flagged: CREDIBLE ENTERPRISE WAN CARRIERS – CZECH REPUBLIC, CREDIBLE ENTERPRISE WAN CARRIERS – NETHERLANDS, MPLS SHARE OF ENTERPRISE WAN SITES GLOBALLY – LATE 2025*
+
+Sources: [Analysys Mason](https://www.analysysmason.com/research/content/reports/operator-profiles-we/); [Analysys Mason](https://www.analysysmason.com/research/content/reports/operator-business-cee/); [TeleGeography](https://resources.telegeography.com/the-rise-of-dia-over-mpls); [TeleGeography](https://resources.telegeography.com/wan-market-size-2025-2030-forecast) and 4 more
 
 ---
 
@@ -1689,6 +2331,144 @@ Sources: [Lufthansa Group Investor Relations](https://investor-relations.lufthan
 *3 conflict(s) flagged: CREDIBLE ENTERPRISE CARRIERS (FACILITIES-BASED MNOS + FIXED), CREDIBLE ENTERPRISE CARRIERS (FACILITIES-BASED), DEUTSCHE TELEKOM RETAIL BROADBAND MARKET SHARE*
 
 Sources: [germancompanyformation.com](https://germancompanyformation.com/guides/telecommunication-companies-in-germany); [VATM / Dialog Consult — 26th Telecoms Market Ana](https://www.vatm.de/wp-content/uploads/2025/06/VATM-Market-Analysis-Germany-2025.pdf); [Val Index (Swiss commercial-register and BAKOM d](https://valindex.ch/en/industry/telecom-connectivity-services/); [Swisscom (company-published product page)](https://www.swisscom.ch/en/business/enterprise/offer/wireline/cloud-access.html) and 1 more
+
+---
+
+## A.P. Moller - Maersk A/S
+
+- **Industry** SHIPPING_LOGISTICS (spec fallback)
+- **Scope** DK, NL, DE, US, CN, IN, BR, SG, DKK, 156 sites (research merged with disclosure)
+- **Confidence** 0.348 (D - Indicative), coverage COMPLETE
+
+**Profile** - EVIDENCED_PUBLIC, 8 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| A.P. MØLLER HOLDING A/S CONSOLIDATED REVENUE (PARENT HOLDING | DK | 425 | 425 | 425 | 2024 |
+| APM TERMINALS: NUMBER OF COUNTRIES | NL | 33 | 34 | 35 | 2025 |
+| APM TERMINALS: NUMBER OF TERMINALS | NL | 54 | 54 | 54 | 2024 |
+| GROUP CONSOLIDATED REVENUE (A.P. MØLLER - MÆRSK A/S) | DK | 53988 | 54734 | 55482 | 2025 |
+| GROUP EMPLOYEES (A.P. MØLLER - MÆRSK A/S) | DK | 100000 | 103819 | 107638 | 2025 |
+| LOGISTICS & SERVICES SEGMENT REVENUE |  | 14920 | 15011.5 | 15103 | 2025 |
+| NUMBER OF COUNTRIES OF OPERATION (MAERSK GROUP) |  | 130 | 130 | 130 | 2025 |
+| OCEAN SEGMENT REVENUE |  | 35000 | 36194 | 37388 | 2025 |
+| REVENUE FROM UNITED STATES (LARGEST SINGLE COUNTRY MARKET) | US | 11700 | 11700 | 11700 | 2025 |
+| TERMINALS SEGMENT REVENUE (APM TERMINALS) |  | 4465 | 4500 | 5339 | 2025 |
+
+*3 conflict(s) flagged: APM TERMINALS: NUMBER OF COUNTRIES, APM TERMINALS: NUMBER OF TERMINALS, TERMINALS SEGMENT REVENUE (APM TERMINALS)*
+
+Sources: [A.P. Møller - Mærsk A/S](https://www.maersk.com/~/media_sc9/maersk/corporate/sustainability/files/resources/2024/maersk-annual-report-2024.pdf); [A.P. Møller - Mærsk A/S (Annual Report 2025, Glo](https://ml-eu.globenewswire.com/Resource/Download/61eb6ba2-916f-4254-8af6-4b2ff2717858); [Maersk (official press release)](https://www.maersk.com/news/articles/2026/02/05/maersk-strong-performance-2025-business-progress); [Maersk (official Q1 2025 press release)](https://www.maersk.com/news/articles/2025/05/08/maersk-reports-solid-results-in-increasingly-volatile-environment) and 4 more
+
+**Locations** - EVIDENCED_PUBLIC, 9 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| APM TERMINALS — ACTIVE PORT/TERMINAL FACILITIES, GLOBAL TOTA |  | 53 | 57 | 60 | 2024 |
+| APM TERMINALS — NL TERMINAL (ROTTERDAM MAASVLAKTE II) | NL | 1 | 1 | 1 | 2024 |
+| APM TERMINALS — SG REGIONAL HUB (TERMINAL/LARGE_OFFICE TYPE) | SG | 1 | 1 | 1 | 2024 |
+| APM TERMINALS — TERMINAL SITES IN BR (TERMINAL TYPE) | BR | 3 | 3 | 3 | 2024 |
+| APM TERMINALS — TERMINAL SITES IN CN (TERMINAL TYPE) | CN | 9 | 9 | 9 | 2024 |
+| APM TERMINALS — TERMINAL SITES IN IN (TERMINAL TYPE) | IN | 2 | 2 | 2 | 2024 |
+| APM TERMINALS — TERMINAL SITES IN US (TERMINAL TYPE) | US | 4 | 4 | 4 | 2024 |
+| MAERSK CHINA — OFFICES IN CN (LARGE_OFFICE/BRANCH TYPE) | CN | 80 | 80 | 80 | 2023 |
+| MAERSK LOGISTICS & SERVICES — WAREHOUSING SITES, GLOBAL TOTA |  | 469 | 469 | 469 | 2023 |
+| MAERSK — GLOBAL OFFICE/LOCATION COUNT (LARGE_OFFICE/BRANCH T |  | 299 | 344 | 389 | 2025 |
+
+*4 conflict(s) flagged: APM TERMINALS — SG REGIONAL HUB (TERMINAL/LARGE_OFFICE TYPE), APM TERMINALS — TERMINAL SITES IN BR (TERMINAL TYPE), APM TERMINALS — TERMINAL SITES IN US (TERMINAL TYPE), MAERSK — GLOBAL OFFICE/LOCATION COUNT (LARGE_OFFICE/BRANCH TYPE, AGGREGATOR ESTIMATE)*
+
+Sources: [A.P. Møller - Mærsk A/S](https://www.maersk.com/~/media_sc9/maersk/corporate/sustainability/files/resources/2024/maersk-annual-report-2024.pdf); [A.P. Møller - Mærsk A/S (investor relations)](https://investor.maersk.com/static-files/31bf05a1-6f0c-4fbd-a3c7-3f58e044f668); [A.P. Møller - Mærsk A/S — Annual Report 2025](https://investor.maersk.com/static-files/75fac9de-c2cc-421c-8eaf-17d5c5d86135); [A.P. Møller - Mærsk A/S — Annual Report 2023](https://www.maersk.com/~/media_sc9/maersk/news/press-releases/files/2024/02/08/apmm-annual-report-2023.pdf) and 5 more
+
+**Data centres and cloud** - EVIDENCED_PUBLIC, 6 source(s)
+
+- Geography of pre-migration regional DCs: 3 continents (Europe, Asia, USA)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| CHINA REGIONAL CLOUD — ALICLOUD (ALIBABA CLOUD) + IN-COUNTRY | CN | None | None | None |  |
+| DC DECOMMISSIONING TIMELINE — REGIONAL DCS TO AZURE |  | None | None | None |  |
+| PRIMARY CLOUD PROVIDER — MICROSOFT AZURE |  | None | None | None |  |
+| REGIONAL DATA CENTRES (PRE-MIGRATION, DECOMMISSIONED) |  | 5 | 5 | 5 | 2017 |
+| SAP SERVERS MIGRATED FROM LEGACY DCS TO AZURE |  | 500 | 500 | 500 | 2024 |
+| SECONDARY CLOUD PROVIDER — AWS (MULTI-CLOUD) |  | None | None | None |  |
+| SERVERS REINSTALLED POST-NOTPETYA (SCALE OF LEGACY DC INFRAS |  | 4000 | 4000 | 4000 | 2017 |
+
+Sources: [HSO (Microsoft partner)](https://www.hso.co.uk/cloud-migration/azure/case-studies/maersk-logistics-security); [SAPinsider](https://sapinsider.org/blogs/maersk-modernizes-sap-on-microsoft-azure-with-near-zero-downtime-2/); [erp.today](https://erp.today/sap-on-azure-cost-optimization-maersk-erp-ai/); [Computer Weekly](https://www.computerweekly.com/news/252465699/Shipping-giant-Maersk-on-taking-a-cloud-first-approach-to-disrupting-the-competition) and 2 more
+
+**Current architecture** - EVIDENCED_PUBLIC, 5 source(s)
+
+- SD-WAN platforms in use or being standardised (named in Maersk job postings): Cisco SD-WAN (Catalyst), Cisco Meraki SD-WAN, Fortinet Secure SD-WAN
+- Zero Trust — stated security policy principle applied to network: Zero Trust principles applied to devices, data and identities
+- Cloud interconnect target — Microsoft Azure (primary cloud after DC migration): Microsoft Azure
+- Network automation tools in use (stated in Maersk job postings): Python, Ansible, REST APIs, Git-based workflows
+- Site types covered by Maersk network engineering (from job scope): offices, warehouses, terminals, depots, other operational locations
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| IT SITES NEEDING NETWORK REBUILD (PRE-MODERNISATION BASELINE |  | None | None | None |  |
+
+Sources: [workopia.io (Maersk job listing — Network Engine](https://workopia.io/jobs/dacf2a8b249bc94d94178909d7edf991); [workopia.io (second Maersk job listing — Network](https://workopia.io/jobs/f565b1a58dff4a9da76fbb33a727f4bb); [CSO Online](https://www.csoonline.com/article/567845/rebuilding-after-notpetya-how-maersk-moved-forward.html); [Computing.co.uk](https://www.computing.co.uk/news/3025345/maersk-rebuilt-its-entire-it-infrastructure-to-recover-from-notpetya) and 1 more
+
+**Current providers and products** - EVIDENCED_PUBLIC, 6 source(s)
+
+- Maritime private wireless network vendor: Nokia
+- Network management platform — vessel operations centre: Nokia MantaRay NM
+- Vessel satellite backhaul (internet connectivity method per vessel): satellite
+- Cloud platform (WAN anchor / internet breakout host): Microsoft Azure
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| VESSEL FLEET SCOPE FOR NOKIA PRIVATE WIRELESS DEPLOYMENT |  | 450 | 450 | 450 | 2024 |
+
+Sources: [Nokia](https://www.nokia.com/newsroom/nokia-supplies-private-wireless-to-maersks-fleet-for-real-time-cargo-tracking/); [Ship Technology (GlobalData)](https://www.ship-technology.com/news/maersk-nokia-private-wireless-network/); [Supply Chain Digital](https://supplychaindigital.com/technology/maersk-upgrades-fleet-nokia-private-4g); [Telecoms.com](https://www.telecoms.com/5g-6g/nokia-secures-major-private-wireless-deal-with-maersk) and 2 more
+
+**Contract and sourcing events** - EVIDENCED_PUBLIC, 8 source(s)
+
+- Inmarsat Maritime — bandwidth upgrade rollout window: 2025–2026
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| 3 DENMARK (3BUSINESS) PRIVATE 4G NETWORK — APM TERMINALS POR | DK | 1 | 1 | 1 | 2021 |
+| AT&T IOT — MAERSK REFRIGERATED CONTAINERS CONNECTED | US | 80000 | 80000 | 80000 | 2021 |
+| INMARSAT MARITIME — FLEET SATELLITE CONNECTIVITY CONTRACT: S |  | 340 | 340 | 340 | 2025 |
+| NOKIA PRIVATE WIRELESS — ROLLOUT COMPLETION TARGET |  | 12026 | 12026 | 12026 | 2025 |
+| NOKIA PRIVATE WIRELESS — VESSELS TO BE EQUIPPED (MAERSK FLEE |  | 450 | 450 | 450 | 2025 |
+
+Sources: [Viasat / Inmarsat (GlobeNewswire)](https://investors.viasat.com/news-releases/news-release-details/inmarsat-maritime-signs-expanded-agreement-maersk-enhance-global); [Inmarsat (company site)](https://www.inmarsat.com/news/latest-news/maritime/2025/inmarsat-maritime-expanded-agreement-maersk-enhance-fleet-connectivity/); [Ship Technology](https://www.ship-technology.com/news/maersk-fleet-connectivity-inmarsat-partnership/); [Nokia (company newsroom)](https://www.nokia.com/newsroom/nokia-supplies-private-wireless-to-maersks-fleet-for-real-time-cargo-tracking/) and 4 more
+
+**Transformation announcements** - EVIDENCED_PUBLIC, 9 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| 2021 CMD MID-TERM ROIC TARGET (GROUP, AVERAGE 2021-2025) | DK | 12 | 12 | 12 | 2021 |
+| 2021 CMD: TECHNOLOGY PLATFORM CAPEX COMMITMENT (2021-2022) | DK | 1000000000 | 1000000000 | 1000000000 | 2021 |
+| 2021 CMD: TERMINAL AUTOMATION CAPEX (5-YEAR, ~30 TERMINALS) |  | 600000000 | 600000000 | 600000000 | 2021 |
+| 2023 RESTRUCTURING: ANNUAL COST SAVINGS TARGET (2024 VS 2023 |  | 600000000 | 600000000 | 600000000 | 2023 |
+| 2023 RESTRUCTURING: ONE-TIME RESTRUCTURING CHARGE |  | 350000000 | 350000000 | 350000000 | 2023 |
+| 2025/2026 CORPORATE OVERHEAD REDUCTION: ANNUAL SAVINGS TARGE |  | 180000000 | 180000000 | 180000000 | 2026 |
+| AI/PREDICTIVE MAINTENANCE ANNUAL SAVINGS (OPERATIONAL, MARIT |  | 300000000 | 300000000 | 340000000 | 2025 |
+| THREE-PHASE DIGITAL TRANSFORMATION: PHASE 1 (COMPLETE), PHAS | DK | 3 | 3 | 3 | 2024 |
+
+Sources: [A.P. Moller - Maersk (official)](https://www.maersk.com/news/articles/2021/05/11/maersk-speeds-up-transformation-to-improve-profitability); [FreightWaves](https://www.freightwaves.com/news/maersk-cutting-10000-jobs-in-face-of-worsening-market-conditions); [CNBC](https://www.cnbc.com/2023/11/03/shipping-giant-maersk-announces-10000-job-cuts-warns-of-volatility.html); [Maritime Professional](http://www.maritimeprofessional.com/news/maersk-2025-report-some-records-415321) and 5 more
+
+**Market serviceability** - EVIDENCED_PUBLIC, 9 source(s)
+
+- Leased line / DIA provisioning lead time: 4–8 weeks
+- DIA / leased line provisioning lead time (Benelux): 60–120 days (up to 180 with civil permits)
+- MPLS unit price per site per month (Germany, indicative range): 800–2500
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| CREDIBLE ENTERPRISE WAN/INTERNET CARRIERS | DK | 9 | 9 | 9 | 2026 |
+| CREDIBLE ENTERPRISE WAN/INTERNET CARRIERS | NL | 5 | 5 | 5 | 2025 |
+| DIA UNIT PRICE, 200 MBPS (INDICATIVE) | NL | 348 | 348 | 348 | 2025 |
+| FTTP/VHCN HOUSEHOLD/PREMISES COVERAGE | DK | 90.25 | 90.25 | 90.25 | 2025 |
+| LEASED LINE AVAILABILITY TARGET (STANDARD SLA, FIBRE) | NL | 99.9 | 99.9 | 99.9 | 2022 |
+| PREMISES WITH ≥100/30 MBPS BROADBAND ACCESS | DK | 99.1 | 99.1 | 99.1 | 2025 |
+| SD-WAN PER-SITE COST (GERMANY, INDICATIVE FLOOR) | DE | 200 | 200 | 200 | 2025 |
+
+*2 conflict(s) flagged: CREDIBLE ENTERPRISE WAN/INTERNET CARRIERS, FTTP/VHCN HOUSEHOLD/PREMISES COVERAGE*
+
+Sources: [TelecomLead](https://telecomlead.com/broadband/best-isps-in-denmark-in-2026-fiber-expansion-gigabit-broadband-and-ai-powered-wi-fi-drive-europes-digital-connectivity-leader-126698); [ConnectedNetworks.io](https://www.connectednetworks.io/countries/holland-the-netherlands-business-internet-connectivity); [Savecall (carrier-independent WAN aggregator, DE](https://www.savecall.de/en/wan/); [Lightyear.ai](https://lightyear.ai/blogs/sd-wan-vs-mpls-cost-comparison) and 5 more
 
 ---
 
@@ -3697,5 +4477,143 @@ Sources: [Volkswagen Group (official)](https://www.volkswagen-group.com/en/press
 *4 conflict(s) flagged: CREDIBLE ENTERPRISE WAN/DIA CARRIERS, DEUTSCHE TELEKOM RETAIL BROADBAND MARKET SHARE (DE), GERMANY TOTAL TELECOM MARKET REVENUE*
 
 Sources: [German Company Formation (trade press)](https://germancompanyformation.com/articles/blog/telecommunication-companies-in-germany/); [VATM (German Telecommunications and Value-Added ](https://www.vatm.de/wp-content/uploads/2025/06/VATM-Market-Analysis-Germany-2025.pdf); [Deutsche Telekom Wholesale](https://wholesale.telekom.com/global-connectivity/our-solutions/sd-wan-enabling-transport/internet-access); [Mordor Intelligence](https://www.mordorintelligence.com/industry-reports/germany-telecom-market) and 5 more
+
+---
+
+## Woolworths Group Limited
+
+- **Industry** GROCERY_RETAIL (entity resolution)
+- **Scope** AU, NZ, AUD, 1,364 sites (research merged with disclosure)
+- **Confidence** 0.338 (D - Indicative), coverage COMPLETE
+
+**Profile** - EVIDENCED_PUBLIC, 8 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| AUSTRALIAN FOOD SEGMENT SALES | AU | 51452000000 | 52652000000 | 53852000000 | 2026 |
+| AUSTRALIAN FOOD STORE COUNT (SUPERMARKETS INCL. METRO) | AU | 1117 | 1123.5 | 1130 | 2026 |
+| GROUP ECOMMERCE SALES | AU | 9146000000 | 9873000000 | 10600000000 | 2026 |
+| GROUP TOTAL EMPLOYEES (TEAM MEMBERS) | AU | 202846 | 208647 | 209026 | 2026 |
+| GROUP TOTAL REVENUE / SALES | AU | 67922000000 | 70308000000 | 71540000000 | 2026 |
+| NEW ZEALAND FOOD SEGMENT SALES (AUD) | NZ | 7557000000 | 7645500000 | 7734000000 | 2026 |
+| NEW ZEALAND FOOD SEGMENT SALES (NZD) | NZ | 8286000000 | 8388500000 | 8491000000 | 2026 |
+| NEW ZEALAND FOOD STORE COUNT | NZ | 182 | 182 | 184 | 2026 |
+| TOTAL RETAIL STORE COUNT (GROUP) | AU | 1715 | 1729 | 1824 | 2026 |
+
+*1 conflict(s) flagged: GROUP ECOMMERCE SALES*
+
+Sources: [Woolworths Group Limited](https://www.woolworthsgroup.com.au/content/dam/wwg/investors/asx-announcements/2026/3108623.pdf); [Woolworths Group Limited — 2026 Annual Report](https://www.woolworthsgroup.com.au/content/dam/wwg/investors/reports/f26/Woolworths%20Group%202026%20Annual%20Report.pdf); [Woolworths Group Limited — 2025 Annual Report](https://www.woolworthsgroup.com.au/content/dam/wwg/sustainability/reports/f25/Woolworths%20Group%20Annual%20Report%202025%20.pdf); [Woolworths Group Limited — H26 Half-Year ASX Ann](https://www.woolworthsgroup.com.au/content/dam/wwg/investors/reports/f26/h26/3029540.pdf) and 4 more
+
+**Locations** - EVIDENCED_PUBLIC, 5 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| LARGE_OFFICE – GROUP HQ (BELLA VISTA, NSW, AU) | AU | 1 | 1 | 1 | 2026 |
+| LARGE_OFFICE – NZ SUBSIDIARY HQ (FAVONA, AUCKLAND, NZ) | NZ | 1 | 1 | 1 | 2025 |
+| STORE – AU BIG W DISCOUNT DEPARTMENT STORES | AU | 178 | 178.5 | 179 | 2026 |
+| STORE – AU PETSTOCK RETAIL PET SPECIALTY STORES | AU | 235 | 237.5 | 240 | 2026 |
+| STORE – AU WOOLWORTHS SUPERMARKETS (INCL. METRO) | AU | 1117 | 1123.5 | 1130 | 2026 |
+| STORE – AU WOOLWORTHS SUPERMARKETS REGIONAL BREAKDOWN (F25) | AU | None | None | None |  |
+| STORE – GROUP TOTAL RETAIL STORES AU + NZ (ALL BANNERS) |  | 1715 | 1729 | 1824 | 2026 |
+| STORE – NZ WOOLWORTHS SUPERMARKETS (DIRECTLY OPERATED) | NZ | 181 | 185.5 | 245 | 2026 |
+| WAREHOUSE – DISTRIBUTION CENTRES AU + NZ (FOOD SUPPLY CHAIN) |  | 24 | 24.5 | 25 | 2026 |
+
+*1 conflict(s) flagged: STORE – NZ WOOLWORTHS SUPERMARKETS (DIRECTLY OPERATED)*
+
+Sources: [Woolworths Group Limited](https://www.woolworthsgroup.com.au/content/dam/wwg/investors/asx-announcements/2026/3108623.pdf); [Woolworths Group Limited](https://www.woolworthsgroup.com.au/content/dam/wwg/investors/reports/f26/Woolworths%20Group%202026%20Annual%20Report.pdf); [Woolworths Group Limited](https://www.woolworthsgroup.com.au/content/dam/wwg/sustainability/reports/f25/Woolworths%20Group%20Annual%20Report%202025%20.pdf); [Woolworths Group Limited](https://www.woolworthsgroup.com.au/content/dam/wwg/investors/reports/f25/f25/2936255.pdf) and 1 more
+
+**Data centres and cloud** - EVIDENCED_PUBLIC, 8 source(s)
+
+- Cloud – Microsoft Azure (public + AVS virtual private cloud): primary public cloud
+- Cloud – Google Cloud (data platform and analytics): strategic partnership, 5-year renewal
+- Cloud – edge workload migration (announced, in progress): partial
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| DC – BELLA VISTA HQ CAMPUS DATA CENTRE (AU) | AU | 1 | 1 | 1 | 2024 |
+| DC – HISTORICAL: THREE DATA CENTRES PRE-CLOUD ERA (AU) | AU | 3 | 3 | 3 | 2016 |
+| DC – OWNED/OPERATED DATA CENTRE FACILITIES (AU, SYDNEY) | AU | 2 | 2 | 2 | 2021 |
+
+Sources: [Dell Technologies](https://investors.delltechnologies.com/news-releases/news-release-details/woolworths-selects-dell-technologies-cloud-deploy-hybrid-cloud); [iTnews](https://www.itnews.com.au/news/woolworths-to-move-workloads-to-run-at-the-edge-628149); [Data Center Dynamics](https://www.datacenterdynamics.com/en/news/woolworths-sydney-hq-and-data-center-put-up-for-sale/); [TCS (Google Cloud case study)](https://www.tcs.com/what-we-do/services/cloud/google/case-study/woolworths-data-driven-retail-enhance-customer-experience) and 4 more
+
+**Current architecture** - EVIDENCED_PUBLIC, 6 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| CONNECTED ENDPOINTS PER STORE (POST-TRANSFORMATION) | AU | 2000 | 2000 | 2000 | 2020 |
+| NBN FIBRE MIGRATION SITES COMPLETED (PROGRESS MILESTONE) | AU | 1200 | 1200 | 1200 | 2019 |
+| NBN MIGRATION RATE (VELOCITY AT PEAK) | AU | 50 | 50 | 50 | 2019 |
+| RETAIL SITES TARGETED FOR NBN FIBRE MIGRATION VIA TELSTRA (P | AU | 3000 | 3000 | 3000 | 2019 |
+| SITES IN SCOPE FOR CISCO SD-WAN ROLLOUT (STORES + OFFICES +  | AU | 3000 | 3000 | 3000 | 2020 |
+| TOTAL NETWORKED DEVICES ACROSS ENTIRE ESTATE (STORES + OTHER | AU | 86000 | 86000 | 86000 | 2020 |
+| TOTAL WIRELESS ACCESS POINTS NATIONWIDE (IN-STORE WI-FI) | AU | 30000 | 30000 | 30000 | 2020 |
+| WI-FI SCALE-UP RATE ACHIEVABLE (CISCO AUTOMATION) | AU | 1000 | 1000 | 1000 | 2020 |
+
+Sources: [iTnews](https://www.itnews.com.au/news/woolworths-brings-cisco-into-large-scale-network-transformation-549678); [iTnews](https://www.itnews.com.au/news/woolworths-to-run-its-retail-sites-on-nbn-fibre-518323); [iTnews](https://www.itnews.com.au/news/woolworths-now-connecting-50-stores-a-week-to-the-nbn-530905); [The Register](https://www.theregister.com/2019/01/23/telstra_wants_oz_retailer_to_get_fibred_calls_on_nbn_co_for_the_build/) and 2 more
+
+**Current providers and products** - EVIDENCED_PUBLIC, 8 source(s)
+
+- WAN carrier – AU retail estate: Telstra
+- Wholesale access network – AU retail estate: NBN Co
+- SD-WAN platform: Cisco DNA SD-WAN
+- Network security / secure access platform: Cisco Secure Access
+- In-store Wi-Fi infrastructure (access points): Cisco
+- Managed IT services partner: TCS (Tata Consultancy Services)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| CONNECTED NETWORK DEVICES ACROSS ALL SITES (AU) | AU | None | None | None |  |
+| SITES CONNECTED TO NBN VIA TELSTRA DEAL (AU RETAIL ESTATE) | AU | 3000 | 3000 | 3000 | 2019 |
+
+Sources: [iTnews](https://www.itnews.com.au/news/woolworths-to-run-its-retail-sites-on-nbn-fibre-518323); [The Register](https://www.theregister.com/2019/01/23/telstra_wants_oz_retailer_to_get_fibred_calls_on_nbn_co_for_the_build/); [ChannelNews AU](https://www.channelnews.com.au/telstra-plugs-woolies-in-to-nbn/); [iTnews](https://www.itnews.com.au/news/woolworths-brings-cisco-into-large-scale-network-transformation-549678) and 4 more
+
+**Contract and sourcing events** - EVIDENCED_PUBLIC, 7 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| WOOLWORTHS–CISCO SD-WAN: NETWORKED DEVICES IN SCOPE | AU | 86000 | 86000 | 86000 | 2020 |
+| WOOLWORTHS–TELSTRA MVNO WHOLESALE AGREEMENT: POPULATION COVE | AU | 98.8 | 98.8 | 98.8 | 2023 |
+| WOOLWORTHS–TELSTRA–NBN CO DEAL: WEEKLY SITE MIGRATION RATE ( | AU | 50 | 50 | 50 | 2019 |
+| WOOLWORTHS–TELSTRA–NBN CO ENTERPRISE CONNECTIVITY DEAL: SITE | AU | 3000 | 3000 | 3000 | 2019 |
+
+Sources: [iTnews](https://www.itnews.com.au/news/woolworths-to-run-its-retail-sites-on-nbn-fibre-518323); [The Register](https://www.theregister.com/2019/01/23/telstra_wants_oz_retailer_to_get_fibred_calls_on_nbn_co_for_the_build/); [iTnews](https://www.itnews.com.au/news/woolworths-now-connecting-50-stores-a-week-to-the-nbn-530905); [ChannelNews AU](https://www.channelnews.com.au/telstra-plugs-woolies-in-to-nbn/) and 3 more
+
+**Transformation announcements** - EVIDENCED_PUBLIC, 7 source(s)
+
+- Above-store cost savings delivered in line with expectations (FY2026 confirmation) – IT spend cited as key savings area: delivered
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| ABOVE-STORE COST SAVINGS TARGET (SUPPORT OFFICE SIMPLIFICATI | AU | 400000000 | 400000000 | 400000000 | 2025 |
+| BIG W TECHNOLOGY PLATFORM SEPARATION – OTHER SEGMENT LBIT (I | AU | 250000000 | 250000000 | 250000000 | 2026 |
+| GROUP TOTAL OPERATING CAPITAL EXPENDITURE GUIDANCE – FY2027 | AU | 1950000000 | 1950000000 | 1950000000 | 2027 |
+| GROUP TOTAL OPERATING CAPITAL EXPENDITURE – FY2025 | AU | 2000000000 | 2010000000 | 2020000000 | 2025 |
+| GROUP TOTAL OPERATING CAPITAL EXPENDITURE – FY2026 | AU | 1840000000 | 1840000000 | 1840000000 | 2026 |
+| IT CAPITAL EXPENDITURE – H1 FY2024 COMPARATOR (HALF-YEAR) | AU | 131000000 | 131000000 | 131000000 | 2023 |
+| IT CAPITAL EXPENDITURE – H1 FY2025 (HALF-YEAR) | AU | 117000000 | 117000000 | 117000000 | 2024 |
+| MOOREBANK SUPPLY CHAIN PROJECT TOTAL CAPITAL (LARGEST SINGLE | AU | 1300000000 | 1300000000 | 1300000000 | 2025 |
+| SAP AZURE MIGRATION SCOPE – APPLICATION SERVERS MIGRATED (CL | AU | 435 | 435 | 435 | 2022 |
+
+Sources: [Woolworths Group Limited (ASX filing)](https://www.woolworthsgroup.com.au/content/dam/wwg/investors/reports/f25/f25/2936255.pdf); [Woolworths Group Limited (ASX filing, H1 FY2025)](https://www.woolworthsgroup.com.au/content/dam/wwg/investors/reports/f25/h1/2855272.pdf); [Woolworths Group Limited (FY2026 Annual Report)](https://www.woolworthsgroup.com.au/content/dam/wwg/investors/reports/f26/Woolworths%20Group%202026%20Annual%20Report.pdf); [Woolworths Group Limited (H1 FY2026 Results)](https://www.woolworthsgroup.com.au/content/dam/wwg/investors/reports/f26/h26/3029540.pdf) and 3 more
+
+**Market serviceability** - EVIDENCED_PUBLIC, 8 source(s)
+
+- Enterprise Ethernet AU lead time – on-net (existing fibre): 20-30
+- Enterprise Ethernet AU lead time – new fibre build required: 60-120
+- Enterprise Ethernet AU standard contract term: 24-36
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| CREDIBLE ENTERPRISE WAN CARRIERS (AU) | AU | None | None | None |  |
+| NBN BUSINESS HIGH-SPEED CONNECTIONS FY26 (AU) | AU | 144000 | 144000 | 144000 | 2026 |
+| NBN CO FY26 TOTAL REVENUE | AU | 5.92 | 5.92 | 5.92 | 2026 |
+| NBN FIXED-LINE PREMISES CAPABLE OF NEAR-GIGABIT/MULTI-GIGABI | AU | None | None | None |  |
+| NBN PREMISES ABLE TO CONNECT (AU) | AU | 12640000 | 12655000 | 12670000 | 2026 |
+| VOCUS AU FIBRE NETWORK LENGTH POST TPG-EGW ACQUISITION | AU | 50000 | 50000 | 50000 | 2025 |
+| VOCUS LIT BUILDINGS AU (ENTERPRISE ON-NET) | AU | 20000 | 20000 | 20000 | 2025 |
+
+*1 conflict(s) flagged: VOCUS AU FIBRE NETWORK LENGTH POST TPG-EGW ACQUISITION*
+
+Sources: [NBN Co](https://www.nbnco.com.au/corporate-information/about-nbn-co/updates/dashboard-january-2026); [NBN Co](https://www.nbnco.com.au/corporate-information/media-centre/media-statements/nbnco-delivers-guidance-as-australians-embrace-a-fibre-led-future); [NBN Co](https://www.nbnco.com.au/corporate-information/media-centre/media-statements/nbn-co-half-year-results-fy26); [Computer Weekly](https://www.computerweekly.com/news/366648813/NBN-Co-passes-fibre-tipping-point-as-speed-uplift-carries-FY26-growth) and 4 more
 
 ---
