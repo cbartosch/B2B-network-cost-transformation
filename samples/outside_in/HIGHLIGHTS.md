@@ -653,6 +653,138 @@ Sources: [businessbroadbandhub.co.uk](https://www.businessbroadbandhub.co.uk/bus
 
 ---
 
+## DBS Group Holdings Ltd
+
+- **Industry** RETAIL_BANKING (entity resolution)
+- **Scope** SG, IN, CN, ID, SGD, 1,787 sites (research merged with disclosure)
+- **Confidence** 0.341 (D - Indicative), coverage COMPLETE
+
+**Profile** - EVIDENCED_PUBLIC, 9 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| CONSUMER BANKING/WEALTH MANAGEMENT SEGMENT INCOME | SG | 10155000000 | 10348000000 | 10541000000 | 2025 |
+| INSTITUTIONAL BANKING SEGMENT INCOME | SG | 8906000000 | 9032500000 | 9159000000 | 2025 |
+| NET PROFIT (GROUP, DBS GROUP HOLDINGS LTD) | SG | 11000000000 | 11200000000 | 11400000000 | 2025 |
+| NUMBER OF EMPLOYEES (GROUP HEADCOUNT) | SG | 39892 | 41000 | 41354 | 2026 |
+| NUMBER OF MARKETS (COUNTRIES) OF PRESENCE |  | 19 | 19 | 19 | 2025 |
+| REST OF GREATER CHINA TOTAL INCOME (COVERS CN, IN-SCOPE COUN | CN | 1977000000 | 2082000000 | 2187000000 | 2025 |
+| SINGAPORE TOTAL INCOME (IN-SCOPE COUNTRY SG) | SG | 14511000000 | 14583000000 | 14655000000 | 2025 |
+| SOUTH AND SOUTHEAST ASIA TOTAL INCOME (COVERS IN AND ID, IN- |  | 1569000000 | 1633500000 | 1698000000 | 2025 |
+| TOTAL ASSETS (GROUP, DBS GROUP HOLDINGS LTD) | SG | 827000000000 | 862000000000 | 897000000000 | 2025 |
+| TOTAL INCOME (GROUP, DBS GROUP HOLDINGS LTD) | SG | 21700000000 | 22598500000 | 22900000000 | 2025 |
+
+Sources: [DBS Group Holdings Ltd](https://www.dbs.com/iwov-resources/images/investors/annual-report/dbs-annual-report-2025.pdf); [DBS Group Holdings Ltd (SGX filing)](https://links.sgx.com/1.0.0/corporate-announcements/QXYV5OVUUK12AYOS/835744_DBS%20Annual%20Report%202024.pdf); [DBS Group Holdings Ltd (mirrored at Ashoka Unive](https://library.ashoka.edu.in/wp-content/uploads/2026/03/DBS-annual-report-2025.pdf); [DBS Group Holdings Ltd (quarterly financials)](https://www.dbs.com/iwov-resources/images/investors/quarterly-financials/2024/4Q24_performance_summary.pdf) and 5 more
+
+**Locations** - EVIDENCED_PUBLIC, 10 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| LARGE_OFFICE (HQ) – SINGAPORE | SG | 1 | 1 | 1 | 2024 |
+| LARGE_OFFICE (MAIN OFFICE) – CHINA | CN | 1 | 1 | 1 | 2024 |
+| LARGE_OFFICE (MAIN OFFICE) – INDIA | IN | 2 | 2 | 2 | 2024 |
+| LARGE_OFFICE (MAIN OFFICE) – INDONESIA | ID | 1 | 1 | 1 | 2024 |
+| SELF_SERVICE_TERMINAL (ATMS) – SINGAPORE (COMBINED DBS+POSB) | SG | 710 | 710 | 710 | 2026 |
+| STORE (BANK BRANCHES) – CHINA (MAINLAND) | CN | 12 | 12 | 12 | 2024 |
+| STORE (BANK BRANCHES) – INDIA | IN | 520 | 520 | 520 | 2023 |
+| STORE (BANK BRANCHES) – INDONESIA | ID | 31 | 39.5 | 48 | 2024 |
+| STORE (BANK BRANCHES, DBS-BRAND ONLY) – SINGAPORE | SG | 26 | 26 | 26 | 2026 |
+| STORE (GLOBAL BRANCH TOTAL, ALL MARKETS) |  | None | None | None |  |
+
+*4 conflict(s) flagged: SELF_SERVICE_TERMINAL (ATMS) – SINGAPORE (COMBINED DBS+POSB), STORE (BANK BRANCHES) – CHINA (MAINLAND), STORE (BANK BRANCHES) – INDONESIA, STORE (BANK BRANCHES, DBS-BRAND ONLY) – SINGAPORE*
+
+Sources: [DBS Group Holdings Ltd](https://www.dbs.com/annualreports/2024/i/pdf/dbs-annual-report-2024-international-presence.pdf); [The Singaporean Investor](https://www.thesingaporeaninvestor.sg/2024/03/07/key-takeaways-from-dbs-group-holdings-fy2023-annual-report/); [DBS Bank (company website)](https://www.dbs.com/global-wealth/why-us.html); [Baidu Baike](https://baike.baidu.com/en/item/DBS%20Bank%20Ltd/1530391) and 6 more
+
+**Data centres and cloud** - EVIDENCED_PUBLIC, 10 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| CAPACITY INCREASE SINCE 2014 (STORAGE AND COMPUTE) | SG | 7 | 7 | 7 | 2017 |
+| CLOUD PROVIDER – ALIBABA CLOUD (CHINA GATEWAY) | CN | None | None | None |  |
+| CLOUD PROVIDER – AWS | SG | None | None | None |  |
+| CLOUD PROVIDER – GOOGLE CLOUD (VERTEX AI) | SG | None | None | None |  |
+| COLOCATION PROVIDER (SINGAPORE PRIMARY DC) | SG | None | None | None |  |
+| DC (PRIMARY + SECONDARY) | SG | 2 | 2 | 2 | 2024 |
+| DC FOOTPRINT REDUCTION (LEGACY TO CLOUD-OPTIMISED) | SG | 0.25 | 0.25 | 0.25 | 2019 |
+| PUBLIC CLOUD WORKLOAD TARGET | SG | 50 | 50 | 50 | 2017 |
+
+Sources: [Monetary Authority of Singapore (MAS)](https://www.mas.gov.sg/news/parliamentary-replies/2023/oral-reply-to-parliamentary-question-onbanking-services-disruption-of-dbs-and-citibank); [DBS Group Holdings – Annual Report 2024](https://www.dbs.com/annualreports/2024/cio-statement.html); [The Asian Banker](https://www.theasianbanker.com/press-releases/dbs-launches-new-cloud-based-data-centre); [Fintech Futures](https://www.fintechfutures.com/cloud-services/dbs-launches-new-cloud-based-data-centre) and 6 more
+
+**Current architecture** - EVIDENCED_PUBLIC, 5 source(s)
+
+- WAN technology stack – MPLS in active use (SG): MPLS
+- WAN technology stack – Cisco SD-WAN capability present (SG): Cisco SD-WAN
+- WAN technology stack – dark fibre / DWDM inter-DC (SG): Dark fibre / DWDM
+- WAN technology stack – IPsec VPN / DMVPN overlay (SG): IPsec VPN / DMVPN
+- Cloud infrastructure model – hybrid multi-cloud (private + public) (Group): Hybrid multi-cloud (private + public cloud)
+- India branch network size (post-LVB integration): 520+
+
+Sources: [Glassdoor / DBS Bank](https://www.glassdoor.com/job-listing/avp-network-operations-engineer-group-infrastructure-and-cloud-technology-and-operations-dbs-bank-JV_KO0,88_KE89,97.htm?jl=1009383724225); [freehire.me (aggregating DBS Bank job posting)](https://freehire.me/jobs/senior-network-engineer-data-center-cloud-lead-dbs-bank-ltd-4fjmpi33); [DBS Bank (official annual report)](https://www.dbs.com/annualreports/2024/cio-statement.html); [DBS Bank (official annual report)](https://www.dbs.com/annualreports/2023/cio-statement.html) and 1 more
+
+**Current providers and products** - EVIDENCED_PUBLIC, 2 source(s)
+
+- Network vendor diversification policy – stated in annual report: confirmed
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| NTT DATA – TECHNOLOGY INFRASTRUCTURE PARTNER FOR DBS BANK (V | SG | 1 | 1 | 1 | 2024 |
+| SINGAPORE DOMESTIC ISP/CARRIER CANDIDATES (SINGTEL, STARHUB, | SG | 3 | 3 | 3 | 2024 |
+
+Sources: [MarketScreener (DBS 2025 Annual Report)](https://www.marketscreener.com/news/dbs-2025-annual-report-ce7e5fd9da8af723); [DBS Bank – CIO Statement 2024](https://www.dbs.com/annualreports/2024/cio-statement.html)
+
+**Contract and sourcing events** - EVIDENCED_PUBLIC, 6 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| DBS OUTSOURCING SHARE (IT SERVICES, CIRCA 2009 BASELINE VS C | SG | 85 | 85 | 85 | 2009 |
+| DBS–CISCO NETWORK INVESTMENT (IP/WAN INFRASTRUCTURE UPGRADE) | SG | 15000000 | 15000000 | 15000000 | 2000 |
+| DBS–IBM IT INFRASTRUCTURE OUTSOURCING CONTRACT VALUE (SG + H | SG | 1200000000 | 1200000000 | 1200000000 | 2002 |
+| DBS–IBM Z15 MAINFRAME MODERNISATION DEAL TERM | SG | 7 | 7 | 7 | 2020 |
+| NTT DATA – DBS BANK TECHNOLOGY INFRASTRUCTURE PARTNERSHIP (U | SG | 1 | 1 | 1 | 2024 |
+
+Sources: [FinanceAsia](https://www.financeasia.com/article/dbs-signs-10-year-outsourcing-agreement-with-ibm/34656); [Finextra](https://www.finextra.com/newsarticle/21672/singapore-central-bank-slams-dbs-and-ibm-over-systems-outage); [Computer Weekly](https://www.computerweekly.com/news/252490439/DBS-to-deploy-IBM-z15-mainframes); [Computer Weekly](https://www.computerweekly.com/feature/Inside-DBS-Banks-digital-journey) and 2 more
+
+**Transformation announcements** - EVIDENCED_PUBLIC, 9 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| AI/ML ECONOMIC IMPACT (REVENUE UPLIFT + COST AVOIDANCE + LOS | SG | 1000000000 | 1000000000 | 1000000000 | 2025 |
+| AI/ML ECONOMIC IMPACT – FY2023 | SG | 370000000 | 370000000 | 370000000 | 2023 |
+| AI/ML ECONOMIC IMPACT – FY2024 | SG | 750000000 | 750000000 | 750000000 | 2024 |
+| DBS 2023 DIGITAL INVESTOR DAY – MEDIUM-TERM ROE TARGET | SG | None | None | None |  |
+| DBS COST-INCOME RATIO – FY2025 AND 2026 GUIDANCE | SG | None | None | None |  |
+| DBS DATA CENTRE FOOTPRINT REDUCTION – NEW CLOUD-OPTIMISED DC | SG | 0.25 | 0.25 | 0.25 | 2018 |
+| DBS TOTAL GROUP EXPENSES – FY2025 | SG | 9250000000 | 9250000000 | 9250000000 | 2025 |
+| INFRASTRUCTURE COST REDUCTION FROM VIRTUALISATION AND OPEN-S | SG | 0.08 | 0.08 | 0.08 | 2023 |
+| NEW CLOUD-OPTIMISED DC RUNNING COST VS. LEGACY DC (75% CHEAP | SG | 0.25 | 0.25 | 0.25 | 2018 |
+| TECHNOLOGY RISK MANAGEMENT UPLIFT (T-UP) PROGRAMME SPECIAL B | SG | 80000000 | 80000000 | 80000000 | 2023 |
+
+*1 conflict(s) flagged: NEW CLOUD-OPTIMISED DC RUNNING COST VS. LEGACY DC (75% CHEAPER TO RUN)*
+
+Sources: [Fintech News Singapore](https://fintechnews.sg/79731/fintech/dbs-apologises-for-service-disruptions-sets-aside-s80-million-for-system-resiliency/); [SP Global Market Intelligence](https://www.spglobal.com/market-intelligence/en/news-insights/articles/2024/2/dbs-expects-sustained-performance-after-2023-profit-grows-26-80326784); [DBS Group Holdings (2024 Annual Report)](https://www.dbs.com/annualreports/2024/cio-statement.html); [DBS Group Holdings (2025 Annual Report)](https://www.dbs.com/annualreports/2025/cfo-statement.html) and 5 more
+
+**Market serviceability** - EVIDENCED_PUBLIC, 10 source(s)
+
+- Singapore NGNBN fibre coverage – business premises: virtually every home and business
+- India enterprise MPLS circuit provisioning lead time: weeks to months
+- China MPLS/DIA price – 100 Mbps circuit (Beijing/Shanghai/Jiangsu): 16600–19600
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| CHINA TELECOM LEASED-LINE NETWORKING CUMULATIVE REVENUE | CN | None | None | None |  |
+| CREDIBLE ENTERPRISE WAN/INTERNET CARRIERS – CHINA (LICENSED  | CN | 3 | 3 | 3 | 2025 |
+| CREDIBLE ENTERPRISE WAN/INTERNET CARRIERS – INDIA | IN | None | None | None |  |
+| CREDIBLE ENTERPRISE WAN/INTERNET CARRIERS – INDONESIA | ID | 3 | 3 | 3 | 2025 |
+| CREDIBLE ENTERPRISE WAN/INTERNET CARRIERS – SINGAPORE | SG | 4 | 4 | 4 | 2026 |
+| DIA PRICE – SINGAPORE 100 MBPS, 24-MONTH CONTRACT (SPTEL) | SG | 312 | 312 | 312 | 2025 |
+| INDONESIA ENTERPRISE NETWORK INFRASTRUCTURE MARKET SIZE | ID | 0.57 | 0.57 | 0.57 | 2025 |
+
+*3 conflict(s) flagged: CREDIBLE ENTERPRISE WAN/INTERNET CARRIERS – CHINA (LICENSED OPERATORS ONLY), CREDIBLE ENTERPRISE WAN/INTERNET CARRIERS – INDONESIA, CREDIBLE ENTERPRISE WAN/INTERNET CARRIERS – SINGAPORE*
+
+Sources: [TechDirectory Singapore](https://techdirectory.sg/best-telecommunication-singapore); [TechDirectory Singapore](https://techdirectory.sg/guides/china-connectivity-singapore); [SPTel (carrier – company published)](https://sptel.com/promotion/business-broadband-singapore/); [Operator Watch Blog](https://www.operatorwatch.com/2026/08/new-singapores-telecoms-market-enters.html) and 6 more
+
+---
+
 ## Deutsche Bahn AG
 
 - **Industry** RAILWAYS (entity resolution)
@@ -2786,6 +2918,152 @@ Sources: [Tesco PLC](https://www.tescoplc.com/media/ch1fbgss/tesco-plc-prelimina
 | OPENREACH WHOLESALE FTTP 1 GBPS BROADBAND ANNUAL RENTAL – GB | GB | 1173.36 | 1173.36 | 1173.36 | 2025 |
 
 Sources: [ComReg (Commission for Communications Regulation](https://comreg.ie/media/2025/12/Quarterly-Key-Data-Report-Q3-2025.pdf?G-RB4EH5DG40=); [BT Ireland](https://www.btireland.com/news/article/2025/09/01/bt-completes-the-sale-of-its-wholesale-and-enterprise-business-unit-in-ireland-to-speed-fibre-group); [Irish Times](https://www.irishtimes.com/business/2025/09/01/enet-owner-buys-bt-irelands-wholesale-fibre-business-for-22m/); [eir Business](https://www.eirbusiness.ie/mobile-and-connectivity) and 3 more
+
+---
+
+## Toyota Motor Corporation
+
+- **Industry** AUTOMOTIVE_OEM (entity resolution)
+- **Scope** JP, US, CN, IN, BR, GB, FR, CA, JPY, 66 sites (research merged with disclosure)
+- **Confidence** 0.349 (D - Indicative), coverage COMPLETE
+
+**Profile** - EVIDENCED_PUBLIC, 9 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| EMPLOYEES IN ASIA |  | 66304 | 66317.5 | 66331 | 2026 |
+| EMPLOYEES IN EUROPE |  | 23610 | 24175.5 | 24741 | 2026 |
+| EMPLOYEES IN JAPAN | JP | 202152 | 204644.5 | 207137 | 2026 |
+| EMPLOYEES IN NORTH AMERICA | US | 63842 | 64626.5 | 65411 | 2026 |
+| NUMBER OF MANUFACTURING COMPANIES WORLDWIDE |  | 72 | 72 | 72 | 2024 |
+| NUMBER OF SALES MARKETS (COUNTRIES/REGIONS) |  | None | None | None |  |
+| SALES REVENUES — JAPAN REGION | JP | 21020721000000 | 21859094000000 | 22074141000000 | 2026 |
+| SALES REVENUES — NORTH AMERICA REGION | US | 17943072000000 | 19300327000000 | 21079665000000 | 2026 |
+| TOTAL CONSOLIDATED EMPLOYEES |  | 380793 | 383853 | 390927 | 2026 |
+| TOTAL CONSOLIDATED SALES REVENUES | JP | 45095300000000 | 48036700000000 | 50684900000000 | 2026 |
+
+*1 conflict(s) flagged: SALES REVENUES — NORTH AMERICA REGION*
+
+Sources: [Toyota Motor Corporation / U.S. SEC](https://www.sec.gov/Archives/edgar/data/0001094517/000119312526264811/d101983d20f.htm); [Toyota Motor Corporation (official 20-F filing, ](https://global.toyota/pages/global_toyota/ir/library/sec/20-F_202603_final.pdf); [Toyota Motor Corporation IR (official)](https://global.toyota/pages/global_toyota/ir/financial-results/2025_4q_summary_en.pdf); [Toyota Motor Corporation IR (official)](https://global.toyota/pages/global_toyota/ir/financial-results/2024_4q_summary_en.pdf) and 5 more
+
+**Locations** - EVIDENCED_PUBLIC, 9 source(s)
+
+- PLANT – Global overseas manufacturing organisations (ex-Japan total): 50+
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| LARGE_OFFICE – JAPAN R&D SITES | JP | 8 | 8 | 8 | 2025 |
+| PLANT – CANADA MANUFACTURING PLANTS | CA | 1 | 1 | 1 | 2025 |
+| PLANT – FRANCE MANUFACTURING PLANTS | FR | 1 | 1 | 1 | 2025 |
+| PLANT – JAPAN PRODUCTION SITES (TOYOTA MOTOR CORPORATION DIR | JP | 16 | 16 | 16 | 2025 |
+| PLANT – UK MANUFACTURING PLANTS | GB | 2 | 2 | 2 | 2025 |
+| PLANT – US MANUFACTURING ENTITIES (NORTH AMERICA TOTAL INCL. | US | 13 | 13 | 13 | 2025 |
+| STORE – INDIA TOYOTA DEALERSHIPS | IN | 587 | 587 | 587 | 2024 |
+| STORE – JAPAN SALES AND SERVICE OUTLETS (DEALER NETWORK) | JP | 4334 | 4334 | 4334 | 2025 |
+| STORE – US TOYOTA BRAND DEALERSHIPS | US | 1245 | 1245.5 | 1246 | 2026 |
+
+*5 conflict(s) flagged: PLANT – CANADA MANUFACTURING PLANTS, PLANT – JAPAN PRODUCTION SITES (TOYOTA MOTOR CORPORATION DIRECT), PLANT – US MANUFACTURING ENTITIES (NORTH AMERICA TOTAL INCL. CANADA, MEXICO), STORE – JAPAN SALES AND SERVICE OUTLETS (DEALER NETWORK), STORE – US TOYOTA BRAND DEALERSHIPS*
+
+Sources: [Toyota Motor Corporation via companiesmarketcap ](https://companiesmarketcap.com/toyota/sec-reports-20f/0001193125-26-264811/); [Toyota Motor Corporation (20-F FY2025, filed Jun](https://global.toyota/pages/global_toyota/ir/library/sec/20-F_202503_final.pdf); [Toyota Motor Corporation – global.toyota (Manufa](https://global.toyota/en/company/profile/facilities/manufacturing-worldwide/north_america.html); [Toyota Europe (toyota-europe.com)](https://www.toyota-europe.com/about-us/toyota-in-europe/european-manufacturing-plants) and 5 more
+
+**Data centres and cloud** - EVIDENCED_PUBLIC, 9 source(s)
+
+- Cloud provider – AWS (primary cloud, US): AWS
+- Cloud provider – Microsoft Azure (US, connected car / SSO): Azure
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| ANNUAL OPERATIONAL SAVINGS FROM AWS+AZURE CLOUD MIGRATION (U | US | 350000 | 350000 | 350000 | 2016 |
+| CLOUD REGIONS – MSPF GLOBAL OPERATIONAL REGIONS |  | 7 | 7 | 7 | 2020 |
+| DC – JAPAN DATA CENTRES (ALL, RUNNING ON RENEWABLE ELECTRICI | JP | 2 | 2 | 2 | 2023 |
+| DC – TOYOTA CONNECTED EUROPE (TCEU), LONDON GB | GB | 1 | 1 | 1 | 2020 |
+| DC – TOYOTA CONNECTED NORTH AMERICA (TCNA), PLANO TX | US | 1 | 1 | 1 | 2020 |
+| DC – TOYOTA SMART CENTER / TBDC (JAPAN) | JP | 1 | 1 | 1 | 2023 |
+| MAINFRAME MIGRATION – COBOL LINES MIGRATED TO AWS (TMNA) | US | 40000000 | 40000000 | 40000000 | 2025 |
+| TOTAL ANNUAL ICT SPEND (TOYOTA GROUP, ANALYST ESTIMATE) | JP | 11100000000 | 11100000000 | 11100000000 | 2024 |
+
+Sources: [Amazon Web Services](https://aws.amazon.com/solutions/case-studies/toyota-transform-case-study/); [CIO Dive](https://www.ciodive.com/news/aws-ibm-boost-mainframe-cloud-interoperability/819373/); [CIO Dive](https://www.ciodive.com/news/aws-transform-ai-legacy-workloads/804198/); [Toyota Connected (Japan)](https://toyotaconnected.co.jp/en/company/history.html) and 5 more
+
+**Current architecture** - EVIDENCED_PUBLIC, 7 source(s)
+
+- SD-WAN deployment (Fortinet FortiGate) — Toyota Systems JP: active
+- Internet breakout architecture — Toyota Systems JP: direct internet breakout at branch via SD-WAN
+- NGFW deployment — Toyota Motor North America (US): Palo Alto Networks PA-500 with Threat Prevention + URL Filtering
+- Zero trust / SASE deployment — Toyota GAZOO Racing WRT (OUT-OF-PERIMETER): Zscaler Zero Trust Exchange deployed
+- NTT as Toyota infrastructure partner (JP): strategic ICT infrastructure partnership since 2017
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| DEALER WAN — TOYOTA GB (GB, ~250 SITES) | GB | None | None | None |  |
+
+Sources: [Fortinet Japan](https://www.fortinet.com/content/dam/fortinet/assets/case-studies/ja_jp/cs-toyota-systems-sdwan.pdf); [TechTarget Japan / ITmedia](https://wp.techtarget.itmedia.co.jp/contents/53344); [Hitachi Solutions Japan](https://www.hitachi-solutions.co.jp/paloalto/case09/); [Convergence Group](https://www.convergencegroup.co.uk/case_study/toyota-gb/) and 3 more
+
+**Current providers and products** - EVIDENCED_PUBLIC, 9 source(s)
+
+- SD-WAN platform — Toyota Systems (JP IT subsidiary): Fortinet FortiGate 1100E (Secure SD-WAN)
+- Email security platform — Toyota Systems / Toyota Group (JP): Fortinet FortiMail Cloud
+- Factory/OT firewall — Toyota Motor manufacturing sites (JP): Fortinet FortiGate (OT security gateway)
+- IT/OT network security — Toyota Material Handling (US affiliate): Fortinet FortiGate NGFW + FortiSwitch + FortiAP + FortiDeceptor
+- Global connected vehicle communications platform operator (mobile/WAN carrier) — JP + global: KDDI Corporation
+- Connected vehicle IoT connectivity — Europe (incl. FR, GB) via KDDI/Orange: Orange Business Services (IoT connectivity management)
+
+Sources: [Fortinet Japan](https://www.fortinet.com/content/dam/fortinet/assets/case-studies/ja_jp/cs-toyota-systems-sdwan.pdf); [TechTarget ITmedia Japan](https://wp.techtarget.itmedia.co.jp/contents/53344); [Toyota Systems Co., Ltd.](https://www.toyotasystems.com/service/security/tsmail-security_forti/); [Fortinet Japan](https://www.fortinet.com/content/dam/fortinet/assets/case-studies/ja_jp/cs-toyota-systems-factory.pdf) and 5 more
+
+**Contract and sourcing events** - EVIDENCED_PUBLIC, 10 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| AT&T CONNECTED-CAR WI-FI SUBSCRIPTION PRICE (US, MY2026 TOYO | US | 15 | 20 | 25 | 2025 |
+| AT&T TENURE AS TOYOTA NORTH AMERICA IN-VEHICLE CONNECTIVITY  | US | 2026 | 2026 | 2026 | 2025 |
+| KDDI–TOYOTA GLOBAL COMMUNICATIONS PLATFORM PARTNERSHIP START | JP | 2016 | 2016 | 2016 | 2016 |
+| NTT DATA TRANSATEL ESIM CONNECTED-VEHICLE PARTNERSHIP — BRAZ | BR | 2025 | 2025 | 2025 | 2025 |
+| NTT–TOYOTA MOBILITY AI PLATFORM JOINT INVESTMENT (COMMS + AI | JP | 500000000000 | 500000000000 | 500000000000 | 2024 |
+| TMC BALANCE-SHEET HOLDING IN KDDI (CROSS-SHAREHOLDING, STRAT | JP | 1075516 | 1268762 | 1296639 | 2023 |
+| TOYOTA ADDITIONAL EQUITY INVESTMENT IN KDDI (CAPITAL ALLIANC | JP | 52200000000 | 52200000000 | 52200000000 | 2021 |
+
+*6 conflict(s) flagged: AT&T CONNECTED-CAR WI-FI SUBSCRIPTION PRICE (US, MY2026 TOYOTA VEHICLES), AT&T TENURE AS TOYOTA NORTH AMERICA IN-VEHICLE CONNECTIVITY PROVIDER (US, MODEL YEAR START), KDDI–TOYOTA GLOBAL COMMUNICATIONS PLATFORM PARTNERSHIP START DATE, NTT DATA TRANSATEL ESIM CONNECTED-VEHICLE PARTNERSHIP — BRAZIL/LATAM LAUNCH, NTT–TOYOTA MOBILITY AI PLATFORM JOINT INVESTMENT (COMMS + AI + COMPUTE INFRASTRUCTURE), TMC BALANCE-SHEET HOLDING IN KDDI (CROSS-SHAREHOLDING, STRATEGIC TELECOM PARTNER)*
+
+Sources: [Toyota Motor Corporation](https://global.toyota/en/newsroom/corporate/41746564.html); [NTT Group](https://group.ntt/en/newsrelease/2024/10/31/241031b.html); [SEC EDGAR — Toyota Motor Corp Form 6-K FY2023](https://www.sec.gov/Archives/edgar/data/1094517/000119312523179202/d513610dex991.htm); [SEC EDGAR — Toyota Motor Corp Form 6-K FY2022](https://www.sec.gov/Archives/edgar/data/1094517/000119312522305276/d436077dex991.htm) and 6 more
+
+**Transformation announcements** - EVIDENCED_PUBLIC, 8 source(s)
+
+- Toyota GAIA Global AI Accelerator – stated investment scale (qualitative: 'billions of dollars'; no JPY figure publishe…: billions of USD (no precise figure published)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| TOYOTA ANNUAL ICT SPEND – GLOBALDATA ESTIMATE (2024) |  | 11100000000 | 11100000000 | 11100000000 | 2024 |
+| TOYOTA CAPITAL EXPENDITURE ON TECHNOLOGY – JAPAN (TOYOTA MOT | JP | 1612900000000 | 1612900000000 | 1612900000000 | 2022 |
+| TOYOTA COST REDUCTION PROGRAMME – FY2025 VALUE ENGINEERING ( |  | 45000000000 | 142500000000 | 240000000000 | 2025 |
+| TOYOTA DIGITALLY CAPABLE WORKFORCE TARGET – 100% BY 2030; 10 | JP | 10000 | 10000 | 10000 | 2025 |
+| TOYOTA FY2026 OPERATING PROFIT FORECAST REDUCTION (TARIFF /  | US | 18790000000 | 18790000000 | 18790000000 | 2026 |
+| TOYOTA MOTOR NORTH AMERICA IT VENDOR CONSOLIDATION – TOTAL C | US | 100000000 | 100000000 | 100000000 | 2025 |
+| TOYOTA MOTOR NORTH AMERICA IT – VENDOR RATE REDUCTION THROUG | US | 30 | 30 | 30 | 2025 |
+| TOYOTA R&D EXPENDITURE – FY2026 | JP | 1202300000000 | 1326400000000 | 1522800000000 | 2026 |
+| TOYOTA SOFTWARE ACADEMY – TRAINING COURSES (AI, DATA SCIENCE | JP | 100 | 100 | 100 | 2025 |
+
+*2 conflict(s) flagged: TOYOTA COST REDUCTION PROGRAMME – FY2025 VALUE ENGINEERING (DESIGN-RELATED COSTS), TOYOTA R&D EXPENDITURE – FY2026*
+
+Sources: [Toyota Motor Corporation – SEC Form 20-F FY2025](https://www.sec.gov/Archives/edgar/data/1094517/000119312525142326/d925022d20f.htm); [Toyota Motor Corporation – Form 20-F FY2026 (via](https://companiesmarketcap.com/toyota/sec-reports-20f/0001193125-26-264811/); [K&B Global (consulting firm – Toyota North Ameri](https://kandbglobal.com/2025/05/30/cost-optimization-client-video/); [K&B Global knowledge base](https://knowledge.kandbglobal.com/cost-optimization-client-video) and 4 more
+
+**Market serviceability** - EVIDENCED_PUBLIC, 9 source(s)
+
+- Enterprise leased line / DIA provisioning lead time – global range: 30–120 days
+- Credible enterprise WAN carriers – Brazil: 3 dominant + global alternatives
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| CHINA MPLS WAN MARKET SIZE | CN | 6200 | 6500 | 6800 | 2025 |
+| CHINA – APPROVED ENTERPRISE WAN CARRIERS (BIG THREE STATE OP | CN | 3 | 3 | 3 | 2025 |
+| CHINA – DIA PRICE AT 100 MBPS (SHANGHAI) – PRICE CONVERGENCE | CN | 16600 | 18100 | 19600 | 2026 |
+| CREDIBLE ENTERPRISE WAN CARRIERS – JAPAN | JP | 4 | 4 | 4 | 2025 |
+| GLOBAL MPLS ENTERPRISE WAN SITE SHARE |  | 54 | 54 | 54 | 2025 |
+| GLOBAL WAN CONNECTIVITY REVENUE – 2025 BASELINE |  | 442 | 442 | 442 | 2025 |
+| JAPAN MPLS WAN MARKET SIZE | JP | 4800 | 4950 | 5100 | 2025 |
+| NORTH AMERICA – ENTERPRISE MPLS CIRCUIT COST AT 1 GBPS | US | 1439 | 1439 | 1439 | 2026 |
+
+*4 conflict(s) flagged: CHINA – DIA PRICE AT 100 MBPS (SHANGHAI) – PRICE CONVERGENCE WITH MPLS, CREDIBLE ENTERPRISE WAN CARRIERS – JAPAN, GLOBAL MPLS ENTERPRISE WAN SITE SHARE, NORTH AMERICA – ENTERPRISE MPLS CIRCUIT COST AT 1 GBPS*
+
+Sources: [TeleGeography](https://resources.telegeography.com/the-rise-of-dia-over-mpls); [TeleGeography](https://resources.telegeography.com/wan-market-size-2025-2030-forecast); [Verified Market Reports](https://www.verifiedmarketreports.com/product/mpls-wan-services-market/); [Lightyear.ai](https://lightyear.ai/blogs/sd-wan-vs-mpls-cost-comparison) and 5 more
 
 ---
 

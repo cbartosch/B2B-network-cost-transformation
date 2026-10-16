@@ -1903,6 +1903,1190 @@
           "reason": "the UPS Store network is franchised - independently owned and operated, so its connectivity is not UPS's cost. Research finds ~5,600 of them in the US alone."
         }
       ]
+    },
+    {
+      "slug": "toyota",
+      "legal_name": "Toyota Motor Corporation",
+      "industry": "AUTOMOTIVE_OEM",
+      "domicile": "JP",
+      "currency": "JPY",
+      "aliases": [
+        "Toyota",
+        "Toyota Motor"
+      ],
+      "countries": [
+        "JP",
+        "US",
+        "CN",
+        "IN",
+        "BR",
+        "GB",
+        "FR",
+        "CA"
+      ],
+      "scope_note_cr02b": "Countries widened under CR-02b. The per-country split is an apportionment of a published group total, not a published per-country figure; research supersedes any pair where it finds a sourced count at least as large.",
+      "declared_footprint": [
+        {
+          "country": "JP",
+          "archetype": "PLANT",
+          "sites": 16,
+          "density": "RURAL"
+        },
+        {
+          "country": "US",
+          "archetype": "PLANT",
+          "sites": 10,
+          "density": "RURAL"
+        },
+        {
+          "country": "CN",
+          "archetype": "PLANT",
+          "sites": 12,
+          "density": "RURAL"
+        },
+        {
+          "country": "IN",
+          "archetype": "PLANT",
+          "sites": 3,
+          "density": "RURAL"
+        },
+        {
+          "country": "BR",
+          "archetype": "PLANT",
+          "sites": 2,
+          "density": "RURAL"
+        },
+        {
+          "country": "GB",
+          "archetype": "PLANT",
+          "sites": 2,
+          "density": "RURAL"
+        },
+        {
+          "country": "FR",
+          "archetype": "PLANT",
+          "sites": 1,
+          "density": "RURAL"
+        },
+        {
+          "country": "CA",
+          "archetype": "PLANT",
+          "sites": 2,
+          "density": "RURAL"
+        },
+        {
+          "country": "JP",
+          "archetype": "LARGE_OFFICE",
+          "sites": 6,
+          "density": "URBAN"
+        },
+        {
+          "country": "US",
+          "archetype": "LARGE_OFFICE",
+          "sites": 4,
+          "density": "URBAN"
+        },
+        {
+          "country": "JP",
+          "archetype": "DC",
+          "sites": 3,
+          "density": "SUBURBAN"
+        },
+        {
+          "country": "US",
+          "archetype": "DC",
+          "sites": 2,
+          "density": "SUBURBAN"
+        }
+      ],
+      "excluded": [
+        {
+          "country": "IN",
+          "archetype": "STORE",
+          "reason": "587 Toyota dealerships in India. A dealership is an independently owned business selling under the brand - it leases its own premises and buys its own access line - which is the basis that excluded 5,603 UPS Store franchises, 182 BNP Fintro branches and 2,516 Allianz tied agents."
+        }
+      ]
+    },
+    {
+      "slug": "dbs",
+      "legal_name": "DBS Group Holdings Ltd",
+      "industry": "RETAIL_BANKING",
+      "domicile": "SG",
+      "currency": "SGD",
+      "aliases": [
+        "DBS",
+        "DBS Bank",
+        "POSB"
+      ],
+      "countries": [
+        "SG",
+        "IN",
+        "CN",
+        "ID"
+      ],
+      "declared_footprint": [
+        {
+          "country": "SG",
+          "archetype": "BRANCH",
+          "sites": 80,
+          "density": "URBAN"
+        },
+        {
+          "country": "IN",
+          "archetype": "BRANCH",
+          "sites": 520,
+          "density": "URBAN"
+        },
+        {
+          "country": "CN",
+          "archetype": "BRANCH",
+          "sites": 30,
+          "density": "URBAN"
+        },
+        {
+          "country": "ID",
+          "archetype": "BRANCH",
+          "sites": 40,
+          "density": "URBAN"
+        },
+        {
+          "country": "SG",
+          "archetype": "ATM",
+          "sites": 1100,
+          "density": "URBAN"
+        },
+        {
+          "country": "SG",
+          "archetype": "LARGE_OFFICE",
+          "sites": 5,
+          "density": "URBAN"
+        },
+        {
+          "country": "SG",
+          "archetype": "DC",
+          "sites": 3,
+          "density": "SUBURBAN"
+        }
+      ],
+      "excluded": [
+        {
+          "country": "IN",
+          "archetype": "STORE",
+          "reason": "the 520 Indian branches are the same network this spec declares as IN BRANCH, typed STORE by research. The merge keys on (country, archetype), so a second archetype adds the branches again rather than correcting the count - the Fresenius, Saint-Gobain, Shell and BNP collision over again. The declared figure is corrected to 520 instead."
+        }
+      ]
+    },
+    {
+      "slug": "woolworths",
+      "legal_name": "Woolworths Group Limited",
+      "industry": "GROCERY_RETAIL",
+      "domicile": "AU",
+      "currency": "AUD",
+      "aliases": [
+        "Woolworths",
+        "Woolworths Supermarkets",
+        "Countdown"
+      ],
+      "countries": [
+        "AU",
+        "NZ"
+      ],
+      "declared_footprint": [
+        {
+          "country": "AU",
+          "archetype": "STORE",
+          "sites": 1100,
+          "density": "URBAN"
+        },
+        {
+          "country": "NZ",
+          "archetype": "STORE",
+          "sites": 190,
+          "density": "URBAN"
+        },
+        {
+          "country": "AU",
+          "archetype": "WAREHOUSE",
+          "sites": 30,
+          "density": "SUBURBAN"
+        },
+        {
+          "country": "NZ",
+          "archetype": "WAREHOUSE",
+          "sites": 5,
+          "density": "SUBURBAN"
+        },
+        {
+          "country": "AU",
+          "archetype": "LARGE_OFFICE",
+          "sites": 5,
+          "density": "URBAN"
+        },
+        {
+          "country": "AU",
+          "archetype": "DC",
+          "sites": 2,
+          "density": "SUBURBAN"
+        }
+      ]
+    },
+    {
+      "slug": "maersk",
+      "legal_name": "A.P. Moller - Maersk A/S",
+      "industry": "SHIPPING_LOGISTICS",
+      "domicile": "DK",
+      "currency": "DKK",
+      "aliases": [
+        "Maersk",
+        "APM Terminals",
+        "A.P. Moller Maersk"
+      ],
+      "countries": [
+        "DK",
+        "NL",
+        "DE",
+        "US",
+        "CN",
+        "IN",
+        "BR",
+        "SG"
+      ],
+      "scope_note_cr02b": "Countries widened under CR-02b. The per-country split is an apportionment of a published group total, not a published per-country figure; research supersedes any pair where it finds a sourced count at least as large.",
+      "declared_footprint": [
+        {
+          "country": "DK",
+          "archetype": "TERMINAL",
+          "sites": 2,
+          "density": "SUBURBAN"
+        },
+        {
+          "country": "NL",
+          "archetype": "TERMINAL",
+          "sites": 4,
+          "density": "SUBURBAN"
+        },
+        {
+          "country": "DE",
+          "archetype": "TERMINAL",
+          "sites": 2,
+          "density": "SUBURBAN"
+        },
+        {
+          "country": "US",
+          "archetype": "TERMINAL",
+          "sites": 8,
+          "density": "SUBURBAN"
+        },
+        {
+          "country": "CN",
+          "archetype": "TERMINAL",
+          "sites": 5,
+          "density": "SUBURBAN"
+        },
+        {
+          "country": "IN",
+          "archetype": "TERMINAL",
+          "sites": 4,
+          "density": "SUBURBAN"
+        },
+        {
+          "country": "BR",
+          "archetype": "TERMINAL",
+          "sites": 3,
+          "density": "SUBURBAN"
+        },
+        {
+          "country": "SG",
+          "archetype": "TERMINAL",
+          "sites": 2,
+          "density": "SUBURBAN"
+        },
+        {
+          "country": "NL",
+          "archetype": "WAREHOUSE",
+          "sites": 25,
+          "density": "SUBURBAN"
+        },
+        {
+          "country": "US",
+          "archetype": "WAREHOUSE",
+          "sites": 40,
+          "density": "SUBURBAN"
+        },
+        {
+          "country": "CN",
+          "archetype": "WAREHOUSE",
+          "sites": 30,
+          "density": "SUBURBAN"
+        },
+        {
+          "country": "IN",
+          "archetype": "WAREHOUSE",
+          "sites": 20,
+          "density": "SUBURBAN"
+        },
+        {
+          "country": "DK",
+          "archetype": "LARGE_OFFICE",
+          "sites": 3,
+          "density": "URBAN"
+        },
+        {
+          "country": "SG",
+          "archetype": "LARGE_OFFICE",
+          "sites": 2,
+          "density": "URBAN"
+        },
+        {
+          "country": "DK",
+          "archetype": "DC",
+          "sites": 2,
+          "density": "SUBURBAN"
+        }
+      ]
+    },
+    {
+      "slug": "capgemini",
+      "legal_name": "Capgemini SE",
+      "industry": "IT_SERVICES",
+      "domicile": "FR",
+      "currency": "EUR",
+      "aliases": [
+        "Capgemini",
+        "Capgemini Engineering"
+      ],
+      "countries": [
+        "FR",
+        "IN",
+        "GB",
+        "DE",
+        "US",
+        "NL",
+        "PL",
+        "ES"
+      ],
+      "scope_note_cr02b": "Countries widened under CR-02b. The per-country split is an apportionment of a published group total, not a published per-country figure; research supersedes any pair where it finds a sourced count at least as large.",
+      "declared_footprint": [
+        {
+          "country": "FR",
+          "archetype": "LARGE_OFFICE",
+          "sites": 30,
+          "density": "URBAN"
+        },
+        {
+          "country": "IN",
+          "archetype": "LARGE_OFFICE",
+          "sites": 20,
+          "density": "URBAN"
+        },
+        {
+          "country": "GB",
+          "archetype": "LARGE_OFFICE",
+          "sites": 12,
+          "density": "URBAN"
+        },
+        {
+          "country": "DE",
+          "archetype": "LARGE_OFFICE",
+          "sites": 10,
+          "density": "URBAN"
+        },
+        {
+          "country": "US",
+          "archetype": "LARGE_OFFICE",
+          "sites": 15,
+          "density": "URBAN"
+        },
+        {
+          "country": "NL",
+          "archetype": "LARGE_OFFICE",
+          "sites": 5,
+          "density": "URBAN"
+        },
+        {
+          "country": "PL",
+          "archetype": "LARGE_OFFICE",
+          "sites": 6,
+          "density": "URBAN"
+        },
+        {
+          "country": "ES",
+          "archetype": "LARGE_OFFICE",
+          "sites": 8,
+          "density": "URBAN"
+        },
+        {
+          "country": "IN",
+          "archetype": "CAMPUS",
+          "sites": 6,
+          "density": "SUBURBAN"
+        },
+        {
+          "country": "FR",
+          "archetype": "DC",
+          "sites": 3,
+          "density": "SUBURBAN"
+        },
+        {
+          "country": "IN",
+          "archetype": "DC",
+          "sites": 2,
+          "density": "SUBURBAN"
+        }
+      ]
+    },
+    {
+      "slug": "carrefour",
+      "legal_name": "Carrefour SA",
+      "industry": "GROCERY_RETAIL",
+      "domicile": "FR",
+      "currency": "EUR",
+      "aliases": [
+        "Carrefour",
+        "Carrefour Market",
+        "Carrefour Express"
+      ],
+      "countries": [
+        "FR",
+        "ES",
+        "IT",
+        "BE",
+        "PL",
+        "BR",
+        "RO"
+      ],
+      "scope_note_cr02b": "Countries widened under CR-02b. The per-country split is an apportionment of a published group total, not a published per-country figure; research supersedes any pair where it finds a sourced count at least as large.",
+      "declared_footprint": [
+        {
+          "country": "FR",
+          "archetype": "STORE",
+          "sites": 5000,
+          "density": "URBAN"
+        },
+        {
+          "country": "ES",
+          "archetype": "STORE",
+          "sites": 1500,
+          "density": "URBAN"
+        },
+        {
+          "country": "IT",
+          "archetype": "STORE",
+          "sites": 1000,
+          "density": "URBAN"
+        },
+        {
+          "country": "BE",
+          "archetype": "STORE",
+          "sites": 700,
+          "density": "URBAN"
+        },
+        {
+          "country": "PL",
+          "archetype": "STORE",
+          "sites": 900,
+          "density": "URBAN"
+        },
+        {
+          "country": "BR",
+          "archetype": "STORE",
+          "sites": 1000,
+          "density": "URBAN"
+        },
+        {
+          "country": "RO",
+          "archetype": "STORE",
+          "sites": 400,
+          "density": "URBAN"
+        },
+        {
+          "country": "FR",
+          "archetype": "WAREHOUSE",
+          "sites": 30,
+          "density": "SUBURBAN"
+        },
+        {
+          "country": "ES",
+          "archetype": "WAREHOUSE",
+          "sites": 12,
+          "density": "SUBURBAN"
+        },
+        {
+          "country": "BR",
+          "archetype": "WAREHOUSE",
+          "sites": 15,
+          "density": "SUBURBAN"
+        },
+        {
+          "country": "FR",
+          "archetype": "LARGE_OFFICE",
+          "sites": 6,
+          "density": "URBAN"
+        },
+        {
+          "country": "FR",
+          "archetype": "DC",
+          "sites": 3,
+          "density": "SUBURBAN"
+        }
+      ]
+    },
+    {
+      "slug": "ahold-delhaize",
+      "legal_name": "Koninklijke Ahold Delhaize N.V.",
+      "industry": "GROCERY_RETAIL",
+      "domicile": "NL",
+      "currency": "EUR",
+      "aliases": [
+        "Ahold Delhaize",
+        "Albert Heijn",
+        "Delhaize",
+        "Stop & Shop",
+        "Food Lion"
+      ],
+      "countries": [
+        "NL",
+        "BE",
+        "US",
+        "GR",
+        "RO",
+        "CZ"
+      ],
+      "scope_note_cr02b": "Countries widened under CR-02b. The per-country split is an apportionment of a published group total, not a published per-country figure; research supersedes any pair where it finds a sourced count at least as large.",
+      "declared_footprint": [
+        {
+          "country": "NL",
+          "archetype": "STORE",
+          "sites": 1200,
+          "density": "URBAN"
+        },
+        {
+          "country": "BE",
+          "archetype": "STORE",
+          "sites": 800,
+          "density": "URBAN"
+        },
+        {
+          "country": "US",
+          "archetype": "STORE",
+          "sites": 2000,
+          "density": "URBAN"
+        },
+        {
+          "country": "GR",
+          "archetype": "STORE",
+          "sites": 500,
+          "density": "URBAN"
+        },
+        {
+          "country": "RO",
+          "archetype": "STORE",
+          "sites": 900,
+          "density": "URBAN"
+        },
+        {
+          "country": "CZ",
+          "archetype": "STORE",
+          "sites": 350,
+          "density": "URBAN"
+        },
+        {
+          "country": "NL",
+          "archetype": "WAREHOUSE",
+          "sites": 15,
+          "density": "SUBURBAN"
+        },
+        {
+          "country": "US",
+          "archetype": "WAREHOUSE",
+          "sites": 25,
+          "density": "SUBURBAN"
+        },
+        {
+          "country": "NL",
+          "archetype": "LARGE_OFFICE",
+          "sites": 5,
+          "density": "URBAN"
+        },
+        {
+          "country": "US",
+          "archetype": "LARGE_OFFICE",
+          "sites": 6,
+          "density": "URBAN"
+        },
+        {
+          "country": "NL",
+          "archetype": "DC",
+          "sites": 3,
+          "density": "SUBURBAN"
+        }
+      ]
+    },
+    {
+      "slug": "eon",
+      "legal_name": "E.ON SE",
+      "industry": "UTILITIES",
+      "domicile": "DE",
+      "currency": "EUR",
+      "aliases": [
+        "E.ON",
+        "EON",
+        "Bayernwerk",
+        "Avacon"
+      ],
+      "countries": [
+        "DE",
+        "GB",
+        "SE",
+        "CZ",
+        "HU",
+        "RO",
+        "PL",
+        "NL"
+      ],
+      "scope_note_cr02b": "Countries widened under CR-02b. The per-country split is an apportionment of a published group total, not a published per-country figure; research supersedes any pair where it finds a sourced count at least as large.",
+      "declared_footprint": [
+        {
+          "country": "DE",
+          "archetype": "NETWORK_SITE",
+          "sites": 400,
+          "density": "RURAL"
+        },
+        {
+          "country": "SE",
+          "archetype": "NETWORK_SITE",
+          "sites": 120,
+          "density": "RURAL"
+        },
+        {
+          "country": "CZ",
+          "archetype": "NETWORK_SITE",
+          "sites": 90,
+          "density": "RURAL"
+        },
+        {
+          "country": "HU",
+          "archetype": "NETWORK_SITE",
+          "sites": 80,
+          "density": "RURAL"
+        },
+        {
+          "country": "RO",
+          "archetype": "NETWORK_SITE",
+          "sites": 70,
+          "density": "RURAL"
+        },
+        {
+          "country": "DE",
+          "archetype": "CONTROL_CENTER",
+          "sites": 12,
+          "density": "SUBURBAN"
+        },
+        {
+          "country": "SE",
+          "archetype": "CONTROL_CENTER",
+          "sites": 4,
+          "density": "SUBURBAN"
+        },
+        {
+          "country": "DE",
+          "archetype": "LARGE_OFFICE",
+          "sites": 25,
+          "density": "URBAN"
+        },
+        {
+          "country": "GB",
+          "archetype": "LARGE_OFFICE",
+          "sites": 8,
+          "density": "URBAN"
+        },
+        {
+          "country": "DE",
+          "archetype": "DC",
+          "sites": 4,
+          "density": "SUBURBAN"
+        }
+      ]
+    },
+    {
+      "slug": "bayer",
+      "legal_name": "Bayer AG",
+      "industry": "PHARMACEUTICALS",
+      "domicile": "DE",
+      "currency": "EUR",
+      "aliases": [
+        "Bayer",
+        "Bayer CropScience",
+        "Bayer Pharmaceuticals"
+      ],
+      "countries": [
+        "DE",
+        "US",
+        "CN",
+        "BR",
+        "IN",
+        "FR",
+        "ES",
+        "MX"
+      ],
+      "scope_note_cr02b": "Countries widened under CR-02b. The per-country split is an apportionment of a published group total, not a published per-country figure; research supersedes any pair where it finds a sourced count at least as large.",
+      "declared_footprint": [
+        {
+          "country": "DE",
+          "archetype": "PLANT",
+          "sites": 18,
+          "density": "RURAL"
+        },
+        {
+          "country": "US",
+          "archetype": "PLANT",
+          "sites": 20,
+          "density": "RURAL"
+        },
+        {
+          "country": "CN",
+          "archetype": "PLANT",
+          "sites": 8,
+          "density": "RURAL"
+        },
+        {
+          "country": "BR",
+          "archetype": "PLANT",
+          "sites": 10,
+          "density": "RURAL"
+        },
+        {
+          "country": "IN",
+          "archetype": "PLANT",
+          "sites": 6,
+          "density": "RURAL"
+        },
+        {
+          "country": "FR",
+          "archetype": "PLANT",
+          "sites": 5,
+          "density": "RURAL"
+        },
+        {
+          "country": "ES",
+          "archetype": "PLANT",
+          "sites": 4,
+          "density": "RURAL"
+        },
+        {
+          "country": "MX",
+          "archetype": "PLANT",
+          "sites": 4,
+          "density": "RURAL"
+        },
+        {
+          "country": "DE",
+          "archetype": "LARGE_OFFICE",
+          "sites": 10,
+          "density": "URBAN"
+        },
+        {
+          "country": "US",
+          "archetype": "LARGE_OFFICE",
+          "sites": 8,
+          "density": "URBAN"
+        },
+        {
+          "country": "DE",
+          "archetype": "CAMPUS",
+          "sites": 2,
+          "density": "SUBURBAN"
+        },
+        {
+          "country": "DE",
+          "archetype": "DC",
+          "sites": 3,
+          "density": "SUBURBAN"
+        }
+      ]
+    },
+    {
+      "slug": "michelin",
+      "legal_name": "Compagnie Generale des Etablissements Michelin SCA",
+      "industry": "AUTOMOTIVE_PARTS",
+      "domicile": "FR",
+      "currency": "EUR",
+      "aliases": [
+        "Michelin",
+        "Groupe Michelin"
+      ],
+      "countries": [
+        "FR",
+        "DE",
+        "US",
+        "BR",
+        "CN",
+        "PL",
+        "ES",
+        "IN"
+      ],
+      "scope_note_cr02b": "Countries widened under CR-02b. The per-country split is an apportionment of a published group total, not a published per-country figure; research supersedes any pair where it finds a sourced count at least as large.",
+      "declared_footprint": [
+        {
+          "country": "FR",
+          "archetype": "PLANT",
+          "sites": 16,
+          "density": "RURAL"
+        },
+        {
+          "country": "DE",
+          "archetype": "PLANT",
+          "sites": 6,
+          "density": "RURAL"
+        },
+        {
+          "country": "US",
+          "archetype": "PLANT",
+          "sites": 19,
+          "density": "RURAL"
+        },
+        {
+          "country": "BR",
+          "archetype": "PLANT",
+          "sites": 4,
+          "density": "RURAL"
+        },
+        {
+          "country": "CN",
+          "archetype": "PLANT",
+          "sites": 4,
+          "density": "RURAL"
+        },
+        {
+          "country": "PL",
+          "archetype": "PLANT",
+          "sites": 3,
+          "density": "RURAL"
+        },
+        {
+          "country": "ES",
+          "archetype": "PLANT",
+          "sites": 5,
+          "density": "RURAL"
+        },
+        {
+          "country": "IN",
+          "archetype": "PLANT",
+          "sites": 2,
+          "density": "RURAL"
+        },
+        {
+          "country": "FR",
+          "archetype": "LARGE_OFFICE",
+          "sites": 5,
+          "density": "URBAN"
+        },
+        {
+          "country": "US",
+          "archetype": "LARGE_OFFICE",
+          "sites": 3,
+          "density": "URBAN"
+        },
+        {
+          "country": "FR",
+          "archetype": "WAREHOUSE",
+          "sites": 12,
+          "density": "SUBURBAN"
+        },
+        {
+          "country": "FR",
+          "archetype": "DC",
+          "sites": 2,
+          "density": "SUBURBAN"
+        }
+      ]
+    },
+    {
+      "slug": "nhs-england",
+      "legal_name": "NHS England",
+      "industry": "HOSPITAL",
+      "domicile": "GB",
+      "currency": "GBP",
+      "aliases": [
+        "NHS",
+        "National Health Service",
+        "NHS England"
+      ],
+      "countries": [
+        "GB"
+      ],
+      "declared_footprint": [
+        {
+          "country": "GB",
+          "archetype": "CAMPUS",
+          "sites": 220,
+          "density": "URBAN"
+        },
+        {
+          "country": "GB",
+          "archetype": "BRANCH",
+          "sites": 1200,
+          "density": "URBAN"
+        },
+        {
+          "country": "GB",
+          "archetype": "LARGE_OFFICE",
+          "sites": 40,
+          "density": "URBAN"
+        },
+        {
+          "country": "GB",
+          "archetype": "WAREHOUSE",
+          "sites": 25,
+          "density": "SUBURBAN"
+        },
+        {
+          "country": "GB",
+          "archetype": "DC",
+          "sites": 6,
+          "density": "SUBURBAN"
+        }
+      ]
+    },
+    {
+      "slug": "network-rail",
+      "legal_name": "Network Rail Infrastructure Limited",
+      "industry": "RAILWAYS",
+      "domicile": "GB",
+      "currency": "GBP",
+      "aliases": [
+        "Network Rail"
+      ],
+      "countries": [
+        "GB"
+      ],
+      "declared_footprint": [
+        {
+          "country": "GB",
+          "archetype": "NETWORK_SITE",
+          "sites": 800,
+          "density": "RURAL"
+        },
+        {
+          "country": "GB",
+          "archetype": "CONTROL_CENTER",
+          "sites": 14,
+          "density": "SUBURBAN"
+        },
+        {
+          "country": "GB",
+          "archetype": "STORE",
+          "sites": 20,
+          "density": "URBAN"
+        },
+        {
+          "country": "GB",
+          "archetype": "LARGE_OFFICE",
+          "sites": 12,
+          "density": "URBAN"
+        },
+        {
+          "country": "GB",
+          "archetype": "WAREHOUSE",
+          "sites": 30,
+          "density": "SUBURBAN"
+        },
+        {
+          "country": "GB",
+          "archetype": "DC",
+          "sites": 3,
+          "density": "SUBURBAN"
+        }
+      ]
+    },
+    {
+      "slug": "royal-mail",
+      "legal_name": "Royal Mail Group Limited",
+      "industry": "PARCEL_LOGISTICS",
+      "domicile": "GB",
+      "currency": "GBP",
+      "aliases": [
+        "Royal Mail",
+        "Parcelforce",
+        "International Distributions Services"
+      ],
+      "countries": [
+        "GB"
+      ],
+      "declared_footprint": [
+        {
+          "country": "GB",
+          "archetype": "TERMINAL",
+          "sites": 37,
+          "density": "SUBURBAN"
+        },
+        {
+          "country": "GB",
+          "archetype": "SERVICE_POINT",
+          "sites": 1200,
+          "density": "URBAN"
+        },
+        {
+          "country": "GB",
+          "archetype": "WAREHOUSE",
+          "sites": 40,
+          "density": "SUBURBAN"
+        },
+        {
+          "country": "GB",
+          "archetype": "LARGE_OFFICE",
+          "sites": 8,
+          "density": "URBAN"
+        },
+        {
+          "country": "GB",
+          "archetype": "DC",
+          "sites": 3,
+          "density": "SUBURBAN"
+        }
+      ]
+    },
+    {
+      "slug": "aena",
+      "legal_name": "Aena S.M.E., S.A.",
+      "industry": "AIRPORTS",
+      "domicile": "ES",
+      "currency": "EUR",
+      "aliases": [
+        "Aena",
+        "Aena Aeropuertos"
+      ],
+      "countries": [
+        "ES",
+        "GB",
+        "BR",
+        "MX"
+      ],
+      "declared_footprint": [
+        {
+          "country": "ES",
+          "archetype": "TERMINAL",
+          "sites": 46,
+          "density": "SUBURBAN"
+        },
+        {
+          "country": "BR",
+          "archetype": "TERMINAL",
+          "sites": 17,
+          "density": "SUBURBAN"
+        },
+        {
+          "country": "GB",
+          "archetype": "TERMINAL",
+          "sites": 1,
+          "density": "SUBURBAN"
+        },
+        {
+          "country": "MX",
+          "archetype": "TERMINAL",
+          "sites": 1,
+          "density": "SUBURBAN"
+        },
+        {
+          "country": "ES",
+          "archetype": "CONTROL_CENTER",
+          "sites": 4,
+          "density": "SUBURBAN"
+        },
+        {
+          "country": "ES",
+          "archetype": "LARGE_OFFICE",
+          "sites": 3,
+          "density": "URBAN"
+        },
+        {
+          "country": "ES",
+          "archetype": "DC",
+          "sites": 2,
+          "density": "SUBURBAN"
+        }
+      ]
+    },
+    {
+      "slug": "fraport",
+      "legal_name": "Fraport AG",
+      "industry": "AIRPORTS",
+      "domicile": "DE",
+      "currency": "EUR",
+      "aliases": [
+        "Fraport",
+        "Fraport Greece"
+      ],
+      "countries": [
+        "DE",
+        "GR",
+        "BR",
+        "PE",
+        "TR",
+        "BG"
+      ],
+      "declared_footprint": [
+        {
+          "country": "DE",
+          "archetype": "TERMINAL",
+          "sites": 2,
+          "density": "SUBURBAN"
+        },
+        {
+          "country": "GR",
+          "archetype": "TERMINAL",
+          "sites": 14,
+          "density": "SUBURBAN"
+        },
+        {
+          "country": "BR",
+          "archetype": "TERMINAL",
+          "sites": 2,
+          "density": "SUBURBAN"
+        },
+        {
+          "country": "PE",
+          "archetype": "TERMINAL",
+          "sites": 1,
+          "density": "SUBURBAN"
+        },
+        {
+          "country": "TR",
+          "archetype": "TERMINAL",
+          "sites": 1,
+          "density": "SUBURBAN"
+        },
+        {
+          "country": "BG",
+          "archetype": "TERMINAL",
+          "sites": 2,
+          "density": "SUBURBAN"
+        },
+        {
+          "country": "DE",
+          "archetype": "CAMPUS",
+          "sites": 1,
+          "density": "SUBURBAN"
+        },
+        {
+          "country": "DE",
+          "archetype": "LARGE_OFFICE",
+          "sites": 6,
+          "density": "URBAN"
+        },
+        {
+          "country": "DE",
+          "archetype": "WAREHOUSE",
+          "sites": 8,
+          "density": "SUBURBAN"
+        },
+        {
+          "country": "DE",
+          "archetype": "DC",
+          "sites": 3,
+          "density": "SUBURBAN"
+        }
+      ]
     }
   ]
 }
