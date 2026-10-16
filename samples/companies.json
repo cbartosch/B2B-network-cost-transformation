@@ -2865,6 +2865,13 @@
           "sites": 6,
           "density": "SUBURBAN"
         }
+      ],
+      "excluded": [
+        {
+          "country": "GB",
+          "archetype": "LARGE_OFFICE",
+          "reason": "the 1,140 are HOSPITAL sites - the label says so - promoted into the office archetype. Two faults: a hospital is not an office, and the hospital estate is already declared as GB/CAMPUS, so this adds it again under a second archetype. The same research puts NHS England's own parent-entity office count at 1, Wellington Place in Leeds."
+        }
       ]
     },
     {
@@ -2916,6 +2923,13 @@
           "sites": 3,
           "density": "SUBURBAN"
         }
+      ],
+      "excluded": [
+        {
+          "country": "GB",
+          "archetype": "SERVICE_POINT",
+          "reason": "the 2,593 are the stations Network Rail OWNS as infrastructure, and the evidence says in its own note that most are operated by train operating companies rather than by Network Rail. A TOC leases the station and buys its own access line. The sites Network Rail actually operates are the 20 largest, counted separately as TERMINAL, so promoting 2,593 would both add circuits nobody at Network Rail pays for and count those 20 twice."
+        }
       ]
     },
     {
@@ -2963,6 +2977,13 @@
           "sites": 3,
           "density": "SUBURBAN"
         }
+      ],
+      "excluded": [
+        {
+          "country": "GB",
+          "archetype": "STORE",
+          "reason": "Customer Service Points are parcel drop-off desks AT delivery offices - the research says so itself. A counter inside a building is not a building. The count is exactly 1,200, which is the delivery-office count and the declared SERVICE_POINT figure, so this is the same estate a second time."
+        }
       ]
     },
     {
@@ -3003,7 +3024,7 @@
         {
           "country": "MX",
           "archetype": "TERMINAL",
-          "sites": 1,
+          "sites": 0,
           "density": "SUBURBAN"
         },
         {
@@ -3023,6 +3044,13 @@
           "archetype": "DC",
           "sites": 2,
           "density": "SUBURBAN"
+        }
+      ],
+      "excluded": [
+        {
+          "country": "MX",
+          "archetype": "TERMINAL",
+          "reason": "Aena holds 6.55% of GAP and the evidence note says it plainly - minority financial stake only, not operator. GAP operates the twelve Mexican airports. A shareholding is not an estate, and Aena buys no circuits at any of them."
         }
       ]
     },

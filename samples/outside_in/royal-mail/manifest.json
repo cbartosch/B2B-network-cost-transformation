@@ -1,0 +1,287 @@
+{
+  "slug": "royal-mail",
+  "legal_name": "Royal Mail Group Limited",
+  "industry": {
+    "industry": "PARCEL_LOGISTICS",
+    "origin": "ENTITY_RESOLUTION",
+    "resolution_said": "Postal activities under universal service obligation (SIC 53100)",
+    "agrees_with_resolution": false
+  },
+  "domicile": "GB",
+  "in_scope_countries": [
+    "GB"
+  ],
+  "base_currency": "GBP",
+  "case_id": "cb6059f1-0662-43ac-a12e-08bda6191b3b",
+  "spec_path": "/tmp/companies.json",
+  "spec_sha256": "74058c1e9959",
+  "entity_resolution": {
+    "resolved": null,
+    "resumed": true
+  },
+  "resumed_existing_case": true,
+  "mode": "repromote",
+  "domains_already_researched_on_resume": [
+    1,
+    2,
+    6,
+    7,
+    8,
+    9,
+    10,
+    12,
+    13,
+    14,
+    15,
+    16,
+    18,
+    19,
+    20,
+    21,
+    22
+  ],
+  "footprint_origin": "RESEARCH_MERGED_WITH_DISCLOSURE",
+  "footprint_used": [
+    {
+      "country": "GB",
+      "archetype": "BRANCH",
+      "sites": 18,
+      "density": "RURAL"
+    },
+    {
+      "country": "GB",
+      "archetype": "BRANCH",
+      "sites": 44,
+      "density": "SUBURBAN"
+    },
+    {
+      "country": "GB",
+      "archetype": "BRANCH",
+      "sites": 55,
+      "density": "URBAN"
+    },
+    {
+      "country": "GB",
+      "archetype": "DC",
+      "sites": 10,
+      "density": "SUBURBAN"
+    },
+    {
+      "country": "GB",
+      "archetype": "LARGE_OFFICE",
+      "sites": 8,
+      "density": "URBAN"
+    },
+    {
+      "country": "GB",
+      "archetype": "SERVICE_POINT",
+      "sites": 1200,
+      "density": "URBAN"
+    },
+    {
+      "country": "GB",
+      "archetype": "TERMINAL",
+      "sites": 37,
+      "density": "SUBURBAN"
+    },
+    {
+      "country": "GB",
+      "archetype": "WAREHOUSE",
+      "sites": 54,
+      "density": "SUBURBAN"
+    }
+  ],
+  "footprint_provenance": [
+    {
+      "country": "GB",
+      "archetype": "STORE",
+      "sites": 1200,
+      "origin": "EXCLUDED_BY_SCOPE",
+      "reason": "Customer Service Points are parcel drop-off desks AT delivery offices - the research says so itself. A counter inside a building is not a building. The count is exactly 1,200, which is the delivery-office count and the declared SERVICE_POINT figure, so this is the same estate a second time."
+    },
+    {
+      "country": "GB",
+      "archetype": "BRANCH",
+      "sites": 117,
+      "origin": "RESEARCHED",
+      "density": null
+    },
+    {
+      "country": "GB",
+      "archetype": "DC",
+      "sites": 10,
+      "origin": "SUPERSEDED_BY_RESEARCH",
+      "density": "SUBURBAN",
+      "research_said": 10,
+      "disclosure_said": 3
+    },
+    {
+      "country": "GB",
+      "archetype": "LARGE_OFFICE",
+      "sites": 8,
+      "origin": "PUBLIC_DISCLOSURE",
+      "density": "URBAN"
+    },
+    {
+      "country": "GB",
+      "archetype": "SERVICE_POINT",
+      "sites": 1200,
+      "origin": "PUBLIC_DISCLOSURE",
+      "density": "URBAN"
+    },
+    {
+      "country": "GB",
+      "archetype": "TERMINAL",
+      "sites": 37,
+      "origin": "PUBLIC_DISCLOSURE",
+      "density": "SUBURBAN"
+    },
+    {
+      "country": "GB",
+      "archetype": "WAREHOUSE",
+      "sites": 54,
+      "origin": "SUPERSEDED_BY_RESEARCH",
+      "density": "SUBURBAN",
+      "research_said": 54,
+      "disclosure_said": 40
+    },
+    {
+      "origin": "DENSITY_FROM_MIX",
+      "rows": 1,
+      "sites": 117,
+      "filled": [
+        {
+          "country": "GB",
+          "archetype": "BRANCH",
+          "sites": 117,
+          "basis": "GENERIC_DEFAULT",
+          "mix_industry": "DEFAULT",
+          "bands": {
+            "RURAL": 18,
+            "SUBURBAN": 44,
+            "URBAN": 55
+          }
+        }
+      ],
+      "note": "the count and the site type are evidenced; the band is a governed sector default from reference.density_mix, not a finding about this client. It decides which bearers are tested, so it is worth replacing with what the client actually has."
+    }
+  ],
+  "scope_countries_modelled": [
+    "GB"
+  ],
+  "scope_countries_company_total": "DECLARED_UNKNOWN",
+  "scope_status": "PARTIAL_COUNTRIES",
+  "scope_note": "Baseline covers 1 country(ies) (GB) and the site types listed in sites_origin. The group's full country and site-type count is not sourced, so the share of the group this represents is DECLARED_UNKNOWN. This is baseline_in_scope, not a group baseline.",
+  "sites_origin": {
+    "BRANCH": "RESEARCHED",
+    "DC": "RESEARCHED",
+    "LARGE_OFFICE": "ASSUMED_PUBLIC_DISCLOSURE",
+    "SERVICE_POINT": "ASSUMED_PUBLIC_DISCLOSURE",
+    "STORE": "ASSUMED_PUBLIC_DISCLOSURE",
+    "TERMINAL": "ASSUMED_PUBLIC_DISCLOSURE",
+    "WAREHOUSE": "RESEARCHED"
+  },
+  "fx_to_eur": {
+    "rate": "1.167224976550984858635937291",
+    "as_of": "2026-09-16",
+    "basis": "cross-rate via USD",
+    "legs": [
+      "USD->GBP=0.74630000@2026-09-16",
+      "USD->EUR=0.87110000@2026-09-17"
+    ],
+    "evidence_grade": "B",
+    "source": "derived from reference.fx_rate",
+    "convention": "SPOT"
+  },
+  "seed": 20260101,
+  "ensemble_size": 25,
+  "domains_declared_unknown": [],
+  "domains_requested": [
+    1,
+    2,
+    6,
+    7,
+    8,
+    9,
+    10,
+    12,
+    13,
+    14,
+    15,
+    16,
+    18,
+    19,
+    20,
+    21,
+    22
+  ],
+  "domains_fell_back_unanswered": [],
+  "domains_researched": [
+    1,
+    2,
+    6,
+    7,
+    8,
+    9,
+    10,
+    12,
+    13,
+    14,
+    15,
+    16,
+    18,
+    19,
+    20,
+    21,
+    22
+  ],
+  "estimate_inputs": {
+    "method": "BUILD_UP",
+    "users": 17112,
+    "ops_cost_per_site_base": 900,
+    "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
+  },
+  "build": "4.272.0",
+  "run_started": "2026-10-16T15:04:41.382107+00:00",
+  "run_seconds": 2.9,
+  "preflight_conditions": 8,
+  "promotion": {
+    "promoted": true,
+    "detail": null,
+    "offered": 8,
+    "accepted": 4,
+    "declined": [
+      {
+        "reason": "sources state this in units that disagree, and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
+        "label": "Royal Mail mail centres / regional sorting hubs (PLANT) — GB",
+        "country": "GB",
+        "flags": [
+          "UNIT_MISMATCH"
+        ]
+      }
+    ],
+    "declined_count": 1
+  },
+  "domains_benchmark_disposed": [
+    3,
+    4,
+    5,
+    11,
+    17,
+    23,
+    24
+  ],
+  "domains_with_no_agent": [
+    3,
+    4,
+    5,
+    11,
+    17,
+    23,
+    24
+  ],
+  "analyst_disposition_response": {
+    "stored": 7,
+    "provenance_dropped": []
+  }
+}
