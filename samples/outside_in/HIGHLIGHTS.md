@@ -1932,23 +1932,106 @@ Sources: [Analysys Mason](https://www.analysysmason.com/research/content/reports
 
 ## Fraport AG
 
-- **Industry** AIRPORTS (spec fallback)
-- **Scope** DE, GR, BR, PE, TR, BG, EUR, 40 sites (public disclosure only)
+- **Industry** AIRPORTS (entity resolution)
+- **Scope** DE, GR, BR, PE, TR, BG, EUR, 41 sites (research merged with disclosure)
 - **Confidence** 0.347 (D - Indicative), coverage COMPLETE
 
-**Profile** - BENCHMARK_PRIOR: research returned no verdict
+**Profile** - DECLARED_UNKNOWN, 1 source(s)
 
-**Locations** - BENCHMARK_PRIOR: research returned no verdict
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| FRAPORT AG STANDALONE EMPLOYEES (LEGAL ENTITY, GERMANY) | DE | 7158 | 7158 | 7158 | 2024 |
+| FRAPORT AG STANDALONE REVENUE (HGB, GERMANY ONLY) | DE | 2550400000 | 2550400000 | 2550400000 | 2024 |
+| FRAPORT GREECE REVENUE (GR SEGMENT, 65% STAKE, IFRS INCLUDIN | GR | 339102191 | 474351095.5 | 609600000 | 2024 |
+| GROUP EBITDA |  | 1301800000 | 1301800000 | 1301800000 | 2024 |
+| GROUP EMPLOYEES (HEADCOUNT AT YEAR-END, EXCL. APPRENTICES AN | DE | 19211 | 19872.5 | 20591 | 2024 |
+| GROUP EMPLOYEES IN GERMANY | DE | 15682 | 15682 | 15682 | 2024 |
+| GROUP REVENUE (IFRS CONSOLIDATED) | DE | 4427000000 | 4427000000 | 4427000000 | 2024 |
+| INTERNATIONAL ACTIVITIES & SERVICES SEGMENT REVENUE |  | 1910300000 | 1910300000 | 1910300000 | 2024 |
+| NUMBER OF AIRPORTS IN GLOBAL PORTFOLIO |  | 29 | 29.5 | 30 | 2024 |
+| TOTAL PASSENGERS AT ALL FRAPORT-MANAGED AIRPORTS |  | 174500000 | 213250000 | 252000000 | 2024 |
 
-**Data centres and cloud** - BENCHMARK_PRIOR: research returned no verdict
+*3 conflict(s) flagged: FRAPORT GREECE REVENUE (GR SEGMENT, 65% STAKE, IFRS INCLUDING IFRIC 12), GROUP REVENUE (IFRS CONSOLIDATED), TOTAL PASSENGERS AT ALL FRAPORT-MANAGED AIRPORTS*
 
-**Current architecture** - BENCHMARK_PRIOR: research returned no verdict
+Sources: [Fraport AG – press release (traffic figures FY20](https://www.fraport.com/en/newsroom/press-releases/2025/traffic-figures/fraport-traffic-figures-2024--frankfurt-remains-the-leading-airp.html)
 
-**Current providers and products** - BENCHMARK_PRIOR: research returned no verdict
+**Locations** - EVIDENCED_PUBLIC, 5 source(s)
 
-**Contract and sourcing events** - BENCHMARK_PRIOR: research returned no verdict
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| CAMPUS – FRANKFURT AIRPORT SITE (DE) | DE | 1 | 1 | 1 | 2024 |
+| TERMINAL – ANTALYA AIRPORT (TR) | TR | 1 | 1 | 1 | 2024 |
+| TERMINAL – BRAZIL AIRPORTS (BR) | BR | 2 | 2 | 2 | 2024 |
+| TERMINAL – BULGARIA AIRPORTS (BG) | BG | 2 | 2 | 2 | 2025 |
+| TERMINAL – GREECE REGIONAL AIRPORTS (GR) | GR | 14 | 14 | 14 | 2024 |
+| TERMINAL – PERU AIRPORT (PE) | PE | 1 | 1 | 1 | 2024 |
 
-**Transformation announcements** - BENCHMARK_PRIOR: research returned no verdict
+Sources: [Copelouzos Group (JV partner of Fraport Greece)](https://www.copelouzos.gr/en/service/greek-regional-airports/); [GTP Headlines (Greek Travel Pages)](https://news.gtp.gr/2024/11/11/fraport-new-investments-to-expand-capacity-at-key-greek-airports/); [Fraport AG – Group Airports (corporate website)](https://www.fraport.com/en/our-group/our-global-group-airports-and-companies/Fraport-TAV-Antalya-Airport.html); [MarketScreener (quoting Fraport Combined Managem](https://www.marketscreener.com/quote/stock/FRAPORT-AG-450725/news/Fraport-Combined-Management-Report-for-the-fiscal-year-2024-49599480/) and 1 more
+
+**Data centres and cloud** - EVIDENCED_PUBLIC, 9 source(s)
+
+- Primary public cloud provider – named: Microsoft Azure
+- On-site DC services offered commercially (KRITIS-grade): present
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| CLOUD MIGRATION FRAMEWORK AGREEMENT – TERM | DE | 5 | 5 | 5 | 2023 |
+| OWNED/OPERATED DATA CENTRES AT FRANKFURT AIRPORT CAMPUS | DE | 3 | 3 | 3 | 2018 |
+
+Sources: [Cisco Blogs](https://blogs.cisco.com/datacenter/frankfurt-airport-automates-dc-operations-delivers-digital-services-with-dc-anywhere); [Fraport AG (b2b portal)](https://b2b.frankfurt-airport.com/en/real-estate-it-services/fraport-it-services.html); [Microsoft](https://www.microsoft.com/en/customers/story/1770212707354189428-fraport-ag-microsoft-365-travel-and-transportation-en-germany); [SAS Institute](https://www.sas.com/en_be/customers/fraport-ag.html) and 5 more
+
+**Current architecture** - EVIDENCED_PUBLIC, 7 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| AIRPORT-WIDE TELECOMMUNICATIONS NETWORK AVAILABILITY SLA – F | DE | 99.9 | 99.9 | 99.9 | 2024 |
+| FRAPORT GREECE AIRPORTS CONNECTED VIA OPERATIONAL DIGITAL PL | GR | 14 | 14 | 14 | 2026 |
+| LAN SOCKETS ON FRANKFURT AIRPORT CAMPUS MPLS NETWORK | DE | 22000 | 22000 | 22000 | 2019 |
+| MONTHLY NETWORK CHANGES PROCESSED ON FRANKFURT CAMPUS MANAGE | DE | 600 | 600 | 600 | 2019 |
+| PRIVATE 5G CAMPUS NETWORK COVERAGE AREA – FRANKFURT AIRPORT  | DE | 20 | 20 | 20 | 2024 |
+| WLAN ACCESS POINTS ON FRANKFURT AIRPORT CAMPUS MANAGED NETWO | DE | 466 | 466 | 466 | 2019 |
+
+Sources: [T-Systems International](https://www.t-systems.com/resource/blob/96834/9cc761ee4a359ccc7444c5fdd626da3c/DL-Flyer-Managed%20high-performance%20network-Fraport-en-t-systems-09-2019.pdf); [NTT Global](https://services.global.ntt/en-us/about-us/case-studies/fraport-ag); [NTT DATA](https://www.nttdata.com/en-ae/insights/case-studies/fraport-ag); [RCR Wireless News](https://www.rcrwireless.com/20220720/5g/frankfurt-airport-appoints-ntt-to-deliver-europes-largest-private-5g-network) and 3 more
+
+**Current providers and products** - EVIDENCED_PUBLIC, 8 source(s)
+
+- Managed WAN/network provider – Frankfurt Airport (DE): T-Systems
+- Core IP network, switching, routing, firewalls, WLAN – Frankfurt Airport (DE): Cisco
+- Private 5G campus network system integrator – Frankfurt Airport (DE): NTT DATA
+- Private 5G RAN supplier – Frankfurt Airport (DE): Nokia
+- WAN/VPN and data centre provider – Fraport Greece (GR, 14 airports): COSMOTE / OTE Group
+- Private radio network supplier – Fraport Greece (GR, 14 airports): Motorola
+
+Sources: [T-Systems](https://www.t-systems.com/resource/blob/96834/9cc761ee4a359ccc7444c5fdd626da3c/DL-Flyer-Managed%20high-performance%20network-Fraport-en-t-systems-09-2019.pdf); [Fraport AG](https://www.fraport.com/en/newsroom/press-releases/2022/q3/fraport-and-ntt-to-build-europe-s-largest-private-5g-network-at-.html); [NTT Ltd.](https://services.global.ntt/en-us/about-us/case-studies/fraport-ag); [Tecknexus](https://tecknexus.com/private-network-excellence-in-airports-ntt-data-and-fraport-build-europes-largest-private-5g-at-frankfurt-airport/) and 4 more
+
+**Contract and sourcing events** - EVIDENCED_PUBLIC, 7 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| FRAPORT GREECE / AIRPORTLABS DIGITAL OPERATIONS PLATFORM – A | GR | 14 | 14 | 14 | 2026 |
+| NTT PRIVATE 5G CAMPUS NETWORK COVERAGE – FRANKFURT AIRPORT | DE | 20 | 20 | 20 | 2022 |
+| T-SYSTEMS INFRASTRUCTURE OUTSOURCING CONTRACT VALUE (2005) | DE | 255000000 | 255000000 | 255000000 | 2005 |
+| T-SYSTEMS INFRASTRUCTURE OUTSOURCING CONTRACT VALUE (2012 FO | DE | 10500000 | 10500000 | 10500000 | 2012 |
+
+Sources: [GlobalData](https://www.globaldata.com/company-profile/fraport-ag/premium-data/technology-services-contracts/); [T-Systems International](https://www.t-systems.com/resource/blob/96834/9cc761ee4a359ccc7444c5fdd626da3c/DL-Flyer-Managed%20high-performance%20network-Fraport-en-t-systems-09-2019.pdf); [RCR Wireless News](https://www.rcrwireless.com/20220720/5g/frankfurt-airport-appoints-ntt-to-deliver-europes-largest-private-5g-network); [PR Newswire / AirportLabs](https://www.prnewswire.com/news-releases/fraport-greece-and-airportlabs-partner-to-optimise-operations-across-14-regional-airports-302747046.html) and 3 more
+
+**Transformation announcements** - EVIDENCED_PUBLIC, 6 source(s)
+
+- ARIS Cloud migration – on-premise server replacement reducing IT costs (DE): not quantified
+- Fraport.2030 strategy announcement date: 2024-Q1
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| ANNUAL IT AND EQUIPMENT INVESTMENT AT FRANKFURT AIRPORT (STA | DE | 100000000 | 100000000 | 100000000 | 2026 |
+| FRANKFURT AIRPORT BRICK-AND-MORTAR CAPEX TARGET (DE, 2026–20 | DE | None | None | None |  |
+| FRAPORT GROUP NORMALISED CAPEX TARGET FROM 2028 (TOTAL AIRPO |  | None | None | None |  |
+| FRAPORT.2030 DAISY – DIGITALIZATION PROJECT SCALE (MVPS DEVE |  | None | None | None |  |
+| FRAPORT.2030 DIGITALIZATION – STATED ROI OF SINGLE STANDOUT  | DE | None | None | None |  |
+| FRAPORT.2030 GROUP EBITDA TARGET BY 2030 |  | 2000000000 | 2000000000 | 2000000000 | 2026 |
+| FRAPORT.2030 GROUP FREE CASH FLOW TARGET BY 2030 |  | 1000000000 | 1000000000 | 1000000000 | 2026 |
+| PRIVATE 5G NETWORK COVERAGE – FRANKFURT AIRPORT CAMPUS (DE) | DE | 2500 | 2500 | 2500 | 2024 |
+
+Sources: [Fraport AG (Annual Report 2024, PDF)](https://www.fraport.com/content/dam/fraport-company/documents/investoren/eng/publications/annual-reports/Annual%20Report%202024.pdf/_jcr_content/renditions/original./Annual%20Report%202024.pdf); [Fraport AG (press release, FY2023 results)](https://www.fraport.com/en/newsroom/press-releases/2024/q1/fraport-fiscal-year-2023--traffic-growth-brings-records-for-reve.html); [Future Travel Experience (trade press)](https://www.futuretravelexperience.com/2026/04/inside-fraports-digital-transformation-journey-scaling-innovation-embracing-ai-and-robotics-and-a-culture-of-experimentation/); [NTT Global Services (vendor case study)](https://services.global.ntt/en-us/about-us/case-studies/fraport-ag) and 2 more
 
 **Market serviceability** - EVIDENCED_PUBLIC, 10 source(s)
 
