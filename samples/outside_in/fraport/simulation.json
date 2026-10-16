@@ -1,13 +1,13 @@
 {
-  "simulation_run_id": "0eb5da01-01d8-4388-b158-444210bd3ba4",
+  "simulation_run_id": "525b3927-9aee-4299-9a71-377bd2b3146b",
   "case_id": "a93435b0-a87b-4d6b-92fb-846a69ebc86b",
   "model_version": "sim-2.7.0",
   "seed": 20260101,
   "ensemble_size": 25,
   "status": "SUCCEEDED",
-  "output_hash": "1ca7178252fb00e12f2d90423da4fbdb67c78d8eae9233820507d819058bc82b",
-  "started_at": "2026-10-16 13:49:25.544110+00:00",
-  "ended_at": "2026-10-16 13:49:25.675702+00:00",
+  "output_hash": "2fc9f033c918d85b3df56e9dd171a20cca19fc86598352ea1d9550935515440a",
+  "started_at": "2026-10-16 16:49:03.256167+00:00",
+  "ended_at": "2026-10-16 16:49:03.390764+00:00",
   "params": {
     "footprint": [
       {
@@ -69,7 +69,7 @@
       {
         "country": "GR",
         "archetype": "TERMINAL",
-        "sites": 14,
+        "sites": 15,
         "industry": null,
         "count_source": null,
         "density": "SUBURBAN"
@@ -1541,10 +1541,10 @@
     "model_version": "sim-2.7.0",
     "seed": 20260101,
     "ensemble_size": 25,
-    "sites": 40,
+    "sites": 41,
     "serviceability": {
       "counts": {
-        "DELIVERED": 20,
+        "DELIVERED": 21,
         "SUBSTITUTED": 20,
         "UNSERVICEABLE": 0
       },
@@ -1575,7 +1575,7 @@
         }
       ],
       "unserviceable": 0,
-      "note": "20 of 40 site(s) take a different product or tier from the one their type asks for, and 0 can be served by nothing at all. A uniform estate is an assumption; this is what the density bands say about it.",
+      "note": "20 of 41 site(s) take a different product or tier from the one their type asks for, and 0 can be served by nothing at all. A uniform estate is an assumption; this is what the density bands say about it.",
       "table_rows": 34,
       "table_basis": "GOVERNED"
     },
@@ -1775,6 +1775,14 @@
       },
       {
         "because": "NOT_DELIVERABLE",
+        "country": "GR",
+        "archetype": "TERMINAL",
+        "density": "SUBURBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in SUBURBAN GR is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
         "country": "PE",
         "archetype": "TERMINAL",
         "density": "SUBURBAN",
@@ -1792,16 +1800,16 @@
     ],
     "estate_truncated": 0,
     "sites_named": 0,
-    "sites_generated": 40,
+    "sites_generated": 41,
     "circuits": {
-      "low": 55,
-      "base": 58,
-      "high": 59
+      "low": 56,
+      "base": 59,
+      "high": 60
     },
     "circuits_primary": {
-      "low": 40,
-      "base": 40,
-      "high": 40
+      "low": 41,
+      "base": 41,
+      "high": 41
     },
     "circuits_backup": {
       "low": 9,
@@ -1924,7 +1932,7 @@
         "product": "ETHERNET",
         "role": "PRIMARY",
         "bandwidth_mbps": 8500,
-        "count": 14,
+        "count": 15,
         "service_class": "ETHERNET",
         "density": "SUBURBAN",
         "bearer_mbps": 10000,
@@ -1959,13 +1967,13 @@
       "high": 13
     },
     "circuits_backbone": 6,
-    "circuits_per_site_base": 1.375,
-    "implied_users": 50980,
+    "circuits_per_site_base": 1.3659,
+    "implied_users": 52980,
     "bandwidth_profile": {
       "TERMINAL": {
-        "sites": 22,
+        "sites": 23,
         "mbps_per_site": 10000,
-        "mbps_total": 220000
+        "mbps_total": 230000
       },
       "CAMPUS": {
         "sites": 1,
@@ -1988,7 +1996,7 @@
         "mbps_total": 8000
       }
     },
-    "bandwidth_mbps_total": 328000,
+    "bandwidth_mbps_total": 338000,
     "diversity_state": "SIMULATED",
     "backbone": {
       "template_version": "1.0.0",
@@ -2028,12 +2036,12 @@
       "backbone_circuits": 6,
       "note": "One region with data centres (EUROPE_CENTRAL), so there is no global core tier - a hub has nothing to reach across."
     },
-    "node_count": 40,
-    "edge_count": 55
+    "node_count": 41,
+    "edge_count": 56
   },
   "output_omitted": {
     "fields": [
-      "estate (40 rows)",
+      "estate (41 rows)",
       "sample_topology (2 rows)"
     ],
     "why": "per-site arrays, the same information the aggregates carry; tools/backfill_simulation.py --full keeps them"
