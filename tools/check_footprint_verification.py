@@ -28,6 +28,20 @@ import sys
 REGISTER = pathlib.Path("samples") / "verification_register.csv"
 SPEC = pathlib.Path("samples") / "companies.json"
 
+#: The fifteen archetypes a footprint row may carry.
+#
+# Written out rather than imported because this checker runs outside the
+# container, with no app on the path. test_verifier_archetypes_match_the_spec
+# keeps the two in step - a copied list that nothing compares is a list that
+# drifts, and the drift is silent: a missing archetype does not raise, it
+# just stops reporting rows of that type.
+VALID_ARCHETYPES = frozenset({
+    "ATM", "BRANCH", "CAMPUS", "CONTROL_CENTER", "DC", "LARGE_OFFICE",
+    "LEGACY_WAN_SITE", "NETWORK_SITE", "PLANT", "REMOTE_SITE",
+    "SELF_SERVICE_TERMINAL", "SERVICE_POINT", "STORE", "TERMINAL",
+    "WAREHOUSE",
+})
+
 #: A disposition says what a person concluded, not what the model did.
 DISPOSITIONS = {
     # The changed count was checked against the evidence and stands.
@@ -402,6 +416,77 @@ def archetype_collisions(outdir: pathlib.Path, spec_path: pathlib.Path) -> list:
     return sorted(out, key=lambda c: -c["found"])
 
 
+def found_but_unused(outdir: pathlib.Path, spec_path: pathlib.Path) -> list:
+    """Footprint pairs research labelled and the estate never took.
+
+    27% of what research labels never reaches an estate, and the waste is the
+    smaller half of the problem. The larger half is that an apportioned
+    declaration is only TESTED when research promotes a competing figure - so
+    a pair that research found and did not promote leaves a round number
+    standing with nothing against it.
+
+    Four rows proved it in one batch. Carrefour Brazil was declared at an
+    apportioned 1,000 while research held 718 with a format breakdown that
+    reconciles exactly - 108 + 26 + 141 + 385 + 58 - and never promoted it.
+    Capgemini's French, German and British office counts were the same shape.
+    All four were caught by priced_above_research, which reports a GAP rather
+    than a conflict and is a weaker signal than the evidence deserved.
+
+    Reported, never enforced: a pair can be absent for good reasons - the
+    classifier declined it, or an analyst excluded it deliberately - and the
+    point is to put it in front of the person doing the ruling.
+    """
+    spec = {c["slug"]: c for c in
+            json.loads(spec_path.read_text("utf-8"))["companies"]}
+    out = []
+    for d in sorted(outdir.iterdir()):
+        rj = d / "research.json"
+        if not d.is_dir() or not rj.exists():
+            continue
+        research = json.loads(rj.read_text("utf-8"))
+        promoted = {(e["country"], e["archetype"])
+                    for e in research.get("evidenced_footprint") or []}
+        declared = {(r["country"], r["archetype"]): r["sites"]
+                    for r in (spec.get(d.name, {}).get("declared_footprint")
+                              or [])}
+        excluded = {(x.get("country"), x.get("archetype"))
+                    for x in (spec.get(d.name, {}).get("excluded") or [])}
+        best = {}
+        for disp in research["dispositions"]:
+            for q in ((disp.get("evidence") or {}).get("quantities") or []):
+                arch = _leading_archetype(q.get("label"))
+                country = q.get("country")
+                if not arch or not country or len(country) != 2:
+                    continue
+                key = (country, arch)
+                if key in promoted or key in excluded:
+                    continue
+                try:
+                    value = float(q.get("value"))
+                except (TypeError, ValueError):
+                    continue
+                if value <= 0 or value > best.get(key, (0,))[0]:
+                    best[key] = (value, (q.get("label") or "")[:58])
+        for (country, arch), (value, label) in sorted(best.items()):
+            out.append({"slug": d.name, "country": country,
+                        "archetype": arch, "found": value,
+                        "declared": declared.get((country, arch)),
+                        "label": label})
+    return out
+
+
+def _leading_archetype(label) -> str:
+    """The archetype a label leads with, or "" - the checker's own copy.
+
+    Deliberately stricter than promotion.archetype_of: this reads only the
+    leading token, because a label merely MENTIONING an archetype is not a
+    count of it and this report is advisory.
+    """
+    text = str(label or "").replace("–", "-")
+    token = re.split(r"[-(:]", text)[0].strip().upper().replace(" ", "_")
+    return token if token in VALID_ARCHETYPES else ""
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", default="samples/outside_in")
@@ -488,6 +573,30 @@ def main() -> int:
             print(f"  {c['slug']:<16}{c['country']}/{c['archetype']:<14}"
                   f"{c['used']:>7,} sites  as of {c['as_of']}  "
                   f"{c['age']:>2}y{mark}")
+
+    unused = found_but_unused(pathlib.Path(args.out), pathlib.Path(args.spec))
+    if unused:
+        # The ones that contradict a declaration are listed first, because
+        # those are the rows where a round number is standing unchallenged
+        # against evidence nobody looked at.
+        contested = [u for u in unused if u["declared"] is not None
+                     and abs(u["found"] - u["declared"]) / max(u["declared"], 1)
+                     >= 0.10]
+        print(f"\nresearch found it, the estate never used it ({len(unused)}, "
+              f"{len(contested)} contradicting a declared figure):")
+        for u in sorted(unused, key=lambda u: (u["declared"] is None,
+                                               -abs(u["found"] -
+                                                    (u["declared"] or 0)))):
+            dec = ("not declared" if u["declared"] is None
+                   else f"declared {u['declared']:,}")
+            flag = "  <- CONTESTS THE DECLARATION" if u in contested else ""
+            print(f"  {u['slug']:<18}{u['country']}/{u['archetype']:<14}"
+                  f"found {u['found']:>8,.0f}  {dec}{flag}")
+            # The console this runs on is cp1252 and the labels carry en
+            # dashes, so an unencodable character would raise rather than
+            # print a report. Ascii-folded for display only.
+            print(f"                     "
+                  + u["label"].encode("ascii", "replace").decode())
 
     collisions = archetype_collisions(pathlib.Path(args.out),
                                       pathlib.Path(args.spec))
