@@ -301,10 +301,40 @@ PREMISES_UNITS = frozenset({
 #
 # Listed rather than merely omitted, because "substation" ends in a premises
 # noun's shape and the next person widening this list will reach for it.
+# An AREA is not a count of premises, and this is the same judgement the
+# grid assets above get. Bayer's row is the case: value 90, unit "acres (14
+# buildings, 838,000 sq ft)" - ninety ACRES of the Creve Coeur campus, which
+# Bayer is selling, promoted as ninety US campuses. The premises noun sat in
+# a parenthetical and the word test found it there.
+#
+# Two separate faults, both fixed here: the area words are listed so an area
+# can never read as an estate, and _unparenthesised() below stops a
+# parenthetical qualifying a unit it does not govern.
 NOT_PREMISES = frozenset({
     "substation", "node", "tower", "cabinet", "mast", "pole", "cell",
     "meter", "circuit", "connection", "customer", "subscriber",
+    "acre", "hectare", "ha", "sqm", "sqft", "km", "mile", "square",
 })
+
+# Locative prepositions. A thing counted AT or IN a place is a part of that
+# place unless the thing itself is premises.
+#
+# Royal Mail is the case: 1,200 "Customer Service Points", unit "parcel
+# drop-off desks at delivery offices". A counter inside a building is not a
+# building, and the arithmetic settles it - 1,200 CSPs, 1,200 delivery
+# offices, 1,200 declared SERVICE_POINTs, one estate counted three ways.
+# "office" is a premises noun and the word test found it after the
+# preposition, where it names the CONTAINER rather than the thing counted.
+_LOCATIVE = re.compile(r"\b(within|inside|at|in)\b")
+
+
+def _unparenthesised(text: str) -> str:
+    """The unit with its parentheticals removed.
+
+    A parenthetical annotates a unit; it does not change what the value
+    counts. "acres (14 buildings, 838,000 sq ft)" counts acres.
+    """
+    return re.sub(r"\([^)]*\)", " ", str(text or ""))
 
 # A count that is not of an estate that exists today.
 #
@@ -400,8 +430,13 @@ def is_premises_unit(unit) -> bool:
     # the branch as the thing being counted put a single French branch
     # into the estate beside the 1,600 declared.
     numerator = re.split(r"\s+per\s+|/", text, maxsplit=1)[0]
+    # The parenthetical cannot carry the unit, and what the value counts is
+    # what stands before the first locative preposition. "desks at delivery
+    # offices" counts desks; "stores in France" counts stores, because the
+    # head noun is premises either way and only one of them is.
+    head = _LOCATIVE.split(_unparenthesised(numerator), maxsplit=1)[0]
     words = [_singular(w) for w in "".join(
-        ch if ch.isalpha() else " " for ch in numerator).split() if w]
+        ch if ch.isalpha() else " " for ch in head).split() if w]
     return any(w in PREMISES_UNITS for w in words)
 
 
@@ -513,6 +548,96 @@ _REGION_RE = re.compile(
 def names_a_region(label) -> bool:
     """Does this label state a multi-country scope?"""
     return bool(_REGION_RE.search(str(label or "")))
+
+
+# Premises nouns that are bound to one archetype, so a label naming one
+# while the row is routed elsewhere is stating two different things.
+#
+# Deliberately TINY. A general noun-to-archetype map would be wrong more
+# often than right - Fraport's "CAMPUS - Frankfurt Airport site" names an
+# airport and is correctly a campus, and Toyota's R&D sites are correctly
+# LARGE_OFFICE. Only nouns that cannot reasonably be another archetype
+# belong here, and each earned its place from a row that was promoted wrong:
+#
+#   fraport DE/CAMPUS   "two data centers with a third as a back-up"
+#                       promoted as 3 campuses, beside a declared DE/DC 3
+#   nhs-england GB/LARGE_OFFICE  "Hospital sites (LARGE_OFFICE archetype)"
+#                       1,140 hospitals belonging to 207 separate trusts,
+#                       promoted into an office archetype whose own estate
+#                       is one building in Leeds
+_BOUND_NOUNS = (
+    (re.compile(r"\bdata\s*cent(er|re)s?\b", re.I), {"DC"}),
+    (re.compile(r"\bhospitals?\b", re.I), {"CAMPUS", "REMOTE_SITE"}),
+)
+
+
+def contradicts_archetype(label, archetype: str) -> str:
+    """The premises noun this label names, when it cannot be that archetype.
+
+    Returns the offending noun, or "" when the label and the archetype agree
+    - which is the common case and the only one that promotes.
+    """
+    for pattern, allowed in _BOUND_NOUNS:
+        m = pattern.search(str(label or ""))
+        if m and archetype not in allowed:
+            return m.group(0)
+    return ""
+
+
+# Two or more places joined into one figure.
+#
+# Woolworths is the case: "total store network comprised 1,729 retail stores
+# across Australia and New Zealand", promoted as 1,729 Australian stores.
+# BASF carried the same shape with a North American total read as a US one.
+# A footprint row is keyed on ONE country, so a figure spanning two cannot
+# be that row's count whichever country it is filed under.
+#
+# The region vocabulary is already written for prices - names_a_region - and
+# this adds the conjoined form a region name does not cover.
+_COUNTRY_WORD = (
+    r"australia|new\s+zealand|germany|france|spain|italy|belgium|netherlands"
+    r"|portugal|poland|austria|switzerland|sweden|norway|denmark|finland"
+    r"|ireland|canada|mexico|brazil|china|japan|india|singapore|turkey"
+    r"|greece|romania|bulgaria|czechia|hungary|peru|chile|argentina"
+    r"|united\s+states|usa|uk|united\s+kingdom|britain|luxembourg")
+_TWO_COUNTRIES = re.compile(
+    rf"\b({_COUNTRY_WORD})\b\s*(?:,|and|&|\+|/)\s*\b({_COUNTRY_WORD})\b",
+    re.IGNORECASE)
+
+
+def spans_two_countries(label) -> bool:
+    """Does this label state a figure covering more than one country?"""
+    return bool(_TWO_COUNTRIES.search(str(label or "")))
+
+
+# Premises somebody else operates, or holds without control.
+#
+# The test for a footprint row is not who owns the asset, it is who buys the
+# access circuit. Three labels state the answer themselves:
+#
+#   bayer US/WAREHOUSE  "GXO-operated Crop Science warehouse sites (US, 3PL)"
+#                       a 3PL warehouse is the provider's building on the
+#                       provider's network
+#   aena  MX/TERMINAL   "airports in Mexico (MX) via GAP minority stake"
+#                       6.55% of GAP - "minority financial stake only, not
+#                       operator", as Aena's own note says
+#   ups   US/STORE      franchised UPS Store locations, 5,603 of them
+#
+# Deliberately NOT including "operated by" on its own. "airports operated by
+# Fraport Greece" is the subject's own estate and the classifier has no way
+# to know whose name follows, so that phrase would decline good rows. Each
+# term here is one that cannot describe premises the subject operates.
+_NOT_THEIR_PREMISES = re.compile(
+    r"\b3pl\b|\bthird[\s-]party\b"
+    r"|\bminority\s+(stake|shareholding|interest|holding)"
+    r"|\bfranchis(e|ed|ee|es|ing)\b",
+    re.IGNORECASE)
+
+
+def not_their_premises(label) -> str:
+    """The phrase saying these premises are somebody else's, if it is there."""
+    m = _NOT_THEIR_PREMISES.search(str(label or ""))
+    return m.group(0) if m else ""
 
 
 def archetypes_named(label) -> list:
@@ -627,6 +752,21 @@ def _classify(q: dict) -> str:
     # production sites (PLANT-type)" from "DE net PLANT site closures
     # announced 2025" - the units are "sites" either way.
     if head in ARCHETYPES and (names_a_change(label) or _negated(label, head)):
+        return "unclassified"
+    # A figure that spans two countries, or a region, cannot be a count for
+    # the one country this row is keyed on. names_a_region already guards
+    # prices this way; the same scope statement disqualifies a count.
+    if head in ARCHETYPES and (spans_two_countries(label)
+                               or names_a_region(label)):
+        return "unclassified"
+    # The label names a premises type the routed archetype cannot be. Left
+    # unclassified rather than re-routed: which archetype it belongs to is a
+    # judgement, and the label saying "data centres" while the row says
+    # CAMPUS is enough to know this row is not it.
+    if head in ARCHETYPES and contradicts_archetype(label, head):
+        return "unclassified"
+    # Premises the label itself says belong to somebody else.
+    if head in ARCHETYPES and not_their_premises(label):
         return "unclassified"
     if head in ARCHETYPES and len(country) == 2 and (
             is_premises_unit(unit)
