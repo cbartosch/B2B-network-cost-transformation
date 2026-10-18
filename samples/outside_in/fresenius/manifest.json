@@ -16,7 +16,7 @@
   "base_currency": "EUR",
   "case_id": "e71dd642-34f1-44b8-8bc1-8c2a230f9cae",
   "spec_path": "/tmp/companies.json",
-  "spec_sha256": "1728910bb736",
+  "spec_sha256": "58e092f291b6",
   "entity_resolution": {
     "resolved": null,
     "resumed": true
@@ -220,15 +220,31 @@
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-15T10:53:36.686142+00:00",
-  "run_seconds": 3.3,
+  "run_started": "2026-10-18T13:46:39.149331+00:00",
+  "run_seconds": 6.6,
   "preflight_conditions": 8,
   "promotion": {
     "promoted": true,
     "detail": null,
-    "offered": 6,
+    "offered": 8,
     "accepted": 3,
     "declined": [
+      {
+        "reason": "sources disagree by 27% (492 to 625), and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
+        "label": "US DIA 100 Mbps MRC — Lightyear dataset median (36-month, mixed US geographies)",
+        "country": "US",
+        "flags": [
+          "MATERIAL_SPREAD"
+        ]
+      },
+      {
+        "reason": "sources disagree by 19% (901 to 1070), and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
+        "label": "US DIA 1 Gbps MRC — Lightyear dataset median (36-month, mixed US geographies)",
+        "country": "US",
+        "flags": [
+          "MATERIAL_SPREAD"
+        ]
+      },
       {
         "reason": "sources state this in units that disagree, and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
         "label": "BRANCH (outpatient medical care centers/MVZ) — DE (Helios Germany)",
@@ -244,17 +260,9 @@
         "flags": [
           "UNIT_MISMATCH"
         ]
-      },
-      {
-        "reason": "sources state this in units that disagree, and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
-        "label": "LARGE_OFFICE (hospitals) — ES (Quirónsalud / Helios Spain)",
-        "country": "ES",
-        "flags": [
-          "UNIT_MISMATCH"
-        ]
       }
     ],
-    "declined_count": 3
+    "declined_count": 4
   },
   "domains_benchmark_disposed": [
     3,

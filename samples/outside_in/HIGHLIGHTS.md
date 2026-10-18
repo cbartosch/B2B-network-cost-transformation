@@ -278,7 +278,7 @@ Sources: [OpenSignal](https://insights.opensignal.com/reports/2025/10/spain/fixe
 
 ## Koninklijke Ahold Delhaize N.V.
 
-- **Industry** GROCERY_RETAIL (spec fallback)
+- **Industry** GROCERY_RETAIL (entity resolution)
 - **Scope** NL, BE, US, GR, RO, CZ, EUR, 6,079 sites (research merged with disclosure)
 - **Confidence** 0.324 (D - Indicative), coverage COMPLETE
 
@@ -1804,7 +1804,7 @@ Sources: [TelecomLead](https://telecomlead.com/broadband/germany-broadband-marke
 
 ## E.ON SE
 
-- **Industry** UTILITIES (spec fallback)
+- **Industry** UTILITIES (entity resolution)
 - **Scope** DE, GB, SE, CZ, HU, RO, PL, NL, EUR, 858 sites (research merged with disclosure)
 - **Confidence** 0.333 (D - Indicative), coverage COMPLETE
 
@@ -3093,7 +3093,7 @@ Sources: [Swiss Federal Office of Communications / ComCom](https://www.comcom.ad
 
 - **Industry** RAILWAYS (entity resolution)
 - **Scope** GB, GBP, 899 sites (research merged with disclosure)
-- **Confidence** 0.327 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.329 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 4 source(s)
 
@@ -3234,7 +3234,7 @@ Sources: [Amvia](https://amvia.co.uk/leased-lines/compare/uk-leased-line-provide
 
 - **Industry** HOSPITAL (entity resolution)
 - **Scope** GB, GBP, 1,491 sites (research merged with disclosure)
-- **Confidence** 0.336 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.337 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 5 source(s)
 
@@ -3370,128 +3370,135 @@ Sources: [techUK](https://www.techuk.org/resource/ofcom-releases-connected-natio
 - **Scope** CH, DE, US, IE, IT, ES, AT, SG, CHF, 125 sites (research merged with disclosure)
 - **Confidence** 0.346 (D - Indicative), coverage COMPLETE
 
-**Profile** - EVIDENCED_PUBLIC, 9 source(s)
+**Profile** - EVIDENCED_PUBLIC, 10 source(s)
 
 | what | country | low | base | high | as of |
 | --- | --- | --- | --- | --- | --- |
-| FTE EMPLOYEES – EUROPE REGION |  | 36092 | 36092 | 36092 | 2024 |
-| FTE EMPLOYEES – UNITED STATES | US | 12591 | 12591 | 12591 | 2024 |
-| FULL-TIME EQUIVALENT EMPLOYEES (GROUP) |  | 75463 | 75883 | 75883 | 2026 |
-| HEADCOUNT (GROUP) |  | 78310 | 78310 | 78310 | 2024 |
-| NET SALES FROM CONTINUING OPERATIONS (GROUP) |  | 50317000000 | 50318500000 | 50320000000 | 2024 |
-| NET SALES – GERMANY (DE) | DE | 3660000000 | 3660000000 | 3660000000 | 2024 |
-| NET SALES – SWITZERLAND (CH) | CH | 1315000000 | 1315000000 | 1315000000 | 2024 |
-| NET SALES – UNITED STATES (US) | US | 21146000000 | 21146000000 | 21146000000 | 2024 |
-| NUMBER OF COUNTRIES WHERE PRODUCTS ARE SOLD |  | 120 | 125 | 130 | 2024 |
-| NUMBER OF GLOBAL OPERATING SITES (INCL. MANUFACTURING, R&D,  |  | 33 | 33 | 33 | 2024 |
+| EMPLOYEES IN EUROPE (FTE) |  | 36092 | 36092 | 36092 | 2024 |
+| EMPLOYEES IN SWITZERLAND (HEADCOUNT) | CH | 10000 | 10000 | 10000 | 2024 |
+| EMPLOYEES IN US (FTE) | US | 12591 | 12591 | 12591 | 2024 |
+| FULL-TIME EQUIVALENT EMPLOYEES (GROUP) |  | 75267 | 75575 | 75883 | 2025 |
+| NET SALES FROM CONTINUING OPERATIONS |  | 56670000000 | 56670000000 | 56670000000 | 2025 |
+| NET SALES – EUROPE REGION |  | 15557000000 | 15557000000 | 15557000000 | 2024 |
+| NET SALES – GERMANY | DE | 3660000000 | 3660000000 | 3660000000 | 2024 |
+| NET SALES – SWITZERLAND | CH | 1315000000 | 1315000000 | 1315000000 | 2024 |
+| NET SALES – UNITED STATES | US | 21146000000 | 21146000000 | 21146000000 | 2024 |
+| NUMBER OF COUNTRIES WHERE PRODUCTS SOLD |  | 120 | 120 | 130 | 2025 |
 
-*2 conflict(s) flagged: FTE EMPLOYEES – UNITED STATES, NUMBER OF GLOBAL OPERATING SITES (INCL. MANUFACTURING, R&D, OFFICES)*
+*5 conflict(s) flagged: EMPLOYEES IN US (FTE), FULL-TIME EQUIVALENT EMPLOYEES (GROUP), NET SALES FROM CONTINUING OPERATIONS, NET SALES – EUROPE REGION, NET SALES – UNITED STATES*
 
-Sources: [Novartis AG (SEC EDGAR – Form 20-F FY2024)](https://www.sec.gov/Archives/edgar/data/0001114448/000137036825000004/nvs-20241231.htm); [Novartis AG (SEC EDGAR – Form 6-K / Integrated R](https://www.sec.gov/Archives/edgar/data/1114448/000137036825000008/a250131-99_2.pdf); [Novartis AG (SEC EDGAR – Form 6-K FY2024 financi](https://www.sec.gov/Archives/edgar/data/1114448/000137036825000008/a250131-99_1.pdf); [Novartis AG (SEC EDGAR – Form 424B5 2024)](https://www.sec.gov/Archives/edgar/data/1114448/000110465924100040/tm2423681-4_424b5.htm) and 5 more
+Sources: [Novartis AG / SEC EDGAR](https://www.sec.gov/Archives/edgar/data/0001114448/000137036825000004/nvs-20241231.htm); [Novartis AG / SEC EDGAR Form 20-F FY2024 Financi](https://www.sec.gov/Archives/edgar/data/1114448/000137036825000004/Financial_Report.xlsx); [Novartis AG / SEC EDGAR Form 6-K (Integrated Rep](https://www.sec.gov/Archives/edgar/data/1114448/000137036825000008/a250131-99_2.pdf); [Novartis AG – Annual Report 2025](https://www.novartis.com/sites/novartis_com/files/novartis-annual-report-2025.pdf) and 6 more
 
 **Locations** - EVIDENCED_PUBLIC, 10 source(s)
 
+- IE/IT/ES/SG – Named subsidiary/site count per country (from 20-F 2023 subsidiary list): see candidates
+
 | what | country | low | base | high | as of |
 | --- | --- | --- | --- | --- | --- |
-| GLOBAL OFFICE LOCATIONS (AGGREGATOR COUNT) |  | 130 | 130 | 130 | 2024 |
-| LARGE_OFFICE / CAMPUS SITES, SWITZERLAND – BASEL ST. JOHANN  | CH | 481448 | 481448 | 481448 | 2025 |
-| LARGE_OFFICE SITES, GERMANY (DE) | DE | 2 | 2 | 2 | 2026 |
-| MAJOR FACILITIES, UNITED STATES (US) – NAMED IN ANNUAL REPOR | US | 4 | 4 | 4 | 2025 |
-| OPERATING SITES WORLDWIDE (TOTAL) |  | 197 | 197 | 197 | 2024 |
-| OPERATING SITES, GERMANY (DE) | DE | 6 | 6 | 6 | 2026 |
-| OPERATING SITES, SWITZERLAND (CH) | CH | 6 | 6 | 6 | 2025 |
-| PLANT SITES, GERMANY (DE) – MANUFACTURING | DE | 2 | 2 | 2 | 2024 |
-| PLANT SITES, SWITZERLAND (CH) – MANUFACTURING | CH | 33 | 33 | 33 | 2024 |
-| TOTAL COMMERCIAL/MANUFACTURING FACILITIES, UNITED STATES (US | US | 12 | 12 | 12 | 2025 |
+| AT – MANUFACTURING SITE(S) AT KUNDL/SCHAFTENAU/LANGKAMPFEN M | AT | 283017 | 381508.5 | 480000 | 2025 |
+| CH – BASEL CAMPUS (CAMPUS: GLOBAL HQ, R&D, COMMERCIAL, >7000 | CH | 481448 | 481448 | 481448 | 2024 |
+| CH – MANUFACTURING SITES (SCHWEIZERHALLE + STEIN + BASEL BDS | CH | 3 | 3 | 3 | 2024 |
+| CH – OFFICES (GENEVA AAA HQ + ROTKREUZ SWISS BU + FRIBOURG N | CH | 3 | 3 | 3 | 2024 |
+| CH – TOTAL NAMED OPERATING SITES | CH | 6 | 6 | 6 | 2025 |
+| DE – TOTAL NAMED OPERATING SITES | DE | 6 | 6 | 6 | 2024 |
+| MANUFACTURING SITES WORLDWIDE |  | 31 | 32 | 33 | 2025 |
+| OPERATING SITES WORLDWIDE (TOTAL, ALL TYPES) |  | 197 | 197 | 197 | 2024 |
+| US – TOTAL FACILITIES (PRIOR TO $23B EXPANSION) | US | 12 | 12 | 12 | 2025 |
 
-*2 conflict(s) flagged: PLANT SITES, SWITZERLAND (CH) – MANUFACTURING, TOTAL COMMERCIAL/MANUFACTURING FACILITIES, UNITED STATES (US) – PRE-EXPANSION*
+*2 conflict(s) flagged: AT – MANUFACTURING SITE(S) AT KUNDL/SCHAFTENAU/LANGKAMPFEN MAPPED TO PLANT, US – TOTAL FACILITIES (PRIOR TO $23B EXPANSION)*
 
-Sources: [Novartis AG](https://www.novartis.com/sites/novartis_com/files/novartis-integrated-report-2024.pdf); [Novartis AG](https://www.novartis.com/sites/novartis_com/files/novartis-annual-report-2025.pdf); [Novartis AG](https://www.novartis.com/sites/novartis_com/files/novartis-annual-report-2024.pdf); [Novartis AG (Switzerland brochure 2024)](https://www.novartis.com/ch-de/sites/novartis_ch/files/novartis-in-switzerland-2024.pdf) and 6 more
+Sources: [Novartis AG](https://www.novartis.com/sites/novartis_com/files/novartis-integrated-report-2024.pdf); [Novartis AG – Annual Report / Form 20-F 2024](https://www.novartis.com/sites/novartis_com/files/novartis-annual-report-2024.pdf); [Novartis AG – Form 20-F 2025](https://www.novartis.com/sites/novartis_com/files/novartis-20-f-2025.pdf); [Novartis AG – Form 20-F 2023 (SEC EDGAR – subsid](https://www.sec.gov/Archives/edgar/data/1114448/000137036824000004/Financial_Report.xlsx) and 6 more
 
 **Data centres and cloud** - EVIDENCED_PUBLIC, 7 source(s)
 
-- AWS – primary cloud provider for multi-cloud data/analytics platform: primary
-- LDC (Lean Digital Core) SAP S/4HANA rollout countries in-scope: 75+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| AWS MANUFACTURING COLLABORATION – PRODUCTION FACILITIES COVE |  | None | None | None |  |
+| CLOUD PROVIDER – AWS (MULTI-YEAR STRATEGIC COLLABORATION) |  | None | None | None |  |
+| CLOUD PROVIDER – MICROSOFT AZURE (STRATEGIC PARTNERSHIP) |  | None | None | None |  |
+| DC – BASEL, SWITZERLAND (CH) | CH | 1 | 1 | 1 | 2015 |
+| DC – EAST HANOVER, NEW JERSEY, USA (US) | US | 1 | 1 | 1 | 2015 |
+| DC – FORT WORTH, TEXAS, USA (US, ALCON CAMPUS) | US | 1 | 1 | 1 | 2015 |
+| DC – STEIN, SWITZERLAND (CH) | CH | 1 | 1 | 1 | 2015 |
+| FORT WORTH DC CAPITAL COST | US | 53000000 | 53000000 | 53000000 | 2015 |
+| PRIMARY GLOBAL DATA CENTRES (ALL LOCATIONS) |  | 4 | 4 | 4 | 2015 |
+
+Sources: [BioSpace](https://www.biospace.com/novartis-ag-opens-up-53-million-global-data-center-at-alcon-in-texas); [BioPharma Dive](https://www.biopharmadive.com/news/novartis-amazon-aws-manufacturing-supply-chain/568572/); [Amazon Web Services](https://aws.amazon.com/blogs/industries/how-novartis-brought-smart-into-smart-procurement-with-aws-machine-learning/); [Novartis AG (SEC Form 6-K)](https://www.sec.gov/Archives/edgar/data/1114448/000137036825000008/a250131-99_2.pdf) and 3 more
+
+**Current architecture** - EVIDENCED_PUBLIC, 4 source(s)
 
 | what | country | low | base | high | as of |
 | --- | --- | --- | --- | --- | --- |
-| DC SITES IN GERMANY (DE) | DE | 0 | 0 | 0 | 2015 |
-| DC SITES IN SWITZERLAND (CH) | CH | 2 | 2 | 2 | 2015 |
-| DC SITES IN UNITED STATES (US) | US | 2 | 2 | 2 | 2015 |
-| FORT WORTH TX DATA CENTRE CAPITAL COST (US) | US | 53000000 | 53000000 | 53000000 | 2015 |
-| MICROSOFT AZURE – STRATEGIC AI CLOUD PARTNERSHIP (DURATION) |  | 5 | 5 | 5 | 2019 |
-| PRIMARY GLOBAL DATA CENTRES (TOTAL) |  | 4 | 4 | 4 | 2015 |
-| SHARE OF GLOBAL COMPANY DATA ON MULTI-CLOUD ANALYTICS PLATFO |  | 35 | 35 | 35 | 2022 |
+| BT AS NOVARTIS GLOBAL NETWORK TECHNOLOGY PARTNER (HISTORICAL | ZA | None | None | None |  |
+| CISCO HARDWARE DEPLOYED AT NOVARTIS SITES (ROUTERS, SWITCHES | ZA | None | None | None |  |
+| MULTI-CLOUD (AWS, AZURE) CONNECTIVITY IN SCOPE FOR WAN ARCHI |  | None | None | None |  |
+| SASE AND ZTNA IN SCOPE FOR NETWORK SECURITY ARCHITECTURE |  | None | None | None |  |
+| SD-WAN IN SCOPE FOR NETWORK ARCHITECT ROLES |  | None | None | None |  |
 
-Sources: [Fort Worth Business Press](https://fortworthbusiness.com/health-care/health-notes-novartis-unveils-global-data-center-in-fort-worth/); [GeekWire](https://www.geekwire.com/2019/microsoft-will-use-ai-supercharge-novartis-giant-drug-development-engine/); [BioPharma Dive](https://www.biopharmadive.com/news/novartis-microsoft-ai-artificial-intelligence-alliance-car-t/564117/); [Accenture (case study)](https://www.accenture.com/us-en/case-studies/life-sciences/reimagining-medicine-through-data-led-transformation) and 3 more
+Sources: [Novartis AG](https://www.novartis.com/careers/career-search/job/details/req-10014238-network-specialist); [Huzzle (aggregating Novartis job posting)](https://www.huzzle.com/jobs/associate-director-enterprise-architect-network-security-247605); [Novartis AG](https://www.novartis.com/careers/career-search/job/details/req-10083559-associate-director-enterprise-architect-network-security); [ITWeb](https://www.itweb.co.za/article/novartis-revamps-its-infrastructure-with-kss-cisco/4r1lyMR1KVz7pmda)
 
-**Current architecture** - EVIDENCED_PUBLIC, 2 source(s)
-
-- Primary WAN hardware vendor: Cisco
-- SD-WAN adoption status: In adoption / partial deployment
-- WAN routing protocols in use: BGP, OSPF
-- Data-centre network fabric vendor (Novartis): Cisco (Nexus/UCS/MDS/vBlock/PNSC/VSG)
-- Cloud platform (multi-cloud, relevant for DIA/internet breakout demand): Multi-cloud (AWS primary, Azure referenced)
-
-Sources: [Novartis AG](https://www.novartis.com/careers/career-search/job/details/req-10014238-network-specialist); [Accenture](https://www.accenture.com/us-en/case-studies/life-sciences/reimagining-medicine-through-data-led-transformation)
-
-**Current providers and products** - EVIDENCED_PUBLIC, 7 source(s)
+**Current providers and products** - EVIDENCED_PUBLIC, 6 source(s)
 
 | what | country | low | base | high | as of |
 | --- | --- | --- | --- | --- | --- |
-| APPLICATION/CRM PLATFORM – SALESFORCE AGENTFORCE LIFE SCIENC |  | None | None | None |  |
-| CLOUD INFRASTRUCTURE OUTSOURCING – AWS |  | None | None | None |  |
-| INFRASTRUCTURE OUTSOURCING MSP – HCL TECHNOLOGIES |  | None | None | None |  |
-| INFRASTRUCTURE OUTSOURCING – IBM (SAP INFRASTRUCTURE) |  | None | None | None |  |
-| INSOURCING OF IT INFRASTRUCTURE (SUPERSEDING OUTSOURCED WAN/ |  | None | None | None |  |
-| NETWORK EQUIPMENT VENDOR – CISCO (INFERRED FROM JOB POSTING) |  | None | None | None |  |
+| CLOUD INFRASTRUCTURE PROVIDER – AMAZON WEB SERVICES |  | 1 | 1 | 1 | 2014 |
+| IT INFRASTRUCTURE CONTRACT VALUE – HCL TECHNOLOGIES |  | 75 | 75 | 75 | 2014 |
+| IT INFRASTRUCTURE CONTRACT VALUE – IBM |  | 60 | 60 | 60 | 2014 |
+| IT INFRASTRUCTURE INSOURCING SIGNAL – LARGE VENDOR CONTRACT  |  | 1 | 1 | 1 | 2022 |
+| IT INFRASTRUCTURE MANAGED SERVICES PROVIDER – HCL TECHNOLOGI |  | 1 | 1 | 1 | 2014 |
+| IT INFRASTRUCTURE OUTSOURCING – CONFIRMED ONGOING RELIANCE O |  | 1 | 1 | 1 | 2025 |
+| SAP INFRASTRUCTURE MANAGED SERVICES PROVIDER – IBM |  | 1 | 1 | 1 | 2014 |
 
-Sources: [FierceBiotech](https://www.fiercebiotech.com/data-management/hcl-tech-adds-novartis-to-roster-of-big-pharma-clients); [Business Standard](https://www.business-standard.com/content/b2b-chemicals/novartis-selects-hcl-for-global-infrastructure-management-114051301102_1.html); [GlobalData](https://www.globaldata.com/company-profile/novartis-ag/premium-data/technology-services-contracts/); [Computerwoche](https://www.computerwoche.de/article/2775482/novartis-laesst-ibm-seine-sap-infrastruktur-verwalten.html) and 3 more
+Sources: [Business Standard](https://www.business-standard.com/content/b2b-chemicals/novartis-selects-hcl-for-global-infrastructure-management-114051301102_1.html); [Fierce Biotech](https://www.fiercebiotech.com/data-management/hcl-tech-adds-novartis-to-roster-of-big-pharma-clients); [GlobalData](https://www.globaldata.com/company-profile/novartis-ag/premium-data/technology-services-contracts/); [Computerwoche](https://www.computerwoche.de/article/2775482/novartis-laesst-ibm-seine-sap-infrastruktur-verwalten.html) and 2 more
 
-**Contract and sourcing events** - EVIDENCED_PUBLIC, 5 source(s)
+**Contract and sourcing events** - EVIDENCED_PUBLIC, 3 source(s)
 
 | what | country | low | base | high | as of |
 | --- | --- | --- | --- | --- | --- |
-| HCL TECHNOLOGIES INFRASTRUCTURE OUTSOURCING CONTRACT VALUE |  | 75 | 75 | 75 | 2014 |
-| HCL TECHNOLOGIES – GEOGRAPHIC SCOPE OF NOVARTIS INFRASTRUCTU |  | None | None | None |  |
-| IBM INFRASTRUCTURE OUTSOURCING CONTRACT VALUE |  | 60 | 60 | 60 | 2014 |
+| AWS INFRASTRUCTURE OUTSOURCING CONTRACT VALUE – NOVARTIS |  | 6 | 6 | 6 | 2014 |
+| BT MANAGED SERVICES CONTRACT TERM – NOVARTIS |  | 7 | 7 | 7 | 2007 |
+| BT MANAGED SERVICES CONTRACT VALUE – NOVARTIS GLOBAL (95 COU |  | 500000000 | 500000000 | 500000000 | 2007 |
+| BT MANAGED SERVICES COUNTRY SCOPE – NOVARTIS |  | 95 | 95 | 95 | 2007 |
+| HCL TECHNOLOGIES INFRASTRUCTURE OUTSOURCING CONTRACT VALUE – |  | 75 | 75 | 75 | 2014 |
+| IBM INFRASTRUCTURE OUTSOURCING CONTRACT VALUE – NOVARTIS |  | 60 | 60 | 60 | 2014 |
 
-Sources: [FierceBiotech](https://www.fiercebiotech.com/data-management/hcl-tech-adds-novartis-to-roster-of-big-pharma-clients); [Business Standard](https://www.business-standard.com/content/b2b-chemicals/novartis-selects-hcl-for-global-infrastructure-management-114051301102_1.html); [CIO.com](https://www.cio.com/article/222269/novartis-succeeds-in-managing-it-modernization-journey-with-two-team-approach.html); [Novartis / AWS](https://www.novartis.com/news/amazon-web-services-aws-announces-strategic-collaboration-novartis-accelerate-digital-transformation-its-business-operations) and 1 more
+Sources: [BT Group PLC – SEC Form 6-K (FY2008)](https://www.sec.gov/Archives/edgar/data/0000756620/000115697308000572/u55641.htm); [GlobalData](https://www.globaldata.com/company-profile/novartis-ag/premium-data/technology-services-contracts/); [Novartis AG (corporate website)](https://www.novartis.com/supplier-portal/sourcing-and-procurement)
 
 **Transformation announcements** - EVIDENCED_PUBLIC, 10 source(s)
 
-| what | country | low | base | high | as of |
-| --- | --- | --- | --- | --- | --- |
-| CORE OPERATING INCOME MARGIN TARGET – MID-TERM (ORIGINALLY 2 |  | 40 | 40.05 | 40.1 | 2027 |
-| NBS (NOVARTIS BUSINESS SERVICES) SHARED-SERVICES – IT CONSOL |  | 3 | 3 | 3 | 2016 |
-| NBS GLOBAL SERVICE CENTER LOCATIONS COUNT (IT/SHARED SERVICE |  | 5 | 5 | 5 | 2020 |
-| NBS HEADCOUNT – SHARED SERVICES ASSOCIATES (IT DOMAIN INCLUD |  | 10000 | 10000 | 10000 | 2020 |
-| NBS – TOTAL GROUP PRODUCTIVITY GAINS IN 2015 |  | 3200000000 | 3200000000 | 3200000000 | 2015 |
-| NOVARTIS ESTIMATED ANNUAL ICT SPEND (GLOBALDATA ANALYST ESTI |  | 2200000000 | 2200000000 | 2200000000 | 2022 |
-| SG&A SAVINGS TARGET FROM 2021 ORGANISATIONAL RESTRUCTURING ( |  | 1000000000 | 1000000000 | 1000000000 | 2024 |
-| TECHNICAL R&D CAPABILITY INVESTMENT (BIOTHERAPEUTICS, RLT, S |  | 400000000 | 400000000 | 400000000 | 2028 |
-
-Sources: [Novartis AG](https://www.novartis.com/news/media-releases/novartis-announces-new-organizational-structure-accelerate-growth-strengthen-pipeline-and-increase-productivity); [Novartis AG – SEC Form 6-K (R&D Day Nov 2023)](https://www.sec.gov/Archives/edgar/data/1114448/000117184323007295/f6k_112823.htm); [Reuters / Yahoo Finance](https://finance.yahoo.com/news/novartis-integrates-pharmaceuticals-oncology-targets-051939311.html); [BioSpace](https://www.biospace.com/novartis-undertakes-transformational-makeover-to-save-1-billion-in-costs) and 6 more
-
-**Market serviceability** - EVIDENCED_PUBLIC, 9 source(s)
-
-- Enterprise WAN contract typical term: 36–60
-- Leased line provisioning lead time – standard (no new civil works): 30–90
+- Novartis net sales CAGR guidance 2025–2030: 5-6
 
 | what | country | low | base | high | as of |
 | --- | --- | --- | --- | --- | --- |
-| CREDIBLE ENTERPRISE CARRIERS – SWITZERLAND (CH) | CH | 3 | 3 | 3 | 2024 |
-| CREDIBLE ENTERPRISE WAN CARRIERS – UNITED STATES (US) | US | 6 | 6 | 6 | 2025 |
-| CREDIBLE ENTERPRISE WAN/DIA CARRIERS – GERMANY (DE) | DE | 4 | 4 | 4 | 2025 |
-| DEUTSCHE TELEKOM RETAIL BROADBAND MARKET SHARE – GERMANY (DE | DE | 50.2 | 50.2 | 50.2 | 2023 |
-| DIA SHARE OF ENTERPRISE WAN SITES GLOBALLY |  | 53.88 | 53.88 | 53.88 | 2025 |
-| FTTP HOUSEHOLD COVERAGE – GERMANY (DE) | DE | 36.8 | 36.8 | 36.8 | 2024 |
-| MPLS SHARE OF ENTERPRISE WAN SITES GLOBALLY |  | 22 | 22 | 22 | 2025 |
-| SWISSCOM MOBILE MARKET SHARE – SWITZERLAND (CH) | CH | 53.1 | 55.05 | 57 | 2024 |
+| NOVARTIS 2022 RESTRUCTURING – SG&A SAVINGS TARGET (UPGRADED) |  | 1000000000 | 1500000000 | 1500000000 | 2022 |
+| NOVARTIS CORE OPERATING INCOME MARGIN TARGET – 40%+ BY 2027  |  | 40.1 | 40.1 | 40.1 | 2025 |
+| NOVARTIS LEAN DIGITAL CORE (LDC) – ENTERPRISE-WIDE SAP S/4HA |  | 75 | 75 | 75 | 2023 |
+| NOVARTIS LEAN DIGITAL CORE (LDC) – INITIAL LAUNCH COUNTRIES  |  | 4 | 4 | 4 | 2025 |
+| NOVARTIS OPERATIONS UNIT (INCL. CUSTOMER & TECHNOLOGY SOLUTI |  | 998000000 | 998000000 | 998000000 | 2022 |
+| NOVARTIS OPERATIONS UNIT 2022 SAVINGS TARGET (TECHNICAL OPER |  | 785000000 | 785000000 | 785000000 | 2022 |
+| NOVARTIS TECHNICAL OPERATIONS PRODUCTIVITY SAVINGS – OUTPERF |  | 300000000 | 300000000 | 300000000 | 2025 |
 
-*4 conflict(s) flagged: CREDIBLE ENTERPRISE CARRIERS – SWITZERLAND (CH), CREDIBLE ENTERPRISE WAN CARRIERS – UNITED STATES (US), CREDIBLE ENTERPRISE WAN/DIA CARRIERS – GERMANY (DE), FTTP HOUSEHOLD COVERAGE – GERMANY (DE)*
+*1 conflict(s) flagged: NOVARTIS 2022 RESTRUCTURING – SG&A SAVINGS TARGET (UPGRADED), TRANSFORMING FOR GROWTH*
 
-Sources: [COMCOM – Federal Communications Commission Switz](https://www.comcom.admin.ch/en/market-share); [valindex.ch – Telecom & Connectivity Switzerland](https://valindex.ch/en/industry/telecom-connectivity-services/); [Mordor Intelligence – Switzerland Telecom MNO Ma](https://www.mordorintelligence.com/industry-reports/switzerland-telecom-market); [germancompanyformation.com – German Telecom Mark](https://germancompanyformation.com/guides/telecommunication-companies-in-germany) and 5 more
+Sources: [Novartis AG / SEC](https://www.sec.gov/Archives/edgar/data/1114448/000137036822000038/a220426-99_1.htm); [Novartis AG / SEC](https://www.sec.gov/Archives/edgar/data/1114448/000137036822000059/nvs-20220630-99_1.htm); [Novartis AG / SEC (Form 20-F FY2022)](https://www.sec.gov/Archives/edgar/data/0001114448/000137036823000006/nvs-20221231.htm); [Novartis AG / SEC (Form 6-K, FY2022 annual resul](https://www.sec.gov/Archives/edgar/data/1114448/000137036823000009/a230201-99_1.pdf) and 6 more
+
+**Market serviceability** - EVIDENCED_PUBLIC, 8 source(s)
+
+- enterprise leased line provisioning lead time: 45–90
+- enterprise leased line contract term: 36–60
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| CREDIBLE ENTERPRISE CARRIERS | AT | 3 | 3 | 3 | 2026 |
+| CREDIBLE ENTERPRISE CARRIERS | CH | 3 | 3 | 3 | 2026 |
+| CREDIBLE ENTERPRISE CARRIERS | DE | 4 | 4 | 4 | 2026 |
+| CREDIBLE ENTERPRISE CARRIERS | ES | 3 | 3 | 3 | 2026 |
+| CREDIBLE ENTERPRISE CARRIERS | IE | 4 | 4 | 4 | 2026 |
+| CREDIBLE ENTERPRISE CARRIERS | IT | 4 | 4 | 4 | 2026 |
+| CREDIBLE ENTERPRISE CARRIERS | SG | 3 | 3 | 3 | 2025 |
+| SWITZERLAND ENTERPRISE FTTH COVERAGE | CH | 50 | 53.5 | 57 | 2025 |
+
+Sources: [Mordor Intelligence](https://www.mordorintelligence.com/industry-reports/switzerland-telecom-market); [Swisscom AG](https://www.swisscom.ch/en/about/network/fibre-optics-network-expansion-map.html); [Swisscom AG](https://www.swisscom.ch/en/about/news/2024/02/08-weniger-kupfer-mehr-glasfaser.html); [Neocarrier Communications Ltd](https://www.neocarrier.com/our-network/) and 4 more
 
 ---
 
@@ -5080,131 +5087,143 @@ Sources: [Vertical Systems Group](https://verticalsystems.com/2026/02/18/2025-us
 
 **Profile** - EVIDENCED_PUBLIC, 9 source(s)
 
-| what | country | low | base | high | as of |
-| --- | --- | --- | --- | --- | --- |
-| COUNTRIES WHERE VEHICLES SOLD |  | 153 | 153 | 153 | 2024 |
-| EMPLOYEES IN CZECH REPUBLIC (CZ) AT YEAR-END | CZ | 37005 | 37005 | 37005 | 2024 |
-| EMPLOYEES IN GERMANY (DE) AT YEAR-END | DE | 293338 | 293338 | 293338 | 2024 |
-| EMPLOYEES IN SPAIN (ES) AT YEAR-END | ES | 23064 | 23064 | 23064 | 2024 |
-| GLOBAL PRODUCTION FACILITIES COUNT |  | 100 | 111 | 114 | 2025 |
-| GROUP OPERATING RESULT |  | 19100000000 | 19100000000 | 19100000000 | 2024 |
-| GROUP SALES REVENUE |  | 324700000000 | 324700000000 | 324700000000 | 2024 |
-| GROUP TOTAL EMPLOYEES (EXCL. CHINESE JVS) AT YEAR-END |  | 614082 | 614082 | 614082 | 2024 |
-| GROUP TOTAL EMPLOYEES (INCL. CHINESE JVS) AT YEAR-END |  | 679472 | 679472 | 682724 | 2024 |
-| VEHICLE UNIT SALES (DELIVERIES) |  | 9027424 | 9032212 | 9037000 | 2024 |
-
-Sources: [Volkswagen Group Annual Report 2024](https://annualreport2024.volkswagen-group.com/group-management-report/results-of-operations-financial-position-and-net-assets/results-of-operations.html); [Volkswagen Group Annual Report 2024 — People](https://annualreport2024.volkswagen-group.com/group-management-report/sustainable-value-enhancement/people.html); [Volkswagen Group Annual Report 2024 — Total Work](https://annualreport2024.volkswagen-group.com/group-management-report/business-development/total-workforce.html); [Volkswagen Group Annual Report 2024 — Sustainabi](https://annualreport2024.volkswagen-group.com/sustainability-report/social/employees-and-non-employees/metrics.html) and 5 more
-
-**Locations** - EVIDENCED_PUBLIC, 9 source(s)
+- Employees in Mexico (MX), Brazil (BR), USA (US), Poland (PL), Slovakia (SK), China (CN): see candidates
+- Vehicle deliveries by region FY2024 (Europe / China / North America / South America): see candidates
 
 | what | country | low | base | high | as of |
 | --- | --- | --- | --- | --- | --- |
-| LARGE_OFFICE – VW GROUP HEADQUARTERS CAMPUS (WOLFSBURG, DE) | DE | 1 | 1 | 1 | 2024 |
-| PLANT – GLOBAL PRODUCTION SITES TOTAL (INCL. CHINESE JVS) |  | 100 | 111 | 115 | 2024 |
-| PLANT – VEHICLE PRODUCTION PLANTS GLOBALLY |  | 70 | 70 | 70 | 2024 |
-| PLANT – VOLKSWAGEN GROUP PRODUCTION SITES IN SPAIN (ES) | ES | 2 | 2.5 | 3 | 2024 |
-| PLANT – VW GROUP BROADER GERMANY FOOTPRINT (ALL BRANDS INCL. | DE | 13 | 13 | 13 | 2024 |
-| PLANT – VW PASSENGER CARS / COMMERCIAL VEHICLES BRAND SITES  | DE | 10 | 10 | 10 | 2024 |
-| PLANT – ŠKODA AUTO (VW GROUP) PRODUCTION SITES IN CZECH REPU | CZ | 3 | 3 | 3 | 2025 |
+| EMPLOYEES IN CZECH REPUBLIC (CZ) | CZ | 37005 | 37005 | 37005 | 2024 |
+| EMPLOYEES IN GERMANY (DE) | DE | 293338 | 293338 | 293338 | 2024 |
+| EMPLOYEES IN SPAIN (ES) | ES | 23064 | 23064 | 23064 | 2024 |
+| GROUP SALES REVENUE |  | 321913000000 | 323306500000 | 324700000000 | 2025 |
+| NUMBER OF PRODUCTION FACILITIES |  | 111 | 112.5 | 114 | 2024 |
+| TOTAL EMPLOYEES (EXCLUDING CHINESE JVS) |  | 614082 | 614082 | 614082 | 2024 |
+| TOTAL EMPLOYEES (INCLUDING CHINESE JVS) |  | 662942 | 679472 | 682724 | 2025 |
+| VEHICLE DELIVERIES WORLDWIDE |  | 9030000 | 9030000 | 9030000 | 2024 |
 
-*3 conflict(s) flagged: PLANT – GLOBAL PRODUCTION SITES TOTAL (INCL. CHINESE JVS), PLANT – VOLKSWAGEN GROUP PRODUCTION SITES IN SPAIN (ES), PLANT – VW PASSENGER CARS / COMMERCIAL VEHICLES BRAND SITES IN GERMANY (DE)*
+*2 conflict(s) flagged: NUMBER OF PRODUCTION FACILITIES, VEHICLE DELIVERIES WORLDWIDE*
 
-Sources: [Volkswagen Group Annual Report 2024](https://annualreport2024.volkswagen-group.com/group-management-report/sustainable-value-enhancement/production.html); [Volkswagen Group – About Us (corporate website)](https://www.volkswagen-group.com/en/about-us-16013); [Volkswagen AG – careers site (Volkswagen sites i](https://www.volkswagen-karriere.de/en/working-at-volkswagen/sites.html); [Statista / auto motor und sport](https://de.statista.com/infografik/32982/volkswagen-standorte-und-anzahl-der-beschaeftigten-in-deutschland) and 5 more
+Sources: [Volkswagen Group Annual Report 2024](https://annualreport2024.volkswagen-group.com/group-management-report/results-of-operations-financial-position-and-net-assets/results-of-operations.html); [Volkswagen Group Annual Report 2024 – Total Work](https://annualreport2024.volkswagen-group.com/group-management-report/business-development/total-workforce.html); [Volkswagen Group Annual Report 2024 – Sustainabi](https://annualreport2024.volkswagen-group.com/sustainability-report/social/employees-and-non-employees/metrics.html); [Volkswagen Group Annual Report 2024 – Structure ](https://annualreport2024.volkswagen-group.com/group-management-report/structure-and-business-activities.html) and 5 more
 
-**Data centres and cloud** - EVIDENCED_PUBLIC, 9 source(s)
-
-| what | country | low | base | high | as of |
-| --- | --- | --- | --- | --- | --- |
-| AWS – DPP PARTNERSHIP TERM EXTENSION (FROM AUG 2025) |  | 5 | 5 | 5 | 2025 |
-| AZURE – CARIAD SERVICE PLATFORM (VW SUBSIDIARY) ADOPTION YEA |  | 2021 | 2021 | 2021 | 2021 |
-| CLOUD PROVIDERS ACTIVE AT VOLKSWAGEN GROUP – MULTI-CLOUD (AW |  | 3 | 3 | 3 | 2024 |
-| DC CARBON-NEUTRAL TARGET YEAR (ALL SIX OPERATIONS) |  | 2027 | 2027 | 2027 | 2022 |
-| DC – NORWAY COLOCATION (GREEN MOUNTAIN, OUT-OF-SCOPE COUNTRY |  | 2 | 2 | 2 | 2022 |
-| DC – STANDALONE DATA-CENTRE OPERATIONS, GLOBAL TOTAL |  | 6 | 6 | 6 | 2022 |
-| DC – WOLFSBURG (DE) STANDALONE DATA-CENTRE OPERATIONS | DE | 3 | 3 | 3 | 2022 |
-| DPP FACTORY-CLOUD – PRODUCTION SITES CONNECTED TO AWS DIGITA |  | 43 | 43 | 43 | 2025 |
-| DPP FACTORY-CLOUD – TOTAL VW PRODUCTION FACILITIES WORLDWIDE |  | 114 | 114 | 114 | 2025 |
-| GREEN MOUNTAIN NORWAY – HPC CAPACITY TAKEN (DC2-TELEMARK, RJ |  | 2.75 | 2.75 | 2.75 | 2019 |
-
-Sources: [Data Center Dynamics](https://www.datacenterdynamics.com/en/news/volkswagen-ag-targets-carbon-neutral-data-centers-by-2027/); [Volkswagen Group](https://www.volkswagen-group.com/en/press-releases/more-efficient-smarter-more-resilient-volkswagen-group-collaborates-with-aws-to-help-transform-production-for-the-age-of-ai-19774); [Flotauto](https://www.flotauto.com/en/volkswagen-digital-production/); [Nordcloud](https://nordcloud.com/case-studies/volkswagen/) and 5 more
-
-**Current architecture** - EVIDENCED_PUBLIC, 5 source(s)
+**Locations** - EVIDENCED_PUBLIC, 8 source(s)
 
 | what | country | low | base | high | as of |
 | --- | --- | --- | --- | --- | --- |
-| VGRF EMPLOYEES ACROSS SD-WAN BRANCH NETWORK | FR | None | None | None |  |
-| VGRF SD-WAN SITES – FORTINET FORTIGATE SECURE SD-WAN (VOLKSW | FR | None | None | None |  |
-| VW GROUP IT SERVICES CONTRACT WITH T-SYSTEMS (HISTORICAL ANC | DE | None | None | None |  |
+| LARGE_OFFICE + PLANT – US LOCATIONS (VWGOA, ALL TYPES) | US | 1 | 1 | 1 | 2024 |
+| LARGE_OFFICE – CN ADMINISTRATIVE/REPRESENTATIVE OFFICES | CN | 7 | 7 | 7 |  |
+| PLANT – BR PRODUCTION SITES (VW DO BRASIL, ANCHIETA + SÃO JO | BR | 2 | 2 | 2 | 2024 |
+| PLANT – CN TOTAL PLANTS (VEHICLE + COMPONENT, INCL. ALL JVS) | CN | 34 | 39 | 39 | 2026 |
+| PLANT – CN VEHICLE PLANTS (NAMED, POST-2024 RESTRUCTURING) | CN | 13 | 13 | 13 | 2026 |
+| PLANT – DE PRODUCTION/MANUFACTURING SITES (VW GROUP, ALL BRA | DE | 10 | 11.5 | 13 | 2024 |
+| PLANT – ES PRODUCTION SITES (VW + SEAT BRANDS) | ES | 3 | 3 | 3 | 2024 |
+| PLANT – GLOBAL PRODUCTION SITES (ALL TYPES, INCL. CHINESE JV |  | 100 | 111 | 115 | 2025 |
+| PLANT – MX PRODUCTION SITES (VW BRAND) | MX | 1 | 1 | 1 | 2024 |
+| PLANT – SK PRODUCTION SITES | SK | 1 | 1 | 1 | 2024 |
 
-Sources: [Fortinet](https://www.fortinet.com/customers/volkswagen-groupe-retail-france); [Fortinet (press release)](https://www.fortinet.com/corporate/about-us/newsroom/press-releases/2019/volkswagen-groupe-retail-france-deploys-fortinet-s-secure-sd-wan); [Network World](https://www.networkworld.com/article/2316938/germany-s-t-systems-buys-vw-s-it-services-unit.html); [Deutsche Telekom / T-Systems](https://www.telekom.com/en/newsroom/latest-updates/media-information/2025/9/25-years-t-systems) and 1 more
+*6 conflict(s) flagged: LARGE_OFFICE + PLANT – US LOCATIONS (VWGOA, ALL TYPES), PLANT – BR PRODUCTION SITES (VW DO BRASIL, ANCHIETA + SÃO JOSÉ DOS PINHAIS), PLANT – DE PRODUCTION/MANUFACTURING SITES (VW GROUP, ALL BRANDS), PLANT – ES PRODUCTION SITES (VW + SEAT BRANDS), PLANT – GLOBAL PRODUCTION SITES (ALL TYPES, INCL. CHINESE JVS), PLANT – MX PRODUCTION SITES (VW BRAND)*
 
-**Current providers and products** - EVIDENCED_PUBLIC, 8 source(s)
+Sources: [Volkswagen Group Annual Report 2024](https://annualreport2024.volkswagen-group.com/group-management-report/sustainable-value-enhancement/production.html); [Volkswagen Group Annual Report 2025](https://annualreport2025.volkswagen-group.com/group-management-report/sustainable-value-enhancement/production.html); [Volkswagen Newsroom (official)](https://www.volkswagen-newsroom.com/en/production-and-locations-3695); [Volkswagen Group China official site](https://volkswagengroupchina.com.cn/en/news/Detail?ArticleID=ABF37CE01DBF4159BCC6057E0909716B) and 4 more
+
+**Data centres and cloud** - EVIDENCED_PUBLIC, 8 source(s)
+
+- Cloud provider – Microsoft Azure (Automotive Cloud / ODP): Azure
+- Cloud provider – AWS (Digital Production Platform / Industrial Cloud): AWS
+- Cloud provider – Google Cloud (multi-cloud): Google Cloud
 
 | what | country | low | base | high | as of |
 | --- | --- | --- | --- | --- | --- |
-| ITSM/PLATFORM STANDARDIZATION SUPPLIER RECOGNIZED AT GROUP L |  | 1 | 1 | 1 | 2026 |
-| LAN/SD-ACCESS VENDOR AT SAIC-VW EV PLANT (CHINA JV – OUT OF  | CN | 1 | 1 | 1 | 2021 |
-| MANAGED IT SERVICES & APPLICATION MSP – CGI / MARV1N | DE | 1 | 1 | 1 | 2025 |
-| MANAGED IT SERVICES MSP FOR VW WORKSTATIONS IN DE – BECHTLE | DE | 100000 | 100000 | 100000 | 2015 |
-| MOBILE OPERATOR (ENTERPRISE MOBILE COMMS) – VODAFONE GLOBAL  | DE | 1 | 1 | 1 | 2012 |
-| PRIMARY IT & NETWORK MSP (GLOBAL INCL. DE) – T-SYSTEMS/DEUTS | DE | 1 | 1 | 1 | 2026 |
-| PRIVATE CLOUD PROVIDER (GROUP PRIVATE CLOUD 2.0) – T-SYSTEMS | DE | 1 | 1 | 1 | 2026 |
-| PUBLIC CLOUD PROVIDER (PRODUCTION DIGITAL PRODUCTION PLATFOR |  | 1 | 1 | 1 | 2024 |
-| VW EMPLOYEES COVERED BY VODAFONE MOBILE CONTRACT | DE | 90000 | 90000 | 90000 | 2012 |
-| WAN COMPONENTS MANAGED BY T-SYSTEMS AT VW AMERICAS SITES |  | 400 | 400 | 400 | 2019 |
+| AWS DPP – FACTORY SITES CONNECTED GLOBALLY |  | 43 | 43 | 43 | 2025 |
+| DC CARBON-NEUTRAL TARGET YEAR |  | 2027 | 2027 | 2027 | 2022 |
+| DC – COLOCATION CAPACITY AT GREEN MOUNTAIN NORWAY (SVG1-RENN | NO | 3 | 3 | 3 | 2022 |
+| DC – OWNED DATA CENTRE SITES IN DE (WOLFSBURG) | DE | 3 | 3 | 3 | 2022 |
+| DC – TOTAL OWNED/CO-LOCATED DATA CENTRE OPERATIONS WORLDWIDE |  | 6 | 6 | 6 | 2025 |
 
-Sources: [T-Systems International GmbH](https://www.t-systems.com/de/en/insights/newsroom/news/major-contract-volkswagen-group-relying-on-t-cloud-1184730); [Deutsche Telekom AG](https://www.telekom.com/en/newsroom/latest-updates/media-information/2026/06/major-contract-volkswagen-group-relying-on-t-cloud); [Deutsche Telekom AG](https://www.telekom.com/en/newsroom/latest-updates/media-information/2025/9/25-years-t-systems); [Vodafone Group](https://www.vodafone.com/news/newsroom/technology/volkswagen) and 4 more
+*1 conflict(s) flagged: DC – COLOCATION CAPACITY AT GREEN MOUNTAIN NORWAY (SVG1-RENNESØY)*
+
+Sources: [Data Center Dynamics](https://www.datacenterdynamics.com/en/news/volkswagen-ag-targets-carbon-neutral-data-centers-by-2027/); [Nordcloud (IBM company)](https://nordcloud.com/case-studies/volkswagen/); [Volkswagen Group](https://www.volkswagen-group.com/en/press-releases/more-efficient-smarter-more-resilient-volkswagen-group-collaborates-with-aws-to-help-transform-production-for-the-age-of-ai-19774); [Volkswagen Group (newsroom)](https://www.volkswagen-newsroom.com/en/press-releases/volkswagen-and-microsoft-announce-strategic-partnership-4234) and 4 more
+
+**Current architecture** - EVIDENCED_PUBLIC, 9 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| T-SYSTEMS IT SERVICES CONTRACT WITH VW AG (HISTORICAL BASELI | DE | 2500000000 | 2500000000 | 2500000000 | 2005 |
+| VGRF – EMPLOYEES (FR DEALER RETAIL SUBSIDIARY ON FORTINET SD | FR | 2300 | 2300 | 2300 | 2019 |
+| VGRF – SITES ON FORTINET SECURE SD-WAN (FR DEALER RETAIL SUB | FR | 70 | 70 | 70 | 2019 |
+| VW GROUP PRIVATE CLOUD 2.0 – T-SYSTEMS PRIVATE CLOUD CONTRAC |  | 1 | 1 | 1 | 2026 |
+
+Sources: [Fortinet](https://www.fortinet.com/corporate/about-us/newsroom/press-releases/2019/volkswagen-groupe-retail-france-deploys-fortinet-s-secure-sd-wan); [Deutsche Telekom AG](https://www.telekom.com/en/newsroom/latest-updates/media-information/2026/06/major-contract-volkswagen-group-relying-on-t-cloud); [Intelligent CIO](https://www.intelligentcio.com/eu/2026/07/09/volkswagen-selects-t-systems-to-build-global-private-cloud-for-secure-european-data-processing/); [Heise (DE trade press)](https://www.heise.de/en/news/VW-relies-on-Telekom-T-Systems-builds-global-cloud-for-Volkswagen-11331610.html) and 5 more
+
+**Current providers and products** - EVIDENCED_PUBLIC, 9 source(s)
+
+- Managed IT services provider – global (private cloud operator): T-Systems (Deutsche Telekom)
+- Public cloud / internet connectivity provider for production sites (DPP factory cloud): Amazon Web Services (AWS)
+- Managed IT services provider – UK entities: CGI
+- Global software development partner (MARV1N JV): CGI (MARV1N subsidiary)
+- Historical WAN managed services provider (~200-site global network): BT Infonet
+- IT managed services for ~100,000 DE workstations (client/desktop): Bechtle
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| PRODUCTION FACTORY SITES CONNECTED TO AWS DPP (INTERNET/CLOU |  | 43 | 43 | 43 | 2025 |
+
+Sources: [T-Systems](https://www.t-systems.com/de/en/insights/newsroom/news/major-contract-volkswagen-group-relying-on-t-cloud-1184730); [IntelligentCIO](https://www.intelligentcio.com/eu/2026/07/09/volkswagen-selects-t-systems-to-build-global-private-cloud-for-secure-european-data-processing/); [Volkswagen Group](https://www.volkswagen-group.com/en/press-releases/more-efficient-smarter-more-resilient-volkswagen-group-collaborates-with-aws-to-help-transform-production-for-the-age-of-ai-19774); [AWS](https://aws.amazon.com/solutions/case-studies/innovators/volkswagen-group/) and 5 more
 
 **Contract and sourcing events** - EVIDENCED_PUBLIC, 9 source(s)
 
-- T-Systems Group Private Cloud 2.0 global operation contract – contract value: undisclosed
-- T-Systems Group Private Cloud 2.0 – contract announced date: 2026-06-12
+- T-Systems VW Group Private Cloud 2.0 contract – contract value (undisclosed): undisclosed
+- VW Industrial Cloud / AWS multi-year agreement (120+ factory sites, IoT/internet connectivity): undisclosed
+- VW private 5G campus network at Wolfsburg (Nokia equipment vendor): undisclosed
 
 | what | country | low | base | high | as of |
 | --- | --- | --- | --- | --- | --- |
-| DEUTSCHE TELEKOM 5G NETWORK AND EDGE DATA CENTRE AT VOLKSWAG | DE | 5800000 | 5800000 | 5800000 | 2023 |
-| INFONET MULTISERVICE RENEWAL CONTRACT – CONTRACT TERM |  | 3 | 3 | 3 | 2002 |
-| T-SYSTEMS / T-MOBILE JOINT GENERAL CONTRACT – TOTAL CONTRACT | DE | 43000000 | 43000000 | 43000000 | 2003 |
-| VODAFONE EXCLUSIVE MOBILE COMMUNICATIONS CONTRACT – CONTRACT | DE | 4 | 4 | 4 | 2012 |
-| VODAFONE EXCLUSIVE MOBILE COMMUNICATIONS CONTRACT – EMPLOYEE | DE | 90000 | 90000 | 90000 | 2012 |
+| CGI MANAGED IT SERVICES CONTRACT TERM (VW GROUP UK ENTITIES) | GB | 5 | 5 | 5 | 2022 |
+| T-SYSTEMS & T-MOBILE JOINT MASTER CONTRACT TERM | DE | 3 | 3 | 3 | 2003 |
+| T-SYSTEMS & T-MOBILE JOINT MASTER CONTRACT VALUE (VW AG, DAT | DE | 43000000 | 43000000 | 43000000 | 2003 |
+| T-SYSTEMS / GEDAS IT SERVICES AGREEMENT VALUE (INCL. LAN/WAN | DE | 2500000000 | 2500000000 | 2500000000 | 2006 |
+| T-SYSTEMS / GEDAS IT SERVICES CONTRACT TERM | DE | 7 | 7 | 7 | 2006 |
+| VODAFONE VW GROUP EMPLOYEE MOBILE COMMUNICATIONS CONTRACT SC | DE | 90000 | 90000 | 90000 | 2012 |
+| VODAFONE VW GROUP EMPLOYEE MOBILE CONTRACT TERM | DE | 4 | 4 | 4 | 2012 |
 
-Sources: [Deutsche Telekom](https://www.telekom.com/en/newsroom/latest-updates/media-information/2026/06/major-contract-volkswagen-group-relying-on-t-cloud); [Heise Online (EN)](https://www.heise.de/en/news/VW-relies-on-Telekom-T-Systems-builds-global-cloud-for-Volkswagen-11331610.html); [Intelligent CIO Europe](https://www.intelligentcio.com/eu/2026/07/09/volkswagen-selects-t-systems-to-build-global-private-cloud-for-secure-european-data-processing/); [Webwire (Deutsche Telekom press release)](https://www.webwire.com/ViewPressRel.asp?aId=356171) and 5 more
+Sources: [Deutsche Telekom AG (official newsroom)](https://www.telekom.com/en/newsroom/latest-updates/media-information/2026/06/major-contract-volkswagen-group-relying-on-t-cloud); [Heise.de](https://www.heise.de/en/news/VW-relies-on-Telekom-T-Systems-builds-global-cloud-for-Volkswagen-11331610.html); [IntelligentCIO EU](https://www.intelligentcio.com/eu/2026/07/09/volkswagen-selects-t-systems-to-build-global-private-cloud-for-secure-european-data-processing/); [Telecompaper](https://www.telecompaper.com/news/volkswagen-signs-eur-43-mln-deal-with-t-systems-and-t-mobile--362769) and 5 more
 
 **Transformation announcements** - EVIDENCED_PUBLIC, 10 source(s)
 
 | what | country | low | base | high | as of |
 | --- | --- | --- | --- | --- | --- |
-| AI INVESTMENT PROGRAMME – TOTAL INVESTMENT BY 2030 (VEHICLE  |  | 1000000000 | 1000000000 | 1000000000 | 2025 |
-| AI PROGRAMME – EXPECTED EFFICIENCY GAINS AND COST AVOIDANCE  |  | 4000000000 | 4000000000 | 4000000000 | 2025 |
-| FIVE-YEAR INVESTMENT PLAN (ROLLING) 2026–2030 |  | 160000000000 | 162500000000 | 165000000000 | 2025 |
-| FUTURE PLAN 2030 – CAPEX + R&D INVESTMENT ENVELOPE 2027–2031 |  | 135000000000 | 135000000000 | 135000000000 | 2026 |
-| FUTURE PLAN 2030 – OVERHEAD COST CAP (TARGET LEVEL POST-REDU |  | 37000000000 | 37000000000 | 37000000000 | 2026 |
-| FUTURE PLAN 2030 – OVERHEAD COST REDUCTION (20% CUT IMPLIED  |  | 9250000000 | 9250000000 | 9250000000 | 2026 |
-| GLOBAL IT TOP 10 PROGRAMME – IT PERFORMANCE IMPROVEMENT TARG |  | 30 | 30 | 30 | 2024 |
-| LEGACY IT SYSTEM REPLACEMENT – TIMELINE FOR REPLACING HUNDRE |  | 2026 | 2026 | 2026 | 2025 |
-| VW BRAND 'ACCELERATE FORWARD / ROAD TO 6.5' – CUMULATIVE EAR | DE | 10000000000 | 10000000000 | 10000000000 | 2023 |
-| VW BRAND TEST-VEHICLE DIGITALISATION – ANNUAL SAVINGS FROM 5 | DE | 400000000 | 400000000 | 400000000 | 2023 |
+| ADMINISTRATIVE PERSONNEL COST REDUCTION TARGET – VW BRAND PE | DE | 20 | 20 | 20 | 2023 |
+| AI INVESTMENT PLANNED BY 2030 (VEHICLE DEVELOPMENT, INDUSTRI |  | 1000000000 | 1000000000 | 1000000000 | 2025 |
+| AI-DRIVEN EFFICIENCY GAINS AND COST AVOIDANCE EXPECTED BY 20 |  | 4000000000 | 4000000000 | 4000000000 | 2025 |
+| DIGITAL PRODUCTION PLATFORM (DPP / 'FACTORY CLOUD') – NUMBER |  | 40 | 40 | 40 | 2025 |
+| GLOBAL IT INFRASTRUCTURE OPERATING DOMAINS (CLOUD, MAINFRAME |  | 5 | 5 | 5 | 2024 |
+| IT LEGACY SYSTEMS REPLACEMENT PROGRAMME – TARGET TIMELINE (H |  | 2026 | 2026 | 2026 | 2025 |
+| RIVIAN–VW SOFTWARE JV INVESTMENT (SOFTWARE ARCHITECTURE OVER | US | 5800000000 | 5800000000 | 5800000000 | 2024 |
+| VW BRAND PERFORMANCE PROGRAMME – TOTAL EARNINGS IMPROVEMENT  |  | 4000000000 | 10000000000 | 10000000000 | 2024 |
+| VW GROUP 5-YEAR INVESTMENT PLAN 2024-2028 (ELECTRIFICATION,  |  | 122000000000 | 146000000000 | 170000000000 | 2024 |
+| VW GROUP-WIDE COST REDUCTION PROGRAMME – TARGET SAVINGS BY E |  | 60000000000 | 60000000000 | 60000000000 | 2026 |
 
-Sources: [Volkswagen Group (official)](https://www.volkswagen-group.com/en/press-releases/boosting-innovation-reshaping-mobility-volkswagen-group-invests-in-ai-19852); [Volkswagen Group (official)](https://www.volkswagen-group.com/en/press-releases/supervisory-board-approves-future-plan-2030-a-strong-signal-for-volkswagen-group-20662); [Volkswagen Group (official)](https://www.volkswagen-group.com/en/future-plan-the-next-phase-of-transformation-20510); [Volkswagen Group Annual Report 2024](https://annualreport2024.volkswagen-group.com/group-management-report/sustainable-value-enhancement/information-technology.html) and 6 more
+*3 conflict(s) flagged: VW BRAND PERFORMANCE PROGRAMME – TOTAL EARNINGS IMPROVEMENT TARGET BY 2026 (ACCELERATE FORWARD / ROAD TO 6.5), VW GROUP 5-YEAR INVESTMENT PLAN 2024-2028 (ELECTRIFICATION, SOFTWARE, BATTERY TECHNOLOGY), VW GROUP-WIDE COST REDUCTION PROGRAMME – TARGET SAVINGS BY END-2028 (ALL BRANDS, ALL COST TYPES)*
 
-**Market serviceability** - EVIDENCED_PUBLIC, 9 source(s)
+Sources: [Volkswagen Group (official press release)](https://www.volkswagen-group.com/en/press-releases/boosting-innovation-reshaping-mobility-volkswagen-group-invests-in-ai-19852); [Volkswagen Group Annual Report 2024](https://annualreport2024.volkswagen-group.com/group-management-report/sustainable-value-enhancement/information-technology.html); [Volkswagen Group Annual Report 2025](https://annualreport2025.volkswagen-group.com/group-management-report/sustainable-value-enhancement/information-technology.html); [Volkswagen Group (official press release, Feb 20](https://www.volkswagen-group.com/en/press-releases/software-development-volkswagen-group-and-cgi-deepen-global-collaboration-19004) and 6 more
+
+**Market serviceability** - EVIDENCED_PUBLIC, 6 source(s)
+
+- China cross-border MPLS provisioning lead time: weeks to months
 
 | what | country | low | base | high | as of |
 | --- | --- | --- | --- | --- | --- |
-| CETIN CZ ACTIVE FIXED CONNECTIONS | CZ | 1.32 | 1.32 | 1.32 | 2025 |
-| CREDIBLE ENTERPRISE WAN/DIA CARRIERS | CZ | 3 | 3 | 3 | 2026 |
-| CREDIBLE ENTERPRISE WAN/DIA CARRIERS | DE | 4 | 4 | 4 | 2025 |
-| CREDIBLE ENTERPRISE WAN/DIA CARRIERS | ES | 3 | 3 | 3 | 2025 |
-| DEUTSCHE TELEKOM RETAIL BROADBAND MARKET SHARE (DE) | DE | 50.2 | 50.2 | 50.2 | 2023 |
-| GERMANY BUSINESS CUSTOMER TELECOM MARKET SIZE | DE | 21.3 | 21.3 | 21.3 | 2025 |
-| GERMANY LEASED LINE STANDARD PROVISIONING TARGET (WHERE RESO | DE | 8 | 8 | 8 | 2015 |
-| GERMANY TOTAL TELECOM MARKET REVENUE | DE | 60.8 | 69.4 | 78 | 2025 |
-| SPAIN FTTH INSTALLED ACCESSES | ES | 80.8 | 80.8 | 80.8 | 2025 |
-| SPAIN LEASED LINE STANDARD PROVISIONING TARGET (TERMINATING  | ES | 60 | 60 | 60 | 2015 |
+| CHINA DIA BANDWIDTH IN MAJOR CITIES (BEIJING/SHANGHAI) | CN | 10000 | 10000 | 10000 | 2025 |
+| CREDIBLE ENTERPRISE CARRIERS (FACILITIES-BASED) | CZ | 3 | 3 | 3 | 2026 |
+| CREDIBLE ENTERPRISE CARRIERS (FACILITIES-BASED) | ES | None | None | None |  |
+| CREDIBLE ENTERPRISE CARRIERS (FACILITIES-BASED) | PL | 4 | 4 | 4 | 2026 |
+| CREDIBLE ENTERPRISE CARRIERS (FACILITIES-BASED) | SK | None | None | None |  |
+| CREDIBLE ENTERPRISE CARRIERS (LICENSED, CROSS-BORDER) | CN | 3 | 3 | 3 | 2025 |
+| CREDIBLE ENTERPRISE CARRIERS (MNO/FIXED, FACILITIES-BASED) | DE | 4 | 4 | 4 | 2026 |
+| DEUTSCHE TELEKOM RETAIL BROADBAND MARKET SHARE | DE | 50.2 | 50.2 | 50.2 | 2026 |
+| SPAIN LEASED LINE PROVISIONING LEAD TIME (REGULATORY REFEREN | ES | 60 | 60 | 60 | 2015 |
 
-*4 conflict(s) flagged: CREDIBLE ENTERPRISE WAN/DIA CARRIERS, DEUTSCHE TELEKOM RETAIL BROADBAND MARKET SHARE (DE), GERMANY TOTAL TELECOM MARKET REVENUE*
+*1 conflict(s) flagged: CREDIBLE ENTERPRISE CARRIERS (MNO/FIXED, FACILITIES-BASED)*
 
-Sources: [German Company Formation (trade press)](https://germancompanyformation.com/articles/blog/telecommunication-companies-in-germany/); [VATM (German Telecommunications and Value-Added ](https://www.vatm.de/wp-content/uploads/2025/06/VATM-Market-Analysis-Germany-2025.pdf); [Deutsche Telekom Wholesale](https://wholesale.telekom.com/global-connectivity/our-solutions/sd-wan-enabling-transport/internet-access); [Mordor Intelligence](https://www.mordorintelligence.com/industry-reports/germany-telecom-market) and 5 more
+Sources: [germancompanyformation.com](https://germancompanyformation.com/guides/telecommunication-companies-in-germany); [Mordor Intelligence](https://www.mordorintelligence.com/industry-reports/germany-telecom-market); [Deutsche Telekom (company website)](https://business.telekom.com/global/products-and-solutions/next-level-networking/mpls/); [Analysys Mason](https://www.analysysmason.com/research/content/reports/operator-business-cee/) and 2 more
 
 ---
 

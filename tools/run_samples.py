@@ -445,18 +445,39 @@ def promote(case_id, slug):
         return {"promoted": False, "detail": f"{st}: {cands}"}
     # footprint_candidates, and candidate_id - the bucket names and the id
     # field are promotion.candidates()' own, not guesses.
-    ids = [c.get("candidate_id")
-           for c in (cands or {}).get("footprint_candidates") or []]
-    ids = [i for i in ids if i]
+    #
+    # PRICES WERE DROPPED HERE. This read footprint_candidates alone, and the
+    # promote endpoint has always handled both - its own docstring says
+    # "Move selected findings into the footprint AND THE PRICE PRIORS". So
+    # research bought 82 country prices across the 41 companies, the
+    # classifier routed all 82 to price_candidates, and the driver never
+    # passed their ids. Ten prices reached the rate card in the whole set,
+    # every one of them put there by hand.
+    #
+    # The cost of that is the headline: 86.1% of a EUR 500m baseline rests on
+    # seeded priors, and the evidence to replace a large part of it was
+    # already bought, already classified, and sitting in the candidate list.
+    #
+    # Safe to promote without a second thought because a promoted price is
+    # NOT a used price: research writes reference.unit_cost_prior with
+    # approved=False and the estimate reads only approved rows. Promoting
+    # makes the number visible and attributable; a steward still decides
+    # whether it prices anything.
+    buckets = ("footprint_candidates", "price_candidates")
+    by_bucket = {b: [c.get("candidate_id")
+                     for c in (cands or {}).get(b) or []] for b in buckets}
+    ids = [i for b in buckets for i in by_bucket[b] if i]
     if not ids:
-        return {"promoted": False, "detail": "no footprint candidates",
+        return {"promoted": False, "detail": "no candidates",
                 "candidates": cands}
     st, res = call("POST",
                    f"/v1/outside-in/cases/{case_id}/research-findings:promote",
                    {"candidate_ids": ids, "promoted_by": ANALYST},
                    timeout=600)
-    log(slug, f"promote {len(ids)} footprint finding(s): {st}")
-    return {"promoted": st == 200, "ids": ids, "result": res}
+    log(slug, f"promote {len(by_bucket['footprint_candidates'])} footprint "
+              f"+ {len(by_bucket['price_candidates'])} price finding(s): {st}")
+    return {"promoted": st == 200, "ids": ids,
+            "price_ids": by_bucket["price_candidates"], "result": res}
 
 
 #: Where the committed spec lives, relative to the repository root and to the

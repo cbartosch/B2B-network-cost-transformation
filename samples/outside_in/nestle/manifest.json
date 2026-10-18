@@ -23,7 +23,7 @@
   "base_currency": "CHF",
   "case_id": "c06346b4-5fad-4862-8004-16e63cb1e199",
   "spec_path": "/tmp/companies.json",
-  "spec_sha256": "1728910bb736",
+  "spec_sha256": "58e092f291b6",
   "entity_resolution": {
     "resolved": null,
     "resumed": true
@@ -474,15 +474,39 @@
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-15T10:53:34.234282+00:00",
-  "run_seconds": 2.4,
+  "run_started": "2026-10-18T13:46:36.503518+00:00",
+  "run_seconds": 2.6,
   "preflight_conditions": 8,
   "promotion": {
     "promoted": true,
     "detail": null,
-    "offered": 13,
+    "offered": 17,
     "accepted": 10,
     "declined": [
+      {
+        "reason": "US DIA price of 492.0 carries no bandwidth. A circuit rate without a tier cannot be matched to any circuit, so it is not promotable to a prior - re-run the domain, or set the tier on the observation first.",
+        "label": null,
+        "country": null,
+        "flags": null
+      },
+      {
+        "reason": "US DIA price of 901.0 carries no bandwidth. A circuit rate without a tier cannot be matched to any circuit, so it is not promotable to a prior - re-run the domain, or set the tier on the observation first.",
+        "label": null,
+        "country": null,
+        "flags": null
+      },
+      {
+        "reason": "US DIA price of 1987.0 carries no bandwidth. A circuit rate without a tier cannot be matched to any circuit, so it is not promotable to a prior - re-run the domain, or set the tier on the observation first.",
+        "label": null,
+        "country": null,
+        "flags": null
+      },
+      {
+        "reason": "US MPLS price of 1439.0 carries no bandwidth. A circuit rate without a tier cannot be matched to any circuit, so it is not promotable to a prior - re-run the domain, or set the tier on the observation first.",
+        "label": null,
+        "country": null,
+        "flags": null
+      },
       {
         "reason": "sources state this in units that disagree, and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
         "label": "PLANT (factories/production sites, total sites) — Germany (DE)",
@@ -492,7 +516,7 @@
         ]
       }
     ],
-    "declined_count": 1
+    "declined_count": 5
   },
   "domains_benchmark_disposed": [
     3,
