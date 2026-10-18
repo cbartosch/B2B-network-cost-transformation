@@ -939,8 +939,8 @@ Sources: [Selectra](https://en.selectra.info/broadband-phone-france/guides/mobil
 ## Boots UK Limited
 
 - **Industry** DRUG_RETAIL (entity resolution)
-- **Scope** GB, IE, GBP, 1,852 sites (research merged with disclosure)
-- **Confidence** 0.347 (D - Indicative), coverage COMPLETE
+- **Scope** GB, IE, GBP, 2,266 sites (research merged with disclosure)
+- **Confidence** 0.343 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 7 source(s)
 
@@ -1210,7 +1210,7 @@ Sources: [TeleGeography](https://resources.telegeography.com/the-rise-of-dia-ove
 ## Carrefour SA
 
 - **Industry** GROCERY_RETAIL (entity resolution)
-- **Scope** FR, ES, IT, BE, PL, BR, RO, EUR, 10,382 sites (research merged with disclosure)
+- **Scope** FR, ES, IT, BE, PL, BR, RO, EUR, 9,382 sites (research merged with disclosure)
 - **Confidence** 0.322 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 8 source(s)
