@@ -3,7 +3,7 @@
   "legal_name": "Fraport AG",
   "industry": {
     "industry": "AIRPORTS",
-    "origin": "SPEC_FALLBACK",
+    "origin": "ENTITY_RESOLUTION",
     "resolution_said": "Airport Operations & Management",
     "agrees_with_resolution": true
   },
@@ -19,49 +19,33 @@
   "base_currency": "EUR",
   "case_id": "a93435b0-a87b-4d6b-92fb-846a69ebc86b",
   "spec_path": "/tmp/companies.json",
-  "spec_sha256": "20e7d932ec01",
+  "spec_sha256": "ad37995b9e77",
   "entity_resolution": {
-    "resolved": true,
-    "candidate": {
-      "candidate_id": "f75d8d39-a698-43e0-9a57-8331341270f7",
-      "case_id": "a93435b0-a87b-4d6b-92fb-846a69ebc86b",
-      "legal_name": "Fraport AG Frankfurt Airport Services Worldwide",
-      "identifier": "5299001ERX0K10IZUL40",
-      "domicile": "DE",
-      "industry": "Airport Operations & Management",
-      "revenue": "",
-      "employees": "",
-      "group_parent": null,
-      "website": "https://www.fraport.com",
-      "match_score": 0.6,
-      "sources": {
-        "differentiators": [
-          "Group parent / listed holding company (Aktiengesellschaft)",
-          "LEI 5299001ERX0K10IZUL40 — FULLY_CORROBORATED, ACTIVE, last updated 2026-04-24",
-          "Commercial Register: Amtsgericht Frankfurt am Main HRB 7042",
-          "ISIN DE0005773303; stock symbol ETR:FRA (Xetra)",
-          "VAT DE 114150623",
-          "EUID DEM1201.HRB7042",
-          "Registered address: Flughafen, Geb. 178, 60547 Frankfurt am Main, DE-HE",
-          "Capital stock €924,687,040 (92,468,704 no-par bearer shares) per 2024 annual report",
-          "Majority public shareholders: State of Hesse 31.31%, City of Frankfurt/Main 20.92% (via Stadtwerke Frankfurt am Main Holding GmbH)",
-          "IPO 2001; entity creation date in LEI register 2004-06-07",
-          "Operates Frankfurt Main Airport as primary asset; active at 30 airports on four continents",
-          "Four reporting segments: Aviation, Retail & Real Estate, Ground Handling, International Activities & Services"
-        ],
-        "unresolved_attributes": [],
-        "prompt_id": "entity.resolve.candidates",
-        "prompt_version": "2.0.0",
-        "provider_response_id": "msg_011Cg5xwuRguRVFqH6bG9KoN"
-      },
-      "agent_run_id": "0f8733bc-5abd-401e-a070-b13c5a0267e7"
-    },
-    "candidates_considered": 9
+    "resolved": null,
+    "resumed": true
   },
-  "resumed_existing_case": false,
-  "mode": "run",
-  "domains_already_researched_on_resume": [],
-  "footprint_origin": "PUBLIC_DISCLOSURE_ONLY",
+  "resumed_existing_case": true,
+  "mode": "repromote",
+  "domains_already_researched_on_resume": [
+    1,
+    2,
+    6,
+    7,
+    8,
+    9,
+    10,
+    12,
+    13,
+    14,
+    15,
+    16,
+    18,
+    19,
+    20,
+    21,
+    22
+  ],
+  "footprint_origin": "RESEARCH_MERGED_WITH_DISCLOSURE",
   "footprint_used": [
     {
       "country": "BG",
@@ -108,7 +92,7 @@
     {
       "country": "GR",
       "archetype": "TERMINAL",
-      "sites": 14,
+      "sites": 15,
       "density": "SUBURBAN"
     },
     {
@@ -126,17 +110,24 @@
   ],
   "footprint_provenance": [
     {
+      "country": "DE",
+      "archetype": "CAMPUS",
+      "sites": 1,
+      "origin": "EXCLUDED_BY_SCOPE",
+      "reason": "the 3 are DATA CENTRES, not campuses - the source reads 'two data centers with a third as a back-up' - and this case already declares DE/DC 3, so promoting it adds the same buildings again under a second archetype. Frankfurt Airport is one campus of 2,300 hectares, which the Fraport Annual Report 2024 states directly."
+    },
+    {
       "country": "BG",
       "archetype": "TERMINAL",
       "sites": 2,
-      "origin": "PUBLIC_DISCLOSURE",
+      "origin": "SUPERSEDED_BY_RESEARCH",
       "density": "SUBURBAN"
     },
     {
       "country": "BR",
       "archetype": "TERMINAL",
       "sites": 2,
-      "origin": "PUBLIC_DISCLOSURE",
+      "origin": "SUPERSEDED_BY_RESEARCH",
       "density": "SUBURBAN"
     },
     {
@@ -177,22 +168,24 @@
     {
       "country": "GR",
       "archetype": "TERMINAL",
-      "sites": 14,
-      "origin": "PUBLIC_DISCLOSURE",
-      "density": "SUBURBAN"
+      "sites": 15,
+      "origin": "SUPERSEDED_BY_RESEARCH",
+      "density": "SUBURBAN",
+      "research_said": 15,
+      "disclosure_said": 14
     },
     {
       "country": "PE",
       "archetype": "TERMINAL",
       "sites": 1,
-      "origin": "PUBLIC_DISCLOSURE",
+      "origin": "SUPERSEDED_BY_RESEARCH",
       "density": "SUBURBAN"
     },
     {
       "country": "TR",
       "archetype": "TERMINAL",
       "sites": 1,
-      "origin": "PUBLIC_DISCLOSURE",
+      "origin": "SUPERSEDED_BY_RESEARCH",
       "density": "SUBURBAN"
     }
   ],
@@ -211,7 +204,7 @@
     "CAMPUS": "ASSUMED_PUBLIC_DISCLOSURE",
     "DC": "ASSUMED_PUBLIC_DISCLOSURE",
     "LARGE_OFFICE": "ASSUMED_PUBLIC_DISCLOSURE",
-    "TERMINAL": "ASSUMED_PUBLIC_DISCLOSURE",
+    "TERMINAL": "RESEARCHED",
     "WAREHOUSE": "ASSUMED_PUBLIC_DISCLOSURE"
   },
   "fx_to_eur": {
@@ -223,20 +216,7 @@
   },
   "seed": 20260101,
   "ensemble_size": 25,
-  "domains_declared_unknown": [
-    1,
-    2,
-    6,
-    7,
-    8,
-    9,
-    10,
-    12,
-    13,
-    14,
-    15,
-    16
-  ],
+  "domains_declared_unknown": [],
   "domains_requested": [
     1,
     2,
@@ -256,7 +236,8 @@
     21,
     22
   ],
-  "domains_fell_back_unanswered": [
+  "domains_fell_back_unanswered": [],
+  "domains_researched": [
     1,
     2,
     6,
@@ -268,9 +249,7 @@
     13,
     14,
     15,
-    16
-  ],
-  "domains_researched": [
+    16,
     18,
     19,
     20,
@@ -279,19 +258,19 @@
   ],
   "estimate_inputs": {
     "method": "BUILD_UP",
-    "users": 480,
+    "users": 492,
     "ops_cost_per_site_base": 900,
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-16T13:05:55.106769+00:00",
-  "run_seconds": 2612.9,
+  "run_started": "2026-10-18T16:46:52.124729+00:00",
+  "run_seconds": 2.8,
   "preflight_conditions": 8,
   "promotion": {
-    "promoted": false,
-    "detail": "no footprint candidates",
-    "offered": 0,
-    "accepted": 0,
+    "promoted": true,
+    "detail": null,
+    "offered": 9,
+    "accepted": 6,
     "declined": [],
     "declined_count": 0
   },

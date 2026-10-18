@@ -46,6 +46,11 @@ API = "http://127.0.0.1:8000"
 # would be a call that cannot answer.
 AGENT_DOMAINS = sorted(n for n, a in research.DOMAIN_AGENT_MAP.items() if a)
 
+# Seconds to wait before re-attempting a domain that failed on infrastructure.
+# Long enough for a DNS blip or a provider 5xx to clear, short enough that two
+# retries do not dominate a run that is already minutes per domain.
+BLOCKED_RETRY_WAIT = 60
+
 # The other seven: 3, 4, 5, 11, 17, 23, 24. No agent is routed to them, so
 # nothing researches them and V0 refuses to publish while any of the 24 has
 # no disposition - correctly, because an undisposed domain is one nobody has
@@ -326,11 +331,45 @@ def do_research(case_id, slug, domains, overwrite=False):
             # saint-gobain - each after an hour of paid research, on a
             # logging format string. A progress line must never be able to
             # end a run.
-            disp = str((got[0] or {}).get("disposition") or "-") if got else "-"
-            log(slug, f"domain {n:>2} {name[:34]:<34} {disp:<18} {took}s")
+            one = (got[0] or {}) if got else {}
+            # A domain the provider could not be reached for and a domain the
+            # agent had nothing to say about both arrive with disposition
+            # None, and this line printed "-" for both. Fraport spent twelve
+            # domains on a DNS outage and the log called it research.
+            #
+            # research.py already separates them - failure_kind and retryable
+            # exist precisely because "the distinction was always here and
+            # only ever in English" - and this driver was never taught to read
+            # them. An infrastructure failure now says so on its own line.
+            if one.get("failed"):
+                kind = one.get("failure_kind") or "FAILED"
+                mark = "retryable" if one.get("retryable") else "permanent"
+                log(slug, f"domain {n:>2} {name[:34]:<34} {kind:<18} {took}s "
+                          f"({mark})")
+                log(slug, f"         {(one.get('failure_detail') or '')[:120]}")
+            else:
+                disp = str(one.get("disposition") or "-") if got else "-"
+                log(slug, f"domain {n:>2} {name[:34]:<34} {disp:<18} {took}s")
         else:
             log(slug, f"domain {n:>2} {name[:34]:<34} FAILED {st} ({took}s)")
     return out
+
+
+def transport_blocked(raw):
+    """Domains whose last attempt failed for a reason retrying could fix.
+
+    PROVIDER_UNAVAILABLE, LIVENESS_PROOF_FAILED and SOURCES_UNREACHABLE are
+    infrastructure, not findings. A domain that hit one of them was never
+    asked the question, so it must not be recorded as having been asked and
+    answered with nothing.
+    """
+    blocked = {}
+    for n, got in (raw or {}).items():
+        res = (got or {}).get("result") or {}
+        for one in (res.get("results") or []):
+            if one.get("failed") and one.get("retryable"):
+                blocked[n] = one.get("failure_kind") or "FAILED"
+    return blocked
 
 
 def dispose_analyst_domains(case_id, slug, researching, keep=()):
@@ -395,8 +434,22 @@ def dispose_analyst_domains(case_id, slug, researching, keep=()):
     return out
 
 
-def dispose_unanswered(case_id, slug):
+def dispose_unanswered(case_id, slug, blocked=()):
     """Whatever research could not answer falls back to the seeded prior.
+
+    `blocked` names domains that failed on infrastructure - the provider was
+    unreachable, the call could not be proven to have run, egress refused the
+    fetch. Those are NEVER disposed here. BENCHMARK_PRIOR with "research
+    returned no verdict" asserts that research ran and established nothing,
+    and a domain that never reached the provider has established nothing
+    about anything. Writing it anyway is how a DNS outage became twelve of
+    Fraport's seventeen domains and a published estimate that read as
+    researched.
+
+    Leaving them undisposed is deliberate and has a cost: V0 refuses to
+    publish a case with an undisposed domain, so the company fails the run.
+    That is the intended outcome. A company missing from the set is a visible
+    gap; a company in the set resting on a silent outage is not.
 
     A research call can return 200 and no verdict - the agent ran, the
     quality gate refused every attempt, and _upsert_disposition is only
@@ -421,9 +474,14 @@ def dispose_unanswered(case_id, slug):
             select(db.domain_disposition.c.domain_no).where(
                 db.domain_disposition.c.case_id == case_id)).all()}
     names = dict(dispositions.DOMAINS)
-    missing = [n for n, _ in dispositions.DOMAINS if n not in have]
+    missing = [n for n, _ in dispositions.DOMAINS
+               if n not in have and n not in set(blocked)]
+    if blocked:
+        detail = ", ".join(f"{n} {k}" for n, k in sorted(dict(blocked).items()))
+        log(slug, f"NOT disposing {len(blocked)} domain(s) blocked on "
+                  f"infrastructure: {detail}")
     if not missing:
-        return {"fell_back": []}
+        return {"fell_back": [], "blocked": dict(blocked or {})}
     st, out = call("PUT",
                    f"/v1/outside-in/cases/{case_id}/domain-dispositions",
                    [{"domain_no": n, "domain_name": names[n],
@@ -434,7 +492,7 @@ def dispose_unanswered(case_id, slug):
         raise RuntimeError(f"fallback dispositions {st}: {out}")
     log(slug, f"{len(missing)} domain(s) research could not answer fell back "
               f"to BENCHMARK_PRIOR: {missing}")
-    return {"fell_back": missing}
+    return {"fell_back": missing, "blocked": dict(blocked or {})}
 
 
 def promote(case_id, slug):
@@ -1263,7 +1321,43 @@ def run_one(spec, outdir, domains, force, repair=False, repromote=False, redo=Fa
             log(slug, f"skipping {len(domains) - len(todo)} domain(s) "
                       f"already researched on this case")
         raw = do_research(case_id, slug, todo)
-    fell_back = dispose_unanswered(case_id, slug)
+    # A retryable failure is worth retrying before it becomes a gap. The DNS
+    # outage that cost Fraport twelve domains lasted under a minute per call
+    # and had recovered by the time domain 18 ran - the run simply never
+    # looked back. Two passes with a wait between them, because a provider
+    # blip and a provider outage look identical on the first attempt.
+    blocked = transport_blocked(raw)
+    for attempt in (1, 2):
+        if not blocked:
+            break
+        log(slug, f"retry {attempt}: {len(blocked)} domain(s) blocked on "
+                  f"infrastructure {sorted(blocked)}, waiting "
+                  f"{BLOCKED_RETRY_WAIT}s")
+        time.sleep(BLOCKED_RETRY_WAIT)
+        again = do_research(case_id, slug, sorted(blocked), overwrite=True)
+        for n, got in again.items():
+            raw[n] = got
+        blocked = transport_blocked(again)
+    if blocked:
+        log(slug, f"{len(blocked)} domain(s) still blocked after 2 retries: "
+                  + ", ".join(f"{n} {k}" for n, k in sorted(blocked.items())))
+
+    fell_back = dispose_unanswered(case_id, slug, blocked=blocked)
+    # Refusing here rather than publishing is the point of the whole change.
+    # An estimate assembled over domains that never reached the provider is
+    # not a thin estimate, it is an estimate about nothing, and the manifest
+    # that labels its domains BENCHMARK_PRIOR cannot say which were a
+    # considered fallback and which were an outage. Failing the company makes
+    # the gap visible and leaves the domains undisposed so --repair can buy
+    # them back.
+    if blocked:
+        raise RuntimeError(
+            f"research never reached the provider for {len(blocked)} "
+            f"domain(s) ({', '.join(f'{n} {k}' for n, k in sorted(blocked.items()))}). "
+            f"These are infrastructure failures, not research outcomes, so "
+            f"they are left undisposed rather than recorded as BENCHMARK_PRIOR. "
+            f"Re-run this company when the provider is reachable.")
+
     prom = promote(case_id, slug)
 
     foot, foot_origin, foot_prov = footprint_for_simulation(case_id, spec)
