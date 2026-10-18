@@ -21,7 +21,7 @@
   "base_currency": "EUR",
   "case_id": "92b5aa01-f7e2-4b3b-a6db-653c41832e17",
   "spec_path": "/tmp/companies.json",
-  "spec_sha256": "74058c1e9959",
+  "spec_sha256": "58e092f291b6",
   "entity_resolution": {
     "resolved": null,
     "resumed": true
@@ -293,14 +293,14 @@
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-16T15:04:15.774852+00:00",
+  "run_started": "2026-10-18T13:48:13.952673+00:00",
   "run_seconds": 2.5,
   "preflight_conditions": 8,
   "promotion": {
     "promoted": true,
     "detail": null,
-    "offered": 8,
-    "accepted": 5,
+    "offered": 6,
+    "accepted": 4,
     "declined": [
       {
         "reason": "sources disagree by 50% (2 to 3), and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
@@ -318,17 +318,9 @@
           "MATERIAL_SPREAD",
           "NEWEST_DIVERGES"
         ]
-      },
-      {
-        "reason": "sources state this in units that disagree, and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
-        "label": "US – super-regional distribution center acquisition (Wilmington, IL – WAREHOUSE site)",
-        "country": "US",
-        "flags": [
-          "UNIT_MISMATCH"
-        ]
       }
     ],
-    "declined_count": 3
+    "declined_count": 2
   },
   "domains_benchmark_disposed": [
     3,

@@ -15,7 +15,7 @@
   "base_currency": "AUD",
   "case_id": "8c0a9187-60fb-4862-b38e-f6d4131a65f0",
   "spec_path": "/tmp/companies.json",
-  "spec_sha256": "4abe96a4acc9",
+  "spec_sha256": "58e092f291b6",
   "entity_resolution": {
     "resolved": null,
     "resumed": true
@@ -240,15 +240,31 @@
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-16T10:15:51.467246+00:00",
-  "run_seconds": 3.6,
+  "run_started": "2026-10-18T13:47:35.021954+00:00",
+  "run_seconds": 3.0,
   "preflight_conditions": 8,
   "promotion": {
     "promoted": true,
     "detail": null,
-    "offered": 12,
+    "offered": 18,
     "accepted": 4,
     "declined": [
+      {
+        "reason": "sources disagree by 16% (129 to 150), and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
+        "label": "BROADBAND_HFC 1000Mbps MRC — AU small/medium business NBN (asymmetric, best-efforts)",
+        "country": "AU",
+        "flags": [
+          "MATERIAL_SPREAD"
+        ]
+      },
+      {
+        "reason": "sources disagree by 83% (492 to 901), and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
+        "label": "DIA 100Mbps MRC — US market benchmark (USD, 36-month, Lightyear 2026 dataset)",
+        "country": "US",
+        "flags": [
+          "MATERIAL_SPREAD"
+        ]
+      },
       {
         "reason": "sources disagree by 35% (181 to 245), and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
         "label": "STORE – NZ Woolworths Supermarkets (directly operated)",
@@ -258,7 +274,7 @@
         ]
       }
     ],
-    "declined_count": 1
+    "declined_count": 3
   },
   "domains_benchmark_disposed": [
     3,

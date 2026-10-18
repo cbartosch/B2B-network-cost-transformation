@@ -17,7 +17,7 @@
   "base_currency": "EUR",
   "case_id": "daaf72eb-105b-46be-b7ce-66361732eb3d",
   "spec_path": "/tmp/companies.json",
-  "spec_sha256": "74058c1e9959",
+  "spec_sha256": "58e092f291b6",
   "entity_resolution": {
     "resolved": null,
     "resumed": true
@@ -260,15 +260,21 @@
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-16T15:04:07.398356+00:00",
-  "run_seconds": 2.7,
+  "run_started": "2026-10-18T13:48:26.133250+00:00",
+  "run_seconds": 2.8,
   "preflight_conditions": 8,
   "promotion": {
     "promoted": true,
     "detail": null,
-    "offered": 15,
-    "accepted": 5,
+    "offered": 14,
+    "accepted": 4,
     "declined": [
+      {
+        "reason": "ES MPLS price of 2.0 carries no bandwidth. A circuit rate without a tier cannot be matched to any circuit, so it is not promotable to a prior - re-run the domain, or set the tier on the observation first.",
+        "label": null,
+        "country": null,
+        "flags": null
+      },
       {
         "reason": "sources state this in units that disagree, and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
         "label": "LARGE_OFFICE — corporate headquarters, Spain (ES)",
@@ -278,7 +284,7 @@
         ]
       }
     ],
-    "declined_count": 1
+    "declined_count": 2
   },
   "domains_benchmark_disposed": [
     3,
