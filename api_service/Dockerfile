@@ -77,6 +77,11 @@ COPY api_service/app ./app
 # copied back over the repository when a run is published, so a spec inside
 # it gets overwritten by whatever the container happened to hold.
 COPY samples/companies.json ./samples/companies.json
+# The verification register is the same kind of input as the spec above - a
+# human-curated, committed decision record, not driver output - but it was
+# missing from this list entirely, so a fresh container always saw an empty
+# register regardless of what reviewers had recorded on the host.
+COPY samples/verification_register.csv ./samples/verification_register.csv
 COPY tests ./tests
 # The second of those two services. The line above has always said the tests
 # read files from both, and `make test` runs them from inside this image - but
