@@ -555,6 +555,32 @@ def names_a_consumer_market(label) -> str:
     return m.group(0) if m else ""
 
 
+# Carrier and industry product names that denote exactly ONE canonical
+# product. PRODUCTS is the schema vocabulary; research returns the market's own
+# words. An Openreach "EAD" is an Ethernet leased line and an "FTTP" rental is
+# fibre - and without this they are declined for naming the product the way the
+# industry names it. These are regulated wholesale reference offers, the
+# strongest enterprise price evidence there is and exactly what domain 19's
+# brief asks for: Tesco and Shell both carry the Openreach EAD1000 annual
+# rental and both lost it on the product gate.
+#
+# Mapped only where the term is one product and one product only:
+#   EAD   Ethernet Access Direct - Openreach's Ethernet leased line, sold as
+#         EAD10 / EAD100 / EAD1000 / EAD LA. "EAD" is also a bank's Exposure At
+#         Default, but that is a stock in currency, not a per-month or per-year
+#         rate, so the rate_period gate in _classify never reaches it.
+#   FTTP  fibre to the premises - the fibre (PON) access product.
+# A bare "leased line" or "fibre" is deliberately NOT mapped: a leased line is
+# Ethernet or DIA depending on whether internet is bundled, and "fibre" is as
+# often the medium beneath an Ethernet circuit as it is the PON product.
+# Guessing either would price one product as another, which this function
+# exists to refuse.
+_PRODUCT_ALIAS = [
+    (re.compile(r"\bEAD\d*\b"), "ETHERNET"),
+    (re.compile(r"\bFTTP\b"), "BROADBAND_PON"),
+]
+
+
 def product_in(label) -> str | None:
     """The connectivity product a finding's label names, if exactly one.
 
@@ -568,13 +594,19 @@ def product_in(label) -> str | None:
     "US DIA 1 Gbps MRC" against a brief whose own example is "DIA 100Mbps
     MRC". Four real market medians were declined on word order.
 
+    Canonical tokens and the carrier aliases in _PRODUCT_ALIAS both count, and
+    an alias that resolves to a product already named is not a second product:
+    "ETHERNET EAD1000" is one product, not two.
+
     Exactly one, or None. "DIA/MPLS blended rate" names two products and a
-    blended rate is neither of them.
+    blended rate is neither of them - and "DIA / EAD" names two just as much.
     """
+    text = str(label or "").upper()
     words = set("".join(
         ch if (ch.isalnum() or ch == "_") else " "
-        for ch in str(label or "").upper()).split())
+        for ch in text).split())
     found = {p for p in PRODUCTS if p in words}
+    found |= {canon for rx, canon in _PRODUCT_ALIAS if rx.search(text)}
     return next(iter(found)) if len(found) == 1 else None
 
 
