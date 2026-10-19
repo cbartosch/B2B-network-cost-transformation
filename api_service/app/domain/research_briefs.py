@@ -298,9 +298,15 @@ RESEARCH_BRIEFS: dict[int, dict] = {
                 "in-scope countries.",
         "wants": "Monthly recurring charge per circuit, per country, for a "
                  "NAMED product at a NAMED bandwidth. This feeds the pricing "
-                 "benchmark directly, so precision matters more than "
-                 "coverage. Four fields decide whether a price can be used "
-                 "at all, and a price missing any of them is discarded. "
+                 "benchmark directly. Return a price for EVERY in-scope "
+                 "country you can source one for, and name the countries you "
+                 "could not - a country with no price is a gap somebody has "
+                 "to fill with an assumption, and six companies researched "
+                 "with this brief returned prices for two countries between "
+                 "them while four returned none at all. Precision AND "
+                 "coverage: a precise price for one country out of nine is "
+                 "not a result. Four fields decide whether a price can be "
+                 "used at all, and a price missing any of them is discarded. "
                  "(1) `label` must contain one of DIA, MPLS, ETHERNET, "
                  "BROADBAND_PON, BROADBAND_HFC, MOBILE_5G, spelled exactly - "
                  "'broadband' alone is not usable, because the benchmark "
@@ -309,13 +315,31 @@ RESEARCH_BRIEFS: dict[int, dict] = {
                  "cannot be matched to any circuit. "
                  "(3) `country` must be a two-letter ISO code - a region "
                  "such as 'North America' or 'EMEA' cannot be priced. "
-                 "(4) `unit` must be a rate per month, like 'USD/month', "
-                 "and not a duration counted in months.",
+                 "(4) `unit` must be a RATE - per month like 'USD/month', "
+                 "or per year like 'GBP/year', which is converted. It must "
+                 "not be a duration counted in months or years: '36 months' "
+                 "is a contract term, not a price.",
         "search": ["{country} leased line pricing benchmark enterprise",
                    "dedicated internet access price per Mbps {country}",
                    "regulator broadband business tariff comparison {country}",
+                   "{country} wholesale reference offer ethernet access "
+                   "price list",
+                   "{country} public sector network framework agreement "
+                   "contract award value",
                    "MPLS circuit monthly cost benchmark"],
-        "sources": ["national regulator price benchmarking studies",
+        # Enterprise WAN pricing is negotiated under NDA, so the obvious
+        # search returns consumer broadband and paywalled analyst decks. The
+        # two sources that ARE public and ARE enterprise pricing are listed
+        # first: a regulated wholesale reference offer is a published tariff
+        # an operator is obliged to honour, and a public-sector framework
+        # award states what a government actually paid.
+        "sources": ["REGULATED WHOLESALE REFERENCE OFFERS - Openreach, "
+                    "BNetzA, ARCEP, CNMC and other national reference offers "
+                    "for leased lines and ethernet access",
+                    "PUBLIC-SECTOR FRAMEWORK AWARDS - national framework "
+                    "agreements, EU TED contract award notices carrying "
+                    "values, and equivalent published public tenders",
+                    "national regulator price benchmarking studies",
                     "published carrier business tariffs",
                     "analyst pricing studies - TeleGeography and similar"],
         # bandwidth_mbps was absent from this example and promotion
