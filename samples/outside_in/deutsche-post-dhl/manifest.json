@@ -16,7 +16,7 @@
   "base_currency": "EUR",
   "case_id": "0fad5c9a-1959-4583-845f-a7cc722e8f60",
   "spec_path": "/tmp/companies.json",
-  "spec_sha256": "58e092f291b6",
+  "spec_sha256": "ad37995b9e77",
   "entity_resolution": {
     "resolved": null,
     "resumed": true
@@ -291,15 +291,23 @@
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-18T13:45:25.435977+00:00",
-  "run_seconds": 6.1,
+  "run_started": "2026-10-19T20:06:11.509324+00:00",
+  "run_seconds": 3.2,
   "preflight_conditions": 8,
   "promotion": {
     "promoted": true,
     "detail": null,
-    "offered": 12,
+    "offered": 14,
     "accepted": 6,
     "declined": [
+      {
+        "reason": "sources disagree by 16% (2100 to 2442), and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
+        "label": "GB ETHERNET 1 Gbps EAD wholesale annual rental (Openreach)",
+        "country": "GB",
+        "flags": [
+          "MATERIAL_SPREAD"
+        ]
+      },
       {
         "reason": "sources state this in units that disagree, and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
         "label": "SERVICE_POINT – Person-operated sales points / post offices (DE)",
@@ -309,7 +317,7 @@
         ]
       }
     ],
-    "declined_count": 1
+    "declined_count": 2
   },
   "domains_benchmark_disposed": [
     3,

@@ -1306,9 +1306,9 @@ Sources: [Wifirst](https://www.wifirst.com/en/press-room/carrefour); [Wireless B
 
 Sources: [Wifirst](https://www.wifirst.com/en/press-room/carrefour); [Wireless Broadband Alliance](https://wballiance.com/wifirst-new-local-network-operator-for-carrefour/); [Telecompaper](https://www.telecompaper.com/news/carrefour-france-telecom-renew-global-network-partnership--306697); [L'Informé](https://www.linforme.com/tech-telecom/article/carrefour-se-relance-dans-la-telephonie-mobile_7523.html) and 1 more
 
-**Transformation announcements** - BENCHMARK_PRIOR: research returned no verdict
+**Transformation announcements** - BENCHMARK_PRIOR
 
-**Market serviceability** - BENCHMARK_PRIOR: research returned no verdict
+**Market serviceability** - BENCHMARK_PRIOR
 
 ---
 
@@ -2193,7 +2193,7 @@ Sources: [germancompanyformation.com](https://germancompanyformation.com/guides/
 
 - **Industry** UTILITIES (entity resolution)
 - **Scope** ES, GB, EUR, 2,756 sites (research merged with disclosure)
-- **Confidence** 0.368 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.325 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 8 source(s)
 
