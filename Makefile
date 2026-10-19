@@ -86,6 +86,15 @@ logs:
 	docker compose logs -f api ui
 
 test:          ## run the integrity + DB control suites inside the api container
+	@# The image deliberately does not bake in samples/outside_in/ (see
+	@# api_service/Dockerfile) - it is sample-driver OUTPUT, not input, and
+	@# baking it in previously let a stale copy silently outlive the commit
+	@# that changed it (see "The sample driver read its input from its own
+	@# output directory"). test_verification_register.py checks that output
+	@# against the committed register, so it needs the CURRENT host copy
+	@# synced in fresh for every run - never left over from a previous one.
+	docker compose exec api rm -rf /app/samples/outside_in
+	docker compose cp samples/outside_in api:/app/samples/outside_in
 	@# DATABASE_URL is passed explicitly so the suite can never bind to Postgres,
 	@# independently of anything conftest.py does.
 	docker compose exec \

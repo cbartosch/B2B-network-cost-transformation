@@ -353,6 +353,16 @@ Check out the branch you mean to share first:  git switch <branch>
     'test' {
         Assert-Docker
         Assert-Service
+        # The image deliberately does not bake in samples/outside_in/ (see
+        # api_service/Dockerfile) - it is sample-driver OUTPUT, not input, and
+        # baking it in previously let a stale copy silently outlive the commit
+        # that changed it (see "The sample driver read its input from its own
+        # output directory"). test_verification_register.py checks that
+        # output against the committed register, so it needs the CURRENT
+        # host copy synced in fresh for every run - never left over from a
+        # previous one. Same reasoning as the Makefile.
+        Invoke-Checked 'docker' @('compose', 'exec', 'api', 'rm', '-rf', '/app/samples/outside_in')
+        Invoke-Checked 'docker' @('compose', 'cp', 'samples/outside_in', 'api:/app/samples/outside_in')
         # DATABASE_URL is passed explicitly so the suite can never bind to
         # Postgres, independently of anything conftest.py does. Same reasoning
         # as the Makefile: three independent layers, and this is one of them.
