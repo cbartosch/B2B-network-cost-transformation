@@ -14680,163 +14680,242 @@
       "domain_name": "Market unit prices",
       "disposition": "EVIDENCED_PUBLIC",
       "reason": null,
-      "agent_run_id": "817eb2d8-0b74-4bd3-a07c-c49fae4105a3",
+      "agent_run_id": "60352992-fa70-4ad8-b4f4-425e17863368",
       "evidence": {
         "sources": [
           {
+            "url": "https://selectra.co.uk/tv-broadband/guides/business/leased-lines",
+            "publisher": "Selectra",
+            "as_of": "2026",
+            "source_class": "AGGREGATOR",
+            "how_read": "SNIPPET_ONLY",
+            "figure_basis": "STATED",
+            "excerpt": "In 2026 prices start at £200/month for 100 Mbps and £350/month for 1 Gbps",
+            "status_code": 200,
+            "fragment": "(function(){ var _fetch = window.fetch; window.fetch = function(url, opts) { if (typeof url === 'string' && url.startsWith('/') && url.indexOf('/api/') !== -1) { opts = opts || {}; opts.headers = opts.headers || {}; var token = document.querySelector('meta[name=\"csrf-token\"]').content; if (opts.headers instanceof Headers) { if (!opts.headers.has('X-CSRF-TOKEN')) opts.headers.set('X-CSRF-TOKEN', token); } else { opts.headers['X-CSRF-TOKEN'] = opts.headers['X-CSRF-TOKEN'] || token; } } return _fetch.call(this, url, opts); }; })(); Leased lines 2026: UK prices, providers and whether your business",
+            "claim_checked": "NOT_FOUND",
+            "claim_verified": false
+          },
+          {
+            "url": "https://amvia.co.uk/leased-lines",
+            "publisher": "AMVIA",
+            "as_of": "2026",
+            "source_class": "AGGREGATOR",
+            "how_read": "SNIPPET_ONLY",
+            "figure_basis": "STATED",
+            "excerpt": "roughly £69–£400/mo for 100Mbps, £129–£700/mo for 1Gbps",
+            "status_code": 200,
+            "fragment": "Leased Lines UK: Compare Costs &amp; Providers (from £69/mo) | AMVIA !function(w,d,s,u){if(w.oaiq)return;var q=function(){q.q.push(arguments)};q.q=[];w.oaiq=q;var j=d.createElement(s);j.async=1;j.src=u;var f=d.getElementsByTagName(s)[0];f.parentNode.insertBefore(j,f)}(window,document,\"script\",\"https://bzrcdn.openai.com/sdk/oaiq.min.js\");oaiq(\"init\",{pixelId:\"Cf1En1y5SYHDBAsFtnRc4i\"}); {\"@context\":\"https://schema.org\",\"@type\":\"Organization\",\"name\":\"AMVIA\",\"legalName\":\"AMVIA LIMITED\",\"url\":\"https://amvia.co.uk\",\"logo\":\"https://amvia.co.uk/logo.svg\",\"telephone\":\"+443337338050\",\"address\":{\"@type\":",
+            "claim_checked": "NOT_FOUND",
+            "claim_verified": false
+          },
+          {
+            "url": "https://www.amvia.co.uk/blog/leased-line-prices-in-the-uk-what-can-you-expect",
+            "publisher": "AMVIA blog",
+            "as_of": "2025",
+            "source_class": "AGGREGATOR",
+            "how_read": "SNIPPET_ONLY",
+            "figure_basis": "STATED",
+            "excerpt": "100 Mbps leased line: £240–£320/month (36-month term) in urban areas",
+            "status_code": 200,
+            "fragment": "Business Leased Line Cost Guide: From £69/Month | AMVIA !function(w,d,s,u){if(w.oaiq)return;var q=function(){q.q.push(arguments)};q.q=[];w.oaiq=q;var j=d.createElement(s);j.async=1;j.src=u;var f=d.getElementsByTagName(s)[0];f.parentNode.insertBefore(j,f)}(window,document,\"script\",\"https://bzrcdn.openai.com/sdk/oaiq.min.js\");oaiq(\"init\",{pixelId:\"Cf1En1y5SYHDBAsFtnRc4i\"}); {\"@context\":\"https://schema.org\",\"@type\":\"BreadcrumbList\",\"itemListElement\":[{\"@type\":\"ListItem\",\"position\":1,\"name\":\"Home\",\"item\":\"https://amvia.co.uk/\"},{\"@type\":\"ListItem\",\"position\":2,\"name\":\"Cost Guides\",\"item\":\"https://",
+            "claim_checked": "NOT_FOUND",
+            "claim_verified": false
+          },
+          {
+            "url": "https://comparenet.co.uk/dedicated-fibre-leased-lines",
+            "publisher": "comparenet.co.uk",
+            "as_of": "2026",
+            "source_class": "AGGREGATOR",
+            "how_read": "SNIPPET_ONLY",
+            "figure_basis": "STATED",
+            "excerpt": "100Mbps from £130/month, 1Gbps from £195/month, 10Gbps from £650/month",
+            "status_code": 200,
+            "fragment": "Business Leased Lines UK | Dedicated Internet & Fiber Quotes window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', 'G-0L5FW639HT'); gtag('config', 'AW-17106406416'); (function(w, d, t, u, o) { w[u] = w[u] || [], o.ts = (new Date).getTime(); var n = d.createElement(t); n.src = \"https://bat.bing.net/bat.js?ti=\" + o.ti + (\"uetq\" != u ? \"&q=\" + u : \"\"), n.async = 1, n.onload = n.onreadystatechange = function() { var s = this.readyState; s && \"loaded\" !== s && \"complete\" !== s || (o.q = w[u], w[u] = new UET(o), w[u].push(\"pageL",
+            "claim_checked": "FIGURES_ONLY",
+            "claim_verified": true
+          },
+          {
+            "url": "https://www.openreach.co.uk/orpg/home/products/pricing/loadProductPriceDetails.do?data=0d0zetWgShsjqKWjcN2Y5WJA8BGGqsBLxL7IgSM4fRpZ6rNZujnCs99NbIKJZPD9hXYmiijxH6wrCQm97GZMyQ%3D%3D",
+            "publisher": "Openreach (BT) – published wholesale EAD price list",
+            "as_of": "2026-07",
+            "source_class": "REGULATOR",
+            "how_read": "SNIPPET_ONLY",
+            "figure_basis": "STATED",
+            "excerpt": "EAD 1000 Extended Reach Area 2 Annual Rental £2,442.00; EAD 10000 Area 2 Annual Rental £4,980.00",
+            "status_code": 200,
+            "fragment": "Price List window[\"adrum-start-time\"] = new Date().getTime(); (function(config){ config.appKey = \"EC-AAB-UDD\"; config.adrumExtUrlHttp = \"http://cdn.appdynamics.com\"; config.adrumExtUrlHttps = \"https://cdn.appdynamics.com\"; config.beaconUrlHttp = \"http://fra-col.eum-appdynamics.com\"; config.beaconUrlHttps = \"https://fra-col.eum-appdynamics.com\"; config.resTiming = {\"bufSize\":200,\"clearResTimingOnBeaconSend\":true}; config.maxUrlLength = 512; })(window[\"adrum-config\"] || (window[\"adrum-config\"] = {})); function searchQueryValidation(val) { val.value=filterNum(val.value) function filterNum(str) { ",
+            "claim_checked": "NOT_FOUND",
+            "claim_verified": false
+          },
+          {
+            "url": "https://selectra.co.uk/tv-broadband/guides/business/best-business-broadband",
+            "publisher": "Selectra",
+            "as_of": "2026",
+            "source_class": "AGGREGATOR",
+            "how_read": "SNIPPET_ONLY",
+            "figure_basis": "STATED",
+            "excerpt": "FTTP 100 Mbps entry £25; 500 Mbps entry £35; 1 Gbps entry £40",
+            "status_code": 200,
+            "fragment": "(function(){ var _fetch = window.fetch; window.fetch = function(url, opts) { if (typeof url === 'string' && url.startsWith('/') && url.indexOf('/api/') !== -1) { opts = opts || {}; opts.headers = opts.headers || {}; var token = document.querySelector('meta[name=\"csrf-token\"]').content; if (opts.headers instanceof Headers) { if (!opts.headers.has('X-CSRF-TOKEN')) opts.headers.set('X-CSRF-TOKEN', token); } else { opts.headers['X-CSRF-TOKEN'] = opts.headers['X-CSRF-TOKEN'] || token; } } return _fetch.call(this, url, opts); }; })(); Best business broadband UK 2026: FTTP, leased lines and 5G FWA co",
+            "claim_checked": "FIGURES_ONLY",
+            "claim_verified": true
+          },
+          {
+            "url": "https://connection-technologies.co.uk/blog/business-broadband-uk-2026",
+            "publisher": "connection-technologies.co.uk",
+            "as_of": "2026",
+            "source_class": "AGGREGATOR",
+            "how_read": "SNIPPET_ONLY",
+            "figure_basis": "STATED",
+            "excerpt": "FTTP (entry) 100–150 Mbps £28–£45; (mid) 300–500 Mbps £40–£60; (premium) 900 Mbps £55–£80",
+            "status_code": 200,
+            "fragment": "window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);} gtag('consent','default',{ 'ad_storage':'denied', 'ad_user_data':'denied', 'ad_personalization':'denied', 'analytics_storage':'denied', 'wait_for_update':500 }); gtag('set','ads_data_redaction',true); gtag('set','url_passthrough',true); (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start': new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0], j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src= 'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j",
+            "claim_checked": "NOT_FOUND",
+            "claim_verified": false
+          },
+          {
+            "url": "https://www.savecall.de/en/leased-line/",
+            "publisher": "savecall.de",
+            "as_of": "2026",
+            "source_class": "AGGREGATOR",
+            "how_read": "SNIPPET_ONLY",
+            "figure_basis": "STATED",
+            "excerpt": "100 Mbit/s range from 500 to 1,500 euros and 1 Gbit/s from 1,500 to 4,000 euros",
+            "status_code": 200,
+            "fragment": "﻿ {\"@context\":\"https://schema.org\",\"@graph\":[{\"@type\":[\"WebPage\",\"FAQPage\"],\"@id\":\"https://www.savecall.de/en/leased-line/\",\"url\":\"https://www.savecall.de/en/leased-line/\",\"name\":\"Leased Line for Businesses: Providers & Pricing | SAVECALL\",\"isPartOf\":{\"@id\":\"https://www.savecall.de/en/#website\"},\"primaryImageOfPage\":{\"@id\":\"https://www.savecall.de/en/leased-line/#primaryimage\"},\"image\":{\"@id\":\"https://www.savecall.de/en/leased-line/#primaryimage\"},\"thumbnailUrl\":\"https://www.savecall.de/wp-content/uploads/2025/10/Standleitung.png\",\"datePublished\":\"2025-08-14T10:57:10+00:00\",\"dateModified\":\"202",
+            "claim_checked": "EXACT",
+            "claim_verified": true
+          },
+          {
+            "url": "https://www.savecall.de/en/mpls/",
+            "publisher": "savecall.de MPLS page",
+            "as_of": "2026",
+            "source_class": "AGGREGATOR",
+            "how_read": "SNIPPET_ONLY",
+            "figure_basis": "STATED",
+            "excerpt": "100 Mbit/s from 800 to 2,500 euros and 1 Gbit/s from 2,500 to 6,000 euros",
+            "status_code": 200,
+            "fragment": "﻿ {\"@context\":\"https://schema.org\",\"@graph\":[{\"@type\":[\"WebPage\",\"FAQPage\"],\"@id\":\"https://www.savecall.de/en/mpls/\",\"url\":\"https://www.savecall.de/en/mpls/\",\"name\":\"MPLS for Businesses: Providers & Cost | SAVECALL\",\"isPartOf\":{\"@id\":\"https://www.savecall.de/en/#website\"},\"primaryImageOfPage\":{\"@id\":\"https://www.savecall.de/en/mpls/#primaryimage\"},\"image\":{\"@id\":\"https://www.savecall.de/en/mpls/#primaryimage\"},\"thumbnailUrl\":\"https://www.savecall.de/wp-content/uploads/2025/10/image-6.png?wsr\",\"datePublished\":\"2025-08-14T11:00:06+00:00\",\"dateModified\":\"2026-05-28T08:48:22+00:00\",\"description\":\"",
+            "claim_checked": "EXACT",
+            "claim_verified": true
+          },
+          {
             "url": "https://lightyear.ai/resources/dedicated-internet-access-dia-ultimate-pricing-guide",
             "publisher": "Lightyear.ai",
-            "as_of": "2026",
+            "as_of": "2025-2026",
             "source_class": "AGGREGATOR",
             "how_read": "SNIPPET_ONLY",
             "figure_basis": "STATED",
-            "excerpt": "Last 12 Months DIA Pricing ($MRC) by Bandwidth Tier — 100 Mbps: $333/$492/$641; 1 Gbps: $600/$901/$1,312; 10 Gbps: $1,175/$1,987/$2,853",
+            "excerpt": "100 Mbps Median $492; 1 Gbps Median $901; 10 Gbps Median $1,987 (36-month, US)",
             "status_code": 200,
             "fragment": "Dedicated Internet Access Pricing | DIA Internet Guide 2026 {\"@context\":\"https://schema.org\",\"@type\":\"SoftwareApplication\",\"name\":\"Lightyear\",\"url\":\"https://lightyear.ai\",\"applicationCategory\":\"BusinessApplication\",\"operatingSystem\":\"Web\",\"description\":\"Lightyear provides enterprises with software that acts as a digital workflow and system of record platform to unlock efficiency across the full enterprise telecom lifecycle, revolutionizing the telecom experience. Enterprises who leverage Lightyear across the full telecom lifecycle spend exponentially less time on telecom management while reduc",
-            "claim_checked": "NOT_FOUND",
-            "claim_verified": false
-          },
-          {
-            "url": "https://lightyear.ai/blogs/how-much-business-internet-costs",
-            "publisher": "Lightyear.ai",
-            "as_of": "2026",
-            "source_class": "AGGREGATOR",
-            "how_read": "SNIPPET_ONLY",
-            "figure_basis": "STATED",
-            "excerpt": "2026 Business Broadband Pricing: 100 Mbps $60/$100/$175; 500 Mbps $65/$110/$212; 1 Gbps $124/$184/$330",
-            "status_code": 200,
-            "fragment": "2026 Business Internet Cost Guide (with Real Data) {\"@context\":\"https://schema.org\",\"@type\":\"SoftwareApplication\",\"name\":\"Lightyear\",\"url\":\"https://lightyear.ai\",\"applicationCategory\":\"BusinessApplication\",\"operatingSystem\":\"Web\",\"description\":\"Lightyear provides enterprises with software that acts as a digital workflow and system of record platform to unlock efficiency across the full enterprise telecom lifecycle, revolutionizing the telecom experience. Enterprises who leverage Lightyear across the full telecom lifecycle spend exponentially less time on telecom management while reducing telec",
-            "claim_checked": "NOT_FOUND",
-            "claim_verified": false
-          },
-          {
-            "url": "https://lightyear.ai/blogs/sd-wan-vs-mpls-cost-comparison",
-            "publisher": "Lightyear.ai",
-            "as_of": "2026",
-            "source_class": "AGGREGATOR",
-            "how_read": "SNIPPET_ONLY",
-            "figure_basis": "STATED",
-            "excerpt": "For a typical 1 Gbps circuit in North America, MPLS costs $1,439 per month",
-            "status_code": 200,
-            "fragment": "SD-WAN vs MPLS: Total Cost Comparison Guide for 2026 {\"@context\":\"https://schema.org\",\"@type\":\"SoftwareApplication\",\"name\":\"Lightyear\",\"url\":\"https://lightyear.ai\",\"applicationCategory\":\"BusinessApplication\",\"operatingSystem\":\"Web\",\"description\":\"Lightyear provides enterprises with software that acts as a digital workflow and system of record platform to unlock efficiency across the full enterprise telecom lifecycle, revolutionizing the telecom experience. Enterprises who leverage Lightyear across the full telecom lifecycle spend exponentially less time on telecom management while reducing tel",
-            "claim_checked": "NOT_FOUND",
-            "claim_verified": false
-          },
-          {
-            "url": "https://californiatelecom.com/blog/enterprise-fiber-cost",
-            "publisher": "californiatelecom.com",
-            "as_of": "2026",
-            "source_class": "TRADE_PRESS",
-            "how_read": "SNIPPET_ONLY",
-            "figure_basis": "STATED",
-            "excerpt": "Enterprise dedicated fiber: $300 to $600 for 100 Mbps, $600 to $1,400 for 1 Gbps, $1,800 to $5,000+ for 10 Gbps",
-            "status_code": 200,
-            "fragment": "What Does Enterprise Fiber Cost? Real 2026 Price Ranges | California Telecom {\"@context\":\"https://schema.org\",\"@type\":\"Organization\",\"@id\":\"https://californiatelecom.com/#organization\",\"name\":\"California Telecom\",\"url\":\"https://californiatelecom.com\",\"logo\":{\"@type\":\"ImageObject\",\"url\":\"https://californiatelecom.com/logo.jpg\"},\"description\":\"California Telecom delivers managed SD-WAN, UCaaS, WiFi, and broadband solutions for multi-location businesses across California.\",\"foundingDate\":\"2008\",\"telephone\":\"+1-877-622-5835\",\"address\":{\"@type\":\"PostalAddress\",\"streetAddress\":\"14538 Central Ave\",\"a",
-            "claim_checked": "NOT_FOUND",
-            "claim_verified": false
-          },
-          {
-            "url": "https://jimber.io/blog/mpls-pricing-2026/",
-            "publisher": "jimber.io",
-            "as_of": "2026",
-            "source_class": "TRADE_PRESS",
-            "how_read": "SNIPPET_ONLY",
-            "figure_basis": "STATED",
-            "excerpt": "100 Mbps Western Europe/Benelux MPLS: €700–€1,300/month; 1 Gbps: €1,100–€1,300; North America 100 Mbps ~$1,500–$3,000",
-            "status_code": 200,
-            "fragment": "window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('consent', 'default', { ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied', analytics_storage: 'denied', wait_for_update: 500 }); (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start': new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0], j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src= 'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f); })(window,document,'script','dataLayer','GTM-5B6SBCD'); MPLS Pricing",
-            "claim_checked": "NOT_FOUND",
-            "claim_verified": false
-          },
-          {
-            "url": "https://www.amvia.co.uk/blog/the-complete-guide-to-comparing-leased-line-costs-and-specifications-in-2025",
-            "publisher": "AMVIA",
-            "as_of": "2025",
-            "source_class": "TRADE_PRESS",
-            "how_read": "SNIPPET_ONLY",
-            "figure_basis": "STATED",
-            "excerpt": "UK businesses pay £175-£270 monthly for 100Mbps urban, £300-£450 for 1Gbps, £550-£850 for 10Gbps",
-            "status_code": 200,
-            "fragment": "The Complete Guide to Comparing Leased Line Costs | AMVIA {\"@context\":\"https://schema.org\",\"@type\":\"BreadcrumbList\",\"itemListElement\":[{\"@type\":\"ListItem\",\"position\":1,\"name\":\"Home\",\"item\":\"https://amvia.co.uk/\"},{\"@type\":\"ListItem\",\"position\":2,\"name\":\"Blog\",\"item\":\"https://amvia.co.uk/blog\"},{\"@type\":\"ListItem\",\"position\":3,\"name\":\"The Complete Guide to Comparing Leased Line Costs\",\"item\":\"https://amvia.co.uk/blog/the-complete-guide-to-comparing-leased-line-costs-and-specifications-in-2025\"}]} {\"@context\":\"https://schema.org\",\"@type\":\"FAQPage\",\"mainEntity\":[{\"@type\":\"Question\",\"name\":\"How ma",
-            "claim_checked": "NOT_FOUND",
-            "claim_verified": false
-          },
-          {
-            "url": "https://www.purple.ai/en-gb/blogs/leased-line-cost",
-            "publisher": "purple.ai",
-            "as_of": "2026",
-            "source_class": "TRADE_PRESS",
-            "how_read": "SNIPPET_ONLY",
-            "figure_basis": "STATED",
-            "excerpt": "100Mbps: £180–£350; 500Mbps: £300–£550; 1Gbps: £450–£850; 10Gbps: £1,200–£3,500+",
-            "status_code": 200,
-            "fragment": "Business leased line costs: 100Mb, 1Gb &amp; 10Gb pricing guide | Purple :root{--base--navy:#011638;--base--purple:#7458fd;--font-family--headings:\"Purple Poppins\",\"Purple Poppins Fallback\",Arial,sans-serif;--font-family--paragraphs:\"Purple Poppins\",\"Purple Poppins Fallback\",Arial,sans-serif}html,body{margin:0;padding:0;background:#fff;color:#011638;font-family:\"Purple Poppins\",\"Purple Poppins Fallback\",Arial,sans-serif;font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased}img{max-width:100%;height:auto;display:block}.page-wrapper,.main-wrapper{position:relative;overflow:clip}.padd",
-            "claim_checked": "NOT_FOUND",
-            "claim_verified": false
-          },
-          {
-            "url": "https://compareyourbusinesscosts.co.uk/how-much-does-a-leased-line-cost",
-            "publisher": "compareyourbusinesscosts.co.uk",
-            "as_of": "2026",
-            "source_class": "TRADE_PRESS",
-            "how_read": "SNIPPET_ONLY",
-            "figure_basis": "STATED",
-            "excerpt": "UK leased line: 100Mbps £150–£300+; 500Mbps £250–£600+; 1Gbps £300–£800+; 10Gbps £1,000–£2,000+",
-            "status_code": 200,
-            "fragment": "if(navigator.userAgent.match(/MSIE|Internet Explorer/i)||navigator.userAgent.match(/Trident\\/7\\..*?rv:11/i)){var href=document.location.href;if(!href.match(/[?&]nowprocket/)){if(href.indexOf(\"?\")==-1){if(href.indexOf(\"#\")==-1){document.location.href=href+\"?nowprocket=1\"}else{document.location.href=href.replace(\"#\",\"?nowprocket=1#\")}}else{if(href.indexOf(\"#\")==-1){document.location.href=href+\"&nowprocket=1\"}else{document.location.href=href.replace(\"#\",\"&nowprocket=1#\")}}}} (()=>{class RocketLazyLoadScripts{constructor(){this.v=\"1.2.6\",this.triggerEvents=[\"keydown\",\"mousedown\",\"mousemove\",\"touch",
-            "claim_checked": "NOT_FOUND",
-            "claim_verified": false
-          },
-          {
-            "url": "https://www.three.co.uk/business",
-            "publisher": "Three UK (three.co.uk/business)",
-            "as_of": "2026",
-            "source_class": "COMPANY_PUBLISHED",
-            "how_read": "SNIPPET_ONLY",
-            "figure_basis": "STATED",
-            "excerpt": "5G Business Broadband from £15.00/month for 24 months, unlimited data",
-            "status_code": 200,
-            "fragment": "Three Business | Superfast 5G broadband, business phone contracts &amp; SIM plans window.adobeDataLayer = window.adobeDataLayer || []; adobeDataLayer.push({ page: JSON.parse(\"{\\x22page\\u002D172c9a6d9d\\x22:{\\x22@type\\x22:\\x22threedigital\\/components\\/page\\x22,\\x22repo:modifyDate\\x22:\\x222026\\u002D09\\u002D16T14:05:10Z\\x22,\\x22dc:title\\x22:\\x22Three Business | Superfast 5G broadband, business phone contracts \\x26 SIM plans\\x22,\\x22dc:description\\x22:\\x22Discover Three Business – flexible business mobile phone plans, reliable 5G connectivity, and innovative solutions tailored for businesses of all",
             "claim_checked": "NOT_FOUND",
             "claim_verified": false
           }
         ],
         "quantities": [
           {
-            "label": "US MPLS 1 Gbps MRC — North America managed service benchmark",
-            "value": "1439",
-            "unit": "USD/month",
-            "country": "US",
+            "label": "ETHERNET 1000 Mbps wholesale annual rental (Openreach EAD Area 2)",
+            "value": "2442",
+            "unit": "GBP/year",
+            "country": "GB",
             "bandwidth_mbps": 1000,
             "as_of": "2026",
-            "currency": "USD",
-            "vendor": null,
-            "term_months": 36,
-            "technology": "MPLS",
+            "currency": "GBP",
+            "vendor": "Openreach",
+            "term_months": null,
+            "technology": "ETHERNET",
             "candidates": [
               {
-                "value": "1439",
-                "unit": "USD/month",
-                "source_url": "https://lightyear.ai/blogs/sd-wan-vs-mpls-cost-comparison",
-                "publisher": "Lightyear.ai",
+                "value": "2442",
+                "unit": "GBP/year",
+                "source_url": "https://www.openreach.co.uk/orpg/home/products/pricing/loadProductPriceDetails.do?data=0d0zetWgShsjqKWjcN2Y5WJA8BGGqsBLxL7IgSM4fRpZ6rNZujnCs99NbIKJZPD9hXYmiijxH6wrCQm97GZMyQ%3D%3D",
+                "publisher": "Openreach published price list",
+                "as_of": "2026-07",
+                "note": "Wholesale access price only; retail end-customer price higher. Area 2 = non-CLA. Ex VAT.",
+                "source_class": "REGULATOR",
+                "how_read": "SNIPPET_ONLY",
+                "figure_basis": "STATED",
+                "excerpt": "EAD 1000 Extended Reach - Area 2 | 01/07/2026 | 31/07/2026 | Annual Rental £2,442.00"
+              },
+              {
+                "value": "2364",
+                "unit": "GBP/year",
+                "source_url": "https://www.openreach.co.uk/orpg/home/products/pricing/loadProductPriceDetails.do?data=0d0zetWgShsjqKWjcN2Y5WJA8BGGqsBLxL7IgSM4fRpZ6rNZujnCs99NbIKJZPD9hXYmiijxH6wrCQm97GZMyQ%3D%3D",
+                "publisher": "Openreach published price list",
+                "as_of": "2026-07",
+                "note": "60-month term discount. Wholesale only. Ex VAT.",
+                "source_class": "REGULATOR",
+                "how_read": "SNIPPET_ONLY",
+                "figure_basis": "STATED",
+                "excerpt": "EAD 1000 Extended Reach (60 month minimum period) - Area 2 | 01/07/2026 | Annual Rental £2,364.00"
+              }
+            ],
+            "candidates_omitted": 0
+          },
+          {
+            "label": "ETHERNET 10000 Mbps wholesale annual rental (Openreach EAD Area 2)",
+            "value": "4980",
+            "unit": "GBP/year",
+            "country": "GB",
+            "bandwidth_mbps": 10000,
+            "as_of": "2026-07",
+            "currency": "GBP",
+            "vendor": "Openreach",
+            "term_months": null,
+            "technology": "ETHERNET",
+            "candidates": [
+              {
+                "value": "4980",
+                "unit": "GBP/year",
+                "source_url": "https://www.openreach.co.uk/orpg/home/products/pricing/loadProductPriceDetails.do?data=0d0zetWgShsjqKWjcN2Y5WJA8BGGqsBLxL7IgSM4fRpZ6rNZujnCs99NbIKJZPD9hXYmiijxH6wrCQm97GZMyQ%3D%3D",
+                "publisher": "Openreach published price list",
+                "as_of": "2026-07",
+                "note": "Wholesale only; 60-month term: £4,380/yr. Ex VAT.",
+                "source_class": "REGULATOR",
+                "how_read": "SNIPPET_ONLY",
+                "figure_basis": "STATED",
+                "excerpt": "EAD 10000 - Area 2 | 01/07/2026 | Annual Rental £4,980.00"
+              },
+              {
+                "value": "4380",
+                "unit": "GBP/year",
+                "source_url": "https://www.openreach.co.uk/orpg/home/products/pricing/loadProductPriceDetails.do?data=0d0zetWgShsjqKWjcN2Y5WJA8BGGqsBLxL7IgSM4fRpZ6rNZujnCs99NbIKJZPD9hXYmiijxH6wrCQm97GZMyQ%3D%3D",
+                "publisher": "Openreach published price list (60-month term)",
+                "as_of": "2026-07",
+                "note": "60-month term; wholesale only. Ex VAT.",
+                "source_class": "REGULATOR",
+                "how_read": "SNIPPET_ONLY",
+                "figure_basis": "STATED",
+                "excerpt": "EAD 10000 (60 month minimum period) - Area 2 | 01/07/2026 | Annual Rental £4,380.00"
+              }
+            ],
+            "candidates_omitted": 0
+          },
+          {
+            "label": "BROADBAND_HFC 1000 Mbps MRC (Virgin Media Business cable)",
+            "value": "29.95",
+            "unit": "GBP/month",
+            "country": "GB",
+            "bandwidth_mbps": 200,
+            "as_of": "2026",
+            "currency": "GBP",
+            "vendor": "Virgin Media Business",
+            "term_months": 24,
+            "technology": "BROADBAND_HFC",
+            "candidates": [
+              {
+                "value": "29.95",
+                "unit": "GBP/month",
+                "source_url": "https://amvia.co.uk/compare/business-broadband",
+                "publisher": "AMVIA (Virgin Media Business section)",
                 "as_of": "2026",
-                "note": "Median from Lightyear enterprise deployment dataset; all-inclusive managed service",
+                "note": "HFC cable entry plan at 200 Mbps, 24-month term; 1 Gbps enterprise pricing not found as a stated figure",
                 "source_class": "AGGREGATOR",
                 "how_read": "SNIPPET_ONLY",
                 "figure_basis": "STATED",
-                "excerpt": "For a typical 1 Gbps circuit in North America, MPLS costs $1,439 per month"
-              },
-              {
-                "value": "1500 / 3000",
-                "unit": "USD/month",
-                "source_url": "https://jimber.io/blog/mpls-pricing-2026/",
-                "publisher": "jimber.io",
-                "as_of": "2026",
-                "note": "jimber.io 2026 benchmark; note this is for 100 Mbps MPLS not 1 Gbps",
-                "source_class": "TRADE_PRESS",
-                "how_read": "SNIPPET_ONLY",
-                "figure_basis": "STATED",
-                "excerpt": "100 Mbps North America ≈$1,500–$3,000 per site per month"
+                "excerpt": "Virgin Media Business | £29.95/mo ex VAT (Voom 200) | 24 months"
               }
             ],
             "candidates_omitted": 0
@@ -14844,414 +14923,434 @@
         ],
         "triangulated": [
           {
-            "label": "US MPLS 1 GBPS MRC — NORTH AMERICA MANAGED SERVICE BENCHMARK",
-            "country": "US",
-            "unit": "usd/month",
-            "low": "1439",
-            "base": "1439",
-            "high": "1439",
-            "newest_value": "1439",
+            "label": "BROADBAND_HFC 1000 MBPS MRC (VIRGIN MEDIA BUSINESS CABLE)",
+            "country": "GB",
+            "unit": "gbp/month",
+            "low": "29.95",
+            "base": "29.95",
+            "high": "29.95",
+            "newest_value": "29.95",
             "newest_year": 2026,
             "oldest_year": 2026,
             "spread_share": 0.0,
             "candidate_count": 1,
             "candidates": [
               {
-                "value": "1439",
-                "unit": "USD/month",
-                "source_url": "https://lightyear.ai/blogs/sd-wan-vs-mpls-cost-comparison",
-                "publisher": "Lightyear.ai",
+                "value": "29.95",
+                "unit": "GBP/month",
+                "source_url": "https://amvia.co.uk/compare/business-broadband",
+                "publisher": "AMVIA (Virgin Media Business section)",
                 "as_of": "2026",
-                "note": "Median from Lightyear enterprise deployment dataset; all-inclusive managed service",
+                "note": "HFC cable entry plan at 200 Mbps, 24-month term; 1 Gbps enterprise pricing not found as a stated figure",
                 "source_class": "AGGREGATOR",
                 "how_read": "SNIPPET_ONLY",
                 "figure_basis": "STATED",
-                "excerpt": "For a typical 1 Gbps circuit in North America, MPLS costs $1,439 per month"
+                "excerpt": "Virgin Media Business | £29.95/mo ex VAT (Voom 200) | 24 months"
               }
             ],
-            "set_aside": [
-              {
-                "value": "1500 / 3000",
-                "unit": "USD/month",
-                "source_url": "https://jimber.io/blog/mpls-pricing-2026/",
-                "publisher": "jimber.io",
-                "as_of": "2026",
-                "note": "jimber.io 2026 benchmark; note this is for 100 Mbps MPLS not 1 Gbps",
-                "source_class": "TRADE_PRESS",
-                "how_read": "SNIPPET_ONLY",
-                "figure_basis": "STATED",
-                "excerpt": "100 Mbps North America ≈$1,500–$3,000 per site per month",
-                "set_aside_reason": "'1500 / 3000' is a finding but not a single number, so it cannot be banded with the others"
-              }
-            ],
+            "set_aside": [],
             "flags": [
               "SINGLE_SOURCE"
             ],
             "conflict_group_id": null,
             "review_required": false,
             "basis": "median of 1 source(s); low and high are the observed extremes, not a confidence interval"
+          },
+          {
+            "label": "ETHERNET 1000 MBPS WHOLESALE ANNUAL RENTAL (OPENREACH EAD AREA 2)",
+            "country": "GB",
+            "unit": "gbp/year",
+            "low": "2364",
+            "base": "2403",
+            "high": "2442",
+            "newest_value": "2403",
+            "newest_year": 2026,
+            "oldest_year": 2026,
+            "spread_share": 0.033,
+            "candidate_count": 2,
+            "candidates": [
+              {
+                "value": "2442",
+                "unit": "GBP/year",
+                "source_url": "https://www.openreach.co.uk/orpg/home/products/pricing/loadProductPriceDetails.do?data=0d0zetWgShsjqKWjcN2Y5WJA8BGGqsBLxL7IgSM4fRpZ6rNZujnCs99NbIKJZPD9hXYmiijxH6wrCQm97GZMyQ%3D%3D",
+                "publisher": "Openreach published price list",
+                "as_of": "2026-07",
+                "note": "Wholesale access price only; retail end-customer price higher. Area 2 = non-CLA. Ex VAT.",
+                "source_class": "REGULATOR",
+                "how_read": "SNIPPET_ONLY",
+                "figure_basis": "STATED",
+                "excerpt": "EAD 1000 Extended Reach - Area 2 | 01/07/2026 | 31/07/2026 | Annual Rental £2,442.00"
+              },
+              {
+                "value": "2364",
+                "unit": "GBP/year",
+                "source_url": "https://www.openreach.co.uk/orpg/home/products/pricing/loadProductPriceDetails.do?data=0d0zetWgShsjqKWjcN2Y5WJA8BGGqsBLxL7IgSM4fRpZ6rNZujnCs99NbIKJZPD9hXYmiijxH6wrCQm97GZMyQ%3D%3D",
+                "publisher": "Openreach published price list",
+                "as_of": "2026-07",
+                "note": "60-month term discount. Wholesale only. Ex VAT.",
+                "source_class": "REGULATOR",
+                "how_read": "SNIPPET_ONLY",
+                "figure_basis": "STATED",
+                "excerpt": "EAD 1000 Extended Reach (60 month minimum period) - Area 2 | 01/07/2026 | Annual Rental £2,364.00"
+              }
+            ],
+            "set_aside": [],
+            "flags": [],
+            "conflict_group_id": null,
+            "review_required": false,
+            "basis": "median of 2 source(s); low and high are the observed extremes, not a confidence interval"
+          },
+          {
+            "label": "ETHERNET 10000 MBPS WHOLESALE ANNUAL RENTAL (OPENREACH EAD AREA 2)",
+            "country": "GB",
+            "unit": "gbp/year",
+            "low": "4380",
+            "base": "4680",
+            "high": "4980",
+            "newest_value": "4680",
+            "newest_year": 2026,
+            "oldest_year": 2026,
+            "spread_share": 0.137,
+            "candidate_count": 2,
+            "candidates": [
+              {
+                "value": "4980",
+                "unit": "GBP/year",
+                "source_url": "https://www.openreach.co.uk/orpg/home/products/pricing/loadProductPriceDetails.do?data=0d0zetWgShsjqKWjcN2Y5WJA8BGGqsBLxL7IgSM4fRpZ6rNZujnCs99NbIKJZPD9hXYmiijxH6wrCQm97GZMyQ%3D%3D",
+                "publisher": "Openreach published price list",
+                "as_of": "2026-07",
+                "note": "Wholesale only; 60-month term: £4,380/yr. Ex VAT.",
+                "source_class": "REGULATOR",
+                "how_read": "SNIPPET_ONLY",
+                "figure_basis": "STATED",
+                "excerpt": "EAD 10000 - Area 2 | 01/07/2026 | Annual Rental £4,980.00"
+              },
+              {
+                "value": "4380",
+                "unit": "GBP/year",
+                "source_url": "https://www.openreach.co.uk/orpg/home/products/pricing/loadProductPriceDetails.do?data=0d0zetWgShsjqKWjcN2Y5WJA8BGGqsBLxL7IgSM4fRpZ6rNZujnCs99NbIKJZPD9hXYmiijxH6wrCQm97GZMyQ%3D%3D",
+                "publisher": "Openreach published price list (60-month term)",
+                "as_of": "2026-07",
+                "note": "60-month term; wholesale only. Ex VAT.",
+                "source_class": "REGULATOR",
+                "how_read": "SNIPPET_ONLY",
+                "figure_basis": "STATED",
+                "excerpt": "EAD 10000 (60 month minimum period) - Area 2 | 01/07/2026 | Annual Rental £4,380.00"
+              }
+            ],
+            "set_aside": [],
+            "flags": [],
+            "conflict_group_id": null,
+            "review_required": false,
+            "basis": "median of 2 source(s); low and high are the observed extremes, not a confidence interval"
           }
         ],
         "qualitative": [
           {
-            "label": "US DIA 100 Mbps MRC — Lightyear dataset 10th/median/90th percentile",
-            "value": "333 / 492 / 641",
-            "unit": "USD/month",
-            "country": "US",
+            "label": "DIA 100 Mbps MRC",
+            "value": "200-400",
+            "unit": "GBP/month",
+            "country": "GB",
             "bandwidth_mbps": 100,
             "as_of": "2026",
-            "currency": "USD",
+            "currency": "GBP",
             "vendor": null,
-            "term_months": 36,
+            "term_months": null,
             "technology": "DIA",
             "candidates": [
               {
-                "value": "333 / 492 / 641",
-                "unit": "USD/month",
-                "source_url": "https://lightyear.ai/resources/dedicated-internet-access-dia-ultimate-pricing-guide",
-                "publisher": "Lightyear.ai",
+                "value": "200-400",
+                "unit": "GBP/month",
+                "source_url": "https://selectra.co.uk/tv-broadband/guides/business/leased-lines",
+                "publisher": "Selectra",
                 "as_of": "2026",
-                "note": "10th/median/90th percentile from Lightyear enterprise dataset, diverse geographies",
+                "note": "Symmetric, uncontended SLA-backed leased line (DIA); range shown as low to mid",
                 "source_class": "AGGREGATOR",
                 "how_read": "SNIPPET_ONLY",
                 "figure_basis": "STATED",
-                "excerpt": "100 Mbps | $333 | $492 | $641 — last 12 months DIA pricing, US, 36-month term"
+                "excerpt": "In 2026 prices start at £200/month for 100 Mbps"
               },
               {
-                "value": "500 / 800",
-                "unit": "USD/month",
-                "source_url": "https://www.meter.com/resources/dedicated-internet-access-pricing",
-                "publisher": "Meter.com",
+                "value": "69-400",
+                "unit": "GBP/month",
+                "source_url": "https://amvia.co.uk/leased-lines",
+                "publisher": "AMVIA",
+                "as_of": "2026",
+                "note": "Wide range reflects on-net vs off-net and urban vs rural",
+                "source_class": "AGGREGATOR",
+                "how_read": "SNIPPET_ONLY",
+                "figure_basis": "STATED",
+                "excerpt": "roughly £69–£400/mo for 100Mbps"
+              },
+              {
+                "value": "240-320",
+                "unit": "GBP/month",
+                "source_url": "https://www.amvia.co.uk/blog/leased-line-prices-in-the-uk-what-can-you-expect",
+                "publisher": "AMVIA blog",
                 "as_of": "2025",
-                "note": "General market rate, not percentile-segmented; higher than Lightyear median",
-                "source_class": "TRADE_PRESS",
-                "how_read": "SNIPPET_ONLY",
-                "figure_basis": "STATED",
-                "excerpt": "100 Mbps: $500–$800 per month"
-              },
-              {
-                "value": "300 / 600",
-                "unit": "USD/month",
-                "source_url": "https://californiatelecom.com/blog/enterprise-fiber-cost",
-                "publisher": "californiatelecom.com",
-                "as_of": "2026",
-                "note": "Published August 2026; cites Lightyear median of $492 as midpoint",
-                "source_class": "TRADE_PRESS",
-                "how_read": "SNIPPET_ONLY",
-                "figure_basis": "STATED",
-                "excerpt": "Enterprise dedicated fiber runs roughly $300 to $600 a month for 100 Mbps"
-              }
-            ],
-            "candidates_omitted": 1
-          },
-          {
-            "label": "US DIA 1 Gbps MRC — Lightyear dataset 10th/median/90th percentile",
-            "value": "600 / 901 / 1312",
-            "unit": "USD/month",
-            "country": "US",
-            "bandwidth_mbps": 1000,
-            "as_of": "2026",
-            "currency": "USD",
-            "vendor": null,
-            "term_months": 36,
-            "technology": "DIA",
-            "candidates": [
-              {
-                "value": "600 / 901 / 1312",
-                "unit": "USD/month",
-                "source_url": "https://lightyear.ai/resources/dedicated-internet-access-dia-ultimate-pricing-guide",
-                "publisher": "Lightyear.ai",
-                "as_of": "2026",
-                "note": "10th/median/90th percentile; model base of $1,350 exceeds 90th percentile",
+                "note": "Urban 36-month term; up to £390/month in semi-rural",
                 "source_class": "AGGREGATOR",
                 "how_read": "SNIPPET_ONLY",
                 "figure_basis": "STATED",
-                "excerpt": "1 Gbps | $600 | $901 | $1,312 — last 12 months DIA pricing, US, 36-month term"
+                "excerpt": "100 Mbps leased line: £240–£320/month (36-month term) in urban areas"
               },
               {
-                "value": "600 / 1400",
-                "unit": "USD/month",
-                "source_url": "https://californiatelecom.com/blog/enterprise-fiber-cost",
-                "publisher": "californiatelecom.com",
-                "as_of": "2026",
-                "note": "Range consistent with Lightyear 10th-90th band",
-                "source_class": "TRADE_PRESS",
-                "how_read": "SNIPPET_ONLY",
-                "figure_basis": "STATED",
-                "excerpt": "$600 to $1,400 for 1 Gbps"
-              },
-              {
-                "value": "700 / 800",
-                "unit": "USD/month",
-                "source_url": "https://www.bsimplify.com/dedicated-internet-pricing/",
-                "publisher": "bsimplify.com",
-                "as_of": "2025",
-                "note": "Provider-specific on-net pricing; Lumen/Zayo among lowest-cost providers",
+                "value": "400-700",
+                "unit": "GBP/month",
+                "source_url": "https://amvia.co.uk/blog/how-much-does-a-bt-leased-line-cost-in-2022",
+                "publisher": "AMVIA (BT DIA section)",
+                "as_of": "2025-2026",
+                "note": "BT-specific pricing; competitors cheaper",
                 "source_class": "AGGREGATOR",
                 "how_read": "SNIPPET_ONLY",
                 "figure_basis": "STATED",
-                "excerpt": "Lumen On-Net 1 Gbps: $700–$800; Zayo On-Net: $600–$800"
-              },
-              {
-                "value": "1000 / 1400",
-                "unit": "USD/month",
-                "source_url": "https://www.bsimplify.com/dedicated-internet-pricing/",
-                "publisher": "bsimplify.com",
-                "as_of": "2025",
-                "note": "AT&T is the highest-priced major carrier at 1 Gbps on-net",
-                "source_class": "AGGREGATOR",
-                "how_read": "SNIPPET_ONLY",
-                "figure_basis": "STATED",
-                "excerpt": "AT&T On-Net 1 Gbps: $1,000–$1,400"
+                "excerpt": "100Mbps BT DIA circuit typically costs £400–£700 per month"
               }
             ],
             "candidates_omitted": 0
           },
           {
-            "label": "US DIA 10 Gbps MRC — Lightyear dataset 10th/median/90th percentile",
-            "value": "1175 / 1987 / 2853",
-            "unit": "USD/month",
-            "country": "US",
+            "label": "DIA 500 Mbps MRC",
+            "value": "325-625",
+            "unit": "GBP/month",
+            "country": "GB",
+            "bandwidth_mbps": 500,
+            "as_of": "2026",
+            "currency": "GBP",
+            "vendor": null,
+            "term_months": null,
+            "technology": "DIA",
+            "candidates": [
+              {
+                "value": "325-625",
+                "unit": "GBP/month",
+                "source_url": "https://selectra.co.uk/tv-broadband/guides/business/leased-lines",
+                "publisher": "Selectra",
+                "as_of": "2026",
+                "note": "Table row for 500 Mbps symmetric leased line",
+                "source_class": "AGGREGATOR",
+                "how_read": "SNIPPET_ONLY",
+                "figure_basis": "STATED",
+                "excerpt": "500 Mbps: £325 to £625 / Free to £3,000 / 99.95% to 99.99%"
+              },
+              {
+                "value": "411-673",
+                "unit": "GBP/month",
+                "source_url": "https://www.amvia.co.uk/blog/leased-line-prices-in-the-uk-what-can-you-expect",
+                "publisher": "AMVIA blog",
+                "as_of": "2025",
+                "note": "36-month term",
+                "source_class": "AGGREGATOR",
+                "how_read": "SNIPPET_ONLY",
+                "figure_basis": "STATED",
+                "excerpt": "500 Mbps leased line: £411–£673/month (36-month term)"
+              }
+            ],
+            "candidates_omitted": 0
+          },
+          {
+            "label": "DIA 1000 Mbps MRC",
+            "value": "350-700",
+            "unit": "GBP/month",
+            "country": "GB",
+            "bandwidth_mbps": 1000,
+            "as_of": "2026",
+            "currency": "GBP",
+            "vendor": null,
+            "term_months": null,
+            "technology": "DIA",
+            "candidates": [
+              {
+                "value": "350-700",
+                "unit": "GBP/month",
+                "source_url": "https://selectra.co.uk/tv-broadband/guides/business/leased-lines",
+                "publisher": "Selectra",
+                "as_of": "2026",
+                "note": "Mainstream business choice",
+                "source_class": "AGGREGATOR",
+                "how_read": "SNIPPET_ONLY",
+                "figure_basis": "STATED",
+                "excerpt": "1 Gbps: £350 to £700 / Free to £3,000"
+              },
+              {
+                "value": "437-994",
+                "unit": "GBP/month",
+                "source_url": "https://www.amvia.co.uk/blog/leased-line-prices-in-the-uk-what-can-you-expect",
+                "publisher": "AMVIA blog",
+                "as_of": "2025",
+                "note": null,
+                "source_class": "AGGREGATOR",
+                "how_read": "SNIPPET_ONLY",
+                "figure_basis": "STATED",
+                "excerpt": "1 Gbps leased line: £437–£994/month depending on provider and location"
+              },
+              {
+                "value": "195",
+                "unit": "GBP/month",
+                "source_url": "https://comparenet.co.uk/dedicated-fibre-leased-lines",
+                "publisher": "comparenet.co.uk",
+                "as_of": "2026",
+                "note": "Floor price; location-dependent",
+                "source_class": "AGGREGATOR",
+                "how_read": "SNIPPET_ONLY",
+                "figure_basis": "STATED",
+                "excerpt": "1Gbps Symmetric — From £195/month, enterprise-grade"
+              }
+            ],
+            "candidates_omitted": 0
+          },
+          {
+            "label": "DIA 10000 Mbps MRC",
+            "value": "1500-3000",
+            "unit": "GBP/month",
+            "country": "GB",
             "bandwidth_mbps": 10000,
             "as_of": "2026",
-            "currency": "USD",
+            "currency": "GBP",
             "vendor": null,
-            "term_months": 36,
+            "term_months": null,
             "technology": "DIA",
             "candidates": [
               {
-                "value": "1175 / 1987 / 2853",
-                "unit": "USD/month",
-                "source_url": "https://lightyear.ai/resources/dedicated-internet-access-dia-ultimate-pricing-guide",
-                "publisher": "Lightyear.ai",
+                "value": "1500-3000",
+                "unit": "GBP/month",
+                "source_url": "https://selectra.co.uk/tv-broadband/guides/business/leased-lines",
+                "publisher": "Selectra",
                 "as_of": "2026",
-                "note": "10th/median/90th percentile; 5G-10% compression at this tier YoY since 2025",
+                "note": "Large enterprise / data centre tier",
                 "source_class": "AGGREGATOR",
                 "how_read": "SNIPPET_ONLY",
                 "figure_basis": "STATED",
-                "excerpt": "10 Gbps | $1,175 | $1,987 | $2,853 — last 12 months DIA pricing, US, 36-month term"
+                "excerpt": "10 Gbps: £1,500 to £3,000"
               },
               {
-                "value": "2000 / 3700",
-                "unit": "USD/month",
-                "source_url": "https://defendmybusiness.com/dedicated-internet-access-pricing-in-us/",
-                "publisher": "defendmybusiness.com",
+                "value": "650",
+                "unit": "GBP/month",
+                "source_url": "https://comparenet.co.uk/dedicated-fibre-leased-lines",
+                "publisher": "comparenet.co.uk",
                 "as_of": "2026",
-                "note": "Provider spread is wide at 10 Gbps; Lumen is cheapest, AT&T most expensive",
+                "note": "Floor / entry price",
                 "source_class": "AGGREGATOR",
                 "how_read": "SNIPPET_ONLY",
                 "figure_basis": "STATED",
-                "excerpt": "Lumen On-Net 10 Gbps $2,000–$2,500; AT&T On-Net $3,000–$3,700"
+                "excerpt": "10Gbps Symmetric — From £650/month, 99.99% uptime SLA"
               }
             ],
             "candidates_omitted": 0
           },
           {
-            "label": "US MPLS 100 Mbps MRC — North America street price",
-            "value": "1500 / 3000",
-            "unit": "USD/month",
-            "country": "US",
+            "label": "BROADBAND_PON 100 Mbps MRC (FTTP business)",
+            "value": "25-35",
+            "unit": "GBP/month",
+            "country": "GB",
             "bandwidth_mbps": 100,
             "as_of": "2026",
-            "currency": "USD",
-            "vendor": null,
-            "term_months": 36,
-            "technology": "MPLS",
-            "candidates": [
-              {
-                "value": "1500 / 3000",
-                "unit": "USD/month",
-                "source_url": "https://jimber.io/blog/mpls-pricing-2026/",
-                "publisher": "jimber.io",
-                "as_of": "2026",
-                "note": "Model base assumption of $900 at 100 Mbps appears below this benchmark range",
-                "source_class": "TRADE_PRESS",
-                "how_read": "SNIPPET_ONLY",
-                "figure_basis": "STATED",
-                "excerpt": "100 Mbps North America ≈$1,500–$3,000 per site per month"
-              }
-            ],
-            "candidates_omitted": 0
-          },
-          {
-            "label": "US business broadband 100 Mbps MRC (best-effort) — 10th/median/90th",
-            "value": "60 / 100 / 175",
-            "unit": "USD/month",
-            "country": "US",
-            "bandwidth_mbps": 100,
-            "as_of": "2026",
-            "currency": "USD",
+            "currency": "GBP",
             "vendor": null,
             "term_months": null,
-            "technology": "BROADBAND",
+            "technology": "BROADBAND_PON",
             "candidates": [
               {
-                "value": "60 / 100 / 175",
-                "unit": "USD/month",
-                "source_url": "https://lightyear.ai/blogs/how-much-business-internet-costs",
-                "publisher": "Lightyear.ai",
+                "value": "25-35",
+                "unit": "GBP/month",
+                "source_url": "https://selectra.co.uk/tv-broadband/guides/business/best-business-broadband",
+                "publisher": "Selectra",
                 "as_of": "2026",
-                "note": "2026 business broadband (best-effort/shared), not DIA; 10th/median/90th percentile",
+                "note": "Entry/mid/premium scan of BT Business, Vodafone, Virgin, TalkTalk, Zen etc. May 2026 ex-VAT",
                 "source_class": "AGGREGATOR",
                 "how_read": "SNIPPET_ONLY",
                 "figure_basis": "STATED",
-                "excerpt": "100 Mbps | $60/mo | $100/mo | $175/mo"
+                "excerpt": "FTTP | 100 Mbps | £25 | £30 | £35"
+              },
+              {
+                "value": "28-45",
+                "unit": "GBP/month",
+                "source_url": "https://connection-technologies.co.uk/blog/business-broadband-uk-2026",
+                "publisher": "connection-technologies.co.uk",
+                "as_of": "2026",
+                "note": "Business FTTP entry tier",
+                "source_class": "AGGREGATOR",
+                "how_read": "SNIPPET_ONLY",
+                "figure_basis": "STATED",
+                "excerpt": "FTTP (entry) | 100–150 Mbps | £28–£45"
               }
             ],
             "candidates_omitted": 0
           },
           {
-            "label": "US business broadband 500 Mbps MRC (best-effort) — 10th/median/90th",
-            "value": "65 / 110 / 212",
-            "unit": "USD/month",
-            "country": "US",
+            "label": "BROADBAND_PON 500 Mbps MRC (FTTP business)",
+            "value": "35-45",
+            "unit": "GBP/month",
+            "country": "GB",
             "bandwidth_mbps": 500,
             "as_of": "2026",
-            "currency": "USD",
+            "currency": "GBP",
             "vendor": null,
             "term_months": null,
-            "technology": "BROADBAND",
+            "technology": "BROADBAND_PON",
             "candidates": [
               {
-                "value": "65 / 110 / 212",
-                "unit": "USD/month",
-                "source_url": "https://lightyear.ai/blogs/how-much-business-internet-costs",
-                "publisher": "Lightyear.ai",
+                "value": "35-45",
+                "unit": "GBP/month",
+                "source_url": "https://selectra.co.uk/tv-broadband/guides/business/best-business-broadband",
+                "publisher": "Selectra",
                 "as_of": "2026",
-                "note": "2026 business broadband best-effort; 10th/median/90th percentile",
+                "note": "Entry/mid/premium scan of major UK business ISPs. May 2026 ex-VAT",
                 "source_class": "AGGREGATOR",
                 "how_read": "SNIPPET_ONLY",
                 "figure_basis": "STATED",
-                "excerpt": "500 Mbps | $65/mo | $110/mo | $212/mo"
+                "excerpt": "FTTP | 500 Mbps | £35 | £40 | £45"
+              },
+              {
+                "value": "40-60",
+                "unit": "GBP/month",
+                "source_url": "https://connection-technologies.co.uk/blog/business-broadband-uk-2026",
+                "publisher": "connection-technologies.co.uk",
+                "as_of": "2026",
+                "note": "Business FTTP mid tier",
+                "source_class": "AGGREGATOR",
+                "how_read": "SNIPPET_ONLY",
+                "figure_basis": "STATED",
+                "excerpt": "FTTP (mid) | 300–500 Mbps | £40–£60"
               }
             ],
             "candidates_omitted": 0
           },
           {
-            "label": "US business broadband 1 Gbps MRC (best-effort) — 10th/median/90th",
-            "value": "124 / 184 / 330",
-            "unit": "USD/month",
-            "country": "US",
+            "label": "BROADBAND_PON 1000 Mbps MRC (FTTP business)",
+            "value": "40-55",
+            "unit": "GBP/month",
+            "country": "GB",
             "bandwidth_mbps": 1000,
             "as_of": "2026",
-            "currency": "USD",
+            "currency": "GBP",
             "vendor": null,
             "term_months": null,
-            "technology": "BROADBAND",
+            "technology": "BROADBAND_PON",
             "candidates": [
               {
-                "value": "124 / 184 / 330",
-                "unit": "USD/month",
-                "source_url": "https://lightyear.ai/blogs/how-much-business-internet-costs",
-                "publisher": "Lightyear.ai",
+                "value": "40-55",
+                "unit": "GBP/month",
+                "source_url": "https://selectra.co.uk/tv-broadband/guides/business/best-business-broadband",
+                "publisher": "Selectra",
                 "as_of": "2026",
-                "note": "2026 business broadband best-effort; 10th/median/90th percentile",
+                "note": "Entry/mid/premium scan of major UK business ISPs. May 2026 ex-VAT",
                 "source_class": "AGGREGATOR",
                 "how_read": "SNIPPET_ONLY",
                 "figure_basis": "STATED",
-                "excerpt": "1 Gbps | $124/mo | $184/mo | $330/mo"
-              }
-            ],
-            "candidates_omitted": 0
-          },
-          {
-            "label": "GB Leased Line / DIA 100 Mbps MRC — urban market range 2025",
-            "value": "175 / 270",
-            "unit": "GBP/month",
-            "country": "GB",
-            "bandwidth_mbps": 100,
-            "as_of": "2025",
-            "currency": "GBP",
-            "vendor": null,
-            "term_months": 36,
-            "technology": "DIA",
-            "candidates": [
-              {
-                "value": "175 / 270",
-                "unit": "GBP/month",
-                "source_url": "https://www.amvia.co.uk/blog/the-complete-guide-to-comparing-leased-line-costs-and-specifications-in-2025",
-                "publisher": "AMVIA",
-                "as_of": "2025",
-                "note": "Urban/city-centre range; rural adds 20-50% premium; 2025 market rates",
-                "source_class": "TRADE_PRESS",
-                "how_read": "SNIPPET_ONLY",
-                "figure_basis": "STATED",
-                "excerpt": "Urban areas: £175-£270/month for 100Mbps, £300-£450 for 1Gbps"
+                "excerpt": "FTTP | 1 Gbps | £40 | £48 | £55"
               },
               {
-                "value": "150 / 300",
+                "value": "55-80",
                 "unit": "GBP/month",
-                "source_url": "https://compareyourbusinesscosts.co.uk/how-much-does-a-leased-line-cost",
-                "publisher": "compareyourbusinesscosts.co.uk",
+                "source_url": "https://connection-technologies.co.uk/blog/business-broadband-uk-2026",
+                "publisher": "connection-technologies.co.uk",
                 "as_of": "2026",
-                "note": "2026 UK guide, broad national range",
-                "source_class": "TRADE_PRESS",
+                "note": "Business FTTP premium tier",
+                "source_class": "AGGREGATOR",
                 "how_read": "SNIPPET_ONLY",
                 "figure_basis": "STATED",
-                "excerpt": "100Mbps £150–£300+ per month"
-              },
-              {
-                "value": "180 / 350",
-                "unit": "GBP/month",
-                "source_url": "https://www.purple.ai/en-gb/blogs/leased-line-cost",
-                "publisher": "purple.ai",
-                "as_of": "2025",
-                "note": "2026 pricing guide; includes enterprise SLA",
-                "source_class": "TRADE_PRESS",
-                "how_read": "SNIPPET_ONLY",
-                "figure_basis": "STATED",
-                "excerpt": "100Mbps on 1Gbps Bearer: £180–£350/month (Dedicated)"
-              },
-              {
-                "value": "199 / 320",
-                "unit": "GBP/month",
-                "source_url": "https://www.amvia.co.uk/blog/leased-line-prices-in-the-uk-what-can-you-expect",
-                "publisher": "AMVIA",
-                "as_of": "2025",
-                "note": "2025 postcode-specific pricing guide",
-                "source_class": "TRADE_PRESS",
-                "how_read": "SNIPPET_ONLY",
-                "figure_basis": "STATED",
-                "excerpt": "City centre, multiple networks available: from £199–£320/month for 100Mbps"
-              }
-            ],
-            "candidates_omitted": 0
-          },
-          {
-            "label": "GB Leased Line / DIA 500 Mbps MRC — urban market range 2025",
-            "value": "300 / 550",
-            "unit": "GBP/month",
-            "country": "GB",
-            "bandwidth_mbps": 500,
-            "as_of": "2025",
-            "currency": "GBP",
-            "vendor": null,
-            "term_months": 36,
-            "technology": "DIA",
-            "candidates": [
-              {
-                "value": "300 / 550",
-                "unit": "GBP/month",
-                "source_url": "https://www.purple.ai/en-gb/blogs/leased-line-cost",
-                "publisher": "purple.ai",
-                "as_of": "2026",
-                "note": "Enterprise 1:1 dedicated, UK 2026",
-                "source_class": "TRADE_PRESS",
-                "how_read": "SNIPPET_ONLY",
-                "figure_basis": "STATED",
-                "excerpt": "500Mbps on 1Gbps Bearer: £300–£550/month (Dedicated)"
-              },
-              {
-                "value": "350 / 500",
-                "unit": "GBP/month",
-                "source_url": "https://www.amvia.co.uk/blog/leased-line-prices-in-the-uk-what-can-you-expect",
-                "publisher": "AMVIA",
-                "as_of": "2025",
-                "note": "2025 city-centre range",
-                "source_class": "TRADE_PRESS",
-                "how_read": "SNIPPET_ONLY",
-                "figure_basis": "STATED",
-                "excerpt": "500Mbps city centre: from £350–£500/month"
+                "excerpt": "FTTP (premium) | 900 Mbps – 2.4 Gbps | £55–£80"
               }
             ],
             "candidates_omitted": 0
@@ -17762,7 +17861,7 @@
   "known_facts": [],
   "evidenced_footprint": [
     {
-      "id": "7d505a91-01a3-4a58-80d6-8afc01ad8438",
+      "id": "fe849472-6900-4c6f-9b84-4275478dbfae",
       "case_id": "71da5c68-a0e5-4d8d-b1cf-f69c8c388689",
       "country": "DE",
       "archetype": "LARGE_OFFICE",
@@ -17778,10 +17877,10 @@
         "https://en.wikipedia.org/wiki/McDonald%27s_Germany"
       ],
       "promoted_by": "sample-run",
-      "promoted_at": "2026-10-18 13:45:40.840666+00:00"
+      "promoted_at": "2026-10-19 20:06:20.621727+00:00"
     },
     {
-      "id": "e315b638-47a5-486d-ae31-869ad9e3aaa1",
+      "id": "c27db172-4179-48bd-a3d3-3cfb7621c19f",
       "case_id": "71da5c68-a0e5-4d8d-b1cf-f69c8c388689",
       "country": "DE",
       "archetype": "STORE",
@@ -17799,10 +17898,10 @@
         "https://www.bundesverband-systemgastronomie.de/mitgliedschaft/mitglieder/mcdonald-s.html"
       ],
       "promoted_by": "sample-run",
-      "promoted_at": "2026-10-18 13:45:40.840666+00:00"
+      "promoted_at": "2026-10-19 20:06:20.621727+00:00"
     },
     {
-      "id": "54c93c49-0d97-4cc5-9b33-3d20cef3a3a1",
+      "id": "733b05f7-b825-4608-9ecc-a987f21565da",
       "case_id": "71da5c68-a0e5-4d8d-b1cf-f69c8c388689",
       "country": "GB",
       "archetype": "STORE",
@@ -17819,10 +17918,10 @@
         "https://www.scrapehero.com/location-reports/McDonald's-UK/"
       ],
       "promoted_by": "sample-run",
-      "promoted_at": "2026-10-18 13:45:40.840666+00:00"
+      "promoted_at": "2026-10-19 20:06:20.621727+00:00"
     },
     {
-      "id": "28d19d54-9cb8-4c10-a964-220280a0594d",
+      "id": "43b21eb9-c263-47f2-9948-998e793e6431",
       "case_id": "71da5c68-a0e5-4d8d-b1cf-f69c8c388689",
       "country": "US",
       "archetype": "STORE",
@@ -17839,8 +17938,10 @@
         "https://www.sec.gov/Archives/edgar/data/63908/000006390825000012/mcd-20241231.htm"
       ],
       "promoted_by": "sample-run",
-      "promoted_at": "2026-10-18 13:45:40.840666+00:00"
+      "promoted_at": "2026-10-19 20:06:20.621727+00:00"
     }
   ],
-  "timings_seconds": {}
+  "timings_seconds": {
+    "19": 216.1
+  }
 }

@@ -1,13 +1,13 @@
 {
-  "simulation_run_id": "c0d09298-382f-41be-bc63-9ffbe7e3f5e6",
+  "simulation_run_id": "5952cfc4-7888-44e0-b3fe-ff3246e54718",
   "case_id": "fab3cb28-e3ff-4c9e-a9d1-a220efeb3ac0",
   "model_version": "sim-2.7.0",
   "seed": 20260101,
   "ensemble_size": 25,
   "status": "SUCCEEDED",
   "output_hash": "a2fa2dd25f29b4b3f01edc0a8da9ed6ce18db5badf726ace15cf8871302328d8",
-  "started_at": "2026-10-18 13:46:49.030847+00:00",
-  "ended_at": "2026-10-18 13:46:50.834386+00:00",
+  "started_at": "2026-10-19 20:07:06.274730+00:00",
+  "ended_at": "2026-10-19 20:07:07.139410+00:00",
   "params": {
     "footprint": [
       {
@@ -961,6 +961,36 @@
   },
   "pinned_priors": {
     "archetype_prior": {
+      "SELF_SERVICE_TERMINAL": {
+        "dual_access_probability": 0.15,
+        "primary_product": "MOBILE_5G",
+        "backup_product": "BROADBAND_PON",
+        "users_base": 0,
+        "bandwidth_mbps_base": 50,
+        "committed_fraction": "0.250",
+        "primary_service_class": "BEST_EFFORT",
+        "backup_service_class": "BEST_EFFORT"
+      },
+      "ATM": {
+        "dual_access_probability": 0.55,
+        "primary_product": "MOBILE_5G",
+        "backup_product": "BROADBAND_PON",
+        "users_base": 0,
+        "bandwidth_mbps_base": 50,
+        "committed_fraction": "0.600",
+        "primary_service_class": "BEST_EFFORT",
+        "backup_service_class": "BEST_EFFORT"
+      },
+      "LEGACY_WAN_SITE": {
+        "dual_access_probability": 0.6,
+        "primary_product": "MPLS",
+        "backup_product": "BROADBAND_PON",
+        "users_base": 40,
+        "bandwidth_mbps_base": 100,
+        "committed_fraction": "0.800",
+        "primary_service_class": "IPVPN",
+        "backup_service_class": "BEST_EFFORT"
+      },
       "BRANCH": {
         "dual_access_probability": 0.55,
         "primary_product": "DIA",
@@ -1079,36 +1109,6 @@
         "bandwidth_mbps_base": 50,
         "committed_fraction": "0.300",
         "primary_service_class": "BEST_EFFORT",
-        "backup_service_class": "BEST_EFFORT"
-      },
-      "SELF_SERVICE_TERMINAL": {
-        "dual_access_probability": 0.15,
-        "primary_product": "MOBILE_5G",
-        "backup_product": "BROADBAND_PON",
-        "users_base": 0,
-        "bandwidth_mbps_base": 50,
-        "committed_fraction": "0.250",
-        "primary_service_class": "BEST_EFFORT",
-        "backup_service_class": "BEST_EFFORT"
-      },
-      "ATM": {
-        "dual_access_probability": 0.55,
-        "primary_product": "MOBILE_5G",
-        "backup_product": "BROADBAND_PON",
-        "users_base": 0,
-        "bandwidth_mbps_base": 50,
-        "committed_fraction": "0.600",
-        "primary_service_class": "BEST_EFFORT",
-        "backup_service_class": "BEST_EFFORT"
-      },
-      "LEGACY_WAN_SITE": {
-        "dual_access_probability": 0.6,
-        "primary_product": "MPLS",
-        "backup_product": "BROADBAND_PON",
-        "users_base": 40,
-        "bandwidth_mbps_base": 100,
-        "committed_fraction": "0.800",
-        "primary_service_class": "IPVPN",
         "backup_service_class": "BEST_EFFORT"
       },
       "DEFAULT/BRANCH": {
@@ -1880,10 +1880,10 @@
       "LEGACY_WAN_SITE": "0.7750",
       "BUILDING_MATERIALS/LARGE_OFFICE": "0.6250",
       "LARGE_OFFICE": "0.6250",
-      "BUILDING_MATERIALS/PLANT": "0.6750",
-      "PLANT": "0.6750",
       "BUILDING_MATERIALS/DC": "0.5250",
-      "DC": "0.5250"
+      "DC": "0.5250",
+      "BUILDING_MATERIALS/PLANT": "0.6750",
+      "PLANT": "0.6750"
     },
     "dual_access_by_archetype": {
       "BUILDING_MATERIALS/STORE": "0.5125",
@@ -1894,10 +1894,10 @@
       "LEGACY_WAN_SITE": "0.7000",
       "BUILDING_MATERIALS/LARGE_OFFICE": "0.9250",
       "LARGE_OFFICE": "0.9250",
-      "BUILDING_MATERIALS/PLANT": "0.8875",
-      "PLANT": "0.8875",
       "BUILDING_MATERIALS/DC": "1.0000",
-      "DC": "1.0000"
+      "DC": "1.0000",
+      "BUILDING_MATERIALS/PLANT": "0.8875",
+      "PLANT": "0.8875"
     },
     "resilience_basis": {
       "industry": "BUILDING_MATERIALS",
