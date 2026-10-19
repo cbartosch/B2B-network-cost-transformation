@@ -464,6 +464,76 @@ def is_monthly_rate_unit(unit) -> bool:
     return not bare_duration
 
 
+# An ANNUAL rate, as opposed to a duration counted in years. Same distinction
+# _RATE_PER_MONTH draws, one period up.
+_RATE_PER_YEAR = ("/year", "/yr", "per year", "per annum", "a year",
+                  "annual rental", "annually", "p.a.", "/annum")
+
+
+def rate_period(unit) -> str | None:
+    """"MONTH", "YEAR", or None - the period this unit prices.
+
+    The rate card is monthly, and a published price is not always. Three
+    findings were discarded on this alone, two of them the best price
+    evidence in the entire set:
+
+        GB ETHERNET 1 Gbps EAD wholesale annual rental (Openreach)
+            2,358 GBP/year
+        GB ETHERNET 100 Mbps EAD Sensitive LA wholesale annual rental
+            1,764 GBP/year
+
+    Those are REGULATED WHOLESALE REFERENCE OFFERS - published, auditable,
+    and exactly the kind of enterprise price that is otherwise locked inside
+    NDAs. 2,358/12 is 196.50 against the 203 GBP already sourced for that
+    cell independently, which is the closest corroboration this rate card
+    has. They were thrown away because the unit said year.
+
+    Year is reported rather than silently accepted: the caller divides, and
+    does so where the value is written, so the conversion is visible at the
+    point it changes a number.
+    """
+    text = str(unit or "").strip().lower()
+    if is_monthly_rate_unit(unit):
+        return "MONTH"
+    if any(hint in text for hint in _RATE_PER_YEAR):
+        # "36 months" has a sibling here: "3 years" is a term, not a rate.
+        if text.replace(".", "").strip() in ("year", "years", "yr", "yrs"):
+            return None
+        return "YEAR"
+    return None
+
+
+#: What an annual rate is divided by to reach the monthly rate card.
+MONTHS_PER_YEAR = 12
+
+
+# A consumer line is not an enterprise circuit, and the brief says so.
+#
+# Domain 19's own reject clause opens "Consumer broadband pricing is not an
+# enterprise circuit price. Say which market a price describes." The agent
+# COMPLIES - it says which market, in the label - and the classifier never
+# read the answer. Seven findings reached the rate card naming their own
+# market as consumer or residential:
+#
+#   FR BROADBAND_PON  100 Mbps   EUR 26/month  "(consumer residential Ft...)"
+#   ES BROADBAND_PON  500 Mbps   EUR 10/month  "(residential, Digi)"
+#   SG BROADBAND_PON 1000 Mbps   SGD 49.90     "(StarHub 24-m residential)"
+#
+# EUR 10 a month is a household line. Priced against an enterprise estate it
+# understates by an order of magnitude, and it did real damage beyond the
+# estimate: the first measurement of how far seeded priors sit above sourced
+# ones put the two most extreme ratios in the set - 0.20x and 0.26x - on two
+# of these rows.
+_CONSUMER_MARKET = re.compile(
+    r"\bconsumer\b|\bresidential\b|\bdomestic\b|\bhousehold\b", re.I)
+
+
+def names_a_consumer_market(label) -> str:
+    """The word by which this label declares itself a consumer price."""
+    m = _CONSUMER_MARKET.search(str(label or ""))
+    return m.group(0) if m else ""
+
+
 def product_in(label) -> str | None:
     """The connectivity product a finding's label names, if exactly one.
 
@@ -802,7 +872,12 @@ def _classify(q: dict) -> str:
     # Declined rather than dropped - the label still reaches a reader through
     # unclassified, and a regional benchmark is worth seeing. It is just not
     # a German price.
-    if priced and len(country) == 2 and is_monthly_rate_unit(unit):
+    # The brief rejects consumer pricing and the label says which market it
+    # is. Declined rather than dropped: a consumer tariff is real evidence
+    # about a market, it is just not a price for an enterprise circuit.
+    if priced and names_a_consumer_market(label):
+        return "unclassified"
+    if priced and len(country) == 2 and rate_period(unit):
         if names_a_region(label):
             return "unclassified"
         return "price"
@@ -1233,6 +1308,12 @@ def promote(session, *, case_id: str, candidate_ids: list[str],
                                f"input.")})
                 continue
             value = float(_parsed)
+            # An annual rate becomes a monthly one here, where it changes a
+            # number, rather than in the classifier where it would only
+            # change a label. See rate_period.
+            period = rate_period(q.get("unit"))
+            if period == "YEAR":
+                value = value / MONTHS_PER_YEAR
             # A single observed price is a point, not a band. Recorded as the
             # base with the band left equal to it and approved=False, so a
             # steward has to widen it deliberately rather than the system
@@ -1298,7 +1379,11 @@ def promote(session, *, case_id: str, candidate_ids: list[str],
                 source_note=(f"researched from domain {e['domain_no']} by "
                              f"{promoted_by}; as_of {q.get('as_of') or 'unstated'}; "
                              f"single observation, band not yet set. "
-                             f"vs benchmark: {cmp['verdict']} - {cmp['note']}")))
+                             + (f"source quoted {_parsed} per YEAR in "
+                                f"{q.get('unit')!r}, divided by "
+                                f"{MONTHS_PER_YEAR} to reach this monthly "
+                                f"rate. " if period == "YEAR" else "")
+                             + f"vs benchmark: {cmp['verdict']} - {cmp['note']}")))
             proposed_prices.append(
                 {"country": country, "product": product, "base": value,
                  "approved": False, "benchmark_comparison": cmp})
