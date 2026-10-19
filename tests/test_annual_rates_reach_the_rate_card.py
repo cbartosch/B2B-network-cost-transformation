@@ -83,3 +83,42 @@ def test_an_enterprise_price_is_still_offered():
     assert promotion._classify({
         "label": "DIA 100 Mbps MRC - US market benchmark", "country": "US",
         "unit": "USD/month", "value": 492, "bandwidth_mbps": 100}) == "price"
+
+
+# ----------------------------------- "consumer" the sector vs the market tag
+@pytest.mark.parametrize("label", [
+    "Retail & Consumer IT spend as % of revenue - VendorBenchmark 2026",
+    "Consumer goods sector telecom price index",
+    "ETHERNET 1 Gbps EAD wholesale - retail & consumer sector client (GB)",
+])
+def test_a_sector_name_is_not_a_consumer_market(label):
+    """'Consumer' can name an industry sector - a kind of company, not a kind
+    of circuit. An enterprise price sold to a retailer is still an enterprise
+    price, so the sector phrase must not read as a consumer-market tag."""
+    assert promotion.names_a_consumer_market(label) == "", label
+
+
+def test_a_real_market_tag_still_fires_after_the_sector_guard():
+    for label in ("residential broadband France",
+                  "BROADBAND_PON MRC (consumer residential Fttx)",
+                  "household line MRC"):
+        assert promotion.names_a_consumer_market(label), label
+
+
+def test_an_enterprise_price_naming_the_consumer_sector_is_still_priced():
+    """The behavioural fix: a rate for a country whose label mentions the
+    consumer SECTOR used to be declined for a market it does not describe.
+    It is now priced."""
+    assert promotion._classify({
+        "label": "ETHERNET 1 Gbps EAD wholesale - Retail & Consumer sector (GB)",
+        "country": "GB", "unit": "GBP/year", "value": 2358,
+        "bandwidth_mbps": 1000}) == "price"
+
+
+def test_a_consumer_word_on_a_non_price_is_not_routed_as_a_price():
+    """A consumer-worded finding that is not a rate for a country (a notice
+    period in days) is unclassified because it is not a price - it never
+    reaches, and is not declined by, the consumer gate."""
+    assert promotion._classify({
+        "label": "consumer/SME broadband minimum notice period (GB) - Ofcom",
+        "country": "GB", "unit": "days", "value": 30}) == "unclassified"
