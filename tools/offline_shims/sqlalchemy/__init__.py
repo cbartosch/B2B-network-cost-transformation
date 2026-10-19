@@ -215,6 +215,16 @@ class Index:
         self.unique = kw.get("unique", False)
 
 
+class CheckConstraint:
+    # Import-only, like the constraints above. The CHECK expression is a
+    # runtime DB invariant, exercised by the engine tests under `make test`;
+    # this shim runs pure logic and never emits it in DDL (as Index is not),
+    # so storing the text is enough to let the table modules import.
+    def __init__(self, sqltext=None, *a, **kw):
+        self.sqltext = sqltext
+        self.name = kw.get("name")
+
+
 class Table:
     def __init__(self, name, metadata, *args, **kw):
         self.name = name
@@ -228,7 +238,7 @@ class Table:
                 a.table = self
                 self.c._add(a)
                 self._order.append(a)
-            elif isinstance(a, (UniqueConstraint, Index)):
+            elif isinstance(a, (UniqueConstraint, Index, CheckConstraint)):
                 self.constraints.append(a)
         self.columns = self.c
         if metadata is not None:
@@ -393,6 +403,22 @@ def select(*a, **k): return _Select(*a)
 def insert(t, *a, **k): return _Insert(t)
 def update(t, *a, **k): return _Update(t)
 def delete(t, *a, **k): return _Delete(t)
+
+
+class _FuncCall:
+    def __init__(self, name, args): self.name, self.args = name, args
+
+
+class _FuncNamespace:
+    # sqlalchemy.func - import-only, like the constraint classes above. A real
+    # aggregate (func.count(...)) needs the engine; offline it only has to be
+    # referenceable so the modules that build such queries can import. A test
+    # that actually runs one needs a real engine (`make test`).
+    def __getattr__(self, name):
+        return lambda *a, **k: _FuncCall(name, a)
+
+
+func = _FuncNamespace()
 
 
 class _Text:

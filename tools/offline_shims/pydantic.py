@@ -60,6 +60,14 @@ class _FieldInfo:
     def required(self):
         return self.default is ... and self.default_factory is None
 
+    @property
+    def metadata(self):
+        # pydantic v2 exposes a field's constraints as a metadata sequence of
+        # objects each carrying one attribute (e.g. `.max_length`). This info
+        # IS that object, so yielding itself lets code written against the real
+        # library - `for m in field.metadata: m.max_length` - read the shim.
+        return (self,)
+
     def get_default(self):
         if self.default_factory is not None:
             return self.default_factory()
@@ -68,6 +76,29 @@ class _FieldInfo:
 
 def Field(default=..., **kw):                            # noqa: N802
     return _FieldInfo(default, **kw)
+
+
+def ConfigDict(**kw):                                    # noqa: N802
+    # pydantic v2's model_config helper - a plain dict of settings. Only the
+    # keys the shim actually enforces matter; `extra` is honoured by BaseModel.
+    return dict(**kw)
+
+
+def model_validator(*, mode="after"):                    # noqa: N802
+    """Register a whole-model validator, as pydantic v2 does.
+
+    Only the behaviour the suite relies on: a `before` validator receives the
+    raw input dict and returns a (possibly rewritten) dict before any field is
+    coerced; an `after` validator runs on the constructed instance. The method
+    is tagged and BaseModel runs it - a stub that dropped the call would let a
+    coercion test pass without the coercion, the exact 'wrong reason' this
+    shim refuses elsewhere.
+    """
+    def deco(fn):
+        raw = fn.__func__ if isinstance(fn, classmethod) else fn
+        raw._mv_mode = mode
+        return classmethod(raw) if isinstance(fn, classmethod) else raw
+    return deco
 
 
 def _origin(ann):
@@ -130,13 +161,35 @@ def _coerce(value, ann, name):
     return value
 
 
+def _own_annotations(cls, ns):
+    """A class's own field annotations, on 3.13 and on 3.14.
+
+    Before Python 3.14 the class namespace carries `__annotations__` and the
+    metaclass can read it directly. Under PEP 649 (3.14+) annotations are
+    deferred: they are absent from the namespace during class creation and are
+    computed lazily from the finished class. Reading `ns["__annotations__"]`
+    there finds nothing, which silently gave every model ZERO fields - a model
+    then dropped every value it was built with. Fall back to the computed
+    annotations of the class itself, which are its own, not a base's.
+    """
+    ann = ns.get("__annotations__")
+    if ann:
+        return ann
+    try:
+        import annotationlib  # 3.14+
+        return annotationlib.get_annotations(
+            cls, format=annotationlib.Format.VALUE)
+    except Exception:
+        return cls.__dict__.get("__annotations__", {}) or {}
+
+
 class _ModelMeta(type):
     def __new__(mcls, name, bases, ns):
         cls = super().__new__(mcls, name, bases, ns)
         fields = {}
         for base in reversed(bases):
             fields.update(getattr(base, "__fields__", {}))
-        annotations = ns.get("__annotations__", {})
+        annotations = _own_annotations(cls, ns)
         for fname, ann in annotations.items():
             # Skip dunder and private names. BaseModel annotates `__fields__`
             # itself, which without this became a *field* on every subclass and
@@ -149,13 +202,30 @@ class _ModelMeta(type):
             info = raw if isinstance(raw, _FieldInfo) else _FieldInfo(raw)
             fields[fname] = (ann, info)
         cls.__fields__ = fields
+        # pydantic v2 name: maps a field to its FieldInfo (constraints and all),
+        # which is what model-level validators introspect.
+        cls.model_fields = {fn: info for fn, (ann, info) in fields.items()}
         return cls
 
 
 class BaseModel(metaclass=_ModelMeta):
     __fields__: dict = {}
 
+    @classmethod
+    def _model_validators(cls, mode):
+        seen, out = set(), []
+        for klass in cls.__mro__:
+            for k, v in vars(klass).items():
+                fn = v.__func__ if isinstance(v, classmethod) else v
+                if getattr(fn, "_mv_mode", None) == mode and k not in seen:
+                    seen.add(k)
+                    out.append(getattr(cls, k))
+        return out
+
     def __init__(self, **data):
+        # `before` validators see the raw mapping and may rewrite it.
+        for mv in type(self)._model_validators("before"):
+            data = mv(dict(data))
         errors, values = [], {}
         unknown = set(data) - set(self.__fields__)
         for fname, (ann, info) in self.__fields__.items():
@@ -179,12 +249,16 @@ class BaseModel(metaclass=_ModelMeta):
                 errors.append(err)
                 continue
             values[fname] = value
-        # Unknown keys are ignored, matching pydantic's default `extra='ignore'`.
-        for k in unknown:
-            pass
+        # Default is pydantic's `extra='ignore'`; `model_config` may forbid it,
+        # which is how `Strict` rejects a field the schema never declared.
+        if getattr(type(self), "model_config", {}).get("extra") == "forbid":
+            for k in sorted(unknown):
+                errors.append(f"{k}: extra fields not permitted")
         if errors:
             raise ValidationError(errors)
         object.__setattr__(self, "__dict__", values)
+        for mv in type(self)._model_validators("after"):
+            mv(self)
 
     def model_dump(self, **kw):
         return dict(self.__dict__)
