@@ -1523,7 +1523,13 @@ def main():
          "finished": datetime.now(timezone.utc).isoformat()},
         indent=2), encoding="utf-8")
     print(f"\ncompleted {len(results)}, failed {len(failures)}")
+    # The status code has to say what the last line says. This returned
+    # nothing, so a run printing "completed 1, failed 8" - a DNS outage that
+    # took out eight of nine companies - exited 0, and so did a run that
+    # could not even open this file because the path had been mangled. A
+    # caller checking $? was told both succeeded.
+    return 1 if failures else 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())
