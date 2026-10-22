@@ -15,8 +15,8 @@
   ],
   "base_currency": "USD",
   "case_id": "71da5c68-a0e5-4d8d-b1cf-f69c8c388689",
-  "spec_path": "/tmp/companies.json",
-  "spec_sha256": "ad37995b9e77",
+  "spec_path": "/src/samples/companies.json",
+  "spec_sha256": "8a2a2c5fbf5c",
   "entity_resolution": {
     "resolved": null,
     "resumed": true
@@ -58,6 +58,12 @@
     },
     {
       "country": "GB",
+      "archetype": "LARGE_OFFICE",
+      "sites": 1,
+      "density": "URBAN"
+    },
+    {
+      "country": "GB",
       "archetype": "STORE",
       "sites": 1507,
       "density": "SUBURBAN"
@@ -94,6 +100,13 @@
     },
     {
       "country": "GB",
+      "archetype": "LARGE_OFFICE",
+      "sites": 1,
+      "origin": "RESEARCHED",
+      "density": null
+    },
+    {
+      "country": "GB",
       "archetype": "STORE",
       "sites": 1507,
       "origin": "SUPERSEDED_BY_RESEARCH",
@@ -119,11 +132,21 @@
     },
     {
       "origin": "DENSITY_FROM_MIX",
-      "rows": 1,
-      "sites": 1,
+      "rows": 2,
+      "sites": 2,
       "filled": [
         {
           "country": "DE",
+          "archetype": "LARGE_OFFICE",
+          "sites": 1,
+          "basis": "INDUSTRY_DEFAULT",
+          "mix_industry": "QSR_RESTAURANTS",
+          "bands": {
+            "URBAN": 1
+          }
+        },
+        {
+          "country": "GB",
           "archetype": "LARGE_OFFICE",
           "sites": 1,
           "basis": "INDUSTRY_DEFAULT",
@@ -200,24 +223,24 @@
   ],
   "estimate_inputs": {
     "method": "BUILD_UP",
-    "users": 200040,
+    "users": 200052,
     "ops_cost_per_site_base": 900,
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-19T20:06:20.530737+00:00",
-  "run_seconds": 18.1,
+  "run_started": "2026-10-22T13:16:29.880290+00:00",
+  "run_seconds": 28.3,
   "preflight_conditions": 8,
   "promotion": {
     "promoted": true,
     "detail": null,
-    "offered": 9,
+    "offered": 13,
     "accepted": 4,
     "declined": [
       {
         "reason": "sources state this in units that disagree, and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
         "label": "LARGE_OFFICE",
-        "country": "GB",
+        "country": "DE",
         "flags": [
           "UNIT_MISMATCH"
         ]

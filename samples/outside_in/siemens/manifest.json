@@ -20,8 +20,8 @@
   ],
   "base_currency": "EUR",
   "case_id": "3e29f228-1016-4a3d-b0ac-bea45544106e",
-  "spec_path": "/tmp/companies.json",
-  "spec_sha256": "ad37995b9e77",
+  "spec_path": "/src/samples/companies.json",
+  "spec_sha256": "8a2a2c5fbf5c",
   "entity_resolution": {
     "resolved": null,
     "resumed": true
@@ -136,7 +136,7 @@
     {
       "country": "IN",
       "archetype": "PLANT",
-      "sites": 14,
+      "sites": 19,
       "density": "SUBURBAN"
     },
     {
@@ -233,7 +233,7 @@
       "sites": 120,
       "origin": "DISCLOSURE_KEPT_RESEARCH_FOUND_FEWER",
       "density": "URBAN",
-      "research_said": 1,
+      "research_said": 30,
       "disclosure_said": 120
     },
     {
@@ -281,9 +281,11 @@
     {
       "country": "IN",
       "archetype": "PLANT",
-      "sites": 14,
-      "origin": "PUBLIC_DISCLOSURE",
-      "density": "SUBURBAN"
+      "sites": 19,
+      "origin": "SUPERSEDED_BY_RESEARCH",
+      "density": "SUBURBAN",
+      "research_said": 19,
+      "disclosure_said": 14
     },
     {
       "country": "IT",
@@ -368,7 +370,7 @@
     "CAMPUS": "RESEARCHED",
     "DC": "ASSUMED_PUBLIC_DISCLOSURE",
     "LARGE_OFFICE": "ASSUMED_PUBLIC_DISCLOSURE",
-    "PLANT": "ASSUMED_PUBLIC_DISCLOSURE"
+    "PLANT": "RESEARCHED"
   },
   "fx_to_eur": {
     "rate": "1.0",
@@ -421,30 +423,21 @@
   ],
   "estimate_inputs": {
     "method": "BUILD_UP",
-    "users": 5964,
+    "users": 6024,
     "ops_cost_per_site_base": 900,
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-19T20:07:03.655097+00:00",
-  "run_seconds": 2.5,
+  "run_started": "2026-10-22T13:17:29.672498+00:00",
+  "run_seconds": 2.7,
   "preflight_conditions": 8,
   "promotion": {
     "promoted": true,
     "detail": null,
-    "offered": 7,
-    "accepted": 4,
-    "declined": [
-      {
-        "reason": "sources disagree by 46% (139 to 203), and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
-        "label": "ETHERNET EAD 100 Mbps retail from Spitfire (GB)",
-        "country": "GB",
-        "flags": [
-          "MATERIAL_SPREAD"
-        ]
-      }
-    ],
-    "declined_count": 1
+    "offered": 8,
+    "accepted": 2,
+    "declined": [],
+    "declined_count": 0
   },
   "domains_benchmark_disposed": [
     3,

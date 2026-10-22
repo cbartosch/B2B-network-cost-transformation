@@ -15,8 +15,8 @@
   ],
   "base_currency": "EUR",
   "case_id": "2e26a1fa-bffc-4f1d-b4e3-a19ab29a45dc",
-  "spec_path": "/tmp/companies.json",
-  "spec_sha256": "ad37995b9e77",
+  "spec_path": "/src/samples/companies.json",
+  "spec_sha256": "8a2a2c5fbf5c",
   "entity_resolution": {
     "resolved": null,
     "resumed": true
@@ -31,6 +31,7 @@
     8,
     9,
     10,
+    12,
     13,
     14,
     15,
@@ -139,9 +140,7 @@
   },
   "seed": 20260101,
   "ensemble_size": 25,
-  "domains_declared_unknown": [
-    12
-  ],
+  "domains_declared_unknown": [],
   "domains_requested": [
     1,
     2,
@@ -170,6 +169,7 @@
     8,
     9,
     10,
+    12,
     13,
     14,
     15,
@@ -187,24 +187,24 @@
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-19T20:06:08.585605+00:00",
-  "run_seconds": 2.9,
+  "run_started": "2026-10-22T13:16:10.031219+00:00",
+  "run_seconds": 3.3,
   "preflight_conditions": 8,
   "promotion": {
     "promoted": true,
     "detail": null,
-    "offered": 13,
-    "accepted": 5,
+    "offered": 10,
+    "accepted": 3,
     "declined": [
       {
-        "reason": "GB MPLS price of 83333.33333333333 carries no bandwidth. A circuit rate without a tier cannot be matched to any circuit, so it is not promotable to a prior - re-run the domain, or set the tier on the observation first.",
+        "reason": "DE BROADBAND_PON price of 29.95 carries no bandwidth. A circuit rate without a tier cannot be matched to any circuit, so it is not promotable to a prior - re-run the domain, or set the tier on the observation first.",
         "label": null,
         "country": null,
         "flags": null
       },
       {
         "reason": "sources disagree by 16% (110 to 128), and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
-        "label": "STORE — Germany (all Inditex brands)",
+        "label": "STORE — Germany (DE)",
         "country": "DE",
         "flags": [
           "MATERIAL_SPREAD"
@@ -212,15 +212,15 @@
       },
       {
         "reason": "sources state this in units that disagree, and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
-        "label": "LARGE_OFFICE — brand and group HQ offices, Spain",
+        "label": "LARGE_OFFICE — group and brand headquarters, Spain (ES)",
         "country": "ES",
         "flags": [
           "UNIT_MISMATCH"
         ]
       },
       {
-        "reason": "sources disagree by 60% (10 to 16), and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
-        "label": "WAREHOUSE — logistics/distribution centres, Spain (all brands)",
+        "reason": "sources disagree by 40% (10 to 14), and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
+        "label": "WAREHOUSE — logistics/distribution centres, Spain (ES), total group",
         "country": "ES",
         "flags": [
           "MATERIAL_SPREAD"

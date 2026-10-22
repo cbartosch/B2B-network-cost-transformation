@@ -1,5 +1,5 @@
 {
-  "estimate_snapshot_id": "a6305930-948a-4e54-8224-81bca4c636ce",
+  "estimate_snapshot_id": "5259ae43-c5b2-4552-9688-0a6d58042c76",
   "v0_status": "COMPLETE",
   "current_tco": {
     "low": "5528492.03",
@@ -2947,10 +2947,10 @@
     "note": "11 step(s) in the order they compound - each acts on what the ones before it left, so they do not add up to the sum of their percentages. 1 lever(s) had a baseline and matched nothing in this estate."
   },
   "confidence": {
-    "current_baseline": "0.295",
+    "current_baseline": "0.301",
     "target_cost": "0.675",
     "realization": "0.193",
-    "weighted": "0.398",
+    "weighted": "0.400",
     "overall": "0.343",
     "band": "D - Indicative",
     "policy_set": "confidence_policy",
@@ -2976,7 +2976,7 @@
       "evidenced_value_share": "0.0000",
       "client_confirmed_value_share": "0",
       "client_confirmed_evidence_weight": "0.7000",
-      "domain_completeness": "0.9583333333333333333333333333",
+      "domain_completeness": "1",
       "prior_coverage": "0.8181818181818181818181818182",
       "prior_recency": "1",
       "lever_stage_mix": {
@@ -2985,7 +2985,7 @@
       },
       "policy_set": "confidence_policy",
       "raw_before_stage_scaling": {
-        "current_baseline": "0.537",
+        "current_baseline": "0.547",
         "target_cost": "0.900",
         "realization": "0.552"
       },
@@ -3001,13 +3001,13 @@
     "scope_status": "PARTIAL_COUNTRIES",
     "metrics": {
       "BASELINE_PER_EMPLOYEE": {
-        "value": "0.01",
+        "value": "135.65",
         "flag": "NOT_ASSESSABLE",
         "note": "scope is PARTIAL_COUNTRIES: this baseline covers part of the group and the denominator is group-wide, so the ratio measures the scope gap rather than the estimate",
         "benchmark": null
       },
       "BASELINE_PCT_OF_REVENUE": {
-        "value": null,
+        "value": "0.12",
         "flag": "NOT_ASSESSABLE",
         "note": "scope is PARTIAL_COUNTRIES: this baseline covers part of the group and the denominator is group-wide, so the ratio measures the scope gap rather than the estimate",
         "benchmark": null
@@ -3027,26 +3027,25 @@
       }
     },
     "inputs": {
-      "employees": "1223000000.00",
-      "revenue": null,
+      "employees": "66400.00",
+      "revenue": "7545000000.00",
       "sites": "2266.00",
       "provenance": {
         "employees": {
-          "value": "1223000000",
-          "label": "Staff costs — Boots UK Limited (entity only)",
+          "value": "66400",
+          "label": "The Boots Group total employees (global, post-spinoff 2025)",
+          "as_of": "2025",
+          "unit": "people",
+          "currency": null,
+          "as_stated": "66400"
+        },
+        "revenue": {
+          "value": "7545000000",
+          "label": "Boots UK Limited revenue (legal entity, GB)",
           "as_of": "FY2025 (year ended 31 Aug 2025)",
           "unit": "GBP",
           "currency": "GBP",
-          "as_stated": "1223000000"
-        },
-        "revenue": {
-          "value": null,
-          "label": "WBA International segment revenue (Boots-led)",
-          "as_of": "FY2024 (year ended 31 Aug 2024)",
-          "unit": "USD",
-          "currency": "USD",
-          "as_stated": "23600000000",
-          "dropped": "stated in USD, baseline is in GBP"
+          "as_stated": "7545000000"
         }
       }
     },
@@ -3075,6 +3074,9 @@
       "GB/MOBILE_5G",
       "IE/MOBILE_5G"
     ],
+    "unserviceable_sites": 0,
+    "site_coverage_pct": "1.000",
+    "unserviceable": [],
     "evidence_grade_mix": {
       "C": "0.021",
       "E": "0.979"

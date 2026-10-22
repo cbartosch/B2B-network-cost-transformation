@@ -14,8 +14,8 @@
   ],
   "base_currency": "GBP",
   "case_id": "cdf61ba7-5492-4980-a4cf-615cfcb272e3",
-  "spec_path": "/tmp/companies.json",
-  "spec_sha256": "ad37995b9e77",
+  "spec_path": "/src/samples/companies.json",
+  "spec_sha256": "37f557ad46b6",
   "entity_resolution": {
     "resolved": null,
     "resumed": true
@@ -83,6 +83,13 @@
   "footprint_provenance": [
     {
       "country": "GB",
+      "archetype": "STORE",
+      "sites": 3688,
+      "origin": "EXCLUDED_BY_SCOPE",
+      "reason": "the 3,688 is 'WBA International segment ... (global, includes Boots UK/IE + T...)' - the whole international segment, promoted into GB. The declaration holds the 2,164 from the 10-K."
+    },
+    {
+      "country": "GB",
       "archetype": "CAMPUS",
       "sites": 1,
       "origin": "RESEARCHED",
@@ -115,8 +122,10 @@
       "country": "GB",
       "archetype": "WAREHOUSE",
       "sites": 3,
-      "origin": "PUBLIC_DISCLOSURE",
-      "density": "SUBURBAN"
+      "origin": "DISCLOSURE_KEPT_RESEARCH_FOUND_FEWER",
+      "density": "SUBURBAN",
+      "research_said": 2,
+      "disclosure_said": 3
     },
     {
       "country": "IE",
@@ -212,34 +221,25 @@
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-19T20:07:20.447286+00:00",
-  "run_seconds": 2.9,
+  "run_started": "2026-10-22T13:42:57.087454+00:00",
+  "run_seconds": 3.3,
   "preflight_conditions": 8,
   "promotion": {
     "promoted": true,
     "detail": null,
-    "offered": 6,
-    "accepted": 3,
+    "offered": 14,
+    "accepted": 4,
     "declined": [
       {
-        "reason": "sources disagree by 49% (1452 to 2164), and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
-        "label": "STORE",
+        "reason": "sources disagree by 23% (43.95 to 53.95), and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
+        "label": "BROADBAND_HFC 1000Mbps MRC (Virgin Media Business Voom Gig1)",
         "country": "GB",
         "flags": [
           "MATERIAL_SPREAD"
         ]
-      },
-      {
-        "reason": "sources disagree by 300% (1 to 4); the newest source diverges from the others, and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
-        "label": "WAREHOUSE",
-        "country": "GB",
-        "flags": [
-          "MATERIAL_SPREAD",
-          "NEWEST_DIVERGES"
-        ]
       }
     ],
-    "declined_count": 2
+    "declined_count": 1
   },
   "domains_benchmark_disposed": [
     3,

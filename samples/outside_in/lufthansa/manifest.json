@@ -15,8 +15,8 @@
   ],
   "base_currency": "EUR",
   "case_id": "f29aa37f-2c3f-476f-8176-b4704fe1d6c6",
-  "spec_path": "/tmp/companies.json",
-  "spec_sha256": "ad37995b9e77",
+  "spec_path": "/src/samples/companies.json",
+  "spec_sha256": "8a2a2c5fbf5c",
   "entity_resolution": {
     "resolved": null,
     "resumed": true
@@ -138,7 +138,7 @@
       "sites": 18,
       "origin": "DISCLOSURE_KEPT_RESEARCH_FOUND_FEWER",
       "density": "URBAN",
-      "research_said": 10,
+      "research_said": 8,
       "disclosure_said": 18
     },
     {
@@ -247,16 +247,33 @@
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-19T20:06:53.149923+00:00",
-  "run_seconds": 2.4,
+  "run_started": "2026-10-22T13:17:17.949077+00:00",
+  "run_seconds": 2.6,
   "preflight_conditions": 8,
   "promotion": {
     "promoted": true,
     "detail": null,
-    "offered": 8,
-    "accepted": 5,
-    "declined": [],
-    "declined_count": 0
+    "offered": 5,
+    "accepted": 1,
+    "declined": [
+      {
+        "reason": "sources state this in units that disagree, and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
+        "label": "LARGE_OFFICE — Austrian Airlines campus locations, Austria (Vienna Airport complex)",
+        "country": "AT",
+        "flags": [
+          "UNIT_MISMATCH"
+        ]
+      },
+      {
+        "reason": "sources state this in units that disagree, and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
+        "label": "LARGE_OFFICE — SWISS International Air Lines locations, Switzerland (named hubs)",
+        "country": "CH",
+        "flags": [
+          "UNIT_MISMATCH"
+        ]
+      }
+    ],
+    "declined_count": 2
   },
   "domains_benchmark_disposed": [
     3,

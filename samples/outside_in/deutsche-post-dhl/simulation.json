@@ -1,13 +1,13 @@
 {
-  "simulation_run_id": "6ba303e2-b052-450a-9b86-efebf9872806",
+  "simulation_run_id": "9b5373f6-654f-481e-9867-b5e6320c66e9",
   "case_id": "0fad5c9a-1959-4583-845f-a7cc722e8f60",
   "model_version": "sim-2.7.0",
   "seed": 20260101,
   "ensemble_size": 25,
   "status": "SUCCEEDED",
-  "output_hash": "12ca107ed6ff42a625d28cf25d689df6c691cdad09f0bde9c2aced6cf169cd74",
-  "started_at": "2026-10-19 20:06:11.660341+00:00",
-  "ended_at": "2026-10-19 20:06:12.772228+00:00",
+  "output_hash": "c3c98a21c05d6e5ce6baad5c96f85d9d16cd42721ce5cc973ff91758452902b6",
+  "started_at": "2026-10-22 13:42:25.023998+00:00",
+  "ended_at": "2026-10-22 13:42:26.764772+00:00",
   "params": {
     "footprint": [
       {
@@ -29,7 +29,7 @@
       {
         "country": "DE",
         "archetype": "TERMINAL",
-        "sites": 28,
+        "sites": 99,
         "industry": null,
         "count_source": null,
         "density": "SUBURBAN"
@@ -37,7 +37,7 @@
       {
         "country": "DE",
         "archetype": "TERMINAL",
-        "sites": 18,
+        "sites": 66,
         "industry": null,
         "count_source": null,
         "density": "URBAN"
@@ -69,7 +69,7 @@
       {
         "country": "GB",
         "archetype": "WAREHOUSE",
-        "sites": 40,
+        "sites": 419,
         "industry": null,
         "count_source": null,
         "density": "SUBURBAN"
@@ -113,8 +113,8 @@
         }
       ],
       "sites_in_large_rows": 2200,
-      "share_in_large_rows": "0.911",
-      "share_asserted_alike": "0.911",
+      "share_in_large_rows": "0.755",
+      "share_asserted_alike": "0.755",
       "basis": "sites in rows above the reporting band; nothing is refused for this - the row prices and the claim is disclosed"
     },
     "backbone": {
@@ -347,14 +347,6 @@
       {
         "country": "DE",
         "density_band": "RURAL",
-        "product": "ETHERNET_FIBRE",
-        "access_technology": "ETHERNET_FIBRE",
-        "available": false,
-        "max_bandwidth_mbps": null
-      },
-      {
-        "country": "DE",
-        "density_band": "RURAL",
         "product": "DARK_FIBRE",
         "access_technology": "DARK_FIBRE",
         "available": false,
@@ -615,14 +607,6 @@
         "access_technology": "MOBILE_4G",
         "available": true,
         "max_bandwidth_mbps": 50
-      },
-      {
-        "country": "GB",
-        "density_band": "RURAL",
-        "product": "ETHERNET_FIBRE",
-        "access_technology": "ETHERNET_FIBRE",
-        "available": false,
-        "max_bandwidth_mbps": null
       },
       {
         "country": "GB",
@@ -891,14 +875,6 @@
       {
         "country": "NL",
         "density_band": "RURAL",
-        "product": "ETHERNET_FIBRE",
-        "access_technology": "ETHERNET_FIBRE",
-        "available": false,
-        "max_bandwidth_mbps": null
-      },
-      {
-        "country": "NL",
-        "density_band": "RURAL",
         "product": "DARK_FIBRE",
         "access_technology": "DARK_FIBRE",
         "available": false,
@@ -967,41 +943,35 @@
         "access_technology": "SATELLITE",
         "available": true,
         "max_bandwidth_mbps": 50
+      },
+      {
+        "country": "DE",
+        "density_band": "RURAL",
+        "product": "ETHERNET_FIBRE",
+        "access_technology": "ETHERNET_FIBRE",
+        "available": true,
+        "max_bandwidth_mbps": 1000
+      },
+      {
+        "country": "GB",
+        "density_band": "RURAL",
+        "product": "ETHERNET_FIBRE",
+        "access_technology": "ETHERNET_FIBRE",
+        "available": true,
+        "max_bandwidth_mbps": 1000
+      },
+      {
+        "country": "NL",
+        "density_band": "RURAL",
+        "product": "ETHERNET_FIBRE",
+        "access_technology": "ETHERNET_FIBRE",
+        "available": true,
+        "max_bandwidth_mbps": 1000
       }
     ]
   },
   "pinned_priors": {
     "archetype_prior": {
-      "SELF_SERVICE_TERMINAL": {
-        "dual_access_probability": 0.15,
-        "primary_product": "MOBILE_5G",
-        "backup_product": "BROADBAND_PON",
-        "users_base": 0,
-        "bandwidth_mbps_base": 50,
-        "committed_fraction": "0.250",
-        "primary_service_class": "BEST_EFFORT",
-        "backup_service_class": "BEST_EFFORT"
-      },
-      "ATM": {
-        "dual_access_probability": 0.55,
-        "primary_product": "MOBILE_5G",
-        "backup_product": "BROADBAND_PON",
-        "users_base": 0,
-        "bandwidth_mbps_base": 50,
-        "committed_fraction": "0.600",
-        "primary_service_class": "BEST_EFFORT",
-        "backup_service_class": "BEST_EFFORT"
-      },
-      "LEGACY_WAN_SITE": {
-        "dual_access_probability": 0.6,
-        "primary_product": "MPLS",
-        "backup_product": "BROADBAND_PON",
-        "users_base": 40,
-        "bandwidth_mbps_base": 100,
-        "committed_fraction": "0.800",
-        "primary_service_class": "IPVPN",
-        "backup_service_class": "BEST_EFFORT"
-      },
       "BRANCH": {
         "dual_access_probability": 0.55,
         "primary_product": "DIA",
@@ -1120,6 +1090,36 @@
         "bandwidth_mbps_base": 50,
         "committed_fraction": "0.300",
         "primary_service_class": "BEST_EFFORT",
+        "backup_service_class": "BEST_EFFORT"
+      },
+      "SELF_SERVICE_TERMINAL": {
+        "dual_access_probability": 0.15,
+        "primary_product": "MOBILE_5G",
+        "backup_product": "BROADBAND_PON",
+        "users_base": 0,
+        "bandwidth_mbps_base": 50,
+        "committed_fraction": "0.250",
+        "primary_service_class": "BEST_EFFORT",
+        "backup_service_class": "BEST_EFFORT"
+      },
+      "ATM": {
+        "dual_access_probability": 0.55,
+        "primary_product": "MOBILE_5G",
+        "backup_product": "BROADBAND_PON",
+        "users_base": 0,
+        "bandwidth_mbps_base": 50,
+        "committed_fraction": "0.600",
+        "primary_service_class": "BEST_EFFORT",
+        "backup_service_class": "BEST_EFFORT"
+      },
+      "LEGACY_WAN_SITE": {
+        "dual_access_probability": 0.6,
+        "primary_product": "MPLS",
+        "backup_product": "BROADBAND_PON",
+        "users_base": 40,
+        "bandwidth_mbps_base": 100,
+        "committed_fraction": "0.800",
+        "primary_service_class": "IPVPN",
         "backup_service_class": "BEST_EFFORT"
       },
       "DEFAULT/BRANCH": {
@@ -2085,11 +2085,11 @@
     "model_version": "sim-2.7.0",
     "seed": 20260101,
     "ensemble_size": 25,
-    "sites": 2416,
+    "sites": 2914,
     "serviceability": {
       "counts": {
         "DELIVERED": 2200,
-        "SUBSTITUTED": 216,
+        "SUBSTITUTED": 714,
         "UNSERVICEABLE": 0
       },
       "substitutions": [
@@ -2097,19 +2097,19 @@
           "asked_for": "DIA",
           "delivered": "DIA",
           "bandwidth_mbps": 500,
-          "sites": 155
+          "sites": 534
         },
         {
           "asked_for": "ETHERNET",
           "delivered": "ETHERNET",
           "bandwidth_mbps": 500,
-          "sites": 34
+          "sites": 105
         },
         {
           "asked_for": "ETHERNET",
           "delivered": "ETHERNET",
           "bandwidth_mbps": 1000,
-          "sites": 27
+          "sites": 75
         }
       ],
       "by_access_technology": [
@@ -2119,11 +2119,11 @@
         },
         {
           "access_technology": "ETHERNET_FIBRE",
-          "sites": 216
+          "sites": 714
         }
       ],
       "unserviceable": 0,
-      "note": "216 of 2416 site(s) take a different product or tier from the one their type asks for, and 0 can be served by nothing at all. 216 of 2416 are delivered over a bearer other than PON (216 on ETHERNET_FIBRE), which is a different circuit at a different rate. A uniform estate is an assumption; this is what the density bands say about it.",
+      "note": "714 of 2914 site(s) take a different product or tier from the one their type asks for, and 0 can be served by nothing at all. 714 of 2914 are delivered over a bearer other than PON (714 on ETHERNET_FIBRE), which is a different circuit at a different rate. A uniform estate is an assumption; this is what the density bands say about it.",
       "table_rows": 102,
       "table_basis": "GOVERNED"
     },
@@ -2405,6 +2405,958 @@
         "because": "NOT_DELIVERABLE",
         "country": "DE",
         "archetype": "TERMINAL",
+        "density": "SUBURBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in SUBURBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "SUBURBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in SUBURBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "SUBURBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in SUBURBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "SUBURBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in SUBURBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "SUBURBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in SUBURBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "SUBURBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in SUBURBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "SUBURBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in SUBURBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "SUBURBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in SUBURBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "SUBURBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in SUBURBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "SUBURBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in SUBURBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "SUBURBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in SUBURBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "SUBURBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in SUBURBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "SUBURBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in SUBURBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "SUBURBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in SUBURBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "SUBURBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in SUBURBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "SUBURBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in SUBURBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "SUBURBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in SUBURBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "SUBURBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in SUBURBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "SUBURBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in SUBURBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "SUBURBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in SUBURBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "SUBURBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in SUBURBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "SUBURBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in SUBURBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "SUBURBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in SUBURBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "SUBURBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in SUBURBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "SUBURBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in SUBURBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "SUBURBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in SUBURBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "SUBURBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in SUBURBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "SUBURBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in SUBURBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "SUBURBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in SUBURBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "SUBURBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in SUBURBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "SUBURBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in SUBURBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "SUBURBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in SUBURBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "SUBURBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in SUBURBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "SUBURBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in SUBURBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "SUBURBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in SUBURBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "SUBURBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in SUBURBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "SUBURBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in SUBURBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "SUBURBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in SUBURBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "SUBURBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in SUBURBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "SUBURBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in SUBURBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "SUBURBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in SUBURBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "SUBURBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in SUBURBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "SUBURBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in SUBURBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "SUBURBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in SUBURBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "SUBURBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in SUBURBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "SUBURBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in SUBURBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "SUBURBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in SUBURBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "SUBURBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in SUBURBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "SUBURBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in SUBURBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "SUBURBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in SUBURBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "SUBURBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in SUBURBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "SUBURBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in SUBURBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "SUBURBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in SUBURBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "SUBURBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in SUBURBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "SUBURBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in SUBURBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "SUBURBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in SUBURBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "SUBURBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in SUBURBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "SUBURBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in SUBURBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "SUBURBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in SUBURBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "SUBURBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in SUBURBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "SUBURBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in SUBURBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "SUBURBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in SUBURBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "SUBURBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in SUBURBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "SUBURBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in SUBURBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "SUBURBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in SUBURBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "SUBURBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in SUBURBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "SUBURBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in SUBURBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "SUBURBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in SUBURBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "SUBURBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in SUBURBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "SUBURBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in SUBURBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "SUBURBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in SUBURBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "URBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in URBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "URBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in URBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "URBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in URBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "URBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in URBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "URBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in URBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "URBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in URBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "URBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in URBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "URBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in URBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "URBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in URBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "URBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in URBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "URBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in URBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "URBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in URBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "URBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in URBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "URBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in URBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "URBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in URBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "URBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in URBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "URBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in URBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "URBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in URBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "URBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in URBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "URBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in URBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "URBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in URBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "URBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in URBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "URBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in URBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "URBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in URBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "URBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in URBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "URBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in URBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "URBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in URBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "URBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in URBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "URBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in URBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "URBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in URBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "URBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in URBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "URBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in URBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "URBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in URBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "URBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in URBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "URBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in URBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "URBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in URBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "URBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in URBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "URBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in URBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "URBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in URBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "URBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in URBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "URBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in URBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "URBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in URBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "URBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in URBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "URBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in URBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "URBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in URBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "URBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in URBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "URBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in URBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
+        "density": "URBAN",
+        "asked_for": "ETHERNET",
+        "reason": "the only backup deliverable in URBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
+      },
+      {
+        "because": "NOT_DELIVERABLE",
+        "country": "DE",
+        "archetype": "TERMINAL",
         "density": "URBAN",
         "asked_for": "ETHERNET",
         "reason": "the only backup deliverable in URBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
@@ -2620,21 +3572,21 @@
     ],
     "estate_truncated": 0,
     "sites_named": 0,
-    "sites_generated": 2416,
+    "sites_generated": 2914,
     "circuits": {
-      "low": 3183,
-      "base": 3217,
-      "high": 3230
+      "low": 3990,
+      "base": 4018,
+      "high": 4034
     },
     "circuits_primary": {
-      "low": 2416,
-      "base": 2416,
-      "high": 2416
+      "low": 2914,
+      "base": 2914,
+      "high": 2914
     },
     "circuits_backup": {
-      "low": 755,
-      "base": 789,
-      "high": 802
+      "low": 1064,
+      "base": 1092,
+      "high": 1108
     },
     "products": [
       {
@@ -2642,7 +3594,7 @@
         "product": "BROADBAND_HFC",
         "role": "BACKUP",
         "bandwidth_mbps": 300,
-        "count": 40,
+        "count": 41,
         "service_class": "BEST_EFFORT",
         "density": "SUBURBAN",
         "bearer_mbps": 300,
@@ -2686,7 +3638,7 @@
         "product": "ETHERNET",
         "role": "PRIMARY",
         "bandwidth_mbps": 425,
-        "count": 28,
+        "count": 99,
         "service_class": "ETHERNET",
         "density": "SUBURBAN",
         "bearer_mbps": 500,
@@ -2697,7 +3649,7 @@
         "product": "ETHERNET",
         "role": "PRIMARY",
         "bandwidth_mbps": 850,
-        "count": 18,
+        "count": 66,
         "service_class": "ETHERNET",
         "density": "URBAN",
         "bearer_mbps": 1000,
@@ -2708,7 +3660,7 @@
         "product": "MOBILE_5G",
         "role": "BACKUP",
         "bandwidth_mbps": 50,
-        "count": 435,
+        "count": 441,
         "service_class": "BEST_EFFORT",
         "density": "SUBURBAN",
         "bearer_mbps": 50,
@@ -2730,7 +3682,7 @@
         "product": "BROADBAND_HFC",
         "role": "BACKUP",
         "bandwidth_mbps": 300,
-        "count": 14,
+        "count": 201,
         "service_class": "BEST_EFFORT",
         "density": "SUBURBAN",
         "bearer_mbps": 300,
@@ -2741,7 +3693,7 @@
         "product": "DIA",
         "role": "PRIMARY",
         "bandwidth_mbps": 500,
-        "count": 40,
+        "count": 419,
         "service_class": "DIA",
         "density": "SUBURBAN",
         "bearer_mbps": 500,
@@ -2774,7 +3726,7 @@
         "product": "BROADBAND_HFC",
         "role": "BACKUP",
         "bandwidth_mbps": 300,
-        "count": 11,
+        "count": 10,
         "service_class": "BEST_EFFORT",
         "density": "SUBURBAN",
         "bearer_mbps": 300,
@@ -2815,13 +3767,13 @@
       }
     ],
     "dual_access_sites": {
-      "low": 755,
-      "base": 789,
-      "high": 802
+      "low": 1064,
+      "base": 1092,
+      "high": 1108
     },
     "circuits_backbone": 12,
-    "circuits_per_site_base": 1.2119,
-    "implied_users": 125900,
+    "circuits_per_site_base": 1.2419,
+    "implied_users": 386640,
     "bandwidth_profile": {
       "DC": {
         "sites": 6,
@@ -2834,17 +3786,17 @@
         "mbps_total": 110000
       },
       "TERMINAL": {
-        "sites": 55,
+        "sites": 174,
         "mbps_per_site": 10000,
-        "mbps_total": 550000
+        "mbps_total": 1740000
       },
       "WAREHOUSE": {
-        "sites": 155,
+        "sites": 534,
         "mbps_per_site": 1000,
-        "mbps_total": 155000
+        "mbps_total": 534000
       }
     },
-    "bandwidth_mbps_total": 875000,
+    "bandwidth_mbps_total": 2444000,
     "diversity_state": "SIMULATED",
     "backbone": {
       "template_version": "1.0.0",
@@ -2875,12 +3827,12 @@
       "backbone_circuits": 12,
       "note": "One region with data centres (EUROPE_CENTRAL), so there is no global core tier - a hub has nothing to reach across."
     },
-    "node_count": 2416,
-    "edge_count": 2928
+    "node_count": 2914,
+    "edge_count": 3619
   },
   "output_omitted": {
     "fields": [
-      "estate (2416 rows)",
+      "estate (2914 rows)",
       "sample_topology (2 rows)"
     ],
     "why": "per-site arrays, the same information the aggregates carry; tools/backfill_simulation.py --full keeps them"

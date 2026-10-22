@@ -20,8 +20,8 @@
   ],
   "base_currency": "EUR",
   "case_id": "6dc7a940-c47e-4544-b19a-6f7de40ace47",
-  "spec_path": "/tmp/companies.json",
-  "spec_sha256": "ad37995b9e77",
+  "spec_path": "/src/samples/companies.json",
+  "spec_sha256": "8a2a2c5fbf5c",
   "entity_resolution": {
     "resolved": null,
     "resumed": true
@@ -54,24 +54,6 @@
       "archetype": "NETWORK_SITE",
       "sites": 90,
       "density": "RURAL"
-    },
-    {
-      "country": "DE",
-      "archetype": "BRANCH",
-      "sites": 5,
-      "density": "RURAL"
-    },
-    {
-      "country": "DE",
-      "archetype": "BRANCH",
-      "sites": 11,
-      "density": "SUBURBAN"
-    },
-    {
-      "country": "DE",
-      "archetype": "BRANCH",
-      "sites": 14,
-      "density": "URBAN"
     },
     {
       "country": "DE",
@@ -117,6 +99,12 @@
     },
     {
       "country": "RO",
+      "archetype": "LARGE_OFFICE",
+      "sites": 1,
+      "density": "DENSE_URBAN"
+    },
+    {
+      "country": "RO",
       "archetype": "NETWORK_SITE",
       "sites": 70,
       "density": "RURAL"
@@ -136,18 +124,18 @@
   ],
   "footprint_provenance": [
     {
+      "country": "DE",
+      "archetype": "BRANCH",
+      "sites": 30,
+      "origin": "EXCLUDED_BY_SCOPE",
+      "reason": "DECLINED 2026-10-16 and never enforced until now: the source says 28 locations, the promoted figure was 30, and the row carried no as_of. The declared 0 holds."
+    },
+    {
       "country": "CZ",
       "archetype": "NETWORK_SITE",
       "sites": 90,
       "origin": "PUBLIC_DISCLOSURE",
       "density": "RURAL"
-    },
-    {
-      "country": "DE",
-      "archetype": "BRANCH",
-      "sites": 30,
-      "origin": "RESEARCHED",
-      "density": null
     },
     {
       "country": "DE",
@@ -160,8 +148,10 @@
       "country": "DE",
       "archetype": "DC",
       "sites": 4,
-      "origin": "PUBLIC_DISCLOSURE",
-      "density": "SUBURBAN"
+      "origin": "DISCLOSURE_KEPT_RESEARCH_FOUND_FEWER",
+      "density": "SUBURBAN",
+      "research_said": 1,
+      "disclosure_said": 4
     },
     {
       "country": "DE",
@@ -202,6 +192,13 @@
     },
     {
       "country": "RO",
+      "archetype": "LARGE_OFFICE",
+      "sites": 1,
+      "origin": "RESEARCHED",
+      "density": null
+    },
+    {
+      "country": "RO",
       "archetype": "NETWORK_SITE",
       "sites": 70,
       "origin": "PUBLIC_DISCLOSURE",
@@ -224,18 +221,16 @@
     {
       "origin": "DENSITY_FROM_MIX",
       "rows": 1,
-      "sites": 30,
+      "sites": 1,
       "filled": [
         {
-          "country": "DE",
-          "archetype": "BRANCH",
-          "sites": 30,
-          "basis": "GENERIC_DEFAULT",
-          "mix_industry": "DEFAULT",
+          "country": "RO",
+          "archetype": "LARGE_OFFICE",
+          "sites": 1,
+          "basis": "INDUSTRY_DEFAULT",
+          "mix_industry": "UTILITIES",
           "bands": {
-            "RURAL": 5,
-            "SUBURBAN": 11,
-            "URBAN": 14
+            "DENSE_URBAN": 1
           }
         }
       ],
@@ -263,10 +258,10 @@
   "scope_status": "PARTIAL_COUNTRIES",
   "scope_note": "Baseline covers 6 country(ies) (CZ, DE, GB, HU, RO, SE) and the site types listed in sites_origin. The group's full country and site-type count is not sourced, so the share of the group this represents is DECLARED_UNKNOWN. This is baseline_in_scope, not a group baseline.",
   "sites_origin": {
-    "BRANCH": "RESEARCHED",
+    "BRANCH": "ASSUMED_PUBLIC_DISCLOSURE",
     "CONTROL_CENTER": "ASSUMED_PUBLIC_DISCLOSURE",
     "DC": "ASSUMED_PUBLIC_DISCLOSURE",
-    "LARGE_OFFICE": "ASSUMED_PUBLIC_DISCLOSURE",
+    "LARGE_OFFICE": "RESEARCHED",
     "NETWORK_SITE": "ASSUMED_PUBLIC_DISCLOSURE",
     "WAREHOUSE": "RESEARCHED"
   },
@@ -321,19 +316,19 @@
   ],
   "estimate_inputs": {
     "method": "BUILD_UP",
-    "users": 10296,
+    "users": 9948,
     "ops_cost_per_site_base": 900,
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-19T20:08:06.695207+00:00",
-  "run_seconds": 2.5,
+  "run_started": "2026-10-22T13:18:50.315646+00:00",
+  "run_seconds": 2.8,
   "preflight_conditions": 8,
   "promotion": {
     "promoted": true,
     "detail": null,
-    "offered": 8,
-    "accepted": 3,
+    "offered": 13,
+    "accepted": 2,
     "declined": [
       {
         "reason": "sources disagree by 33% (139 to 185), and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
@@ -350,9 +345,33 @@
         "flags": [
           "MATERIAL_SPREAD"
         ]
+      },
+      {
+        "reason": "sources state this in units that disagree, and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
+        "label": "BRANCH",
+        "country": "DE",
+        "flags": [
+          "UNIT_MISMATCH"
+        ]
+      },
+      {
+        "reason": "sources state this in units that disagree, and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
+        "label": "LARGE_OFFICE",
+        "country": "DE",
+        "flags": [
+          "UNIT_MISMATCH"
+        ]
+      },
+      {
+        "reason": "sources state this in units that disagree, and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
+        "label": "LARGE_OFFICE",
+        "country": "GB",
+        "flags": [
+          "UNIT_MISMATCH"
+        ]
       }
     ],
-    "declined_count": 2
+    "declined_count": 5
   },
   "domains_benchmark_disposed": [
     3,

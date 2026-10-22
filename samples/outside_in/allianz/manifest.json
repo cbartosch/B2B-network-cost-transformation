@@ -15,8 +15,8 @@
   ],
   "base_currency": "EUR",
   "case_id": "d306c1b6-5c12-4709-b0b8-bda47b7763d1",
-  "spec_path": "/tmp/companies.json",
-  "spec_sha256": "ad37995b9e77",
+  "spec_path": "/src/samples/companies.json",
+  "spec_sha256": "8a2a2c5fbf5c",
   "entity_resolution": {
     "resolved": null,
     "resumed": true
@@ -104,7 +104,7 @@
     {
       "country": "FR",
       "archetype": "STORE",
-      "sites": 2516,
+      "sites": 2601,
       "origin": "EXCLUDED_BY_SCOPE",
       "reason": "an agent general is self-employed, leases their own premises and buys their own access line; Allianz reaches them over it. The STORE archetype buys a broadband circuit with 5G backup and Allianz does not buy 2,516 of those. Same basis as the UPS Store network and BNP's Fintro branches, both already excluded."
     },
@@ -270,16 +270,34 @@
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-19T20:06:17.812756+00:00",
-  "run_seconds": 2.7,
+  "run_started": "2026-10-22T13:16:26.643247+00:00",
+  "run_seconds": 3.2,
   "preflight_conditions": 8,
   "promotion": {
     "promoted": true,
     "detail": null,
-    "offered": 13,
-    "accepted": 6,
-    "declined": [],
-    "declined_count": 0
+    "offered": 8,
+    "accepted": 4,
+    "declined": [
+      {
+        "reason": "sources disagree by 104% (2500 to 5096); the newest source diverges from the others, and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
+        "label": "STORE (customer-facing Agenturen / insurance agencies)",
+        "country": "DE",
+        "flags": [
+          "MATERIAL_SPREAD",
+          "NEWEST_DIVERGES"
+        ]
+      },
+      {
+        "reason": "sources disagree by 100% (1 to 2), and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
+        "label": "LARGE_OFFICE (sedi operative / HQ offices)",
+        "country": "IT",
+        "flags": [
+          "MATERIAL_SPREAD"
+        ]
+      }
+    ],
+    "declined_count": 2
   },
   "domains_benchmark_disposed": [
     3,

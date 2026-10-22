@@ -15,8 +15,8 @@
   ],
   "base_currency": "EUR",
   "case_id": "7af28f40-a494-461a-b6dd-da0b42200b72",
-  "spec_path": "/tmp/companies.json",
-  "spec_sha256": "ad37995b9e77",
+  "spec_path": "/src/samples/companies.json",
+  "spec_sha256": "37f557ad46b6",
   "entity_resolution": {
     "resolved": null,
     "resumed": true
@@ -51,6 +51,18 @@
       "density": "URBAN"
     },
     {
+      "country": "BE",
+      "archetype": "LARGE_OFFICE",
+      "sites": 8,
+      "density": "DENSE_URBAN"
+    },
+    {
+      "country": "BE",
+      "archetype": "LARGE_OFFICE",
+      "sites": 6,
+      "density": "URBAN"
+    },
+    {
       "country": "FR",
       "archetype": "BRANCH",
       "sites": 1600,
@@ -71,7 +83,19 @@
     {
       "country": "IT",
       "archetype": "BRANCH",
-      "sites": 700,
+      "sites": 564,
+      "density": "URBAN"
+    },
+    {
+      "country": "IT",
+      "archetype": "LARGE_OFFICE",
+      "sites": 20,
+      "density": "DENSE_URBAN"
+    },
+    {
+      "country": "IT",
+      "archetype": "LARGE_OFFICE",
+      "sites": 14,
       "density": "URBAN"
     }
   ],
@@ -79,7 +103,7 @@
     {
       "country": "BE",
       "archetype": "STORE",
-      "sites": 182,
+      "sites": 275,
       "origin": "EXCLUDED_BY_SCOPE",
       "reason": "Fintro is a franchise network - independently operated agents, so the connectivity is not BNP's cost. The retained Belgian branches are declared separately."
     },
@@ -91,6 +115,13 @@
       "reason": "the 1,474 retail branches in the registration document are the same network this spec declares as 1,600 FR BRANCH sites."
     },
     {
+      "country": "IT",
+      "archetype": "STORE",
+      "sites": 564,
+      "origin": "EXCLUDED_BY_SCOPE",
+      "reason": "BNL's 564 retail branches (sportelli) are the network declared as IT/BRANCH, typed STORE. Excluded as a double count; IT/BRANCH corrected to 564 from Bank of Italy supervisory data."
+    },
+    {
       "country": "BE",
       "archetype": "BRANCH",
       "sites": 420,
@@ -100,12 +131,19 @@
       "disclosure_said": 420
     },
     {
+      "country": "BE",
+      "archetype": "LARGE_OFFICE",
+      "sites": 14,
+      "origin": "RESEARCHED",
+      "density": null
+    },
+    {
       "country": "FR",
       "archetype": "BRANCH",
       "sites": 1600,
       "origin": "DISCLOSURE_KEPT_RESEARCH_FOUND_FEWER",
       "density": "URBAN",
-      "research_said": 1474,
+      "research_said": 39,
       "disclosure_said": 1600
     },
     {
@@ -119,17 +157,54 @@
       "country": "FR",
       "archetype": "LARGE_OFFICE",
       "sites": 20,
-      "origin": "PUBLIC_DISCLOSURE",
-      "density": "URBAN"
+      "origin": "DISCLOSURE_KEPT_RESEARCH_FOUND_FEWER",
+      "density": "URBAN",
+      "research_said": 13,
+      "disclosure_said": 20
     },
     {
       "country": "IT",
       "archetype": "BRANCH",
-      "sites": 700,
-      "origin": "DISCLOSURE_KEPT_RESEARCH_FOUND_FEWER",
-      "density": "URBAN",
-      "research_said": 564,
-      "disclosure_said": 700
+      "sites": 564,
+      "origin": "SUPERSEDED_BY_RESEARCH",
+      "density": "URBAN"
+    },
+    {
+      "country": "IT",
+      "archetype": "LARGE_OFFICE",
+      "sites": 34,
+      "origin": "RESEARCHED",
+      "density": null
+    },
+    {
+      "origin": "DENSITY_FROM_MIX",
+      "rows": 2,
+      "sites": 48,
+      "filled": [
+        {
+          "country": "BE",
+          "archetype": "LARGE_OFFICE",
+          "sites": 14,
+          "basis": "INDUSTRY_DEFAULT",
+          "mix_industry": "UNIVERSAL_BANKING",
+          "bands": {
+            "DENSE_URBAN": 8,
+            "URBAN": 6
+          }
+        },
+        {
+          "country": "IT",
+          "archetype": "LARGE_OFFICE",
+          "sites": 34,
+          "basis": "INDUSTRY_DEFAULT",
+          "mix_industry": "UNIVERSAL_BANKING",
+          "bands": {
+            "DENSE_URBAN": 20,
+            "URBAN": 14
+          }
+        }
+      ],
+      "note": "the count and the site type are evidenced; the band is a governed sector default from reference.density_mix, not a finding about this client. It decides which bearers are tested, so it is worth replacing with what the client actually has."
     }
   ],
   "scope_countries_modelled": [
@@ -141,9 +216,9 @@
   "scope_status": "PARTIAL_COUNTRIES",
   "scope_note": "Baseline covers 3 country(ies) (BE, FR, IT) and the site types listed in sites_origin. The group's full country and site-type count is not sourced, so the share of the group this represents is DECLARED_UNKNOWN. This is baseline_in_scope, not a group baseline.",
   "sites_origin": {
-    "BRANCH": "ASSUMED_PUBLIC_DISCLOSURE",
+    "BRANCH": "RESEARCHED",
     "DC": "ASSUMED_PUBLIC_DISCLOSURE",
-    "LARGE_OFFICE": "ASSUMED_PUBLIC_DISCLOSURE",
+    "LARGE_OFFICE": "RESEARCHED",
     "STORE": "ASSUMED_PUBLIC_DISCLOSURE"
   },
   "fx_to_eur": {
@@ -197,38 +272,62 @@
   ],
   "estimate_inputs": {
     "method": "BUILD_UP",
-    "users": 32976,
+    "users": 31920,
     "ops_cost_per_site_base": 900,
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-19T20:06:14.706225+00:00",
-  "run_seconds": 3.1,
+  "run_started": "2026-10-22T13:42:30.703028+00:00",
+  "run_seconds": 3.3,
   "preflight_conditions": 8,
   "promotion": {
     "promoted": true,
     "detail": null,
-    "offered": 7,
-    "accepted": 4,
+    "offered": 17,
+    "accepted": 9,
     "declined": [
       {
-        "reason": "sources disagree by 25% (247 to 308), and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
-        "label": "STORE (retail branches, BNP Paribas Fortis own network) — Belgium",
+        "reason": "sources disagree by 36% (75 to 101.9), and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
+        "label": "BROADBAND_PON 1000 Mbps MRC (business shared fibre, Proximus Giga Fiber)",
         "country": "BE",
         "flags": [
           "MATERIAL_SPREAD"
         ]
       },
       {
-        "reason": "sources disagree by 24% (564 to 700), and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
-        "label": "STORE (retail branches, BNL) — Italy",
-        "country": "IT",
+        "reason": "sources disagree by 26% (65.15 to 82), and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
+        "label": "BROADBAND_PON 500 Mbps MRC (business shared fibre, Proximus Enterprise Pack / Flex+)",
+        "country": "BE",
+        "flags": [
+          "MATERIAL_SPREAD"
+        ]
+      },
+      {
+        "reason": "sources disagree by 18% (125 to 147.9), and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
+        "label": "BROADBAND_PON 10000 Mbps MRC (Proximus Flex+ Ultra Fiber 10 Gbps)",
+        "country": "BE",
+        "flags": [
+          "MATERIAL_SPREAD"
+        ]
+      },
+      {
+        "reason": "sources disagree by 18% (510 to 600), and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
+        "label": "DIA 1000 Mbps MRC Belgium (Mixvoip Direct Internet Access)",
+        "country": "BE",
+        "flags": [
+          "MATERIAL_SPREAD"
+        ]
+      },
+      {
+        "reason": "sources disagree by 39% (350 to 485), and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
+        "label": "DIA 200 Mbps MRC France (Orange Business FTTO dedicated fibre)",
+        "country": "FR",
         "flags": [
           "MATERIAL_SPREAD"
         ]
       }
     ],
-    "declined_count": 2
+    "declined_count": 5
   },
   "domains_benchmark_disposed": [
     3,

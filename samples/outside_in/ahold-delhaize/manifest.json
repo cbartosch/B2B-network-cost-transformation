@@ -18,8 +18,8 @@
   ],
   "base_currency": "EUR",
   "case_id": "515d6634-4783-40e7-aa14-5249ea88babc",
-  "spec_path": "/tmp/companies.json",
-  "spec_sha256": "ad37995b9e77",
+  "spec_path": "/src/samples/companies.json",
+  "spec_sha256": "37f557ad46b6",
   "entity_resolution": {
     "resolved": null,
     "resumed": true
@@ -50,7 +50,7 @@
     {
       "country": "BE",
       "archetype": "STORE",
-      "sites": 818,
+      "sites": 800,
       "density": "URBAN"
     },
     {
@@ -122,13 +122,18 @@
   ],
   "footprint_provenance": [
     {
+      "country": "GR",
+      "archetype": "STORE",
+      "sites": 645,
+      "origin": "EXCLUDED_BY_SCOPE",
+      "reason": "the 645 does not reconcile: research's own figures give 578 plus 32 net openings, which is 610, and the 645 comes from an undated careers page. The declaration holds the 578 from Ahold's own store table."
+    },
+    {
       "country": "BE",
       "archetype": "STORE",
-      "sites": 818,
+      "sites": 800,
       "origin": "SUPERSEDED_BY_RESEARCH",
-      "density": "URBAN",
-      "research_said": 818,
-      "disclosure_said": 800
+      "density": "URBAN"
     },
     {
       "country": "CZ",
@@ -143,10 +148,8 @@
       "country": "GR",
       "archetype": "STORE",
       "sites": 578,
-      "origin": "SUPERSEDED_BY_RESEARCH",
-      "density": "URBAN",
-      "research_said": 578,
-      "disclosure_said": 500
+      "origin": "PUBLIC_DISCLOSURE",
+      "density": "URBAN"
     },
     {
       "country": "NL",
@@ -304,21 +307,47 @@
   ],
   "estimate_inputs": {
     "method": "BUILD_UP",
-    "users": 72948,
+    "users": 72732,
     "ops_cost_per_site_base": 900,
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-19T20:07:59.742551+00:00",
-  "run_seconds": 6.9,
+  "run_started": "2026-10-22T13:43:20.756609+00:00",
+  "run_seconds": 7.2,
   "preflight_conditions": 8,
   "promotion": {
     "promoted": true,
     "detail": null,
-    "offered": 18,
-    "accepted": 8,
-    "declined": [],
-    "declined_count": 0
+    "offered": 23,
+    "accepted": 7,
+    "declined": [
+      {
+        "reason": "sources disagree by 29% (700 to 901), and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
+        "label": "DIA 1 Gbps MRC median",
+        "country": "US",
+        "flags": [
+          "MATERIAL_SPREAD"
+        ]
+      },
+      {
+        "reason": "sources disagree by 94% (334 to 647); the newest source diverges from the others, and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
+        "label": "STORE — Czech Republic (Albert)",
+        "country": "CZ",
+        "flags": [
+          "MATERIAL_SPREAD",
+          "NEWEST_DIVERGES"
+        ]
+      },
+      {
+        "reason": "sources disagree by 32% (19 to 25), and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
+        "label": "WAREHOUSE — US distribution centres (ADUSA network)",
+        "country": "US",
+        "flags": [
+          "MATERIAL_SPREAD"
+        ]
+      }
+    ],
+    "declined_count": 3
   },
   "domains_benchmark_disposed": [
     3,

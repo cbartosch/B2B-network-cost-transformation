@@ -14,8 +14,8 @@
   ],
   "base_currency": "AUD",
   "case_id": "8c0a9187-60fb-4862-b38e-f6d4131a65f0",
-  "spec_path": "/tmp/companies.json",
-  "spec_sha256": "ad37995b9e77",
+  "spec_path": "/src/samples/companies.json",
+  "spec_sha256": "8a2a2c5fbf5c",
   "entity_resolution": {
     "resolved": null,
     "resumed": true
@@ -46,7 +46,7 @@
     {
       "country": "AU",
       "archetype": "DC",
-      "sites": 3,
+      "sites": 2,
       "density": "SUBURBAN"
     },
     {
@@ -89,19 +89,24 @@
   "footprint_provenance": [
     {
       "country": "AU",
+      "archetype": "DC",
+      "sites": 1,
+      "origin": "EXCLUDED_BY_SCOPE",
+      "reason": "DECLINED and never enforced until now: the evidence conflates data centres with distribution centres under the letters DC. The declared 2 matches the data-centre evidence and holds."
+    },
+    {
+      "country": "AU",
       "archetype": "STORE",
-      "sites": 1729,
+      "sites": 1715,
       "origin": "EXCLUDED_BY_SCOPE",
       "reason": "the 1,729 is the group total - 'total store network comprised 1,729 retail stores across Australia AND New Zealand' - promoted into Australia alone. A sibling finding gives the Australian figure directly at 1,130, and the declaration is corrected to that instead."
     },
     {
       "country": "AU",
       "archetype": "DC",
-      "sites": 3,
-      "origin": "SUPERSEDED_BY_RESEARCH",
-      "density": "SUBURBAN",
-      "research_said": 3,
-      "disclosure_said": 2
+      "sites": 2,
+      "origin": "PUBLIC_DISCLOSURE",
+      "density": "SUBURBAN"
     },
     {
       "country": "AU",
@@ -137,8 +142,10 @@
       "country": "NZ",
       "archetype": "STORE",
       "sites": 190,
-      "origin": "PUBLIC_DISCLOSURE",
-      "density": "URBAN"
+      "origin": "DISCLOSURE_KEPT_RESEARCH_FOUND_FEWER",
+      "density": "URBAN",
+      "research_said": 187,
+      "disclosure_said": 190
     },
     {
       "country": "NZ",
@@ -174,7 +181,7 @@
   "scope_status": "PARTIAL_COUNTRIES",
   "scope_note": "Baseline covers 2 country(ies) (AU, NZ) and the site types listed in sites_origin. The group's full country and site-type count is not sourced, so the share of the group this represents is DECLARED_UNKNOWN. This is baseline_in_scope, not a group baseline.",
   "sites_origin": {
-    "DC": "RESEARCHED",
+    "DC": "ASSUMED_PUBLIC_DISCLOSURE",
     "LARGE_OFFICE": "RESEARCHED",
     "STORE": "ASSUMED_PUBLIC_DISCLOSURE",
     "WAREHOUSE": "ASSUMED_PUBLIC_DISCLOSURE"
@@ -235,46 +242,38 @@
   ],
   "estimate_inputs": {
     "method": "BUILD_UP",
-    "users": 16368,
+    "users": 16356,
     "ops_cost_per_site_base": 900,
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-19T20:07:41.077891+00:00",
-  "run_seconds": 2.6,
+  "run_started": "2026-10-22T13:18:16.533846+00:00",
+  "run_seconds": 3.1,
   "preflight_conditions": 8,
   "promotion": {
     "promoted": true,
     "detail": null,
-    "offered": 18,
-    "accepted": 4,
+    "offered": 21,
+    "accepted": 5,
     "declined": [
       {
-        "reason": "sources disagree by 16% (129 to 150), and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
-        "label": "BROADBAND_HFC 1000Mbps MRC — AU small/medium business NBN (asymmetric, best-efforts)",
+        "reason": "sources disagree by 37% (99 to 136), and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
+        "label": "BROADBAND_PON AU 500Mbps MRC (Aussie Broadband Business FTTP 500/200)",
         "country": "AU",
         "flags": [
           "MATERIAL_SPREAD"
         ]
       },
       {
-        "reason": "sources disagree by 83% (492 to 901), and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
-        "label": "DIA 100Mbps MRC — US market benchmark (USD, 36-month, Lightyear 2026 dataset)",
-        "country": "US",
-        "flags": [
-          "MATERIAL_SPREAD"
-        ]
-      },
-      {
-        "reason": "sources disagree by 35% (181 to 245), and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
-        "label": "STORE – NZ Woolworths Supermarkets (directly operated)",
-        "country": "NZ",
+        "reason": "sources disagree by 24% (129 to 160), and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
+        "label": "BROADBAND_PON AU 1000Mbps MRC (Aussie Broadband Business FTTP 1000/400)",
+        "country": "AU",
         "flags": [
           "MATERIAL_SPREAD"
         ]
       }
     ],
-    "declined_count": 3
+    "declined_count": 2
   },
   "domains_benchmark_disposed": [
     3,

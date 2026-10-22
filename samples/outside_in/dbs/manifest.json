@@ -16,8 +16,8 @@
   ],
   "base_currency": "SGD",
   "case_id": "11ba398f-96c7-4027-9624-6355f5290b8e",
-  "spec_path": "/tmp/companies.json",
-  "spec_sha256": "ad37995b9e77",
+  "spec_path": "/src/samples/companies.json",
+  "spec_sha256": "37f557ad46b6",
   "entity_resolution": {
     "resolved": null,
     "resumed": true
@@ -48,7 +48,7 @@
     {
       "country": "CN",
       "archetype": "BRANCH",
-      "sites": 35,
+      "sites": 30,
       "density": "URBAN"
     },
     {
@@ -72,7 +72,7 @@
     {
       "country": "IN",
       "archetype": "BRANCH",
-      "sites": 520,
+      "sites": 507,
       "density": "URBAN"
     },
     {
@@ -114,19 +114,54 @@
   ],
   "footprint_provenance": [
     {
+      "country": "CN",
+      "archetype": "STORE",
+      "sites": 12,
+      "origin": "EXCLUDED_BY_SCOPE",
+      "reason": "DBS Bank (China)'s 12 branches are part of the network declared as CN/BRANCH (12 branches and 23 sub-branches), typed STORE. Excluded as a double count."
+    },
+    {
+      "country": "ID",
+      "archetype": "BRANCH",
+      "sites": 61,
+      "origin": "EXCLUDED_BY_SCOPE",
+      "reason": "DECLINED: the evidence runs from 61 branches at a May 2024 roadshow down to 13 branch offices and 14 sub-branches in a June 2026 newsroom release - too wide to promote, with the most recent figure the lowest. The declared 40 holds."
+    },
+    {
+      "country": "IN",
+      "archetype": "BRANCH",
+      "sites": 594,
+      "origin": "EXCLUDED_BY_SCOPE",
+      "reason": "the promoted 594 is from a cover diagram whose own source says it 'may include non-branch touchpoints'; DBS Bank India's FY2024-25 annual report states 507, and the declaration is corrected to that."
+    },
+    {
+      "country": "IN",
+      "archetype": "LARGE_OFFICE",
+      "sites": 1,
+      "origin": "EXCLUDED_BY_SCOPE",
+      "reason": "research found the Mumbai head office and noted the Hyderabad technology centre separately but counted only 1. Both are DBS offices; the declaration is 2."
+    },
+    {
       "country": "IN",
       "archetype": "STORE",
-      "sites": 520,
+      "sites": 507,
       "origin": "EXCLUDED_BY_SCOPE",
       "reason": "the 520 Indian branches are the same network this spec declares as IN BRANCH, typed STORE by research. The merge keys on (country, archetype), so a second archetype adds the branches again rather than correcting the count - the Fresenius, Saint-Gobain, Shell and BNP collision over again. The declared figure is corrected to 520 instead."
     },
     {
+      "country": "SG",
+      "archetype": "STORE",
+      "sites": 80,
+      "origin": "EXCLUDED_BY_SCOPE",
+      "reason": "the 80 DBS and POSB branches are the network declared as SG/BRANCH 80, typed STORE. Excluded as a double count."
+    },
+    {
       "country": "CN",
       "archetype": "BRANCH",
-      "sites": 35,
-      "origin": "SUPERSEDED_BY_RESEARCH",
+      "sites": 30,
+      "origin": "DISCLOSURE_KEPT_RESEARCH_FOUND_FEWER",
       "density": "URBAN",
-      "research_said": 35,
+      "research_said": 12,
       "disclosure_said": 30
     },
     {
@@ -153,7 +188,7 @@
     {
       "country": "IN",
       "archetype": "BRANCH",
-      "sites": 520,
+      "sites": 507,
       "origin": "PUBLIC_DISCLOSURE",
       "density": "URBAN"
     },
@@ -161,7 +196,7 @@
       "country": "IN",
       "archetype": "LARGE_OFFICE",
       "sites": 2,
-      "origin": "RESEARCHED",
+      "origin": "PUBLIC_DISCLOSURE",
       "density": null
     },
     {
@@ -247,7 +282,7 @@
   "scope_note": "Baseline covers 4 country(ies) (CN, ID, IN, SG) and the site types listed in sites_origin. The group's full country and site-type count is not sourced, so the share of the group this represents is DECLARED_UNKNOWN. This is baseline_in_scope, not a group baseline.",
   "sites_origin": {
     "ATM": "ASSUMED_PUBLIC_DISCLOSURE",
-    "BRANCH": "RESEARCHED",
+    "BRANCH": "ASSUMED_PUBLIC_DISCLOSURE",
     "DC": "ASSUMED_PUBLIC_DISCLOSURE",
     "LARGE_OFFICE": "RESEARCHED",
     "STORE": "ASSUMED_PUBLIC_DISCLOSURE"
@@ -308,63 +343,30 @@
   ],
   "estimate_inputs": {
     "method": "BUILD_UP",
-    "users": 21444,
+    "users": 21228,
     "ops_cost_per_site_base": 900,
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-19T20:07:38.258590+00:00",
-  "run_seconds": 2.8,
+  "run_started": "2026-10-22T13:43:06.098607+00:00",
+  "run_seconds": 3.0,
   "preflight_conditions": 8,
   "promotion": {
     "promoted": true,
     "detail": null,
-    "offered": 15,
-    "accepted": 7,
+    "offered": 16,
+    "accepted": 9,
     "declined": [
       {
         "reason": "sources state this in units that disagree, and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
-        "label": "STORE (bank branches) – China (mainland)",
-        "country": "CN",
-        "flags": [
-          "UNIT_MISMATCH"
-        ]
-      },
-      {
-        "reason": "sources disagree by 55% (31 to 48); the newest source diverges from the others, and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
-        "label": "STORE (bank branches) – Indonesia",
+        "label": "STORE (bank branch offices) – Indonesia",
         "country": "ID",
-        "flags": [
-          "MATERIAL_SPREAD",
-          "NEWEST_DIVERGES"
-        ]
-      },
-      {
-        "reason": "sources state this in units that disagree, and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
-        "label": "DBS/POSB ATM locations in Singapore",
-        "country": "SG",
-        "flags": [
-          "UNIT_MISMATCH"
-        ]
-      },
-      {
-        "reason": "sources state this in units that disagree, and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
-        "label": "DBS/POSB branch locations in Singapore",
-        "country": "SG",
-        "flags": [
-          "UNIT_MISMATCH"
-        ]
-      },
-      {
-        "reason": "sources state this in units that disagree, and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
-        "label": "STORE (bank branches, DBS-brand only) – Singapore",
-        "country": "SG",
         "flags": [
           "UNIT_MISMATCH"
         ]
       }
     ],
-    "declined_count": 5
+    "declined_count": 1
   },
   "domains_benchmark_disposed": [
     3,

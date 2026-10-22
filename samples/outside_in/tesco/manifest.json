@@ -14,8 +14,8 @@
   ],
   "base_currency": "GBP",
   "case_id": "1acf16ce-b58d-437f-8c30-60d47bbf86d2",
-  "spec_path": "/tmp/companies.json",
-  "spec_sha256": "ad37995b9e77",
+  "spec_path": "/src/samples/companies.json",
+  "spec_sha256": "37f557ad46b6",
   "entity_resolution": {
     "resolved": null,
     "resumed": true
@@ -62,6 +62,12 @@
       "density": "SUBURBAN"
     },
     {
+      "country": "GB",
+      "archetype": "WAREHOUSE",
+      "sites": 20,
+      "density": "SUBURBAN"
+    },
+    {
       "country": "IE",
       "archetype": "LARGE_OFFICE",
       "sites": 1,
@@ -84,6 +90,13 @@
     },
     {
       "country": "IE",
+      "archetype": "STORE",
+      "sites": 194,
+      "origin": "EXCLUDED_BY_SCOPE",
+      "reason": "the 194 is Wikipedia-grade and does not match the annual report's 182 plus the 9 openings since. The declaration holds the 182 from AR25."
+    },
+    {
+      "country": "IE",
       "archetype": "WAREHOUSE",
       "sites": 1,
       "origin": "EXCLUDED_BY_SCOPE",
@@ -95,15 +108,17 @@
       "sites": 25,
       "origin": "DISCLOSURE_KEPT_RESEARCH_FOUND_FEWER",
       "density": "SUBURBAN",
-      "research_said": 2,
+      "research_said": 5,
       "disclosure_said": 25
     },
     {
       "country": "GB",
       "archetype": "LARGE_OFFICE",
       "sites": 12,
-      "origin": "PUBLIC_DISCLOSURE",
-      "density": "URBAN"
+      "origin": "DISCLOSURE_KEPT_RESEARCH_FOUND_FEWER",
+      "density": "URBAN",
+      "research_said": 1,
+      "disclosure_said": 12
     },
     {
       "country": "GB",
@@ -111,8 +126,15 @@
       "sites": 3700,
       "origin": "DISCLOSURE_KEPT_RESEARCH_FOUND_FEWER",
       "density": "SUBURBAN",
-      "research_said": 806,
+      "research_said": 2094,
       "disclosure_said": 3700
+    },
+    {
+      "country": "GB",
+      "archetype": "WAREHOUSE",
+      "sites": 20,
+      "origin": "RESEARCHED",
+      "density": null
     },
     {
       "country": "IE",
@@ -125,16 +147,24 @@
       "country": "IE",
       "archetype": "STORE",
       "sites": 182,
-      "origin": "SUPERSEDED_BY_RESEARCH",
-      "density": "SUBURBAN",
-      "research_said": 182,
-      "disclosure_said": 170
+      "origin": "PUBLIC_DISCLOSURE",
+      "density": "SUBURBAN"
     },
     {
       "origin": "DENSITY_FROM_MIX",
-      "rows": 1,
-      "sites": 1,
+      "rows": 2,
+      "sites": 21,
       "filled": [
+        {
+          "country": "GB",
+          "archetype": "WAREHOUSE",
+          "sites": 20,
+          "basis": "INDUSTRY_DEFAULT",
+          "mix_industry": "GROCERY_RETAIL",
+          "bands": {
+            "SUBURBAN": 20
+          }
+        },
         {
           "country": "IE",
           "archetype": "LARGE_OFFICE",
@@ -159,8 +189,8 @@
   "sites_origin": {
     "DC": "ASSUMED_PUBLIC_DISCLOSURE",
     "LARGE_OFFICE": "RESEARCHED",
-    "STORE": "RESEARCHED",
-    "WAREHOUSE": "ASSUMED_PUBLIC_DISCLOSURE"
+    "STORE": "ASSUMED_PUBLIC_DISCLOSURE",
+    "WAREHOUSE": "RESEARCHED"
   },
   "fx_to_eur": {
     "rate": "1.167224976550984858635937291",
@@ -218,38 +248,21 @@
   ],
   "estimate_inputs": {
     "method": "BUILD_UP",
-    "users": 47040,
+    "users": 47280,
     "ops_cost_per_site_base": 900,
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-19T20:06:02.058552+00:00",
-  "run_seconds": 6.5,
+  "run_started": "2026-10-22T13:42:14.610457+00:00",
+  "run_seconds": 10.1,
   "preflight_conditions": 8,
   "promotion": {
     "promoted": true,
     "detail": null,
-    "offered": 12,
-    "accepted": 6,
-    "declined": [
-      {
-        "reason": "sources state this in units that disagree, and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
-        "label": "LARGE_OFFICE – GB (group HQ)",
-        "country": "GB",
-        "flags": [
-          "UNIT_MISMATCH"
-        ]
-      },
-      {
-        "reason": "sources state this in units that disagree, and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
-        "label": "WAREHOUSE – GB (distribution/logistics centres)",
-        "country": "GB",
-        "flags": [
-          "UNIT_MISMATCH"
-        ]
-      }
-    ],
-    "declined_count": 2
+    "offered": 16,
+    "accepted": 7,
+    "declined": [],
+    "declined_count": 0
   },
   "domains_benchmark_disposed": [
     3,

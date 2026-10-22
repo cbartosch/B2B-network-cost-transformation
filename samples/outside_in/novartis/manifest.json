@@ -20,8 +20,8 @@
   ],
   "base_currency": "CHF",
   "case_id": "18f2d1bc-b978-4074-8726-19be0609f087",
-  "spec_path": "/tmp/companies.json",
-  "spec_sha256": "ad37995b9e77",
+  "spec_path": "/src/samples/companies.json",
+  "spec_sha256": "8a2a2c5fbf5c",
   "entity_resolution": {
     "resolved": null,
     "resumed": true
@@ -178,7 +178,7 @@
       "sites": 25,
       "origin": "DISCLOSURE_KEPT_RESEARCH_FOUND_FEWER",
       "density": "URBAN",
-      "research_said": 3,
+      "research_said": 2,
       "disclosure_said": 25
     },
     {
@@ -233,8 +233,10 @@
       "country": "IT",
       "archetype": "PLANT",
       "sites": 6,
-      "origin": "PUBLIC_DISCLOSURE",
-      "density": "SUBURBAN"
+      "origin": "DISCLOSURE_KEPT_RESEARCH_FOUND_FEWER",
+      "density": "SUBURBAN",
+      "research_said": 1,
+      "disclosure_said": 6
     },
     {
       "country": "SG",
@@ -354,30 +356,29 @@
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-19T20:06:41.150739+00:00",
-  "run_seconds": 2.4,
+  "run_started": "2026-10-22T13:16:58.270418+00:00",
+  "run_seconds": 2.5,
   "preflight_conditions": 8,
   "promotion": {
     "promoted": true,
     "detail": null,
-    "offered": 10,
+    "offered": 8,
     "accepted": 5,
     "declined": [
       {
-        "reason": "sources disagree by 126% (138 to 312), and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
-        "label": "BROADBAND_PON 100 Mbps MRC — Singapore (enterprise-grade ISP-direct)",
-        "country": "SG",
+        "reason": "sources state this in units that disagree, and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
+        "label": "AT – PLANT – Kundl and Schaftenau (biotech production)",
+        "country": "AT",
         "flags": [
-          "MATERIAL_SPREAD"
+          "UNIT_MISMATCH"
         ]
       },
       {
-        "reason": "sources disagree by 70% (283017 to 480000); the newest source diverges from the others, and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
-        "label": "AT – Manufacturing site(s) at Kundl/Schaftenau/Langkampfen mapped to PLANT",
-        "country": "AT",
+        "reason": "sources state this in units that disagree, and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
+        "label": "CH – PLANT count (named manufacturing municipalities: Basel BDSS, Schweizerhalle, Stein)",
+        "country": "CH",
         "flags": [
-          "MATERIAL_SPREAD",
-          "NEWEST_DIVERGES"
+          "UNIT_MISMATCH"
         ]
       }
     ],

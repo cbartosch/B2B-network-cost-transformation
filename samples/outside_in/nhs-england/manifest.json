@@ -13,8 +13,8 @@
   ],
   "base_currency": "GBP",
   "case_id": "c7709723-63a0-40a4-a5b1-aba323b64c35",
-  "spec_path": "/tmp/companies.json",
-  "spec_sha256": "ad37995b9e77",
+  "spec_path": "/src/samples/companies.json",
+  "spec_sha256": "37f557ad46b6",
   "entity_resolution": {
     "resolved": null,
     "resumed": true
@@ -76,8 +76,15 @@
   "footprint_provenance": [
     {
       "country": "GB",
+      "archetype": "BRANCH",
+      "sites": 8000,
+      "origin": "EXCLUDED_BY_SCOPE",
+      "reason": "the 8,000 primary-care facilities are GP practices - independent contractors to the NHS - and community clinics run by NHS trusts. Neither is NHS England's estate, on the basis that excluded the 1,140 hospitals of 207 separate trusts."
+    },
+    {
+      "country": "GB",
       "archetype": "LARGE_OFFICE",
-      "sites": 1,
+      "sites": 450,
       "origin": "EXCLUDED_BY_SCOPE",
       "reason": "the 1,140 are HOSPITAL sites - the label says so - promoted into the office archetype. Two faults: a hospital is not an office, and the hospital estate is already declared as GB/CAMPUS, so this adds it again under a second archetype. The same research puts NHS England's own parent-entity office count at 1, Wellington Place in Leeds."
     },
@@ -193,26 +200,26 @@
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-19T20:08:13.859203+00:00",
+  "run_started": "2026-10-22T13:43:28.032254+00:00",
   "run_seconds": 2.8,
   "preflight_conditions": 8,
   "promotion": {
     "promoted": true,
     "detail": null,
-    "offered": 13,
+    "offered": 9,
     "accepted": 2,
     "declined": [
       {
-        "reason": "sources disagree by 48% (139 to 206), and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
-        "label": "DIA 100 Mbps MRC — Vodafone Business (wires only, 60-month)",
+        "reason": "sources disagree by 60% (139 to 222), and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
+        "label": "DIA 100Mbps MRC – Vodafone Business published retail tariff",
         "country": "GB",
         "flags": [
           "MATERIAL_SPREAD"
         ]
       },
       {
-        "reason": "sources disagree by 17% (29.95 to 34.95), and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
-        "label": "BROADBAND_HFC 200 Mbps MRC — Virgin Media Business Voom 200",
+        "reason": "sources disagree by 48% (203 to 300), and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
+        "label": "DIA 1000Mbps MRC – carrier retail tariffs",
         "country": "GB",
         "flags": [
           "MATERIAL_SPREAD"
@@ -220,22 +227,14 @@
       },
       {
         "reason": "sources state this in units that disagree, and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
-        "label": "NHS England parent-entity central Spine data centres (DC archetype)",
-        "country": "GB",
-        "flags": [
-          "UNIT_MISMATCH"
-        ]
-      },
-      {
-        "reason": "sources state this in units that disagree, and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
-        "label": "Community pharmacies — NHS contracted, England (STORE archetype)",
+        "label": "CAMPUS – NHS hospital sites (trust estate, all trust types)",
         "country": "GB",
         "flags": [
           "UNIT_MISMATCH"
         ]
       }
     ],
-    "declined_count": 4
+    "declined_count": 3
   },
   "domains_benchmark_disposed": [
     3,
