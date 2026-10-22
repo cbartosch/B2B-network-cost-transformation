@@ -56,7 +56,7 @@
         {
           "country": "IE",
           "archetype": "STORE",
-          "sites": 170,
+          "sites": 182,
           "density": "SUBURBAN"
         }
       ],
@@ -70,6 +70,11 @@
           "country": "IE",
           "archetype": "WAREHOUSE",
           "reason": "the only source is a warehouse fit-out company's listicle of large buildings, which names one Dublin facility and states no count. The finding's own note says the total Irish DC count was not found."
+        },
+        {
+          "country": "IE",
+          "archetype": "STORE",
+          "reason": "the 194 is Wikipedia-grade and does not match the annual report's 182 plus the 9 openings since. The declaration holds the 182 from AR25."
         }
       ]
     },
@@ -166,6 +171,11 @@
           "archetype": "DC",
           "sites": 6,
           "density": "URBAN"
+        },
+        {
+          "country": "DE",
+          "archetype": "TERMINAL",
+          "sites": 165
         }
       ],
       "excluded": [
@@ -178,6 +188,11 @@
           "country": "DE",
           "archetype": "SERVICE_POINT",
           "reason": "the 24,000 'person-operated sales points' are overwhelmingly counters inside partner retailers - the evidence's own note says the lower 13,000 figure 'may exclude partner/agency outlets', which means the 24,000 includes them. A counter in somebody else's shop runs on somebody else's line. Same basis as this case's already-excluded GB/SERVICE_POINT, and as the UPS Store, Fintro and Allianz rulings."
+        },
+        {
+          "country": "DE",
+          "archetype": "TERMINAL",
+          "reason": "research found three separate German networks - 81 mail centres, 38 parcel centres, 46 freight terminals - and a pair can carry only one figure, so promotion kept the largest. The declaration is their sum, 165."
         }
       ]
     },
@@ -211,7 +226,7 @@
         {
           "country": "IT",
           "archetype": "BRANCH",
-          "sites": 700,
+          "sites": 564,
           "density": "URBAN"
         },
         {
@@ -237,6 +252,11 @@
           "country": "FR",
           "archetype": "STORE",
           "reason": "the 1,474 retail branches in the registration document are the same network this spec declares as 1,600 FR BRANCH sites."
+        },
+        {
+          "country": "IT",
+          "archetype": "STORE",
+          "reason": "BNL's 564 retail branches (sportelli) are the network declared as IT/BRANCH, typed STORE. Excluded as a double count; IT/BRANCH corrected to 564 from Bank of Italy supervisory data."
         }
       ]
     },
@@ -662,6 +682,11 @@
           "country": "NL",
           "archetype": "STORE",
           "reason": "the 662 branded forecourts are the same sites this spec declares as 500 NL SERVICE_POINT. Referred first on whether a dealer-owned forecourt is Shell's cost, which is still an open question; the double count is a second and sufficient reason to keep the row out whichever way that is ruled."
+        },
+        {
+          "country": "GB",
+          "archetype": "SERVICE_POINT",
+          "reason": "DECLINED: 1,222 is a low-precision aggregator figure its own note says may include licensee and franchise sites; Shell's live locator showed 1,038 in October 2026. The declared 1,000 holds."
         }
       ]
     },
@@ -758,6 +783,13 @@
           "archetype": "LARGE_OFFICE",
           "sites": 5,
           "density": "URBAN"
+        }
+      ],
+      "excluded": [
+        {
+          "country": "GB",
+          "archetype": "STORE",
+          "reason": "DECLINED: '~400 hotels (INFERRED from ENA total x GB revenue share)' - a proxy computed from revenue, not a count. Accor is also largely asset-light, so most of its hotels are franchised or managed for owners. The declared 250 holds."
         }
       ]
     },
@@ -1338,6 +1370,11 @@
           "archetype": "DC",
           "sites": 3,
           "density": "SUBURBAN"
+        },
+        {
+          "country": "DE",
+          "archetype": "PLANT",
+          "sites": 23
         }
       ],
       "excluded": [
@@ -1355,6 +1392,11 @@
           "country": "FR",
           "archetype": "STORE",
           "reason": "SGDB France's points de vente are the same builders' merchant network this spec declares as 900 FR WAREHOUSE sites - a trade counter and a yard at one address. The German and British merchants show the same pairing and were excluded as divested; the French ones are retained, so the collision is visible here instead."
+        },
+        {
+          "country": "DE",
+          "archetype": "PLANT",
+          "reason": "the 25 German factories predate the closure of the Herzogenrath glass plant and the sale of Brueggemann to the Koster Group, both at end-2025. The declaration is 23."
         }
       ]
     },
@@ -1449,6 +1491,13 @@
           "sites": 6,
           "density": "SUBURBAN"
         }
+      ],
+      "excluded": [
+        {
+          "country": "DE",
+          "archetype": "CONTROL_CENTER",
+          "reason": "the 3,836 are interlockings (Stellwerke) - railway signalling equipment on DB's own trackside network, 538 of them mechanical lever frames. Track infrastructure, kept out on the basis that kept Iberdrola's grid assets out. The declared 30 are DB's operations control centres."
+        }
       ]
     },
     {
@@ -1500,7 +1549,7 @@
         {
           "country": "IN",
           "archetype": "PLANT",
-          "sites": 30,
+          "sites": 27,
           "density": "SUBURBAN"
         },
         {
@@ -1641,6 +1690,13 @@
           "archetype": "DC",
           "sites": 1,
           "density": "SUBURBAN"
+        }
+      ],
+      "excluded": [
+        {
+          "country": "GB",
+          "archetype": "STORE",
+          "reason": "the 3,688 is 'WBA International segment ... (global, includes Boots UK/IE + T...)' - the whole international segment, promoted into GB. The declaration holds the 2,164 from the 10-K."
         }
       ]
     },
@@ -1804,6 +1860,13 @@
           "sites": 1,
           "density": "SUBURBAN"
         }
+      ],
+      "excluded": [
+        {
+          "country": "NL",
+          "archetype": "WAREHOUSE",
+          "reason": "a Dutch warehouse run by Bleckmann, a third-party logistics provider - the provider's building, as GXO's were for Bayer - and research could not confirm it is operating."
+        }
       ]
     },
     {
@@ -1846,6 +1909,18 @@
           "archetype": "LARGE_OFFICE",
           "sites": 1,
           "density": "SUBURBAN"
+        },
+        {
+          "country": "US",
+          "archetype": "WAREHOUSE",
+          "sites": 2
+        }
+      ],
+      "excluded": [
+        {
+          "country": "US",
+          "archetype": "WAREHOUSE",
+          "reason": "the 3 are buildings of one Columbus distribution complex, which shares its access; with the separate Adore Me building in New Jersey the estate is 2 sites. A third-party DC (DailyLook) used under a service agreement is not counted."
         }
       ]
     },
@@ -2044,7 +2119,7 @@
         {
           "country": "IN",
           "archetype": "BRANCH",
-          "sites": 520,
+          "sites": 507,
           "density": "URBAN"
         },
         {
@@ -2076,6 +2151,11 @@
           "archetype": "DC",
           "sites": 3,
           "density": "SUBURBAN"
+        },
+        {
+          "country": "IN",
+          "archetype": "LARGE_OFFICE",
+          "sites": 2
         }
       ],
       "excluded": [
@@ -2083,6 +2163,31 @@
           "country": "IN",
           "archetype": "STORE",
           "reason": "the 520 Indian branches are the same network this spec declares as IN BRANCH, typed STORE by research. The merge keys on (country, archetype), so a second archetype adds the branches again rather than correcting the count - the Fresenius, Saint-Gobain, Shell and BNP collision over again. The declared figure is corrected to 520 instead."
+        },
+        {
+          "country": "CN",
+          "archetype": "STORE",
+          "reason": "DBS Bank (China)'s 12 branches are part of the network declared as CN/BRANCH (12 branches and 23 sub-branches), typed STORE. Excluded as a double count."
+        },
+        {
+          "country": "SG",
+          "archetype": "STORE",
+          "reason": "the 80 DBS and POSB branches are the network declared as SG/BRANCH 80, typed STORE. Excluded as a double count."
+        },
+        {
+          "country": "ID",
+          "archetype": "BRANCH",
+          "reason": "DECLINED: the evidence runs from 61 branches at a May 2024 roadshow down to 13 branch offices and 14 sub-branches in a June 2026 newsroom release - too wide to promote, with the most recent figure the lowest. The declared 40 holds."
+        },
+        {
+          "country": "IN",
+          "archetype": "BRANCH",
+          "reason": "the promoted 594 is from a cover diagram whose own source says it 'may include non-branch touchpoints'; DBS Bank India's FY2024-25 annual report states 507, and the declaration is corrected to that."
+        },
+        {
+          "country": "IN",
+          "archetype": "LARGE_OFFICE",
+          "reason": "research found the Mumbai head office and noted the Hyderabad technology centre separately but counted only 1. Both are DBS offices; the declaration is 2."
         }
       ]
     },
@@ -2418,7 +2523,7 @@
         {
           "country": "RO",
           "archetype": "STORE",
-          "sites": 400,
+          "sites": 0,
           "density": "URBAN"
         },
         {
@@ -2450,6 +2555,18 @@
           "archetype": "DC",
           "sites": 3,
           "density": "SUBURBAN"
+        }
+      ],
+      "excluded": [
+        {
+          "country": "RO",
+          "archetype": "STORE",
+          "reason": "the 478 is the count before Carrefour sold its Romanian business to Paval Holding, deconsolidated on 30 June 2026. Carrefour has no Romanian stores; the declaration is 0."
+        },
+        {
+          "country": "FR",
+          "archetype": "STORE",
+          "reason": "DECLINED 2026-10-17 and not enforced until now: 6,766 is the count 'under its banners', franchises included - 117 of 325 hypermarkets alone are franchised. The 20 October rerun promoted it straight back."
         }
       ]
     },
@@ -2497,7 +2614,7 @@
         {
           "country": "GR",
           "archetype": "STORE",
-          "sites": 500,
+          "sites": 578,
           "density": "URBAN"
         },
         {
@@ -2541,6 +2658,13 @@
           "archetype": "DC",
           "sites": 3,
           "density": "SUBURBAN"
+        }
+      ],
+      "excluded": [
+        {
+          "country": "GR",
+          "archetype": "STORE",
+          "reason": "the 645 does not reconcile: research's own figures give 578 plus 32 net openings, which is 610, and the 645 comes from an undated careers page. The declaration holds the 578 from Ahold's own store table."
         }
       ]
     },
@@ -2893,6 +3017,11 @@
           "country": "GB",
           "archetype": "LARGE_OFFICE",
           "reason": "the 1,140 are HOSPITAL sites - the label says so - promoted into the office archetype. Two faults: a hospital is not an office, and the hospital estate is already declared as GB/CAMPUS, so this adds it again under a second archetype. The same research puts NHS England's own parent-entity office count at 1, Wellington Place in Leeds."
+        },
+        {
+          "country": "GB",
+          "archetype": "BRANCH",
+          "reason": "the 8,000 primary-care facilities are GP practices - independent contractors to the NHS - and community clinics run by NHS trusts. Neither is NHS England's estate, on the basis that excluded the 1,140 hospitals of 207 separate trusts."
         }
       ]
     },
@@ -2951,6 +3080,11 @@
           "country": "GB",
           "archetype": "SERVICE_POINT",
           "reason": "the 2,593 are the stations Network Rail OWNS as infrastructure, and the evidence says in its own note that most are operated by train operating companies rather than by Network Rail. A TOC leases the station and buys its own access line. The sites Network Rail actually operates are the 20 largest, counted separately as TERMINAL, so promoting 2,593 would both add circuits nobody at Network Rail pays for and count those 20 twice."
+        },
+        {
+          "country": "GB",
+          "archetype": "WAREHOUSE",
+          "reason": "DECLINED: a count of ~60 maintenance depots computed from the entries visible in a directory snippet, self-described as possibly incomplete, dated 2021. The declared 30 holds."
         }
       ]
     },
@@ -2998,6 +3132,11 @@
           "archetype": "DC",
           "sites": 3,
           "density": "SUBURBAN"
+        },
+        {
+          "country": "GB",
+          "archetype": "BRANCH",
+          "sites": 117
         }
       ],
       "excluded": [
@@ -3010,6 +3149,16 @@
           "country": "GB",
           "archetype": "DC",
           "reason": "DECLINED and never enforced until now: 10 is a pre-consolidation 2021 figure from an undated vendor case study. The declared 3 holds."
+        },
+        {
+          "country": "GB",
+          "archetype": "SERVICE_POINT",
+          "reason": "the 23,000 are Royal Mail's out-of-home network: third-party shops, lockers and street parcel postboxes. None is Royal Mail premises buying a circuit, and the shops include the separately owned Post Office this case was added to test."
+        },
+        {
+          "country": "GB",
+          "archetype": "BRANCH",
+          "reason": "research's 1,200 BRANCH are the delivery offices - already in the estate as the declared SERVICE_POINT 1,200. A third typing of the same 1,200 sites. The declaration holds the 117 vehicle workshops verified earlier."
         }
       ]
     },

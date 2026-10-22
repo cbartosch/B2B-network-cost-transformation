@@ -17,8 +17,8 @@
   ],
   "base_currency": "EUR",
   "case_id": "b374ccc2-f4d2-4ade-9a47-161e8b4a5a4a",
-  "spec_path": "/tmp/companies.json",
-  "spec_sha256": "ad37995b9e77",
+  "spec_path": "/src/samples/companies.json",
+  "spec_sha256": "37f557ad46b6",
   "entity_resolution": {
     "resolved": null,
     "resumed": true
@@ -115,6 +115,13 @@
   ],
   "footprint_provenance": [
     {
+      "country": "NL",
+      "archetype": "WAREHOUSE",
+      "sites": 1,
+      "origin": "EXCLUDED_BY_SCOPE",
+      "reason": "a Dutch warehouse run by Bleckmann, a third-party logistics provider - the provider's building, as GXO's were for Bayer - and research could not confirm it is operating."
+    },
+    {
       "country": "DE",
       "archetype": "DC",
       "sites": 2,
@@ -127,17 +134,15 @@
       "country": "DE",
       "archetype": "LARGE_OFFICE",
       "sites": 1,
-      "origin": "PUBLIC_DISCLOSURE",
+      "origin": "SUPERSEDED_BY_RESEARCH",
       "density": "SUBURBAN"
     },
     {
       "country": "DE",
       "archetype": "STORE",
       "sites": 430,
-      "origin": "DISCLOSURE_KEPT_RESEARCH_FOUND_FEWER",
-      "density": "URBAN",
-      "research_said": 398,
-      "disclosure_said": 430
+      "origin": "SUPERSEDED_BY_RESEARCH",
+      "density": "URBAN"
     },
     {
       "country": "DE",
@@ -260,7 +265,7 @@
   "scope_note": "Baseline covers 5 country(ies) (DE, FR, IT, NL, PL) and the site types listed in sites_origin. The group's full country and site-type count is not sourced, so the share of the group this represents is DECLARED_UNKNOWN. This is baseline_in_scope, not a group baseline.",
   "sites_origin": {
     "DC": "ASSUMED_PUBLIC_DISCLOSURE",
-    "LARGE_OFFICE": "ASSUMED_PUBLIC_DISCLOSURE",
+    "LARGE_OFFICE": "RESEARCHED",
     "STORE": "RESEARCHED",
     "WAREHOUSE": "RESEARCHED"
   },
@@ -320,14 +325,14 @@
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-19T20:07:28.093855+00:00",
-  "run_seconds": 2.7,
+  "run_started": "2026-10-22T13:43:00.531829+00:00",
+  "run_seconds": 2.8,
   "preflight_conditions": 8,
   "promotion": {
     "promoted": true,
     "detail": null,
-    "offered": 10,
-    "accepted": 7,
+    "offered": 11,
+    "accepted": 9,
     "declined": [],
     "declined_count": 0
   },

@@ -339,8 +339,28 @@ def test_a_room_of_equipment_inside_a_building_is_not_a_site(tool):
     data centre's bandwidth. The unit gate cannot catch it - the unit says
     "sites" and the disqualification is in the label, the same shape as
     the DIVESTED merchants.
+
+    Built on a fixture rather than the published samples. The 20 October
+    rerun re-researched Tesco and the IT-room label is no longer among its
+    findings - the IE/DC exclusion still keeps the room out of the estate,
+    but there is nothing left in the real data for this rule to catch, and
+    a test that depends on what research happens to return stops testing
+    the rule the day research returns something else.
     """
-    warned = tool.label_warnings(OUT)
+    import json
+    import tempfile
+    out = pathlib.Path(tempfile.mkdtemp()) / "out"
+    (out / "tesco").mkdir(parents=True)
+    (out / "tesco" / "research.json").write_text(json.dumps({
+        "dispositions": [{"domain_no": 6, "evidence": {"quantities": [{
+            "label": "DC – IE satellite IT room (Dublin)",
+            "country": "IE", "value": 1, "unit": "sites"}]}}]}),
+        encoding="utf-8")
+    (out / "tesco" / "manifest.json").write_text(json.dumps({
+        "footprint_provenance": [{"country": "IE", "archetype": "DC",
+                                  "sites": 1, "origin": "RESEARCHED"}]}),
+        encoding="utf-8")
+    warned = tool.label_warnings(out)
     pairs = {(w["slug"], w["country"], w["archetype"]) for w in warned}
     assert ("tesco", "IE", "DC") in pairs
 

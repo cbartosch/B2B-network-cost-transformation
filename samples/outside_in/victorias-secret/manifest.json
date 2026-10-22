@@ -14,8 +14,8 @@
   ],
   "base_currency": "USD",
   "case_id": "63048804-2cbf-468f-a16f-2d1921d7af1f",
-  "spec_path": "/tmp/companies.json",
-  "spec_sha256": "ad37995b9e77",
+  "spec_path": "/src/samples/companies.json",
+  "spec_sha256": "37f557ad46b6",
   "entity_resolution": {
     "resolved": null,
     "resumed": true
@@ -70,11 +70,18 @@
     {
       "country": "US",
       "archetype": "WAREHOUSE",
-      "sites": 1,
+      "sites": 2,
       "density": "SUBURBAN"
     }
   ],
   "footprint_provenance": [
+    {
+      "country": "US",
+      "archetype": "WAREHOUSE",
+      "sites": 3,
+      "origin": "EXCLUDED_BY_SCOPE",
+      "reason": "the 3 are buildings of one Columbus distribution complex, which shares its access; with the separate Adore Me building in New Jersey the estate is 2 sites. A third-party DC (DailyLook) used under a service agreement is not counted."
+    },
     {
       "country": "CA",
       "archetype": "STORE",
@@ -104,29 +111,29 @@
       "sites": 800,
       "origin": "DISCLOSURE_KEPT_RESEARCH_FOUND_FEWER",
       "density": "SUBURBAN",
-      "research_said": 766,
+      "research_said": 769,
       "disclosure_said": 800
     },
     {
       "country": "US",
       "archetype": "WAREHOUSE",
-      "sites": 1,
-      "origin": "RESEARCHED",
+      "sites": 2,
+      "origin": "PUBLIC_DISCLOSURE",
       "density": null
     },
     {
       "origin": "DENSITY_FROM_MIX",
       "rows": 1,
-      "sites": 1,
+      "sites": 2,
       "filled": [
         {
           "country": "US",
           "archetype": "WAREHOUSE",
-          "sites": 1,
+          "sites": 2,
           "basis": "INDUSTRY_DEFAULT",
           "mix_industry": "SPECIALTY_RETAIL",
           "bands": {
-            "SUBURBAN": 1
+            "SUBURBAN": 2
           }
         }
       ],
@@ -144,7 +151,7 @@
     "DC": "ASSUMED_PUBLIC_DISCLOSURE",
     "LARGE_OFFICE": "RESEARCHED",
     "STORE": "ASSUMED_PUBLIC_DISCLOSURE",
-    "WAREHOUSE": "RESEARCHED"
+    "WAREHOUSE": "ASSUMED_PUBLIC_DISCLOSURE"
   },
   "fx_to_eur": {
     "rate": "0.87110000",
@@ -198,30 +205,21 @@
   ],
   "estimate_inputs": {
     "method": "BUILD_UP",
-    "users": 10008,
+    "users": 10020,
     "ops_cost_per_site_base": 900,
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-19T20:07:30.771779+00:00",
-  "run_seconds": 2.5,
+  "run_started": "2026-10-22T13:43:03.430348+00:00",
+  "run_seconds": 2.6,
   "preflight_conditions": 8,
   "promotion": {
     "promoted": true,
     "detail": null,
-    "offered": 10,
-    "accepted": 4,
-    "declined": [
-      {
-        "reason": "sources state this in units that disagree, and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
-        "label": "US distribution and shipping buildings — count (WAREHOUSE sites)",
-        "country": "US",
-        "flags": [
-          "UNIT_MISMATCH"
-        ]
-      }
-    ],
-    "declined_count": 1
+    "offered": 8,
+    "accepted": 3,
+    "declined": [],
+    "declined_count": 0
   },
   "domains_benchmark_disposed": [
     3,

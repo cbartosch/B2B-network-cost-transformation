@@ -1,13 +1,13 @@
 {
-  "simulation_run_id": "640001d2-9722-460d-8587-641b100796c7",
+  "simulation_run_id": "fc8bdfc1-7f26-4fd3-aead-65c63e5f3656",
   "case_id": "cdf61ba7-5492-4980-a4cf-615cfcb272e3",
   "model_version": "sim-2.7.0",
   "seed": 20260101,
   "ensemble_size": 25,
   "status": "SUCCEEDED",
   "output_hash": "0e2fb15434f21b2a8e1d264c28f157c843f4b67a599c9bc2ec04c6c59a2b5d71",
-  "started_at": "2026-10-19 20:07:20.607287+00:00",
-  "ended_at": "2026-10-19 20:07:21.613271+00:00",
+  "started_at": "2026-10-22 13:42:57.232382+00:00",
+  "ended_at": "2026-10-22 13:42:58.444156+00:00",
   "params": {
     "footprint": [
       {
@@ -294,14 +294,6 @@
       {
         "country": "GB",
         "density_band": "RURAL",
-        "product": "ETHERNET_FIBRE",
-        "access_technology": "ETHERNET_FIBRE",
-        "available": false,
-        "max_bandwidth_mbps": null
-      },
-      {
-        "country": "GB",
-        "density_band": "RURAL",
         "product": "DARK_FIBRE",
         "access_technology": "DARK_FIBRE",
         "available": false,
@@ -370,41 +362,19 @@
         "access_technology": "SATELLITE",
         "available": true,
         "max_bandwidth_mbps": 50
+      },
+      {
+        "country": "GB",
+        "density_band": "RURAL",
+        "product": "ETHERNET_FIBRE",
+        "access_technology": "ETHERNET_FIBRE",
+        "available": true,
+        "max_bandwidth_mbps": 1000
       }
     ]
   },
   "pinned_priors": {
     "archetype_prior": {
-      "SELF_SERVICE_TERMINAL": {
-        "dual_access_probability": 0.15,
-        "primary_product": "MOBILE_5G",
-        "backup_product": "BROADBAND_PON",
-        "users_base": 0,
-        "bandwidth_mbps_base": 50,
-        "committed_fraction": "0.250",
-        "primary_service_class": "BEST_EFFORT",
-        "backup_service_class": "BEST_EFFORT"
-      },
-      "ATM": {
-        "dual_access_probability": 0.55,
-        "primary_product": "MOBILE_5G",
-        "backup_product": "BROADBAND_PON",
-        "users_base": 0,
-        "bandwidth_mbps_base": 50,
-        "committed_fraction": "0.600",
-        "primary_service_class": "BEST_EFFORT",
-        "backup_service_class": "BEST_EFFORT"
-      },
-      "LEGACY_WAN_SITE": {
-        "dual_access_probability": 0.6,
-        "primary_product": "MPLS",
-        "backup_product": "BROADBAND_PON",
-        "users_base": 40,
-        "bandwidth_mbps_base": 100,
-        "committed_fraction": "0.800",
-        "primary_service_class": "IPVPN",
-        "backup_service_class": "BEST_EFFORT"
-      },
       "BRANCH": {
         "dual_access_probability": 0.55,
         "primary_product": "DIA",
@@ -523,6 +493,36 @@
         "bandwidth_mbps_base": 50,
         "committed_fraction": "0.300",
         "primary_service_class": "BEST_EFFORT",
+        "backup_service_class": "BEST_EFFORT"
+      },
+      "SELF_SERVICE_TERMINAL": {
+        "dual_access_probability": 0.15,
+        "primary_product": "MOBILE_5G",
+        "backup_product": "BROADBAND_PON",
+        "users_base": 0,
+        "bandwidth_mbps_base": 50,
+        "committed_fraction": "0.250",
+        "primary_service_class": "BEST_EFFORT",
+        "backup_service_class": "BEST_EFFORT"
+      },
+      "ATM": {
+        "dual_access_probability": 0.55,
+        "primary_product": "MOBILE_5G",
+        "backup_product": "BROADBAND_PON",
+        "users_base": 0,
+        "bandwidth_mbps_base": 50,
+        "committed_fraction": "0.600",
+        "primary_service_class": "BEST_EFFORT",
+        "backup_service_class": "BEST_EFFORT"
+      },
+      "LEGACY_WAN_SITE": {
+        "dual_access_probability": 0.6,
+        "primary_product": "MPLS",
+        "backup_product": "BROADBAND_PON",
+        "users_base": 40,
+        "bandwidth_mbps_base": 100,
+        "committed_fraction": "0.800",
+        "primary_service_class": "IPVPN",
         "backup_service_class": "BEST_EFFORT"
       },
       "DEFAULT/BRANCH": {

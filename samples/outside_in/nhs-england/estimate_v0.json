@@ -1,5 +1,5 @@
 {
-  "estimate_snapshot_id": "eea23547-7288-45c7-9b90-07985258d2a4",
+  "estimate_snapshot_id": "ceaae30c-fb3b-4da6-bd33-87d82c247866",
   "v0_status": "COMPLETE",
   "current_tco": {
     "low": "5568060.65",
@@ -2827,10 +2827,10 @@
     "note": "11 step(s) in the order they compound - each acts on what the ones before it left, so they do not add up to the sum of their percentages. 1 lever(s) had a baseline and matched nothing in this estate."
   },
   "confidence": {
-    "current_baseline": "0.352",
+    "current_baseline": "0.358",
     "target_cost": "0.750",
     "realization": "0.187",
-    "weighted": "0.442",
+    "weighted": "0.444",
     "overall": "0.337",
     "band": "D - Indicative",
     "policy_set": "confidence_policy",
@@ -2856,7 +2856,7 @@
       "evidenced_value_share": "0.0000",
       "client_confirmed_value_share": "0",
       "client_confirmed_evidence_weight": "0.7000",
-      "domain_completeness": "0.9583333333333333333333333333",
+      "domain_completeness": "1",
       "prior_coverage": "1",
       "prior_recency": "1",
       "lever_stage_mix": {
@@ -2866,7 +2866,7 @@
       },
       "policy_set": "confidence_policy",
       "raw_before_stage_scaling": {
-        "current_baseline": "0.640",
+        "current_baseline": "0.650",
         "target_cost": "1.000",
         "realization": "0.535"
       },
@@ -2882,7 +2882,7 @@
     "scope_status": "PARTIAL_COUNTRIES",
     "metrics": {
       "BASELINE_PER_EMPLOYEE": {
-        "value": "0.02",
+        "value": "0.00",
         "flag": "NOT_ASSESSABLE",
         "note": "scope is PARTIAL_COUNTRIES: this baseline covers part of the group and the denominator is group-wide, so the ratio measures the scope gap rather than the estimate",
         "benchmark": null
@@ -2908,25 +2908,25 @@
       }
     },
     "inputs": {
-      "employees": "490000000.00",
+      "employees": "89900000000.00",
       "revenue": "190990000000.00",
       "sites": "1491.00",
       "provenance": {
         "employees": {
-          "value": "490000000",
-          "label": "NHS England merger savings (NHS Digital + HEE merger, headcount -35%)",
-          "as_of": "2024/25",
-          "unit": "GBP",
+          "value": "8.9900E+10",
+          "label": "NHS total staff cost (England, NHS providers)",
+          "as_of": "FY2024-25",
+          "unit": "GBP millions",
           "currency": "GBP",
-          "as_stated": "490000000"
+          "as_stated": "89900"
         },
         "revenue": {
-          "value": "190990000000",
-          "label": "NHS England Group revenue limit (RDEL, non-ringfenced)",
-          "as_of": "FY2024/25",
-          "unit": "GBP",
+          "value": "1.90990E+11",
+          "label": "NHS England Group total revenue limit (RDEL general)",
+          "as_of": "FY2024-25",
+          "unit": "GBP millions",
           "currency": "GBP",
-          "as_stated": "190990000000"
+          "as_stated": "190990"
         }
       }
     },
@@ -2952,6 +2952,9 @@
     "spend_basis": "DERIVED_FROM_SIMULATED_SCOPE_AND_PRIORS",
     "unpriced_countries": [],
     "unpriced_pairs": [],
+    "unserviceable_sites": 0,
+    "site_coverage_pct": "1.000",
+    "unserviceable": [],
     "evidence_grade_mix": {
       "C": "0.857",
       "E": "0.143"

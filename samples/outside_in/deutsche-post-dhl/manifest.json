@@ -15,8 +15,8 @@
   ],
   "base_currency": "EUR",
   "case_id": "0fad5c9a-1959-4583-845f-a7cc722e8f60",
-  "spec_path": "/tmp/companies.json",
-  "spec_sha256": "ad37995b9e77",
+  "spec_path": "/src/samples/companies.json",
+  "spec_sha256": "37f557ad46b6",
   "entity_resolution": {
     "resolved": null,
     "resumed": true
@@ -59,13 +59,13 @@
     {
       "country": "DE",
       "archetype": "TERMINAL",
-      "sites": 28,
+      "sites": 99,
       "density": "SUBURBAN"
     },
     {
       "country": "DE",
       "archetype": "TERMINAL",
-      "sites": 18,
+      "sites": 66,
       "density": "URBAN"
     },
     {
@@ -89,7 +89,7 @@
     {
       "country": "GB",
       "archetype": "WAREHOUSE",
-      "sites": 40,
+      "sites": 419,
       "density": "SUBURBAN"
     },
     {
@@ -112,6 +112,13 @@
     }
   ],
   "footprint_provenance": [
+    {
+      "country": "DE",
+      "archetype": "TERMINAL",
+      "sites": 81,
+      "origin": "EXCLUDED_BY_SCOPE",
+      "reason": "research found three separate German networks - 81 mail centres, 38 parcel centres, 46 freight terminals - and a pair can carry only one figure, so promotion kept the largest. The declaration is their sum, 165."
+    },
     {
       "country": "GB",
       "archetype": "SERVICE_POINT",
@@ -136,8 +143,8 @@
     {
       "country": "DE",
       "archetype": "TERMINAL",
-      "sites": 46,
-      "origin": "RESEARCHED",
+      "sites": 165,
+      "origin": "PUBLIC_DISCLOSURE",
       "density": null
     },
     {
@@ -159,9 +166,11 @@
     {
       "country": "GB",
       "archetype": "WAREHOUSE",
-      "sites": 40,
-      "origin": "PUBLIC_DISCLOSURE",
-      "density": "SUBURBAN"
+      "sites": 419,
+      "origin": "SUPERSEDED_BY_RESEARCH",
+      "density": "SUBURBAN",
+      "research_said": 419,
+      "disclosure_said": 40
     },
     {
       "country": "NL",
@@ -176,23 +185,23 @@
       "sites": 25,
       "origin": "DISCLOSURE_KEPT_RESEARCH_FOUND_FEWER",
       "density": "SUBURBAN",
-      "research_said": 16,
+      "research_said": 18,
       "disclosure_said": 25
     },
     {
       "origin": "DENSITY_FROM_MIX",
       "rows": 3,
-      "sites": 55,
+      "sites": 174,
       "filled": [
         {
           "country": "DE",
           "archetype": "TERMINAL",
-          "sites": 46,
+          "sites": 165,
           "basis": "INDUSTRY_DEFAULT",
           "mix_industry": "POSTAL_AND_PARCEL_NETWORK",
           "bands": {
-            "SUBURBAN": 28,
-            "URBAN": 18
+            "SUBURBAN": 99,
+            "URBAN": 66
           }
         },
         {
@@ -233,7 +242,7 @@
     "DC": "ASSUMED_PUBLIC_DISCLOSURE",
     "SERVICE_POINT": "ASSUMED_PUBLIC_DISCLOSURE",
     "TERMINAL": "RESEARCHED",
-    "WAREHOUSE": "ASSUMED_PUBLIC_DISCLOSURE"
+    "WAREHOUSE": "RESEARCHED"
   },
   "fx_to_eur": {
     "rate": "1.0",
@@ -286,23 +295,48 @@
   ],
   "estimate_inputs": {
     "method": "BUILD_UP",
-    "users": 28992,
+    "users": 34968,
     "ops_cost_per_site_base": 900,
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-19T20:06:11.509324+00:00",
-  "run_seconds": 3.2,
+  "run_started": "2026-10-22T13:42:24.815457+00:00",
+  "run_seconds": 5.8,
   "preflight_conditions": 8,
   "promotion": {
     "promoted": true,
     "detail": null,
-    "offered": 14,
-    "accepted": 6,
+    "offered": 13,
+    "accepted": 3,
     "declined": [
       {
-        "reason": "sources disagree by 16% (2100 to 2442), and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
-        "label": "GB ETHERNET 1 Gbps EAD wholesale annual rental (Openreach)",
+        "reason": "sources disagree by 26% (150 to 188.5), and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
+        "label": "ETHERNET 1000Mbps MRC (Openreach EAD Local Access 1G, standard term, wholesale)",
+        "country": "GB",
+        "flags": [
+          "MATERIAL_SPREAD"
+        ]
+      },
+      {
+        "reason": "sources disagree by 39% (160 to 222), and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
+        "label": "DIA 100Mbps MRC (Vodafone Business wires-only, retail)",
+        "country": "GB",
+        "flags": [
+          "MATERIAL_SPREAD"
+        ]
+      },
+      {
+        "reason": "sources disagree by 122% (203 to 450); the newest source diverges from the others, and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
+        "label": "DIA 1000Mbps MRC (Vodafone Business wires-only/managed, retail)",
+        "country": "GB",
+        "flags": [
+          "MATERIAL_SPREAD",
+          "NEWEST_DIVERGES"
+        ]
+      },
+      {
+        "reason": "sources disagree by 69% (29 to 49), and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
+        "label": "BROADBAND_PON 100Mbps MRC (UK business FTTP, SME-grade)",
         "country": "GB",
         "flags": [
           "MATERIAL_SPREAD"
@@ -310,14 +344,14 @@
       },
       {
         "reason": "sources state this in units that disagree, and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
-        "label": "SERVICE_POINT – Person-operated sales points / post offices (DE)",
+        "label": "SERVICE_POINT – Fixed-location acceptance and sales points in Germany",
         "country": "DE",
         "flags": [
           "UNIT_MISMATCH"
         ]
       }
     ],
-    "declined_count": 2
+    "declined_count": 5
   },
   "domains_benchmark_disposed": [
     3,

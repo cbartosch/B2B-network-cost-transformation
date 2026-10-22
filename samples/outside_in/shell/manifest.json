@@ -15,8 +15,8 @@
   ],
   "base_currency": "USD",
   "case_id": "4ceb19bd-c331-45c1-8220-87db66ff9103",
-  "spec_path": "/tmp/companies.json",
-  "spec_sha256": "ad37995b9e77",
+  "spec_path": "/src/samples/companies.json",
+  "spec_sha256": "37f557ad46b6",
   "entity_resolution": {
     "resolved": null,
     "resumed": true
@@ -83,8 +83,14 @@
     {
       "country": "NL",
       "archetype": "LARGE_OFFICE",
-      "sites": 1,
+      "sites": 2,
       "density": "DENSE_URBAN"
+    },
+    {
+      "country": "NL",
+      "archetype": "LARGE_OFFICE",
+      "sites": 1,
+      "density": "URBAN"
     },
     {
       "country": "NL",
@@ -120,6 +126,13 @@
       "reason": "the 1,916 branded retail fuel sites are the same forecourts this spec declares as 1,900 DE SERVICE_POINT sites. Separately, branded is not operated - the question referred on the Dutch forecourts - but the double count stands whichever way that is ruled."
     },
     {
+      "country": "GB",
+      "archetype": "SERVICE_POINT",
+      "sites": 1222,
+      "origin": "EXCLUDED_BY_SCOPE",
+      "reason": "DECLINED: 1,222 is a low-precision aggregator figure its own note says may include licensee and franchise sites; Shell's live locator showed 1,038 in October 2026. The declared 1,000 holds."
+    },
+    {
       "country": "NL",
       "archetype": "STORE",
       "sites": 662,
@@ -137,8 +150,10 @@
       "country": "DE",
       "archetype": "SERVICE_POINT",
       "sites": 1900,
-      "origin": "PUBLIC_DISCLOSURE",
-      "density": "SUBURBAN"
+      "origin": "DISCLOSURE_KEPT_RESEARCH_FOUND_FEWER",
+      "density": "SUBURBAN",
+      "research_said": 1895,
+      "disclosure_said": 1900
     },
     {
       "country": "GB",
@@ -146,7 +161,7 @@
       "sites": 8,
       "origin": "DISCLOSURE_KEPT_RESEARCH_FOUND_FEWER",
       "density": "URBAN",
-      "research_said": 1,
+      "research_said": 2,
       "disclosure_said": 8
     },
     {
@@ -173,7 +188,7 @@
     {
       "country": "NL",
       "archetype": "LARGE_OFFICE",
-      "sites": 1,
+      "sites": 3,
       "origin": "RESEARCHED",
       "density": null
     },
@@ -181,8 +196,10 @@
       "country": "NL",
       "archetype": "PLANT",
       "sites": 3,
-      "origin": "PUBLIC_DISCLOSURE",
-      "density": "RURAL"
+      "origin": "DISCLOSURE_KEPT_RESEARCH_FOUND_FEWER",
+      "density": "RURAL",
+      "research_said": 2,
+      "disclosure_said": 3
     },
     {
       "country": "NL",
@@ -208,7 +225,7 @@
     {
       "origin": "DENSITY_FROM_MIX",
       "rows": 6,
-      "sites": 6,
+      "sites": 8,
       "filled": [
         {
           "country": "DE",
@@ -243,11 +260,12 @@
         {
           "country": "NL",
           "archetype": "LARGE_OFFICE",
-          "sites": 1,
+          "sites": 3,
           "basis": "INDUSTRY_DEFAULT",
           "mix_industry": "INTEGRATED_OIL_GAS",
           "bands": {
-            "DENSE_URBAN": 1
+            "DENSE_URBAN": 2,
+            "URBAN": 1
           }
         },
         {
@@ -343,24 +361,24 @@
   ],
   "estimate_inputs": {
     "method": "BUILD_UP",
-    "users": 41004,
+    "users": 41028,
     "ops_cost_per_site_base": 900,
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-19T20:06:43.542463+00:00",
-  "run_seconds": 3.4,
+  "run_started": "2026-10-22T13:42:34.057354+00:00",
+  "run_seconds": 6.2,
   "preflight_conditions": 8,
   "promotion": {
     "promoted": true,
     "detail": null,
-    "offered": 10,
-    "accepted": 8,
+    "offered": 13,
+    "accepted": 6,
     "declined": [
       {
-        "reason": "sources disagree by 18% (1038 to 1222), and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
-        "label": "STORE — branded retail fuel sites, GB (United Kingdom)",
-        "country": "GB",
+        "reason": "sources disagree by 33% (500 to 666), and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
+        "label": "SERVICE_POINT — Shell service stations in Netherlands (NL)",
+        "country": "NL",
         "flags": [
           "MATERIAL_SPREAD"
         ]

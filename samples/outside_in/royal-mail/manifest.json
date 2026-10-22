@@ -13,8 +13,8 @@
   ],
   "base_currency": "GBP",
   "case_id": "cb6059f1-0662-43ac-a12e-08bda6191b3b",
-  "spec_path": "/tmp/companies.json",
-  "spec_sha256": "ad37995b9e77",
+  "spec_path": "/src/samples/companies.json",
+  "spec_sha256": "37f557ad46b6",
   "entity_resolution": {
     "resolved": null,
     "resumed": true
@@ -63,7 +63,7 @@
     {
       "country": "GB",
       "archetype": "DC",
-      "sites": 10,
+      "sites": 3,
       "density": "SUBURBAN"
     },
     {
@@ -94,6 +94,27 @@
   "footprint_provenance": [
     {
       "country": "GB",
+      "archetype": "BRANCH",
+      "sites": 1200,
+      "origin": "EXCLUDED_BY_SCOPE",
+      "reason": "research's 1,200 BRANCH are the delivery offices - already in the estate as the declared SERVICE_POINT 1,200. A third typing of the same 1,200 sites. The declaration holds the 117 vehicle workshops verified earlier."
+    },
+    {
+      "country": "GB",
+      "archetype": "DC",
+      "sites": 10,
+      "origin": "EXCLUDED_BY_SCOPE",
+      "reason": "DECLINED and never enforced until now: 10 is a pre-consolidation 2021 figure from an undated vendor case study. The declared 3 holds."
+    },
+    {
+      "country": "GB",
+      "archetype": "SERVICE_POINT",
+      "sites": 23000,
+      "origin": "EXCLUDED_BY_SCOPE",
+      "reason": "the 23,000 are Royal Mail's out-of-home network: third-party shops, lockers and street parcel postboxes. None is Royal Mail premises buying a circuit, and the shops include the separately owned Post Office this case was added to test."
+    },
+    {
+      "country": "GB",
       "archetype": "STORE",
       "sites": 1200,
       "origin": "EXCLUDED_BY_SCOPE",
@@ -103,17 +124,15 @@
       "country": "GB",
       "archetype": "BRANCH",
       "sites": 117,
-      "origin": "RESEARCHED",
+      "origin": "PUBLIC_DISCLOSURE",
       "density": null
     },
     {
       "country": "GB",
       "archetype": "DC",
-      "sites": 10,
-      "origin": "SUPERSEDED_BY_RESEARCH",
-      "density": "SUBURBAN",
-      "research_said": 10,
-      "disclosure_said": 3
+      "sites": 3,
+      "origin": "PUBLIC_DISCLOSURE",
+      "density": "SUBURBAN"
     },
     {
       "country": "GB",
@@ -133,7 +152,7 @@
       "country": "GB",
       "archetype": "TERMINAL",
       "sites": 37,
-      "origin": "PUBLIC_DISCLOSURE",
+      "origin": "SUPERSEDED_BY_RESEARCH",
       "density": "SUBURBAN"
     },
     {
@@ -173,12 +192,12 @@
   "scope_status": "PARTIAL_COUNTRIES",
   "scope_note": "Baseline covers 1 country(ies) (GB) and the site types listed in sites_origin. The group's full country and site-type count is not sourced, so the share of the group this represents is DECLARED_UNKNOWN. This is baseline_in_scope, not a group baseline.",
   "sites_origin": {
-    "BRANCH": "RESEARCHED",
-    "DC": "RESEARCHED",
+    "BRANCH": "ASSUMED_PUBLIC_DISCLOSURE",
+    "DC": "ASSUMED_PUBLIC_DISCLOSURE",
     "LARGE_OFFICE": "ASSUMED_PUBLIC_DISCLOSURE",
     "SERVICE_POINT": "ASSUMED_PUBLIC_DISCLOSURE",
     "STORE": "ASSUMED_PUBLIC_DISCLOSURE",
-    "TERMINAL": "ASSUMED_PUBLIC_DISCLOSURE",
+    "TERMINAL": "RESEARCHED",
     "WAREHOUSE": "RESEARCHED"
   },
   "fx_to_eur": {
@@ -237,38 +256,21 @@
   ],
   "estimate_inputs": {
     "method": "BUILD_UP",
-    "users": 17112,
+    "users": 17028,
     "ops_cost_per_site_base": 900,
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-19T20:08:19.267378+00:00",
+  "run_started": "2026-10-22T13:43:33.629584+00:00",
   "run_seconds": 2.7,
   "preflight_conditions": 8,
   "promotion": {
     "promoted": true,
     "detail": null,
-    "offered": 11,
-    "accepted": 3,
-    "declined": [
-      {
-        "reason": "sources state this in units that disagree, and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
-        "label": "Royal Mail mail centres / regional sorting hubs (PLANT) — GB",
-        "country": "GB",
-        "flags": [
-          "UNIT_MISMATCH"
-        ]
-      },
-      {
-        "reason": "sources state this in units that disagree, and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
-        "label": "Royal Mail delivery offices (WAREHOUSE) — GB",
-        "country": "GB",
-        "flags": [
-          "UNIT_MISMATCH"
-        ]
-      }
-    ],
-    "declined_count": 2
+    "offered": 12,
+    "accepted": 5,
+    "declined": [],
+    "declined_count": 0
   },
   "domains_benchmark_disposed": [
     3,

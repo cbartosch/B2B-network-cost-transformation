@@ -77,6 +77,13 @@ def _verified_a_different_figure(entry: dict, change: dict) -> bool:
     """
     if (entry.get("disposition") or "").strip().upper() != "VERIFIED":
         return False
+    # Only a CHANGED record says what the estate HOLDS. An EXCLUDED record's
+    # "used" is the figure a scope rule kept OUT - comparing a verdict
+    # against it would demand re-verification of exactly the number a person
+    # had already ruled away, and flag every pair corrected by declaring the
+    # right figure and excluding research's wrong one.
+    if change.get("kind") != "CHANGED":
+        return False
     figure = (entry.get("register_sites") or "").strip()
     if not figure:
         return False
@@ -229,12 +236,20 @@ def label_warnings(outdir: pathlib.Path) -> list:
                             if w in label.lower()), None)
                 if not hit:
                     continue
-                key = (q.get("country"), label.split()[0].upper())
-                if key in promoted and (d.name, key) not in seen:
-                    seen.add((d.name, key))
-                    out.append({"slug": d.name, "country": key[0],
-                                "archetype": key[1], "marker": hit,
-                                "label": label})
+                # The lead word can name more than one archetype. The 20
+                # October rerun relabelled Saint-Gobain's divested German
+                # branches "STORE/BRANCH - ... DIVESTED", and reading the
+                # whole of "STORE/BRANCH" as one archetype matched nothing,
+                # so a finding that still said DIVESTED stopped being
+                # reported. Each archetype in the lead is tried in turn.
+                lead = label.split()[0].upper()
+                for arch in [a for a in re.split(r"[/+]", lead) if a]:
+                    key = (q.get("country"), arch)
+                    if key in promoted and (d.name, key) not in seen:
+                        seen.add((d.name, key))
+                        out.append({"slug": d.name, "country": key[0],
+                                    "archetype": key[1], "marker": hit,
+                                    "label": label})
     return out
 
 

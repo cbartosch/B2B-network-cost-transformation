@@ -13,8 +13,8 @@
   ],
   "base_currency": "GBP",
   "case_id": "b2a3fb22-1ee4-450c-83d4-f659159576e1",
-  "spec_path": "/tmp/companies.json",
-  "spec_sha256": "ad37995b9e77",
+  "spec_path": "/src/samples/companies.json",
+  "spec_sha256": "37f557ad46b6",
   "entity_resolution": {
     "resolved": null,
     "resumed": true
@@ -57,7 +57,7 @@
     {
       "country": "GB",
       "archetype": "LARGE_OFFICE",
-      "sites": 12,
+      "sites": 25,
       "density": "URBAN"
     },
     {
@@ -95,6 +95,13 @@
     },
     {
       "country": "GB",
+      "archetype": "WAREHOUSE",
+      "sites": 60,
+      "origin": "EXCLUDED_BY_SCOPE",
+      "reason": "DECLINED: a count of ~60 maintenance depots computed from the entries visible in a directory snippet, self-described as possibly incomplete, dated 2021. The declared 30 holds."
+    },
+    {
+      "country": "GB",
       "archetype": "CONTROL_CENTER",
       "sites": 14,
       "origin": "PUBLIC_DISCLOSURE",
@@ -104,15 +111,17 @@
       "country": "GB",
       "archetype": "DC",
       "sites": 3,
-      "origin": "PUBLIC_DISCLOSURE",
+      "origin": "SUPERSEDED_BY_RESEARCH",
       "density": "SUBURBAN"
     },
     {
       "country": "GB",
       "archetype": "LARGE_OFFICE",
-      "sites": 12,
-      "origin": "PUBLIC_DISCLOSURE",
-      "density": "URBAN"
+      "sites": 25,
+      "origin": "SUPERSEDED_BY_RESEARCH",
+      "density": "URBAN",
+      "research_said": 25,
+      "disclosure_said": 12
     },
     {
       "country": "GB",
@@ -160,8 +169,8 @@
   "scope_note": "Baseline covers 1 country(ies) (GB) and the site types listed in sites_origin. The group's full country and site-type count is not sourced, so the share of the group this represents is DECLARED_UNKNOWN. This is baseline_in_scope, not a group baseline.",
   "sites_origin": {
     "CONTROL_CENTER": "ASSUMED_PUBLIC_DISCLOSURE",
-    "DC": "ASSUMED_PUBLIC_DISCLOSURE",
-    "LARGE_OFFICE": "ASSUMED_PUBLIC_DISCLOSURE",
+    "DC": "RESEARCHED",
+    "LARGE_OFFICE": "RESEARCHED",
     "NETWORK_SITE": "ASSUMED_PUBLIC_DISCLOSURE",
     "SERVICE_POINT": "ASSUMED_PUBLIC_DISCLOSURE",
     "STORE": "ASSUMED_PUBLIC_DISCLOSURE",
@@ -224,30 +233,38 @@
   ],
   "estimate_inputs": {
     "method": "BUILD_UP",
-    "users": 10788,
+    "users": 10944,
     "ops_cost_per_site_base": 900,
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-19T20:08:16.722017+00:00",
-  "run_seconds": 2.5,
+  "run_started": "2026-10-22T13:43:30.955344+00:00",
+  "run_seconds": 2.6,
   "preflight_conditions": 8,
   "promotion": {
     "promoted": true,
     "detail": null,
-    "offered": 5,
-    "accepted": 2,
+    "offered": 9,
+    "accepted": 5,
     "declined": [
       {
-        "reason": "sources state this in units that disagree, and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
-        "label": "LARGE_OFFICE",
+        "reason": "sources disagree by 17% (12 to 14), and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
+        "label": "CONTROL_CENTER — Rail Operating Centres (ROCs) target count",
         "country": "GB",
         "flags": [
-          "UNIT_MISMATCH"
+          "MATERIAL_SPREAD"
+        ]
+      },
+      {
+        "reason": "sources disagree by 865% (86 to 830), and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
+        "label": "NETWORK_SITE — legacy signal boxes (being consolidated/wound down)",
+        "country": "GB",
+        "flags": [
+          "MATERIAL_SPREAD"
         ]
       }
     ],
-    "declined_count": 1
+    "declined_count": 2
   },
   "domains_benchmark_disposed": [
     3,

@@ -1,31 +1,31 @@
 {
-  "estimate_snapshot_id": "0a59b661-34b1-4b02-9ea5-5ff0a4f7be62",
+  "estimate_snapshot_id": "44cf022f-3f98-4a98-8e19-a0eae4e2c558",
   "v0_status": "COMPLETE",
   "current_tco": {
-    "low": "4595847.93",
+    "low": "4910030.14",
     "base": "8470761.83",
-    "high": "14030528.37"
+    "high": "13579736.49"
   },
   "by_layer": {
     "L0": {
-      "low": "892505.65",
+      "low": "984773.99",
       "base": "2030481.83",
-      "high": "3837326.19"
+      "high": "3690825.30"
     },
     "L2": {
-      "low": "866268.70",
+      "low": "916703.67",
       "base": "1488300.00",
-      "high": "2317675.07"
+      "high": "2250428.44"
     },
     "L4": {
-      "low": "1429604.88",
+      "low": "1550648.81",
       "base": "2922480.00",
-      "high": "4912980.16"
+      "high": "4751588.26"
     },
     "OPS": {
-      "low": "1407468.70",
+      "low": "1457903.67",
       "base": "2029500.00",
-      "high": "2962546.95"
+      "high": "2886894.49"
     }
   },
   "origin_breakdown": {
@@ -300,9 +300,9 @@
         "high": "11875988.54"
       },
       "gross_run_rate_savings": {
-        "low": "0.00",
+        "low": "4519.37",
         "base": "297262.54",
-        "high": "969036.81"
+        "high": "914568.63"
       },
       "gross_run_rate_savings_unwidened": {
         "low": "89380.77",
@@ -825,7 +825,7 @@
       "gross_run_rate_savings": {
         "low": "0.00",
         "base": "179985.81",
-        "high": "680559.97"
+        "high": "639972.87"
       },
       "gross_run_rate_savings_unwidened": {
         "low": "50482.48",
@@ -1375,9 +1375,9 @@
         "high": "11162886.13"
       },
       "gross_run_rate_savings": {
-        "low": "50635.82",
+        "low": "143691.71",
         "base": "1198325.04",
-        "high": "3131133.87"
+        "high": "2974419.64"
       },
       "gross_run_rate_savings_unwidened": {
         "low": "449412.48",
@@ -1933,9 +1933,9 @@
         "high": "11211005.98"
       },
       "gross_run_rate_savings": {
-        "low": "58364.06",
+        "low": "150543.37",
         "base": "1195242.16",
-        "high": "3197142.28"
+        "high": "3034826.06"
       },
       "gross_run_rate_savings_unwidened": {
         "low": "453384.28",
@@ -2612,10 +2612,10 @@
     "note": "9 step(s) in the order they compound - each acts on what the ones before it left, so they do not add up to the sum of their percentages. 1 lever(s) found no cost pool to act on: PoP exit. That is an opportunity this estimate could not size, not one worth zero. 2 lever(s) had a baseline and matched nothing in this estate."
   },
   "confidence": {
-    "current_baseline": "0.352",
+    "current_baseline": "0.358",
     "target_cost": "0.750",
     "realization": "0.175",
-    "weighted": "0.438",
+    "weighted": "0.440",
     "overall": "0.325",
     "band": "D - Indicative",
     "policy_set": "confidence_policy",
@@ -2641,7 +2641,7 @@
       "evidenced_value_share": "0.0000",
       "client_confirmed_value_share": "0",
       "client_confirmed_evidence_weight": "0.7000",
-      "domain_completeness": "0.9583333333333333333333333333",
+      "domain_completeness": "1",
       "prior_coverage": "1",
       "prior_recency": "1",
       "lever_stage_mix": {
@@ -2649,7 +2649,7 @@
       },
       "policy_set": "confidence_policy",
       "raw_before_stage_scaling": {
-        "current_baseline": "0.640",
+        "current_baseline": "0.650",
         "target_cost": "1.000",
         "realization": "0.500"
       },
@@ -2665,7 +2665,7 @@
     "scope_status": "PARTIAL_COUNTRIES",
     "metrics": {
       "BASELINE_PER_EMPLOYEE": {
-        "value": "414.62",
+        "value": "22.47",
         "flag": "NOT_ASSESSABLE",
         "note": "scope is PARTIAL_COUNTRIES: this baseline covers part of the group and the denominator is group-wide, so the ratio measures the scope gap rather than the estimate",
         "benchmark": null
@@ -2691,25 +2691,25 @@
       }
     },
     "inputs": {
-      "employees": "20430.00",
-      "revenue": "5639000000.00",
+      "employees": "376984.00",
+      "revenue": "5606000000.00",
       "sites": "2255.00",
       "provenance": {
         "employees": {
-          "value": "20430",
-          "label": "Employees — direct (Accor SA consolidated payroll, average)",
-          "as_of": "FY2025",
+          "value": "376984",
+          "label": "Total workforce (ecosystem-wide, incl. managed/franchised hotels)",
+          "as_of": "FY2024",
           "unit": "people",
           "currency": null,
-          "as_stated": "20430"
+          "as_stated": "376984"
         },
         "revenue": {
-          "value": "5.639E+9",
+          "value": "5606000000",
           "label": "Group consolidated revenue",
-          "as_of": "FY2025",
-          "unit": "EUR million",
+          "as_of": "FY2024",
+          "unit": "EUR",
           "currency": "EUR",
-          "as_stated": "5639"
+          "as_stated": "5606000000"
         }
       }
     },
@@ -2735,6 +2735,9 @@
     "spend_basis": "DERIVED_FROM_SIMULATED_SCOPE_AND_PRIORS",
     "unpriced_countries": [],
     "unpriced_pairs": [],
+    "unserviceable_sites": 0,
+    "site_coverage_pct": "1.000",
+    "unserviceable": [],
     "evidence_grade_mix": {
       "E": "1.000"
     },
