@@ -82,3 +82,44 @@ def test_an_excluded_figure_is_a_different_claim(tmp_path, monkeypatch):
     what the estate holds - only VERIFIED makes that claim."""
     assert _strict(tmp_path, monkeypatch, used=20, verified=2593,
                    disposition="EXCLUDED") == 0
+
+
+def test_an_excluded_research_figure_does_not_unverify_a_pair(tmp_path,
+                                                             monkeypatch):
+    """Declaring the right figure and excluding research's wrong one is how a
+    pair is corrected. The EXCLUDED record carries research's figure as its
+    'used', and a VERIFIED entry must not be held to the number it was
+    written to keep out."""
+    out = tmp_path / "out" / "post"
+    out.mkdir(parents=True)
+    (out / "research.json").write_text(json.dumps({
+        "evidenced_footprint": [], "dispositions": []}), encoding="utf-8")
+    (out / "manifest.json").write_text(json.dumps({
+        "footprint_used": [{"country": "DE", "archetype": "TERMINAL",
+                            "sites": 165}],
+        "footprint_provenance": [{"country": "DE", "archetype": "TERMINAL",
+                                  "sites": 81,
+                                  "origin": "EXCLUDED_BY_SCOPE"}]}),
+        encoding="utf-8")
+    spec = tmp_path / "companies.json"
+    spec.write_text(json.dumps({"companies": [{
+        "slug": "post", "legal_name": "Post",
+        "declared_footprint": [{"country": "DE", "archetype": "TERMINAL",
+                                "sites": 165}],
+        "excluded": [{"country": "DE", "archetype": "TERMINAL",
+                      "reason": "x"}]}]}), encoding="utf-8")
+    reg = tmp_path / "register.csv"
+    with reg.open("w", encoding="utf-8", newline="") as fh:
+        w = csv.DictWriter(fh, fieldnames=FIELDS, lineterminator="\n")
+        w.writeheader()
+        w.writerow({"slug": "post", "country": "DE", "archetype": "TERMINAL",
+                    "declared_sites": 165, "register_sites": 165,
+                    "disposition": "VERIFIED", "as_of": "2025-12-31",
+                    "site_definition": "mail, parcel and freight centres",
+                    "evidence_ref": "x", "verified_by": "x",
+                    "verified_at": "2026-10-22", "note": "x"})
+    mod = _checker()
+    monkeypatch.setattr(sys, "argv", [
+        "check", "--strict", "--out", str(tmp_path / "out"),
+        "--spec", str(spec), "--register", str(reg)])
+    assert mod.main() == 0
