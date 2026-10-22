@@ -170,16 +170,22 @@ def test_dedicated_access_thins_out_with_density():
                 if c == "DE" and b == band and a}
 
     # Keyed on the bearer since 4.175. "DIA" is a service class and never
-    # appeared in this table again; dedicated fibre is what thins out, and the
-    # services that need it become unserviceable as a consequence.
+    # appeared in this table again.
+    #
+    # Rural dedicated fibre is deliverable since the rural plant change - a
+    # factory asking for Ethernet has nothing else that can carry it, and 312
+    # rural plants were being removed from their estates as unserviceable.
+    # What thins out now is HOW it arrives: in town it is switched on, in the
+    # country it is built, and serviceability.BUILD_ONLY holds a build back
+    # until nothing already in place can carry the service.
     assert "ETHERNET_FIBRE" in deliverable("URBAN")
-    assert "ETHERNET_FIBRE" not in deliverable("RURAL")
-    # Rural gains satellite and fixed wireless, so it is not a strict subset -
-    # it is a different set, which is the point. What matters is that the
-    # bearers a dedicated service needs are gone.
-    from app.domain import access
-    assert not (set(access.carriers_for(access.ETHERNET))
-                & deliverable("RURAL"))
+    assert "ETHERNET_FIBRE" in deliverable("RURAL")
+    assert ("RURAL", "ETHERNET_FIBRE") in serviceability.BUILD_ONLY
+    assert ("URBAN", "ETHERNET_FIBRE") not in serviceability.BUILD_ONLY
+    # And dark fibre does not reach rural at all, so the band still buys a
+    # real difference rather than a join.
+    assert "DARK_FIBRE" in deliverable("URBAN")
+    assert "DARK_FIBRE" not in deliverable("RURAL")
 
 
 def test_every_deliverable_product_is_one_the_model_prices():
@@ -287,12 +293,16 @@ def test_two_circuits_of_the_same_product_are_not_a_second_path(table):
     assert "not a second path" in out["note"]
 
 
-def test_a_backup_whose_bearer_does_not_reach_is_not_a_second_path(table):
-    """An ETHERNET backup in a rural town is not a second path, because the
-    bearer it needs is not there.
+def test_a_rural_ethernet_backup_is_not_a_second_path(table):
+    """An ETHERNET backup behind an ETHERNET primary in a rural town is not a
+    second path.
 
-    carriers_for("ETHERNET") is (ETHERNET_FIBRE, DARK_FIBRE) and the seed
-    marks both unavailable in DE RURAL, so there is no path at any speed.
+    It used to fail for want of a bearer - carriers_for("ETHERNET") is
+    (ETHERNET_FIBRE, DARK_FIBRE) and the seed marked both unavailable in DE
+    RURAL. Rural fibre is now a build, so the bearer reaches; what refuses
+    it now is the other half of the same rule. The only thing deliverable is
+    the service the primary already uses, and two of the same service is not
+    a second path. Refused either way, for the reason that now applies.
 
     This test used to expect the opposite - "a rural DC asking for an
     ETHERNET backup gets broadband, which is a different failure domain" -
@@ -311,10 +321,10 @@ def test_a_backup_whose_bearer_does_not_reach_is_not_a_second_path(table):
     assert out["resilient"] is False
     assert out["outcome"] == serviceability.UNSERVICEABLE
     assert out["product"] is None
-    assert "no second access path is deliverable" in out["note"]
+    assert "Two of the same service is not a second path" in out["note"]
 
     # Not a bandwidth question. The same ask at a hundredth of the speed is
-    # refused for the same reason, which is what makes this about the bearer.
+    # refused for the same reason, which is what makes this about diversity.
     assert _backup(table, "RURAL", "ETHERNET", "ETHERNET",
                    mbps=100)["resilient"] is False
 
@@ -386,18 +396,25 @@ def _resolve_by_class(service_class, wanted=100, density="RURAL", country="DE"):
         service_class=service_class, wanted_mbps=wanted, asked_for="X")
 
 
-def test_a_committed_vpn_is_deliverable_where_a_dedicated_service_is_not():
+def test_a_committed_vpn_rides_what_is_there_and_ethernet_is_built():
     """The distinction the product-keyed table could not make. It asked "is
     MPLS available in rural Germany", which a carrier answers by whether it
     will sell there - and selling is not the constraint. Reaching is.
 
-    An IPVPN in a rural town is deliverable if a bearer reaches it. Ethernet
-    transport is not, because Ethernet transport is fibre and no fibre
-    reaches."""
+    An IPVPN in a rural town rides a bearer already there. Ethernet transport
+    is fibre, and this test used to say no fibre reaches - which removed 312
+    rural plants from their estates, because a factory asking for Ethernet had
+    nowhere to go. Fibre reaches by being built, and a factory builds. The
+    IPVPN does not, because the PON is there first."""
     from app.domain import access
 
-    assert _resolve_by_class(access.IPVPN)["outcome"] == serviceability.DELIVERED
-    assert _resolve_by_class(access.ETHERNET)["outcome"] == serviceability.UNSERVICEABLE
+    vpn = _resolve_by_class(access.IPVPN)
+    assert vpn["outcome"] == serviceability.DELIVERED
+    assert vpn["access_technology"] == "PON"
+
+    plant = _resolve_by_class(access.ETHERNET, wanted=1000)
+    assert plant["outcome"] == serviceability.DELIVERED
+    assert plant["access_technology"] == "ETHERNET_FIBRE"
 
 
 def test_the_outcome_names_the_bearer_that_carries_it():
@@ -455,13 +472,19 @@ def test_the_seeded_table_is_keyed_on_technologies_the_vocabulary_declares():
 
 
 def test_dense_urban_delivers_what_rural_cannot():
-    """The band has to matter, or the table is decoration."""
+    """The band has to matter, or the table is decoration.
+
+    Asked with DIA, because Ethernet now reaches both bands - rural by a
+    build - and the difference that survives is which bearer a DIA site
+    rides: fibre switched on in town, the PON already in the street in the
+    country, never a fibre build for a service PON can carry."""
     from app.domain import access
 
-    assert _resolve_by_class(access.ETHERNET, density="DENSE_URBAN")["outcome"] == (
-        serviceability.DELIVERED)
-    assert _resolve_by_class(access.ETHERNET, density="RURAL")["outcome"] == (
-        serviceability.UNSERVICEABLE)
+    town = _resolve_by_class(access.DIA, density="DENSE_URBAN")
+    country = _resolve_by_class(access.DIA, density="RURAL")
+    assert town["outcome"] == country["outcome"] == serviceability.DELIVERED
+    assert town["access_technology"] == "ETHERNET_FIBRE"
+    assert country["access_technology"] == "PON"
 
 
 # ------------- the loader, the pin and the lookup must agree on one key

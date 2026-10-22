@@ -1,0 +1,293 @@
+{
+  "slug": "totalenergies",
+  "legal_name": "TotalEnergies SE",
+  "industry": {
+    "industry": "INTEGRATED_OIL_GAS",
+    "origin": "ENTITY_RESOLUTION",
+    "resolution_said": null,
+    "agrees_with_resolution": null
+  },
+  "domicile": "FR",
+  "in_scope_countries": [
+    "FR",
+    "BE",
+    "DE"
+  ],
+  "base_currency": "USD",
+  "case_id": "0d8cfa49-fa9c-4815-828c-cdb1ccca5dc1",
+  "spec_path": "/src/samples/companies.json",
+  "spec_sha256": "8a2a2c5fbf5c",
+  "entity_resolution": {
+    "resolved": null,
+    "resumed": true
+  },
+  "resumed_existing_case": true,
+  "mode": "repromote",
+  "domains_already_researched_on_resume": [
+    1,
+    2,
+    6,
+    7,
+    8,
+    9,
+    10,
+    12,
+    13,
+    14,
+    15,
+    16,
+    18,
+    19,
+    20,
+    21,
+    22
+  ],
+  "footprint_origin": "RESEARCH_MERGED_WITH_DISCLOSURE",
+  "footprint_used": [
+    {
+      "country": "BE",
+      "archetype": "PLANT",
+      "sites": 2,
+      "density": "RURAL"
+    },
+    {
+      "country": "DE",
+      "archetype": "PLANT",
+      "sites": 1,
+      "density": "RURAL"
+    },
+    {
+      "country": "FR",
+      "archetype": "DC",
+      "sites": 1,
+      "density": "DENSE_URBAN"
+    },
+    {
+      "country": "FR",
+      "archetype": "LARGE_OFFICE",
+      "sites": 1,
+      "density": "DENSE_URBAN"
+    },
+    {
+      "country": "FR",
+      "archetype": "PLANT",
+      "sites": 6,
+      "density": "RURAL"
+    },
+    {
+      "country": "FR",
+      "archetype": "SERVICE_POINT",
+      "sites": 3250,
+      "density": "SUBURBAN"
+    }
+  ],
+  "footprint_provenance": [
+    {
+      "country": "BE",
+      "archetype": "WAREHOUSE",
+      "sites": 1,
+      "origin": "EXCLUDED_BY_SCOPE",
+      "reason": "a planned conversion of the Antwerp cracker to a logistics hub 'from 2029', with licensing only initiated. Not a site that exists today."
+    },
+    {
+      "country": "FR",
+      "archetype": "REMOTE_SITE",
+      "sites": 420,
+      "origin": "EXCLUDED_BY_SCOPE",
+      "reason": "420 solar and wind generation facilities. Generation assets, kept out of the enterprise estate on the basis that kept Iberdrola's grid assets out."
+    },
+    {
+      "country": "FR",
+      "archetype": "STORE",
+      "sites": 4000,
+      "origin": "EXCLUDED_BY_SCOPE",
+      "reason": "the 4,000 is labelled 'all sites combined, France (all site types)' - every TotalEnergies site in France, not a station count - and the station network is declared as FR/SERVICE_POINT 3,250."
+    },
+    {
+      "country": "BE",
+      "archetype": "PLANT",
+      "sites": 2,
+      "origin": "PUBLIC_DISCLOSURE",
+      "density": "RURAL"
+    },
+    {
+      "country": "DE",
+      "archetype": "PLANT",
+      "sites": 1,
+      "origin": "PUBLIC_DISCLOSURE",
+      "density": "RURAL"
+    },
+    {
+      "country": "FR",
+      "archetype": "DC",
+      "sites": 1,
+      "origin": "RESEARCHED",
+      "density": null
+    },
+    {
+      "country": "FR",
+      "archetype": "LARGE_OFFICE",
+      "sites": 1,
+      "origin": "RESEARCHED",
+      "density": null
+    },
+    {
+      "country": "FR",
+      "archetype": "PLANT",
+      "sites": 6,
+      "origin": "PUBLIC_DISCLOSURE",
+      "density": "RURAL"
+    },
+    {
+      "country": "FR",
+      "archetype": "SERVICE_POINT",
+      "sites": 3250,
+      "origin": "PUBLIC_DISCLOSURE",
+      "density": "SUBURBAN"
+    },
+    {
+      "origin": "DENSITY_FROM_MIX",
+      "rows": 2,
+      "sites": 2,
+      "filled": [
+        {
+          "country": "FR",
+          "archetype": "DC",
+          "sites": 1,
+          "basis": "INDUSTRY_DEFAULT",
+          "mix_industry": "INTEGRATED_OIL_GAS",
+          "bands": {
+            "DENSE_URBAN": 1
+          }
+        },
+        {
+          "country": "FR",
+          "archetype": "LARGE_OFFICE",
+          "sites": 1,
+          "basis": "INDUSTRY_DEFAULT",
+          "mix_industry": "INTEGRATED_OIL_GAS",
+          "bands": {
+            "DENSE_URBAN": 1
+          }
+        }
+      ],
+      "note": "the count and the site type are evidenced; the band is a governed sector default from reference.density_mix, not a finding about this client. It decides which bearers are tested, so it is worth replacing with what the client actually has."
+    }
+  ],
+  "scope_countries_modelled": [
+    "BE",
+    "DE",
+    "FR"
+  ],
+  "scope_countries_company_total": "DECLARED_UNKNOWN",
+  "scope_status": "PARTIAL_COUNTRIES",
+  "scope_note": "Baseline covers 3 country(ies) (BE, DE, FR) and the site types listed in sites_origin. The group's full country and site-type count is not sourced, so the share of the group this represents is DECLARED_UNKNOWN. This is baseline_in_scope, not a group baseline.",
+  "sites_origin": {
+    "DC": "RESEARCHED",
+    "LARGE_OFFICE": "RESEARCHED",
+    "PLANT": "ASSUMED_PUBLIC_DISCLOSURE",
+    "REMOTE_SITE": "ASSUMED_PUBLIC_DISCLOSURE",
+    "SERVICE_POINT": "ASSUMED_PUBLIC_DISCLOSURE",
+    "STORE": "ASSUMED_PUBLIC_DISCLOSURE",
+    "WAREHOUSE": "ASSUMED_PUBLIC_DISCLOSURE"
+  },
+  "fx_to_eur": {
+    "rate": "0.87110000",
+    "as_of": "2026-09-17",
+    "basis": "USD->EUR",
+    "evidence_grade": "B",
+    "source": "mid-market EUR/USD 1.1480 inverted, 17 September 2026; the rate used to read a German quote against this card",
+    "convention": "SPOT"
+  },
+  "seed": 20260101,
+  "ensemble_size": 25,
+  "domains_declared_unknown": [],
+  "domains_requested": [
+    1,
+    2,
+    6,
+    7,
+    8,
+    9,
+    10,
+    12,
+    13,
+    14,
+    15,
+    16,
+    18,
+    19,
+    20,
+    21,
+    22
+  ],
+  "domains_fell_back_unanswered": [],
+  "domains_researched": [
+    1,
+    2,
+    6,
+    7,
+    8,
+    9,
+    10,
+    12,
+    13,
+    14,
+    15,
+    16,
+    18,
+    19,
+    20,
+    21,
+    22
+  ],
+  "estimate_inputs": {
+    "method": "BUILD_UP",
+    "users": 39132,
+    "ops_cost_per_site_base": 900,
+    "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
+  },
+  "build": "4.272.0",
+  "run_started": "2026-10-22T11:35:34.137547+00:00",
+  "run_seconds": 6.4,
+  "preflight_conditions": 8,
+  "promotion": {
+    "promoted": true,
+    "detail": null,
+    "offered": 10,
+    "accepted": 5,
+    "declined": [
+      {
+        "reason": "sources disagree by 24% (500 to 619), and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
+        "label": "STORE – service stations, Belgium (JV with Couche-Tard, 40% TotalEnergies)",
+        "country": "BE",
+        "flags": [
+          "MATERIAL_SPREAD"
+        ]
+      }
+    ],
+    "declined_count": 1
+  },
+  "domains_benchmark_disposed": [
+    3,
+    4,
+    5,
+    11,
+    17,
+    23,
+    24
+  ],
+  "domains_with_no_agent": [
+    3,
+    4,
+    5,
+    11,
+    17,
+    23,
+    24
+  ],
+  "analyst_disposition_response": {
+    "stored": 7,
+    "provenance_dropped": []
+  }
+}

@@ -186,3 +186,40 @@ def test_operated_by_alone_does_not_decline():
 ])
 def test_somebody_elses_premises_are_not_offered(q):
     assert promotion._classify(q) == "unclassified", q["label"]
+
+
+# ------------------------------------------------------- a mixed count
+def test_a_count_not_all_managed_by_the_subject_is_mixed():
+    """network-rail GB/TERMINAL. 'total stations in GB rail network (owned,
+    not all managed by NR)' - 2,593 stations promoted over the 20 Network
+    Rail manages, the rest run by train operators."""
+    label = ("TERMINAL - total stations in GB rail network "
+             "(owned, not all managed by NR)")
+    assert promotion.not_their_premises(label)
+    assert promotion._classify({"label": label, "country": "GB",
+                                "unit": "stations", "value": 2593}) \
+        == "unclassified"
+
+
+def test_a_count_not_all_operated_by_a_third_party_is_mixed_too():
+    """The same grammar naming a third party is still a mixed count -
+    franchised plus company-run - so it declines either way."""
+    assert promotion.not_their_premises(
+        "STORE - network (not all operated by franchisees)")
+
+
+def test_a_bare_negation_is_not_caught():
+    """'not operated by franchisees' means the company DOES operate them.
+    Without 'all' the verdict depends on whose name follows, which the
+    classifier cannot know - so it must not decline."""
+    assert not promotion.not_their_premises(
+        "STORE - stores not operated by franchisees")
+    assert not promotion.not_their_premises(
+        "TERMINAL - stations not managed by NR")
+
+
+def test_the_managed_subset_still_promotes():
+    """The 20 stations Network Rail does manage are its estate."""
+    assert promotion._classify({
+        "label": "TERMINAL - Network Rail directly managed stations",
+        "country": "GB", "unit": "sites", "value": 20}) == "footprint"

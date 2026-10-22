@@ -20,8 +20,8 @@
   ],
   "base_currency": "JPY",
   "case_id": "effb620c-de53-4789-a329-72c589c5193e",
-  "spec_path": "/tmp/companies.json",
-  "spec_sha256": "ad37995b9e77",
+  "spec_path": "/src/samples/companies.json",
+  "spec_sha256": "8a2a2c5fbf5c",
   "entity_resolution": {
     "resolved": null,
     "resumed": true
@@ -100,7 +100,7 @@
     {
       "country": "JP",
       "archetype": "PLANT",
-      "sites": 17,
+      "sites": 16,
       "density": "RURAL"
     },
     {
@@ -129,6 +129,13 @@
       "sites": 587,
       "origin": "EXCLUDED_BY_SCOPE",
       "reason": "587 Toyota dealerships in India. A dealership is an independently owned business selling under the brand - it leases its own premises and buys its own access line - which is the basis that excluded 5,603 UPS Store franchises, 182 BNP Fintro branches and 2,516 Allianz tied agents."
+    },
+    {
+      "country": "JP",
+      "archetype": "PLANT",
+      "sites": 17,
+      "origin": "EXCLUDED_BY_SCOPE",
+      "reason": "DECLINED 2026-10-16 and never enforced until now: the 17 counts affiliate manufacturing companies as well as Toyota's own production sites. The declared 16 holds."
     },
     {
       "country": "BR",
@@ -193,11 +200,9 @@
     {
       "country": "JP",
       "archetype": "PLANT",
-      "sites": 17,
-      "origin": "SUPERSEDED_BY_RESEARCH",
-      "density": "RURAL",
-      "research_said": 17,
-      "disclosure_said": 16
+      "sites": 16,
+      "origin": "PUBLIC_DISCLOSURE",
+      "density": "RURAL"
     },
     {
       "country": "US",
@@ -298,13 +303,13 @@
   ],
   "estimate_inputs": {
     "method": "BUILD_UP",
-    "users": 792,
+    "users": 780,
     "ops_cost_per_site_base": 900,
     "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
   },
   "build": "4.272.0",
-  "run_started": "2026-10-19T20:07:35.931639+00:00",
-  "run_seconds": 2.3,
+  "run_started": "2026-10-22T11:35:25.014418+00:00",
+  "run_seconds": 2.5,
   "preflight_conditions": 8,
   "promotion": {
     "promoted": true,

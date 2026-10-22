@@ -64,6 +64,25 @@ services:
       TLS_PINS: ${TLS_PINS:-}
       TLS_PIN_EXPIRY_WARN_DAYS: ${TLS_PIN_EXPIRY_WARN_DAYS:-21}
       TLS_PIN_ALLOW_CERT_ONLY: ${TLS_PIN_ALLOW_CERT_ONLY:-false}
+    # The sample driver reads its spec and writes its output here.
+    #
+    # It has to run INSIDE this container, because it drives the workflow
+    # over http://127.0.0.1:8000 - a `docker compose run` container has no
+    # API listening on that port, so `exec` is the only option and `exec`
+    # cannot add a mount. Without this, --out /src/... fails on the first
+    # company and every one after it:
+    #
+    #   [FAIL] generali: FileNotFoundError:
+    #          '/src/samples/outside_in/_cases.json'
+    #
+    # Nine companies failed that way, nine for nine, before a single
+    # provider call. Cheap as failures go, and invisible as causes go.
+    #
+    # Only samples/ is mounted, not the repository root: the container has
+    # no business reading .env or .git, and the driver needs nothing else -
+    # its own code is baked at /app.
+    volumes:
+      - ./samples:/src/samples
     depends_on:
       db: {condition: service_healthy}
     ports: ["8000:8000"]

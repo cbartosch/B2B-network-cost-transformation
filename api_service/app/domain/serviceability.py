@@ -37,6 +37,25 @@ DELIVERED = "DELIVERED"
 SUBSTITUTED = "SUBSTITUTED"
 UNSERVICEABLE = "UNSERVICEABLE"
 
+# Bearers that reach a site only by being BUILT to it, by density band.
+#
+# Rural dedicated fibre is deliverable - seed.SERVICEABILITY says so, and its
+# cost is carried by the ETHERNET RURAL density multiplier, 2.00x urban - but
+# it is dug, surveyed and paid for, not switched on. That matters for WHICH
+# sites take it. A factory asking for Ethernet transport has nothing else
+# that can carry it, so it builds. A branch or a shop asking for DIA has a
+# PON or a copper line already in the street, and would not.
+#
+# Marking the row merely available made both build: the first version of the
+# rural change moved a synthetic 600 rural DIA sites from PON onto fibre at
+# the 1.8x DIA premium, which test_serviceability's Eifel discounter exists
+# to forbid. Holding the build back until nothing in place can carry the
+# service keeps the plants and leaves the shops where they were.
+#
+# Keyed on (density, technology), country-independent, matching the seed
+# rows for all five countries that have a rural row.
+BUILD_ONLY = frozenset({("RURAL", "ETHERNET_FIBRE")})
+
 # Preference order when the asked-for product cannot be delivered. Dedicated
 # access first, then shared, then mobile - which is the order of how much a
 # circuit can be relied on, not how much it costs. A cheaper substitute that
@@ -86,6 +105,15 @@ def _by_access(*, table: dict, country: str, density: str,
     """
     carriers = access.carriers_for(service_class)
     known = [t for t in carriers if (country, density, t) in table]
+    # A build goes to the back of the queue. "Best first" is right among
+    # bearers that are already there, and wrong for one that has to be dug:
+    # a rural DIA site would otherwise take a fibre build ahead of the PON on
+    # its street, because ETHERNET_FIBRE heads DIA's list. Behind everything
+    # else, a build is reached only when nothing in place can carry the
+    # service - which is the Ethernet transport a factory asks for, and not
+    # the DIA a branch or a shop asks for.
+    known = ([t for t in known if (density, t) not in BUILD_ONLY]
+             + [t for t in known if (density, t) in BUILD_ONLY])
     if not known:
         # Nothing recorded about any bearer this service could use. Silence,
         # not a constraint.

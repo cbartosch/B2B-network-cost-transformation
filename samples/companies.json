@@ -2009,6 +2009,11 @@
           "country": "IN",
           "archetype": "STORE",
           "reason": "587 Toyota dealerships in India. A dealership is an independently owned business selling under the brand - it leases its own premises and buys its own access line - which is the basis that excluded 5,603 UPS Store franchises, 182 BNP Fintro branches and 2,516 Allianz tied agents."
+        },
+        {
+          "country": "JP",
+          "archetype": "PLANT",
+          "reason": "DECLINED 2026-10-16 and never enforced until now: the 17 counts affiliate manufacturing companies as well as Toyota's own production sites. The declared 16 holds."
         }
       ]
     },
@@ -2139,6 +2144,11 @@
           "country": "AU",
           "archetype": "STORE",
           "reason": "the 1,729 is the group total - 'total store network comprised 1,729 retail stores across Australia AND New Zealand' - promoted into Australia alone. A sibling finding gives the Australian figure directly at 1,130, and the declaration is corrected to that instead."
+        },
+        {
+          "country": "AU",
+          "archetype": "DC",
+          "reason": "DECLINED and never enforced until now: the evidence conflates data centres with distribution centres under the letters DC. The declared 2 matches the data-centre evidence and holds."
         }
       ]
     },
@@ -2618,6 +2628,13 @@
           "sites": 4,
           "density": "SUBURBAN"
         }
+      ],
+      "excluded": [
+        {
+          "country": "DE",
+          "archetype": "BRANCH",
+          "reason": "DECLINED 2026-10-16 and never enforced until now: the source says 28 locations, the promoted figure was 30, and the row carried no as_of. The declared 0 holds."
+        }
       ]
     },
     {
@@ -2988,6 +3005,11 @@
           "country": "GB",
           "archetype": "STORE",
           "reason": "Customer Service Points are parcel drop-off desks AT delivery offices - the research says so itself. A counter inside a building is not a building. The count is exactly 1,200, which is the delivery-office count and the declared SERVICE_POINT figure, so this is the same estate a second time."
+        },
+        {
+          "country": "GB",
+          "archetype": "DC",
+          "reason": "DECLINED and never enforced until now: 10 is a pre-consolidation 2021 figure from an undated vendor case study. The declared 3 holds."
         }
       ]
     },
@@ -3144,6 +3166,1172 @@
           "country": "DE",
           "archetype": "CAMPUS",
           "reason": "the 3 are DATA CENTRES, not campuses - the source reads 'two data centers with a third as a back-up' - and this case already declares DE/DC 3, so promoting it adds the same buildings again under a second archetype. Frankfurt Airport is one campus of 2,300 hectares, which the Fraport Annual Report 2024 states directly."
+        }
+      ]
+    },
+    {
+      "slug": "generali",
+      "legal_name": "Assicurazioni Generali S.p.A.",
+      "industry": "INSURANCE",
+      "domicile": "IT",
+      "countries": [
+        "IT",
+        "AT"
+      ],
+      "currency": "EUR",
+      "aliases": [
+        "Generali",
+        "Assicurazioni Generali",
+        "Generali Group"
+      ],
+      "declared_footprint": [
+        {
+          "country": "IT",
+          "archetype": "BRANCH",
+          "sites": 800,
+          "density": "URBAN"
+        },
+        {
+          "country": "AT",
+          "archetype": "BRANCH",
+          "sites": 119,
+          "density": "URBAN"
+        }
+      ],
+      "declaration_note": "Company-operated sites only. Generali Italia/Cattolica agencies (~4,000 points of sale, self-employed agents), French agents généraux, German DVAG advisers and Spanish agent offices are independent intermediaries, not Generali sites, and are excluded. DE, FR and ES publish no company-run site count and are left out of scope. No data-centre or large-office count is published.",
+      "declaration_sources": [
+        {
+          "country": "IT",
+          "archetype": "BRANCH",
+          "sites": 800,
+          "stated": "presenti in 800 punti operativi nel Paese (Alleanza Assicurazioni, company-employed agency network)",
+          "source": "AziendaBanca, https://www.aziendabanca.it/notizie/assicurazioni/next-trasformazione-industriale-alleanza-assicurazioni",
+          "as_of": "2026-02",
+          "basis": "PUBLISHED (trade press reporting the company's statement)"
+        },
+        {
+          "country": "AT",
+          "archetype": "BRANCH",
+          "sites": 110,
+          "stated": "Rund 2.000 Kundenbetreuer_innen in 114 Geschäftsstellen",
+          "source": "Generali Österreich, Zahlen und Fakten 2025, https://eu-assets.contentstack.com/v3/assets/bltcba55c71291ad2c3/blt9d776ee908a27bd1/6a0c1cc04c91d12e44cb38dd/Generali_%C3%96sterreich_-_Zahlen_und_Fakten_2025.pdf",
+          "as_of": "FY2025",
+          "basis": "PUBLISHED, rounded down"
+        }
+      ],
+      "excluded": [
+        {
+          "country": "AT",
+          "archetype": "STORE",
+          "reason": "the 119 Geschaeftsstellen are Generali Oesterreich's branch offices - the declared AT/BRANCH network, typed STORE. Excluded as a double count; AT/BRANCH corrected to 119 instead."
+        },
+        {
+          "country": "IT",
+          "archetype": "STORE",
+          "reason": "Generali Italia's 1,857 agenzie are independent agents under mandate and its 4,671 sub-agenzie are their sub-agents - neither is Generali's premises or Generali's circuit. Same basis as Allianz's tied agents."
+        }
+      ]
+    },
+    {
+      "slug": "santander",
+      "legal_name": "Banco Santander, S.A.",
+      "industry": "UNIVERSAL_BANKING",
+      "domicile": "ES",
+      "countries": [
+        "ES",
+        "GB",
+        "PT"
+      ],
+      "currency": "EUR",
+      "aliases": [
+        "Santander",
+        "Banco Santander",
+        "Grupo Santander"
+      ],
+      "declared_footprint": [
+        {
+          "country": "ES",
+          "archetype": "BRANCH",
+          "sites": 1630,
+          "density": "URBAN"
+        },
+        {
+          "country": "GB",
+          "archetype": "BRANCH",
+          "sites": 308,
+          "density": "URBAN"
+        },
+        {
+          "country": "PT",
+          "archetype": "BRANCH",
+          "sites": 327,
+          "density": "URBAN"
+        },
+        {
+          "country": "ES",
+          "archetype": "CAMPUS",
+          "sites": 1,
+          "density": "SUBURBAN"
+        }
+      ],
+      "declaration_note": "PL excluded: the sale of Santander Bank Polska to Erste completed 9 Jan 2026 (9.7% retained). GB includes TSB, acquired 30 Apr 2026. Data centres are described as paired but no count is published. BR, MX, US and CL branch networks are large but left out to stay close to the peer's European scope.",
+      "declaration_sources": [
+        {
+          "country": "ES",
+          "archetype": "BRANCH",
+          "sites": 1490,
+          "stated": "Spain (*) 1,499 (includes Openbank's Spanish branches)",
+          "source": "Banco Santander H1 2026 Financial Report, note 15, https://www.santander.com/content/dam/santander-com/es/documentos/informacion-sobre-resultados-semestrales-y-anuales-suministrada-a-la-sec/2026/sec-semestral-6-k-ejercicio-2026-es.pdf",
+          "as_of": "2026-06-30",
+          "basis": "PUBLISHED, rounded down"
+        },
+        {
+          "country": "GB",
+          "archetype": "BRANCH",
+          "sites": 480,
+          "stated": "UK 484; Santander UK: Santander UK and TSB have 480 branches",
+          "source": "Santander UK H1 2026, https://www.sec.gov/Archives/edgar/data/0001649373/000164937326000032/san-20260630.htm",
+          "as_of": "2026-06-30",
+          "basis": "PUBLISHED"
+        },
+        {
+          "country": "PT",
+          "archetype": "BRANCH",
+          "sites": 280,
+          "stated": "Portugal 281",
+          "source": "Banco Santander H1 2026 Financial Report, note 15 (as above)",
+          "as_of": "2026-06-30",
+          "basis": "PUBLISHED, rounded down"
+        },
+        {
+          "country": "ES",
+          "archetype": "CAMPUS",
+          "sites": 1,
+          "stated": "our corporate centre in Boadilla del Monte (Madrid)",
+          "source": "Banco Santander Annual Report 2025, https://www.sec.gov/Archives/edgar/data/891478/000089147826000022/annualreport2025.pdf",
+          "as_of": "FY2025",
+          "basis": "PUBLISHED"
+        }
+      ],
+      "excluded": [
+        {
+          "country": "ES",
+          "archetype": "STORE",
+          "reason": "the 1,877 Spanish 'bank branches' are the network this spec declares as ES/BRANCH, typed STORE by research. Excluded as a double count; the declared BRANCH figure is corrected instead."
+        },
+        {
+          "country": "GB",
+          "archetype": "STORE",
+          "reason": "the 444 UK 'bank branches' are the declared GB/BRANCH network, typed STORE by research. Excluded as a double count; GB/BRANCH corrected instead."
+        },
+        {
+          "country": "PT",
+          "archetype": "STORE",
+          "reason": "the 328 Portuguese 'bank branches' are the declared PT/BRANCH network, typed STORE by research. Excluded as a double count; PT/BRANCH corrected instead."
+        }
+      ]
+    },
+    {
+      "slug": "totalenergies",
+      "legal_name": "TotalEnergies SE",
+      "industry": "INTEGRATED_OIL_GAS",
+      "domicile": "FR",
+      "countries": [
+        "FR",
+        "BE",
+        "DE"
+      ],
+      "currency": "USD",
+      "aliases": [
+        "TotalEnergies",
+        "Total",
+        "Total SA"
+      ],
+      "declared_footprint": [
+        {
+          "country": "FR",
+          "archetype": "SERVICE_POINT",
+          "sites": 3250,
+          "density": "SUBURBAN"
+        },
+        {
+          "country": "FR",
+          "archetype": "PLANT",
+          "sites": 6,
+          "density": "RURAL"
+        },
+        {
+          "country": "BE",
+          "archetype": "PLANT",
+          "sites": 2,
+          "density": "RURAL"
+        },
+        {
+          "country": "DE",
+          "archetype": "PLANT",
+          "sites": 1,
+          "density": "RURAL"
+        }
+      ],
+      "declaration_note": "DE and NL service stations were sold to Couche-Tard (Dec 2023 / Jan 2024) and BE/LU retail sits in a Couche-Tard-controlled joint venture (60%); all are excluded although still TotalEnergies-branded. The French 3,256 includes third-party-owned stations with no published split - the same branded-versus-operated question as Shell's forecourts. Zeeland (NL, 55% non-operated) excluded. Currency is USD, the reporting currency, as for Shell.",
+      "declaration_sources": [
+        {
+          "country": "FR",
+          "archetype": "SERVICE_POINT",
+          "sites": 3250,
+          "stated": "of which France 3,256 (section 2.6.3)",
+          "source": "TotalEnergies Universal Registration Document 2025, https://www.sec.gov/Archives/edgar/data/879764/000110465926035876/tot-20251231xex15d1.htm",
+          "as_of": "2025-12-31",
+          "basis": "PUBLISHED, rounded down"
+        },
+        {
+          "country": "FR",
+          "archetype": "PLANT",
+          "sites": 6,
+          "stated": "refineries at Donges, Feyzin and Gonfreville; biorefinery in La Mède; Grandpuits zero-crude platform; Carling petrochemical site",
+          "source": "TotalEnergies Universal Registration Document 2025 (as above)",
+          "as_of": "2025-12-31",
+          "basis": "PUBLISHED (named sites)"
+        },
+        {
+          "country": "BE",
+          "archetype": "PLANT",
+          "sites": 2,
+          "stated": "Antwerp refining and petrochemicals; Feluy",
+          "source": "TotalEnergies Universal Registration Document 2025 (as above)",
+          "as_of": "2025-12-31",
+          "basis": "PUBLISHED (named sites)"
+        },
+        {
+          "country": "DE",
+          "archetype": "PLANT",
+          "sites": 1,
+          "stated": "Leuna (100%) 227 kb/d",
+          "source": "TotalEnergies Universal Registration Document 2025 (as above)",
+          "as_of": "2025-12-31",
+          "basis": "PUBLISHED"
+        }
+      ],
+      "excluded": [
+        {
+          "country": "FR",
+          "archetype": "STORE",
+          "reason": "the 4,000 is labelled 'all sites combined, France (all site types)' - every TotalEnergies site in France, not a station count - and the station network is declared as FR/SERVICE_POINT 3,250."
+        },
+        {
+          "country": "FR",
+          "archetype": "REMOTE_SITE",
+          "reason": "420 solar and wind generation facilities. Generation assets, kept out of the enterprise estate on the basis that kept Iberdrola's grid assets out."
+        },
+        {
+          "country": "BE",
+          "archetype": "WAREHOUSE",
+          "reason": "a planned conversion of the Antwerp cracker to a logistics hub 'from 2029', with licensing only initiated. Not a site that exists today."
+        }
+      ]
+    },
+    {
+      "slug": "danone",
+      "legal_name": "Danone S.A.",
+      "industry": "FOOD_MANUFACTURING",
+      "domicile": "FR",
+      "countries": [
+        "FR",
+        "US",
+        "MX",
+        "PL",
+        "ES"
+      ],
+      "currency": "EUR",
+      "aliases": [
+        "Danone",
+        "Groupe Danone"
+      ],
+      "declared_footprint": [
+        {
+          "country": "FR",
+          "archetype": "PLANT",
+          "sites": 13,
+          "density": "RURAL"
+        },
+        {
+          "country": "US",
+          "archetype": "PLANT",
+          "sites": 12,
+          "density": "RURAL"
+        },
+        {
+          "country": "MX",
+          "archetype": "PLANT",
+          "sites": 35,
+          "density": "RURAL"
+        },
+        {
+          "country": "PL",
+          "archetype": "PLANT",
+          "sites": 7,
+          "density": "RURAL"
+        },
+        {
+          "country": "ES",
+          "archetype": "PLANT",
+          "sites": 5,
+          "density": "RURAL"
+        },
+        {
+          "country": "US",
+          "archetype": "LARGE_OFFICE",
+          "sites": 2,
+          "density": "URBAN"
+        },
+        {
+          "country": "PL",
+          "archetype": "LARGE_OFFICE",
+          "sites": 2,
+          "density": "URBAN"
+        }
+      ],
+      "declaration_note": "MX is the weakest row: a press account of a company anniversary, and most of the 35 are small water-bottling plants. DE (2 plants, Ochsenfurt closing Q4 2026) and TR (6 plants last stated 2023) left out. No warehouse or data-centre count: France's 12 non-production sites are not broken down and Mexican distribution-centre figures conflict.",
+      "declaration_sources": [
+        {
+          "country": "FR",
+          "archetype": "PLANT",
+          "sites": 13,
+          "stated": "25 sites en France, dont 13 sites de production",
+          "source": "Danone en France, https://www.danone.com/fr/fr/groupe/danone-en-france.html",
+          "as_of": "2025",
+          "basis": "PUBLISHED"
+        },
+        {
+          "country": "US",
+          "archetype": "PLANT",
+          "sites": 12,
+          "stated": "13 U.S. manufacturing facilities in 10 states, less Bridgeton NJ (closed 4 Aug 2026)",
+          "source": "Danone North America, https://www.danonenorthamerica.com/newsroom/details/danone-invests-into-americas-heartland.html; https://careers.danone.com/us/en/locations.html; https://fooddive.com/news/danone-to-close-plant-based-dairy-facility-in-new-jersey/819781/",
+          "as_of": "2025-08",
+          "basis": "PUBLISHED, adjusted for a closure"
+        },
+        {
+          "country": "MX",
+          "archetype": "PLANT",
+          "sites": 35,
+          "stated": "presencia nacional a través de 35 plantas",
+          "source": "InformaBTL, Grupo Danone celebra 50 años en México, https://www.informabtl.com/grupo-danone-celebra-50-anos-en-mexico/",
+          "as_of": "2024-11",
+          "basis": "PUBLISHED (press)"
+        },
+        {
+          "country": "PL",
+          "archetype": "PLANT",
+          "sites": 7,
+          "stated": "Grupa spółek Danone w Polsce ma siedem zakładów produkcyjnych (7 named)",
+          "source": "xyz.pl interview with the Danone Poland MD, https://xyz.pl/danone-chce-by-polska-w-wiekszym-stopniu-wplywala-na-przyszlosc-calej-grupy/",
+          "as_of": "2025-01",
+          "basis": "PUBLISHED"
+        },
+        {
+          "country": "ES",
+          "archetype": "PLANT",
+          "sites": 5,
+          "stated": "sus tres plantas de envasado de agua, plus the Aldaia and Tres Cantos dairy plants",
+          "source": "Alimarket, https://www.alimarket.es/alimentacion/noticia_amp/410492/danone-impulsa-el-segmento-de-aguas-con-inversiones-millonarias-en-sus-plantas-de-envasado; Ara, https://es.ara.cat/economia/mercado-laboral/danone-quiere-cerrar-historica-fabrica-parets-valles_1_4908279.html",
+          "as_of": "2025-06",
+          "basis": "PUBLISHED (sum of named plants; Parets closed, Salas sold)"
+        },
+        {
+          "country": "US",
+          "archetype": "LARGE_OFFICE",
+          "sites": 2,
+          "stated": "Danone North America (HQ): White Plains NY and Louisville CO",
+          "source": "https://careers.danone.com/us/en/locations.html",
+          "as_of": "2026",
+          "basis": "PUBLISHED"
+        },
+        {
+          "country": "PL",
+          "archetype": "LARGE_OFFICE",
+          "sites": 2,
+          "stated": "W 9 lokalizacjach w kraju, less the 7 plants: the Warsaw office and the Katowice planning centre",
+          "source": "Danone Poland press release, https://nutricia.pl/biuro-prasowe/pobierz/36?x=1",
+          "as_of": "2026-01",
+          "basis": "PUBLISHED"
+        }
+      ],
+      "excluded": [
+        {
+          "country": "US",
+          "archetype": "PLANT",
+          "reason": "DECLINED: research's 13 is the count before the Bridgeton NJ plant closed on 4 August 2025, confirmed by two sources. 13 less Bridgeton is 12, the declared figure."
+        }
+      ]
+    },
+    {
+      "slug": "henkel",
+      "legal_name": "Henkel AG & Co. KGaA",
+      "industry": "HOUSEHOLD_PERSONAL_CARE",
+      "domicile": "DE",
+      "countries": [
+        "DE",
+        "US",
+        "MX",
+        "CN"
+      ],
+      "currency": "EUR",
+      "aliases": [
+        "Henkel"
+      ],
+      "declared_footprint": [
+        {
+          "country": "DE",
+          "archetype": "PLANT",
+          "sites": 6,
+          "density": "SUBURBAN"
+        },
+        {
+          "country": "US",
+          "archetype": "PLANT",
+          "sites": 18,
+          "density": "SUBURBAN"
+        },
+        {
+          "country": "MX",
+          "archetype": "PLANT",
+          "sites": 9,
+          "density": "SUBURBAN"
+        },
+        {
+          "country": "CN",
+          "archetype": "PLANT",
+          "sites": 2,
+          "density": "SUBURBAN"
+        },
+        {
+          "country": "MX",
+          "archetype": "LARGE_OFFICE",
+          "sites": 1,
+          "density": "URBAN"
+        },
+        {
+          "country": "MX",
+          "archetype": "WAREHOUSE",
+          "sites": 3,
+          "density": "SUBURBAN"
+        },
+        {
+          "country": "CN",
+          "archetype": "LARGE_OFFICE",
+          "sites": 1,
+          "density": "URBAN"
+        },
+        {
+          "country": "DE",
+          "archetype": "CAMPUS",
+          "sites": 1,
+          "density": "URBAN"
+        }
+      ],
+      "declaration_note": "FR, ES and PL are down to 1-2 plants each and are left out. CN is a named minimum (two plants) kept so research can add to it; Henkel publishes only a combined ~30 plants, offices and R&D centres for China. The Mexico figures date from 2023. Group context: 165 production sites in 53 countries (2025 sustainability indicators).",
+      "declaration_sources": [
+        {
+          "country": "DE",
+          "archetype": "PLANT",
+          "sites": 6,
+          "stated": "named production sites: Düsseldorf, Heidelberg, Bopfingen, Hannover, Herborn-Schönbach, Wassertrüdingen",
+          "source": "https://www.henkel.com/company/locations; https://www.henkel.de/resource/blob/2067002/e9c49dc8ed166e141d0a000968ca25b2/data/2025-06-25-henkel-presseinformation-100-jahre-schoenbach.pdf",
+          "as_of": "2024-2025",
+          "basis": "PUBLISHED (count of named sites)"
+        },
+        {
+          "country": "US",
+          "archetype": "PLANT",
+          "sites": 18,
+          "stated": "about 20 production sites in the U.S. (CEO, via Reuters), reduced for 'about' and the Oak Creek WI closure",
+          "source": "https://www.stockopedia.com/share-prices/henkel-ag-co-kga-a-ETR:HEN/news/henkel-sees-continued-sales-growth-in-2025-updated-019e69b1-b0f5-7128-9a42-9e30c4efaa83/; https://www.wearegreenbay.com/news/local-news/chemical-consumer-goods-facility-in-wisconsin-shutting-down-57-layoffs-ahead/amp/",
+          "as_of": "2025-03",
+          "basis": "PUBLISHED, reduced"
+        },
+        {
+          "country": "MX",
+          "archetype": "PLANT",
+          "sites": 9,
+          "stated": "una Planta en Monterrey, Irapuato, Salamanca y Santiago, dos en Toluca y tres en Guadalajara",
+          "source": "Henkel Mexico press release, https://www.henkel.com/resource/blob/1889984/0d0d24eb0f67e3b5d25615a598586fc6/data/pr-henkelday2023.pdf",
+          "as_of": "2023-09",
+          "basis": "PUBLISHED"
+        },
+        {
+          "country": "CN",
+          "archetype": "PLANT",
+          "sites": 2,
+          "stated": "Shanghai Dragon Plant; Yantai Kunpeng plant",
+          "source": "https://www.henkel.com/resource/blob/26860/8aa9cd4b24ff62d4a4efeb277fbbd73b/data/henkel-opens-worlds-largest-adhesives-factory-in-china.pdf; https://www.itbear.com.cn/html/2025-03/753103.html",
+          "as_of": "2025",
+          "basis": "PUBLISHED (named minimum)"
+        },
+        {
+          "country": "MX",
+          "archetype": "LARGE_OFFICE",
+          "sites": 1,
+          "stated": "oficina corporativa en Interlomas",
+          "source": "Henkel Mexico press release (as above)",
+          "as_of": "2023-09",
+          "basis": "PUBLISHED"
+        },
+        {
+          "country": "MX",
+          "archetype": "WAREHOUSE",
+          "sites": 3,
+          "stated": "Centro de Distribución en Toluca, Tlalnepantla y Guadalajara",
+          "source": "Henkel Mexico press release (as above)",
+          "as_of": "2023-09",
+          "basis": "PUBLISHED"
+        }
+      ],
+      "excluded": [
+        {
+          "country": "CN",
+          "archetype": "PLANT",
+          "reason": "DECLINED: the 4 mixes the Henkel Management Centre in New Jiangwan, a 1,500-person office, with plants. The plants it names are Dragon and Kunpeng - the declared 2. The office is declared separately as CN/LARGE_OFFICE."
+        },
+        {
+          "country": "DE",
+          "archetype": "LARGE_OFFICE",
+          "reason": "the Duesseldorf-Holthausen headquarters and main site, which research itself says 'maps to CAMPUS archetype': over 6,000 Henkel staff and 11,000 people on site. Typed an office it is undersized; declared as DE/CAMPUS 1 instead."
+        }
+      ]
+    },
+    {
+      "slug": "abb",
+      "legal_name": "ABB Ltd",
+      "industry": "INDUSTRIAL_CONGLOMERATE",
+      "domicile": "CH",
+      "countries": [
+        "CH",
+        "SE",
+        "DE",
+        "US",
+        "IT",
+        "CN",
+        "IN",
+        "CA"
+      ],
+      "currency": "USD",
+      "aliases": [
+        "ABB",
+        "ABB Group"
+      ],
+      "declared_footprint": [
+        {
+          "country": "CH",
+          "archetype": "PLANT",
+          "sites": 6,
+          "density": "SUBURBAN"
+        },
+        {
+          "country": "DE",
+          "archetype": "PLANT",
+          "sites": 4,
+          "density": "SUBURBAN"
+        },
+        {
+          "country": "US",
+          "archetype": "PLANT",
+          "sites": 20,
+          "density": "SUBURBAN"
+        },
+        {
+          "country": "IT",
+          "archetype": "PLANT",
+          "sites": 4,
+          "density": "SUBURBAN"
+        },
+        {
+          "country": "CN",
+          "archetype": "PLANT",
+          "sites": 10,
+          "density": "SUBURBAN"
+        },
+        {
+          "country": "IN",
+          "archetype": "PLANT",
+          "sites": 4,
+          "density": "SUBURBAN"
+        },
+        {
+          "country": "CA",
+          "archetype": "PLANT",
+          "sites": 14,
+          "density": "SUBURBAN"
+        },
+        {
+          "country": "CH",
+          "archetype": "LARGE_OFFICE",
+          "sites": 2,
+          "density": "URBAN"
+        },
+        {
+          "country": "DE",
+          "archetype": "LARGE_OFFICE",
+          "sites": 1,
+          "density": "URBAN"
+        },
+        {
+          "country": "SE",
+          "archetype": "LARGE_OFFICE",
+          "sites": 1,
+          "density": "URBAN"
+        }
+      ],
+      "declaration_note": "US is the least certain row: ABB publishes only a combined manufacturing-plus-distribution count there. The robotics division sale to SoftBank was due to close mid-to-late 2026 and no completion was found, so CN and US may still include robotics sites; SE carries no plant row because its main factories are robotics. DE, IT and IN are named minimums (ABB states 35 locations in Germany; press reports 8-9 Italian plants, unverified). Currency is USD, the reporting currency.",
+      "declaration_sources": [
+        {
+          "country": "CH",
+          "archetype": "PLANT",
+          "sites": 6,
+          "stated": "sites listed under Produktion/Engineering, excluding HQ, the research centre and Zürich",
+          "source": "ABB Schweiz Standorte, https://new.abb.com/docs/librariesprovider27/situationsplaene/standorte-chabb-produktion-engineering-2024.pdf",
+          "as_of": "2025-01",
+          "basis": "PUBLISHED"
+        },
+        {
+          "country": "CH",
+          "archetype": "LARGE_OFFICE",
+          "sites": 2,
+          "stated": "Baden (Hauptsitz) and Zürich",
+          "source": "ABB Schweiz Standorte (as above)",
+          "as_of": "2025-01",
+          "basis": "PUBLISHED"
+        },
+        {
+          "country": "DE",
+          "archetype": "PLANT",
+          "sites": 4,
+          "stated": "Heidelberg, Lüdenscheid, Sasbach, Ratingen",
+          "source": "https://new.abb.com/low-voltage/de/service/factory-touren; https://www.abb.com/global/en/company/stories/germany",
+          "as_of": "2025-07",
+          "basis": "PUBLISHED (named minimum)"
+        },
+        {
+          "country": "DE",
+          "archetype": "LARGE_OFFICE",
+          "sites": 1,
+          "stated": "ABB Campus in Mannheim ist Hauptsitz",
+          "source": "https://new.abb.com/de/ueber-uns/standorte",
+          "as_of": "2026",
+          "basis": "PUBLISHED"
+        },
+        {
+          "country": "US",
+          "archetype": "PLANT",
+          "sites": 20,
+          "stated": "approximately 40 manufacturing and distribution facilities",
+          "source": "ABB, Engineered for America, https://new.abb.com/us/engineered-for-america",
+          "as_of": "2026",
+          "basis": "APPORTIONED: 40 x 14/27 (ABB Canada's manufacturing share of its plants plus distribution sites), rounded down"
+        },
+        {
+          "country": "IT",
+          "archetype": "PLANT",
+          "sites": 4,
+          "stated": "stabilimenti di Bergamo, Dalmine e Frosinone, plus Santa Palomba",
+          "source": "https://new.abb.com/news/it/detail/117541/buon-compleanno-sace-abb-marks-90-years-of-innovation; https://new.abb.com/news/it/detail/136993/lighthouse-plant-il-progetto-che-ha-guidato-la-trasformazione-digitale-delle-fabbriche-abb-in-italia",
+          "as_of": "2024-2026",
+          "basis": "PUBLISHED (named minimum)"
+        },
+        {
+          "country": "CN",
+          "archetype": "PLANT",
+          "sites": 10,
+          "stated": "10 main manufacturing facilities and hubs",
+          "source": "ABB China story, https://www.abb.com/global/en/company/stories/china-sustainable-growth",
+          "as_of": "2025-05",
+          "basis": "PUBLISHED"
+        },
+        {
+          "country": "IN",
+          "archetype": "PLANT",
+          "sites": 4,
+          "stated": "Nelamangala, Peenya, Nashik, Vadodara, of nearly 25 manufacturing, distribution and operating facilities",
+          "source": "ABB India press release, https://new.abb.com/news/detail/134015/abb-invests-75-million-in-india-to-expand-manufacturing-and-rd-for-critical-segments",
+          "as_of": "2026-03",
+          "basis": "PUBLISHED (named sites)"
+        },
+        {
+          "country": "CA",
+          "archetype": "PLANT",
+          "sites": 14,
+          "stated": "14 manufacturing sites",
+          "source": "ABB Canada fact sheet, https://new.abb.com/docs/librariesprovider16/default-document-library/jan-2026_fact-sheet-abb-canada_eng",
+          "as_of": "2026-01",
+          "basis": "PUBLISHED"
+        },
+        {
+          "country": "SE",
+          "archetype": "LARGE_OFFICE",
+          "sites": 1,
+          "stated": "huvudkontoret är beläget i Västerås",
+          "source": "ABB Sverige, https://new.abb.com/se/om-abb/kort",
+          "as_of": "2026",
+          "basis": "PUBLISHED"
+        }
+      ],
+      "excluded": [
+        {
+          "country": "CA",
+          "archetype": "BRANCH",
+          "reason": "DECLINED: an aggregator count of 'locations' mixing manufacturing and offices, typed BRANCH. ABB runs no branch network, and Canada is declared as CA/PLANT 14."
+        },
+        {
+          "country": "US",
+          "archetype": "BRANCH",
+          "reason": "DECLINED: an aggregator count of '~41 locations (all types)', self-described as incomplete, typed BRANCH. ABB USA is declared as US/PLANT 20, which this would double."
+        }
+      ]
+    },
+    {
+      "slug": "heidelberg-materials",
+      "legal_name": "Heidelberg Materials AG",
+      "industry": "BUILDING_MATERIALS",
+      "domicile": "DE",
+      "countries": [
+        "DE",
+        "US",
+        "GB",
+        "FR",
+        "IT",
+        "PL"
+      ],
+      "currency": "EUR",
+      "aliases": [
+        "Heidelberg Materials",
+        "HeidelbergCement"
+      ],
+      "declared_footprint": [
+        {
+          "country": "US",
+          "archetype": "REMOTE_SITE",
+          "sites": 300,
+          "density": "RURAL"
+        },
+        {
+          "country": "FR",
+          "archetype": "REMOTE_SITE",
+          "sites": 290,
+          "density": "RURAL"
+        },
+        {
+          "country": "DE",
+          "archetype": "REMOTE_SITE",
+          "sites": 240,
+          "density": "RURAL"
+        },
+        {
+          "country": "GB",
+          "archetype": "REMOTE_SITE",
+          "sites": 200,
+          "density": "RURAL"
+        },
+        {
+          "country": "IT",
+          "archetype": "REMOTE_SITE",
+          "sites": 120,
+          "density": "RURAL"
+        },
+        {
+          "country": "PL",
+          "archetype": "REMOTE_SITE",
+          "sites": 75,
+          "density": "RURAL"
+        },
+        {
+          "country": "IT",
+          "archetype": "PLANT",
+          "sites": 14,
+          "density": "RURAL"
+        },
+        {
+          "country": "US",
+          "archetype": "PLANT",
+          "sites": 13,
+          "density": "RURAL"
+        },
+        {
+          "country": "DE",
+          "archetype": "PLANT",
+          "sites": 9,
+          "density": "RURAL"
+        },
+        {
+          "country": "FR",
+          "archetype": "PLANT",
+          "sites": 7,
+          "density": "RURAL"
+        },
+        {
+          "country": "GB",
+          "archetype": "PLANT",
+          "sites": 3,
+          "density": "RURAL"
+        },
+        {
+          "country": "PL",
+          "archetype": "PLANT",
+          "sites": 2,
+          "density": "RURAL"
+        }
+      ],
+      "declaration_note": "Mapping: cement plants and grinding stations are PLANT; quarries, aggregates pits and depots, and ready-mix and asphalt plants are REMOTE_SITE. A batching plant is a small yard on one dispatch link, nearer REMOTE_SITE's bandwidth than PLANT's, and research findings should be read the same way - a researched count of ready-mix plants filed as PLANT would replace the declared cement plants and inflate the estate. The German ~170 ready-mix figure may include equity-held TBG plants; the five European countries sum to ~660 ready-mix plants against a Europe-wide 786 (Dec 2025), so some undated country pages may run high. Excluded: CA (no separate ready-mix or aggregates count), BE, the Nordics, UK slag-grinding and asphalt, offices and data centres (no counts published).",
+      "declaration_sources": [
+        {
+          "country": "DE",
+          "archetype": "PLANT",
+          "sites": 9,
+          "stated": "produziert … an 10 Standorten; hat beschlossen, das Zementwerk in Paderborn endgültig stillzulegen",
+          "source": "https://www.heidelbergmaterials.de/de/zement/zementwerke; https://www.heidelbergmaterials.com/system/files/2026-03/HM_DE_260306.pdf",
+          "as_of": "2026-03-06",
+          "basis": "PUBLISHED (10 less 1 closure)"
+        },
+        {
+          "country": "DE",
+          "archetype": "REMOTE_SITE",
+          "sites": 240,
+          "stated": "about 70 locations (aggregates); bundesweit rund 170 Transportbetonwerke",
+          "source": "https://www.heidelbergmaterials.com/en/company/group-areas-and-countries/europe/germany; https://www.heidelbergmaterials.de/de/beton",
+          "as_of": "undated",
+          "basis": "PUBLISHED (sum)"
+        },
+        {
+          "country": "US",
+          "archetype": "PLANT",
+          "sites": 13,
+          "stated": "13 strategically located cement plants",
+          "source": "https://www.heidelbergmaterials.com/en/company/group-areas-and-countries/north-america/usa",
+          "as_of": "undated",
+          "basis": "PUBLISHED"
+        },
+        {
+          "country": "US",
+          "archetype": "REMOTE_SITE",
+          "sites": 300,
+          "stated": "US+Canada: more than 200 aggregate production sites and distribution terminals; 141 ready-mix plants; 32 asphalt plants (US only)",
+          "source": "https://www.heidelbergmaterials.us/products; Capital Market Slides Q1 2026, slide 12, https://www.heidelbergmaterials.com/system/files/2026-05/Heidelberg_Materials_Capital_Market_Slides_Q1_2026.pdf",
+          "as_of": "2025-12",
+          "basis": "APPORTIONED: (200 + 141) x 13/16 (US share of the 16 North American cement plants) + 32 = 309, rounded down"
+        },
+        {
+          "country": "GB",
+          "archetype": "PLANT",
+          "sites": 3,
+          "stated": "our three cement plants nationwide",
+          "source": "https://www.heidelbergmaterials.co.uk/en/cement",
+          "as_of": "undated",
+          "basis": "PUBLISHED"
+        },
+        {
+          "country": "GB",
+          "archetype": "REMOTE_SITE",
+          "sites": 200,
+          "stated": "over 80 quarries, depots and wharves; over 120 static and mobile … plants",
+          "source": "https://www.heidelbergmaterials.co.uk/en/about-us/company-structure; https://www.heidelbergmaterials.co.uk/en/ready-mixed-concrete",
+          "as_of": "undated",
+          "basis": "PUBLISHED (sum; the lower of two ready-mix figures used)"
+        },
+        {
+          "country": "FR",
+          "archetype": "PLANT",
+          "sites": 7,
+          "stated": "7 cimenteries sur le territoire métropolitain",
+          "source": "Heidelberg Materials France press release, https://s3-site.artsetmetiers.fr/public/2025-06/250617_CP_Arts%20et%20M%C3%A9tiers_Ch%C3%A2lons_Heidelberg%20RP%20(002)%204.pdf",
+          "as_of": "2025-06-17",
+          "basis": "PUBLISHED"
+        },
+        {
+          "country": "FR",
+          "archetype": "REMOTE_SITE",
+          "sites": 290,
+          "stated": "plus de 300 sites de production dont près d'une centaine de carrières et 7 cimenteries",
+          "source": "Heidelberg Materials France press release (as above)",
+          "as_of": "2025-06-17",
+          "basis": "PUBLISHED (300 less 7, rounded down)"
+        },
+        {
+          "country": "IT",
+          "archetype": "PLANT",
+          "sites": 14,
+          "stated": "9 cementerie a ciclo completo, 1 … prodotti speciali e 4 centri di macinazione",
+          "source": "https://www.heidelbergmaterials.it/it/impianti",
+          "as_of": "undated",
+          "basis": "PUBLISHED"
+        },
+        {
+          "country": "IT",
+          "archetype": "REMOTE_SITE",
+          "sites": 120,
+          "stated": "oltre 120 impianti di betonaggio (quarries not counted)",
+          "source": "https://www.heidelbergmaterials.it/it/impianti",
+          "as_of": "undated",
+          "basis": "PUBLISHED"
+        },
+        {
+          "country": "PL",
+          "archetype": "PLANT",
+          "sites": 2,
+          "stated": "a cement plant … at Górażdże; a grinding plant near Katowice",
+          "source": "https://www.heidelbergmaterials.com/en/company/group-areas-and-countries/europe/poland",
+          "as_of": "undated",
+          "basis": "PUBLISHED"
+        },
+        {
+          "country": "PL",
+          "archetype": "REMOTE_SITE",
+          "sites": 75,
+          "stated": "17 plants (sand and gravel); 59 ready-mixed concrete plants",
+          "source": "https://www.heidelbergmaterials.com/en/company/group-areas-and-countries/europe/poland",
+          "as_of": "undated",
+          "basis": "PUBLISHED (76, rounded down)"
+        }
+      ],
+      "excluded": [
+        {
+          "country": "DE",
+          "archetype": "PLANT",
+          "reason": "DECLINED: research's 10 cement and grinding plants predate the permanent closure of the Paderborn cement plant in March 2026. Hanover stopped clinker but continues as a grinding plant and still counts. 10 less Paderborn is 9, the declared figure."
+        }
+      ]
+    },
+    {
+      "slug": "anglo-american",
+      "legal_name": "Anglo American plc",
+      "industry": "DIVERSIFIED_MINING",
+      "domicile": "GB",
+      "countries": [
+        "GB",
+        "CL",
+        "PE",
+        "ZA",
+        "BR"
+      ],
+      "currency": "USD",
+      "aliases": [
+        "Anglo American"
+      ],
+      "declared_footprint": [
+        {
+          "country": "GB",
+          "archetype": "REMOTE_SITE",
+          "sites": 1,
+          "density": "RURAL"
+        },
+        {
+          "country": "GB",
+          "archetype": "LARGE_OFFICE",
+          "sites": 1,
+          "density": "URBAN"
+        },
+        {
+          "country": "CL",
+          "archetype": "CONTROL_CENTER",
+          "sites": 1,
+          "density": "URBAN"
+        },
+        {
+          "country": "CL",
+          "archetype": "PLANT",
+          "sites": 3,
+          "density": "RURAL"
+        },
+        {
+          "country": "PE",
+          "archetype": "PLANT",
+          "sites": 1,
+          "density": "RURAL"
+        },
+        {
+          "country": "ZA",
+          "archetype": "PLANT",
+          "sites": 2,
+          "density": "RURAL"
+        },
+        {
+          "country": "BR",
+          "archetype": "PLANT",
+          "sites": 1,
+          "density": "RURAL"
+        },
+        {
+          "country": "ZA",
+          "archetype": "WAREHOUSE",
+          "sites": 1,
+          "density": "RURAL"
+        }
+      ],
+      "declaration_note": "Operations, not every pit. Excluded as divested or not operated, per the H1 2026 results (https://www.angloamerican.com/media/press-releases/2026/30-07-2026): steelmaking coal (sale to Dhilmar, closing expected Q1 2027), Brazilian nickel (sale to MMG in EU review), De Beers (sale in final stages), platinum (demerged 31 May 2025), Samancor manganese (managed by South32), Collahuasi (44%, independently managed) and the Açu port (50% JV). The Teck merger awaits only China's approval (expected by March 2027); on completion the company becomes Anglo Teck plc headquartered in Vancouver and this entry must be redone. Regional offices (Johannesburg, Singapore, Lima, Belo Horizonte) are known from addresses but not counted, as for the peer.",
+      "declaration_sources": [
+        {
+          "country": "CL",
+          "archetype": "REMOTE_SITE",
+          "sites": 3,
+          "stated": "Los Bronces mine, which we manage and operate … we also manage and operate the El Soldado mine and the Chagres smelter",
+          "source": "Anglo American Integrated Annual Report 2025, p.131, https://www.angloamerican.com/~/media/Files/A/Anglo-American-Group-v9/PLC/investors/annual-reporting/2025/aa-annual-report-full-2025.pdf",
+          "as_of": "2025-12-31",
+          "basis": "PUBLISHED"
+        },
+        {
+          "country": "ZA",
+          "archetype": "REMOTE_SITE",
+          "sites": 2,
+          "stated": "Kumba operates two open-pit mines - Sishen and Kolomela",
+          "source": "Anglo American Integrated Annual Report 2025, p.137 (as above)",
+          "as_of": "2025-12-31",
+          "basis": "PUBLISHED"
+        },
+        {
+          "country": "PE",
+          "archetype": "REMOTE_SITE",
+          "sites": 1,
+          "stated": "our Quellaveco mine in Peru",
+          "source": "Anglo American Integrated Annual Report 2025, p.130 (as above)",
+          "as_of": "2025-12-31",
+          "basis": "PUBLISHED"
+        },
+        {
+          "country": "BR",
+          "archetype": "REMOTE_SITE",
+          "sites": 1,
+          "stated": "we own 85% of the integrated Minas-Rio operation",
+          "source": "Anglo American Integrated Annual Report 2025, p.136 (as above)",
+          "as_of": "2025-12-31",
+          "basis": "PUBLISHED"
+        },
+        {
+          "country": "GB",
+          "archetype": "REMOTE_SITE",
+          "sites": 1,
+          "stated": "developing the Woodsmith project … north east of England",
+          "source": "Anglo American Integrated Annual Report 2025, p.144 (as above)",
+          "as_of": "2025-12-31",
+          "basis": "PUBLISHED"
+        },
+        {
+          "country": "GB",
+          "archetype": "LARGE_OFFICE",
+          "sites": 1,
+          "stated": "17 Charterhouse Street, London EC1N 6RA; UK head office",
+          "source": "Anglo American Integrated Annual Report 2025, back cover (as above)",
+          "as_of": "2025-12-31",
+          "basis": "PUBLISHED"
+        },
+        {
+          "country": "CL",
+          "archetype": "CONTROL_CENTER",
+          "sites": 1,
+          "stated": "Centro Integrado de Operación Remota … controlar Los Bronces … desde Santiago",
+          "source": "Anglo American Chile press release, https://chile.angloamerican.com/es-es/medios/noticias/pr-2021/2021-04-07",
+          "as_of": "2021-04 (reported still operating Nov 2025)",
+          "basis": "PUBLISHED"
+        }
+      ],
+      "excluded": [
+        {
+          "country": "CL",
+          "archetype": "PLANT",
+          "reason": "research's 4 Chilean sites are Los Bronces, El Soldado, Collahuasi and the Chagres smelter. Collahuasi is a joint venture - 44% Anglo American, 44% Glencore, 12% a Japanese consortium - operated by its own company, and a non-operated JV is not Anglo's estate on the same basis that excluded Volkswagen's Chinese JVs. The other three are operated by Anglo American Sur and are declared."
+        },
+        {
+          "country": "BR",
+          "archetype": "PLANT",
+          "reason": "research's 2 Brazilian sites are Minas-Rio and Barro Alto. Barro Alto is nickel, and Anglo American sold its nickel business to MMG in 2025. Minas-Rio is declared."
+        },
+        {
+          "country": "CL",
+          "archetype": "LARGE_OFFICE",
+          "reason": "research's own label is 'Chile (Santiago HQ/IROC)' - one building, the Santiago head office housing the Integrated Remote Operations Centre, which this spec already declares as CL/CONTROL_CENTER 1. Typing it LARGE_OFFICE as well counts the building twice; it is priced once, at the CONTROL_CENTER profile the IROC needs."
+        },
+        {
+          "country": "BR",
+          "archetype": "DC",
+          "reason": "DECLINED: two Minas-Rio data centre nodes from a 2021 project article. The mine-side node shares the connectivity of the mine declared as BR/PLANT; the port-side node sits at a terminal outside this estate."
+        }
+      ]
+    },
+    {
+      "slug": "air-france-klm",
+      "legal_name": "Air France-KLM S.A.",
+      "industry": "AIRLINES",
+      "domicile": "FR",
+      "countries": [
+        "FR",
+        "NL"
+      ],
+      "currency": "EUR",
+      "aliases": [
+        "Air France-KLM",
+        "Air France",
+        "KLM"
+      ],
+      "declared_footprint": [
+        {
+          "country": "FR",
+          "archetype": "REMOTE_SITE",
+          "sites": 20,
+          "density": "SUBURBAN"
+        },
+        {
+          "country": "NL",
+          "archetype": "REMOTE_SITE",
+          "sites": 4,
+          "density": "SUBURBAN"
+        },
+        {
+          "country": "FR",
+          "archetype": "LARGE_OFFICE",
+          "sites": 2,
+          "density": "URBAN"
+        },
+        {
+          "country": "NL",
+          "archetype": "LARGE_OFFICE",
+          "sites": 0,
+          "density": "URBAN"
+        }
+      ],
+      "declaration_note": "REMOTE_SITE covers airport stations and maintenance sites, as for the peer. 16 French airports is a floor (Transavia serves more). Air France left Orly at the end of March 2026, but Transavia and the maintenance arm remain there. Excluded: data centres (none disclosed by the company), the Toulouse finance centre and the Schiphol shared-services centre (they may share buildings already counted), overseas territories, and hub control rooms.",
+      "declaration_sources": [
+        {
+          "country": "FR",
+          "archetype": "REMOTE_SITE",
+          "sites": 20,
+          "stated": "Air France is a member of 16 CCEs in France, including … Paris-CDG and Paris-Orly; principal maintenance sites: Toulouse, Amsterdam, Villeneuve-le-Roi, Roissy, and Orly",
+          "source": "Air France-KLM Universal Registration Document 2025, pp.316 and 52, https://www.airfranceklm.com/sites/default/files/2026-03/urd-2025-veng.pdf",
+          "as_of": "2025-12-31",
+          "basis": "PUBLISHED (16 airports + 4 French maintenance sites)"
+        },
+        {
+          "country": "NL",
+          "archetype": "REMOTE_SITE",
+          "sites": 4,
+          "stated": "Transavia bases in the Netherlands (Amsterdam, Rotterdam, and Eindhoven), plus the Amsterdam maintenance site",
+          "source": "Air France-KLM Universal Registration Document 2025, pp.48 and 52 (as above)",
+          "as_of": "2025-12-31",
+          "basis": "PUBLISHED (sum)"
+        },
+        {
+          "country": "FR",
+          "archetype": "LARGE_OFFICE",
+          "sites": 2,
+          "stated": "7, rue du Cirque, 75008 Paris (group); 45, rue de Paris, 95747 Roissy (Air France)",
+          "source": "Air France-KLM Universal Registration Document 2025, pp.515 and 117 (as above)",
+          "as_of": "2025-12-31",
+          "basis": "PUBLISHED"
+        },
+        {
+          "country": "NL",
+          "archetype": "LARGE_OFFICE",
+          "sites": 1,
+          "stated": "KLM, Amsterdamseweg 55 … Amstelveen",
+          "source": "Air France-KLM Universal Registration Document 2025, p.86 (as above)",
+          "as_of": "2025-12-31",
+          "basis": "PUBLISHED"
         }
       ]
     }
