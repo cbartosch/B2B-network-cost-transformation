@@ -1,13 +1,13 @@
 {
-  "simulation_run_id": "b6ca609e-34d5-4032-a80b-ec651f8dfdb4",
+  "simulation_run_id": "85aa5a97-2945-4e56-9e8a-1ed7e3c9e950",
   "case_id": "01739fa6-24eb-4f55-93d8-059ac60241f9",
   "model_version": "sim-2.7.0",
   "seed": 20260101,
   "ensemble_size": 25,
   "status": "SUCCEEDED",
-  "output_hash": "16beb52988519e0f4640e3a8735c865a3dd8b4af5a423541688e9ddf69fd6e6f",
-  "started_at": "2026-10-19 20:08:09.368895+00:00",
-  "ended_at": "2026-10-19 20:08:09.453634+00:00",
+  "output_hash": "f45f7acf6134c32810ec003c68d84f88435a67b88b67901ff5af3ff9ceda0c53",
+  "started_at": "2026-10-22 10:53:06.669795+00:00",
+  "ended_at": "2026-10-22 10:53:06.797751+00:00",
   "params": {
     "footprint": [
       {
@@ -356,14 +356,6 @@
       {
         "country": "DE",
         "density_band": "RURAL",
-        "product": "ETHERNET_FIBRE",
-        "access_technology": "ETHERNET_FIBRE",
-        "available": false,
-        "max_bandwidth_mbps": null
-      },
-      {
-        "country": "DE",
-        "density_band": "RURAL",
         "product": "DARK_FIBRE",
         "access_technology": "DARK_FIBRE",
         "available": false,
@@ -624,14 +616,6 @@
         "access_technology": "MOBILE_4G",
         "available": true,
         "max_bandwidth_mbps": 50
-      },
-      {
-        "country": "FR",
-        "density_band": "RURAL",
-        "product": "ETHERNET_FIBRE",
-        "access_technology": "ETHERNET_FIBRE",
-        "available": false,
-        "max_bandwidth_mbps": null
       },
       {
         "country": "FR",
@@ -900,14 +884,6 @@
       {
         "country": "US",
         "density_band": "RURAL",
-        "product": "ETHERNET_FIBRE",
-        "access_technology": "ETHERNET_FIBRE",
-        "available": false,
-        "max_bandwidth_mbps": null
-      },
-      {
-        "country": "US",
-        "density_band": "RURAL",
         "product": "DARK_FIBRE",
         "access_technology": "DARK_FIBRE",
         "available": false,
@@ -976,41 +952,35 @@
         "access_technology": "SATELLITE",
         "available": true,
         "max_bandwidth_mbps": 50
+      },
+      {
+        "country": "DE",
+        "density_band": "RURAL",
+        "product": "ETHERNET_FIBRE",
+        "access_technology": "ETHERNET_FIBRE",
+        "available": true,
+        "max_bandwidth_mbps": 1000
+      },
+      {
+        "country": "FR",
+        "density_band": "RURAL",
+        "product": "ETHERNET_FIBRE",
+        "access_technology": "ETHERNET_FIBRE",
+        "available": true,
+        "max_bandwidth_mbps": 1000
+      },
+      {
+        "country": "US",
+        "density_band": "RURAL",
+        "product": "ETHERNET_FIBRE",
+        "access_technology": "ETHERNET_FIBRE",
+        "available": true,
+        "max_bandwidth_mbps": 1000
       }
     ]
   },
   "pinned_priors": {
     "archetype_prior": {
-      "SELF_SERVICE_TERMINAL": {
-        "dual_access_probability": 0.15,
-        "primary_product": "MOBILE_5G",
-        "backup_product": "BROADBAND_PON",
-        "users_base": 0,
-        "bandwidth_mbps_base": 50,
-        "committed_fraction": "0.250",
-        "primary_service_class": "BEST_EFFORT",
-        "backup_service_class": "BEST_EFFORT"
-      },
-      "ATM": {
-        "dual_access_probability": 0.55,
-        "primary_product": "MOBILE_5G",
-        "backup_product": "BROADBAND_PON",
-        "users_base": 0,
-        "bandwidth_mbps_base": 50,
-        "committed_fraction": "0.600",
-        "primary_service_class": "BEST_EFFORT",
-        "backup_service_class": "BEST_EFFORT"
-      },
-      "LEGACY_WAN_SITE": {
-        "dual_access_probability": 0.6,
-        "primary_product": "MPLS",
-        "backup_product": "BROADBAND_PON",
-        "users_base": 40,
-        "bandwidth_mbps_base": 100,
-        "committed_fraction": "0.800",
-        "primary_service_class": "IPVPN",
-        "backup_service_class": "BEST_EFFORT"
-      },
       "BRANCH": {
         "dual_access_probability": 0.55,
         "primary_product": "DIA",
@@ -1129,6 +1099,36 @@
         "bandwidth_mbps_base": 50,
         "committed_fraction": "0.300",
         "primary_service_class": "BEST_EFFORT",
+        "backup_service_class": "BEST_EFFORT"
+      },
+      "SELF_SERVICE_TERMINAL": {
+        "dual_access_probability": 0.15,
+        "primary_product": "MOBILE_5G",
+        "backup_product": "BROADBAND_PON",
+        "users_base": 0,
+        "bandwidth_mbps_base": 50,
+        "committed_fraction": "0.250",
+        "primary_service_class": "BEST_EFFORT",
+        "backup_service_class": "BEST_EFFORT"
+      },
+      "ATM": {
+        "dual_access_probability": 0.55,
+        "primary_product": "MOBILE_5G",
+        "backup_product": "BROADBAND_PON",
+        "users_base": 0,
+        "bandwidth_mbps_base": 50,
+        "committed_fraction": "0.600",
+        "primary_service_class": "BEST_EFFORT",
+        "backup_service_class": "BEST_EFFORT"
+      },
+      "LEGACY_WAN_SITE": {
+        "dual_access_probability": 0.6,
+        "primary_product": "MPLS",
+        "backup_product": "BROADBAND_PON",
+        "users_base": 40,
+        "bandwidth_mbps_base": 100,
+        "committed_fraction": "0.800",
+        "primary_service_class": "IPVPN",
         "backup_service_class": "BEST_EFFORT"
       },
       "DEFAULT/BRANCH": {
@@ -1913,10 +1913,10 @@
     "model_version": "sim-2.7.0",
     "seed": 20260101,
     "ensemble_size": 25,
-    "sites": 55,
+    "sites": 98,
     "serviceability": {
       "counts": {
-        "DELIVERED": 50,
+        "DELIVERED": 93,
         "SUBSTITUTED": 5,
         "UNSERVICEABLE": 0
       },
@@ -1931,40 +1931,15 @@
       "by_access_technology": [
         {
           "access_technology": "ETHERNET_FIBRE",
-          "sites": 23
+          "sites": 66
         }
       ],
       "unserviceable": 0,
-      "note": "5 of 55 site(s) take a different product or tier from the one their type asks for, and 0 can be served by nothing at all. A uniform estate is an assumption; this is what the density bands say about it.",
+      "note": "5 of 98 site(s) take a different product or tier from the one their type asks for, and 0 can be served by nothing at all. A uniform estate is an assumption; this is what the density bands say about it.",
       "table_rows": 102,
       "table_basis": "GOVERNED"
     },
-    "unserviceable": [
-      {
-        "country": "DE",
-        "archetype": "PLANT",
-        "density": "RURAL",
-        "sites": 18,
-        "asked_for": "ETHERNET",
-        "reason": "no bearer that can carry a ETHERNET is available in RURAL DE - ETHERNET_FIBRE, DARK_FIBRE are recorded and none is deliverable"
-      },
-      {
-        "country": "FR",
-        "archetype": "PLANT",
-        "density": "RURAL",
-        "sites": 5,
-        "asked_for": "ETHERNET",
-        "reason": "no bearer that can carry a ETHERNET is available in RURAL FR - ETHERNET_FIBRE, DARK_FIBRE are recorded and none is deliverable"
-      },
-      {
-        "country": "US",
-        "archetype": "PLANT",
-        "density": "RURAL",
-        "sites": 20,
-        "asked_for": "ETHERNET",
-        "reason": "no bearer that can carry a ETHERNET is available in RURAL US - ETHERNET_FIBRE, DARK_FIBRE are recorded and none is deliverable"
-      }
-    ],
+    "unserviceable": [],
     "single_by_necessity": [
       {
         "because": "NOT_DELIVERABLE",
@@ -2009,21 +1984,21 @@
     ],
     "estate_truncated": 0,
     "sites_named": 0,
-    "sites_generated": 55,
+    "sites_generated": 98,
     "circuits": {
-      "low": 103,
-      "base": 105,
-      "high": 108
+      "low": 180,
+      "base": 185,
+      "high": 188
     },
     "circuits_primary": {
-      "low": 55,
-      "base": 55,
-      "high": 55
+      "low": 98,
+      "base": 98,
+      "high": 98
     },
     "circuits_backup": {
-      "low": 42,
-      "base": 44,
-      "high": 47
+      "low": 76,
+      "base": 81,
+      "high": 84
     },
     "products": [
       {
@@ -2053,7 +2028,7 @@
         "product": "BROADBAND_PON",
         "role": "BACKUP",
         "bandwidth_mbps": 1000,
-        "count": 8,
+        "count": 6,
         "service_class": "BEST_EFFORT",
         "density": "RURAL",
         "bearer_mbps": 1000,
@@ -2072,10 +2047,21 @@
       },
       {
         "country": "DE",
+        "product": "BROADBAND_PON",
+        "role": "BACKUP",
+        "bandwidth_mbps": 100,
+        "count": 15,
+        "service_class": "BEST_EFFORT",
+        "density": "RURAL",
+        "bearer_mbps": 100,
+        "access_technology": "PON"
+      },
+      {
+        "country": "DE",
         "product": "DIA",
         "role": "BACKUP",
         "bandwidth_mbps": 1000,
-        "count": 10,
+        "count": 9,
         "service_class": "DIA",
         "density": "URBAN",
         "bearer_mbps": 1000,
@@ -2115,11 +2101,22 @@
         "access_technology": "ETHERNET_FIBRE"
       },
       {
+        "country": "DE",
+        "product": "ETHERNET",
+        "role": "PRIMARY",
+        "bandwidth_mbps": 600,
+        "count": 18,
+        "service_class": "ETHERNET",
+        "density": "RURAL",
+        "bearer_mbps": 1000,
+        "access_technology": "ETHERNET_FIBRE"
+      },
+      {
         "country": "ES",
         "product": "BROADBAND_PON",
         "role": "BACKUP",
         "bandwidth_mbps": 1000,
-        "count": 4,
+        "count": 3,
         "service_class": "BEST_EFFORT",
         "density": "RURAL",
         "bearer_mbps": 1000,
@@ -2148,11 +2145,33 @@
         "access_technology": "ETHERNET_FIBRE"
       },
       {
+        "country": "FR",
+        "product": "BROADBAND_PON",
+        "role": "BACKUP",
+        "bandwidth_mbps": 100,
+        "count": 4,
+        "service_class": "BEST_EFFORT",
+        "density": "RURAL",
+        "bearer_mbps": 100,
+        "access_technology": "PON"
+      },
+      {
+        "country": "FR",
+        "product": "ETHERNET",
+        "role": "PRIMARY",
+        "bandwidth_mbps": 600,
+        "count": 5,
+        "service_class": "ETHERNET",
+        "density": "RURAL",
+        "bearer_mbps": 1000,
+        "access_technology": "ETHERNET_FIBRE"
+      },
+      {
         "country": "IN",
         "product": "BROADBAND_PON",
         "role": "BACKUP",
         "bandwidth_mbps": 1000,
-        "count": 3,
+        "count": 4,
         "service_class": "BEST_EFFORT",
         "density": "RURAL",
         "bearer_mbps": 1000,
@@ -2193,6 +2212,17 @@
       },
       {
         "country": "US",
+        "product": "BROADBAND_PON",
+        "role": "BACKUP",
+        "bandwidth_mbps": 100,
+        "count": 20,
+        "service_class": "BEST_EFFORT",
+        "density": "RURAL",
+        "bearer_mbps": 100,
+        "access_technology": "PON"
+      },
+      {
+        "country": "US",
         "product": "DIA",
         "role": "BACKUP",
         "bandwidth_mbps": 1000,
@@ -2212,15 +2242,26 @@
         "density": "URBAN",
         "bearer_mbps": 1000,
         "access_technology": "ETHERNET_FIBRE"
+      },
+      {
+        "country": "US",
+        "product": "ETHERNET",
+        "role": "PRIMARY",
+        "bandwidth_mbps": 600,
+        "count": 20,
+        "service_class": "ETHERNET",
+        "density": "RURAL",
+        "bearer_mbps": 1000,
+        "access_technology": "ETHERNET_FIBRE"
       }
     ],
     "dual_access_sites": {
-      "low": 42,
-      "base": 44,
-      "high": 47
+      "low": 76,
+      "base": 81,
+      "high": 84
     },
     "circuits_backbone": 6,
-    "circuits_per_site_base": 1.9091,
+    "circuits_per_site_base": 1.8776,
     "implied_users": 44500,
     "bandwidth_profile": {
       "PLANT": {
@@ -2286,12 +2327,12 @@
       "backbone_circuits": 6,
       "note": "One region with data centres (EUROPE_CENTRAL), so there is no global core tier - a hub has nothing to reach across."
     },
-    "node_count": 55,
-    "edge_count": 105
+    "node_count": 98,
+    "edge_count": 184
   },
   "output_omitted": {
     "fields": [
-      "estate (55 rows)",
+      "estate (98 rows)",
       "sample_topology (2 rows)"
     ],
     "why": "per-site arrays, the same information the aggregates carry; tools/backfill_simulation.py --full keeps them"

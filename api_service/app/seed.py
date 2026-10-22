@@ -1709,14 +1709,43 @@ SERVICEABILITY = [
         ("SUBURBAN", "MOBILE_5G", True, 200),
         ("SUBURBAN", "MOBILE_4G", True, 50),
 
-        # Rural is where a retail estate's assumptions break. Dedicated fibre
-        # is a build rather than a service, so it is unavailable rather than
-        # expensive: an estimate that prices a circuit nobody can deliver is
-        # worse than one that reports it cannot be delivered.
+        # Rural dedicated fibre is a BUILD, and a build is deliverable - it is
+        # quoted, surveyed and paid for as an excess construction charge.
         #
-        # Copper and cable still reach, which is why a best-effort or a
-        # committed VPN is deliverable here and a DIA is not.
-        ("RURAL", "ETHERNET_FIBRE", False, None),
+        # This row used to say False, reasoning that "dedicated fibre is a
+        # build rather than a service, so it is unavailable rather than
+        # expensive". That is a RETAIL assumption, and the comment said so -
+        # "rural is where a retail estate's assumptions break". A rural shop
+        # will not fund a fibre build and buys broadband instead. A rural
+        # FACTORY funds one as a matter of course: it is how industrial sites
+        # are connected.
+        #
+        # The retail reading was applied to every site type, because this
+        # table has no site-type dimension. So every rural PLANT, which asks
+        # for Ethernet and has no substitute in its product pair, came back
+        # unserviceable and was removed from its estate and priced at nothing:
+        # 312 sites across nine companies, 59% of michelin's plants, 44% of
+        # bayer's. The comment's own promise - "reports it cannot be
+        # delivered" - was never kept, and the coverage gate said COMPLETE.
+        #
+        # Available now, with the premium where it belongs. The ETHERNET RURAL
+        # row of DENSITY_COST_MULTIPLIER prices a rural tail at 2.00x urban
+        # (1.25 to 3.20), "dominated by excess construction, which is why its
+        # range is the widest on the card". That multiplier was always meant
+        # to carry this cost; it had nothing to apply to.
+        #
+        # Available is not the same as first choice. A rural BRANCH or
+        # WAREHOUSE asks for DIA, and DIA's carriers start with fibre - so the
+        # first version of this change moved them onto a build too, ahead of
+        # the PON already in their street. serviceability.BUILD_ONLY holds a
+        # build back until nothing in place can carry the service: a factory
+        # asking for Ethernet transport gets one, a branch asking for DIA
+        # stays on PON. STORE never asks for fibre at all.
+        #
+        # 1000 Mbps, the urban tier: a built tail runs the same optics as an
+        # urban one. DARK_FIBRE stays unavailable - that is a distinct product
+        # and nothing here argues for it.
+        ("RURAL", "ETHERNET_FIBRE", True, 1000),
         ("RURAL", "DARK_FIBRE", False, None),
         ("RURAL", "PON", True, 100),
         ("RURAL", "HFC", True, 200),

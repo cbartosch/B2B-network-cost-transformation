@@ -154,7 +154,9 @@ def derive_scope(*, sim_output: dict, priors: dict,
 
 def assess(*, scope: list[dict], layers_in_scope: list, layers_priced: set,
            policy: CoveragePolicy,
-           declared_spend_by_country: dict | None = None) -> dict:
+           declared_spend_by_country: dict | None = None,
+           unserviceable: list | None = None,
+           simulated_sites: int | None = None) -> dict:
     # No thresholds dict with code defaults behind it: the policy is required
     # and was validated when it was loaded from reference data.
     from .estimate import expired_share
@@ -184,6 +186,28 @@ def assess(*, scope: list[dict], layers_in_scope: list, layers_priced: set,
     # Unsizable scope cannot hide from a circuit count, so the worse of the two
     # governs. This is what closes the audit finding.
     effective = min(value_pct, circuit_pct)
+
+    # And an unserviceable site cannot hide from a SITE count.
+    #
+    # A site the simulation could not connect produces no circuit, so it is
+    # absent from both the value and the circuit tests above - it is not
+    # unpriced, it is simply not there. 312 sites across nine companies were
+    # removed this way, rural plants asking for an Ethernet bearer the seed
+    # serviceability table marks undeliverable, and the estimates said
+    # nothing: michelin, 58 of its 98 plants gone, reported COMPLETE with
+    # "all coverage tests passed".
+    #
+    # The serviceability table's own comment says a circuit nobody can
+    # deliver should be REPORTED, not priced. This is where the report was
+    # supposed to happen. The share joins the same min() as value and
+    # circuits, so the same governed thresholds decide what it means rather
+    # than a new one invented for it.
+    dropped_rows = [u for u in (unserviceable or []) if int(u.get("sites") or 0)]
+    dropped = sum(int(u["sites"]) for u in dropped_rows)
+    site_pct = D(1)
+    if dropped and simulated_sites is not None:
+        site_pct = D(int(simulated_sites)) / D(int(simulated_sites) + dropped)
+        effective = min(effective, site_pct)
 
     by_country: dict[str, list] = {}
     for r in scope:
@@ -222,14 +246,20 @@ def assess(*, scope: list[dict], layers_in_scope: list, layers_priced: set,
         reason = (f"effective coverage {effective:.1%} is below the absolute floor "
                   f"{t['v0_prior_coverage_floor']:.0%}; an estimate priced on less "
                   f"than two-fifths of its own scope is not an estimate")
+        if dropped:
+            reason += "; " + _unserviceable_note(dropped_rows, dropped, site_pct)
     elif (effective < t["v0_prior_coverage_min"] or unsizable or material_breaches
           or layer_pct < t["v0_product_coverage_min"]):
         status = "PARTIAL"
         bits = []
         if effective < t["v0_prior_coverage_min"]:
+            # Sites named when they bind, or "value 100%, circuits 100%" sits
+            # beside an effective 40.8% with nothing to account for it.
+            sites = f", sites {site_pct:.1%}" if dropped else ""
             bits.append(f"effective coverage {effective:.1%} below minimum "
                         f"{t['v0_prior_coverage_min']:.0%} "
-                        f"(value {value_pct:.1%}, circuits {circuit_pct:.1%})")
+                        f"(value {value_pct:.1%}, circuits {circuit_pct:.1%}"
+                        f"{sites})")
         if unsizable:
             bits.append("scope that cannot be sized at any approved rate: "
                         + ", ".join(f"{c}/{p}" for c, p in unsizable))
@@ -238,14 +268,24 @@ def assess(*, scope: list[dict], layers_in_scope: list, layers_priced: set,
         if layer_pct < t["v0_product_coverage_min"]:
             bits.append(f"layer coverage {layer_pct:.0%} below minimum "
                         f"{t['v0_product_coverage_min']:.0%}")
+        if dropped:
+            bits.append(_unserviceable_note(dropped_rows, dropped, site_pct))
         reason = "; ".join(bits)
+    elif dropped:
+        # Inside every threshold, so not PARTIAL - but not silent either. A
+        # sentence beginning "all coverage tests passed" is read as "nothing
+        # is missing", and something is.
+        status = "COMPLETE"
+        reason = ("all coverage tests passed; "
+                  + _unserviceable_note(dropped_rows, dropped, site_pct))
     else:
         status, reason = "COMPLETE", "all coverage tests passed"
 
     out = {
         "status": status, "reason": reason,
         "effective_coverage_pct": f"{effective:.3f}",
-        "coverage_basis": "MIN_OF_VALUE_AND_CIRCUIT_COVERAGE",
+        "coverage_basis": ("MIN_OF_VALUE_CIRCUIT_AND_SITE_COVERAGE" if dropped
+                           else "MIN_OF_VALUE_AND_CIRCUIT_COVERAGE"),
         "priced_spend_pct": f"{value_pct:.3f}",
         "circuit_coverage_pct": f"{circuit_pct:.3f}",
         "priced_spend": as_str(priced_value), "total_estimated_spend": as_str(total_value),
@@ -253,6 +293,16 @@ def assess(*, scope: list[dict], layers_in_scope: list, layers_priced: set,
         "spend_basis": "DERIVED_FROM_SIMULATED_SCOPE_AND_PRIORS",
         "unpriced_countries": unpriced_countries,
         "unpriced_pairs": [f"{c}/{p}" for c, p in unpriced_pairs],
+        # Sites the simulation could not connect at all, and so priced at
+        # nothing. Separate from unpriced_pairs, which are circuits that exist
+        # without a rate: these have no circuit to rate.
+        "unserviceable_sites": dropped,
+        "site_coverage_pct": f"{site_pct:.3f}",
+        "unserviceable": [
+            {"country": u.get("country"), "archetype": u.get("archetype"),
+             "density": u.get("density"), "sites": int(u["sites"]),
+             "asked_for": u.get("asked_for"), "reason": u.get("reason")}
+            for u in dropped_rows],
         # What share of the priced value rests on an indicative seeded price
         # rather than an approved benchmark. Both were approved=True and
         # indistinguishable, so coverage reported 100% priced on a portfolio
@@ -320,6 +370,15 @@ def assess(*, scope: list[dict], layers_in_scope: list, layers_priced: set,
                 sorted(set(by_country) - set(declared_spend_by_country)),
         }
     return out
+
+
+def _unserviceable_note(rows: list, dropped: int, site_pct) -> str:
+    """One sentence naming what fell out of the estate and why it matters."""
+    by = ", ".join(f"{r.get('country')}/{r.get('archetype')} {int(r['sites'])}"
+                   for r in sorted(rows, key=lambda r: -int(r["sites"])))
+    return (f"{dropped} site(s) the simulation could not connect are absent "
+            f"from the estimate and priced at nothing ({by}); site coverage "
+            f"{site_pct:.1%}")
 
 
 def prior_recency(priors: dict, current_year: int, policy: CoveragePolicy) -> Decimal:

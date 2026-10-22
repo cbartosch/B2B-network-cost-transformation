@@ -1,0 +1,4105 @@
+{
+  "estimate_snapshot_id": "87a5ed1b-8170-41cd-9ff7-747218f0aa9e",
+  "v0_status": "PARTIAL",
+  "current_tco": {
+    "low": "3171102.63",
+    "base": "6368593.93",
+    "high": "11534195.25"
+  },
+  "by_layer": {
+    "L0": {
+      "low": "965590.48",
+      "base": "2732905.93",
+      "high": "5937432.79"
+    },
+    "L2": {
+      "low": "515140.03",
+      "base": "840180.00",
+      "high": "1273566.62"
+    },
+    "L4": {
+      "low": "869712.08",
+      "base": "1649808.00",
+      "high": "2689935.89"
+    },
+    "OPS": {
+      "low": "820660.03",
+      "base": "1145700.00",
+      "high": "1633259.95"
+    }
+  },
+  "origin_breakdown": {
+    "ANALYST_ENTERED_SCOPE": {
+      "value": "5582230.64",
+      "share": "0.8765"
+    },
+    "SIMULATED": {
+      "value": "786363.29",
+      "share": "0.1235"
+    }
+  },
+  "components": [
+    {
+      "key": "L0_backup_DE_BROADBAND_PON_100M_rural",
+      "layer": "L0",
+      "driver": "circuits",
+      "quantity": 163,
+      "quantity_origin": "SIMULATED",
+      "unit_cost_origin": "BENCHMARK_PRIOR",
+      "product": "BROADBAND_PON",
+      "role": "BACKUP",
+      "service_class": "BEST_EFFORT",
+      "access_technology": "PON",
+      "bearer_mbps": 100,
+      "committed_mbps": 100,
+      "density_band": "RURAL",
+      "density_multiplier": "1.120",
+      "source_ref": null,
+      "value": {
+        "low": "100801.04",
+        "base": "148850.22",
+        "high": "214858.21"
+      }
+    },
+    {
+      "key": "L0_primary_DE_ETHERNET_600M_rural_priced_at_1000M",
+      "layer": "L0",
+      "driver": "circuits",
+      "quantity": 9,
+      "quantity_origin": "ANALYST_ENTERED_SCOPE",
+      "unit_cost_origin": "BENCHMARK_PRIOR",
+      "product": "ETHERNET",
+      "role": "PRIMARY",
+      "service_class": "ETHERNET",
+      "access_technology": "ETHERNET_FIBRE",
+      "bearer_mbps": 1000,
+      "committed_mbps": 600,
+      "density_band": "RURAL",
+      "density_multiplier": "2.000",
+      "source_ref": null,
+      "value": {
+        "low": "110189.79",
+        "base": "235197.00",
+        "high": "470243.47"
+      }
+    },
+    {
+      "key": "L0_primary_DE_MOBILE_5G_100M_rural",
+      "layer": "L0",
+      "driver": "circuits",
+      "quantity": 240,
+      "quantity_origin": "ANALYST_ENTERED_SCOPE",
+      "unit_cost_origin": "BENCHMARK_PRIOR",
+      "product": "MOBILE_5G",
+      "role": "PRIMARY",
+      "service_class": "BEST_EFFORT",
+      "access_technology": "MOBILE_5G",
+      "bearer_mbps": 100,
+      "committed_mbps": 100,
+      "density_band": "RURAL",
+      "density_multiplier": "1.050",
+      "source_ref": null,
+      "value": {
+        "low": "107877.02",
+        "base": "202833.89",
+        "high": "392371.32"
+      }
+    },
+    {
+      "key": "L0_backup_FR_BROADBAND_PON_100M_rural",
+      "layer": "L0",
+      "driver": "circuits",
+      "quantity": 208,
+      "quantity_origin": "SIMULATED",
+      "unit_cost_origin": "BENCHMARK_PRIOR",
+      "product": "BROADBAND_PON",
+      "role": "BACKUP",
+      "service_class": "BEST_EFFORT",
+      "access_technology": "PON",
+      "bearer_mbps": 100,
+      "committed_mbps": 100,
+      "density_band": "RURAL",
+      "density_multiplier": "1.120",
+      "source_ref": null,
+      "value": {
+        "low": "113105.30",
+        "base": "165592.07",
+        "high": "240256.35"
+      }
+    },
+    {
+      "key": "L0_primary_FR_ETHERNET_600M_rural_priced_at_1000M",
+      "layer": "L0",
+      "driver": "circuits",
+      "quantity": 7,
+      "quantity_origin": "ANALYST_ENTERED_SCOPE",
+      "unit_cost_origin": "BENCHMARK_PRIOR",
+      "product": "ETHERNET",
+      "role": "PRIMARY",
+      "service_class": "ETHERNET",
+      "access_technology": "ETHERNET_FIBRE",
+      "bearer_mbps": 1000,
+      "committed_mbps": 600,
+      "density_band": "RURAL",
+      "density_multiplier": "2.000",
+      "source_ref": null,
+      "value": {
+        "low": "82318.95",
+        "base": "175613.76",
+        "high": "351227.52"
+      }
+    },
+    {
+      "key": "L0_primary_FR_MOBILE_5G_100M_rural",
+      "layer": "L0",
+      "driver": "circuits",
+      "quantity": 290,
+      "quantity_origin": "ANALYST_ENTERED_SCOPE",
+      "unit_cost_origin": "BENCHMARK_PRIOR",
+      "product": "MOBILE_5G",
+      "role": "PRIMARY",
+      "service_class": "BEST_EFFORT",
+      "access_technology": "MOBILE_5G",
+      "bearer_mbps": 100,
+      "committed_mbps": 100,
+      "density_band": "RURAL",
+      "density_multiplier": "1.050",
+      "source_ref": null,
+      "value": {
+        "low": "121257.12",
+        "base": "229175.96",
+        "high": "453198.49"
+      }
+    },
+    {
+      "key": "L0_backup_GB_BROADBAND_PON_100M_rural",
+      "layer": "L0",
+      "driver": "circuits",
+      "quantity": 142,
+      "quantity_origin": "SIMULATED",
+      "unit_cost_origin": "BENCHMARK_PRIOR",
+      "product": "BROADBAND_PON",
+      "role": "BACKUP",
+      "service_class": "BEST_EFFORT",
+      "access_technology": "PON",
+      "bearer_mbps": 100,
+      "committed_mbps": 100,
+      "density_band": "RURAL",
+      "density_multiplier": "1.120",
+      "source_ref": null,
+      "value": {
+        "low": "78730.16",
+        "base": "116373.38",
+        "high": "167880.48"
+      }
+    },
+    {
+      "key": "L0_primary_GB_ETHERNET_600M_rural_priced_at_1000M",
+      "layer": "L0",
+      "driver": "circuits",
+      "quantity": 3,
+      "quantity_origin": "ANALYST_ENTERED_SCOPE",
+      "unit_cost_origin": "BENCHMARK_PRIOR",
+      "product": "ETHERNET",
+      "role": "PRIMARY",
+      "service_class": "ETHERNET",
+      "access_technology": "ETHERNET_FIBRE",
+      "bearer_mbps": 1000,
+      "committed_mbps": 600,
+      "density_band": "RURAL",
+      "density_multiplier": "2.000",
+      "source_ref": null,
+      "value": {
+        "low": "15758.20",
+        "base": "46224.05",
+        "high": "107575.97"
+      }
+    },
+    {
+      "key": "L0_primary_GB_MOBILE_5G_100M_rural",
+      "layer": "L0",
+      "driver": "circuits",
+      "quantity": 200,
+      "quantity_origin": "ANALYST_ENTERED_SCOPE",
+      "unit_cost_origin": "BENCHMARK_PRIOR",
+      "product": "MOBILE_5G",
+      "role": "PRIMARY",
+      "service_class": "BEST_EFFORT",
+      "access_technology": "MOBILE_5G",
+      "bearer_mbps": 100,
+      "committed_mbps": 100,
+      "density_band": "RURAL",
+      "density_multiplier": "1.050",
+      "source_ref": null,
+      "value": {
+        "low": "79444.32",
+        "base": "151466.87",
+        "high": "298125.26"
+      }
+    },
+    {
+      "key": "L0_backup_IT_BROADBAND_PON_100M_rural",
+      "layer": "L0",
+      "driver": "circuits",
+      "quantity": 83,
+      "quantity_origin": "SIMULATED",
+      "unit_cost_origin": "BENCHMARK_PRIOR",
+      "product": "BROADBAND_PON",
+      "role": "BACKUP",
+      "service_class": "BEST_EFFORT",
+      "access_technology": "PON",
+      "bearer_mbps": 100,
+      "committed_mbps": 100,
+      "density_band": "RURAL",
+      "density_multiplier": "1.120",
+      "source_ref": null,
+      "value": {
+        "low": "42478.46",
+        "base": "63162.42",
+        "high": "91359.92"
+      }
+    },
+    {
+      "key": "L0_backup_IT_BROADBAND_PON_1000M_rural",
+      "layer": "L0",
+      "driver": "circuits",
+      "quantity": 13,
+      "quantity_origin": "SIMULATED",
+      "unit_cost_origin": "BENCHMARK_PRIOR",
+      "product": "BROADBAND_PON",
+      "role": "BACKUP",
+      "service_class": "BEST_EFFORT",
+      "access_technology": "PON",
+      "bearer_mbps": 1000,
+      "committed_mbps": 1000,
+      "density_band": "RURAL",
+      "density_multiplier": "1.120",
+      "source_ref": null,
+      "value": {
+        "low": "14831.21",
+        "base": "21764.40",
+        "high": "31445.32"
+      }
+    },
+    {
+      "key": "L0_primary_IT_ETHERNET_600M_rural_priced_at_1000M",
+      "layer": "L0",
+      "driver": "circuits",
+      "quantity": 14,
+      "quantity_origin": "ANALYST_ENTERED_SCOPE",
+      "unit_cost_origin": "BENCHMARK_PRIOR",
+      "product": "ETHERNET",
+      "role": "PRIMARY",
+      "service_class": "ETHERNET",
+      "access_technology": "ETHERNET_FIBRE",
+      "bearer_mbps": 1000,
+      "committed_mbps": 600,
+      "density_band": "RURAL",
+      "density_multiplier": "2.000",
+      "source_ref": null,
+      "value": {
+        "low": "143966.70",
+        "base": "307324.08",
+        "high": "614414.01"
+      }
+    },
+    {
+      "key": "L0_backup_PL_BROADBAND_PON_100M_rural",
+      "layer": "L0",
+      "driver": "circuits",
+      "quantity": 55,
+      "quantity_origin": "SIMULATED",
+      "unit_cost_origin": "BENCHMARK_PRIOR",
+      "product": "BROADBAND_PON",
+      "role": "BACKUP",
+      "service_class": "BEST_EFFORT",
+      "access_technology": "PON",
+      "bearer_mbps": 100,
+      "committed_mbps": 100,
+      "density_band": "RURAL",
+      "density_multiplier": "1.120",
+      "source_ref": null,
+      "value": {
+        "low": "21697.71",
+        "base": "32195.86",
+        "high": "46339.04"
+      }
+    },
+    {
+      "key": "L0_backup_PL_BROADBAND_PON_1000M_rural",
+      "layer": "L0",
+      "driver": "circuits",
+      "quantity": 2,
+      "quantity_origin": "SIMULATED",
+      "unit_cost_origin": "BENCHMARK_PRIOR",
+      "product": "BROADBAND_PON",
+      "role": "BACKUP",
+      "service_class": "BEST_EFFORT",
+      "access_technology": "PON",
+      "bearer_mbps": 1000,
+      "committed_mbps": 1000,
+      "density_band": "RURAL",
+      "density_multiplier": "1.120",
+      "source_ref": null,
+      "value": {
+        "low": "1748.61",
+        "base": "2575.67",
+        "high": "3723.43"
+      }
+    },
+    {
+      "key": "L0_primary_PL_ETHERNET_600M_rural_priced_at_1000M",
+      "layer": "L0",
+      "driver": "circuits",
+      "quantity": 2,
+      "quantity_origin": "ANALYST_ENTERED_SCOPE",
+      "unit_cost_origin": "BENCHMARK_PRIOR",
+      "product": "ETHERNET",
+      "role": "PRIMARY",
+      "service_class": "ETHERNET",
+      "access_technology": "ETHERNET_FIBRE",
+      "bearer_mbps": 1000,
+      "committed_mbps": 600,
+      "density_band": "RURAL",
+      "density_multiplier": "2.000",
+      "source_ref": null,
+      "value": {
+        "low": "15679.80",
+        "base": "33450.24",
+        "high": "66900.48"
+      }
+    },
+    {
+      "key": "L0_backup_US_BROADBAND_PON_100M_rural",
+      "layer": "L0",
+      "driver": "circuits",
+      "quantity": 237,
+      "quantity_origin": "SIMULATED",
+      "unit_cost_origin": "BENCHMARK_PRIOR",
+      "product": "BROADBAND_PON",
+      "role": "BACKUP",
+      "service_class": "BEST_EFFORT",
+      "access_technology": "PON",
+      "bearer_mbps": 100,
+      "committed_mbps": 100,
+      "density_band": "RURAL",
+      "density_multiplier": "1.120",
+      "source_ref": null,
+      "value": {
+        "low": "159198.26",
+        "base": "235849.28",
+        "high": "341386.88"
+      }
+    },
+    {
+      "key": "L0_primary_US_ETHERNET_600M_rural_priced_at_1000M",
+      "layer": "L0",
+      "driver": "circuits",
+      "quantity": 13,
+      "quantity_origin": "ANALYST_ENTERED_SCOPE",
+      "unit_cost_origin": "BENCHMARK_PRIOR",
+      "product": "ETHERNET",
+      "role": "PRIMARY",
+      "service_class": "ETHERNET",
+      "access_technology": "ETHERNET_FIBRE",
+      "bearer_mbps": 1000,
+      "committed_mbps": 600,
+      "density_band": "RURAL",
+      "density_multiplier": "2.000",
+      "source_ref": null,
+      "value": {
+        "low": "133683.36",
+        "base": "285372.36",
+        "high": "570527.29"
+      }
+    },
+    {
+      "key": "L0_primary_US_MOBILE_5G_100M_rural",
+      "layer": "L0",
+      "driver": "circuits",
+      "quantity": 300,
+      "quantity_origin": "ANALYST_ENTERED_SCOPE",
+      "unit_cost_origin": "BENCHMARK_PRIOR",
+      "product": "MOBILE_5G",
+      "role": "PRIMARY",
+      "service_class": "BEST_EFFORT",
+      "access_technology": "MOBILE_5G",
+      "bearer_mbps": 100,
+      "committed_mbps": 100,
+      "density_band": "RURAL",
+      "density_multiplier": "1.050",
+      "source_ref": null,
+      "value": {
+        "low": "144254.16",
+        "base": "279884.43",
+        "high": "530134.04"
+      }
+    },
+    {
+      "key": "L2_overlay",
+      "layer": "L2",
+      "driver": "sites",
+      "quantity": 1273,
+      "quantity_origin": "ANALYST_ENTERED_SCOPE",
+      "unit_cost_origin": "BENCHMARK_PRIOR",
+      "product": "SDWAN_OVERLAY",
+      "role": "PLATFORM",
+      "service_class": null,
+      "access_technology": null,
+      "bearer_mbps": null,
+      "committed_mbps": null,
+      "density_band": null,
+      "density_multiplier": null,
+      "source_ref": null,
+      "value": {
+        "low": "611040.00",
+        "base": "840180.00",
+        "high": "1145700.00"
+      }
+    },
+    {
+      "key": "L4_sse",
+      "layer": "L4",
+      "driver": "users",
+      "quantity": 15276,
+      "quantity_origin": "ANALYST_ENTERED_SCOPE",
+      "unit_cost_origin": "BENCHMARK_PRIOR",
+      "product": "SSE_LICENCE",
+      "role": "PLATFORM",
+      "service_class": null,
+      "access_technology": null,
+      "bearer_mbps": null,
+      "committed_mbps": null,
+      "density_band": null,
+      "density_multiplier": null,
+      "source_ref": null,
+      "value": {
+        "low": "1099872.00",
+        "base": "1649808.00",
+        "high": "2383056.00"
+      }
+    },
+    {
+      "key": "OPS_operations",
+      "layer": "OPS",
+      "driver": "sites",
+      "quantity": 1273,
+      "quantity_origin": "ANALYST_ENTERED_SCOPE",
+      "unit_cost_origin": "BENCHMARK_PRIOR",
+      "product": null,
+      "role": "PLATFORM",
+      "service_class": null,
+      "access_technology": null,
+      "bearer_mbps": null,
+      "committed_mbps": null,
+      "density_band": null,
+      "density_multiplier": null,
+      "source_ref": null,
+      "value": {
+        "low": "916560.00",
+        "base": "1145700.00",
+        "high": "1489410.00"
+      }
+    }
+  ],
+  "scenarios": {
+    "A": {
+      "ceiling": {
+        "layers_addressed": [
+          "L0"
+        ],
+        "addressable_base": "2732905.93",
+        "saving_base": "400097.43",
+        "within_ceiling": true,
+        "note": null
+      },
+      "label": "Reprice current state",
+      "target_tco": {
+        "low": "3773667.15",
+        "base": "5968496.50",
+        "high": "9663690.93"
+      },
+      "gross_run_rate_savings": {
+        "low": "0.00",
+        "base": "400097.43",
+        "high": "1455564.52"
+      },
+      "gross_run_rate_savings_unwidened": {
+        "low": "103199.20",
+        "base": "400097.43",
+        "high": "1144158.94"
+      },
+      "saving_on_specified_baseline": "284973.85",
+      "saving_on_simulated_baseline": "115123.59",
+      "savings_pct_base": "0.063",
+      "levers": [
+        {
+          "lever_id": "LEV-REPRICE-001",
+          "family": "Same-service repricing",
+          "description": "Re-rate current products to benchmark",
+          "cost_layers": [
+            "L0"
+          ],
+          "eligibility": {},
+          "saving_low": "89221.21",
+          "saving_base": "327948.71",
+          "saving_high": "898554.15",
+          "saving_on_simulated_baseline": "94363.60",
+          "saving_on_specified_baseline": "233585.12"
+        },
+        {
+          "lever_id": "LEV-CLEANUP-001",
+          "family": "Billing cleanup",
+          "description": "Cease unused and duplicate services",
+          "cost_layers": [
+            "L0"
+          ],
+          "eligibility": {},
+          "saving_low": "13977.99",
+          "saving_base": "72148.72",
+          "saving_high": "245604.80",
+          "saving_on_simulated_baseline": "20759.99",
+          "saving_on_specified_baseline": "51388.73"
+        }
+      ],
+      "transition": {
+        "one_time_cost": {
+          "low": "621472.00",
+          "base": "1398312.00",
+          "high": "2796624.00"
+        },
+        "one_time_cost_build": {
+          "by_component": {
+            "hardware": "548352.00",
+            "migration": "391680.00",
+            "integration": "229140.00",
+            "project_management": "229140.00"
+          },
+          "by_site_type": [
+            {
+              "archetype": "PLANT",
+              "sites": 48,
+              "circuits": "91.00",
+              "circuits_per_site": "1.896",
+              "cost_per_site_base": "1179.00",
+              "cost_base": "56592.00"
+            },
+            {
+              "archetype": "REMOTE_SITE",
+              "sites": 1225,
+              "circuits": "2085.00",
+              "circuits_per_site": "1.702",
+              "cost_per_site_base": "1095.28",
+              "cost_base": "1341720.00"
+            }
+          ],
+          "origin": {
+            "shares": "ASSUMED",
+            "reference_cost": "ASSUMED",
+            "circuits": "SIMULATED"
+          },
+          "not_varied_by": {
+            "country": "DECLARED_UNKNOWN - no sourced per-country transition cost, and a factor invented to vary it would read as evidence",
+            "target_architecture": "DECLARED_UNKNOWN - same reason"
+          }
+        },
+        "dual_running_cost": {
+          "low": "90050.82",
+          "base": "150084.70",
+          "high": "300169.39"
+        },
+        "total_transition_cost": {
+          "low": "711522.82",
+          "base": "1548396.70",
+          "high": "3096793.39"
+        },
+        "gross_run_rate_savings": {
+          "low": "103199.20",
+          "base": "400097.43",
+          "high": "1144158.94"
+        },
+        "first_year_net": "-1148299.27",
+        "payback_months": {
+          "optimistic": 16,
+          "base": 55,
+          "pessimistic": 368
+        },
+        "payback_definition": "first month in which cumulative net benefit turns positive, with savings accruing as circuits are cut over",
+        "payback_simple_months": 47,
+        "payback_reconciliation_note": null,
+        "run_rate_saving": {
+          "low": "103199.20",
+          "base": "400097.43",
+          "high": "1144158.94"
+        },
+        "programme_months": 15,
+        "programme_months_band": {
+          "low": 15,
+          "base": 15,
+          "high": 15
+        },
+        "programme_flag": null,
+        "programme": {
+          "months": 15,
+          "capacity_per_month": "150.00",
+          "capacity_unit": "circuits",
+          "parallel_waves": 1,
+          "waves": [
+            {
+              "month": 1,
+              "circuits": "150.00",
+              "cumulative_share": "0.07"
+            },
+            {
+              "month": 2,
+              "circuits": "150.00",
+              "cumulative_share": "0.14"
+            },
+            {
+              "month": 3,
+              "circuits": "150.00",
+              "cumulative_share": "0.21"
+            },
+            {
+              "month": 4,
+              "circuits": "150.00",
+              "cumulative_share": "0.28"
+            },
+            {
+              "month": 5,
+              "circuits": "150.00",
+              "cumulative_share": "0.34"
+            },
+            {
+              "month": 6,
+              "circuits": "150.00",
+              "cumulative_share": "0.41"
+            },
+            {
+              "month": 7,
+              "circuits": "150.00",
+              "cumulative_share": "0.48"
+            },
+            {
+              "month": 8,
+              "circuits": "150.00",
+              "cumulative_share": "0.55"
+            },
+            {
+              "month": 9,
+              "circuits": "150.00",
+              "cumulative_share": "0.62"
+            },
+            {
+              "month": 10,
+              "circuits": "150.00",
+              "cumulative_share": "0.69"
+            },
+            {
+              "month": 11,
+              "circuits": "150.00",
+              "cumulative_share": "0.76"
+            },
+            {
+              "month": 12,
+              "circuits": "150.00",
+              "cumulative_share": "0.83"
+            },
+            {
+              "month": 13,
+              "circuits": "150.00",
+              "cumulative_share": "0.90"
+            },
+            {
+              "month": 14,
+              "circuits": "150.00",
+              "cumulative_share": "0.97"
+            },
+            {
+              "month": 15,
+              "circuits": "76.00",
+              "cumulative_share": "1.00"
+            }
+          ],
+          "basis": "Capacity-limited rollout at 150.00 circuit(s) a month, derived from the governed 120 sites a month at the reference density of 1.2500 circuits per site. Pilot waves, capacity ramp and inter-site dependencies are not modelled - they are owner inputs and none is sourced.",
+          "not_modelled": [
+            "pilot_wave",
+            "capacity_ramp",
+            "site_dependencies"
+          ]
+        },
+        "payback_basis": "Modelled. Transition cost is evidence grade E - an expert assumption with no quoted transaction behind it - so this payback is a modelled payback and not a business case. It excludes 6 cost categories this model has no basis for.",
+        "not_modelled": [
+          "CPE purchase or refresh",
+          "SD-WAN and SASE licence ramp",
+          "internal programme and project cost",
+          "early-termination liability on the existing contracts",
+          "site-survey and construction charges where access is not on-net",
+          "temporary capacity during cutover"
+        ],
+        "note": "Savings accrue as circuits are cut over. This programme runs 15 month(s) at 150.00 circuit(s) a month, and the payback above is the first month cumulative net benefit turns positive against that rollout."
+      },
+      "levers_not_applicable": [],
+      "simulated_share": "0.1125",
+      "origin_breakdown": {
+        "ANALYST_ENTERED_SCOPE": {
+          "value": "5297256.80",
+          "share": "0.8875"
+        },
+        "SIMULATED": {
+          "value": "671239.71",
+          "share": "0.1125"
+        }
+      },
+      "target_components": [
+        {
+          "key": "L0_backup_DE_BROADBAND_PON_100M_rural",
+          "layer": "L0",
+          "driver": "circuits",
+          "quantity": 163,
+          "quantity_origin": "SIMULATED",
+          "unit_cost_origin": "BENCHMARK_PRIOR",
+          "product": "BROADBAND_PON",
+          "role": "BACKUP",
+          "service_class": "BEST_EFFORT",
+          "access_technology": "PON",
+          "bearer_mbps": 100,
+          "committed_mbps": 100,
+          "density_band": null,
+          "density_multiplier": null,
+          "source_ref": null,
+          "value": {
+            "low": "77697.44",
+            "base": "127058.55",
+            "high": "199947.05"
+          }
+        },
+        {
+          "key": "L0_primary_DE_ETHERNET_600M_rural_priced_at_1000M",
+          "layer": "L0",
+          "driver": "circuits",
+          "quantity": 9,
+          "quantity_origin": "ANALYST_ENTERED_SCOPE",
+          "unit_cost_origin": "BENCHMARK_PRIOR",
+          "product": "ETHERNET",
+          "role": "PRIMARY",
+          "service_class": "ETHERNET",
+          "access_technology": "ETHERNET_FIBRE",
+          "bearer_mbps": 1000,
+          "committed_mbps": 600,
+          "density_band": null,
+          "density_multiplier": null,
+          "source_ref": null,
+          "value": {
+            "low": "84934.29",
+            "base": "200764.16",
+            "high": "437608.58"
+          }
+        },
+        {
+          "key": "L0_primary_DE_MOBILE_5G_100M_rural",
+          "layer": "L0",
+          "driver": "circuits",
+          "quantity": 240,
+          "quantity_origin": "ANALYST_ENTERED_SCOPE",
+          "unit_cost_origin": "BENCHMARK_PRIOR",
+          "product": "MOBILE_5G",
+          "role": "PRIMARY",
+          "service_class": "BEST_EFFORT",
+          "access_technology": "MOBILE_5G",
+          "bearer_mbps": 100,
+          "committed_mbps": 100,
+          "density_band": null,
+          "density_multiplier": null,
+          "source_ref": null,
+          "value": {
+            "low": "83151.61",
+            "base": "173139.01",
+            "high": "365140.75"
+          }
+        },
+        {
+          "key": "L0_backup_FR_BROADBAND_PON_100M_rural",
+          "layer": "L0",
+          "driver": "circuits",
+          "quantity": 208,
+          "quantity_origin": "SIMULATED",
+          "unit_cost_origin": "BENCHMARK_PRIOR",
+          "product": "BROADBAND_PON",
+          "role": "BACKUP",
+          "service_class": "BEST_EFFORT",
+          "access_technology": "PON",
+          "bearer_mbps": 100,
+          "committed_mbps": 100,
+          "density_band": null,
+          "density_multiplier": null,
+          "source_ref": null,
+          "value": {
+            "low": "87181.56",
+            "base": "141349.39",
+            "high": "223582.56"
+          }
+        },
+        {
+          "key": "L0_primary_FR_ETHERNET_600M_rural_priced_at_1000M",
+          "layer": "L0",
+          "driver": "circuits",
+          "quantity": 7,
+          "quantity_origin": "ANALYST_ENTERED_SCOPE",
+          "unit_cost_origin": "BENCHMARK_PRIOR",
+          "product": "ETHERNET",
+          "role": "PRIMARY",
+          "service_class": "ETHERNET",
+          "access_technology": "ETHERNET_FIBRE",
+          "bearer_mbps": 1000,
+          "committed_mbps": 600,
+          "density_band": null,
+          "density_multiplier": null,
+          "source_ref": null,
+          "value": {
+            "low": "63451.45",
+            "base": "149903.91",
+            "high": "326852.33"
+          }
+        },
+        {
+          "key": "L0_primary_FR_MOBILE_5G_100M_rural",
+          "layer": "L0",
+          "driver": "circuits",
+          "quantity": 290,
+          "quantity_origin": "ANALYST_ENTERED_SCOPE",
+          "unit_cost_origin": "BENCHMARK_PRIOR",
+          "product": "MOBILE_5G",
+          "role": "PRIMARY",
+          "service_class": "BEST_EFFORT",
+          "access_technology": "MOBILE_5G",
+          "bearer_mbps": 100,
+          "committed_mbps": 100,
+          "density_band": null,
+          "density_multiplier": null,
+          "source_ref": null,
+          "value": {
+            "low": "93464.99",
+            "base": "195624.60",
+            "high": "421746.51"
+          }
+        },
+        {
+          "key": "L0_backup_GB_BROADBAND_PON_100M_rural",
+          "layer": "L0",
+          "driver": "circuits",
+          "quantity": 142,
+          "quantity_origin": "SIMULATED",
+          "unit_cost_origin": "BENCHMARK_PRIOR",
+          "product": "BROADBAND_PON",
+          "role": "BACKUP",
+          "service_class": "BEST_EFFORT",
+          "access_technology": "PON",
+          "bearer_mbps": 100,
+          "committed_mbps": 100,
+          "density_band": null,
+          "density_multiplier": null,
+          "source_ref": null,
+          "value": {
+            "low": "60685.21",
+            "base": "99336.32",
+            "high": "156229.58"
+          }
+        },
+        {
+          "key": "L0_primary_GB_ETHERNET_600M_rural_priced_at_1000M",
+          "layer": "L0",
+          "driver": "circuits",
+          "quantity": 3,
+          "quantity_origin": "ANALYST_ENTERED_SCOPE",
+          "unit_cost_origin": "BENCHMARK_PRIOR",
+          "product": "ETHERNET",
+          "role": "PRIMARY",
+          "service_class": "ETHERNET",
+          "access_technology": "ETHERNET_FIBRE",
+          "bearer_mbps": 1000,
+          "committed_mbps": 600,
+          "density_band": null,
+          "density_multiplier": null,
+          "source_ref": null,
+          "value": {
+            "low": "12146.42",
+            "base": "39456.85",
+            "high": "100110.20"
+          }
+        },
+        {
+          "key": "L0_primary_GB_MOBILE_5G_100M_rural",
+          "layer": "L0",
+          "driver": "circuits",
+          "quantity": 200,
+          "quantity_origin": "ANALYST_ENTERED_SCOPE",
+          "unit_cost_origin": "BENCHMARK_PRIOR",
+          "product": "MOBILE_5G",
+          "role": "PRIMARY",
+          "service_class": "BEST_EFFORT",
+          "access_technology": "MOBILE_5G",
+          "bearer_mbps": 100,
+          "committed_mbps": 100,
+          "density_band": null,
+          "density_multiplier": null,
+          "source_ref": null,
+          "value": {
+            "low": "61235.68",
+            "base": "129292.12",
+            "high": "277435.37"
+          }
+        },
+        {
+          "key": "L0_backup_IT_BROADBAND_PON_100M_rural",
+          "layer": "L0",
+          "driver": "circuits",
+          "quantity": 83,
+          "quantity_origin": "SIMULATED",
+          "unit_cost_origin": "BENCHMARK_PRIOR",
+          "product": "BROADBAND_PON",
+          "role": "BACKUP",
+          "service_class": "BEST_EFFORT",
+          "access_technology": "PON",
+          "bearer_mbps": 100,
+          "committed_mbps": 100,
+          "density_band": null,
+          "density_multiplier": null,
+          "source_ref": null,
+          "value": {
+            "low": "32742.40",
+            "base": "53915.44",
+            "high": "85019.54"
+          }
+        },
+        {
+          "key": "L0_backup_IT_BROADBAND_PON_1000M_rural",
+          "layer": "L0",
+          "driver": "circuits",
+          "quantity": 13,
+          "quantity_origin": "SIMULATED",
+          "unit_cost_origin": "BENCHMARK_PRIOR",
+          "product": "BROADBAND_PON",
+          "role": "BACKUP",
+          "service_class": "BEST_EFFORT",
+          "access_technology": "PON",
+          "bearer_mbps": 1000,
+          "committed_mbps": 1000,
+          "density_band": null,
+          "density_multiplier": null,
+          "source_ref": null,
+          "value": {
+            "low": "11431.90",
+            "base": "18578.09",
+            "high": "29263.01"
+          }
+        },
+        {
+          "key": "L0_primary_IT_ETHERNET_600M_rural_priced_at_1000M",
+          "layer": "L0",
+          "driver": "circuits",
+          "quantity": 14,
+          "quantity_origin": "ANALYST_ENTERED_SCOPE",
+          "unit_cost_origin": "BENCHMARK_PRIOR",
+          "product": "ETHERNET",
+          "role": "PRIMARY",
+          "service_class": "ETHERNET",
+          "access_technology": "ETHERNET_FIBRE",
+          "bearer_mbps": 1000,
+          "committed_mbps": 600,
+          "density_band": null,
+          "density_multiplier": null,
+          "source_ref": null,
+          "value": {
+            "low": "110969.53",
+            "base": "262331.83",
+            "high": "571773.68"
+          }
+        },
+        {
+          "key": "L0_backup_PL_BROADBAND_PON_100M_rural",
+          "layer": "L0",
+          "driver": "circuits",
+          "quantity": 55,
+          "quantity_origin": "SIMULATED",
+          "unit_cost_origin": "BENCHMARK_PRIOR",
+          "product": "BROADBAND_PON",
+          "role": "BACKUP",
+          "service_class": "BEST_EFFORT",
+          "access_technology": "PON",
+          "bearer_mbps": 100,
+          "committed_mbps": 100,
+          "density_band": null,
+          "density_multiplier": null,
+          "source_ref": null,
+          "value": {
+            "low": "16724.59",
+            "base": "27482.38",
+            "high": "43123.11"
+          }
+        },
+        {
+          "key": "L0_backup_PL_BROADBAND_PON_1000M_rural",
+          "layer": "L0",
+          "driver": "circuits",
+          "quantity": 2,
+          "quantity_origin": "SIMULATED",
+          "unit_cost_origin": "BENCHMARK_PRIOR",
+          "product": "BROADBAND_PON",
+          "role": "BACKUP",
+          "service_class": "BEST_EFFORT",
+          "access_technology": "PON",
+          "bearer_mbps": 1000,
+          "committed_mbps": 1000,
+          "density_band": null,
+          "density_multiplier": null,
+          "source_ref": null,
+          "value": {
+            "low": "1347.83",
+            "base": "2198.59",
+            "high": "3465.02"
+          }
+        },
+        {
+          "key": "L0_primary_PL_ETHERNET_600M_rural_priced_at_1000M",
+          "layer": "L0",
+          "driver": "circuits",
+          "quantity": 2,
+          "quantity_origin": "ANALYST_ENTERED_SCOPE",
+          "unit_cost_origin": "BENCHMARK_PRIOR",
+          "product": "ETHERNET",
+          "role": "PRIMARY",
+          "service_class": "ETHERNET",
+          "access_technology": "ETHERNET_FIBRE",
+          "bearer_mbps": 1000,
+          "committed_mbps": 600,
+          "density_band": null,
+          "density_multiplier": null,
+          "source_ref": null,
+          "value": {
+            "low": "12085.99",
+            "base": "28553.12",
+            "high": "62257.59"
+          }
+        },
+        {
+          "key": "L0_backup_US_BROADBAND_PON_100M_rural",
+          "layer": "L0",
+          "driver": "circuits",
+          "quantity": 237,
+          "quantity_origin": "SIMULATED",
+          "unit_cost_origin": "BENCHMARK_PRIOR",
+          "product": "BROADBAND_PON",
+          "role": "BACKUP",
+          "service_class": "BEST_EFFORT",
+          "access_technology": "PON",
+          "bearer_mbps": 100,
+          "committed_mbps": 100,
+          "density_band": null,
+          "density_multiplier": null,
+          "source_ref": null,
+          "value": {
+            "low": "122710.02",
+            "base": "201320.95",
+            "high": "317694.63"
+          }
+        },
+        {
+          "key": "L0_primary_US_ETHERNET_600M_rural_priced_at_1000M",
+          "layer": "L0",
+          "driver": "circuits",
+          "quantity": 13,
+          "quantity_origin": "ANALYST_ENTERED_SCOPE",
+          "unit_cost_origin": "BENCHMARK_PRIOR",
+          "product": "ETHERNET",
+          "role": "PRIMARY",
+          "service_class": "ETHERNET",
+          "access_technology": "ETHERNET_FIBRE",
+          "bearer_mbps": 1000,
+          "committed_mbps": 600,
+          "density_band": null,
+          "density_multiplier": null,
+          "source_ref": null,
+          "value": {
+            "low": "103043.14",
+            "base": "243593.85",
+            "high": "530932.70"
+          }
+        },
+        {
+          "key": "L0_primary_US_MOBILE_5G_100M_rural",
+          "layer": "L0",
+          "driver": "circuits",
+          "quantity": 300,
+          "quantity_origin": "ANALYST_ENTERED_SCOPE",
+          "unit_cost_origin": "BENCHMARK_PRIOR",
+          "product": "MOBILE_5G",
+          "role": "PRIMARY",
+          "service_class": "BEST_EFFORT",
+          "access_technology": "MOBILE_5G",
+          "bearer_mbps": 100,
+          "committed_mbps": 100,
+          "density_band": null,
+          "density_multiplier": null,
+          "source_ref": null,
+          "value": {
+            "low": "111191.11",
+            "base": "238909.35",
+            "high": "493342.74"
+          }
+        },
+        {
+          "key": "L2_overlay",
+          "layer": "L2",
+          "driver": "sites",
+          "quantity": 1273,
+          "quantity_origin": "ANALYST_ENTERED_SCOPE",
+          "unit_cost_origin": "BENCHMARK_PRIOR",
+          "product": "SDWAN_OVERLAY",
+          "role": "PLATFORM",
+          "service_class": null,
+          "access_technology": null,
+          "bearer_mbps": null,
+          "committed_mbps": null,
+          "density_band": null,
+          "density_multiplier": null,
+          "source_ref": null,
+          "value": {
+            "low": "611040.00",
+            "base": "840180.00",
+            "high": "1145700.00"
+          }
+        },
+        {
+          "key": "L4_sse",
+          "layer": "L4",
+          "driver": "users",
+          "quantity": 15276,
+          "quantity_origin": "ANALYST_ENTERED_SCOPE",
+          "unit_cost_origin": "BENCHMARK_PRIOR",
+          "product": "SSE_LICENCE",
+          "role": "PLATFORM",
+          "service_class": null,
+          "access_technology": null,
+          "bearer_mbps": null,
+          "committed_mbps": null,
+          "density_band": null,
+          "density_multiplier": null,
+          "source_ref": null,
+          "value": {
+            "low": "1099872.00",
+            "base": "1649808.00",
+            "high": "2383056.00"
+          }
+        },
+        {
+          "key": "OPS_operations",
+          "layer": "OPS",
+          "driver": "sites",
+          "quantity": 1273,
+          "quantity_origin": "ANALYST_ENTERED_SCOPE",
+          "unit_cost_origin": "BENCHMARK_PRIOR",
+          "product": null,
+          "role": "PLATFORM",
+          "service_class": null,
+          "access_technology": null,
+          "bearer_mbps": null,
+          "committed_mbps": null,
+          "density_band": null,
+          "density_multiplier": null,
+          "source_ref": null,
+          "value": {
+            "low": "916560.00",
+            "base": "1145700.00",
+            "high": "1489410.00"
+          }
+        }
+      ]
+    },
+    "B": {
+      "ceiling": {
+        "layers_addressed": [
+          "L0"
+        ],
+        "addressable_base": "2732905.93",
+        "saving_base": "224297.90",
+        "within_ceiling": true,
+        "note": null
+      },
+      "label": "Optimized SD-WAN",
+      "target_tco": {
+        "low": "3896632.82",
+        "base": "6144296.03",
+        "high": "9832263.66"
+      },
+      "gross_run_rate_savings": {
+        "low": "0.00",
+        "base": "224297.90",
+        "high": "915375.00"
+      },
+      "gross_run_rate_savings_unwidened": {
+        "low": "54464.84",
+        "base": "224297.90",
+        "high": "711479.25"
+      },
+      "saving_on_specified_baseline": "153525.20",
+      "saving_on_simulated_baseline": "70772.70",
+      "savings_pct_base": "0.035",
+      "levers": [
+        {
+          "lever_id": "LEV-RISKTIER-001",
+          "family": "Risk-tiered access",
+          "description": "Move guest, customer and telemetry traffic to segmented low-cost access",
+          "cost_layers": [
+            "L0"
+          ],
+          "eligibility": {
+            "service_class": [
+              "BEST_EFFORT"
+            ]
+          },
+          "saving_low": "39416.93",
+          "saving_base": "148475.20",
+          "saving_high": "449772.60",
+          "saving_on_simulated_baseline": "70772.70",
+          "saving_on_specified_baseline": "77702.50"
+        },
+        {
+          "lever_id": "LEV-BANDWIDTH-001",
+          "family": "Right-sizing",
+          "description": "Right-size committed bandwidth against utilisation prior",
+          "cost_layers": [
+            "L0"
+          ],
+          "eligibility": {
+            "service_class": [
+              "DIA",
+              "ETHERNET",
+              "IPVPN"
+            ]
+          },
+          "saving_low": "15047.90",
+          "saving_base": "75822.70",
+          "saving_high": "261706.65",
+          "saving_on_simulated_baseline": "0.00",
+          "saving_on_specified_baseline": "75822.70"
+        }
+      ],
+      "transition": {
+        "one_time_cost": {
+          "low": "621472.00",
+          "base": "1398312.00",
+          "high": "2796624.00"
+        },
+        "one_time_cost_build": {
+          "by_component": {
+            "hardware": "548352.00",
+            "migration": "391680.00",
+            "integration": "229140.00",
+            "project_management": "229140.00"
+          },
+          "by_site_type": [
+            {
+              "archetype": "PLANT",
+              "sites": 48,
+              "circuits": "91.00",
+              "circuits_per_site": "1.896",
+              "cost_per_site_base": "1179.00",
+              "cost_base": "56592.00"
+            },
+            {
+              "archetype": "REMOTE_SITE",
+              "sites": 1225,
+              "circuits": "2085.00",
+              "circuits_per_site": "1.702",
+              "cost_per_site_base": "1095.28",
+              "cost_base": "1341720.00"
+            }
+          ],
+          "origin": {
+            "shares": "ASSUMED",
+            "reference_cost": "ASSUMED",
+            "circuits": "SIMULATED"
+          },
+          "not_varied_by": {
+            "country": "DECLARED_UNKNOWN - no sourced per-country transition cost, and a factor invented to vary it would read as evidence",
+            "target_architecture": "DECLARED_UNKNOWN - same reason"
+          }
+        },
+        "dual_running_cost": {
+          "low": "90050.82",
+          "base": "150084.70",
+          "high": "300169.39"
+        },
+        "total_transition_cost": {
+          "low": "711522.82",
+          "base": "1548396.70",
+          "high": "3096793.39"
+        },
+        "gross_run_rate_savings": {
+          "low": "54464.84",
+          "base": "224297.90",
+          "high": "711479.25"
+        },
+        "first_year_net": "-1324098.79",
+        "payback_months": {
+          "optimistic": 20,
+          "base": 91,
+          "pessimistic": null
+        },
+        "payback_definition": "first month in which cumulative net benefit turns positive, with savings accruing as circuits are cut over",
+        "payback_simple_months": 83,
+        "payback_reconciliation_note": null,
+        "run_rate_saving": {
+          "low": "54464.84",
+          "base": "224297.90",
+          "high": "711479.25"
+        },
+        "programme_months": 15,
+        "programme_months_band": {
+          "low": 15,
+          "base": 15,
+          "high": 15
+        },
+        "programme_flag": null,
+        "programme": {
+          "months": 15,
+          "capacity_per_month": "150.00",
+          "capacity_unit": "circuits",
+          "parallel_waves": 1,
+          "waves": [
+            {
+              "month": 1,
+              "circuits": "150.00",
+              "cumulative_share": "0.07"
+            },
+            {
+              "month": 2,
+              "circuits": "150.00",
+              "cumulative_share": "0.14"
+            },
+            {
+              "month": 3,
+              "circuits": "150.00",
+              "cumulative_share": "0.21"
+            },
+            {
+              "month": 4,
+              "circuits": "150.00",
+              "cumulative_share": "0.28"
+            },
+            {
+              "month": 5,
+              "circuits": "150.00",
+              "cumulative_share": "0.34"
+            },
+            {
+              "month": 6,
+              "circuits": "150.00",
+              "cumulative_share": "0.41"
+            },
+            {
+              "month": 7,
+              "circuits": "150.00",
+              "cumulative_share": "0.48"
+            },
+            {
+              "month": 8,
+              "circuits": "150.00",
+              "cumulative_share": "0.55"
+            },
+            {
+              "month": 9,
+              "circuits": "150.00",
+              "cumulative_share": "0.62"
+            },
+            {
+              "month": 10,
+              "circuits": "150.00",
+              "cumulative_share": "0.69"
+            },
+            {
+              "month": 11,
+              "circuits": "150.00",
+              "cumulative_share": "0.76"
+            },
+            {
+              "month": 12,
+              "circuits": "150.00",
+              "cumulative_share": "0.83"
+            },
+            {
+              "month": 13,
+              "circuits": "150.00",
+              "cumulative_share": "0.90"
+            },
+            {
+              "month": 14,
+              "circuits": "150.00",
+              "cumulative_share": "0.97"
+            },
+            {
+              "month": 15,
+              "circuits": "76.00",
+              "cumulative_share": "1.00"
+            }
+          ],
+          "basis": "Capacity-limited rollout at 150.00 circuit(s) a month, derived from the governed 120 sites a month at the reference density of 1.2500 circuits per site. Pilot waves, capacity ramp and inter-site dependencies are not modelled - they are owner inputs and none is sourced.",
+          "not_modelled": [
+            "pilot_wave",
+            "capacity_ramp",
+            "site_dependencies"
+          ]
+        },
+        "payback_basis": "Modelled. Transition cost is evidence grade E - an expert assumption with no quoted transaction behind it - so this payback is a modelled payback and not a business case. It excludes 6 cost categories this model has no basis for.",
+        "not_modelled": [
+          "CPE purchase or refresh",
+          "SD-WAN and SASE licence ramp",
+          "internal programme and project cost",
+          "early-termination liability on the existing contracts",
+          "site-survey and construction charges where access is not on-net",
+          "temporary capacity during cutover"
+        ],
+        "note": "Savings accrue as circuits are cut over. This programme runs 15 month(s) at 150.00 circuit(s) a month, and the payback above is the first month cumulative net benefit turns positive against that rollout."
+      },
+      "levers_not_applicable": [
+        {
+          "lever_id": "LEV-MPLS-001",
+          "family": "MPLS substitution",
+          "eligibility": {
+            "service_class": [
+              "IPVPN"
+            ]
+          },
+          "products_present": [
+            "service_class=BEST_EFFORT",
+            "service_class=ETHERNET"
+          ],
+          "reason": "MPLS substitution acts on service_class in ['IPVPN'], and this estate's service_class=BEST_EFFORT, service_class=ETHERNET in L0 contain none of them. No saving is booked."
+        }
+      ],
+      "simulated_share": "0.1165",
+      "origin_breakdown": {
+        "ANALYST_ENTERED_SCOPE": {
+          "value": "5428705.43",
+          "share": "0.8835"
+        },
+        "SIMULATED": {
+          "value": "715590.60",
+          "share": "0.1165"
+        }
+      },
+      "target_components": [
+        {
+          "key": "L0_backup_DE_BROADBAND_PON_100M_rural",
+          "layer": "L0",
+          "driver": "circuits",
+          "quantity": 163,
+          "quantity_origin": "SIMULATED",
+          "unit_cost_origin": "BENCHMARK_PRIOR",
+          "product": "BROADBAND_PON",
+          "role": "BACKUP",
+          "service_class": "BEST_EFFORT",
+          "access_technology": "PON",
+          "bearer_mbps": 100,
+          "committed_mbps": 100,
+          "density_band": null,
+          "density_multiplier": null,
+          "source_ref": null,
+          "value": {
+            "low": "84672.88",
+            "base": "135453.70",
+            "high": "206263.88"
+          }
+        },
+        {
+          "key": "L0_primary_DE_ETHERNET_600M_rural_priced_at_1000M",
+          "layer": "L0",
+          "driver": "circuits",
+          "quantity": 9,
+          "quantity_origin": "ANALYST_ENTERED_SCOPE",
+          "unit_cost_origin": "BENCHMARK_PRIOR",
+          "product": "ETHERNET",
+          "role": "PRIMARY",
+          "service_class": "ETHERNET",
+          "access_technology": "ETHERNET_FIBRE",
+          "bearer_mbps": 1000,
+          "committed_mbps": 600,
+          "density_band": null,
+          "density_multiplier": null,
+          "source_ref": null,
+          "value": {
+            "low": "96967.02",
+            "base": "218733.21",
+            "high": "456136.17"
+          }
+        },
+        {
+          "key": "L0_primary_DE_MOBILE_5G_100M_rural",
+          "layer": "L0",
+          "driver": "circuits",
+          "quantity": 240,
+          "quantity_origin": "ANALYST_ENTERED_SCOPE",
+          "unit_cost_origin": "BENCHMARK_PRIOR",
+          "product": "MOBILE_5G",
+          "role": "PRIMARY",
+          "service_class": "BEST_EFFORT",
+          "access_technology": "MOBILE_5G",
+          "bearer_mbps": 100,
+          "committed_mbps": 100,
+          "density_band": null,
+          "density_multiplier": null,
+          "source_ref": null,
+          "value": {
+            "low": "90616.70",
+            "base": "184578.84",
+            "high": "376676.46"
+          }
+        },
+        {
+          "key": "L0_backup_FR_BROADBAND_PON_100M_rural",
+          "layer": "L0",
+          "driver": "circuits",
+          "quantity": 208,
+          "quantity_origin": "SIMULATED",
+          "unit_cost_origin": "BENCHMARK_PRIOR",
+          "product": "BROADBAND_PON",
+          "role": "BACKUP",
+          "service_class": "BEST_EFFORT",
+          "access_technology": "PON",
+          "bearer_mbps": 100,
+          "committed_mbps": 100,
+          "density_band": null,
+          "density_multiplier": null,
+          "source_ref": null,
+          "value": {
+            "low": "95008.45",
+            "base": "150688.78",
+            "high": "230646.09"
+          }
+        },
+        {
+          "key": "L0_primary_FR_ETHERNET_600M_rural_priced_at_1000M",
+          "layer": "L0",
+          "driver": "circuits",
+          "quantity": 7,
+          "quantity_origin": "ANALYST_ENTERED_SCOPE",
+          "unit_cost_origin": "BENCHMARK_PRIOR",
+          "product": "ETHERNET",
+          "role": "PRIMARY",
+          "service_class": "ETHERNET",
+          "access_technology": "ETHERNET_FIBRE",
+          "bearer_mbps": 1000,
+          "committed_mbps": 600,
+          "density_band": null,
+          "density_multiplier": null,
+          "source_ref": null,
+          "value": {
+            "low": "72440.68",
+            "base": "163320.80",
+            "high": "340690.69"
+          }
+        },
+        {
+          "key": "L0_primary_FR_MOBILE_5G_100M_rural",
+          "layer": "L0",
+          "driver": "circuits",
+          "quantity": 290,
+          "quantity_origin": "ANALYST_ENTERED_SCOPE",
+          "unit_cost_origin": "BENCHMARK_PRIOR",
+          "product": "MOBILE_5G",
+          "role": "PRIMARY",
+          "service_class": "BEST_EFFORT",
+          "access_technology": "MOBILE_5G",
+          "bearer_mbps": 100,
+          "committed_mbps": 100,
+          "density_band": null,
+          "density_multiplier": null,
+          "source_ref": null,
+          "value": {
+            "low": "101855.98",
+            "base": "208550.12",
+            "high": "435070.55"
+          }
+        },
+        {
+          "key": "L0_backup_GB_BROADBAND_PON_100M_rural",
+          "layer": "L0",
+          "driver": "circuits",
+          "quantity": 142,
+          "quantity_origin": "SIMULATED",
+          "unit_cost_origin": "BENCHMARK_PRIOR",
+          "product": "BROADBAND_PON",
+          "role": "BACKUP",
+          "service_class": "BEST_EFFORT",
+          "access_technology": "PON",
+          "bearer_mbps": 100,
+          "committed_mbps": 100,
+          "density_band": null,
+          "density_multiplier": null,
+          "source_ref": null,
+          "value": {
+            "low": "66133.33",
+            "base": "105899.78",
+            "high": "161165.26"
+          }
+        },
+        {
+          "key": "L0_primary_GB_ETHERNET_600M_rural_priced_at_1000M",
+          "layer": "L0",
+          "driver": "circuits",
+          "quantity": 3,
+          "quantity_origin": "ANALYST_ENTERED_SCOPE",
+          "unit_cost_origin": "BENCHMARK_PRIOR",
+          "product": "ETHERNET",
+          "role": "PRIMARY",
+          "service_class": "ETHERNET",
+          "access_technology": "ETHERNET_FIBRE",
+          "bearer_mbps": 1000,
+          "committed_mbps": 600,
+          "density_band": null,
+          "density_multiplier": null,
+          "source_ref": null,
+          "value": {
+            "low": "13867.22",
+            "base": "42988.37",
+            "high": "104348.69"
+          }
+        },
+        {
+          "key": "L0_primary_GB_MOBILE_5G_100M_rural",
+          "layer": "L0",
+          "driver": "circuits",
+          "quantity": 200,
+          "quantity_origin": "ANALYST_ENTERED_SCOPE",
+          "unit_cost_origin": "BENCHMARK_PRIOR",
+          "product": "MOBILE_5G",
+          "role": "PRIMARY",
+          "service_class": "BEST_EFFORT",
+          "access_technology": "MOBILE_5G",
+          "bearer_mbps": 100,
+          "committed_mbps": 100,
+          "density_band": null,
+          "density_multiplier": null,
+          "source_ref": null,
+          "value": {
+            "low": "66733.23",
+            "base": "137834.85",
+            "high": "286200.25"
+          }
+        },
+        {
+          "key": "L0_backup_IT_BROADBAND_PON_100M_rural",
+          "layer": "L0",
+          "driver": "circuits",
+          "quantity": 83,
+          "quantity_origin": "SIMULATED",
+          "unit_cost_origin": "BENCHMARK_PRIOR",
+          "product": "BROADBAND_PON",
+          "role": "BACKUP",
+          "service_class": "BEST_EFFORT",
+          "access_technology": "PON",
+          "bearer_mbps": 100,
+          "committed_mbps": 100,
+          "density_band": null,
+          "density_multiplier": null,
+          "source_ref": null,
+          "value": {
+            "low": "35681.91",
+            "base": "57477.80",
+            "high": "87705.53"
+          }
+        },
+        {
+          "key": "L0_backup_IT_BROADBAND_PON_1000M_rural",
+          "layer": "L0",
+          "driver": "circuits",
+          "quantity": 13,
+          "quantity_origin": "SIMULATED",
+          "unit_cost_origin": "BENCHMARK_PRIOR",
+          "product": "BROADBAND_PON",
+          "role": "BACKUP",
+          "service_class": "BEST_EFFORT",
+          "access_technology": "PON",
+          "bearer_mbps": 1000,
+          "committed_mbps": 1000,
+          "density_band": null,
+          "density_multiplier": null,
+          "source_ref": null,
+          "value": {
+            "low": "12458.22",
+            "base": "19805.60",
+            "high": "30187.50"
+          }
+        },
+        {
+          "key": "L0_primary_IT_ETHERNET_600M_rural_priced_at_1000M",
+          "layer": "L0",
+          "driver": "circuits",
+          "quantity": 14,
+          "quantity_origin": "ANALYST_ENTERED_SCOPE",
+          "unit_cost_origin": "BENCHMARK_PRIOR",
+          "product": "ETHERNET",
+          "role": "PRIMARY",
+          "service_class": "ETHERNET",
+          "access_technology": "ETHERNET_FIBRE",
+          "bearer_mbps": 1000,
+          "committed_mbps": 600,
+          "density_band": null,
+          "density_multiplier": null,
+          "source_ref": null,
+          "value": {
+            "low": "126690.69",
+            "base": "285811.39",
+            "high": "595981.59"
+          }
+        },
+        {
+          "key": "L0_backup_PL_BROADBAND_PON_100M_rural",
+          "layer": "L0",
+          "driver": "circuits",
+          "quantity": 55,
+          "quantity_origin": "SIMULATED",
+          "unit_cost_origin": "BENCHMARK_PRIOR",
+          "product": "BROADBAND_PON",
+          "role": "BACKUP",
+          "service_class": "BEST_EFFORT",
+          "access_technology": "PON",
+          "bearer_mbps": 100,
+          "committed_mbps": 100,
+          "density_band": null,
+          "density_multiplier": null,
+          "source_ref": null,
+          "value": {
+            "low": "18226.07",
+            "base": "29298.23",
+            "high": "44485.47"
+          }
+        },
+        {
+          "key": "L0_backup_PL_BROADBAND_PON_1000M_rural",
+          "layer": "L0",
+          "driver": "circuits",
+          "quantity": 2,
+          "quantity_origin": "SIMULATED",
+          "unit_cost_origin": "BENCHMARK_PRIOR",
+          "product": "BROADBAND_PON",
+          "role": "BACKUP",
+          "service_class": "BEST_EFFORT",
+          "access_technology": "PON",
+          "bearer_mbps": 1000,
+          "committed_mbps": 1000,
+          "density_band": null,
+          "density_multiplier": null,
+          "source_ref": null,
+          "value": {
+            "low": "1468.83",
+            "base": "2343.86",
+            "high": "3574.49"
+          }
+        },
+        {
+          "key": "L0_primary_PL_ETHERNET_600M_rural_priced_at_1000M",
+          "layer": "L0",
+          "driver": "circuits",
+          "quantity": 2,
+          "quantity_origin": "ANALYST_ENTERED_SCOPE",
+          "unit_cost_origin": "BENCHMARK_PRIOR",
+          "product": "ETHERNET",
+          "role": "PRIMARY",
+          "service_class": "ETHERNET",
+          "access_technology": "ETHERNET_FIBRE",
+          "bearer_mbps": 1000,
+          "committed_mbps": 600,
+          "density_band": null,
+          "density_multiplier": null,
+          "source_ref": null,
+          "value": {
+            "low": "13798.22",
+            "base": "31108.72",
+            "high": "64893.47"
+          }
+        },
+        {
+          "key": "L0_backup_US_BROADBAND_PON_100M_rural",
+          "layer": "L0",
+          "driver": "circuits",
+          "quantity": 237,
+          "quantity_origin": "SIMULATED",
+          "unit_cost_origin": "BENCHMARK_PRIOR",
+          "product": "BROADBAND_PON",
+          "role": "BACKUP",
+          "service_class": "BEST_EFFORT",
+          "access_technology": "PON",
+          "bearer_mbps": 100,
+          "committed_mbps": 100,
+          "density_band": null,
+          "density_multiplier": null,
+          "source_ref": null,
+          "value": {
+            "low": "133726.54",
+            "base": "214622.84",
+            "high": "327731.40"
+          }
+        },
+        {
+          "key": "L0_primary_US_ETHERNET_600M_rural_priced_at_1000M",
+          "layer": "L0",
+          "driver": "circuits",
+          "quantity": 13,
+          "quantity_origin": "ANALYST_ENTERED_SCOPE",
+          "unit_cost_origin": "BENCHMARK_PRIOR",
+          "product": "ETHERNET",
+          "role": "PRIMARY",
+          "service_class": "ETHERNET",
+          "access_technology": "ETHERNET_FIBRE",
+          "bearer_mbps": 1000,
+          "committed_mbps": 600,
+          "density_band": null,
+          "density_multiplier": null,
+          "source_ref": null,
+          "value": {
+            "low": "117641.36",
+            "base": "265396.29",
+            "high": "553411.47"
+          }
+        },
+        {
+          "key": "L0_primary_US_MOBILE_5G_100M_rural",
+          "layer": "L0",
+          "driver": "circuits",
+          "quantity": 300,
+          "quantity_origin": "ANALYST_ENTERED_SCOPE",
+          "unit_cost_origin": "BENCHMARK_PRIOR",
+          "product": "MOBILE_5G",
+          "role": "PRIMARY",
+          "service_class": "BEST_EFFORT",
+          "access_technology": "MOBILE_5G",
+          "bearer_mbps": 100,
+          "committed_mbps": 100,
+          "density_band": null,
+          "density_multiplier": null,
+          "source_ref": null,
+          "value": {
+            "low": "121173.49",
+            "base": "254694.83",
+            "high": "508928.68"
+          }
+        },
+        {
+          "key": "L2_overlay",
+          "layer": "L2",
+          "driver": "sites",
+          "quantity": 1273,
+          "quantity_origin": "ANALYST_ENTERED_SCOPE",
+          "unit_cost_origin": "BENCHMARK_PRIOR",
+          "product": "SDWAN_OVERLAY",
+          "role": "PLATFORM",
+          "service_class": null,
+          "access_technology": null,
+          "bearer_mbps": null,
+          "committed_mbps": null,
+          "density_band": null,
+          "density_multiplier": null,
+          "source_ref": null,
+          "value": {
+            "low": "611040.00",
+            "base": "840180.00",
+            "high": "1145700.00"
+          }
+        },
+        {
+          "key": "L4_sse",
+          "layer": "L4",
+          "driver": "users",
+          "quantity": 15276,
+          "quantity_origin": "ANALYST_ENTERED_SCOPE",
+          "unit_cost_origin": "BENCHMARK_PRIOR",
+          "product": "SSE_LICENCE",
+          "role": "PLATFORM",
+          "service_class": null,
+          "access_technology": null,
+          "bearer_mbps": null,
+          "committed_mbps": null,
+          "density_band": null,
+          "density_multiplier": null,
+          "source_ref": null,
+          "value": {
+            "low": "1099872.00",
+            "base": "1649808.00",
+            "high": "2383056.00"
+          }
+        },
+        {
+          "key": "OPS_operations",
+          "layer": "OPS",
+          "driver": "sites",
+          "quantity": 1273,
+          "quantity_origin": "ANALYST_ENTERED_SCOPE",
+          "unit_cost_origin": "BENCHMARK_PRIOR",
+          "product": null,
+          "role": "PLATFORM",
+          "service_class": null,
+          "access_technology": null,
+          "bearer_mbps": null,
+          "committed_mbps": null,
+          "density_band": null,
+          "density_multiplier": null,
+          "source_ref": null,
+          "value": {
+            "low": "916560.00",
+            "base": "1145700.00",
+            "high": "1489410.00"
+          }
+        }
+      ]
+    },
+    "C": {
+      "ceiling": {
+        "layers_addressed": [
+          "L0",
+          "L1",
+          "L2",
+          "L4"
+        ],
+        "addressable_base": "5222893.93",
+        "saving_base": "676482.38",
+        "within_ceiling": true,
+        "note": null
+      },
+      "label": "SASE northstar",
+      "target_tco": {
+        "low": "3447334.26",
+        "base": "5692111.55",
+        "high": "9481828.29"
+      },
+      "gross_run_rate_savings": {
+        "low": "76761.98",
+        "base": "676482.38",
+        "high": "1686463.90"
+      },
+      "gross_run_rate_savings_unwidened": {
+        "low": "253703.81",
+        "base": "676482.38",
+        "high": "1388478.41"
+      },
+      "saving_on_specified_baseline": "676482.38",
+      "saving_on_simulated_baseline": "0.00",
+      "savings_pct_base": "0.106",
+      "levers": [
+        {
+          "lever_id": "LEV-SASE-001",
+          "family": "Platform consolidation",
+          "description": "Converge SD-WAN, SSE and remote access",
+          "cost_layers": [
+            "L2",
+            "L4"
+          ],
+          "eligibility": {
+            "product": [
+              "SDWAN_OVERLAY",
+              "SSE_LICENCE"
+            ]
+          },
+          "saving_low": "205309.44",
+          "saving_base": "547797.36",
+          "saving_high": "1129201.92",
+          "saving_on_simulated_baseline": "0.00",
+          "saving_on_specified_baseline": "547797.36"
+        },
+        {
+          "lever_id": "LEV-SECRETIRE-001",
+          "family": "Security appliance retirement",
+          "description": "Retire on-site firewall estate",
+          "cost_layers": [
+            "L4"
+          ],
+          "eligibility": {
+            "product": [
+              "SSE_LICENCE"
+            ]
+          },
+          "saving_low": "48394.37",
+          "saving_base": "128685.02",
+          "saving_high": "259276.49",
+          "saving_on_simulated_baseline": "0.00",
+          "saving_on_specified_baseline": "128685.02"
+        }
+      ],
+      "transition": {
+        "one_time_cost": {
+          "low": "621472.00",
+          "base": "1398312.00",
+          "high": "2796624.00"
+        },
+        "one_time_cost_build": {
+          "by_component": {
+            "hardware": "548352.00",
+            "migration": "391680.00",
+            "integration": "229140.00",
+            "project_management": "229140.00"
+          },
+          "by_site_type": [
+            {
+              "archetype": "PLANT",
+              "sites": 48,
+              "circuits": "91.00",
+              "circuits_per_site": "1.896",
+              "cost_per_site_base": "1179.00",
+              "cost_base": "56592.00"
+            },
+            {
+              "archetype": "REMOTE_SITE",
+              "sites": 1225,
+              "circuits": "2085.00",
+              "circuits_per_site": "1.702",
+              "cost_per_site_base": "1095.28",
+              "cost_base": "1341720.00"
+            }
+          ],
+          "origin": {
+            "shares": "ASSUMED",
+            "reference_cost": "ASSUMED",
+            "circuits": "SIMULATED"
+          },
+          "not_varied_by": {
+            "country": "DECLARED_UNKNOWN - no sourced per-country transition cost, and a factor invented to vary it would read as evidence",
+            "target_architecture": "DECLARED_UNKNOWN - same reason"
+          }
+        },
+        "dual_running_cost": {
+          "low": "90050.82",
+          "base": "150084.70",
+          "high": "300169.39"
+        },
+        "total_transition_cost": {
+          "low": "711522.82",
+          "base": "1548396.70",
+          "high": "3096793.39"
+        },
+        "gross_run_rate_savings": {
+          "low": "253703.81",
+          "base": "676482.38",
+          "high": "1388478.41"
+        },
+        "first_year_net": "-871914.31",
+        "payback_months": {
+          "optimistic": 14,
+          "base": 36,
+          "pessimistic": 155
+        },
+        "payback_definition": "first month in which cumulative net benefit turns positive, with savings accruing as circuits are cut over",
+        "payback_simple_months": 28,
+        "payback_reconciliation_note": "Ramped payback is 36 month(s) against a simple 28, a gap of 29%. The simple figure divides total transition cost by the full-year saving, which is the saving only once every site is live; this programme runs 15 month(s), so for most of it the estate is part-migrated and saving proportionally less.",
+        "run_rate_saving": {
+          "low": "253703.81",
+          "base": "676482.38",
+          "high": "1388478.41"
+        },
+        "programme_months": 15,
+        "programme_months_band": {
+          "low": 15,
+          "base": 15,
+          "high": 15
+        },
+        "programme_flag": null,
+        "programme": {
+          "months": 15,
+          "capacity_per_month": "150.00",
+          "capacity_unit": "circuits",
+          "parallel_waves": 1,
+          "waves": [
+            {
+              "month": 1,
+              "circuits": "150.00",
+              "cumulative_share": "0.07"
+            },
+            {
+              "month": 2,
+              "circuits": "150.00",
+              "cumulative_share": "0.14"
+            },
+            {
+              "month": 3,
+              "circuits": "150.00",
+              "cumulative_share": "0.21"
+            },
+            {
+              "month": 4,
+              "circuits": "150.00",
+              "cumulative_share": "0.28"
+            },
+            {
+              "month": 5,
+              "circuits": "150.00",
+              "cumulative_share": "0.34"
+            },
+            {
+              "month": 6,
+              "circuits": "150.00",
+              "cumulative_share": "0.41"
+            },
+            {
+              "month": 7,
+              "circuits": "150.00",
+              "cumulative_share": "0.48"
+            },
+            {
+              "month": 8,
+              "circuits": "150.00",
+              "cumulative_share": "0.55"
+            },
+            {
+              "month": 9,
+              "circuits": "150.00",
+              "cumulative_share": "0.62"
+            },
+            {
+              "month": 10,
+              "circuits": "150.00",
+              "cumulative_share": "0.69"
+            },
+            {
+              "month": 11,
+              "circuits": "150.00",
+              "cumulative_share": "0.76"
+            },
+            {
+              "month": 12,
+              "circuits": "150.00",
+              "cumulative_share": "0.83"
+            },
+            {
+              "month": 13,
+              "circuits": "150.00",
+              "cumulative_share": "0.90"
+            },
+            {
+              "month": 14,
+              "circuits": "150.00",
+              "cumulative_share": "0.97"
+            },
+            {
+              "month": 15,
+              "circuits": "76.00",
+              "cumulative_share": "1.00"
+            }
+          ],
+          "basis": "Capacity-limited rollout at 150.00 circuit(s) a month, derived from the governed 120 sites a month at the reference density of 1.2500 circuits per site. Pilot waves, capacity ramp and inter-site dependencies are not modelled - they are owner inputs and none is sourced.",
+          "not_modelled": [
+            "pilot_wave",
+            "capacity_ramp",
+            "site_dependencies"
+          ]
+        },
+        "payback_basis": "Modelled. Transition cost is evidence grade E - an expert assumption with no quoted transaction behind it - so this payback is a modelled payback and not a business case. It excludes 6 cost categories this model has no basis for.",
+        "not_modelled": [
+          "CPE purchase or refresh",
+          "SD-WAN and SASE licence ramp",
+          "internal programme and project cost",
+          "early-termination liability on the existing contracts",
+          "site-survey and construction charges where access is not on-net",
+          "temporary capacity during cutover"
+        ],
+        "note": "Savings accrue as circuits are cut over. This programme runs 15 month(s) at 150.00 circuit(s) a month, and the payback above is the first month cumulative net benefit turns positive against that rollout."
+      },
+      "levers_not_applicable": [
+        {
+          "lever_id": "LEV-POP-001",
+          "family": "PoP exit",
+          "cost_layers": [
+            "L1"
+          ],
+          "reason": "PoP exit acts on L1, and this estimate has no baseline for L1 at all - it prices L0/L2/L4/OPS. The saving is not zero; it is unmeasured, and a headline that omits it is understated by however much that layer costs.",
+          "saving_base": "0"
+        },
+        {
+          "lever_id": "LEV-BACKBONE-001",
+          "family": "Backbone to hyperscaler",
+          "eligibility": {
+            "role": [
+              "BACKBONE"
+            ]
+          },
+          "products_present": [
+            "role=BACKUP",
+            "role=PRIMARY"
+          ],
+          "reason": "Backbone to hyperscaler acts on role in ['BACKBONE'], and this estate's role=BACKUP, role=PRIMARY in L0 contain none of them. No saving is booked."
+        }
+      ],
+      "simulated_share": "0.1381",
+      "origin_breakdown": {
+        "ANALYST_ENTERED_SCOPE": {
+          "value": "4905748.25",
+          "share": "0.8619"
+        },
+        "SIMULATED": {
+          "value": "786363.29",
+          "share": "0.1381"
+        }
+      },
+      "target_components": [
+        {
+          "key": "L0_backup_DE_BROADBAND_PON_100M_rural",
+          "layer": "L0",
+          "driver": "circuits",
+          "quantity": 163,
+          "quantity_origin": "SIMULATED",
+          "unit_cost_origin": "BENCHMARK_PRIOR",
+          "product": "BROADBAND_PON",
+          "role": "BACKUP",
+          "service_class": "BEST_EFFORT",
+          "access_technology": "PON",
+          "bearer_mbps": 100,
+          "committed_mbps": 100,
+          "density_band": null,
+          "density_multiplier": null,
+          "source_ref": null,
+          "value": {
+            "low": "100801.04",
+            "base": "148850.22",
+            "high": "214858.21"
+          }
+        },
+        {
+          "key": "L0_primary_DE_ETHERNET_600M_rural_priced_at_1000M",
+          "layer": "L0",
+          "driver": "circuits",
+          "quantity": 9,
+          "quantity_origin": "ANALYST_ENTERED_SCOPE",
+          "unit_cost_origin": "BENCHMARK_PRIOR",
+          "product": "ETHERNET",
+          "role": "PRIMARY",
+          "service_class": "ETHERNET",
+          "access_technology": "ETHERNET_FIBRE",
+          "bearer_mbps": 1000,
+          "committed_mbps": 600,
+          "density_band": null,
+          "density_multiplier": null,
+          "source_ref": null,
+          "value": {
+            "low": "110189.79",
+            "base": "235197.00",
+            "high": "470243.47"
+          }
+        },
+        {
+          "key": "L0_primary_DE_MOBILE_5G_100M_rural",
+          "layer": "L0",
+          "driver": "circuits",
+          "quantity": 240,
+          "quantity_origin": "ANALYST_ENTERED_SCOPE",
+          "unit_cost_origin": "BENCHMARK_PRIOR",
+          "product": "MOBILE_5G",
+          "role": "PRIMARY",
+          "service_class": "BEST_EFFORT",
+          "access_technology": "MOBILE_5G",
+          "bearer_mbps": 100,
+          "committed_mbps": 100,
+          "density_band": null,
+          "density_multiplier": null,
+          "source_ref": null,
+          "value": {
+            "low": "107877.02",
+            "base": "202833.89",
+            "high": "392371.32"
+          }
+        },
+        {
+          "key": "L0_backup_FR_BROADBAND_PON_100M_rural",
+          "layer": "L0",
+          "driver": "circuits",
+          "quantity": 208,
+          "quantity_origin": "SIMULATED",
+          "unit_cost_origin": "BENCHMARK_PRIOR",
+          "product": "BROADBAND_PON",
+          "role": "BACKUP",
+          "service_class": "BEST_EFFORT",
+          "access_technology": "PON",
+          "bearer_mbps": 100,
+          "committed_mbps": 100,
+          "density_band": null,
+          "density_multiplier": null,
+          "source_ref": null,
+          "value": {
+            "low": "113105.30",
+            "base": "165592.07",
+            "high": "240256.35"
+          }
+        },
+        {
+          "key": "L0_primary_FR_ETHERNET_600M_rural_priced_at_1000M",
+          "layer": "L0",
+          "driver": "circuits",
+          "quantity": 7,
+          "quantity_origin": "ANALYST_ENTERED_SCOPE",
+          "unit_cost_origin": "BENCHMARK_PRIOR",
+          "product": "ETHERNET",
+          "role": "PRIMARY",
+          "service_class": "ETHERNET",
+          "access_technology": "ETHERNET_FIBRE",
+          "bearer_mbps": 1000,
+          "committed_mbps": 600,
+          "density_band": null,
+          "density_multiplier": null,
+          "source_ref": null,
+          "value": {
+            "low": "82318.95",
+            "base": "175613.76",
+            "high": "351227.52"
+          }
+        },
+        {
+          "key": "L0_primary_FR_MOBILE_5G_100M_rural",
+          "layer": "L0",
+          "driver": "circuits",
+          "quantity": 290,
+          "quantity_origin": "ANALYST_ENTERED_SCOPE",
+          "unit_cost_origin": "BENCHMARK_PRIOR",
+          "product": "MOBILE_5G",
+          "role": "PRIMARY",
+          "service_class": "BEST_EFFORT",
+          "access_technology": "MOBILE_5G",
+          "bearer_mbps": 100,
+          "committed_mbps": 100,
+          "density_band": null,
+          "density_multiplier": null,
+          "source_ref": null,
+          "value": {
+            "low": "121257.12",
+            "base": "229175.96",
+            "high": "453198.49"
+          }
+        },
+        {
+          "key": "L0_backup_GB_BROADBAND_PON_100M_rural",
+          "layer": "L0",
+          "driver": "circuits",
+          "quantity": 142,
+          "quantity_origin": "SIMULATED",
+          "unit_cost_origin": "BENCHMARK_PRIOR",
+          "product": "BROADBAND_PON",
+          "role": "BACKUP",
+          "service_class": "BEST_EFFORT",
+          "access_technology": "PON",
+          "bearer_mbps": 100,
+          "committed_mbps": 100,
+          "density_band": null,
+          "density_multiplier": null,
+          "source_ref": null,
+          "value": {
+            "low": "78730.16",
+            "base": "116373.38",
+            "high": "167880.48"
+          }
+        },
+        {
+          "key": "L0_primary_GB_ETHERNET_600M_rural_priced_at_1000M",
+          "layer": "L0",
+          "driver": "circuits",
+          "quantity": 3,
+          "quantity_origin": "ANALYST_ENTERED_SCOPE",
+          "unit_cost_origin": "BENCHMARK_PRIOR",
+          "product": "ETHERNET",
+          "role": "PRIMARY",
+          "service_class": "ETHERNET",
+          "access_technology": "ETHERNET_FIBRE",
+          "bearer_mbps": 1000,
+          "committed_mbps": 600,
+          "density_band": null,
+          "density_multiplier": null,
+          "source_ref": null,
+          "value": {
+            "low": "15758.20",
+            "base": "46224.05",
+            "high": "107575.97"
+          }
+        },
+        {
+          "key": "L0_primary_GB_MOBILE_5G_100M_rural",
+          "layer": "L0",
+          "driver": "circuits",
+          "quantity": 200,
+          "quantity_origin": "ANALYST_ENTERED_SCOPE",
+          "unit_cost_origin": "BENCHMARK_PRIOR",
+          "product": "MOBILE_5G",
+          "role": "PRIMARY",
+          "service_class": "BEST_EFFORT",
+          "access_technology": "MOBILE_5G",
+          "bearer_mbps": 100,
+          "committed_mbps": 100,
+          "density_band": null,
+          "density_multiplier": null,
+          "source_ref": null,
+          "value": {
+            "low": "79444.32",
+            "base": "151466.87",
+            "high": "298125.26"
+          }
+        },
+        {
+          "key": "L0_backup_IT_BROADBAND_PON_100M_rural",
+          "layer": "L0",
+          "driver": "circuits",
+          "quantity": 83,
+          "quantity_origin": "SIMULATED",
+          "unit_cost_origin": "BENCHMARK_PRIOR",
+          "product": "BROADBAND_PON",
+          "role": "BACKUP",
+          "service_class": "BEST_EFFORT",
+          "access_technology": "PON",
+          "bearer_mbps": 100,
+          "committed_mbps": 100,
+          "density_band": null,
+          "density_multiplier": null,
+          "source_ref": null,
+          "value": {
+            "low": "42478.46",
+            "base": "63162.42",
+            "high": "91359.92"
+          }
+        },
+        {
+          "key": "L0_backup_IT_BROADBAND_PON_1000M_rural",
+          "layer": "L0",
+          "driver": "circuits",
+          "quantity": 13,
+          "quantity_origin": "SIMULATED",
+          "unit_cost_origin": "BENCHMARK_PRIOR",
+          "product": "BROADBAND_PON",
+          "role": "BACKUP",
+          "service_class": "BEST_EFFORT",
+          "access_technology": "PON",
+          "bearer_mbps": 1000,
+          "committed_mbps": 1000,
+          "density_band": null,
+          "density_multiplier": null,
+          "source_ref": null,
+          "value": {
+            "low": "14831.21",
+            "base": "21764.40",
+            "high": "31445.32"
+          }
+        },
+        {
+          "key": "L0_primary_IT_ETHERNET_600M_rural_priced_at_1000M",
+          "layer": "L0",
+          "driver": "circuits",
+          "quantity": 14,
+          "quantity_origin": "ANALYST_ENTERED_SCOPE",
+          "unit_cost_origin": "BENCHMARK_PRIOR",
+          "product": "ETHERNET",
+          "role": "PRIMARY",
+          "service_class": "ETHERNET",
+          "access_technology": "ETHERNET_FIBRE",
+          "bearer_mbps": 1000,
+          "committed_mbps": 600,
+          "density_band": null,
+          "density_multiplier": null,
+          "source_ref": null,
+          "value": {
+            "low": "143966.70",
+            "base": "307324.08",
+            "high": "614414.01"
+          }
+        },
+        {
+          "key": "L0_backup_PL_BROADBAND_PON_100M_rural",
+          "layer": "L0",
+          "driver": "circuits",
+          "quantity": 55,
+          "quantity_origin": "SIMULATED",
+          "unit_cost_origin": "BENCHMARK_PRIOR",
+          "product": "BROADBAND_PON",
+          "role": "BACKUP",
+          "service_class": "BEST_EFFORT",
+          "access_technology": "PON",
+          "bearer_mbps": 100,
+          "committed_mbps": 100,
+          "density_band": null,
+          "density_multiplier": null,
+          "source_ref": null,
+          "value": {
+            "low": "21697.71",
+            "base": "32195.86",
+            "high": "46339.04"
+          }
+        },
+        {
+          "key": "L0_backup_PL_BROADBAND_PON_1000M_rural",
+          "layer": "L0",
+          "driver": "circuits",
+          "quantity": 2,
+          "quantity_origin": "SIMULATED",
+          "unit_cost_origin": "BENCHMARK_PRIOR",
+          "product": "BROADBAND_PON",
+          "role": "BACKUP",
+          "service_class": "BEST_EFFORT",
+          "access_technology": "PON",
+          "bearer_mbps": 1000,
+          "committed_mbps": 1000,
+          "density_band": null,
+          "density_multiplier": null,
+          "source_ref": null,
+          "value": {
+            "low": "1748.61",
+            "base": "2575.67",
+            "high": "3723.43"
+          }
+        },
+        {
+          "key": "L0_primary_PL_ETHERNET_600M_rural_priced_at_1000M",
+          "layer": "L0",
+          "driver": "circuits",
+          "quantity": 2,
+          "quantity_origin": "ANALYST_ENTERED_SCOPE",
+          "unit_cost_origin": "BENCHMARK_PRIOR",
+          "product": "ETHERNET",
+          "role": "PRIMARY",
+          "service_class": "ETHERNET",
+          "access_technology": "ETHERNET_FIBRE",
+          "bearer_mbps": 1000,
+          "committed_mbps": 600,
+          "density_band": null,
+          "density_multiplier": null,
+          "source_ref": null,
+          "value": {
+            "low": "15679.80",
+            "base": "33450.24",
+            "high": "66900.48"
+          }
+        },
+        {
+          "key": "L0_backup_US_BROADBAND_PON_100M_rural",
+          "layer": "L0",
+          "driver": "circuits",
+          "quantity": 237,
+          "quantity_origin": "SIMULATED",
+          "unit_cost_origin": "BENCHMARK_PRIOR",
+          "product": "BROADBAND_PON",
+          "role": "BACKUP",
+          "service_class": "BEST_EFFORT",
+          "access_technology": "PON",
+          "bearer_mbps": 100,
+          "committed_mbps": 100,
+          "density_band": null,
+          "density_multiplier": null,
+          "source_ref": null,
+          "value": {
+            "low": "159198.26",
+            "base": "235849.28",
+            "high": "341386.88"
+          }
+        },
+        {
+          "key": "L0_primary_US_ETHERNET_600M_rural_priced_at_1000M",
+          "layer": "L0",
+          "driver": "circuits",
+          "quantity": 13,
+          "quantity_origin": "ANALYST_ENTERED_SCOPE",
+          "unit_cost_origin": "BENCHMARK_PRIOR",
+          "product": "ETHERNET",
+          "role": "PRIMARY",
+          "service_class": "ETHERNET",
+          "access_technology": "ETHERNET_FIBRE",
+          "bearer_mbps": 1000,
+          "committed_mbps": 600,
+          "density_band": null,
+          "density_multiplier": null,
+          "source_ref": null,
+          "value": {
+            "low": "133683.36",
+            "base": "285372.36",
+            "high": "570527.29"
+          }
+        },
+        {
+          "key": "L0_primary_US_MOBILE_5G_100M_rural",
+          "layer": "L0",
+          "driver": "circuits",
+          "quantity": 300,
+          "quantity_origin": "ANALYST_ENTERED_SCOPE",
+          "unit_cost_origin": "BENCHMARK_PRIOR",
+          "product": "MOBILE_5G",
+          "role": "PRIMARY",
+          "service_class": "BEST_EFFORT",
+          "access_technology": "MOBILE_5G",
+          "bearer_mbps": 100,
+          "committed_mbps": 100,
+          "density_band": null,
+          "density_multiplier": null,
+          "source_ref": null,
+          "value": {
+            "low": "144254.16",
+            "base": "279884.43",
+            "high": "530134.04"
+          }
+        },
+        {
+          "key": "L2_overlay",
+          "layer": "L2",
+          "driver": "sites",
+          "quantity": 1273,
+          "quantity_origin": "ANALYST_ENTERED_SCOPE",
+          "unit_cost_origin": "BENCHMARK_PRIOR",
+          "product": "SDWAN_OVERLAY",
+          "role": "PLATFORM",
+          "service_class": null,
+          "access_technology": null,
+          "bearer_mbps": null,
+          "committed_mbps": null,
+          "density_band": null,
+          "density_multiplier": null,
+          "source_ref": null,
+          "value": {
+            "low": "415507.20",
+            "base": "655340.40",
+            "high": "1008216.00"
+          }
+        },
+        {
+          "key": "L4_sse",
+          "layer": "L4",
+          "driver": "users",
+          "quantity": 15276,
+          "quantity_origin": "ANALYST_ENTERED_SCOPE",
+          "unit_cost_origin": "BENCHMARK_PRIOR",
+          "product": "SSE_LICENCE",
+          "role": "PLATFORM",
+          "service_class": null,
+          "access_technology": null,
+          "bearer_mbps": null,
+          "committed_mbps": null,
+          "density_band": null,
+          "density_multiplier": null,
+          "source_ref": null,
+          "value": {
+            "low": "628246.89",
+            "base": "1158165.22",
+            "high": "1992234.82"
+          }
+        },
+        {
+          "key": "OPS_operations",
+          "layer": "OPS",
+          "driver": "sites",
+          "quantity": 1273,
+          "quantity_origin": "ANALYST_ENTERED_SCOPE",
+          "unit_cost_origin": "BENCHMARK_PRIOR",
+          "product": null,
+          "role": "PLATFORM",
+          "service_class": null,
+          "access_technology": null,
+          "bearer_mbps": null,
+          "committed_mbps": null,
+          "density_band": null,
+          "density_multiplier": null,
+          "source_ref": null,
+          "value": {
+            "low": "916560.00",
+            "base": "1145700.00",
+            "high": "1489410.00"
+          }
+        }
+      ]
+    },
+    "D": {
+      "ceiling": {
+        "layers_addressed": [
+          "L0",
+          "OPS"
+        ],
+        "addressable_base": "3878605.93",
+        "saving_base": "1115196.53",
+        "within_ceiling": true,
+        "note": null
+      },
+      "label": "Carrier-managed NaaS",
+      "target_tco": {
+        "low": "3093959.19",
+        "base": "5253397.41",
+        "high": "9079040.95"
+      },
+      "gross_run_rate_savings": {
+        "low": "42080.81",
+        "base": "1115196.53",
+        "high": "3373393.71"
+      },
+      "gross_run_rate_savings_unwidened": {
+        "low": "358693.45",
+        "base": "1115196.53",
+        "high": "2707134.00"
+      },
+      "saving_on_specified_baseline": "896902.07",
+      "saving_on_simulated_baseline": "218294.45",
+      "savings_pct_base": "0.175",
+      "levers": [
+        {
+          "lever_id": "LEV-OPS-001",
+          "family": "Operating-model optimisation",
+          "description": "Consolidate NOC and vendor management",
+          "cost_layers": [
+            "OPS"
+          ],
+          "eligibility": {},
+          "saving_low": "91656.00",
+          "saving_base": "206226.00",
+          "saving_high": "417034.80",
+          "saving_on_simulated_baseline": "0.00",
+          "saving_on_specified_baseline": "206226.00"
+        },
+        {
+          "lever_id": "LEV-NAAS-001",
+          "family": "Supplier consolidation",
+          "description": "Single global prime with managed edge",
+          "cost_layers": [
+            "L0",
+            "OPS"
+          ],
+          "eligibility": {},
+          "saving_low": "184953.93",
+          "saving_base": "587580.79",
+          "saving_high": "1455442.24",
+          "saving_on_simulated_baseline": "125818.13",
+          "saving_on_specified_baseline": "461762.66"
+        },
+        {
+          "lever_id": "LEV-LASTMILE-001",
+          "family": "Direct local access",
+          "description": "Source off-net tails locally rather than through a global carrier",
+          "cost_layers": [
+            "L0"
+          ],
+          "eligibility": {},
+          "saving_low": "82083.51",
+          "saving_base": "321389.74",
+          "saving_high": "834656.96",
+          "saving_on_simulated_baseline": "92476.32",
+          "saving_on_specified_baseline": "228913.41"
+        }
+      ],
+      "transition": {
+        "one_time_cost": {
+          "low": "621472.00",
+          "base": "1398312.00",
+          "high": "2796624.00"
+        },
+        "one_time_cost_build": {
+          "by_component": {
+            "hardware": "548352.00",
+            "migration": "391680.00",
+            "integration": "229140.00",
+            "project_management": "229140.00"
+          },
+          "by_site_type": [
+            {
+              "archetype": "PLANT",
+              "sites": 48,
+              "circuits": "91.00",
+              "circuits_per_site": "1.896",
+              "cost_per_site_base": "1179.00",
+              "cost_base": "56592.00"
+            },
+            {
+              "archetype": "REMOTE_SITE",
+              "sites": 1225,
+              "circuits": "2085.00",
+              "circuits_per_site": "1.702",
+              "cost_per_site_base": "1095.28",
+              "cost_base": "1341720.00"
+            }
+          ],
+          "origin": {
+            "shares": "ASSUMED",
+            "reference_cost": "ASSUMED",
+            "circuits": "SIMULATED"
+          },
+          "not_varied_by": {
+            "country": "DECLARED_UNKNOWN - no sourced per-country transition cost, and a factor invented to vary it would read as evidence",
+            "target_architecture": "DECLARED_UNKNOWN - same reason"
+          }
+        },
+        "dual_running_cost": {
+          "low": "90050.82",
+          "base": "150084.70",
+          "high": "300169.39"
+        },
+        "total_transition_cost": {
+          "low": "711522.82",
+          "base": "1548396.70",
+          "high": "3096793.39"
+        },
+        "gross_run_rate_savings": {
+          "low": "358693.45",
+          "base": "1115196.53",
+          "high": "2707134.00"
+        },
+        "first_year_net": "-433200.17",
+        "payback_months": {
+          "optimistic": 8,
+          "base": 25,
+          "pessimistic": 112
+        },
+        "payback_definition": "first month in which cumulative net benefit turns positive, with savings accruing as circuits are cut over",
+        "payback_simple_months": 17,
+        "payback_reconciliation_note": "Ramped payback is 25 month(s) against a simple 17, a gap of 47%. The simple figure divides total transition cost by the full-year saving, which is the saving only once every site is live; this programme runs 15 month(s), so for most of it the estate is part-migrated and saving proportionally less.",
+        "run_rate_saving": {
+          "low": "358693.45",
+          "base": "1115196.53",
+          "high": "2707134.00"
+        },
+        "programme_months": 15,
+        "programme_months_band": {
+          "low": 15,
+          "base": 15,
+          "high": 15
+        },
+        "programme_flag": null,
+        "programme": {
+          "months": 15,
+          "capacity_per_month": "150.00",
+          "capacity_unit": "circuits",
+          "parallel_waves": 1,
+          "waves": [
+            {
+              "month": 1,
+              "circuits": "150.00",
+              "cumulative_share": "0.07"
+            },
+            {
+              "month": 2,
+              "circuits": "150.00",
+              "cumulative_share": "0.14"
+            },
+            {
+              "month": 3,
+              "circuits": "150.00",
+              "cumulative_share": "0.21"
+            },
+            {
+              "month": 4,
+              "circuits": "150.00",
+              "cumulative_share": "0.28"
+            },
+            {
+              "month": 5,
+              "circuits": "150.00",
+              "cumulative_share": "0.34"
+            },
+            {
+              "month": 6,
+              "circuits": "150.00",
+              "cumulative_share": "0.41"
+            },
+            {
+              "month": 7,
+              "circuits": "150.00",
+              "cumulative_share": "0.48"
+            },
+            {
+              "month": 8,
+              "circuits": "150.00",
+              "cumulative_share": "0.55"
+            },
+            {
+              "month": 9,
+              "circuits": "150.00",
+              "cumulative_share": "0.62"
+            },
+            {
+              "month": 10,
+              "circuits": "150.00",
+              "cumulative_share": "0.69"
+            },
+            {
+              "month": 11,
+              "circuits": "150.00",
+              "cumulative_share": "0.76"
+            },
+            {
+              "month": 12,
+              "circuits": "150.00",
+              "cumulative_share": "0.83"
+            },
+            {
+              "month": 13,
+              "circuits": "150.00",
+              "cumulative_share": "0.90"
+            },
+            {
+              "month": 14,
+              "circuits": "150.00",
+              "cumulative_share": "0.97"
+            },
+            {
+              "month": 15,
+              "circuits": "76.00",
+              "cumulative_share": "1.00"
+            }
+          ],
+          "basis": "Capacity-limited rollout at 150.00 circuit(s) a month, derived from the governed 120 sites a month at the reference density of 1.2500 circuits per site. Pilot waves, capacity ramp and inter-site dependencies are not modelled - they are owner inputs and none is sourced.",
+          "not_modelled": [
+            "pilot_wave",
+            "capacity_ramp",
+            "site_dependencies"
+          ]
+        },
+        "payback_basis": "Modelled. Transition cost is evidence grade E - an expert assumption with no quoted transaction behind it - so this payback is a modelled payback and not a business case. It excludes 6 cost categories this model has no basis for.",
+        "not_modelled": [
+          "CPE purchase or refresh",
+          "SD-WAN and SASE licence ramp",
+          "internal programme and project cost",
+          "early-termination liability on the existing contracts",
+          "site-survey and construction charges where access is not on-net",
+          "temporary capacity during cutover"
+        ],
+        "note": "Savings accrue as circuits are cut over. This programme runs 15 month(s) at 150.00 circuit(s) a month, and the payback above is the first month cumulative net benefit turns positive against that rollout."
+      },
+      "levers_not_applicable": [],
+      "simulated_share": "0.1081",
+      "origin_breakdown": {
+        "ANALYST_ENTERED_SCOPE": {
+          "value": "4685328.56",
+          "share": "0.8919"
+        },
+        "SIMULATED": {
+          "value": "568068.84",
+          "share": "0.1081"
+        }
+      },
+      "target_components": [
+        {
+          "key": "L0_backup_DE_BROADBAND_PON_100M_rural",
+          "layer": "L0",
+          "driver": "circuits",
+          "quantity": 163,
+          "quantity_origin": "SIMULATED",
+          "unit_cost_origin": "BENCHMARK_PRIOR",
+          "product": "BROADBAND_PON",
+          "role": "BACKUP",
+          "service_class": "BEST_EFFORT",
+          "access_technology": "PON",
+          "bearer_mbps": 100,
+          "committed_mbps": 100,
+          "density_band": null,
+          "density_multiplier": null,
+          "source_ref": null,
+          "value": {
+            "low": "59754.86",
+            "base": "107529.40",
+            "high": "185809.38"
+          }
+        },
+        {
+          "key": "L0_primary_DE_ETHERNET_600M_rural_priced_at_1000M",
+          "layer": "L0",
+          "driver": "circuits",
+          "quantity": 9,
+          "quantity_origin": "ANALYST_ENTERED_SCOPE",
+          "unit_cost_origin": "BENCHMARK_PRIOR",
+          "product": "ETHERNET",
+          "role": "PRIMARY",
+          "service_class": "ETHERNET",
+          "access_technology": "ETHERNET_FIBRE",
+          "bearer_mbps": 1000,
+          "committed_mbps": 600,
+          "density_band": null,
+          "density_multiplier": null,
+          "source_ref": null,
+          "value": {
+            "low": "65320.51",
+            "base": "169906.31",
+            "high": "406666.56"
+          }
+        },
+        {
+          "key": "L0_primary_DE_MOBILE_5G_100M_rural",
+          "layer": "L0",
+          "driver": "circuits",
+          "quantity": 240,
+          "quantity_origin": "ANALYST_ENTERED_SCOPE",
+          "unit_cost_origin": "BENCHMARK_PRIOR",
+          "product": "MOBILE_5G",
+          "role": "PRIMARY",
+          "service_class": "BEST_EFFORT",
+          "access_technology": "MOBILE_5G",
+          "bearer_mbps": 100,
+          "committed_mbps": 100,
+          "density_band": null,
+          "density_multiplier": null,
+          "source_ref": null,
+          "value": {
+            "low": "63949.50",
+            "base": "146527.20",
+            "high": "339322.71"
+          }
+        },
+        {
+          "key": "L0_backup_FR_BROADBAND_PON_100M_rural",
+          "layer": "L0",
+          "driver": "circuits",
+          "quantity": 208,
+          "quantity_origin": "SIMULATED",
+          "unit_cost_origin": "BENCHMARK_PRIOR",
+          "product": "BROADBAND_PON",
+          "role": "BACKUP",
+          "service_class": "BEST_EFFORT",
+          "access_technology": "PON",
+          "bearer_mbps": 100,
+          "committed_mbps": 100,
+          "density_band": null,
+          "density_multiplier": null,
+          "source_ref": null,
+          "value": {
+            "low": "67048.82",
+            "base": "119623.71",
+            "high": "207773.69"
+          }
+        },
+        {
+          "key": "L0_primary_FR_ETHERNET_600M_rural_priced_at_1000M",
+          "layer": "L0",
+          "driver": "circuits",
+          "quantity": 7,
+          "quantity_origin": "ANALYST_ENTERED_SCOPE",
+          "unit_cost_origin": "BENCHMARK_PRIOR",
+          "product": "ETHERNET",
+          "role": "PRIMARY",
+          "service_class": "ETHERNET",
+          "access_technology": "ETHERNET_FIBRE",
+          "bearer_mbps": 1000,
+          "committed_mbps": 600,
+          "density_band": null,
+          "density_multiplier": null,
+          "source_ref": null,
+          "value": {
+            "low": "48798.67",
+            "base": "126863.38",
+            "high": "303741.56"
+          }
+        },
+        {
+          "key": "L0_primary_FR_MOBILE_5G_100M_rural",
+          "layer": "L0",
+          "driver": "circuits",
+          "quantity": 290,
+          "quantity_origin": "ANALYST_ENTERED_SCOPE",
+          "unit_cost_origin": "BENCHMARK_PRIOR",
+          "product": "MOBILE_5G",
+          "role": "PRIMARY",
+          "service_class": "BEST_EFFORT",
+          "access_technology": "MOBILE_5G",
+          "bearer_mbps": 100,
+          "committed_mbps": 100,
+          "density_band": null,
+          "density_multiplier": null,
+          "source_ref": null,
+          "value": {
+            "low": "71881.22",
+            "base": "165556.71",
+            "high": "391926.05"
+          }
+        },
+        {
+          "key": "L0_backup_GB_BROADBAND_PON_100M_rural",
+          "layer": "L0",
+          "driver": "circuits",
+          "quantity": 142,
+          "quantity_origin": "SIMULATED",
+          "unit_cost_origin": "BENCHMARK_PRIOR",
+          "product": "BROADBAND_PON",
+          "role": "BACKUP",
+          "service_class": "BEST_EFFORT",
+          "access_technology": "PON",
+          "bearer_mbps": 100,
+          "committed_mbps": 100,
+          "density_band": null,
+          "density_multiplier": null,
+          "source_ref": null,
+          "value": {
+            "low": "46671.24",
+            "base": "84068.13",
+            "high": "145183.04"
+          }
+        },
+        {
+          "key": "L0_primary_GB_ETHERNET_600M_rural_priced_at_1000M",
+          "layer": "L0",
+          "driver": "circuits",
+          "quantity": 3,
+          "quantity_origin": "ANALYST_ENTERED_SCOPE",
+          "unit_cost_origin": "BENCHMARK_PRIOR",
+          "product": "ETHERNET",
+          "role": "PRIMARY",
+          "service_class": "ETHERNET",
+          "access_technology": "ETHERNET_FIBRE",
+          "bearer_mbps": 1000,
+          "committed_mbps": 600,
+          "density_band": null,
+          "density_multiplier": null,
+          "source_ref": null,
+          "value": {
+            "low": "9341.46",
+            "base": "33392.25",
+            "high": "93031.70"
+          }
+        },
+        {
+          "key": "L0_primary_GB_MOBILE_5G_100M_rural",
+          "layer": "L0",
+          "driver": "circuits",
+          "quantity": 200,
+          "quantity_origin": "ANALYST_ENTERED_SCOPE",
+          "unit_cost_origin": "BENCHMARK_PRIOR",
+          "product": "MOBILE_5G",
+          "role": "PRIMARY",
+          "service_class": "BEST_EFFORT",
+          "access_technology": "MOBILE_5G",
+          "bearer_mbps": 100,
+          "committed_mbps": 100,
+          "density_band": null,
+          "density_multiplier": null,
+          "source_ref": null,
+          "value": {
+            "low": "47094.59",
+            "base": "109419.67",
+            "high": "257818.73"
+          }
+        },
+        {
+          "key": "L0_backup_IT_BROADBAND_PON_100M_rural",
+          "layer": "L0",
+          "driver": "circuits",
+          "quantity": 83,
+          "quantity_origin": "SIMULATED",
+          "unit_cost_origin": "BENCHMARK_PRIOR",
+          "product": "BROADBAND_PON",
+          "role": "BACKUP",
+          "service_class": "BEST_EFFORT",
+          "access_technology": "PON",
+          "bearer_mbps": 100,
+          "committed_mbps": 100,
+          "density_band": null,
+          "density_multiplier": null,
+          "source_ref": null,
+          "value": {
+            "low": "25181.23",
+            "base": "45628.53",
+            "high": "79008.06"
+          }
+        },
+        {
+          "key": "L0_backup_IT_BROADBAND_PON_1000M_rural",
+          "layer": "L0",
+          "driver": "circuits",
+          "quantity": 13,
+          "quantity_origin": "SIMULATED",
+          "unit_cost_origin": "BENCHMARK_PRIOR",
+          "product": "BROADBAND_PON",
+          "role": "BACKUP",
+          "service_class": "BEST_EFFORT",
+          "access_technology": "PON",
+          "bearer_mbps": 1000,
+          "committed_mbps": 1000,
+          "density_band": null,
+          "density_multiplier": null,
+          "source_ref": null,
+          "value": {
+            "low": "8791.94",
+            "base": "15722.60",
+            "high": "27193.91"
+          }
+        },
+        {
+          "key": "L0_primary_IT_ETHERNET_600M_rural_priced_at_1000M",
+          "layer": "L0",
+          "driver": "circuits",
+          "quantity": 14,
+          "quantity_origin": "ANALYST_ENTERED_SCOPE",
+          "unit_cost_origin": "BENCHMARK_PRIOR",
+          "product": "ETHERNET",
+          "role": "PRIMARY",
+          "service_class": "ETHERNET",
+          "access_technology": "ETHERNET_FIBRE",
+          "bearer_mbps": 1000,
+          "committed_mbps": 600,
+          "density_band": null,
+          "density_multiplier": null,
+          "source_ref": null,
+          "value": {
+            "low": "85343.46",
+            "base": "222010.92",
+            "high": "531345.23"
+          }
+        },
+        {
+          "key": "L0_backup_PL_BROADBAND_PON_100M_rural",
+          "layer": "L0",
+          "driver": "circuits",
+          "quantity": 55,
+          "quantity_origin": "SIMULATED",
+          "unit_cost_origin": "BENCHMARK_PRIOR",
+          "product": "BROADBAND_PON",
+          "role": "BACKUP",
+          "service_class": "BEST_EFFORT",
+          "access_technology": "PON",
+          "bearer_mbps": 100,
+          "committed_mbps": 100,
+          "density_band": null,
+          "density_multiplier": null,
+          "source_ref": null,
+          "value": {
+            "low": "12862.40",
+            "base": "23258.29",
+            "high": "40074.00"
+          }
+        },
+        {
+          "key": "L0_backup_PL_BROADBAND_PON_1000M_rural",
+          "layer": "L0",
+          "driver": "circuits",
+          "quantity": 2,
+          "quantity_origin": "SIMULATED",
+          "unit_cost_origin": "BENCHMARK_PRIOR",
+          "product": "BROADBAND_PON",
+          "role": "BACKUP",
+          "service_class": "BEST_EFFORT",
+          "access_technology": "PON",
+          "bearer_mbps": 1000,
+          "committed_mbps": 1000,
+          "density_band": null,
+          "density_multiplier": null,
+          "source_ref": null,
+          "value": {
+            "low": "1036.58",
+            "base": "1860.66",
+            "high": "3220.02"
+          }
+        },
+        {
+          "key": "L0_primary_PL_ETHERNET_600M_rural_priced_at_1000M",
+          "layer": "L0",
+          "driver": "circuits",
+          "quantity": 2,
+          "quantity_origin": "ANALYST_ENTERED_SCOPE",
+          "unit_cost_origin": "BENCHMARK_PRIOR",
+          "product": "ETHERNET",
+          "role": "PRIMARY",
+          "service_class": "ETHERNET",
+          "access_technology": "ETHERNET_FIBRE",
+          "bearer_mbps": 1000,
+          "committed_mbps": 600,
+          "density_band": null,
+          "density_multiplier": null,
+          "source_ref": null,
+          "value": {
+            "low": "9294.99",
+            "base": "24164.45",
+            "high": "57855.54"
+          }
+        },
+        {
+          "key": "L0_backup_US_BROADBAND_PON_100M_rural",
+          "layer": "L0",
+          "driver": "circuits",
+          "quantity": 237,
+          "quantity_origin": "SIMULATED",
+          "unit_cost_origin": "BENCHMARK_PRIOR",
+          "product": "BROADBAND_PON",
+          "role": "BACKUP",
+          "service_class": "BEST_EFFORT",
+          "access_technology": "PON",
+          "bearer_mbps": 100,
+          "committed_mbps": 100,
+          "density_band": null,
+          "density_multiplier": null,
+          "source_ref": null,
+          "value": {
+            "low": "94372.73",
+            "base": "170377.52",
+            "high": "295231.37"
+          }
+        },
+        {
+          "key": "L0_primary_US_ETHERNET_600M_rural_priced_at_1000M",
+          "layer": "L0",
+          "driver": "circuits",
+          "quantity": 13,
+          "quantity_origin": "ANALYST_ENTERED_SCOPE",
+          "unit_cost_origin": "BENCHMARK_PRIOR",
+          "product": "ETHERNET",
+          "role": "PRIMARY",
+          "service_class": "ETHERNET",
+          "access_technology": "ETHERNET_FIBRE",
+          "bearer_mbps": 1000,
+          "committed_mbps": 600,
+          "density_band": null,
+          "density_multiplier": null,
+          "source_ref": null,
+          "value": {
+            "low": "79247.50",
+            "base": "206152.99",
+            "high": "493392.00"
+          }
+        },
+        {
+          "key": "L0_primary_US_MOBILE_5G_100M_rural",
+          "layer": "L0",
+          "driver": "circuits",
+          "quantity": 300,
+          "quantity_origin": "ANALYST_ENTERED_SCOPE",
+          "unit_cost_origin": "BENCHMARK_PRIOR",
+          "product": "MOBILE_5G",
+          "role": "PRIMARY",
+          "service_class": "BEST_EFFORT",
+          "access_technology": "MOBILE_5G",
+          "bearer_mbps": 100,
+          "committed_mbps": 100,
+          "density_band": null,
+          "density_multiplier": null,
+          "source_ref": null,
+          "value": {
+            "low": "85513.87",
+            "base": "202188.51",
+            "high": "458459.92"
+          }
+        },
+        {
+          "key": "L2_overlay",
+          "layer": "L2",
+          "driver": "sites",
+          "quantity": 1273,
+          "quantity_origin": "ANALYST_ENTERED_SCOPE",
+          "unit_cost_origin": "BENCHMARK_PRIOR",
+          "product": "SDWAN_OVERLAY",
+          "role": "PLATFORM",
+          "service_class": null,
+          "access_technology": null,
+          "bearer_mbps": null,
+          "committed_mbps": null,
+          "density_band": null,
+          "density_multiplier": null,
+          "source_ref": null,
+          "value": {
+            "low": "611040.00",
+            "base": "840180.00",
+            "high": "1145700.00"
+          }
+        },
+        {
+          "key": "L4_sse",
+          "layer": "L4",
+          "driver": "users",
+          "quantity": 15276,
+          "quantity_origin": "ANALYST_ENTERED_SCOPE",
+          "unit_cost_origin": "BENCHMARK_PRIOR",
+          "product": "SSE_LICENCE",
+          "role": "PLATFORM",
+          "service_class": null,
+          "access_technology": null,
+          "bearer_mbps": null,
+          "committed_mbps": null,
+          "density_band": null,
+          "density_multiplier": null,
+          "source_ref": null,
+          "value": {
+            "low": "1099872.00",
+            "base": "1649808.00",
+            "high": "2383056.00"
+          }
+        },
+        {
+          "key": "OPS_operations",
+          "layer": "OPS",
+          "driver": "sites",
+          "quantity": 1273,
+          "quantity_origin": "ANALYST_ENTERED_SCOPE",
+          "unit_cost_origin": "BENCHMARK_PRIOR",
+          "product": null,
+          "role": "PLATFORM",
+          "service_class": null,
+          "access_technology": null,
+          "bearer_mbps": null,
+          "committed_mbps": null,
+          "density_band": null,
+          "density_multiplier": null,
+          "source_ref": null,
+          "value": {
+            "low": "501541.63",
+            "base": "789158.16",
+            "high": "1233231.48"
+          }
+        }
+      ]
+    }
+  },
+  "savings_bridge": {
+    "baseline": "6368593.93",
+    "steps": [
+      {
+        "step": "Same-service repricing",
+        "lever_id": "LEV-REPRICE-001",
+        "scenario": "A",
+        "saving": "327948.71",
+        "from": "6368593.93",
+        "to": "6040645.22",
+        "basis": "GOVERNED_LEVER",
+        "layers": [
+          "L0"
+        ]
+      },
+      {
+        "step": "Billing cleanup",
+        "lever_id": "LEV-CLEANUP-001",
+        "scenario": "A",
+        "saving": "72148.72",
+        "from": "6040645.22",
+        "to": "5968496.50",
+        "basis": "GOVERNED_LEVER",
+        "layers": [
+          "L0"
+        ]
+      },
+      {
+        "step": "Risk-tiered access",
+        "lever_id": "LEV-RISKTIER-001",
+        "scenario": "B",
+        "saving": "148475.20",
+        "from": "5968496.50",
+        "to": "5820021.30",
+        "basis": "GOVERNED_LEVER",
+        "layers": [
+          "L0"
+        ]
+      },
+      {
+        "step": "Right-sizing",
+        "lever_id": "LEV-BANDWIDTH-001",
+        "scenario": "B",
+        "saving": "75822.70",
+        "from": "5820021.30",
+        "to": "5744198.60",
+        "basis": "GOVERNED_LEVER",
+        "layers": [
+          "L0"
+        ]
+      },
+      {
+        "step": "Platform consolidation",
+        "lever_id": "LEV-SASE-001",
+        "scenario": "C",
+        "saving": "547797.36",
+        "from": "5744198.60",
+        "to": "5196401.24",
+        "basis": "GOVERNED_LEVER",
+        "layers": [
+          "L2",
+          "L4"
+        ]
+      },
+      {
+        "step": "Security appliance retirement",
+        "lever_id": "LEV-SECRETIRE-001",
+        "scenario": "C",
+        "saving": "128685.02",
+        "from": "5196401.24",
+        "to": "5067716.22",
+        "basis": "GOVERNED_LEVER",
+        "layers": [
+          "L4"
+        ]
+      },
+      {
+        "step": "Operating-model optimisation",
+        "lever_id": "LEV-OPS-001",
+        "scenario": "D",
+        "saving": "206226.00",
+        "from": "5067716.22",
+        "to": "4861490.22",
+        "basis": "GOVERNED_LEVER",
+        "layers": [
+          "OPS"
+        ]
+      },
+      {
+        "step": "Supplier consolidation",
+        "lever_id": "LEV-NAAS-001",
+        "scenario": "D",
+        "saving": "587580.79",
+        "from": "4861490.22",
+        "to": "4273909.43",
+        "basis": "GOVERNED_LEVER",
+        "layers": [
+          "L0",
+          "OPS"
+        ]
+      },
+      {
+        "step": "Direct local access",
+        "lever_id": "LEV-LASTMILE-001",
+        "scenario": "D",
+        "saving": "321389.74",
+        "from": "4273909.43",
+        "to": "3952519.69",
+        "basis": "GOVERNED_LEVER",
+        "layers": [
+          "L0"
+        ]
+      }
+    ],
+    "not_counted": [
+      {
+        "step": "MPLS substitution",
+        "lever_id": "LEV-MPLS-001",
+        "scenario": "B",
+        "saving": "0",
+        "basis": "NOT_APPLICABLE",
+        "reason": "MPLS substitution acts on service_class in ['IPVPN'], and this estate's service_class=BEST_EFFORT, service_class=ETHERNET in L0 contain none of them. No saving is booked."
+      },
+      {
+        "step": "PoP exit",
+        "lever_id": "LEV-POP-001",
+        "scenario": "C",
+        "saving": "0",
+        "basis": "NO_BASELINE",
+        "reason": "PoP exit acts on L1, and this estimate has no baseline for L1 at all - it prices L0/L2/L4/OPS. The saving is not zero; it is unmeasured, and a headline that omits it is understated by however much that layer costs."
+      },
+      {
+        "step": "Backbone to hyperscaler",
+        "lever_id": "LEV-BACKBONE-001",
+        "scenario": "C",
+        "saving": "0",
+        "basis": "NOT_APPLICABLE",
+        "reason": "Backbone to hyperscaler acts on role in ['BACKBONE'], and this estate's role=BACKUP, role=PRIMARY in L0 contain none of them. No saving is booked."
+      }
+    ],
+    "target": "3952519.69",
+    "total_saving": "2416074.24",
+    "governed_saving": "2416074.24",
+    "estimated_saving": "0",
+    "saving_pct": "0.379",
+    "governed_share": "1.000",
+    "coverage": {
+      "status": "PARTIAL",
+      "effective_coverage_pct": "0.910",
+      "qualifications": [
+        "material country(ies) not covered: IT",
+        "cost layer(s) in scope with nothing priced: L1"
+      ],
+      "what_it_means": "Every saving above is a share of a baseline priced on 0.910 of its own scope. That baseline is qualified, so the savings inherit the qualification: they are a percentage of a partial picture, not of the estate. material country(ies) not covered: IT cost layer(s) in scope with nothing priced: L1"
+    },
+    "note": "9 step(s) in the order they compound - each acts on what the ones before it left, so they do not add up to the sum of their percentages. 1 lever(s) found no cost pool to act on: PoP exit. That is an opportunity this estimate could not size, not one worth zero. 2 lever(s) had a baseline and matched nothing in this estate."
+  },
+  "confidence": {
+    "current_baseline": "0.332",
+    "target_cost": "0.700",
+    "realization": "0.179",
+    "weighted": "0.415",
+    "overall": "0.263",
+    "band": "D - Indicative",
+    "policy_set": "confidence_policy",
+    "ceilings_applied": [
+      "simulated_target_confidence_ceiling=0.7000",
+      "unpriced_scope_confidence_penalty=one_band"
+    ],
+    "weights": {
+      "current_baseline": "0.3500",
+      "realization": "0.3000",
+      "target_cost": "0.3500"
+    },
+    "component_cap_headroom": "0.1500",
+    "band_floors": {
+      "A": "0.8500",
+      "B": "0.7000",
+      "C": "0.5000"
+    },
+    "v0_status": "PARTIAL",
+    "partial_penalty_factor": "0.8000",
+    "arithmetic": "capped = min(sum(component x weight), min(component) + component_cap_headroom). If v0_status is PARTIAL, capped is lowered one band: to (next lower band floor - 0.01) where the score is at or above a floor, otherwise to capped x partial_penalty_factor. overall = clamp of the result. Ceilings in `ceilings_applied` have already been applied to the components above.",
+    "simulated_share": "0.1381",
+    "asserted_share": "0.0000",
+    "drivers": {
+      "priced_spend_pct": "0.910",
+      "evidenced_value_share": "0.0000",
+      "client_confirmed_value_share": "0",
+      "client_confirmed_evidence_weight": "0.7000",
+      "domain_completeness": "0.9583333333333333333333333333",
+      "prior_coverage": "0.9",
+      "prior_recency": "1",
+      "lever_stage_mix": {
+        "V3": "206226.00",
+        "V4": "587580.79",
+        "V2": "321389.74"
+      },
+      "policy_set": "confidence_policy",
+      "raw_before_stage_scaling": {
+        "current_baseline": "0.604",
+        "target_cost": "0.945",
+        "realization": "0.512"
+      },
+      "stage_ceilings": {
+        "current_baseline": "0.5500",
+        "target_cost": "0.7500",
+        "realization": "0.3500"
+      }
+    }
+  },
+  "baseline_plausibility": {
+    "flag": "OK",
+    "scope_status": "PARTIAL_COUNTRIES",
+    "metrics": {
+      "BASELINE_PER_EMPLOYEE": {
+        "value": "125.63",
+        "flag": "NOT_ASSESSABLE",
+        "note": "scope is PARTIAL_COUNTRIES: this baseline covers part of the group and the denominator is group-wide, so the ratio measures the scope gap rather than the estimate",
+        "benchmark": null
+      },
+      "BASELINE_PCT_OF_REVENUE": {
+        "value": "0.03",
+        "flag": "NOT_ASSESSABLE",
+        "note": "scope is PARTIAL_COUNTRIES: this baseline covers part of the group and the denominator is group-wide, so the ratio measures the scope gap rather than the estimate",
+        "benchmark": null
+      },
+      "BASELINE_PER_SITE": {
+        "value": "5002.82",
+        "flag": "OK",
+        "note": "5002.823197172034564021995287 is within 1500.000000-20000.000000",
+        "benchmark": {
+          "low": "1500.00",
+          "high": "20000.00",
+          "unit": "base currency per site per year",
+          "source": "UNSOURCED TRIPWIRE set by the workbench, not a published benchmark. Wide enough to catch only an order-of-magnitude error. Replace with a sourced range before any external use - see docs/CR-NCT-001-ASSUMPTIONS.md.",
+          "as_of": "2026-10-12",
+          "evidence_grade": "F"
+        }
+      }
+    },
+    "inputs": {
+      "employees": "50692.00",
+      "revenue": "21460000000.00",
+      "sites": "1273.00",
+      "provenance": {
+        "employees": {
+          "value": "50692",
+          "label": "Group employees (FTE/headcount, at 31 December)",
+          "as_of": "FY2024",
+          "unit": "FTE",
+          "currency": "FTE",
+          "as_stated": "50692"
+        },
+        "revenue": {
+          "value": "2.1460E+10",
+          "label": "Group revenue (consolidated)",
+          "as_of": "FY2025",
+          "unit": "EUR million",
+          "currency": "EUR",
+          "as_stated": "21460"
+        }
+      }
+    },
+    "notes": [
+      "BASELINE_PER_EMPLOYEE: scope is PARTIAL_COUNTRIES: this baseline covers part of the group and the denominator is group-wide, so the ratio measures the scope gap rather than the estimate",
+      "BASELINE_PCT_OF_REVENUE: scope is PARTIAL_COUNTRIES: this baseline covers part of the group and the denominator is group-wide, so the ratio measures the scope gap rather than the estimate",
+      "BASELINE_PER_SITE: 5002.823197172034564021995287 is within 1500.000000-20000.000000",
+      "scope is PARTIAL_COUNTRIES, so only BASELINE_PER_SITE is judged. Per-site divides the cost of the estate by the size of the same estate and is unaffected by how much of the group that estate is."
+    ],
+    "benchmark_rows": 21
+  },
+  "coverage": {
+    "status": "PARTIAL",
+    "reason": "material country floor breached by IT",
+    "effective_coverage_pct": "0.910",
+    "coverage_basis": "MIN_OF_VALUE_AND_CIRCUIT_COVERAGE",
+    "priced_spend_pct": "0.936",
+    "circuit_coverage_pct": "0.910",
+    "priced_spend": "2065949.54",
+    "total_estimated_spend": "2206597.35",
+    "priced_circuits": 1981,
+    "total_circuits": 2176,
+    "spend_basis": "DERIVED_FROM_SIMULATED_SCOPE_AND_PRIORS",
+    "unpriced_countries": [],
+    "unpriced_pairs": [
+      "IT/MOBILE_5G",
+      "PL/MOBILE_5G"
+    ],
+    "unserviceable_sites": 0,
+    "site_coverage_pct": "1.000",
+    "unserviceable": [],
+    "evidence_grade_mix": {
+      "C": "0.011",
+      "E": "0.989"
+    },
+    "unsourced_price_share": "0.989",
+    "expired_price_share": "0.000",
+    "seeded_price_share": "1.000",
+    "unsizable_pairs": [],
+    "unsizable_circuits": 0,
+    "material_country_breaches": [
+      "IT"
+    ],
+    "unpriced_layers": [
+      "L1"
+    ],
+    "layer_coverage_pct": "0.800",
+    "thresholds": {
+      "v0_prior_coverage_min": "0.7000",
+      "v0_prior_coverage_floor": "0.4000",
+      "v0_material_country_floor": "0.1000",
+      "v0_product_coverage_min": "0.6000"
+    },
+    "policy_set": "v0_coverage_threshold_set",
+    "unpriced_scope_treatment": "EXCLUDED_FROM_HEADLINE",
+    "unpriced_scope_basis": "circuit count; no approved rate exists for these products in any country, so their value is unknown rather than zero",
+    "scope": [
+      {
+        "country": "DE",
+        "product": "BROADBAND_PON",
+        "role": "BACKUP",
+        "bandwidth_mbps": 100,
+        "priced_at_bandwidth_mbps": null,
+        "count": 163,
+        "priced": true,
+        "rate_basis": "APPROVED_PRIOR",
+        "price_basis": "SEED",
+        "evidence_grade": "E",
+        "prior_expired": false,
+        "annual_value": "132901.98"
+      },
+      {
+        "country": "DE",
+        "product": "ETHERNET",
+        "role": "PRIMARY",
+        "bandwidth_mbps": 600,
+        "priced_at_bandwidth_mbps": 1000,
+        "count": 9,
+        "priced": true,
+        "rate_basis": "APPROVED_PRIOR",
+        "price_basis": "SEED",
+        "evidence_grade": "E",
+        "prior_expired": false,
+        "annual_value": "117598.50"
+      },
+      {
+        "country": "DE",
+        "product": "MOBILE_5G",
+        "role": "PRIMARY",
+        "bandwidth_mbps": 100,
+        "priced_at_bandwidth_mbps": null,
+        "count": 240,
+        "priced": true,
+        "rate_basis": "APPROVED_PRIOR",
+        "price_basis": "SEED",
+        "evidence_grade": "E",
+        "prior_expired": false,
+        "annual_value": "193175.14"
+      },
+      {
+        "country": "FR",
+        "product": "BROADBAND_PON",
+        "role": "BACKUP",
+        "bandwidth_mbps": 100,
+        "priced_at_bandwidth_mbps": null,
+        "count": 208,
+        "priced": true,
+        "rate_basis": "APPROVED_PRIOR",
+        "price_basis": "SEED",
+        "evidence_grade": "E",
+        "prior_expired": false,
+        "annual_value": "147850.06"
+      },
+      {
+        "country": "FR",
+        "product": "ETHERNET",
+        "role": "PRIMARY",
+        "bandwidth_mbps": 600,
+        "priced_at_bandwidth_mbps": 1000,
+        "count": 7,
+        "priced": true,
+        "rate_basis": "APPROVED_PRIOR",
+        "price_basis": "SEED",
+        "evidence_grade": "E",
+        "prior_expired": false,
+        "annual_value": "87806.88"
+      },
+      {
+        "country": "FR",
+        "product": "MOBILE_5G",
+        "role": "PRIMARY",
+        "bandwidth_mbps": 100,
+        "priced_at_bandwidth_mbps": null,
+        "count": 290,
+        "priced": true,
+        "rate_basis": "APPROVED_PRIOR",
+        "price_basis": "SEED",
+        "evidence_grade": "E",
+        "prior_expired": false,
+        "annual_value": "218262.82"
+      },
+      {
+        "country": "GB",
+        "product": "BROADBAND_PON",
+        "role": "BACKUP",
+        "bandwidth_mbps": 100,
+        "priced_at_bandwidth_mbps": null,
+        "count": 142,
+        "priced": true,
+        "rate_basis": "APPROVED_PRIOR",
+        "price_basis": "SEED",
+        "evidence_grade": "E",
+        "prior_expired": false,
+        "annual_value": "103904.81"
+      },
+      {
+        "country": "GB",
+        "product": "ETHERNET",
+        "role": "PRIMARY",
+        "bandwidth_mbps": 600,
+        "priced_at_bandwidth_mbps": 1000,
+        "count": 3,
+        "priced": true,
+        "rate_basis": "APPROVED_PRIOR",
+        "price_basis": "SEED",
+        "evidence_grade": "C",
+        "prior_expired": false,
+        "annual_value": "23112.03"
+      },
+      {
+        "country": "GB",
+        "product": "MOBILE_5G",
+        "role": "PRIMARY",
+        "bandwidth_mbps": 100,
+        "priced_at_bandwidth_mbps": null,
+        "count": 200,
+        "priced": true,
+        "rate_basis": "APPROVED_PRIOR",
+        "price_basis": "SEED",
+        "evidence_grade": "E",
+        "prior_expired": false,
+        "annual_value": "144254.16"
+      },
+      {
+        "country": "IT",
+        "product": "BROADBAND_PON",
+        "role": "BACKUP",
+        "bandwidth_mbps": 100,
+        "priced_at_bandwidth_mbps": null,
+        "count": 83,
+        "priced": true,
+        "rate_basis": "APPROVED_PRIOR",
+        "price_basis": "SEED",
+        "evidence_grade": "E",
+        "prior_expired": false,
+        "annual_value": "56395.01"
+      },
+      {
+        "country": "IT",
+        "product": "BROADBAND_PON",
+        "role": "BACKUP",
+        "bandwidth_mbps": 1000,
+        "priced_at_bandwidth_mbps": null,
+        "count": 13,
+        "priced": true,
+        "rate_basis": "APPROVED_PRIOR",
+        "price_basis": "SEED",
+        "evidence_grade": "E",
+        "prior_expired": false,
+        "annual_value": "19432.50"
+      },
+      {
+        "country": "IT",
+        "product": "ETHERNET",
+        "role": "PRIMARY",
+        "bandwidth_mbps": 600,
+        "priced_at_bandwidth_mbps": 1000,
+        "count": 14,
+        "priced": true,
+        "rate_basis": "APPROVED_PRIOR",
+        "price_basis": "SEED",
+        "evidence_grade": "E",
+        "prior_expired": false,
+        "annual_value": "153662.04"
+      },
+      {
+        "country": "IT",
+        "product": "MOBILE_5G",
+        "role": "PRIMARY",
+        "bandwidth_mbps": 100,
+        "priced_at_bandwidth_mbps": null,
+        "count": 120,
+        "priced": false,
+        "rate_basis": "CROSS_COUNTRY_MEDIAN",
+        "price_basis": null,
+        "evidence_grade": null,
+        "prior_expired": false,
+        "annual_value": "86552.50"
+      },
+      {
+        "country": "PL",
+        "product": "BROADBAND_PON",
+        "role": "BACKUP",
+        "bandwidth_mbps": 100,
+        "priced_at_bandwidth_mbps": null,
+        "count": 55,
+        "priced": true,
+        "rate_basis": "APPROVED_PRIOR",
+        "price_basis": "SEED",
+        "evidence_grade": "E",
+        "prior_expired": false,
+        "annual_value": "28746.30"
+      },
+      {
+        "country": "PL",
+        "product": "BROADBAND_PON",
+        "role": "BACKUP",
+        "bandwidth_mbps": 1000,
+        "priced_at_bandwidth_mbps": null,
+        "count": 2,
+        "priced": true,
+        "rate_basis": "APPROVED_PRIOR",
+        "price_basis": "SEED",
+        "evidence_grade": "E",
+        "prior_expired": false,
+        "annual_value": "2299.70"
+      },
+      {
+        "country": "PL",
+        "product": "ETHERNET",
+        "role": "PRIMARY",
+        "bandwidth_mbps": 600,
+        "priced_at_bandwidth_mbps": 1000,
+        "count": 2,
+        "priced": true,
+        "rate_basis": "APPROVED_PRIOR",
+        "price_basis": "SEED",
+        "evidence_grade": "E",
+        "prior_expired": false,
+        "annual_value": "16725.12"
+      },
+      {
+        "country": "PL",
+        "product": "MOBILE_5G",
+        "role": "PRIMARY",
+        "bandwidth_mbps": 100,
+        "priced_at_bandwidth_mbps": null,
+        "count": 75,
+        "priced": false,
+        "rate_basis": "CROSS_COUNTRY_MEDIAN",
+        "price_basis": null,
+        "evidence_grade": null,
+        "prior_expired": false,
+        "annual_value": "54095.31"
+      },
+      {
+        "country": "US",
+        "product": "BROADBAND_PON",
+        "role": "BACKUP",
+        "bandwidth_mbps": 100,
+        "priced_at_bandwidth_mbps": null,
+        "count": 237,
+        "priced": true,
+        "rate_basis": "APPROVED_PRIOR",
+        "price_basis": "SEED",
+        "evidence_grade": "E",
+        "prior_expired": false,
+        "annual_value": "210579.71"
+      },
+      {
+        "country": "US",
+        "product": "ETHERNET",
+        "role": "PRIMARY",
+        "bandwidth_mbps": 600,
+        "priced_at_bandwidth_mbps": 1000,
+        "count": 13,
+        "priced": true,
+        "rate_basis": "APPROVED_PRIOR",
+        "price_basis": "SEED",
+        "evidence_grade": "E",
+        "prior_expired": false,
+        "annual_value": "142686.18"
+      },
+      {
+        "country": "US",
+        "product": "MOBILE_5G",
+        "role": "PRIMARY",
+        "bandwidth_mbps": 100,
+        "priced_at_bandwidth_mbps": null,
+        "count": 300,
+        "priced": true,
+        "rate_basis": "APPROVED_PRIOR",
+        "price_basis": "SEED",
+        "evidence_grade": "E",
+        "prior_expired": false,
+        "annual_value": "266556.60"
+      }
+    ],
+    "unpriced_components": [
+      {
+        "country": "IT",
+        "product": "MOBILE_5G",
+        "role": "PRIMARY",
+        "bandwidth_mbps": 100,
+        "count": 120,
+        "service_class": "BEST_EFFORT",
+        "density": "RURAL",
+        "bearer_mbps": 100,
+        "access_technology": "MOBILE_5G",
+        "reason": "NO_APPROVED_PRIOR_AT_BANDWIDTH"
+      },
+      {
+        "country": "PL",
+        "product": "MOBILE_5G",
+        "role": "PRIMARY",
+        "bandwidth_mbps": 100,
+        "count": 75,
+        "service_class": "BEST_EFFORT",
+        "density": "RURAL",
+        "bearer_mbps": 100,
+        "access_technology": "MOBILE_5G",
+        "reason": "NO_APPROVED_PRIOR_AT_BANDWIDTH"
+      },
+      {
+        "product": "POP_COLOCATION",
+        "role": "PLATFORM",
+        "reason": "NO_HUB_IN_TOPOLOGY"
+      }
+    ]
+  },
+  "simulated_share": "0.1381",
+  "simulated_share_by_scenario": {
+    "A": "0.1125",
+    "B": "0.1165",
+    "C": "0.1381",
+    "D": "0.1081"
+  },
+  "asserted_share": "0.0000",
+  "entered_share": "0.8765",
+  "quantity_sources": {
+    "footprint": {
+      "origin": "ANALYST_ENTERED_SCOPE",
+      "known_fact_id": null
+    },
+    "users": {
+      "origin": "ANALYST_ENTERED_SCOPE",
+      "known_fact_id": null
+    }
+  },
+  "users": 15276,
+  "users_source": "ANALYST_SUPPLIED",
+  "users_implied_by_footprint": 92700,
+  "bandwidth_profile": {
+    "PLANT": {
+      "sites": 48,
+      "mbps_per_site": 1000,
+      "mbps_total": 48000
+    },
+    "REMOTE_SITE": {
+      "sites": 1225,
+      "mbps_per_site": 100,
+      "mbps_total": 122500
+    }
+  },
+  "bandwidth_mbps_total": 170500,
+  "bandwidth_is_priced": false,
+  "uncorroborated_known_facts": 0
+}

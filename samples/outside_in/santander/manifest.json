@@ -1,0 +1,284 @@
+{
+  "slug": "santander",
+  "legal_name": "Banco Santander, S.A.",
+  "industry": {
+    "industry": "UNIVERSAL_BANKING",
+    "origin": "ENTITY_RESOLUTION",
+    "resolution_said": "Banking / Financial Services",
+    "agrees_with_resolution": true
+  },
+  "domicile": "ES",
+  "in_scope_countries": [
+    "ES",
+    "GB",
+    "PT"
+  ],
+  "base_currency": "EUR",
+  "case_id": "f17dd2e2-f70e-4d6c-b612-d9dc5f2a3a9b",
+  "spec_path": "/src/samples/companies.json",
+  "spec_sha256": "8a2a2c5fbf5c",
+  "entity_resolution": {
+    "resolved": null,
+    "resumed": true
+  },
+  "resumed_existing_case": true,
+  "mode": "repromote",
+  "domains_already_researched_on_resume": [
+    1,
+    2,
+    6,
+    7,
+    8,
+    9,
+    10,
+    12,
+    13,
+    14,
+    15,
+    16,
+    18,
+    19,
+    20,
+    21,
+    22
+  ],
+  "footprint_origin": "RESEARCH_MERGED_WITH_DISCLOSURE",
+  "footprint_used": [
+    {
+      "country": "ES",
+      "archetype": "BRANCH",
+      "sites": 1630,
+      "density": "URBAN"
+    },
+    {
+      "country": "ES",
+      "archetype": "CAMPUS",
+      "sites": 1,
+      "density": "SUBURBAN"
+    },
+    {
+      "country": "ES",
+      "archetype": "DC",
+      "sites": 1,
+      "density": "DENSE_URBAN"
+    },
+    {
+      "country": "ES",
+      "archetype": "DC",
+      "sites": 1,
+      "density": "URBAN"
+    },
+    {
+      "country": "GB",
+      "archetype": "BRANCH",
+      "sites": 308,
+      "density": "URBAN"
+    },
+    {
+      "country": "PT",
+      "archetype": "BRANCH",
+      "sites": 327,
+      "density": "URBAN"
+    }
+  ],
+  "footprint_provenance": [
+    {
+      "country": "ES",
+      "archetype": "STORE",
+      "sites": 1877,
+      "origin": "EXCLUDED_BY_SCOPE",
+      "reason": "the 1,877 Spanish 'bank branches' are the network this spec declares as ES/BRANCH, typed STORE by research. Excluded as a double count; the declared BRANCH figure is corrected instead."
+    },
+    {
+      "country": "GB",
+      "archetype": "STORE",
+      "sites": 444,
+      "origin": "EXCLUDED_BY_SCOPE",
+      "reason": "the 444 UK 'bank branches' are the declared GB/BRANCH network, typed STORE by research. Excluded as a double count; GB/BRANCH corrected instead."
+    },
+    {
+      "country": "PT",
+      "archetype": "STORE",
+      "sites": 328,
+      "origin": "EXCLUDED_BY_SCOPE",
+      "reason": "the 328 Portuguese 'bank branches' are the declared PT/BRANCH network, typed STORE by research. Excluded as a double count; PT/BRANCH corrected instead."
+    },
+    {
+      "country": "ES",
+      "archetype": "BRANCH",
+      "sites": 1630,
+      "origin": "DISCLOSURE_KEPT_RESEARCH_FOUND_FEWER",
+      "density": "URBAN",
+      "research_said": 2,
+      "disclosure_said": 1630
+    },
+    {
+      "country": "ES",
+      "archetype": "CAMPUS",
+      "sites": 1,
+      "origin": "PUBLIC_DISCLOSURE",
+      "density": "SUBURBAN"
+    },
+    {
+      "country": "ES",
+      "archetype": "DC",
+      "sites": 2,
+      "origin": "RESEARCHED",
+      "density": null
+    },
+    {
+      "country": "GB",
+      "archetype": "BRANCH",
+      "sites": 308,
+      "origin": "PUBLIC_DISCLOSURE",
+      "density": "URBAN"
+    },
+    {
+      "country": "PT",
+      "archetype": "BRANCH",
+      "sites": 327,
+      "origin": "PUBLIC_DISCLOSURE",
+      "density": "URBAN"
+    },
+    {
+      "origin": "DENSITY_FROM_MIX",
+      "rows": 1,
+      "sites": 2,
+      "filled": [
+        {
+          "country": "ES",
+          "archetype": "DC",
+          "sites": 2,
+          "basis": "INDUSTRY_DEFAULT",
+          "mix_industry": "UNIVERSAL_BANKING",
+          "bands": {
+            "DENSE_URBAN": 1,
+            "URBAN": 1
+          }
+        }
+      ],
+      "note": "the count and the site type are evidenced; the band is a governed sector default from reference.density_mix, not a finding about this client. It decides which bearers are tested, so it is worth replacing with what the client actually has."
+    }
+  ],
+  "scope_countries_modelled": [
+    "ES",
+    "GB",
+    "PT"
+  ],
+  "scope_countries_company_total": "DECLARED_UNKNOWN",
+  "scope_status": "PARTIAL_COUNTRIES",
+  "scope_note": "Baseline covers 3 country(ies) (ES, GB, PT) and the site types listed in sites_origin. The group's full country and site-type count is not sourced, so the share of the group this represents is DECLARED_UNKNOWN. This is baseline_in_scope, not a group baseline.",
+  "sites_origin": {
+    "BRANCH": "ASSUMED_PUBLIC_DISCLOSURE",
+    "CAMPUS": "ASSUMED_PUBLIC_DISCLOSURE",
+    "DC": "RESEARCHED",
+    "STORE": "ASSUMED_PUBLIC_DISCLOSURE"
+  },
+  "fx_to_eur": {
+    "rate": "1.0",
+    "as_of": null,
+    "basis": "base currency",
+    "evidence_grade": null,
+    "source": "identity"
+  },
+  "seed": 20260101,
+  "ensemble_size": 25,
+  "domains_declared_unknown": [],
+  "domains_requested": [
+    1,
+    2,
+    6,
+    7,
+    8,
+    9,
+    10,
+    12,
+    13,
+    14,
+    15,
+    16,
+    18,
+    19,
+    20,
+    21,
+    22
+  ],
+  "domains_fell_back_unanswered": [],
+  "domains_researched": [
+    1,
+    2,
+    6,
+    7,
+    8,
+    9,
+    10,
+    12,
+    13,
+    14,
+    15,
+    16,
+    18,
+    19,
+    20,
+    21,
+    22
+  ],
+  "estimate_inputs": {
+    "method": "BUILD_UP",
+    "users": 27216,
+    "ops_cost_per_site_base": 900,
+    "note": "users and ops_cost_per_site are assumptions, not research. They are stated here because an estimate that hides its inputs cannot be checked."
+  },
+  "build": "4.272.0",
+  "run_started": "2026-10-22T11:35:30.176073+00:00",
+  "run_seconds": 3.9,
+  "preflight_conditions": 8,
+  "promotion": {
+    "promoted": true,
+    "detail": null,
+    "offered": 13,
+    "accepted": 6,
+    "declined": [
+      {
+        "reason": "sources disagree by 120% (188.5 to 415); the newest source diverges from the others, and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
+        "label": "ETHERNET 10000Mbps MRC",
+        "country": "GB",
+        "flags": [
+          "MATERIAL_SPREAD",
+          "NEWEST_DIVERGES"
+        ]
+      },
+      {
+        "reason": "sources state this in units that disagree, and this has not been reviewed. Look at it and promote with accept_conflicts, or research the domain again.",
+        "label": "DC (owned CPD) — United Kingdom",
+        "country": "GB",
+        "flags": [
+          "UNIT_MISMATCH"
+        ]
+      }
+    ],
+    "declined_count": 2
+  },
+  "domains_benchmark_disposed": [
+    3,
+    4,
+    5,
+    11,
+    17,
+    23,
+    24
+  ],
+  "domains_with_no_agent": [
+    3,
+    4,
+    5,
+    11,
+    17,
+    23,
+    24
+  ],
+  "analyst_disposition_response": {
+    "stored": 7,
+    "provenance_dropped": []
+  }
+}

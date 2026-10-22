@@ -2,6 +2,151 @@
 
 One section per company. Everything here was produced by the agent-routed research domains against public sources; the `sources` count is distinct URLs the agents cited and had re-fetched independently. A domain that found nothing says so - `DECLARED_UNKNOWN` is a result, not a gap in this document.
 
+## ABB Ltd
+
+- **Industry** INDUSTRIAL_CONGLOMERATE (entity resolution)
+- **Scope** CH, SE, DE, US, IT, CN, IN, CA, USD, 67 sites (research merged with disclosure)
+- **Confidence** 0.345 (D - Indicative), coverage COMPLETE
+
+**Profile** - EVIDENCED_PUBLIC, 6 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| COUNTRIES OF OPERATION |  | 100 | 100 | 100 | 2025 |
+| EMPLOYEES BY REGION – EUROPE |  | 27700 | 31800 | 52400 | 2025 |
+| GROUP EMPLOYEES (FTE) |  | 112000 | 112000 | 112000 | 2026 |
+| GROUP REVENUE |  | 32235 | 32850 | 33220 | 2025 |
+| MANUFACTURING SITES |  | 160 | 165 | 170 | 2025 |
+| REVENUE – AMERICAS REGION |  | 11370 | 11897 | 12424 | 2025 |
+| REVENUE – ASIA, MIDDLE EAST AND AFRICA REGION |  | 9075 | 9232 | 9389 | 2025 |
+| REVENUE – CHINA (ELECTRIFICATION BA, IN-SCOPE COUNTRY PROXY) | CN | 1731 | 1744 | 4296 | 2025 |
+| REVENUE – EUROPE REGION |  | 10138 | 10772.5 | 11407 | 2025 |
+| REVENUE – UNITED STATES (IN-SCOPE COUNTRY) | US | 8623 | 8879 | 9660 | 2025 |
+
+*3 conflict(s) flagged: EMPLOYEES BY REGION – EUROPE, GROUP EMPLOYEES (FTE), REVENUE – CHINA (ELECTRIFICATION BA, IN-SCOPE COUNTRY PROXY)*
+
+Sources: [ABB Ltd](https://library.e.abb.com/public/b32991481e8b4418a5c5261c5ff25440/ABB%20Financial%20Report%202025.pdf); [ABB Ltd (company website)](https://www.abb.com/global/en/company/annual-reporting-suite/key-figures); [ABB Ltd (press release)](https://new.abb.com/news/detail/132985/q4-2025-results); [MarketViewInsights](https://marketviewinsights.com/statistics/abb-statistics-and-facts) and 2 more
+
+**Locations** - EVIDENCED_PUBLIC, 6 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| BRANCH | CA | 7 | 7 | 7 | 2025 |
+| BRANCH | IN | 27 | 27 | 27 | 2024 |
+| BRANCH | US | 41 | 41 | 41 | 2025 |
+| LARGE_OFFICE | CH | 1 | 1 | 1 | 2025 |
+| LARGE_OFFICE | IN | 1 | 1 | 1 | 2024 |
+| PLANT |  | 160 | 170 | 170 | 2024 |
+| PLANT |  | 356 | 356 | 356 | 2025 |
+| PLANT |  | 397 | 473.5 | 550 | 2018 |
+| PLANT | CN | 30 | 30 | 30 | 2022 |
+| PLANT | IN | 5 | 5 | 5 | 2023 |
+
+*4 conflict(s) flagged: BRANCH, PLANT*
+
+Sources: [ABB Ltd – Financial Report 2025](https://library.e.abb.com/public/b32991481e8b4418a5c5261c5ff25440/ABB%20Financial%20Report%202025.pdf); [ABB Ltd – Key Figures (Annual Reporting Suite 20](https://www.abb.com/global/en/company/annual-reporting-suite/key-figures); [Craft.co – ABB global profile](https://craft.co/abb); [Craft.co – ABB USA profile](https://craft.co/abb-usa) and 2 more
+
+**Data centres and cloud** - EVIDENCED_PUBLIC, 4 source(s)
+
+- DC (owned/co-located) — count disclosed in public filings: 0 disclosed
+- Named cloud provider — Microsoft Azure (product and IT platform): Microsoft Azure
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| MICROSOFT STRATEGIC CLOUD PARTNERSHIP — ANNOUNCED |  | 2016 | 2016 | 2016 | 2016 |
+
+Sources: [ABB Ltd (new.abb.com)](https://new.abb.com/news/detail/112930/abbs-cloud-based-collaboration-with-microsoft-boosts-project-execution-efficiency); [Microsoft](https://www.microsoft.com/en/customers/story/19773-abb-group-azure); [ABB Ltd / SEC](https://www.sec.gov/Archives/edgar/data/0001091587/000110465916148480/a16-19463_16k.htm); [ABB Ltd](https://library.e.abb.com/public/b32991481e8b4418a5c5261c5ff25440/ABB%20Financial%20Report%202025.pdf)
+
+**Current architecture** - EVIDENCED_PUBLIC, 6 source(s)
+
+- ABB facilities connected by BT (SDN/WAN, 2022 contract): 600+
+- ABB managed endpoint/CPE devices (BT, 2022 contract): 1100+
+- ABB Future Network Model — SD-WAN modernisation scope (TCS, 2026): global
+- ABB WAN architecture state characterisation (pre-2026): fragmented multi-vendor
+- ABB 5G WAN access option (BT contract, 2022): yes — 5G access option per site
+- ABB security architecture (BT, 2022 contract): multi-layered cyber security, end-to-end, compliant
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| COUNTRIES COVERED BY ABB WAN (BT CONTRACT, 2022) |  | 60 | 60 | 60 | 2022 |
+| FIREWALLS MANAGED ON ABB NETWORK (BT, PRIOR CONTRACT) |  | 400 | 400 | 400 | 2019 |
+
+Sources: [TCS (official press release)](https://www.tcs.com/who-we-are/newsroom/press-release/tcs-and-abb-sign-multi-million-multi-year-deal-to-transform-global-network-operations-with-ai); [PR Newswire / BT](https://www.prnewswire.com/news-releases/bt-engineers-new-digital-network-infrastructure-for-abb-301459030.html); [Technology Magazine](https://technologymagazine.com/news/abb-and-tcs-sign-multi-million-ai-network-overhaul-agreement); [Mining Weekly](https://www.miningweekly.com/article/tcs-and-abb-sign-multi-million-multi-year-deal-to-transform-global-network-operations-with-ai-2026-07-16) and 2 more
+
+**Current providers and products** - EVIDENCED_PUBLIC, 8 source(s)
+
+- Managed network services provider (NaaS, WAN, SD-WAN, NOC, security): TCS (Tata Consultancy Services)
+- WAN carrier / managed connectivity (global, 60+ countries): BT (BT Global)
+- BT contract scope: ABB facilities connected: 600+
+- BT contract scope: endpoint devices managed (security): 1100+
+- SD-WAN / network modernisation scope (TCS Future Network Model): multi-vendor SD-WAN environment (vendor not named)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| PRIOR BT CONTRACT: ABB EMPLOYEES SERVED BY NETWORK |  | 140000 | 140000 | 140000 | 2014 |
+| TCS–ABB NETWORK DEAL DURATION |  | None | None | None |  |
+| WAN COUNTRIES COVERED (BT CONTRACT) |  | 60 | 60 | 60 | 2022 |
+
+Sources: [Mining Weekly](https://www.miningweekly.com/article/tcs-and-abb-sign-multi-million-multi-year-deal-to-transform-global-network-operations-with-ai-2026-07-16); [APAC News Network](https://apacnewsnetwork.com/2026/07/tcs-expands-abb-partnership-with-new-global-network-operations-deal/); [CRN Asia](https://www.crnasia.com/india/news/2026/tcs-expands-abb-partnership-with-multi-million-network-operations-deal); [Technology Magazine](https://technologymagazine.com/news/abb-and-tcs-sign-multi-million-ai-network-overhaul-agreement) and 4 more
+
+**Contract and sourcing events** - EVIDENCED_PUBLIC, 8 source(s)
+
+- TCS–ABB NaaS contract value: undisclosed multi-million USD
+- TCS–ABB NaaS geographic scope: 100+
+- BT–ABB managed network contract – facilities covered: 600+
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| BT–ABB CONTRACT ANNOUNCEMENT DATE / PREDECESSOR CONTRACT |  | 2014 | 2014 | 2014 | 2022 |
+| BT–ABB MANAGED NETWORK CONTRACT – COUNTRIES COVERED |  | 60 | 60 | 60 | 2022 |
+| IBM–ABB AGREEMENT EXTENSION VALUE (2009 AMENDMENT, EXTENDED  |  | 1400000000 | 1400000000 | 1400000000 | 2009 |
+| IBM–ABB IS INFRASTRUCTURE OUTSOURCING CONTRACT VALUE (2003 T |  | 1100000000 | 1100000000 | 1100000000 | 2003 |
+| IBM–ABB IS INFRASTRUCTURE OUTSOURCING TOTAL RELATIONSHIP VAL |  | 1700000000 | 1700000000 | 1700000000 | 2003 |
+| IBM–ABB OUTSOURCING GEOGRAPHIC SCOPE |  | 15 | 15 | 15 | 2005 |
+| TCS–ABB NAAS CONTRACT TERM |  | None | None | None |  |
+
+*1 conflict(s) flagged: IBM–ABB OUTSOURCING GEOGRAPHIC SCOPE*
+
+Sources: [TCS (official press release)](https://www.tcs.com/who-we-are/newsroom/press-release/tcs-and-abb-sign-multi-million-multi-year-deal-to-transform-global-network-operations-with-ai); [APAC News Network](https://apacnewsnetwork.com/2026/07/tcs-expands-abb-partnership-with-new-global-network-operations-deal/); [Business View Point Magazine](https://businessviewpointmagazine.com/tcs-and-abb-sign/); [PR Newswire / BT Group](https://www.prnewswire.com/news-releases/bt-engineers-new-digital-network-infrastructure-for-abb-301459030.html) and 4 more
+
+**Transformation announcements** - EVIDENCED_PUBLIC, 9 source(s)
+
+- ABB Future Network Model – TCS deal value: multi-million
+- ABB Capital Markets Day 2025 – Operational EBITA margin target: 18-22
+- ABB R&D investment target (Capital Markets Day 2025): 4.5-5.0
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| ABB INTERNAL DATA INFRASTRUCTURE PROGRAMME – AVOIDED INVENTO |  | 200000000 | 200000000 | 200000000 | 2020 |
+| ABB WAY RIGHT-SIZING RESTRUCTURING CHARGES (2023) |  | 76000000 | 76000000 | 76000000 | 2023 |
+| ABB WAY RIGHT-SIZING RESTRUCTURING CHARGES (2024) |  | 27000000 | 27000000 | 27000000 | 2024 |
+| ABB-OS PROGRAMME SAVINGS REALISED IN 2019 |  | 160000000 | 160000000 | 160000000 | 2019 |
+| ABB-OS PROGRAMME – CUMULATIVE RESTRUCTURING CHARGES (ACTUAL  |  | 309000000 | 309000000 | 309000000 | 2020 |
+| ABB-OS SIMPLIFICATION PROGRAMME – ANNUAL RUN-RATE SAVINGS TA |  | 500000000 | 500000000 | 500000000 | 2018 |
+| WHITE COLLAR PRODUCTIVITY PROGRAMME – ANNUAL COST SAVINGS (T |  | 1200000000 | 1200000000 | 1300000000 | 2019 |
+
+Sources: [Engineering News](https://www.engineeringnews.co.za/article/tcs-and-abb-sign-multi-million-multi-year-deal-to-transform-global-network-operations-with-ai-2026-07-16); [FutureCIO](https://futurecio.tech/tcs-and-abb-expand-partnership-to-transform-global-network-operations-with-ai/); [ABB Ltd (SEC Form 20-F FY2018)](https://www.sec.gov/Archives/edgar/data/1091587/000141057819000158/maindocument001.htm); [ABB Ltd (SEC Form 20-F FY2020)](https://www.sec.gov/Archives/edgar/data/0001091587/000110465921028374/abb20201231.htm) and 5 more
+
+**Market serviceability** - EVIDENCED_PUBLIC, 9 source(s)
+
+- Deutsche Telekom retail broadband market share (Germany): 39–40
+- MPLS circuit provisioning lead time (standard, enterprise): 60–90 business days
+- SD-WAN / internet-leg provisioning lead time: 3–10 days
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| ACTIVE SD-WAN/MANAGED WAN VENDORS IN GERMANY (ISG 2025 RANKI | DE | 39 | 39 | 39 | 2025 |
+| CREDIBLE ENTERPRISE CARRIERS (TELECOM/CONNECTIVITY COMPANIES | CH | 500 | 500 | 500 | 2026 |
+| ENTERPRISE FIBRE PROVIDERS IDENTIFIED IN SWEDEN | SE | 43 | 43 | 43 | 2026 |
+| GERMANY ACTIVE FIBRE CONNECTIONS (FTTH/FTTB) | DE | None | None | None |  |
+| SWEDEN BROADBAND COVERAGE TARGET (HOUSEHOLDS AND BUSINESSES  | SE | None | None | None |  |
+| SWISSCOM FTTH PREMISES COVERAGE (% OF HOUSEHOLDS AND OFFICES | CH | None | None | None |  |
+| VODAFONE GERMANY FIXED BROADBAND CUSTOMERS | DE | None | None | None |  |
+
+Sources: [Val Index (Swiss commercial-register / BAKOM dat](https://valindex.ch/en/industry/telecom-connectivity-services/); [Swisscom (company website)](https://www.swisscom.ch/en/about/network/fibre-optics-network-expansion-map.html); [Swisscom (company website)](https://www.swisscom.ch/en/business/enterprise/offer/wireline/enterprise-connect.html); [European Commission](https://digital-strategy.ec.europa.eu/en/policies/digital-connectivity-sweden) and 5 more
+
+---
+
 ## Accor SA
 
 - **Industry** HOTELS (entity resolution)
@@ -409,6 +554,142 @@ Sources: [Connected Networks (trade press/broker)](https://www.connectednetworks
 
 ---
 
+## Air France-KLM S.A.
+
+- **Industry** AIRLINES (entity resolution)
+- **Scope** FR, NL, EUR, 39 sites (research merged with disclosure)
+- **Confidence** 0.485 (D - Indicative), coverage COMPLETE
+
+**Profile** - EVIDENCED_PUBLIC, 10 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| AIR FRANCE EMPLOYEES (STANDALONE) | FR | 37000 | 37000 | 37000 | 2024 |
+| COUNTRIES SERVED BY NETWORK (AIR FRANCE + KLM) |  | 90 | 90 | 100 | 2025 |
+| GROUP BUSINESS SEGMENTS (COUNT) |  | 4 | 4 | 4 | 2024 |
+| GROUP EMPLOYEES (HEADCOUNT, CONSOLIDATED) |  | 78000 | 80133.5 | 82714 | 2024 |
+| GROUP EMPLOYEES (HEADCOUNT, CONSOLIDATED) FY2023 |  | 77806 | 77806 | 77806 | 2023 |
+| GROUP REVENUE (CONSOLIDATED) |  | 31459 | 31460 | 31500 | 2024 |
+| GROUP REVENUE (CONSOLIDATED) FY2023 |  | 30019 | 30019 | 30019 | 2023 |
+| GROUP REVENUE (CONSOLIDATED) FY2025 (FULL YEAR) |  | 33000 | 33005 | 33010 | 2025 |
+| KLM EMPLOYEES (STANDALONE) | NL | 36071 | 36071 | 36071 | 2024 |
+| WAN-CONNECTED SITES ACROSS COUNTRIES (GTT MANAGED NETWORK CO |  | 37 | 37 | 37 | 2021 |
+
+Sources: [Air France-KLM S.A. (AMF filing)](https://www.airfranceklm.com/sites/default/files/2025-03/2024.12-consolidated-financial-statements-and-notes-afkl-as-of-december-31-2024.pdf); [Air France-KLM S.A. — FY2024 earnings press rele](https://www.airfranceklm.com/sites/default/files/2025-03/20250305-fy-2024-afklm-press-release-english.pdf); [Air France-KLM S.A. — 2024 Universal Registratio](https://www.airfranceklm.com/sites/default/files/2025-04/2024_urd_ven_04032025.pdf); [Air France-KLM S.A. — H1 2025 condensed interim ](https://www.airfranceklm.com/sites/default/files/2025-07/2025.06-air-france-klm-consolidated-financial-statements-and-notes-as-of-june-30-2025.pdf) and 6 more
+
+**Locations** - EVIDENCED_PUBLIC, 8 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| CAMPUS — KLM BLUE BASE CONSOLIDATED CAMPUS (NL) | NL | 1 | 1 | 1 | 2024 |
+| LARGE_OFFICE — AIR FRANCE IT/DIGITAL SITES (FR) | FR | 3 | 3 | 3 | 2025 |
+| LARGE_OFFICE — AIR FRANCE/AF-KLM HEADQUARTERS AND MAJOR OFFI | FR | 2 | 2 | 2 | 2024 |
+| STORE — AIR FRANCE CITY TICKET OFFICES (FR, MINIMUM NAMED CI | FR | 7 | 7 | 7 | 2015 |
+| TERMINAL — AIR FRANCE HUB AIRPORTS (FR) | FR | 2 | 2 | 2 | 2024 |
+| TERMINAL — KLM HUB AIRPORT (NL) | NL | 1 | 1 | 1 | 2024 |
+| WAREHOUSE — AFI KLM E&M MRO MAIN FACILITIES (FR) | FR | 4 | 4 | 4 | 2024 |
+| WAREHOUSE — AIR FRANCE MAINTENANCE SITES IN FRANCE (HISTORIC | FR | 4 | 4 | 4 | 2004 |
+| WAREHOUSE — KLM E&M MRO MAIN BASE (NL) | NL | 1 | 1 | 1 | 2024 |
+| WAREHOUSE — KLM TOTAL WORKSPACE AT SCHIPHOL (NL, FLOOR AREA  | NL | 700000 | 700000 | 700000 | 2024 |
+
+*3 conflict(s) flagged: LARGE_OFFICE — AIR FRANCE/AF-KLM HEADQUARTERS AND MAJOR OFFICES (FR), STORE — AIR FRANCE CITY TICKET OFFICES (FR, MINIMUM NAMED CITIES), WAREHOUSE — AFI KLM E&M MRO MAIN FACILITIES (FR)*
+
+Sources: [Air France-KLM](https://www.airfranceklm.com/sites/default/files/2025-04/2024_urd_ven_04032025.pdf); [Air France corporate website](https://corporate.airfrance.com/en/about-air-france/key-figures); [CAPA — Centre for Aviation](https://centreforaviation.com/data/profiles/maintenance-repair-and-overhaul/air-france-industries-klm-engineering-and-maintenance); [KLM careers (official KLM page)](https://careers.klm.com/en/campaign/real-estate-and-facility-contracting/) and 4 more
+
+**Data centres and cloud** - EVIDENCED_PUBLIC, 9 source(s)
+
+- DC exit target date (close all three legacy data centres): 2027-12
+- Colocation — residual Equinix footprint post-DC exit: some
+- Applications being migrated to cloud (total scope): 500+
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| CLOUD — DATA ANALYTICS AND DATALAKES ON GOOGLE CLOUD PLATFOR |  | None | None | None |  |
+| CLOUD — E-COMMERCE APPLICATIONS ON MICROSOFT AZURE (SHARE) |  | 80 | 80 | 80 | 2025 |
+| DC — LEGACY DATA CENTRE IN THE NETHERLANDS (AMSTERDAM) | NL | 1 | 1 | 1 | 2024 |
+| DC — LEGACY DATA CENTRES IN FRANCE (VALBONNE + TOULOUSE) | FR | 2 | 2 | 2 | 2024 |
+| DC — LEGACY OWNED/OPERATED DATA CENTRES (GROUP TOTAL) |  | 3 | 3 | 3 | 2025 |
+
+Sources: [La Revue du Digital](https://www.larevuedudigital.com/air-france-klm-eteindra-ses-salles-informatiques-historiques-en-2027/); [Data Centre Dynamics](https://www.datacenterdynamics.com/en/news/tcs-signs-multi-year-cloud-migration-deal-with-air-france-klm/); [Data Centre Dynamics](https://www.datacenterdynamics.com/en/news/air-france-klm-signs-ai-deal-with-google-cloud/); [Accenture newsroom](https://newsroom.accenture.com/news/2025/accenture-teams-up-with-air-france-klm-to-support-the-group-s-transition-to-the-cloud) and 5 more
+
+**Current architecture** - EVIDENCED_PUBLIC, 7 source(s)
+
+- WAN-connected airport and cargo sites (Tata hybrid WAN, global): 130+
+- WAN-connected sites via GTT managed WAN (global, subset of offices and airports): 37 countries, 5 continents
+- Network availability at dual-connected WAN locations (Tata hybrid WAN): >99.994%
+- Bandwidth increase delivered by hybrid WAN vs. legacy network: ~3x (near-triple)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| MPLS WAN SITES — TATA COMMUNICATIONS (MIDDLE EAST, AFRICA, A |  | 170 | 170 | 170 | 2016 |
+
+Sources: [Tata Communications](https://www.tatacommunications.com/case-study/air-france-klm-hybrid-wan); [MIT Technology Review](https://www.technologyreview.com/2025/03/03/1112349/architecting-tomorrows-network/); [GTT Communications](https://www.gtt.net/about-us/press-releases/air-france-klm-group-selects-gtt-to-connect-its-sites-in-37-countries/); [GlobeNewswire](https://www.globenewswire.com/news-release/2021/12/02/2345024/0/en/Air-France-KLM-Group-Selects-GTT-to-Connect-Its-Sites-in-37-Countries.html) and 3 more
+
+**Current providers and products** - EVIDENCED_PUBLIC, 8 source(s)
+
+- WAN carrier — GTT Communications (managed WAN, 37 countries, 5 continents): GTT Communications
+- WAN/MPLS carrier — Tata Communications (hybrid WAN, airports and cargo, 130+ sites): Tata Communications
+- In-flight connectivity provider — Orange Business Services (A320 family, FR): Orange Business Services
+- Cloud/data migration MSP — TCS (multi-year deal, group-wide): Tata Consultancy Services (TCS)
+- SASE platform partnership — GTT + Palo Alto Networks (carrier-level, not confirmed as AFKLM deployment): Palo Alto Networks (via GTT)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| WAN SITES CONNECTED VIA GTT (37 COUNTRIES, 5 CONTINENTS) |  | 37 | 37 | 37 | 2021 |
+| WAN SITES CONNECTED VIA TATA COMMUNICATIONS (MEA/APAC CONTRA |  | 170 | 170 | 170 |  |
+
+Sources: [GTT Communications](https://www.gtt.net/about-us/press-releases/air-france-klm-group-selects-gtt-to-connect-its-sites-in-37-countries/); [GlobeNewswire](https://www.globenewswire.com/news-release/2021/12/02/2345024/0/en/air-france-klm-group-selects-gtt-to-connect-its-sites-in-37-countries.html); [Telecompaper](https://www.telecompaper.com/news/gtt-provides-global-managed-wide-area-network-for-air-france-klm--1406375); [GTT Communications (PDF)](https://www.gtt.net/wp-content/uploads/media/3564/air-france-klm-group-selects-gtt-to-connect-its-sites-in-37-countries.pdf) and 4 more
+
+**Contract and sourcing events** - EVIDENCED_PUBLIC, 9 source(s)
+
+- Tata Communications MPLS WAN – contract value (stated range): multi-million USD
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| AIR FRANCE STARLINK INFLIGHT WIFI – FLEET COVERAGE TARGET | FR | None | None | None |  |
+| GTT MANAGED WAN – COUNTRY SCOPE |  | 37 | 37 | 37 | 2021 |
+| TATA COMMUNICATIONS MPLS WAN – SITE COUNT |  | 170 | 170 | 170 | 2016 |
+
+Sources: [GTT Communications](https://www.gtt.net/about-us/press-releases/air-france-klm-group-selects-gtt-to-connect-its-sites-in-37-countries/); [GlobeNewswire](https://www.globenewswire.com/news-release/2021/12/02/2345024/0/en/Air-France-KLM-Group-Selects-GTT-to-Connect-Its-Sites-in-37-Countries.html); [Telecompaper](https://www.telecompaper.com/news/gtt-provides-global-managed-wide-area-network-for-air-france-klm--1406375); [Tata Communications](https://www.tatacommunications.com/press-release/air-france-klms-new-network-unleash-digital-transformation-emerging-market-growth) and 5 more
+
+**Transformation announcements** - EVIDENCED_PUBLIC, 10 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| AIR FRANCE-KLM NET CAPITAL EXPENDITURE GUIDANCE (FLEET + IT) | FR | 3000000000 | 3000000000 | 3000000000 | 2024 |
+| ATLASSIAN CLOUD MIGRATION — ANNUAL IT TOOLING COST SAVING (J | FR | 600000 | 600000 | 600000 | 2024 |
+| CLOUD/IT INFRASTRUCTURE TRANSFORMATION — APPLICATIONS MIGRAT | FR | 350 | 350 | 350 | 2025 |
+| GROUP OPERATING RESULT IMPROVEMENT TARGET OVER 5 YEARS (2023 | FR | 2000000000 | 2000000000 | 2000000000 | 2023 |
+| GROUP TRANSFORMATION STRUCTURAL BENEFITS ACHIEVED/TARGETED — | FR | 3000000000 | 3000000000 | 3000000000 | 2024 |
+| GROUP-WIDE STRUCTURAL BENEFITS TARGET BY 2026 (REVENUE + COS | FR | 4400000000 | 4400000000 | 4400000000 | 2026 |
+| KLM BACK ON TRACK PROGRAMME — ANNUALISED SAVINGS/REVENUE IMP | NL | 450000000 | 450000000 | 450000000 | 2025 |
+| KLM BACK ON TRACK — SAVINGS DELIVERED FIRST 9 MONTHS 2025 | NL | 300000000 | 300000000 | 300000000 | 2025 |
+| KLM BACK ON TRACK — SAVINGS DELIVERED H1 2026 | NL | 315000000 | 315000000 | 315000000 | 2026 |
+| KLM BACK ON TRACK — SAVINGS DELIVERED Q1 2026 | NL | 159000000 | 159000000 | 159000000 | 2026 |
+
+Sources: [Air France-KLM S.A.](https://www.airfranceklm.com/sites/default/files/2023-12/Air%20France-KLM%20Investor%20Day%202023%20vEN%20-%20141223.pdf); [Air France-KLM S.A. — official newsroom](https://www.airfranceklm.com/en/newsroom/air-france-klm-2023-investor-day); [Air France-KLM S.A. — Corporate Presentation 202](https://www.airfranceklm.com/sites/default/files/2026-03/air-france-klm-corporate-presentation-pdf.pdf); [KLM Royal Dutch Airlines — Full Year 2025 Result](https://ml-eu.globenewswire.com/Resource/Download/e17bb9bc-e339-4547-8466-d616af4326df) and 6 more
+
+**Market serviceability** - EVIDENCED_PUBLIC, 9 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| CREDIBLE ENTERPRISE CARRIERS — FRANCE | FR | None | None | None |  |
+| CREDIBLE ENTERPRISE CARRIERS — NETHERLANDS | NL | None | None | None |  |
+| EUROFIBER FIBRE MARKET SHARE — NETHERLANDS | NL | 34 | 34 | 34 | 2025 |
+| FRENCH ENTERPRISE FIBRE ADOPTION RATE | FR | 83 | 83 | 83 | 2025 |
+| FTTH FIBRE PREMISES COVERAGE — METROPOLITAN FRANCE | FR | 93 | 93.5 | 94.3 | 2025 |
+| FTTH SUBSCRIPTIONS AS SHARE OF TOTAL FIXED SUBSCRIPTIONS — F | FR | 79 | 79.5 | 80 | 2025 |
+| KPN BUSINESS BROADBAND CONNECTIONS — NETHERLANDS | NL | 374000 | 374000 | 374000 | 2025 |
+| KPN FIBRE HOUSEHOLD COVERAGE — NETHERLANDS | NL | 70 | 70 | 70 | 2025 |
+| ORANGE FIXED MARKET SHARE — FRANCE | FR | 39 | 39 | 39 | 2026 |
+| SFR BUSINESS ENTERPRISE REVENUE — FRANCE | FR | 1.2 | 1.2 | 1.2 | 2025 |
+
+*1 conflict(s) flagged: KPN FIBRE HOUSEHOLD COVERAGE — NETHERLANDS*
+
+Sources: [ARCEP (French Telecom Regulator)](https://en.arcep.fr/news/press-releases/view/n/fixed-broadband-and-superfast-broadband-market-091225.html); [ARCEP](https://en.arcep.fr/fileadmin/user_upload/61-25-english-version.pdf); [ARCEP Annual Report 2025](https://en.arcep.fr/news/press-releases/view/n/annual-report-020726.html); [ARCEP](https://en.arcep.fr/news/press-releases/view/n/fibre-deployment-in-france-281025.html) and 5 more
+
+---
+
 ## Allianz SE
 
 - **Industry** INSURANCE (entity resolution)
@@ -526,6 +807,148 @@ Sources: [Allianz SE via BusinessWire](https://www.businesswire.com/news/home/20
 | TIM FIXED BROADBAND MARKET SHARE (IT) | IT | 38 | 38 | 38 | 2026 |
 
 Sources: [germancompanyformation.com](https://germancompanyformation.com/guides/telecommunication-companies-in-germany); [Mordor Intelligence](https://www.mordorintelligence.com/industry-reports/germany-telecom-market); [Deutsche Telekom Wholesale](https://wholesale.telekom.com/global-connectivity/our-solutions/sd-wan-enabling-transport/internet-access); [checkeverything.fr](https://checkeverything.fr/en/telecommunications/operators) and 5 more
+
+---
+
+## Anglo American plc
+
+- **Industry** DIVERSIFIED_MINING (entity resolution)
+- **Scope** GB, CL, PE, ZA, BR, USD, 13 sites (research merged with disclosure)
+- **Confidence** 0.347 (D - Indicative), coverage COMPLETE
+
+**Profile** - EVIDENCED_PUBLIC, 10 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| EMPLOYEES — BRAZIL (BR) | BR | 4200 | 4450 | 4700 | 2025 |
+| EMPLOYEES — CHILE (CL) | CL | 4100 | 4150 | 4200 | 2025 |
+| EMPLOYEES — EUROPE (INCL. GB) | GB | 2600 | 2750 | 2900 | 2025 |
+| EMPLOYEES — PERU (PE) | PE | 1200 | 1350 | 1500 | 2025 |
+| EMPLOYEES — SOUTH AFRICA (ZA) | ZA | 22600 | 27050 | 31500 | 2025 |
+| GROUP EMPLOYEES (AVERAGE, EXCL. CONTRACTORS) |  | 43000 | 54500 | 58000 | 2025 |
+| GROUP REVENUE (ALL SEGMENTS, FULL CONSOLIDATION) |  | 27290 | 27290 | 30652 | 2024 |
+| GROUP REVENUE (CONTINUING OPERATIONS POST-SIMPLIFICATION) |  | 18546 | 18546 | 18546 | 2025 |
+| NUMBER OF COUNTRIES IN CORPORATE STRUCTURE (SUBSIDIARIES) |  | 27 | 27 | 27 | 2025 |
+| NUMBER OF OPERATIONS / SITES |  | 56 | 56 | 56 | 2024 |
+
+*7 conflict(s) flagged: EMPLOYEES — BRAZIL (BR), EMPLOYEES — CHILE (CL), EMPLOYEES — PERU (PE), EMPLOYEES — SOUTH AFRICA (ZA), GROUP EMPLOYEES (AVERAGE, EXCL. CONTRACTORS), NUMBER OF COUNTRIES IN CORPORATE STRUCTURE (SUBSIDIARIES)*
+
+Sources: [Anglo American plc](https://www.angloamerican.com/~/media/Files/A/Anglo-American-Group-v9/PLC/investors/annual-reporting/2024/aa-annual-report-full-2024.pdf); [Anglo American plc](https://www.angloamerican.com/~/media/Files/A/Anglo-American-Group-v9/PLC/media/press-release/releases/2025pr/anglo-american-preliminary-results-for-the-year-ended-31-december-2024.pdf); [Anglo American plc](https://www.angloamerican.com/~/media/Files/A/Anglo-American-Group-v9/PLC/investors/annual-reporting/2024/tax-and-economic-contribution-report-2024.pdf); [Anglo American plc](https://www.angloamerican.com/~/media/Files/A/Anglo-American-Group-v9/PLC/investors/annual-reporting/2025/sustainability-report-plc-2024.pdf) and 6 more
+
+**Locations** - EVIDENCED_PUBLIC, 10 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| GLOBAL OPERATIONAL SITES (ALL BUSINESSES, PRE-SIMPLIFICATION |  | 56 | 56 | 56 | 2023 |
+| LARGE_OFFICE – CHILE (SANTIAGO HQ/IROC) | CL | 1 | 1 | 1 | 2024 |
+| LARGE_OFFICE – PERU (LIMA REGIONAL OFFICE) | PE | 1 | 1 | 1 | 2025 |
+| LARGE_OFFICE – SOUTH AFRICA (JOHANNESBURG ROSEBANK CORPORATE | ZA | 1 | 1 | 1 | 2024 |
+| LARGE_OFFICE – UK (LONDON HQ AT 17 CHARTERHOUSE STREET) AND  | GB | 1 | 1 | 1 | 2026 |
+| PLANT – BRAZIL IRON ORE/NICKEL OPERATIONS (MINAS-RIO AND BAR | BR | 1 | 1 | 1 | 2024 |
+| PLANT – CHILE COPPER MINE SITES (LOS BRONCES, EL SOLDADO, CO | CL | 4 | 4 | 4 | 2025 |
+| PLANT – PERU COPPER MINE SITE (QUELLAVECO) | PE | 1 | 1 | 1 | 2025 |
+| PLANT – SOUTH AFRICA IRON ORE MINE SITES (SISHEN AND KOLOMEL | ZA | 2 | 2 | 2 | 2024 |
+| WAREHOUSE – SOUTH AFRICA SALDANHA BAY PORT (IRON ORE EXPORT  | ZA | 1 | 1 | 1 | 2024 |
+
+*5 conflict(s) flagged: GLOBAL OPERATIONAL SITES (ALL BUSINESSES, PRE-SIMPLIFICATION), LARGE_OFFICE – UK (LONDON HQ AT 17 CHARTERHOUSE STREET) AND GB DEVELOPMENT PROJECT (WOODSMITH), PLANT – BRAZIL IRON ORE/NICKEL OPERATIONS (MINAS-RIO AND BARRO ALTO), PLANT – CHILE COPPER MINE SITES (LOS BRONCES, EL SOLDADO, COLLAHUASI, CHAGRES SMELTER), PLANT – SOUTH AFRICA IRON ORE MINE SITES (SISHEN AND KOLOMELA, KUMBA IRON ORE)*
+
+Sources: [Statista](https://www.statista.com/topics/7191/angloamerican/); [London Mining Network](https://londonminingnetwork.org/companies-in-focus-anglo-american/); [Anglo American plc](https://www.angloamerican.com/~/media/Files/A/Anglo-American-Group-v9/PLC/investors/annual-reporting/2025/aa-annual-report-full-2025.pdf); [Anglo American plc (via SEC filing – Teck 6-K ex](https://www.sec.gov/Archives/edgar/data/886986/000110465925109325/tm2527845d10_ex99-2.htm) and 6 more
+
+**Data centres and cloud** - EVIDENCED_PUBLIC, 6 source(s)
+
+- DC – Global data centre footprint reduction programme (direction stated; count not stated): unknown
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| DC – MINAS-RIO OPERATIONAL DATA CENTRES (BRAZIL, POST-CONSOL | BR | 1 | 1 | 1 | 2021 |
+| DC – MINAS-RIO PHYSICAL DATA CENTRE NODES (BRAZIL, PRE- AND  | BR | 2 | 2 | 2 | 2021 |
+
+Sources: [Data Center Dynamics](https://www.datacenterdynamics.com/en/news/anglo-american-consolidates-two-data-centers-brazil/); [International Mining](https://im-mining.com/2021/01/27/anglo-american-consolidates-two-minas-rio-data-centres-brazil-dell-hyperconvergence-structure/); [HCL Technologies (official press release)](https://hcl.com/media_management/hcl-signs-new-infrastructure-services-contract-with-anglo-american/); [Mining Technology](https://www.mining-technology.com/news/anglo-american-awards-infrastructure-services-contract-hcl/) and 2 more
+
+**Current architecture** - EVIDENCED_PUBLIC, 4 source(s)
+
+- Private 4G/5G – mine-site deployments (multi-site, multi-national): multiple
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| INTERNET BREAKOUT – SECURE INTERNET GATEWAY (CLOUD OPTIMISAT | GB | None | None | None |  |
+| IT INFRASTRUCTURE SERVICES – HCL TECHNOLOGIES MANAGED SERVIC |  | None | None | None |  |
+| VOICE PLATFORM – CISCO UCM OVER IP CONNECT (USERS PER REGION |  | None | None | None |  |
+| WAN ARCHITECTURE – BT IP CONNECT GLOBAL (MANAGED MPLS/IP BAC |  | None | None | None |  |
+
+Sources: [BT Business](https://business.bt.com/insights/case-studies/anglo-american/); [HCL Technologies](https://hcl.com/media_management/hcl-signs-new-infrastructure-services-contract-with-anglo-american/); [SNS Telecom](https://www.snstelecom.com/private5gdatabase); [SNS Telecom](https://www.snstelecom.com/private5g)
+
+**Current providers and products** - EVIDENCED_PUBLIC, 9 source(s)
+
+- WAN carrier / managed network services provider: BT Global Services
+- WAN network technology – access types in contract: Ethernet, MPLS, Satellite, Microwave
+- Total network-connected locations (approximate) under BT contract: several hundred
+- IT infrastructure managed services provider: HCL Technologies
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| HCL INFRASTRUCTURE CONTRACT VALUE (2018 RENEWAL) |  | 87 | 87 | 87 | 2018 |
+| NUMBER OF COUNTRIES IN BT MANAGED WAN CONTRACT |  | 15 | 15 | 15 | 2012 |
+| NUMBER OF WAN-OPTIMISED LOCATIONS (BT CONNECT APPLICATIONS) |  | 65 | 65 | 65 | 2012 |
+| ORIGINAL BT + HP JOINT OUTSOURCING DEAL VALUE (2007, INCLUDE |  | 435 | 435 | 435 | 2007 |
+| WAN CONTRACT VALUE (2012 BT RENEWAL) |  | 213 | 213 | 213 | 2012 |
+
+*2 conflict(s) flagged: ORIGINAL BT + HP JOINT OUTSOURCING DEAL VALUE (2007, INCLUDES VOICE, DC, DESKTOP), WAN CONTRACT VALUE (2012 BT RENEWAL)*
+
+Sources: [Light Reading](https://www.lightreading.com/services/anglo-american-renews-bt-contract); [iTnews](https://www.itnews.com.au/news/anglo-american-splits-ict-outsourcing-contract-297151); [BT Group plc (SEC 20-F FY2012)](https://www.sec.gov/Archives/edgar/data/0000756620/000119312512245853/d354337dex152.htm); [BT Group plc (SEC 6-K FY2007)](https://www.sec.gov/Archives/edgar/data/0000756620/000115697307000870/u52729-6k.htm) and 5 more
+
+**Contract and sourcing events** - EVIDENCED_PUBLIC, 10 source(s)
+
+- BT managed network – number of locations covered (2012 renewal): several hundred
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| ACCENTURE TECHNOLOGY SERVICES EXTENSION – TERM END DATE |  | 2023 | 2023 | 2023 | 2020 |
+| BT MANAGED NETWORK CONTRACT TERM (2012 RENEWAL) |  | 5 | 5 | 5 | 2012 |
+| BT MANAGED NETWORK CONTRACT VALUE (2012 RENEWAL) |  | 220000000 | 220000000 | 220000000 | 2012 |
+| BT MANAGED NETWORK – NUMBER OF COUNTRIES COVERED (2012 RENEW |  | 15 | 15 | 15 | 2012 |
+| HCL INFRASTRUCTURE SERVICES CONTRACT TERM (2018 RENEWAL) |  | 5 | 5 | 5 | 2018 |
+| HCL INFRASTRUCTURE SERVICES CONTRACT VALUE (2018 RENEWAL) |  | 87000000 | 87000000 | 87000000 | 2018 |
+| HP+BT ALLIANCE ORIGINAL OUTSOURCING CONTRACT VALUE (2007) |  | 450000000 | 450000000 | 450000000 | 2007 |
+
+Sources: [Light Reading](https://www.lightreading.com/services/anglo-american-renews-bt-contract); [iTnews (Australia)](https://www.itnews.com.au/news/anglo-american-splits-ict-outsourcing-contract-297151); [BT Group plc (SEC Form 20-F Exhibit 15.2)](https://www.sec.gov/Archives/edgar/data/756620/000119312512245853/d354337dex152.htm); [BT Group plc (SEC Form 6-K, FY2007)](https://www.sec.gov/Archives/edgar/data/0000756620/000115697307000870/u52729-6k.htm) and 6 more
+
+**Transformation announcements** - EVIDENCED_PUBLIC, 10 source(s)
+
+- FutureSmart Mining / VOXEL digital transformation – standalone IT budget (not publicly disclosed): not disclosed
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| CAPEX REDUCTION TARGET 2023–2026 (GROUP-WIDE, PART OF TRANSF |  | 1800000000 | 1800000000 | 1800000000 | 2026 |
+| COMMITTED GROUP-WIDE COST SAVINGS RUN-RATE TARGET (TOTAL PRO |  | 1800000000 | 1800000000 | 1800000000 | 2025 |
+| CORPORATE COST SAVINGS (ANNUAL RUN-RATE) – FIRST TRANCHE, AC |  | 500000000 | 500000000 | 500000000 | 2024 |
+| CORPORATE STREAMLINING SAVINGS REALISED IN 2024 (OVERHEAD AN |  | 300000000 | 300000000 | 300000000 | 2024 |
+| CORPORATE TRANSFORMATION SAVINGS COMPONENT OF 2025 GROSS SAV |  | 400000000 | 400000000 | 400000000 | 2025 |
+| GROSS COST SAVINGS REALISED IN 2025 (AHEAD OF $0.5BN TARGET) |  | 600000000 | 600000000 | 600000000 | 2025 |
+| INCREMENTAL PRE-TAX RECURRING COST BENEFITS FROM MAY 2024 ST |  | 800000000 | 800000000 | 800000000 | 2025 |
+| ONE-OFF COSTS TO ACHIEVE MAY 2024 STRATEGY COST BENEFITS |  | 400000000 | 400000000 | 400000000 | 2025 |
+| RUN-RATE COST SAVINGS ACHIEVED IN 2024 (AHEAD OF SCHEDULE) |  | 1300000000 | 1300000000 | 1300000000 | 2024 |
+
+Sources: [Anglo American plc](https://www.angloamerican.com/media/press-releases/2026/20-02-2026); [Investegate (Anglo American RNS)](https://www.investegate.co.uk/announcement/rns/anglo-american--aal/anglo-american-full-year-2025-results/9439268); [Anglo American plc](https://www.angloamerican.com/media/press-releases/2024/14-05-2024); [Anglo American plc](https://www.angloamerican.com/~/media/Files/A/Anglo-American-Group-v9/PLC/media/press-release/releases/2025pr/anglo-american-preliminary-results-for-the-year-ended-31-december-2024.pdf) and 6 more
+
+**Market serviceability** - EVIDENCED_PUBLIC, 8 source(s)
+
+- UK leased line provisioning lead time: 45–90
+- UK leased line rural provisioning lead time: 90–120+
+- UK full-fibre (FTTP) premises coverage: 79.5%
+- Chile FTTH share of fixed broadband: 73.5%
+- Chile enterprise circuit pricing pressure note: Price rigidity for enterprise circuits due to 72.6% mobile / 66.2% fixed market concentration in top 3 operators
+- Peru fibre share of fixed broadband: 81%
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| CREDIBLE ENTERPRISE WAN CARRIERS | CL | 9 | 9 | 9 | 2025 |
+| CREDIBLE ENTERPRISE WAN/MPLS CARRIERS | GB | 5 | 5 | 5 | 2025 |
+| CREDIBLE ENTERPRISE WAN/MPLS CARRIERS | PE | 4 | 4 | 4 | 2025 |
+
+*2 conflict(s) flagged: CREDIBLE ENTERPRISE WAN CARRIERS, CREDIBLE ENTERPRISE WAN/MPLS CARRIERS*
+
+Sources: [netify.co.uk](https://netify.co.uk/insights/top-best-mpls-network-providers/); [marketsintrend.com](https://www.marketsintrend.com/report/2334-united-kingdom-mpls-and-sdwan-market); [amvia.co.uk](https://amvia.co.uk/leased-lines/questions/leased-line-installation-time); [leasedline.io](https://leasedline.io/knowledge-hub/leased-line-installation-timeline/) and 4 more
 
 ---
 
@@ -1309,6 +1732,137 @@ Sources: [Wifirst](https://www.wifirst.com/en/press-room/carrefour); [Wireless B
 **Transformation announcements** - BENCHMARK_PRIOR
 
 **Market serviceability** - BENCHMARK_PRIOR
+
+---
+
+## Danone S.A.
+
+- **Industry** FOOD_MANUFACTURING (entity resolution)
+- **Scope** FR, US, MX, PL, ES, EUR, 76 sites (research merged with disclosure)
+- **Confidence** 0.277 (D - Indicative), coverage PARTIAL
+
+**Profile** - EVIDENCED_PUBLIC, 9 source(s)
+
+- Number of countries/markets of operation: 120+
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| EUROPE ZONE SHARE OF GROUP NET SALES |  | 24 | 29.5 | 35 | 2024 |
+| FRANCE NET SALES | FR | 2297 | 2297 | 2297 | 2024 |
+| FRANCE SHARE OF GROUP NET SALES | FR | 8 | 8 | 8 | 2024 |
+| GROUP NET SALES (REVENUE) |  | 27283 | 27378 | 27400 | 2025 |
+| MEXICO SHARE OF GROUP NET SALES | MX | 5 | 5 | 5 | 2024 |
+| POLAND SHARE OF GROUP NET SALES | PL | 3 | 3 | 3 | 2024 |
+| SPAIN SHARE OF GROUP NET SALES | ES | 4 | 4 | 4 | 2024 |
+| TOTAL EMPLOYEES (CONSOLIDATED GROUP) |  | 88670 | 89272 | 90000 | 2026 |
+| UNITED STATES SHARE OF GROUP NET SALES | US | 21 | 21 | 21 | 2024 |
+
+*1 conflict(s) flagged: EUROPE ZONE SHARE OF GROUP NET SALES*
+
+Sources: [Danone S.A.](https://www.danone.com/content/dam/corp/global/danonecom/investors/en-all-publications/2025/registrationdocuments/urd2024accessibleversion.pdf); [Danone S.A. — Consolidated Financial Statements ](https://www.danone.com/content/dam/corp/global/danonecom/investors/en-consolidated-accounts/2024/consolidatedaccountsdanone2024.pdf); [Danone S.A. (via GlobeNewswire) — FY2025 Full-Ye](https://www.globenewswire.com/news-release/2026/02/20/3241691/0/en/danone-2025-another-year-of-strong-delivery.html); [Danone S.A. — Annual Integrated Report 2024](https://www.danone.com/content/dam/corp/global/danonecom/investors/en-sustainability/reports-and-data/cross-topic/danoneiar2024.pdf) and 5 more
+
+**Locations** - EVIDENCED_PUBLIC, 9 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| LARGE_OFFICE – GLOBAL OFFICE LOCATIONS (ALL COUNTRIES, AGGRE |  | 89 | 89 | 89 | 2024 |
+| LARGE_OFFICE – OFFICES IN POLAND | PL | 2 | 2 | 2 | 2023 |
+| LARGE_OFFICE – US HEADQUARTERS LOCATIONS | US | 2 | 2 | 2 | 2024 |
+| PLANT – PRODUCTION PLANTS IN FRANCE | FR | 13 | 13 | 13 | 2025 |
+| PLANT – PRODUCTION PLANTS IN MEXICO | MX | 34 | 34 | 34 | 2024 |
+| PLANT – PRODUCTION PLANTS IN POLAND | PL | 7 | 7 | 7 | 2023 |
+| PLANT – PRODUCTION PLANTS IN UNITED STATES | US | 7 | 7 | 7 | 2022 |
+| PLANT – PRODUCTION SITES (GLOBAL TOTAL) |  | 151 | 151 | 151 | 2025 |
+| PLANT – PRODUCTION/R&I CENTRES IN SPAIN | ES | 3 | 3 | 3 | 2025 |
+| WAREHOUSE – DISTRIBUTION CENTRES IN MEXICO | MX | 45 | 45 | 45 | 2021 |
+
+*3 conflict(s) flagged: PLANT – PRODUCTION PLANTS IN POLAND, PLANT – PRODUCTION PLANTS IN UNITED STATES, WAREHOUSE – DISTRIBUTION CENTRES IN MEXICO*
+
+Sources: [Danone S.A.](https://www.danone.com/content/dam/corp/global/danonecom/investors/en-all-publications/2025/registrationdocuments/urd2024accessibleversion.pdf); [Danone S.A.](https://www.danone.com/content/dam/corp/global/danonecom/investors/en-all-publications/2026/registrationdocuments/urd2025.pdf); [Danone S.A.](https://www.danone.com/content/dam/corp/global/danonecom/investors/en-sustainability/reports-and-data/cross-topic/danoneexhaustive2024extrafinancialdata.pdf); [Danone Mexico (Danone S.A.)](https://careers.danone.com/mx/es/our-locations.html) and 5 more
+
+**Data centres and cloud** - EVIDENCED_PUBLIC, 8 source(s)
+
+- Applications/domains migrated to AWS (DACH subsidiaries): hundreds
+- Owned / co-located data-centre site count: unknown
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| AWS CLOUD VMS – DACH EUROPEAN INFRASTRUCTURE (EU-CENTRAL-1,  | DE | 50 | 50 | 50 | 2019 |
+| AWS CLOUD – EU DR BACKUP REGION FOR DACH INFRASTRUCTURE |  | 1 | 1 | 1 | 2019 |
+| DATA MANAGED BY DANONE IT (PETABYTES) |  | 8 | 8 | 8 | 2025 |
+| DATABRICKS – CROSS-REGION DATA SHARING PLATFORM |  | None | None | None |  |
+| MICROSOFT AI PARTNERSHIP ANNOUNCEMENT – DANONE (MULTI-YEAR,  |  | None | None | None |  |
+| MICROSOFT AZURE – PRIMARY GLOBAL CLOUD PLATFORM (AZURE AI, M |  | None | None | None |  |
+
+Sources: [Hostersi (AWS migration partner)](https://www.hostersi.com/case-studies/migration-of-danone-applications-and-websites-to-amazon-web-services/); [GlobeNewsWire / ResearchAndMarkets](https://www.globenewswire.com/news-release/2024/07/02/2907279/28124/en/danone-digital-transformation-strategy-analysis-report-2024-accelerators-incubators-and-other-innovation-programs.html); [Microsoft (official customer story)](https://www.microsoft.com/en/customers/story/25506-danone-microsoft-365-copilot); [RFP.wiki (technology stack aggregator)](https://www.rfp.wiki/specialty-industries/fmcg/danone) and 4 more
+
+**Current architecture** - DECLARED_UNKNOWN, 1 source(s)
+
+- WAN vendor stack – network engineer profile: Cisco, Fortinet, Palo Alto, Velocloud (SD-WAN)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| GLOBAL UCAAS DEPLOYMENT – EMPLOYEES ONBOARDED |  | 65000 | 65000 | 65000 | 2024 |
+
+Sources: [StableLogic](https://stablelogic.com/case-studies/danone/)
+
+**Current providers and products** - EVIDENCED_PUBLIC, 4 source(s)
+
+- Firewall/switching vendor – plant-level (Benelux job posting): Cisco, Fortinet, HP, Stratix
+- Cloud platform – European subsidiaries (primary): Amazon Web Services (AWS)
+- Cloud/AI platform – global (Microsoft Azure + Copilot): Microsoft Azure
+- ITSM / employee experience platform: ServiceNow
+- ERP platform (SAP) – confirmed via job postings and awards: SAP IBP / S4HANA
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| TOTAL ICT SPEND (ESTIMATED, 2023) |  | 419.5 | 419.5 | 419.5 | 2023 |
+
+Sources: [GlobeNewswire / ResearchAndMarkets](https://www.globenewswire.com/news-release/2024/07/02/2907279/28124/en/danone-digital-transformation-strategy-analysis-report-2024-accelerators-incubators-and-other-innovation-programs.html); [ServiceNow (vendor case study)](https://www.servicenow.com/customers/danone.html); [GlobalData / ResearchAndMarkets (paywalled)](https://www.globaldata.com/store/report/danone-enterprise-tech-analysis/); [RFP.wiki (aggregator)](https://www.rfp.wiki/specialty-industries/fmcg/danone)
+
+**Contract and sourcing events** - EVIDENCED_PUBLIC, 3 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| CONTRACT TERM – BT TELECOMUNICACIONES / DANONE SPAIN FRAME R | ES | 3 | 3 | 3 | 1995 |
+| SITE COUNT – BT TELECOMUNICACIONES / DANONE SPAIN FRAME RELA | ES | 20 | 20 | 20 | 1995 |
+
+Sources: [Danone S.A.](https://www.danone.com/content/dam/corp/global/danonecom/investors/en-all-publications/2026/registrationdocuments/urd2025.pdf); [Danone S.A.](https://www.danone.com/content/dam/corp/global/danonecom/investors/en-all-publications/2025/registrationdocuments/urd2024accessibleversion.pdf); [Telecompaper](https://www.telecompaper.com/news/danone-bt-telecomunicaciones-in-data-services-deal--60772)
+
+**Transformation announcements** - EVIDENCED_PUBLIC, 10 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| ANNUAL GROUP-WIDE PRODUCTIVITY CONTRIBUTION (SUPPLY CHAIN, M |  | 500 | 500 | 500 | 2024 |
+| DANONE–MICROSOFT AI COLLABORATION – EMPLOYEES USING AI TOOLS |  | 50000 | 50000 | 50000 | 2024 |
+| DANSKILLS PROGRAMME – EMPLOYEE RESKILLING TARGET (AI/DIGITAL |  | 100000 | 100000 | 100000 | 2024 |
+| DIGITAL MANUFACTURING TRANSFORMATION – EUROPEAN FACTORIES IN | EU | 40 | 40 | 40 | 2024 |
+| LOCAL FIRST PROGRAMME – G&A SAVINGS COMPONENT |  | 700 | 700 | 700 | 2023 |
+| LOCAL FIRST PROGRAMME – ONE-OFF RESTRUCTURING COSTS (2021–20 |  | 1400 | 1400 | 1400 | 2021 |
+| LOCAL FIRST PROGRAMME – TOTAL RECURRING SAVINGS TARGET |  | 1000 | 1000 | 1000 | 2023 |
+| NON-RECURRING TRANSFORMATION COSTS FY2024 (EUROPE AND US PRO |  | 179 | 179 | 179 | 2024 |
+| RENEW DANONE CHAPTER 2 – MID-TERM FCF AMBITION (2025–2028) |  | 3000 | 3000 | 3000 | 2028 |
+| SERVICENOW FOUNDA!/MYDANONE – HELP DESK COST SAVINGS |  | 600000 | 600000 | 600000 | 2023 |
+
+Sources: [Danone (company-published transcript)](https://www.danone.com/content/dam/corp/global/danonecom/investors/fr-result-center/2024/transcriptdanonefy24.pdf); [Danone (company press release, FY2024 results)](https://www.danone.com/content/dam/corp/global/danonecom/investors/en-all-publications/2025/pressreleases/prdanone260225.pdf); [GlobeNewsWire / Danone](https://www.globenewswire.com/news-release/2025/02/26/3032566/0/en/Danone-Strong-FY-2024-results-Entering-the-next-chapter-of-Renew-with-confidence.html); [Danone corporate website](https://www.danone.com/group/renew-danone-strategy.html) and 6 more
+
+**Market serviceability** - EVIDENCED_PUBLIC, 10 source(s)
+
+- Credible enterprise WAN/Internet carriers – France: 4+
+- Credible enterprise WAN/Internet carriers – United States: 6+
+- Credible enterprise WAN/Internet carriers – Mexico: 4+
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| CREDIBLE ENTERPRISE WAN/INTERNET CARRIERS – POLAND | PL | None | None | None |  |
+| CREDIBLE ENTERPRISE WAN/INTERNET CARRIERS – SPAIN | ES | None | None | None |  |
+| DIA SHARE OF ENTERPRISE WAN SITES – GLOBAL BENCHMARK |  | 53.88 | 53.88 | 53.88 | 2025 |
+| ENTERPRISE FIBRE ADOPTION RATE – FRANCE | FR | 83 | 83 | 83 | 2025 |
+| MEXICO MPLS MARKET SHARE OF GLOBAL REVENUE – LATIN AMERICA | MX | 8.7 | 8.7 | 8.7 | 2025 |
+| MPLS SHARE OF ENTERPRISE WAN SITES – GLOBAL BENCHMARK |  | 22 | 22 | 22 | 2025 |
+| SPAIN HIGH-CAPACITY LEASED-CIRCUIT REVENUE | ES | 541.4 | 541.4 | 541.4 | 2025 |
+
+Sources: [ARCEP (French telecom regulator)](https://en.arcep.fr/news/press-releases/view/n/competition-080626.html); [Telecompaper (citing Covage/InfraNum survey)](https://www.telecompaper.com/news/fibre-adoption-rises-to-83-in-2025-in-french-enterprise-segment-study--1572575); [Bouygues / Yahoo Finance (press release)](https://uk.finance.yahoo.com/news/bouygues-telecom-free-iliad-group-060200642.html); [RCR Wireless](https://rcrwireless.com/20260608/carriers/sfr-bouygues-orange-iliad-scale-sovereignty) and 6 more
 
 ---
 
@@ -2186,6 +2740,396 @@ Sources: [Fresenius SE — Annual Report 2024](https://report.fresenius.com/2024
 *2 conflict(s) flagged: CREDIBLE ENTERPRISE ETHERNET/WAN CARRIERS — US (CARRIER ETHERNET LEADERBOARD RANK ORDER), DEUTSCHE TELEKOM RETAIL BROADBAND MARKET SHARE — GERMANY*
 
 Sources: [germancompanyformation.com](https://germancompanyformation.com/guides/telecommunication-companies-in-germany); [VATM (German telecoms industry association)](https://www.vatm.de/wp-content/uploads/2025/06/VATM-Market-Analysis-Germany-2025.pdf); [Yahoo Finance / ResearchAndMarkets](https://uk.finance.yahoo.com/news/germany-telecom-operators-intelligence-report-144900650.html); [KenResearch](https://www.kenresearch.com/industry-reports/spain-telecom-market) and 5 more
+
+---
+
+## Assicurazioni Generali S.p.A.
+
+- **Industry** INSURANCE (entity resolution)
+- **Scope** IT, AT, EUR, 932 sites (research merged with disclosure)
+- **Confidence** 0.344 (D - Indicative), coverage COMPLETE
+
+**Profile** - EVIDENCED_PUBLIC, 7 source(s)
+
+- Countries of operation (Group): 50+
+- Business segments (Group): Life; P&C; Asset & Wealth Management; Holding & Other Businesses
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| ADJUSTED NET RESULT (GROUP) |  | 3769000000 | 4042000000 | 4315000000 | 2025 |
+| EMPLOYEES (GROUP) |  | 86851 | 87500 | 88249 | 2025 |
+| EMPLOYEES — ITALY (GENERALI ITALIA) | IT | 15000 | 15000 | 15000 | 2025 |
+| GROSS WRITTEN PREMIUMS (GROUP) |  | 95190000000 | 98100000000 | 98124000000 | 2025 |
+| GROSS WRITTEN PREMIUMS — AUSTRIA SEGMENT | AT | 3000000000 | 3150000000 | 3300000000 | 2025 |
+| GROSS WRITTEN PREMIUMS — ITALY SEGMENT | IT | 30000000000 | 30400000000 | 30800000000 | 2025 |
+| OPERATING RESULT (GROUP) |  | 7295000000 | 7649500000 | 8004000000 | 2025 |
+| TOTAL AUM (GROUP) |  | 863000000000 | 881500000000 | 900000000000 | 2025 |
+
+Sources: [Generali Group](https://www.generali.com/media/press-releases/all/2026/Consolidated-Results-as-of-31-December-2025); [Generali Group](https://www.generali.com/who-we-are/at-a-glance); [Generali Group — Generali in Figures 2025](https://www.generali.com/doc/jcr:1b51607f-bfde-4264-ae1d-4782b7d2b788/Generali%20in%20figures%202025_ENG_FINAL.pdf/lang:en/Generali_in_figures_2025_ENG_FINAL.pdf); [Generali Group](https://www.generali.com/media/press-releases/all/2025/Consolidated-Results-as-of-31-December-2024) and 3 more
+
+**Locations** - EVIDENCED_PUBLIC, 7 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| LARGE_OFFICE (CORPORATE/REGIONAL STANDORTE) — GENERALI ÖSTER | AT | 9 | 9 | 9 | 2024 |
+| LARGE_OFFICE (PRINCIPAL OFFICES) — GENERALI ITALIA / GROUP I | IT | 4 | 4 | 4 | 2025 |
+| STORE (AGENZIE) — GENERALI ITALIA | IT | 1857 | 1879 | 1901 | 2024 |
+| STORE (GESCHÄFTSSTELLEN) — GENERALI VERSICHERUNG AUSTRIA | AT | 119 | 123 | 127 | 2023 |
+| STORE (SUB-AGENZIE) — GENERALI ITALIA | IT | 4547 | 4609 | 4671 | 2024 |
+
+Sources: [Generali Italia S.p.A. (statutory filing via ema](https://www.emarketstorage.it/sites/default/files/comunicati/2025-05/20250520_167521.pdf); [Generali Österreich (official fact sheet)](https://eu-assets.contentstack.com/v3/assets/bltcba55c71291ad2c3/blte2fee798952f0168/Generali%20%C3%96sterreich%20-%20Zahlen%20und%20Fakten%202023.pdf); [Trend.at](https://www.trend.at/unternehmensprofile/generali-versicherung-ag-global-player-bei-den-versicherungen); [karriere.at](https://www.karriere.at/f/generali-gruppe-%C3%B6sterreich) and 3 more
+
+**Data centres and cloud** - EVIDENCED_PUBLIC, 9 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| CLOUD PROVIDER — GOOGLE CLOUD (STRATEGIC PARTNERSHIP, GROUP- | IT | 1 | 1 | 1 | 2024 |
+| CLOUD PROVIDER — MICROSOFT AZURE (STRATEGIC PARTNERSHIP, GRO | IT | 1 | 1 | 1 | 2024 |
+| GROUP AI & TECHNOLOGY INVESTMENT PLAN (LIFETIME PARTNER 27,  |  | None | None | None |  |
+| GROUP DIGITAL & TECHNOLOGY INVESTMENT (LIFETIME PARTNER 24,  |  | 443000000 | 443000000 | 443000000 | 2024 |
+| TECHNOLOGY LAB / INNOVATION PARK SITE (MOGLIANO VENETO, IT)  | IT | 1 | 1 | 1 | 2020 |
+
+*1 conflict(s) flagged: CLOUD PROVIDER — MICROSOFT AZURE (STRATEGIC PARTNERSHIP, GROUP-WIDE)*
+
+Sources: [Google Cloud](https://cloud.google.com/customers/generali); [CPO Strategy](https://cpostrategy.media/blog/executiveinsights/generali-a-lifetime-insurance-partner/); [Reply / Cluster Reply](https://www.reply.com/en/ai-powered-software-engineering/cloud-and-low-code-for-the-connected-insurance-ecosystem); [Microsoft](https://www.microsoft.com/en/customers/story/25382-generali-microsoft-365-copilot) and 5 more
+
+**Current architecture** - EVIDENCED_PUBLIC, 2 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| CLOUD PROVIDERS CONFIRMED (STRATEGIC, GROUP-WIDE) — IMPLIES  | IT | 2 | 2 | 2 | 2023 |
+| IT SERVICES / INFRASTRUCTURE PROVIDER (GOSP JOINT VENTURE WI | IT | 1 | 1 | 1 | 2023 |
+
+Sources: [BusinessWire / Generali Group](https://www.businesswire.com/news/home/20201216005665/en/Generali-Group-and-Accenture-Form-Joint-Venture-to-Accelerate-the-Insurers-Digital-Transformation-Strategy); [Sword Group](https://www.sword-group.com/uk-generali-case-study/)
+
+**Current providers and products** - EVIDENCED_PUBLIC, 3 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| COMMERCIAL PARTNER — VODAFONE BUSINESS (CYBER INSURANCE DIST |  | 1 | 1 | 1 | 2021 |
+| ON-PREMISES DATA CENTRES (PRE-CLOUD MIGRATION) | IT | 23 | 23 | 23 | 2021 |
+
+Sources: [Google Cloud](https://cloud.google.com/customers/generali); [Accenture newsroom](https://newsroom.accenture.com/news/2021/generali-teams-with-accenture-and-vodafone-business-to-launch-cyber-insurance-solutions-for-global-customers); [Generali (official press release PDF)](https://www.generali.com/doc/jcr:e7a59e60-fee5-4de0-a2a0-34818b60d43d/12.09%20PR_Generali%20Global%20Cyber%20Security%20Provider-EN.pdf/lang:en/12.09_PR_Generali_Global_Cyber_Security_Provider-EN.pdf)
+
+**Contract and sourcing events** - EVIDENCED_PUBLIC, 3 source(s)
+
+- Service scope — Generali Group / Telecom Italia WAN and connectivity services: WAN, MAN fibre, internet, data-network outsourcing, voice
+- Data-centre connectivity contract — Generali Business Solutions / Telecom Italia (Mogliano Veneto–Padua fibre campus): not stated
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| CONTRACT TERM — TELECOM ITALIA SOLE-SUPPLIER AGREEMENT FOR G | AT | 5 | 5 | 5 | 2007 |
+
+Sources: [Telecom Italia S.p.A. (SEC EDGAR Form 6-K, FY200](https://www.sec.gov/Archives/edgar/data/0000948642/000119312508198351/d6k.htm); [Telecom Italia S.p.A. (SEC EDGAR Form 6-K, FY200](https://www.sec.gov/Archives/edgar/data/0000948642/000119312508239104/d6k.htm); [Telecom Italia S.p.A. (SEC EDGAR Form 6-K, FY201](https://www.sec.gov/Archives/edgar/data/0000948642/000094864211000018/t6k110414n01.htm)
+
+**Transformation announcements** - EVIDENCED_PUBLIC, 8 source(s)
+
+- Insurance Cost/Income ratio improvement target — LP27: 2.5-3.0
+- IT infrastructure — listed as Group-centralized competence under LP27 operating model: centralized
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| CUMULATIVE INVESTMENT IN AI AND TECHNOLOGY — LP27 PLAN |  | None | None | None |  |
+| CUMULATIVE INVESTMENT IN DIGITAL TECHNOLOGY — LP24 PLAN (PRI |  | 1100000000 | 1150000000 | 1200000000 | 2022 |
+| FTE SHARE IN GROUP SHARED SERVICES — CURRENT VS LONG-TERM AM |  | None | None | None |  |
+| GENERALI CORE TECH SOFTWARE FACTORY — TEAM SIZE |  | 150 | 150 | 150 | 2026 |
+| INSURANCE IN A BOX (IIAB) SHARED PLATFORM — POLICIES IN SCOP |  | 15000000 | 15000000 | 15000000 | 2026 |
+| INTERNAL CAPITAL DEPLOYMENT FOR STRATEGIC INITIATIVES — LP27 |  | None | None | None |  |
+| P&C GENERAL EXPENSES / GROSS INSURANCE REVENUES RATIO REDUCT |  | -1.5 | -1.5 | -1.5 | 2024 |
+| TARGET DIGITAL INTERACTIONS SHARE — LP27 |  | None | None | None |  |
+
+Sources: [Generali Group](https://www.generali.com/media/press-releases/all/2025/Generali-launches-Lifetime-Partner-27-Driving-Excellence); [Generali Switzerland (mirror of Group press rele](https://www.generali.ch/content/dam/generali/pdf/mediarelease/en/2025/20250130-mm-en-lifetimepartner27.pdf); [Generali Group (Strategy page)](https://www.generali.com/investors/Strategy); [InsurTech Digital](https://insurtechdigital.com/news/generali-launches-software-factory-to-scale-core-platform) and 4 more
+
+**Market serviceability** - EVIDENCED_PUBLIC, 8 source(s)
+
+- Leased-line standard provisioning lead time, Italy (AGCOM reference offer): 48–100
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| A1 TELEKOM AUSTRIA FTTH HOMES PASSED | AT | 987000 | 987000 | 987000 | 2025 |
+| CREDIBLE ENTERPRISE CARRIERS (NATIONAL), AUSTRIA | AT | None | None | None |  |
+| CREDIBLE ENTERPRISE WAN/INTERNET CARRIERS (NATIONAL) | IT | 5 | 5 | 5 | 2026 |
+| FIXED-LINE MARKET SHARE — TIM (INCUMBENT), ITALY | IT | 32.7 | 32.7 | 32.7 | 2025 |
+| FTTH ACCESSES, ITALY | IT | 6740000 | 6740000 | 6740000 | 2025 |
+| FTTH HOUSEHOLD AVAILABILITY, AUSTRIA | AT | 50 | 50 | 50 | 2025 |
+| LEASED-LINE STANDARD PROVISIONING LEAD TIME, AUSTRIA (REFERE | AT | None | None | None |  |
+| TOTAL FIXED-LINE LINES, ITALY | IT | 20540000 | 20540000 | 20540000 | 2025 |
+| ULTRA-FAST BROADBAND (VHCN) HOUSEHOLD COVERAGE, ITALY VS EU  | IT | 59 | 59 | 59 | 2025 |
+
+*2 conflict(s) flagged: FIXED-LINE MARKET SHARE — TIM (INCUMBENT), ITALY, FTTH HOUSEHOLD AVAILABILITY, AUSTRIA*
+
+Sources: [Cloudbrink (citing AGCOM end-2025 data)](https://cloudbrink.com/european-internet-speeds/internet-speed-info-in-italy/); [btw.media (citing AGCOM Osservatorio n4-2025)](https://btw.media/en/tiscali-and-the-price-of-relevance-after-italian-fibre-became-a-scale-game); [Telecompaper (citing AGCOM Q2 2025)](https://www.telecompaper.com/news/tim-and-fastwebvodafone-reach-over-63-of-italian-fixed-lines--1554000); [TelecomTV](https://www.telecomtv.com/content/access-evolution/italy-has-a-new-mobile-leader-fastweb-vodafone-52035/) and 4 more
+
+---
+
+## Heidelberg Materials AG
+
+- **Industry** BUILDING_MATERIALS (entity resolution)
+- **Scope** DE, US, GB, FR, IT, PL, EUR, 1,273 sites (research merged with disclosure)
+- **Confidence** 0.263 (D - Indicative), coverage PARTIAL
+
+**Profile** - EVIDENCED_PUBLIC, 7 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| EUROPE SEGMENT REVENUE (GROUP CONSOLIDATED) | EUROPE (MULTI-COUNTRY) | 9467 | 9508.5 | 9550 | 2025 |
+| GROUP EMPLOYEES (FTE/HEADCOUNT, AT 31 DECEMBER) |  | 50692 | 50692 | 50692 | 2024 |
+| GROUP EMPLOYEES (HEADCOUNT, AT 31 DECEMBER) |  | 48973 | 48973 | 49145 | 2025 |
+| GROUP REVENUE (CONSOLIDATED) |  | 21156 | 21460 | 21800 | 2025 |
+| NORTH AMERICA SEGMENT REVENUE (GROUP CONSOLIDATED) | US, CA | 5310 | 5310 | 5310 | 2024 |
+| NUMBER OF COUNTRIES OF OPERATION (GROUP) |  | None | None | None |  |
+| NUMBER OF PRODUCTION/OPERATING LOCATIONS (GROUP) |  | 3000 | 3000 | 3000 | 2024 |
+| STANDALONE HEIDELBERG MATERIALS AG (LEGAL ENTITY ONLY) REVEN | DE | 1023.8 | 1023.8 | 1023.8 | 2024 |
+| STANDALONE HEIDELBERG MATERIALS AG EMPLOYEES (ANNUAL AVERAGE | DE | 2164 | 2164 | 2164 | 2024 |
+
+*2 conflict(s) flagged: GROUP EMPLOYEES (FTE/HEADCOUNT, AT 31 DECEMBER), NUMBER OF PRODUCTION/OPERATING LOCATIONS (GROUP)*
+
+Sources: [Heidelberg Materials AG – official press release](https://www.heidelbergmaterials.com/en/pr-2026-02-25); [Heidelberg Materials AG – Business Figures 2025](https://www.heidelbergmaterials.com/system/files/2026-02/HM_Business_Figures_2025.pdf); [Heidelberg Materials AG – Annual and Sustainabil](https://www.heidelbergmaterials.com/system/files/2026-03/HM_ASR25_en.pdf); [Heidelberg Materials AG – Annual and Sustainabil](https://www.heidelbergmaterials.com/sites/default/files/2025-03/HM_ASR24_en.pdf) and 3 more
+
+**Locations** - EVIDENCED_PUBLIC, 8 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| LARGE_OFFICE (COUNTRY/REGIONAL HQS, IN-SCOPE COUNTRIES) |  | 6 | 6 | 6 | 2024 |
+| PLANT (CEMENT + GRINDING PLANTS, DE GERMANY) | DE | 10 | 10 | 10 | 2024 |
+| PLANT (CEMENT PLANTS, US USA) | US | 13 | 13 | 13 | 2023 |
+| WAREHOUSE (QUARRIES AND AGGREGATES PITS, GLOBAL) |  | 130 | 130 | 130 | 2024 |
+| WAREHOUSE (READY-MIXED CONCRETE PLANTS, GLOBAL) |  | 1270 | 1285 | 1300 | 2025 |
+| WAREHOUSE+PLANT (ALL PRODUCING LOCATIONS, GLOBAL CONSOLIDATE |  | 2350 | 2650 | 3000 | 2025 |
+| WAREHOUSE+PLANT (ALL PRODUCTION SITES, DE GERMANY) | DE | 250 | 250 | 250 | 2023 |
+| WAREHOUSE+PLANT (ALL PRODUCTION SITES, GB UNITED KINGDOM) | GB | 300 | 300 | 332 | 2024 |
+| WAREHOUSE+PLANT (ALL PRODUCTION SITES, IT ITALY) | IT | 140 | 140 | 140 | 2019 |
+| WAREHOUSE+PLANT (ALL PRODUCTION SITES, PL POLAND) | PL | 77 | 77 | 77 | 2023 |
+
+*2 conflict(s) flagged: WAREHOUSE (QUARRIES AND AGGREGATES PITS, GLOBAL), WAREHOUSE+PLANT (ALL PRODUCING LOCATIONS, GLOBAL CONSOLIDATED)*
+
+Sources: [Heidelberg Materials AG](https://www.heidelbergmaterials.com/sites/default/files/2025-03/HM_ASR24_en.pdf); [Heidelberg Materials AG](https://www.heidelbergmaterials.com/system/files/2026-03/HM_ASR25_en.pdf); [Heidelberg Materials AG](https://www.heidelbergmaterials.com/en/company/group-areas-and-countries/europe/germany); [Heidelberg Materials AG](https://www.heidelbergmaterials.com/en/company/group-areas-and-countries/europe/uk) and 4 more
+
+**Data centres and cloud** - EVIDENCED_PUBLIC, 4 source(s)
+
+- Primary cloud provider: Microsoft Azure
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| CLOUD MIGRATION / ERP CONSOLIDATION TARGET YEAR |  | None | None | None |  |
+| DC |  | 6 | 6 | 6 | 2023 |
+| DC – EUROPE REGION (INFERRED MINIMUM) | DE | 2 | 2 | 2 | 2023 |
+| DC – NORTH AMERICA (INFERRED MINIMUM) | US | 1 | 1 | 1 | 2023 |
+
+Sources: [Megaport (vendor case study – Heidelberg Materia](https://www.megaport.com/resources/case-studies/heidelbergcement/); [Megaport (case study PDF – Heidelberg Materials)](https://www.megaport.com/resources/case-studies/heidelbergcement/HeidelbergCement-Case-Study.pdf); [Heidelberg Materials AG – Annual and Sustainabil](https://www.heidelbergmaterials.com/system/files/2026-03/HM_ASR25_en.pdf); [Heidelberg Materials AG – Annual and Sustainabil](https://www.heidelbergmaterials.com/sites/default/files/2025-03/HM_ASR24_en.pdf)
+
+**Current architecture** - EVIDENCED_PUBLIC, 2 source(s)
+
+- Prior WAN architecture – private MPLS lines (replaced): multi-provider MPLS
+- SD-WAN deployment status: evaluating (not deployed)
+- Primary cloud provider connected via Megaport backbone: Microsoft Azure
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| DATA CENTRES CONNECTED VIA MEGAPORT NAAS BACKBONE (REPLACING |  | 6 | 6 | 6 | 2022 |
+| MCR REGIONS IN MEGAPORT DUAL-RING BACKBONE |  | 3 | 3 | 3 | 2022 |
+
+Sources: [Megaport](https://www.megaport.com/resources/case-studies/heidelbergcement/); [Megaport](https://www.megaport.com/resources/case-studies/heidelbergcement/HeidelbergCement-Case-Study.pdf)
+
+**Current providers and products** - EVIDENCED_PUBLIC, 5 source(s)
+
+- WAN carrier – MPLS (historical incumbent): BT Global Services
+- WAN carrier – internet gateway security (historical): BT Counterpane (Managed Security Monitoring)
+- WAN backbone – NaaS (current, replacing MPLS): Megaport NaaS
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| INTERNET GATEWAY LOCATIONS (HISTORICAL) |  | None | None | None |  |
+| NUMBER OF WAN-CONNECTED LOCATIONS (HISTORICAL, BT CONTRACT) |  | 1000 | 1000 | 1000 | 2010 |
+
+*1 conflict(s) flagged: NUMBER OF WAN-CONNECTED LOCATIONS (HISTORICAL, BT CONTRACT)*
+
+Sources: [Telecompaper](https://www.telecompaper.com/news/bt-wins-extended-heidelbergcement-data-network-contract--761861); [Megaport](https://www.megaport.com/resources/case-studies/heidelbergcement/); [Megaport](https://www.megaport.com/resources/case-studies/heidelbergcement/HeidelbergCement-Case-Study.pdf); [GlobalData](https://www.globaldata.com/company-profile/heidelbergcement-ag/premium-data/technology-services-contracts/) and 1 more
+
+**Contract and sourcing events** - EVIDENCED_PUBLIC, 5 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| BT HEIDELBERGCEMENT WAN — NUMBER OF CONNECTED LOCATIONS |  | 1000 | 1000 | 1000 | 2010 |
+| BT HEIDELBERGCEMENT WAN — NUMBER OF COUNTRIES COVERED |  | 38 | 38 | 38 | 2010 |
+| BT HEIDELBERGCEMENT WAN+INTERNET CONTRACT VALUE |  | 18 | 18 | 18 | 2010 |
+| MEGAPORT NAAS — DC INTERCONNECT SITES REPLACED (MPLS TO NAAS |  | 6 | 6 | 6 | 2022 |
+
+*1 conflict(s) flagged: BT HEIDELBERGCEMENT WAN — NUMBER OF CONNECTED LOCATIONS*
+
+Sources: [Telecompaper](https://www.telecompaper.com/news/bt-wins-extended-heidelbergcement-data-network-contract--761861); [GlobalData](https://www.globaldata.com/company-profile/heidelbergcement-ag/premium-data/technology-services-contracts/); [Megaport](https://www.megaport.com/resources/case-studies/heidelbergcement/HeidelbergCement-Case-Study.pdf); [Megaport](https://www.megaport.com/resources/case-studies/heidelbergcement/) and 1 more
+
+**Transformation announcements** - EVIDENCED_PUBLIC, 9 source(s)
+
+- Strategy 2030 — RCO growth target per annum: 7-10%
+- Megaport NaaS — MPLS backbone replacement: bandwidth capacity uplift vs prior TCO: 4x bandwidth at lower cost
+- ASCEND Programme — SAP S/4HANA Cloud (ERP transformation scope): global (50+ countries)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| AUTONOMOUS TRUCK DEPLOYMENT — PROJECTED ANNUAL STAFF COST SA |  | 5000000 | 5000000 | 5000000 | 2025 |
+| BECHTLE IT/OT STANDARDISATION — CEMENT PLANT HARDWARE ROLLOU |  | None | None | None |  |
+| DIGITALIZATION P&L BENEFIT — NORTH AMERICA ANNUAL TARGET (CM | US | 50000000 | 50000000 | 50000000 | 2025 |
+| STRATEGY 2030 — NET CAPEX TARGET PER ANNUM |  | 1300000000 | 1300000000 | 1300000000 | 2025 |
+| TRANSFORMATION ACCELERATOR INITIATIVE — CUMULATIVE SAVINGS D |  | 380000000 | 405000000 | 440000000 | 2026 |
+| TRANSFORMATION ACCELERATOR INITIATIVE — STATED ANNUAL SAVING |  | 500000000 | 500000000 | 500000000 | 2026 |
+
+*1 conflict(s) flagged: TRANSFORMATION ACCELERATOR INITIATIVE — CUMULATIVE SAVINGS DELIVERED (H1 2026)*
+
+Sources: [Heidelberg Materials AG](https://www.heidelbergmaterials.com/en/pr-2025-02-25); [Heidelberg Materials AG](https://www.heidelbergmaterials.com/en/pr-2026-07-30); [Heidelberg Materials AG](https://www.heidelbergmaterials.com/en/pr-2026-05-06); [Heidelberg Materials AG](https://www.heidelbergmaterials.com/system/files/2025-05/HM_EN_20250528.pdf) and 5 more
+
+**Market serviceability** - EVIDENCED_PUBLIC, 5 source(s)
+
+- UK leased line provisioning lead time: 45–90
+- Germany leased line provisioning lead time (lines requiring significant construction): 6 months
+- UK enterprise MPLS carrier price range (100 Mbps/month excl. VAT): £300–£800
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| CREDIBLE ENTERPRISE WAN/INTERNET CARRIERS | DE | None | None | None |  |
+| FRANCE FIBRE SUBSCRIPTION SHARE | FR | None | None | None |  |
+| GERMANY ACTIVE FTTH/FTTB CONNECTIONS | DE | 9900000 | 9900000 | 9900000 | 2025 |
+| GERMANY FIBRE SUBSCRIPTION SHARE (2024 BASELINE, RISING TO ~ | DE | None | None | None |  |
+| GERMANY GIGABIT-CAPABLE NETWORK COVERAGE (HOMES/SMES PASSED) | DE | 86 | 86 | 86 | 2025 |
+| UK CITYFIBRE ENTERPRISE ETHERNET SERVICE AVAILABILITY | GB | None | None | None |  |
+| UK FTTP FULL-FIBRE COVERAGE (PREMISES) | GB | None | None | None |  |
+
+*1 conflict(s) flagged: GERMANY ACTIVE FTTH/FTTB CONNECTIONS*
+
+Sources: [VATM (German telecommunications industry associa](https://www.vatm.de/wp-content/uploads/2025/06/VATM-Market-Analysis-Germany-2025.pdf); [PwC Global Telecom Outlook 2025–2029](https://www.pwc.com/id/en/pwc-publications/industries-publications/tmt/telecom-outlook-perspectives.html); [Wikipedia](https://en.wikipedia.org/wiki/Telecommunications_in_Germany); [ISPreview.co.uk](https://www.ispreview.co.uk/index.php/2025/06/cityfibre-says-enterprise-grade-ethernet-services-reach-260000-uk-businesses.html) and 1 more
+
+---
+
+## Henkel AG & Co. KGaA
+
+- **Industry** HOUSEHOLD_PERSONAL_CARE (entity resolution)
+- **Scope** DE, US, MX, CN, EUR, 41 sites (research merged with disclosure)
+- **Confidence** 0.345 (D - Indicative), coverage COMPLETE
+
+**Profile** - EVIDENCED_PUBLIC, 6 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| ADHESIVE TECHNOLOGIES SEGMENT REVENUE (FY2024) |  | 10970000000 | 10970000000 | 10970000000 | 2024 |
+| CONSUMER BRANDS SEGMENT REVENUE (FY2024) |  | 10467000000 | 10467000000 | 10467000000 | 2024 |
+| COUNTRIES OF OPERATION |  | None | None | None |  |
+| GLOBAL PRODUCTION SITES |  | 161 | 161 | 161 | 2025 |
+| GROUP EMPLOYEES | DE | 47000 | 47200 | 47350 | 2025 |
+| GROUP REVENUE (FY2024) | DE | 21586000000 | 21590000000 | 21590000000 | 2024 |
+| GROUP REVENUE (FY2025) | DE | 20495000000 | 20497500000 | 20500000000 | 2025 |
+| NORTH AMERICA EMPLOYEES AND SITES | US | 7000 | 7000 | 7000 | 2025 |
+| NORTH AMERICA Q1 2024 REGIONAL SALES | US | 1478000000 | 1478000000 | 1478000000 | 2024 |
+| NORTH AMERICA REGION REVENUE (FY2025) | US | 0.26 | 0.26 | 0.26 | 2025 |
+
+*2 conflict(s) flagged: GLOBAL PRODUCTION SITES, NORTH AMERICA REGION REVENUE (FY2025)*
+
+Sources: [Henkel North America](https://www.henkel-northamerica.com/press/press-releases-and-kits/2025-11-03-very-good-annual-results-2024-demonstrate-successful-implementation-of-purposeful-growth-agenda-2044674); [Henkel North America](https://www.henkel-northamerica.com/press/facts-and-figures/company-profile); [Henkel North America (homepage)](https://www.henkel-northamerica.com/); [Wikipedia (citing Henkel AR2025)](https://en.wikipedia.org/wiki/Henkel) and 2 more
+
+**Locations** - EVIDENCED_PUBLIC, 8 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| GLOBAL PRODUCTION SITES (ALL COUNTRIES) |  | 161 | 161 | 161 | 2024 |
+| LARGE_OFFICE / CAMPUS – DÜSSELDORF HQ AND MAIN CAMPUS (DE) | DE | 1 | 1 | 1 | 2024 |
+| PLANT / LARGE_OFFICE – LATIN AMERICA PRODUCTION SITES (MEXIC | MX | 13 | 13 | 13 | 2022 |
+| PLANT / LARGE_OFFICE – NAMED CHINA (CN) SITES | CN | None | None | None |  |
+| PLANT / LARGE_OFFICE – NAMED GERMANY (DE) SITES ON HENKEL.CO | DE | 10 | 10 | 10 | 2023 |
+| PLANT / WAREHOUSE / LARGE_OFFICE – NORTH AMERICA FACILITIES  | US | 70 | 70 | 70 | 2025 |
+| PLANT – ADHESIVE TECHNOLOGIES PRODUCTION SITES GLOBALLY (FY2 |  | 122 | 122 | 122 | 2023 |
+| PLANT – LARGEST US PRODUCTION SITE (BOWLING GREEN, KY) | US | 1 | 1 | 1 | 2024 |
+| PLANT – NEW ADHESIVES PLANT IN GUADALUPE, MEXICO (MX) | MX | 1 | 1 | 1 | 2022 |
+| TOTAL DETECTED LOCATIONS GLOBALLY (OFFICES + PLANTS) |  | 211 | 211 | 211 | 2025 |
+
+*2 conflict(s) flagged: GLOBAL PRODUCTION SITES (ALL COUNTRIES), PLANT / LARGE_OFFICE – NAMED GERMANY (DE) SITES ON HENKEL.COM*
+
+Sources: [Henkel Sustainability Report 2024 (via WikiRate ](https://wikirate-production-storage.fra1.cdn.digitaloceanspaces.com/files/21495966/51135906.pdf); [Henkel North America – Company Profile (official](https://www.henkel-northamerica.com/press/facts-and-figures/company-profile); [Henkel – Locations & Addresses (official)](https://www.henkel.com/company/locations); [Henkel DE – Standort Düsseldorf (official)](https://www.henkel.de/presse-und-medien/zahlen-und-fakten/standort-duesseldorf) and 4 more
+
+**Data centres and cloud** - EVIDENCED_PUBLIC, 6 source(s)
+
+- On-premise DC estate targeted for full cloud migration: all
+- Primary cloud infrastructure platform: Microsoft Azure
+- ERP cloud provider (RISE with SAP / S/4HANA cloud): SAP (RISE with SAP / S/4HANA / SAP BTP / SAP HANA Cloud)
+- Global IT hub (Henkel dx Bangalore) – IT staff count: 500+
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| SAP HANA CLOUD DATA VOLUME MIGRATED (SAP BTP INNOVATION LAND | DE | None | None | None |  |
+
+Sources: [Henkel AG & Co. KGaA](https://www.henkel.com/press-and-media/press-releases-and-kits/2023-04-25-henkel-and-sap-bring-strategic-partnership-to-the-next-level-1822040); [Consumer Goods Technology](https://consumergoods.com/henkel-shift-entire-digital-infrastructure-cloud); [SAP News](https://news.sap.com/2023/04/sap-and-henkel-cloud-transformation/); [Skaylink (Microsoft cloud partner)](https://www.skaylink.com/en/case-studies/henkels-devops-triumph/) and 2 more
+
+**Current architecture** - EVIDENCED_PUBLIC, 4 source(s)
+
+- SD-WAN platform in production: HPE Aruba EdgeConnect (formerly Silver Peak / Silver Peak EdgeConnect)
+- WAN transport model: Multi-provider hybrid WAN (MPLS and/or DIA + SD-WAN overlay)
+- Internet security / SSE platform (Zscaler ZIA – internet proxy/SWG): Zscaler ZIA (Zscaler Internet Access)
+- Zero-trust / ZTNA platform (Zscaler ZPA): Zscaler ZPA (Zscaler Private Access)
+- Firewall platforms in production (Palo Alto Networks): Palo Alto Networks (including Panorama centralised management)
+- Firewall platforms in production (Fortinet FortiGate): Fortinet FortiGate
+
+Sources: [Henkel AG & Co. KGaA](https://www.henkel.com/careers/find-your-job-apply/2213058-2213058); [Henkel AG & Co. KGaA](https://www.henkel.in/careers/jobs-and-application/2213046-2213046); [freehire.me (aggregating Henkel listing)](https://freehire.me/jobs/consultant-network-security-operations-henkel-vjewawic); [CHEManager Online](https://chemanager-online.com/de/news/henkel-mpls-vpn-netzwerk-als-industrieparkloesung)
+
+**Current providers and products** - EVIDENCED_PUBLIC, 7 source(s)
+
+- WAN/hybrid network carrier – Orange Business Services: Orange Business Services
+- Carrier and telephony managed services provider – NTT DATA: NTT DATA
+- Managed network services provider – Unisys: Unisys
+- IT outsourcing / data centre provider – Atos: Atos
+- Unified communications / telephony platform – Microsoft Teams: Microsoft Teams
+- Internal network/security operations technology stack (job signal): WAN, LAN, SD-WAN, firewalls, secure access
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| COUNTRIES COVERED BY NTT DATA TEAMS TELEPHONY FOR HENKEL |  | None | None | None |  |
+| HYBRID NETWORK LOCATION COUNT (ORANGE BUSINESS SERVICES CONT |  | 355 | 355 | 355 | 2016 |
+| USERS COVERED BY ORANGE BUSINESS SERVICES MANAGED SECURITY |  | 42000 | 42000 | 42000 | 2016 |
+
+Sources: [Orange Business Services](https://www.orange-business.com/en/press/henkel-opts-for-orange-business-services-next-generation-hybrid-network-to-support-growing); [Telecompaper](https://www.telecompaper.com/news/henkel-chooses-orange-business-services-hybrid-network--1147478); [NTT DATA (global services)](https://services.global.ntt/en-us/about-us/case-studies/henkel-ex); [NTT DATA (Malaysia domain)](https://www.nttdata.com/en-my/insights/case-studies/henkel-ex) and 3 more
+
+**Contract and sourcing events** - EVIDENCED_PUBLIC, 9 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| ACCENTURE – GLOBAL APPLICATION OUTSOURCING CONTRACT TERM (EU |  | 7 | 7 | 7 | 2009 |
+| ACCENTURE – NORTH AMERICA APPLICATION OUTSOURCING CONTRACT T | US | 6 | 6 | 6 | 2010 |
+| NTT DATA CARRIER AND MANAGED NETWORK SERVICES – COUNTRIES CO |  | 30 | 30 | 30 | 2021 |
+| UNISYS – MANAGED NETWORK SERVICES CONTRACT SIGNED (QUARTER) |  | 42018 | 42018 | 42018 | 2018 |
+
+Sources: [NTT (services.global.ntt)](https://services.global.ntt/en-us/about-us/case-studies/henkel-ex); [NTT DATA (nttdata.com)](https://www.nttdata.com/en-my/insights/case-studies/henkel-ex); [Unisys](https://www.unisys.com/news-release/uk-henkel-expands-scope-of-global-partnership-with-unisys/); [PRNewswire](https://www.prnewswire.com/news-releases/henkel-expands-scope-of-global-partnership-with-unisys-for-secure-digital-workplace-transformation-300826067.html) and 5 more
+
+**Transformation announcements** - EVIDENCED_PUBLIC, 8 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| CONSUMER BRANDS MERGER GROSS SAVINGS TARGET (ORIGINAL ANNOUN | DE | 500000000 | 500000000 | 500000000 | 2022 |
+| CONSUMER BRANDS MERGER PHASE 1 SAVINGS TARGET REVISED (UP FR | DE | 275000000 | 275000000 | 275000000 | 2023 |
+| CONSUMER BRANDS MERGER SAVINGS REALISED – PHASE 1 (ORGANISAT | DE | 275000000 | 275000000 | 275000000 | 2024 |
+| CONSUMER BRANDS MERGER SAVINGS REALISED – PHASE 2 (SUPPLY CH | DE | 150000000 | 150000000 | 150000000 | 2024 |
+| CONSUMER BRANDS MERGER SAVINGS TARGET (REVISED, NET) | DE | 525000000 | 525000000 | 525000000 | 2025 |
+| CONSUMER BRANDS MERGER SUPPLY-CHAIN SAVINGS TARGET – PHASE 2 |  | 250000000 | 250000000 | 250000000 | 2023 |
+| CONSUMER BRANDS MERGER TOTAL SAVINGS REALISED BY END FY2024  | DE | 420000000 | 422500000 | 425000000 | 2024 |
+| HENKEL DX GLOBAL TECHNOLOGY CENTER (BENGALURU) – IT HEADCOUN | IN | 500 | 500 | 500 | 2024 |
+| HENKEL MID-TERM ADJUSTED EBIT MARGIN AMBITION (GROUP-LEVEL,  | DE | 16 | 16 | 16 | 2025 |
+| SUPPLY CHAIN COMPLEXITY REDUCTION TARGET (CONSUMER BRANDS ME |  | 25 | 25 | 25 | 2024 |
+
+Sources: [roic.ai (Henkel Q4 FY2024 earnings call transcri](https://www.roic.ai/quote/HELKF/transcripts/2024-year/4-quarter); [Henkel AG & Co. KGaA (official FY2025 press rele](https://www.henkel.com/press-and-media/press-releases-and-kits/2026-03-11-henkel-delivers-organic-growth-in-2025-and-increases-profitability-through-innovation-and-more-efficiency-2131952); [Henkel AG & Co. KGaA (Henkel North America FY202](https://www.henkel-northamerica.com/press/press-releases-and-kits/2025-11-03-very-good-annual-results-2024-demonstrate-successful-implementation-of-purposeful-growth-agenda-2044674); [Henkel AG & Co. KGaA (Henkel North America FY202](https://www.henkel-northamerica.com/press/press-releases-and-kits/2024-04-03-henkel-delivers-very-strong-organic-sales-growth-and-significant-earnings-improvement-in-2023-1935634) and 4 more
+
+**Market serviceability** - EVIDENCED_PUBLIC, 9 source(s)
+
+- Credible enterprise carriers – Germany: 6+
+- Credible enterprise carriers – United States: 6+
+- Credible enterprise carriers – Mexico: 5+
+- MPLS circuit provisioning lead time – enterprise (global, indicative): 60–90
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| AXTEL MEXICO ENTERPRISE CAPEX 2025 | MX | 87 | 87 | 87 | 2025 |
+| CREDIBLE ENTERPRISE CARRIERS – CHINA (LICENSED OPERATORS ONL | CN | None | None | None |  |
+| DEUTSCHE TELEKOM RETAIL BROADBAND MARKET SHARE – GERMANY | DE | 50.2 | 50.2 | 50.2 | 2025 |
+| GERMANY FIBRE SUBSCRIPTION SHARE | DE | None | None | None |  |
+| GERMANY TELECOM MARKET REVENUE | DE | 78 | 78 | 78 | 2023 |
+| VERIZON ENTERPRISE & PUBLIC SECTOR REVENUES | US | 13.5 | 13.5 | 13.5 | 2025 |
+
+Sources: [germancompanyformation.com](https://germancompanyformation.com/guides/telecommunication-companies-in-germany); [Mordor Intelligence](https://www.mordorintelligence.com/industry-reports/germany-telecom-market); [PwC Global Telecom Outlook 2025–2029](https://www.pwc.com/id/en/pwc-publications/industries-publications/tmt/telecom-outlook-perspectives.html); [netify.co.uk](https://insights.netify.co.uk/top-best-mpls-network-providers/) and 5 more
 
 ---
 
@@ -3988,6 +4932,128 @@ Sources: [ARCEP (French telecom regulator)](https://en.arcep.fr/fileadmin/user_u
 
 ---
 
+## Banco Santander, S.A.
+
+- **Industry** UNIVERSAL_BANKING (entity resolution)
+- **Scope** ES, GB, PT, EUR, 2,268 sites (research merged with disclosure)
+- **Confidence** 0.343 (D - Indicative), coverage COMPLETE
+
+**Profile** - EVIDENCED_PUBLIC, 10 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| BANCO SANTANDER, S.A. (LEGAL ENTITY ONLY) AVERAGE EMPLOYEES | ES | 23839 | 23839 | 23839 | 2024 |
+| GROUP ATTRIBUTABLE PROFIT (NET INCOME) |  | 12574000000 | 12574000000 | 12574000000 | 2024 |
+| GROUP CUSTOMERS TOTAL |  | 172537332 | 172768666 | 173000000 | 2024 |
+| GROUP EMPLOYEES (HEADCOUNT, YEAR-END) |  | 203217 | 204985 | 206753 | 2024 |
+| GROUP EMPLOYEES IN PORTUGAL | PT | 5316 | 5316 | 5316 | 2024 |
+| GROUP EMPLOYEES IN SPAIN | ES | 34940 | 34940 | 34940 | 2024 |
+| GROUP EMPLOYEES IN UNITED KINGDOM | GB | 22542 | 22542 | 22542 | 2024 |
+| GROUP TOTAL ASSETS |  | 1837000000000 | 1837000000000 | 1837000000000 | 2024 |
+| GROUP TOTAL BRANCHES WORLDWIDE |  | 8011 | 8011 | 8011 | 2024 |
+| GROUP TOTAL INCOME (REVENUE) |  | 58380000000 | 60295500000 | 62211000000 | 2024 |
+
+Sources: [Banco Santander, S.A. — Form 20-F FY2024 (SEC)](https://www.sec.gov/Archives/edgar/data/0000891478/000089147825000054/san-20241231.htm); [Banco Santander, S.A. — Form 20-F FY2024 Financi](https://www.sec.gov/Archives/edgar/data/891478/000089147825000054/Financial_Report.xlsx); [Banco Santander — 2024 Results Press Release](https://www.santander.com/content/dam/santander-com/en/documentos/informacion-privilegiada/2025/02/hr-2025-02-05-2024-results-press-release-en.pdf); [Banco Santander Annual Report 2024 (SEC Form 6-K](https://www.sec.gov/Archives/edgar/data/891478/000089147825000051/annualreport2024.pdf) and 6 more
+
+**Locations** - EVIDENCED_PUBLIC, 10 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| STORE (BANK BRANCHES) — GROUP GLOBAL TOTAL |  | 7124 | 8011 | 8011 | 2025 |
+| STORE (BANK BRANCHES) — PORTUGAL | PT | 286 | 327 | 328 | 2025 |
+| STORE (BANK BRANCHES) — SPAIN | ES | 1877 | 1880 | 1883 | 2024 |
+| STORE (BANK BRANCHES) — UNITED KINGDOM | GB | 444 | 444 | 444 | 2024 |
+
+Sources: [Banco Santander, S.A. (SEC Form 6-K, Q3-2025)](https://www.sec.gov/Archives/edgar/data/891478/000089147825000138/financieroq325ingles.htm); [Banco Santander, S.A. (SEC Form 6-K, H1-2024)](https://www.sec.gov/Archives/edgar/data/891478/000089147824000092/san-20240630.htm); [Banco Santander, S.A. (2024 Annual Report, SEC F](https://www.sec.gov/Archives/edgar/data/891478/000089147825000051/annualreport2024.pdf); [Santander UK plc (2024 Annual Report)](https://www.santander.co.uk/assets/s3fs-public/documents/Santander%20UK%20plc%202024%20Annual%20Report.pdf) and 6 more
+
+**Data centres and cloud** - EVIDENCED_PUBLIC, 10 source(s)
+
+- Gravity platform — countries live (includes in-scope markets): 6+
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| CANTABRIA CPD — FLOOR AREA AND INVESTMENT (ES) | ES | None | None | None |  |
+| CARLTON PARK DC — FLOOR AREA PER BUILDING (GB) | GB | None | None | None |  |
+| CLOUD MIGRATION COMPLETION — SPAIN (GRAVITY PLATFORM) | ES | None | None | None |  |
+| DC (OWNED CPD) — PORTUGAL | PT | 0 | 0 | 0 | 2024 |
+| DC (OWNED CPD) — SPAIN TOTAL | ES | 2 | 2 | 2 | 2024 |
+| DC (OWNED CPD) — UNITED KINGDOM | GB | 1 | 1 | 1 | 2012 |
+| NAMED PUBLIC CLOUD PROVIDERS — GROUP LEVEL |  | None | None | None |  |
+
+*1 conflict(s) flagged: DC (OWNED CPD) — UNITED KINGDOM*
+
+Sources: [Santander Digital Services (official)](https://www.santanderdigitalservices.com/en/datacenters-and-monitoring); [Data Center Knowledge](https://www.datacenterknowledge.com/investing/spanish-banking-giant-santander-builds-500m-s-o-paulo-data-center); [Data Center Dynamics](https://www.datacenterdynamics.com/en/news/santander-building-100m-data-center-in-uks-midlands/); [UK Environment Agency / GOV.UK](https://www.gov.uk/government/publications/le19-0al-santander-uk-plc-environmental-permit-issued) and 6 more
+
+**Current architecture** - EVIDENCED_PUBLIC, 5 source(s)
+
+- WAN/SD-WAN technology in use — Spain: Cisco Viptela (SD-WAN) and Fortinet (SD-WAN/WAN)
+- LAN/WLAN technology in use — Spain: Cisco, Meraki, Aruba, Juniper, Fortinet
+- WAN routing protocols in use — Spain: BGP, OSPF (dynamic routing; multi-vendor overlay)
+- Network technologies in use — United Kingdom (WAN/routing/security stack): Cisco Routing (BGP, OSPF, PBR, MPLS), Cisco ACI, Fortinet FortiGate, Fortinet FortiSwitch, Palo Alto FW; Zscaler / FortiProxy (internet proxy/SSE - additional skill)
+- SD-WAN as recognised ICT budget category — Group level: SD-WAN listed as discrete spend line item
+- Cloud infrastructure share — Group IT (context for internet breakout / cloud-direct traffic): 80%
+
+Sources: [Santander Workday Careers / Santander Digital Se](https://santander.wd3.myworkdayjobs.com/SantanderCareers/job/Boadilla-del-Monte/Network-Architect---Santander-Digital-Services_Req1473895-1); [GlobalData](https://www.globaldata.com/company-profile/banco-santander-sa/premium-data/ict-spend-tech-priorities/); [SME Banking Platform](https://smebanking.agency/platform/santander-digitalizes-its-core-banking-with-cloud-technology-to-improve-service-and-efficiency/); [AWS Architecture Blog](https://aws.amazon.com/blogs/architecture/digital-transformation-at-santander-how-platform-engineering-is-revolutionizing-cloud-infrastructure/) and 1 more
+
+**Current providers and products** - EVIDENCED_PUBLIC, 4 source(s)
+
+- Managed IT / hybrid cloud provider (Santander Consumer Bank, Grupo Santander subsidiary): Orange Business
+- Internal IT/network delivery entity (group-wide): SGT&O (Santander Global Technology and Operations)
+- Cloud platform (Santander UK Digital): AWS
+- Application outsourcing vendor: IBM
+
+Sources: [Orange Business](https://www.orange-business.com/be-en/about-us/customer-stories/santander-consumer-bank-gets-flexibility-accessibility-cloud); [FDIC (US regulator)](https://www.fdic.gov/resolutions/banco-santander-2025-165d-resolution-plan-public-section.pdf); [Santander (corporate careers)](https://www.santander.com/en/careers/uk-careers/where-do-you-want-to-make-an-impact/digital); [GlobalData (aggregator)](https://www.globaldata.com/company-profile/banco-santander-sa/premium-data/technology-services-contracts/)
+
+**Contract and sourcing events** - EVIDENCED_PUBLIC, 5 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| TELEFÓNICA–SANTANDER 5G BRANCH CONNECTIVITY PILOT — NUMBER O | ES | 2 | 2 | 2 | 2019 |
+
+Sources: [Telefónica](https://www.telefonica.com/en/communication-room/press-room/santander-and-telefonica-develop-together-the-first-5g-use-cases-of-the-banking-sector-in-europe/); [Hitachi Vantara](https://www.hitachivantara.com/en-us/company/customer-stories/telefonica-spain-case-study); [RCR Wireless](https://rcrwireless.com/20190617/5g/telefonica-santander-apply-5g-tech-banking-sector); [Light Reading](https://www.lightreading.com/5g/eurobites-telef-nica-hooks-up-with-santander-for-5g-banking) and 1 more
+
+**Transformation announcements** - EVIDENCED_PUBLIC, 9 source(s)
+
+- Gravity cloud migration — Spain (Santander España) completed: 2025-06-01
+- Gravity cloud migration — United Kingdom (Santander UK) completed: 2023-12-31
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| AI-GENERATED SAVINGS IN 2024 (RUN-RATE, PER CHIEF DATA AND A |  | 200000000 | 200000000 | 200000000 | 2024 |
+| ANNUAL TECHNOLOGY SPEND (TOTAL IT SPENDING AND INVESTMENTS)  |  | 2000000000 | 2250000000 | 2500000000 | 2026 |
+| GRAVITY PLATFORM SAVINGS FROM INITIAL DEPLOYMENT (SUB-COMPON |  | 150000000 | 232000000 | 314000000 | 2026 |
+| GROUP EFFICIENCY RATIO — TARGET BY 2028 (ONE TRANSFORMATION  |  | 36 | 41.2 | 42.8 | 2028 |
+| ONE TRANSFORMATION 2026–2028 — TOTAL COST BASE EFFICIENCY IM |  | None | None | None |  |
+| ONE TRANSFORMATION — AI AND DATA INVESTMENT ANNUAL BUSINESS  |  | 1000000000 | 1000000000 | 1000000000 | 2028 |
+| ONE TRANSFORMATION — AI-DRIVEN COST SAVINGS COMPONENT (>HALF |  | 500000000 | 500000000 | 500000000 | 2028 |
+| ONE TRANSFORMATION — CUMULATIVE IT/TECH SAVINGS SINCE DEC 20 |  | 237000000 | 497000000 | 550000000 | 2025 |
+
+*4 conflict(s) flagged: ANNUAL TECHNOLOGY SPEND (TOTAL IT SPENDING AND INVESTMENTS) — GROUP, GRAVITY PLATFORM SAVINGS FROM INITIAL DEPLOYMENT (SUB-COMPONENT OF CUMULATIVE SAVINGS), GROUP EFFICIENCY RATIO — TARGET BY 2028 (ONE TRANSFORMATION OUTCOME), ONE TRANSFORMATION — CUMULATIVE IT/TECH SAVINGS SINCE DEC 2022 (GROUP)*
+
+Sources: [Banco Santander (official press room)](https://www.santander.com/en/press-room/press-releases/2026/02/2026-santander-investor-day); [Banco Santander (2026 Investor Day executive cha](https://www.santander.com/content/dam/santander-com/en/documentos/investor-day/2026/id-2026-investor-day-executive-chair-presentation-en.pdf); [Banco Santander (Institutional Presentation FY20](https://www.santander.com/content/dam/santander-com/en/documentos/presentacion-institucional/2025/pi-2025-institutional-presentation-en.pdf); [Banco Santander (Q2/H1 2025 results press releas](https://www.santander.com/en/press-room/press-releases/2025/07/q2-2025-santander-bank-results) and 5 more
+
+**Market serviceability** - EVIDENCED_PUBLIC, 8 source(s)
+
+- Credible enterprise WAN carriers — United Kingdom: 6+
+- UK leased line / DIA installation lead time: 45–90
+- UK MPLS circuit price benchmark: £300–£900
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| CREDIBLE ENTERPRISE WAN CARRIERS — PORTUGAL | PT | None | None | None |  |
+| CREDIBLE ENTERPRISE WAN CARRIERS — SPAIN | ES | 4 | 4 | 4 | 2025 |
+| PORTUGAL 5G COVERAGE — ALL MUNICIPALITIES (ENTERPRISE WIRELE | PT | 13089 | 13089 | 13089 | 2024 |
+| SPAIN FTTH INSTALLED ACCESSES (ENTERPRISE FIBRE SUPPLY INDIC | ES | 80800000 | 80800000 | 80800000 | 2025 |
+| SPAIN LEASED LINE STANDARD PROVISIONING LEAD TIME (REGULATOR | ES | 60 | 60 | 60 | 2015 |
+| UK FTTP FULL-FIBRE COVERAGE OF SMES | GB | 78 | 78 | 78 | 2025 |
+| UK GIGABIT-CAPABLE BROADBAND COVERAGE (SME ENTERPRISE UNDERL | GB | 87 | 87 | 87 | 2025 |
+
+*2 conflict(s) flagged: PORTUGAL 5G COVERAGE — ALL MUNICIPALITIES (ENTERPRISE WIRELESS BACKUP INDICATOR), UK GIGABIT-CAPABLE BROADBAND COVERAGE (SME ENTERPRISE UNDERLAY SUPPLY INDICATOR)*
+
+Sources: [KenResearch](https://www.kenresearch.com/industry-reports/spain-telecom-market); [Mordor Intelligence](https://www.mordorintelligence.com/industry-reports/spain-telecom-market); [WIK-Consult / European Commission](https://www.wik.org/fileadmin/Studien/2015/BT_EthernetLL_Benchmark_final.pdf); [Netify.co.uk](https://netify.co.uk/insights/top-best-mpls-network-providers/) and 4 more
+
+---
+
 ## Shell plc
 
 - **Industry** INTEGRATED_OIL_GAS (entity resolution)
@@ -4519,10 +5585,143 @@ Sources: [ComReg (Commission for Communications Regulation](https://comreg.ie/me
 
 ---
 
+## TotalEnergies SE
+
+- **Industry** INTEGRATED_OIL_GAS (entity resolution)
+- **Scope** FR, BE, DE, USD, 3,261 sites (research merged with disclosure)
+- **Confidence** 0.339 (D - Indicative), coverage COMPLETE
+
+**Profile** - EVIDENCED_PUBLIC, 9 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| EMPLOYEES_BELGIUM | BE | 4052 | 4052 | 4052 | 2024 |
+| EMPLOYEES_FRANCE | FR | 37369 | 37369 | 37369 | 2024 |
+| EMPLOYEES_GERMANY | DE | 4437 | 4437 | 4437 | 2024 |
+| EMPLOYEES_GROUP |  | 101513 | 102887 | 116366 | 2025 |
+| GROSS_SALES_GROUP |  | 201196 | 207873 | 214550 | 2025 |
+| NUMBER_OF_COUNTRIES_OPERATIONS |  | 120 | 125 | 130 | 2024 |
+| REVENUES_FROM_SALES_GROUP |  | 182344 | 195610 | 195610 | 2025 |
+| REVENUE_BELGIUM_CBCR | BE | 31900000000 | 31900000000 | 31900000000 | 2024 |
+| REVENUE_FRANCE_CBCR | FR | 107500000000 | 107500000000 | 107500000000 | 2024 |
+| REVENUE_GERMANY_CBCR | DE | 35400000000 | 35400000000 | 35400000000 | 2024 |
+
+*1 conflict(s) flagged: NUMBER_OF_COUNTRIES_OPERATIONS*
+
+Sources: [TotalEnergies SE](https://totalenergies.com/system/files/documents/totalenergies_pr-results-q4-2024_2025_en.pdf); [TotalEnergies SE](https://totalenergies.com/system/files/documents/totalenergies_pr-results-q4-2025_2026_en.pdf); [SEC (TotalEnergies SE Form 20-F Exhibit 15.1 / U](https://www.sec.gov/Archives/edgar/data/879764/000110465925029751/tot-20241231xex15d1.htm); [Taxplorer.eu (aggregating TotalEnergies public C](https://www.taxplorer.eu/company/totalenergies/) and 5 more
+
+**Locations** - EVIDENCED_PUBLIC, 9 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| ALL SITE TYPES COMBINED, FRANCE – TOTAL SITES | FR | 4000 | 4000 | 4000 | 2025 |
+| LARGE_OFFICE – GLOBAL OFFICE LOCATIONS (AGGREGATOR ESTIMATE) |  | 130 | 130 | 130 | 2024 |
+| REMOTE_SITE – SOLAR AND WIND POWER FACILITIES, FRANCE | FR | 420 | 420 | 420 | 2025 |
+| STORE – SERVICE STATIONS, BELGIUM (JV WITH COUCHE-TARD, 40%  | BE | 500 | 570 | 619 | 2025 |
+| STORE – SERVICE STATIONS, FRANCE | FR | 3000 | 3121 | 3300 | 2025 |
+| STORE – SERVICE STATIONS, GERMANY (DIVESTED JAN 2024 TO COUC | DE | 1198 | 1198 | 1198 | 2023 |
+| WAREHOUSE/PLANT – ANTWERP REFINING & PETROCHEMICALS PLATFORM | BE | 3 | 3 | 3 | 2019 |
+| WAREHOUSE/PLANT – LEUNA REFINERY, GERMANY (RETAINED BY TOTAL | DE | 1 | 1 | 1 | 2025 |
+| WAREHOUSE/PLANT – LNG TERMINALS AND GAS POWER STATIONS, FRAN | FR | 9 | 9 | 9 | 2025 |
+| WAREHOUSE/PLANT – REFINERIES AND BIOREFINERIES, FRANCE | FR | 3 | 3 | 3 | 2025 |
+
+*2 conflict(s) flagged: STORE – SERVICE STATIONS, BELGIUM (JV WITH COUCHE-TARD, 40% TOTALENERGIES), WAREHOUSE/PLANT – REFINERIES AND BIOREFINERIES, FRANCE*
+
+Sources: [TotalEnergies SE](https://totalenergies.com/france); [TotalEnergies SE](https://totalenergies.com/news/press-releases/totalenergies-teams-are-proud-dedicate-their-energy-serve-people-across-france); [TotalEnergies SE](https://totalenergies.com/belgium); [TotalEnergies SE (SEC Form 6-K)](https://www.sec.gov/Archives/edgar/data/879764/000110465924009052/tm244366d1_ex99-3.htm) and 5 more
+
+**Data centres and cloud** - EVIDENCED_PUBLIC, 10 source(s)
+
+- SAP environments migrated to AWS cloud (global): 260+
+- OneTech R&D / engineering headcount (Europe: FR, BE, DK sites): 3000+
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| CLOUD – AWS SUBSCRIPTIONS (DIGITAL FACTORY) | FR | 1000 | 1000 | 1000 | 2022 |
+| CLOUD – AZURE SUBSCRIPTIONS (DIGITAL FACTORY) | FR | 600 | 600 | 600 | 2022 |
+| CLOUD – NAMED PRIMARY CLOUD PROVIDERS (STRATEGIC PARTNERSHIP | FR | None | None | None |  |
+| DC – OWNED ON-PREMISES HPC DATA CENTRE (CSTJF PAU) | FR | 1 | 1 | 1 | 2026 |
+| DC – PANGEA 5 INVESTMENT (ON-PREM HPC EXPANSION, PAU FR) | FR | 100 | 100 | 100 | 2026 |
+| LARGE_OFFICE – DIGITAL FACTORY PARIS (FR) | FR | 1 | 1 | 1 | 2025 |
+
+*1 conflict(s) flagged: DC – PANGEA 5 INVESTMENT (ON-PREM HPC EXPANSION, PAU FR)*
+
+Sources: [TotalEnergies SE (official newsroom)](https://totalenergies.com/newsroom/totalenergies-develops-pangea-5-a-next-generation-supercomputer-469512/?lang=eng); [TotalEnergies SE (official newsroom)](https://totalenergies.com/news/press-releases/totalenergies-latest-pangea-supercomputer-tackles-energy-transition); [Blocks & Files (IT trade press)](https://www.blocksandfiles.com/file/2026/05/08/ddn-storage-being-used-in-french-pangea-supercomputer/5235729); [TotalEnergies SE – SEC 20-F / Universal Registra](https://www.sec.gov/Archives/edgar/data/879764/000110465926035876/tot-20251231xex15d1.htm) and 6 more
+
+**Current architecture** - DECLARED_UNKNOWN, 1 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| COUNTRIES COVERED BY OBS–TOTAL WAN CONTRACT |  | 100 | 100 | 100 | 2008 |
+| OBS–TOTAL GLOBAL WAN CONTRACT VALUE |  | 100 | 100 | 100 | 2008 |
+| WAN SITES UNDER OBS MANAGED CONTRACT (TOTAL, GLOBAL) |  | 1000 | 1000 | 1000 | 2008 |
+
+Sources: [Telecompaper](https://www.telecompaper.com/news/obs-wins-global-networking-contract-from-total--680278)
+
+**Current providers and products** - EVIDENCED_PUBLIC, 4 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| OT NETWORK HARDWARE ITEMS INSTALLED (ALLIED TELESIS, NORTH S | GB | 200 | 200 | 200 | 2024 |
+| OT NETWORK NODES SERVED (ALLIED TELESIS, NORTH SEA – OUT OF  | GB | 400 | 400 | 400 | 2024 |
+| WAN MANAGED-SERVICES CONTRACT VALUE (TOTAL / ORANGE BUSINESS |  | 100 | 100 | 100 | 2007 |
+| WAN SITES COVERED BY OBS CONTRACT (TOTAL) |  | 1000 | 1000 | 1000 | 2007 |
+
+Sources: [Telecompaper](https://www.telecompaper.com/news/obs-wins-global-networking-contract-from-total--680278); [JournalduNet](https://www.journaldunet.com/solutions/dsi/1070780-wan-total-fait-appel-a-orange-business-services/); [Computer Weekly](https://www.computerweekly.com/news/366573432/TotalEnergies-upgrades-OT-network-to-increase-safety-performance-cyber-security); [PSS (Process Safety Solutions)](https://pssuk.co.uk/case-studies/totalenergies-increases-safety-with-an-upgraded-ot-network)
+
+**Contract and sourcing events** - EVIDENCED_PUBLIC, 5 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| OBS–TOTAL GLOBAL WAN CONTRACT TERM |  | 5 | 5 | 5 | 2008 |
+| OBS–TOTAL GLOBAL WAN CONTRACT VALUE (CEILING) |  | 100000000 | 100000000 | 100000000 | 2008 |
+| OBS–TOTAL WAN IN-SCOPE SITE COUNT (GLOBAL) |  | 1000 | 1000 | 1000 | 2008 |
+| TOTALENERGIES TOTAL GOODS & SERVICES PROCUREMENT SPEND (EX-P |  | 30000000000 | 30000000000 | 30000000000 | 2023 |
+
+Sources: [Telecompaper](https://www.telecompaper.com/news/obs-wins-global-networking-contract-from-total--680278); [TotalEnergies SE](https://totalenergies.com/suppliers); [GlobalData](https://www.globaldata.com/company-profile/total-se/premium-data/tenders-and-contracts/); [trans.info](https://trans.info/en/totalenergies-germany-and-netherlands-375601) and 1 more
+
+**Transformation announcements** - EVIDENCED_PUBLIC, 8 source(s)
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| CASH SAVINGS PROGRAMME (CAPEX + OPEX) 2026-2030 – ORIGINAL A |  | 7500000000 | 7500000000 | 7500000000 | 2025 |
+| CASH SAVINGS PROGRAMME (CAPEX + OPEX) 2026-2030 – UPGRADED T |  | 12500000000 | 12500000000 | 12500000000 | 2026 |
+| CASH SAVINGS TARGET FOR 2026 ALONE (FIRST YEAR OF PROGRAMME) |  | 2500000000 | 2500000000 | 2500000000 | 2026 |
+| DIGITAL FACTORY VALUE CREATION TARGET – ANNUAL BY 2025 |  | 1500000000 | 1500000000 | 1500000000 | 2023 |
+| DIGITAL INVESTMENT PROGRAMME 2026-2028 (3 AI STRATEGIC PROGR |  | 1000000000 | 1000000000 | 1000000000 | 2026 |
+| DIGITAL SHARE OF R&D/INNOVATION BUDGET – 2025 |  | 30 | 30 | 30 | 2025 |
+| ESTIMATED ANNUAL ICT SPENDING – 2024 |  | 820700000 | 820700000 | 820700000 | 2024 |
+| FIXED-COST SAVINGS WITHIN 2026 ANNUAL TARGET |  | 200000000 | 200000000 | 200000000 | 2026 |
+| R&D, INDUSTRIAL INNOVATION AND DIGITAL DEVELOPMENTS SPEND –  |  | 1000000000 | 1000000000 | 1000000000 | 2025 |
+| TOTAL 2026 OPEX SAVINGS (ALL LEVERS) WITHIN PROGRAMME |  | 500000000 | 500000000 | 500000000 | 2026 |
+
+Sources: [TotalEnergies SE (SEC Form 6-K)](https://www.sec.gov/Archives/edgar/data/879764/000110465925103965/tm2529545d1_ex99-2.htm); [NASDAQ / TotalEnergies official press release](https://www.nasdaq.com/press-release/totalenergies-se-2025-strategy-and-outlook-presentation-2025-09-29); [TotalEnergies SE – Q4 2025 / FY2025 results pres](https://totalenergies.com/system/files/documents/totalenergies_pr-results-q4-2025_2026_en.pdf); [TotalEnergies SE (SEC Form 6-K, FY2026)](https://www.sec.gov/Archives/edgar/data/879764/000110465926013065/tm265640d1_ex99-1.htm) and 4 more
+
+**Market serviceability** - EVIDENCED_PUBLIC, 8 source(s)
+
+- MPLS circuit provisioning lead time (Western Europe): 60–90
+- credible enterprise carriers: 4+
+- DIA/dedicated business line provisioning lead time: 60–120
+- credible enterprise carriers: 3+
+
+| what | country | low | base | high | as of |
+| --- | --- | --- | --- | --- | --- |
+| CREDIBLE ENTERPRISE CARRIERS (MNO/FIXED, NAMED) | FR | None | None | None |  |
+| ENTERPRISE FIBRE ADOPTION RATE | FR | 83 | 83 | 83 | 2025 |
+| FTTH PREMISES COVERAGE | BE | 43 | 43 | 43 | 2025 |
+| FTTH PREMISES COVERAGE | FR | 91 | 91 | 91 | 2024 |
+| MPLS PRESENCE ON ENTERPRISE WAN SITES GLOBALLY |  | 41 | 41 | 41 | 2024 |
+| ORANGE FIXED BROADBAND MARKET SHARE | FR | 39 | 39 | 39 | 2026 |
+
+*1 conflict(s) flagged: FTTH PREMISES COVERAGE*
+
+Sources: [Telecompaper](https://www.telecompaper.com/news/fibre-adoption-rises-to-83-in-2025-in-french-enterprise-segment-study--1572575); [checkeverything.fr](https://checkeverything.fr/en/telecommunications/operators); [Mordor Intelligence](https://www.mordorintelligence.com/industry-reports/france-telecom-market); [jimber.io citing TeleGeography](https://jimber.io/blog/mpls-network-explained-and-why-sd-wan-is-replacing-it/) and 4 more
+
+---
+
 ## Toyota Motor Corporation
 
 - **Industry** AUTOMOTIVE_OEM (entity resolution)
-- **Scope** JP, US, CN, IN, BR, GB, FR, CA, JPY, 66 sites (research merged with disclosure)
+- **Scope** JP, US, CN, IN, BR, GB, FR, CA, JPY, 65 sites (research merged with disclosure)
 - **Confidence** 0.349 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 9 source(s)

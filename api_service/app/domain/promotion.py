@@ -753,7 +753,20 @@ def spans_two_countries(label) -> bool:
 _NOT_THEIR_PREMISES = re.compile(
     r"\b3pl\b|\bthird[\s-]party\b"
     r"|\bminority\s+(stake|shareholding|interest|holding)"
-    r"|\bfranchis(e|ed|ee|es|ing)\b",
+    r"|\bfranchis(e|ed|ee|es|ing)\b"
+    # A MIXED count. "not all managed by NR" is Network Rail plus the train
+    # operators; "not all operated by franchisees" is franchised plus
+    # company-run. Whichever party is named, the figure is not a count of the
+    # subject's own estate - which is what makes this safe where a bare
+    # negation is not. "not operated by franchisees" means the company DOES
+    # operate them, the opposite verdict from "not managed by NR", and the
+    # classifier cannot tell them apart. "not all" it can.
+    #
+    # Network Rail is the case: "TERMINAL - total stations in GB rail network
+    # (owned, not all managed by NR)", 2,593 stations promoted over the 20 it
+    # manages. Against all 50 committed research files the pattern matched
+    # nothing else.
+    r"|\bnot\s+all\s+(?:\w+\s+){0,2}?(managed|operated|run|owned)\s+by\b",
     re.IGNORECASE)
 
 

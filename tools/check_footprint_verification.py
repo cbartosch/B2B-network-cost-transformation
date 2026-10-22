@@ -59,6 +59,55 @@ DISPOSITIONS = {
 }
 
 
+def _verified_a_different_figure(entry: dict, change: dict) -> bool:
+    """A VERIFIED entry that describes an estate the set no longer holds.
+
+    A register entry covered its (company, country, archetype) PAIR, so
+    whatever figure the pair held next was covered too. Network Rail's
+    GB/TERMINAL was verified at 20 - the stations it manages directly - and
+    a later run promoted 2,593, the whole GB network including stations
+    train operators run. The checker filed 2,593 under "verified" on the
+    strength of a verdict about 20.
+
+    VERIFIED alone, because it is the only disposition whose register_sites
+    is a claim about what the estate HOLDS. EXCLUDED and DECLINED record a
+    figure that was looked at and kept out, which is a different claim.
+    Strict equality: across 70 matched VERIFIED entries none differed, so a
+    tolerance would only be room for this to happen again.
+    """
+    if (entry.get("disposition") or "").strip().upper() != "VERIFIED":
+        return False
+    figure = (entry.get("register_sites") or "").strip()
+    if not figure:
+        return False
+    return int(figure) != int(change["used"])
+
+
+def _declined_but_priced(entry: dict, change: dict, excluded: set) -> bool:
+    """A DECLINED ruling that nothing enforces.
+
+    DECLINED means "the evidence was too inconsistent to accept; the declared
+    figure holds". Nothing made it hold. The merge takes research's figure
+    over the declaration, a register entry is not read by the run, and so
+    seven of twelve declines were priced at exactly the figure a person had
+    declined: E.ON's 30 German branches from a source that said 28, Royal
+    Mail's 10 data centres from an undated 2021 vendor case study, Toyota's
+    17 Japanese plants against a declared 16.
+
+    The only thing that keeps research's figure out of an estate is a scope
+    exclusion in the spec, so a decline is enforced when its pair is
+    excluded there - or when research happens to agree with the declaration
+    already. Otherwise the register says one thing and the estate another.
+    """
+    if (entry.get("disposition") or "").strip().upper() != "DECLINED":
+        return False
+    if change.get("kind") != "CHANGED":
+        return False
+    if (change["country"], change["archetype"]) in excluded:
+        return False
+    return int(change["used"]) != int(change["declared"])
+
+
 def load_register(path: pathlib.Path) -> dict:
     if not path.exists():
         return {}
@@ -369,7 +418,16 @@ def priced_above_research(outdir: pathlib.Path, spec_path: pathlib.Path) -> list
 #:                        three countries independently).
 SAME_PREMISES = (frozenset({"STORE", "BRANCH"}),
                  frozenset({"STORE", "SERVICE_POINT"}),
-                 frozenset({"STORE", "WAREHOUSE"}))
+                 frozenset({"STORE", "WAREHOUSE"}),
+                 # The first non-retail pair. Anglo American declared its
+                 # Quellaveco copper mine REMOTE_SITE and research promoted
+                 # it PLANT, so the estate held one mine twice; the three
+                 # retail pairs above could not see it. A mine sits on the
+                 # boundary - unmanned-asset profile or industrial site -
+                 # which is exactly where research and a declaration will
+                 # type the same premises differently. Added against the
+                 # whole set it flagged Quellaveco and nothing else.
+                 frozenset({"REMOTE_SITE", "PLANT"}))
 
 #: How far two counts of one network may differ and still be one network.
 #: Saint-Gobain's French merchants are the widest real case at 2.2x - the
@@ -499,11 +557,25 @@ def main() -> int:
     register = load_register(pathlib.Path(args.register))
     found = changes(pathlib.Path(args.out), pathlib.Path(args.spec))
 
-    covered, bare = [], []
+    spec_doc = json.loads(pathlib.Path(args.spec).read_text("utf-8"))
+    excluded_by_slug = {
+        c["slug"]: {(x.get("country"), x.get("archetype"))
+                    for x in (c.get("excluded") or [])}
+        for c in spec_doc["companies"]}
+
+    covered, bare, stale_verdicts, unenforced = [], [], [], []
     for change in found:
         key = (change["slug"], change["country"], change["archetype"])
-        (covered if key in register else bare).append((change,
-                                                       register.get(key)))
+        entry = register.get(key)
+        if entry is None:
+            bare.append((change, None))
+        elif _verified_a_different_figure(entry, change):
+            stale_verdicts.append((change, entry))
+        elif _declined_but_priced(entry, change,
+                                  excluded_by_slug.get(change["slug"], set())):
+            unenforced.append((change, entry))
+        else:
+            covered.append((change, entry))
 
     if covered:
         print(f"verified ({len(covered)}):")
@@ -524,6 +596,24 @@ def main() -> int:
             more = f" +{len(items) - 3} more" if len(items) > 3 else ""
             print(f"  {slug:<16}{len(items):>2} row(s), {moved:>+7,} sites  "
                   f"{pairs}{more}")
+
+    if unenforced:
+        print(f"\ndeclined, but the estate prices it anyway ({len(unenforced)})"
+              f" - add a scope exclusion so the declared figure holds:")
+        for change, entry in unenforced:
+            print(f"  {change['slug']:<16}{change['country']}/"
+                  f"{change['archetype']:<14}declared "
+                  f"{change['declared']:>7,}, priced at {change['used']:>7,}"
+                  f"  <- NOT ENFORCED")
+    if stale_verdicts:
+        print(f"\nverified, but not this figure ({len(stale_verdicts)}) - the "
+              f"estate has moved since a person looked:")
+        for change, entry in stale_verdicts:
+            print(f"  {change['slug']:<16}{change['country']}/"
+                  f"{change['archetype']:<14}verified "
+                  f"{int(entry['register_sites']):>7,}, now uses "
+                  f"{change['used']:>7,}  (as of {entry['as_of']})  "
+                  f"<- RE-VERIFY")
 
     # Entries matching no change. A DECLINED row is the common case: it
     # records that a figure was examined and left alone, which is a decision
@@ -639,7 +729,7 @@ def main() -> int:
             print(f"  {w['slug']:<16}{w['country']}/{w['archetype']:<13}"
                   f"[{w['marker']}] {w['label'][:46]}{mark}")
 
-    if args.strict and (bare or live):
+    if args.strict and (bare or live or stale_verdicts or unenforced):
         return 1
     return 0
 

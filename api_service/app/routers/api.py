@@ -4254,7 +4254,12 @@ def run_estimate(case_id: str, payload: EstimateIn):
             layers_in_scope=case_row.in_scope_cost_layers or ["L0"],
             layers_priced=layers_priced,
             policy=coverage_policy,
-            declared_spend_by_country=payload.declared_spend_by_country or None)
+            declared_spend_by_country=payload.declared_spend_by_country or None,
+            # The sites the simulation dropped. Without these the gate only
+            # ever saw what survived, and reported COMPLETE over an estate
+            # missing half its plants.
+            unserviceable=(sim.output or {}).get("unserviceable") or [],
+            simulated_sites=(sim.output or {}).get("sites"))
         if cov["status"] == "REFUSED":
             raise HTTPException(409, {"error": "V0 publication refused (0.3C)",
                                       "coverage": cov})
