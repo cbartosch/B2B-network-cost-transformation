@@ -44,6 +44,30 @@ REGION_PARENT = {
 }
 
 
+def price_ladder(country: str, region: str | None) -> list[str]:
+    """The scopes one country's circuits may be priced at, most specific first.
+
+    The country, then its sub-region, then that sub-region's parent. The route
+    has loaded both regional rungs into `priors` since EMEA split, and nothing
+    told `match_prior` to look at them: both callers passed the country alone,
+    so Hungary's 5G backups were unpriced while the Central European rate that
+    would have priced them sat in the dict. The tests spelled the chain out by
+    hand whenever they called `match_prior`, so they passed throughout - the
+    rung was wired in every test and in no route.
+
+    A country in no region gets only itself, and so does a scope that is
+    already a region - a backbone leg priced against EMEA has nothing above it
+    to fall to.
+    """
+    ladder = [country]
+    if region and region != country:
+        ladder.append(region)
+        parent = REGION_PARENT.get(region)
+        if parent:
+            ladder.append(parent)
+    return ladder
+
+
 SCOPE_MODES = ("COUNTRIES", "REGION", "GLOBAL")
 
 # Maintained by hand: there is no atlas anywhere else in this system, and a

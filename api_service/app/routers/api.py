@@ -15,6 +15,7 @@ from .. import config, db, jobs, migrations
 # UnboundLocalError on every estimate. Python decides local-or-global per
 # function, not per line.
 from ..domain.scope import REGION_PARENT as REGION_PARENT
+from ..domain.scope import price_ladder
 from ..domain import (access as access_vocab, anchor_estimate,
                       assumptions, bics, calibration, case_rates,
                       currency, estate_plausibility, industry_asks,
@@ -3964,12 +3965,19 @@ def run_estimate(case_id: str, payload: EstimateIn):
         # or African estate reaches a sub-region that prices nothing and needs
         # the rung beneath it. Loading only the sub-region would have made the
         # split a coverage regression.
-        _sub = sorted({
-            r.region for r in s.execute(select(db.country_region).where(
-                db.country_region.c.country.in_(countries or ["--"]))).all()})
+        _sub_of = {
+            r.country: r.region for r in s.execute(select(db.country_region).where(
+                db.country_region.c.country.in_(countries or ["--"]))).all()}
+        _sub = sorted(set(_sub_of.values()))
         in_scope_regions = sorted(set(_sub) | {
             REGION_PARENT[r] for r in _sub
             if r in REGION_PARENT})
+        # And the order each country may reach them in. Loading the rungs was
+        # half the fallback: nothing passed the chain to the matcher, so no
+        # country ever fell to them - the sub-region rows priced nothing and
+        # the parents only the backbone. One map for the gate and the total,
+        # like the client rates below.
+        price_scopes = {c: price_ladder(c, _sub_of.get(c)) for c in countries}
         # One row per (country, product, bandwidth), best-evidenced.
         #
         # The card holds a seeded assumption and a researched price that
@@ -4155,6 +4163,7 @@ def run_estimate(case_id: str, payload: EstimateIn):
         scope = coverage.derive_scope(
             sim_output=sim.output, priors=priors,
             sizing_priors=sizing_priors, case_rates=client_rates,
+            price_scopes=price_scopes,
             # Priced as of the case's price year, not today: an estimate must
             # reproduce, and "expired" against a moving today would make the
             # same run give different answers on different days.
@@ -4244,7 +4253,8 @@ def run_estimate(case_id: str, payload: EstimateIn):
                           .get("hub_regions") or []),
             sse_unit=platform.get("SSE_LICENCE"),
             band_priors=band_priors,
-            density_multipliers=density_multipliers)
+            density_multipliers=density_multipliers,
+            price_scopes=price_scopes)
         if not components:
             raise HTTPException(409, {"error": "no priced components", "unpriced": unpriced})
 
