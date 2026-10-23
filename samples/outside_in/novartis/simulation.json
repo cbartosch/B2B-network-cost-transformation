@@ -1,13 +1,13 @@
 {
-  "simulation_run_id": "9b1e58c7-2519-4244-a68d-6c9f578200c1",
+  "simulation_run_id": "c65290ca-62f3-4d5d-b1b2-565b026fd39c",
   "case_id": "18f2d1bc-b978-4074-8726-19be0609f087",
-  "model_version": "sim-2.7.0",
+  "model_version": "sim-2.9.0",
   "seed": 20260101,
   "ensemble_size": 25,
   "status": "SUCCEEDED",
-  "output_hash": "72a2a2476bff9fac4e110e1dc0f55593b07da33bfd7cea9b5db8d1c531509058",
-  "started_at": "2026-10-22 17:59:00.124182+00:00",
-  "ended_at": "2026-10-22 17:59:00.341560+00:00",
+  "output_hash": "d3e3065bb11ffdd74fe1813f424f189ac511768f7385feff88a0ef5bb973d816",
+  "started_at": "2026-10-23 11:45:49.459705+00:00",
+  "ended_at": "2026-10-23 11:45:49.864364+00:00",
   "params": {
     "footprint": [
       {
@@ -1656,6 +1656,151 @@
       "archetypes_covered": 3
     },
     "providers_by_role": {},
+    "plan_tiers": {
+      "AT|BROADBAND_HFC": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "AT|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "AT|MOBILE_5G": [
+        50,
+        100
+      ],
+      "SG|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "SG|MOBILE_5G": [
+        50,
+        100
+      ],
+      "SG|BROADBAND_HFC": [
+        100,
+        250,
+        500,
+        1000
+      ],
+      "US|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "US|BROADBAND_HFC": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "US|MOBILE_5G": [
+        50,
+        100
+      ],
+      "CH|BROADBAND_HFC": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "CH|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "CH|MOBILE_5G": [
+        50,
+        100
+      ],
+      "IT|BROADBAND_HFC": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "IT|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "IT|MOBILE_5G": [
+        50,
+        100
+      ],
+      "ES|BROADBAND_HFC": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "ES|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "ES|MOBILE_5G": [
+        50,
+        100
+      ],
+      "DE|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "DE|BROADBAND_HFC": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "DE|MOBILE_5G": [
+        50,
+        100
+      ],
+      "IE|BROADBAND_HFC": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "IE|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "IE|MOBILE_5G": [
+        50,
+        100
+      ]
+    },
     "backbone": {
       "template_version": "1.0.0",
       "regions": {
@@ -1726,7 +1871,7 @@
     }
   },
   "output": {
-    "model_version": "sim-2.7.0",
+    "model_version": "sim-2.9.0",
     "seed": 20260101,
     "ensemble_size": 25,
     "sites": 125,
@@ -1900,6 +2045,7 @@
         "reason": "the only backup deliverable in SUBURBAN US is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
       }
     ],
+    "backups_below_primary": [],
     "estate_truncated": 0,
     "sites_named": 0,
     "sites_generated": 125,
@@ -1978,28 +2124,6 @@
         "country": "CH",
         "product": "ETHERNET",
         "role": "PRIMARY",
-        "bandwidth_mbps": 3000,
-        "count": 4,
-        "service_class": "ETHERNET",
-        "density": "SUBURBAN",
-        "bearer_mbps": 10000,
-        "access_technology": "ETHERNET_FIBRE"
-      },
-      {
-        "country": "CH",
-        "product": "ETHERNET",
-        "role": "PRIMARY",
-        "bandwidth_mbps": 500,
-        "count": 25,
-        "service_class": "ETHERNET",
-        "density": "URBAN",
-        "bearer_mbps": 1000,
-        "access_technology": "ETHERNET_FIBRE"
-      },
-      {
-        "country": "CH",
-        "product": "ETHERNET",
-        "role": "PRIMARY",
         "bandwidth_mbps": 600,
         "count": 12,
         "service_class": "ETHERNET",
@@ -2011,7 +2135,29 @@
         "country": "CH",
         "product": "ETHERNET",
         "role": "PRIMARY",
-        "bandwidth_mbps": 9500,
+        "bandwidth_mbps": 6500,
+        "count": 4,
+        "service_class": "ETHERNET",
+        "density": "SUBURBAN",
+        "bearer_mbps": 10000,
+        "access_technology": "ETHERNET_FIBRE"
+      },
+      {
+        "country": "CH",
+        "product": "ETHERNET",
+        "role": "PRIMARY",
+        "bandwidth_mbps": 750,
+        "count": 25,
+        "service_class": "ETHERNET",
+        "density": "URBAN",
+        "bearer_mbps": 1000,
+        "access_technology": "ETHERNET_FIBRE"
+      },
+      {
+        "country": "CH",
+        "product": "ETHERNET",
+        "role": "PRIMARY",
+        "bandwidth_mbps": 9750,
         "count": 6,
         "service_class": "ETHERNET",
         "density": "URBAN",
@@ -2034,7 +2180,7 @@
         "product": "DIA",
         "role": "BACKUP",
         "bandwidth_mbps": 1000,
-        "count": 6,
+        "count": 7,
         "service_class": "DIA",
         "density": "URBAN",
         "bearer_mbps": 1000,
@@ -2055,7 +2201,7 @@
         "country": "DE",
         "product": "ETHERNET",
         "role": "PRIMARY",
-        "bandwidth_mbps": 500,
+        "bandwidth_mbps": 750,
         "count": 7,
         "service_class": "ETHERNET",
         "density": "URBAN",
@@ -2121,10 +2267,10 @@
         "country": "IE",
         "product": "ETHERNET",
         "role": "PRIMARY",
-        "bandwidth_mbps": 500,
-        "count": 4,
+        "bandwidth_mbps": 600,
+        "count": 5,
         "service_class": "ETHERNET",
-        "density": "URBAN",
+        "density": "SUBURBAN",
         "bearer_mbps": 1000,
         "access_technology": "ETHERNET_FIBRE"
       },
@@ -2132,10 +2278,10 @@
         "country": "IE",
         "product": "ETHERNET",
         "role": "PRIMARY",
-        "bandwidth_mbps": 600,
-        "count": 5,
+        "bandwidth_mbps": 750,
+        "count": 4,
         "service_class": "ETHERNET",
-        "density": "SUBURBAN",
+        "density": "URBAN",
         "bearer_mbps": 1000,
         "access_technology": "ETHERNET_FIBRE"
       },
@@ -2199,22 +2345,11 @@
         "product": "DIA",
         "role": "BACKUP",
         "bandwidth_mbps": 1000,
-        "count": 13,
+        "count": 16,
         "service_class": "DIA",
         "density": "URBAN",
         "bearer_mbps": 1000,
         "access_technology": null
-      },
-      {
-        "country": "US",
-        "product": "ETHERNET",
-        "role": "PRIMARY",
-        "bandwidth_mbps": 150,
-        "count": 2,
-        "service_class": "ETHERNET",
-        "density": "SUBURBAN",
-        "bearer_mbps": 500,
-        "access_technology": "ETHERNET_FIBRE"
       },
       {
         "country": "US",
@@ -2231,7 +2366,18 @@
         "country": "US",
         "product": "ETHERNET",
         "role": "PRIMARY",
-        "bandwidth_mbps": 500,
+        "bandwidth_mbps": 325,
+        "count": 2,
+        "service_class": "ETHERNET",
+        "density": "SUBURBAN",
+        "bearer_mbps": 500,
+        "access_technology": "ETHERNET_FIBRE"
+      },
+      {
+        "country": "US",
+        "product": "ETHERNET",
+        "role": "PRIMARY",
+        "bandwidth_mbps": 750,
         "count": 16,
         "service_class": "ETHERNET",
         "density": "URBAN",
@@ -2242,7 +2388,7 @@
         "country": "US",
         "product": "ETHERNET",
         "role": "PRIMARY",
-        "bandwidth_mbps": 950,
+        "bandwidth_mbps": 975,
         "count": 5,
         "service_class": "ETHERNET",
         "density": "URBAN",
@@ -2256,7 +2402,7 @@
       "high": 100
     },
     "circuits_backbone": 16,
-    "circuits_per_site_base": 1.872,
+    "circuits_per_site_base": 1.904,
     "implied_users": 90400,
     "bandwidth_profile": {
       "PLANT": {
@@ -2351,7 +2497,7 @@
       "note": ""
     },
     "node_count": 125,
-    "edge_count": 234
+    "edge_count": 238
   },
   "output_omitted": {
     "fields": [

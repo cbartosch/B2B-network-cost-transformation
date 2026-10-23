@@ -1,13 +1,13 @@
 {
-  "simulation_run_id": "2cb996dc-19d3-40cd-aacc-4b3c9d67971e",
+  "simulation_run_id": "8689e244-5c51-4694-9d72-9762e5c69865",
   "case_id": "fab3cb28-e3ff-4c9e-a9d1-a220efeb3ac0",
-  "model_version": "sim-2.7.0",
+  "model_version": "sim-2.9.0",
   "seed": 20260101,
   "ensemble_size": 25,
   "status": "SUCCEEDED",
-  "output_hash": "0b294891484957c138570453fa19ec8ebbf5483d1acf8661e8557fb5a6dd3945",
-  "started_at": "2026-10-22 17:59:41.645578+00:00",
-  "ended_at": "2026-10-22 17:59:42.890024+00:00",
+  "output_hash": "7b72c40b34aaba088aedc0a61201a96707b17f9dae534c5766d876afce75cda6",
+  "started_at": "2026-10-23 11:46:37.071320+00:00",
+  "ended_at": "2026-10-23 11:46:39.576128+00:00",
   "params": {
     "footprint": [
       {
@@ -1937,6 +1937,80 @@
       "archetypes_covered": 6
     },
     "providers_by_role": {},
+    "plan_tiers": {
+      "DE|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "DE|BROADBAND_HFC": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "DE|MOBILE_5G": [
+        50,
+        100
+      ],
+      "FR|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "FR|BROADBAND_HFC": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "FR|MOBILE_5G": [
+        50,
+        100
+      ],
+      "GB|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "GB|BROADBAND_HFC": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "GB|MOBILE_5G": [
+        50,
+        100
+      ],
+      "BR|BROADBAND_HFC": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "BR|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "BR|MOBILE_5G": [
+        50,
+        100
+      ]
+    },
     "backbone": {
       "template_version": "1.0.0",
       "regions": {
@@ -1999,7 +2073,7 @@
     }
   },
   "output": {
-    "model_version": "sim-2.7.0",
+    "model_version": "sim-2.9.0",
     "seed": 20260101,
     "ensemble_size": 25,
     "sites": 1928,
@@ -2063,6 +2137,7 @@
         "reason": "the only backup deliverable in SUBURBAN FR is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
       }
     ],
+    "backups_below_primary": [],
     "estate_truncated": 0,
     "sites_named": 0,
     "sites_generated": 1928,
@@ -2097,7 +2172,7 @@
         "country": "BR",
         "product": "ETHERNET",
         "role": "PRIMARY",
-        "bandwidth_mbps": 3000,
+        "bandwidth_mbps": 5250,
         "count": 1,
         "service_class": "ETHERNET",
         "density": "DENSE_URBAN",
@@ -2109,7 +2184,7 @@
         "product": "BROADBAND_HFC",
         "role": "BACKUP",
         "bandwidth_mbps": 100,
-        "count": 102,
+        "count": 129,
         "service_class": "BEST_EFFORT",
         "density": "SUBURBAN",
         "bearer_mbps": 100,
@@ -2152,7 +2227,7 @@
         "country": "DE",
         "product": "ETHERNET",
         "role": "PRIMARY",
-        "bandwidth_mbps": 300,
+        "bandwidth_mbps": 337,
         "count": 11,
         "service_class": "ETHERNET",
         "density": "SUBURBAN",
@@ -2163,7 +2238,7 @@
         "country": "DE",
         "product": "ETHERNET",
         "role": "PRIMARY",
-        "bandwidth_mbps": 600,
+        "bandwidth_mbps": 675,
         "count": 12,
         "service_class": "ETHERNET",
         "density": "RURAL",
@@ -2186,7 +2261,7 @@
         "product": "BROADBAND_HFC",
         "role": "BACKUP",
         "bandwidth_mbps": 100,
-        "count": 398,
+        "count": 527,
         "service_class": "BEST_EFFORT",
         "density": "SUBURBAN",
         "bearer_mbps": 100,
@@ -2229,7 +2304,7 @@
         "country": "FR",
         "product": "ETHERNET",
         "role": "PRIMARY",
-        "bandwidth_mbps": 150,
+        "bandwidth_mbps": 262,
         "count": 3,
         "service_class": "ETHERNET",
         "density": "SUBURBAN",
@@ -2240,7 +2315,7 @@
         "country": "FR",
         "product": "ETHERNET",
         "role": "PRIMARY",
-        "bandwidth_mbps": 500,
+        "bandwidth_mbps": 625,
         "count": 1,
         "service_class": "ETHERNET",
         "density": "DENSE_URBAN",
@@ -2251,7 +2326,7 @@
         "country": "FR",
         "product": "ETHERNET",
         "role": "PRIMARY",
-        "bandwidth_mbps": 600,
+        "bandwidth_mbps": 675,
         "count": 60,
         "service_class": "ETHERNET",
         "density": "RURAL",
@@ -2263,7 +2338,7 @@
         "product": "BROADBAND_HFC",
         "role": "BACKUP",
         "bandwidth_mbps": 100,
-        "count": 313,
+        "count": 402,
         "service_class": "BEST_EFFORT",
         "density": "SUBURBAN",
         "bearer_mbps": 100,
@@ -2285,7 +2360,7 @@
         "product": "BROADBAND_PON",
         "role": "BACKUP",
         "bandwidth_mbps": 300,
-        "count": 18,
+        "count": 19,
         "service_class": "BEST_EFFORT",
         "density": "SUBURBAN",
         "bearer_mbps": 300,
@@ -2306,7 +2381,7 @@
         "country": "GB",
         "product": "ETHERNET",
         "role": "PRIMARY",
-        "bandwidth_mbps": 300,
+        "bandwidth_mbps": 337,
         "count": 20,
         "service_class": "ETHERNET",
         "density": "SUBURBAN",
@@ -2317,7 +2392,7 @@
         "country": "GB",
         "product": "ETHERNET",
         "role": "PRIMARY",
-        "bandwidth_mbps": 600,
+        "bandwidth_mbps": 675,
         "count": 20,
         "service_class": "ETHERNET",
         "density": "RURAL",
@@ -2331,7 +2406,7 @@
       "high": 1197
     },
     "circuits_backbone": 12,
-    "circuits_per_site_base": 1.486,
+    "circuits_per_site_base": 1.6136,
     "implied_users": 157450,
     "bandwidth_profile": {
       "DC": {
@@ -2418,7 +2493,7 @@
       "note": ""
     },
     "node_count": 1928,
-    "edge_count": 2865
+    "edge_count": 3111
   },
   "output_omitted": {
     "fields": [

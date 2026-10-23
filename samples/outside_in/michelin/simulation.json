@@ -1,13 +1,13 @@
 {
-  "simulation_run_id": "20c6e147-255d-4538-ba6b-cfb4a1b5a8e1",
+  "simulation_run_id": "96cb91da-7538-4d8f-875c-101f1db33544",
   "case_id": "92b5aa01-f7e2-4b3b-a6db-653c41832e17",
-  "model_version": "sim-2.7.0",
+  "model_version": "sim-2.9.0",
   "seed": 20260101,
   "ensemble_size": 25,
   "status": "SUCCEEDED",
-  "output_hash": "18882ab6d27e2971fbc01b2f9cb3fd0845305be6e6ee67bfb34a555f66814206",
-  "started_at": "2026-10-22 18:01:11.632362+00:00",
-  "ended_at": "2026-10-22 18:01:11.898463+00:00",
+  "output_hash": "83a9eee8bb656dfa9c5b96ed83a73e7c6eaff30a0c8e209edf1038bfd474a36f",
+  "started_at": "2026-10-23 11:48:08.820012+00:00",
+  "ended_at": "2026-10-23 11:48:09.033054+00:00",
   "params": {
     "footprint": [
       {
@@ -1796,6 +1796,150 @@
       "archetypes_covered": 0
     },
     "providers_by_role": {},
+    "plan_tiers": {
+      "CN|BROADBAND_HFC": [
+        100,
+        250,
+        500,
+        1000
+      ],
+      "CN|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "CN|MOBILE_5G": [
+        50,
+        100
+      ],
+      "BR|BROADBAND_HFC": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "BR|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "BR|MOBILE_5G": [
+        50,
+        100
+      ],
+      "US|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "US|BROADBAND_HFC": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "US|MOBILE_5G": [
+        50,
+        100
+      ],
+      "PL|BROADBAND_HFC": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "PL|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "PL|MOBILE_5G": [
+        50,
+        100
+      ],
+      "FR|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "FR|BROADBAND_HFC": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "FR|MOBILE_5G": [
+        50,
+        100
+      ],
+      "ES|BROADBAND_HFC": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "ES|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "ES|MOBILE_5G": [
+        50,
+        100
+      ],
+      "DE|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "DE|BROADBAND_HFC": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "DE|MOBILE_5G": [
+        50,
+        100
+      ],
+      "IN|BROADBAND_HFC": [
+        100,
+        250,
+        500,
+        1000
+      ],
+      "IN|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "IN|MOBILE_5G": [
+        50,
+        100
+      ]
+    },
     "backbone": {
       "template_version": "1.0.0",
       "regions": {
@@ -1838,7 +1982,7 @@
     }
   },
   "output": {
-    "model_version": "sim-2.7.0",
+    "model_version": "sim-2.9.0",
     "seed": 20260101,
     "ensemble_size": 25,
     "sites": 98,
@@ -1886,6 +2030,7 @@
         "reason": "the only backup deliverable in SUBURBAN FR is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
       }
     ],
+    "backups_below_primary": [],
     "estate_truncated": 0,
     "sites_named": 0,
     "sites_generated": 98,

@@ -1092,6 +1092,20 @@ if sim:
         if len(o.get("single_by_necessity") or []) > 6:
             st.caption(f"and {len(o['single_by_necessity']) - 6} more cluster(s) "
                        f"with no deliverable second path.")
+        # A second path that carries less than the first. The backup was asked
+        # for at the primary's bandwidth and is a plan, not a bandwidth - so it
+        # is bought as the largest plan the card sells, and says so here.
+        for _bp in (o.get("backups_below_primary") or [])[:6]:
+            _where = " ".join(x for x in (_bp.get("density"), _bp["country"]) if x)
+            st.warning(
+                f"**{_bp['sites']:,} {_bp['archetype']} site(s) in {_where}: the "
+                f"backup carries {_bp['sold_mbps']} of the {_bp['asked_mbps']} "
+                f"Mbps it was asked for.** {_bp['product']} is sold to "
+                f"{_bp['sold_mbps']} Mbps here, so the backup is priced as that "
+                f"plan, and a failover runs these sites below their primary.")
+        if len(o.get("backups_below_primary") or []) > 6:
+            st.caption(f"and {len(o['backups_below_primary']) - 6} more "
+                       f"cluster(s) whose backup carries less than the primary.")
 
         for _u in _unserv:
             st.error(

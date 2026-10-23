@@ -1,13 +1,13 @@
 {
-  "simulation_run_id": "0bbc737d-0f56-470c-b91c-950b6153eb24",
+  "simulation_run_id": "9ac9d63f-00bb-40c9-99a6-c328713ae4ee",
   "case_id": "e71dd642-34f1-44b8-8bc1-8c2a230f9cae",
-  "model_version": "sim-2.7.0",
+  "model_version": "sim-2.9.0",
   "seed": 20260101,
   "ensemble_size": 25,
   "status": "SUCCEEDED",
-  "output_hash": "7c7bc4088460e48f7107f967907c1f35a9aabf99d0999a3b47000f30e52abfe9",
-  "started_at": "2026-10-22 17:59:31.589253+00:00",
-  "ended_at": "2026-10-22 17:59:33.649549+00:00",
+  "output_hash": "cc861f5f3468d0380b5e901702d25346277fb09d6842c7172237de16320a3d2c",
+  "started_at": "2026-10-23 11:46:23.268736+00:00",
+  "ended_at": "2026-10-23 11:46:27.296375+00:00",
   "params": {
     "footprint": [
       {
@@ -1606,6 +1606,62 @@
       "archetypes_covered": 6
     },
     "providers_by_role": {},
+    "plan_tiers": {
+      "DE|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "DE|BROADBAND_HFC": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "DE|MOBILE_5G": [
+        50,
+        100
+      ],
+      "US|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "US|BROADBAND_HFC": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "US|MOBILE_5G": [
+        50,
+        100
+      ],
+      "ES|BROADBAND_HFC": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "ES|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "ES|MOBILE_5G": [
+        50,
+        100
+      ]
+    },
     "backbone": {
       "template_version": "1.0.0",
       "regions": {
@@ -1639,7 +1695,7 @@
     }
   },
   "output": {
-    "model_version": "sim-2.7.0",
+    "model_version": "sim-2.9.0",
     "seed": 20260101,
     "ensemble_size": 25,
     "sites": 3385,
@@ -1703,6 +1759,7 @@
         "reason": "the only backup deliverable in SUBURBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
       }
     ],
+    "backups_below_primary": [],
     "estate_truncated": 0,
     "sites_named": 0,
     "sites_generated": 3385,
@@ -1738,7 +1795,7 @@
         "product": "DIA",
         "role": "BACKUP",
         "bandwidth_mbps": 1000,
-        "count": 6,
+        "count": 7,
         "service_class": "DIA",
         "density": "URBAN",
         "bearer_mbps": 1000,
@@ -1759,7 +1816,7 @@
         "country": "DE",
         "product": "ETHERNET",
         "role": "PRIMARY",
-        "bandwidth_mbps": 150,
+        "bandwidth_mbps": 300,
         "count": 4,
         "service_class": "ETHERNET",
         "density": "SUBURBAN",
@@ -1770,7 +1827,7 @@
         "country": "DE",
         "product": "ETHERNET",
         "role": "PRIMARY",
-        "bandwidth_mbps": 500,
+        "bandwidth_mbps": 700,
         "count": 8,
         "service_class": "ETHERNET",
         "density": "URBAN",
@@ -1812,6 +1869,17 @@
       },
       {
         "country": "US",
+        "product": "BROADBAND_HFC",
+        "role": "BACKUP",
+        "bandwidth_mbps": 100,
+        "count": 2,
+        "service_class": "BEST_EFFORT",
+        "density": "SUBURBAN",
+        "bearer_mbps": 100,
+        "access_technology": "HFC"
+      },
+      {
+        "country": "US",
         "product": "BROADBAND_PON",
         "role": "BACKUP",
         "bandwidth_mbps": 100,
@@ -1839,7 +1907,7 @@
       "high": 1899
     },
     "circuits_backbone": 8,
-    "circuits_per_site_base": 1.5566,
+    "circuits_per_site_base": 1.5575,
     "implied_users": 86430,
     "bandwidth_profile": {
       "BRANCH": {
@@ -1897,7 +1965,7 @@
       "note": "One region with data centres (EUROPE_CENTRAL), so there is no global core tier - a hub has nothing to reach across."
     },
     "node_count": 3385,
-    "edge_count": 5269
+    "edge_count": 5272
   },
   "output_omitted": {
     "fields": [

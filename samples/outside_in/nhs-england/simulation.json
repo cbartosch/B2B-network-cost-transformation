@@ -1,13 +1,13 @@
 {
-  "simulation_run_id": "39587bc6-0ea9-4687-b1a3-74edde6ee222",
+  "simulation_run_id": "d64bf81f-0111-4e76-9572-7d5a9fa1ba30",
   "case_id": "c7709723-63a0-40a4-a5b1-aba323b64c35",
-  "model_version": "sim-2.7.0",
+  "model_version": "sim-2.9.0",
   "seed": 20260101,
   "ensemble_size": 25,
   "status": "SUCCEEDED",
-  "output_hash": "73e4f16cbd8fc81bf4996c3e479a4f6918369a0a5975addb13794f8d779b3301",
-  "started_at": "2026-10-22 18:01:14.608559+00:00",
-  "ended_at": "2026-10-22 18:01:15.723507+00:00",
+  "output_hash": "ac4a1e4d22f0039a218547e7b73233b71f7cc018f97dfc220fd7898c93b7581f",
+  "started_at": "2026-10-23 11:48:11.534119+00:00",
+  "ended_at": "2026-10-23 11:48:12.656588+00:00",
   "params": {
     "footprint": [
       {
@@ -1310,6 +1310,26 @@
       "archetypes_covered": 6
     },
     "providers_by_role": {},
+    "plan_tiers": {
+      "GB|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "GB|BROADBAND_HFC": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "GB|MOBILE_5G": [
+        50,
+        100
+      ]
+    },
     "backbone": {
       "template_version": "1.0.0",
       "regions": {
@@ -1337,7 +1357,7 @@
     }
   },
   "output": {
-    "model_version": "sim-2.7.0",
+    "model_version": "sim-2.9.0",
     "seed": 20260101,
     "ensemble_size": 25,
     "sites": 1491,
@@ -3183,6 +3203,7 @@
         "reason": "the only backup deliverable in SUBURBAN GB is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
       }
     ],
+    "backups_below_primary": [],
     "estate_truncated": 0,
     "sites_named": 0,
     "sites_generated": 1491,
@@ -3218,7 +3239,7 @@
         "product": "BROADBAND_HFC",
         "role": "BACKUP",
         "bandwidth_mbps": 100,
-        "count": 7,
+        "count": 18,
         "service_class": "BEST_EFFORT",
         "density": "SUBURBAN",
         "bearer_mbps": 100,
@@ -3240,7 +3261,7 @@
         "product": "DIA",
         "role": "BACKUP",
         "bandwidth_mbps": 1000,
-        "count": 35,
+        "count": 37,
         "service_class": "DIA",
         "density": "URBAN",
         "bearer_mbps": 1000,
@@ -3272,7 +3293,7 @@
         "country": "GB",
         "product": "ETHERNET",
         "role": "PRIMARY",
-        "bandwidth_mbps": 150,
+        "bandwidth_mbps": 300,
         "count": 6,
         "service_class": "ETHERNET",
         "density": "SUBURBAN",
@@ -3283,7 +3304,7 @@
         "country": "GB",
         "product": "ETHERNET",
         "role": "PRIMARY",
-        "bandwidth_mbps": 500,
+        "bandwidth_mbps": 700,
         "count": 40,
         "service_class": "ETHERNET",
         "density": "URBAN",
@@ -3308,7 +3329,7 @@
       "high": 754
     },
     "circuits_backbone": 12,
-    "circuits_per_site_base": 1.4842,
+    "circuits_per_site_base": 1.493,
     "implied_users": 1141500,
     "bandwidth_profile": {
       "BRANCH": {
@@ -3365,7 +3386,7 @@
       "note": "One region with data centres (EUROPE_WEST), so there is no global core tier - a hub has nothing to reach across."
     },
     "node_count": 1491,
-    "edge_count": 2213
+    "edge_count": 2226
   },
   "output_omitted": {
     "fields": [

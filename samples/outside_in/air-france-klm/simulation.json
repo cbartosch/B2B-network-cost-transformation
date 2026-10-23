@@ -1,13 +1,13 @@
 {
-  "simulation_run_id": "b71a0efb-9dfa-4907-9f4b-3ebe71a215b1",
+  "simulation_run_id": "da665e25-9de2-4dc6-b58d-ecdcef0a596b",
   "case_id": "58d9376d-c4ab-4c83-8784-cdc2bc810d68",
-  "model_version": "sim-2.7.0",
+  "model_version": "sim-2.9.0",
   "seed": 20260101,
   "ensemble_size": 25,
   "status": "SUCCEEDED",
-  "output_hash": "2e821f70cc03555ae177b3b29285b9db58e02361a1a48dd8e2a08e7db0d635bb",
-  "started_at": "2026-10-22 18:02:00.299066+00:00",
-  "ended_at": "2026-10-22 18:02:00.448018+00:00",
+  "output_hash": "657e4c1ca45b197c9d7ed9d31444c090e8245cbda61d682d69a598016ee61caf",
+  "started_at": "2026-10-23 11:48:52.447106+00:00",
+  "ended_at": "2026-10-23 11:48:52.557925+00:00",
   "params": {
     "footprint": [
       {
@@ -1582,6 +1582,44 @@
       "archetypes_covered": 3
     },
     "providers_by_role": {},
+    "plan_tiers": {
+      "FR|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "FR|BROADBAND_HFC": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "FR|MOBILE_5G": [
+        50,
+        100
+      ],
+      "NL|BROADBAND_HFC": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "NL|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "NL|MOBILE_5G": [
+        50,
+        100
+      ]
+    },
     "backbone": {
       "template_version": "1.0.0",
       "regions": {
@@ -1610,7 +1648,7 @@
     }
   },
   "output": {
-    "model_version": "sim-2.7.0",
+    "model_version": "sim-2.9.0",
     "seed": 20260101,
     "ensemble_size": 25,
     "sites": 39,
@@ -1702,6 +1740,7 @@
         "reason": "the only backup deliverable in None NL is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
       }
     ],
+    "backups_below_primary": [],
     "estate_truncated": 0,
     "sites_named": 0,
     "sites_generated": 39,
@@ -1780,7 +1819,7 @@
         "country": "FR",
         "product": "ETHERNET",
         "role": "PRIMARY",
-        "bandwidth_mbps": 300,
+        "bandwidth_mbps": 650,
         "count": 1,
         "service_class": "ETHERNET",
         "density": "URBAN",
@@ -1791,7 +1830,7 @@
         "country": "FR",
         "product": "ETHERNET",
         "role": "PRIMARY",
-        "bandwidth_mbps": 3000,
+        "bandwidth_mbps": 6500,
         "count": 1,
         "service_class": "ETHERNET",
         "density": "DENSE_URBAN",
@@ -1802,7 +1841,7 @@
         "country": "FR",
         "product": "ETHERNET",
         "role": "PRIMARY",
-        "bandwidth_mbps": 500,
+        "bandwidth_mbps": 750,
         "count": 3,
         "service_class": "ETHERNET",
         "density": "URBAN",
@@ -1868,7 +1907,7 @@
         "country": "NL",
         "product": "ETHERNET",
         "role": "PRIMARY",
-        "bandwidth_mbps": 300,
+        "bandwidth_mbps": 650,
         "count": 1,
         "service_class": "ETHERNET",
         "density": "URBAN",

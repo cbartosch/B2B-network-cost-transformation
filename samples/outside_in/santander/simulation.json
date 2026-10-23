@@ -1,13 +1,13 @@
 {
-  "simulation_run_id": "c691ed7f-1efc-434e-8df0-aa4ba5e89388",
+  "simulation_run_id": "b9ad3467-f0b4-4a6b-b419-ff7a4ace3cb7",
   "case_id": "f17dd2e2-f70e-4d6c-b612-d9dc5f2a3a9b",
-  "model_version": "sim-2.7.0",
+  "model_version": "sim-2.9.0",
   "seed": 20260101,
   "ensemble_size": 25,
   "status": "SUCCEEDED",
-  "output_hash": "38e72aac170656fcf36823fe5bedde7bd495f728c14a686fcf9a2e9e6b501870",
-  "started_at": "2026-10-22 18:01:33.989227+00:00",
-  "ended_at": "2026-10-22 18:01:35.407028+00:00",
+  "output_hash": "010a5b8bc87bf586327721d0d23a607b689247801ce8a2de32b11c9f4c7ff3ae",
+  "started_at": "2026-10-23 11:48:29.131541+00:00",
+  "ended_at": "2026-10-23 11:48:30.553927+00:00",
   "params": {
     "footprint": [
       {
@@ -1265,6 +1265,62 @@
       "archetypes_covered": 3
     },
     "providers_by_role": {},
+    "plan_tiers": {
+      "GB|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "GB|BROADBAND_HFC": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "GB|MOBILE_5G": [
+        50,
+        100
+      ],
+      "PT|BROADBAND_HFC": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "PT|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "PT|MOBILE_5G": [
+        50,
+        100
+      ],
+      "ES|BROADBAND_HFC": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "ES|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "ES|MOBILE_5G": [
+        50,
+        100
+      ]
+    },
     "backbone": {
       "template_version": "1.0.0",
       "regions": {
@@ -1296,7 +1352,7 @@
     }
   },
   "output": {
-    "model_version": "sim-2.7.0",
+    "model_version": "sim-2.9.0",
     "seed": 20260101,
     "ensemble_size": 25,
     "sites": 2268,
@@ -1345,6 +1401,7 @@
         "reason": "the only backup deliverable in URBAN ES is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
       }
     ],
+    "backups_below_primary": [],
     "estate_truncated": 0,
     "sites_named": 0,
     "sites_generated": 2268,
@@ -1369,7 +1426,7 @@
         "product": "BROADBAND_PON",
         "role": "BACKUP",
         "bandwidth_mbps": 100,
-        "count": 923,
+        "count": 1301,
         "service_class": "BEST_EFFORT",
         "density": "URBAN",
         "bearer_mbps": 100,
@@ -1390,7 +1447,7 @@
         "country": "ES",
         "product": "ETHERNET",
         "role": "PRIMARY",
-        "bandwidth_mbps": 3000,
+        "bandwidth_mbps": 6500,
         "count": 1,
         "service_class": "ETHERNET",
         "density": "DENSE_URBAN",
@@ -1401,7 +1458,7 @@
         "country": "ES",
         "product": "ETHERNET",
         "role": "PRIMARY",
-        "bandwidth_mbps": 3000,
+        "bandwidth_mbps": 6500,
         "count": 1,
         "service_class": "ETHERNET",
         "density": "URBAN",
@@ -1435,7 +1492,7 @@
         "product": "BROADBAND_PON",
         "role": "BACKUP",
         "bandwidth_mbps": 100,
-        "count": 167,
+        "count": 240,
         "service_class": "BEST_EFFORT",
         "density": "URBAN",
         "bearer_mbps": 100,
@@ -1457,7 +1514,7 @@
         "product": "BROADBAND_PON",
         "role": "BACKUP",
         "bandwidth_mbps": 100,
-        "count": 174,
+        "count": 264,
         "service_class": "BEST_EFFORT",
         "density": "URBAN",
         "bearer_mbps": 100,
@@ -1481,7 +1538,7 @@
       "high": 1823
     },
     "circuits_backbone": 4,
-    "circuits_per_site_base": 1.5591,
+    "circuits_per_site_base": 1.7976,
     "implied_users": 61625,
     "bandwidth_profile": {
       "BRANCH": {
@@ -1532,7 +1589,7 @@
       "note": "One region with data centres (EUROPE_SOUTH), so there is no global core tier - a hub has nothing to reach across."
     },
     "node_count": 2268,
-    "edge_count": 3536
+    "edge_count": 4077
   },
   "output_omitted": {
     "fields": [

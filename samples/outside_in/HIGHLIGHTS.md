@@ -151,7 +151,7 @@ Sources: [Val Index (Swiss commercial-register / BAKOM dat](https://valindex.ch/
 
 - **Industry** HOTELS (entity resolution)
 - **Scope** FR, DE, GB, EUR, 2,255 sites (research merged with disclosure)
-- **Confidence** 0.325 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.318 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 7 source(s)
 
@@ -449,7 +449,7 @@ Sources: [OpenSignal](https://insights.opensignal.com/reports/2025/10/spain/fixe
 
 - **Industry** GROCERY_RETAIL (entity resolution)
 - **Scope** NL, BE, US, GR, RO, CZ, EUR, 6,061 sites (research merged with disclosure)
-- **Confidence** 0.324 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.326 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 7 source(s)
 
@@ -1405,7 +1405,7 @@ Sources: [checkeverything.fr](https://checkeverything.fr/en/telecommunications/o
 
 - **Industry** DRUG_RETAIL (entity resolution)
 - **Scope** GB, IE, GBP, 2,266 sites (research merged with disclosure)
-- **Confidence** 0.343 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.322 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 6 source(s)
 
@@ -1680,7 +1680,7 @@ Sources: [TeleGeography](https://resources.telegeography.com/the-rise-of-dia-ove
 
 - **Industry** GROCERY_RETAIL (entity resolution)
 - **Scope** FR, ES, IT, BE, PL, BR, RO, EUR, 8,982 sites (research merged with disclosure)
-- **Confidence** 0.322 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.325 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 8 source(s)
 
@@ -1815,7 +1815,7 @@ Sources: [checkeverything.fr (ARCEP-sourced)](https://checkeverything.fr/en/tele
 
 - **Industry** FOOD_MANUFACTURING (entity resolution)
 - **Scope** FR, US, MX, PL, ES, EUR, 76 sites (research merged with disclosure)
-- **Confidence** 0.277 (D - Indicative), coverage PARTIAL
+- **Confidence** 0.348 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 9 source(s)
 
@@ -2345,7 +2345,7 @@ Sources: [VATM / Dialog Consult](https://www.vatm.de/dokument/market-analysis-20
 
 - **Industry** SPECIALTY_RETAIL (entity resolution)
 - **Scope** DE, FR, IT, NL, PL, EUR, 1,339 sites (research merged with disclosure)
-- **Confidence** 0.325 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.327 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 7 source(s)
 
@@ -2463,7 +2463,7 @@ Sources: [BusinessWire / ISG](https://www.businesswire.com/news/home/20250807539
 
 - **Industry** UTILITIES (entity resolution)
 - **Scope** DE, GB, SE, CZ, HU, RO, PL, NL, EUR, 829 sites (research merged with disclosure)
-- **Confidence** 0.332 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.333 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 7 source(s)
 
@@ -3389,7 +3389,7 @@ Sources: [Opensignal (citing CNMC data)](https://insights.opensignal.com/reports
 
 - **Industry** SPECIALTY_RETAIL (entity resolution)
 - **Scope** ES, FR, DE, EUR, 1,695 sites (research merged with disclosure)
-- **Confidence** 0.331 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.333 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 7 source(s)
 
@@ -3521,7 +3521,7 @@ Sources: [Opensignal](https://insights.opensignal.com/reports/2025/10/spain/fixe
 
 - **Industry** AIRLINES (entity resolution)
 - **Scope** DE, CH, AT, EUR, 218 sites (research merged with disclosure)
-- **Confidence** 0.339 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.340 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 7 source(s)
 
@@ -3806,7 +3806,7 @@ Sources: [TelecomLead](https://telecomlead.com/broadband/best-isps-in-denmark-in
 
 - **Industry** QSR_RESTAURANTS (entity resolution)
 - **Scope** US, GB, DE, USD, 16,671 sites (research merged with disclosure)
-- **Confidence** 0.331 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.333 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 10 source(s)
 
@@ -4084,7 +4084,7 @@ Sources: [TeleGeography](https://resources.telegeography.com/the-rise-of-dia-ove
 
 - **Industry** FOOD_MANUFACTURING (entity resolution)
 - **Scope** CH, DE, FR, US, GB, ES, IT, BR, MX, CN, CHF, 292 sites (research merged with disclosure)
-- **Confidence** 0.277 (D - Indicative), coverage PARTIAL
+- **Confidence** 0.348 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 8 source(s)
 
@@ -4390,7 +4390,7 @@ Sources: [Netify](https://netify.co.uk/insights/top-best-mpls-network-providers/
 
 - **Industry** HOSPITAL (entity resolution)
 - **Scope** GB, GBP, 1,491 sites (research merged with disclosure)
-- **Confidence** 0.337 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.338 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 6 source(s)
 
@@ -4545,7 +4545,7 @@ Sources: [Amvia](https://amvia.co.uk/leased-lines/compare/uk-leased-line-provide
 
 - **Industry** PHARMACEUTICALS (entity resolution)
 - **Scope** CH, DE, US, IE, IT, ES, AT, SG, CHF, 125 sites (research merged with disclosure)
-- **Confidence** 0.346 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.347 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 8 source(s)
 
@@ -4818,7 +4818,7 @@ Sources: [leasedlineandmpls.co.uk](https://www.leasedlineandmpls.co.uk/top-100gb
 
 - **Industry** PARCEL_LOGISTICS (entity resolution)
 - **Scope** GB, GBP, 1,419 sites (research merged with disclosure)
-- **Confidence** 0.325 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.326 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 7 source(s)
 
@@ -5619,7 +5619,7 @@ Sources: [Pallas Digital](https://pall.as/the-state-of-enterprise-wan/); [Socium
 
 - **Industry** GROCERY_RETAIL (entity resolution)
 - **Scope** GB, IE, GBP, 3,940 sites (research merged with disclosure)
-- **Confidence** 0.380 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.327 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 7 source(s)
 
@@ -6185,7 +6185,7 @@ Sources: [Vertical Systems Group](https://verticalsystems.com/2026/02/18/2025-us
 
 - **Industry** HOUSEHOLD_PERSONAL_CARE (entity resolution)
 - **Scope** GB, NL, DE, US, IN, BR, MX, PL, IT, FR, EUR, 208 sites (research merged with disclosure)
-- **Confidence** 0.345 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.346 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 10 source(s)
 
@@ -6467,7 +6467,7 @@ Sources: [Vertical Systems Group](https://verticalsystems.com/2026/09/02/mid-202
 
 - **Industry** SPECIALTY_RETAIL (entity resolution)
 - **Scope** US, CA, USD, 835 sites (research merged with disclosure)
-- **Confidence** 0.334 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.335 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 9 source(s)
 
@@ -6746,7 +6746,7 @@ Sources: [germancompanyformation.com](https://germancompanyformation.com/guides/
 
 - **Industry** GROCERY_RETAIL (entity resolution)
 - **Scope** AU, NZ, AUD, 1,363 sites (research merged with disclosure)
-- **Confidence** 0.337 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.338 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 7 source(s)
 

@@ -1,13 +1,13 @@
 {
-  "simulation_run_id": "e3b9ac23-913f-4533-a47c-8716e8d967cb",
+  "simulation_run_id": "5067f0d3-0d00-4b27-9985-736e6fe3d60e",
   "case_id": "daaf72eb-105b-46be-b7ce-66361732eb3d",
-  "model_version": "sim-2.7.0",
+  "model_version": "sim-2.9.0",
   "seed": 20260101,
   "ensemble_size": 25,
   "status": "SUCCEEDED",
-  "output_hash": "f97f85ac9cfc06f3541c870ca5f0b7a79725eef6b480e48198bc7581cec9702f",
-  "started_at": "2026-10-22 18:01:24.431612+00:00",
-  "ended_at": "2026-10-22 18:01:24.591661+00:00",
+  "output_hash": "ec977dad6690b41b0d3a2064667749909b88cd23c82415e70d3b0a736d025604",
+  "started_at": "2026-10-23 11:48:21.079624+00:00",
+  "ended_at": "2026-10-23 11:48:21.278202+00:00",
   "params": {
     "footprint": [
       {
@@ -1483,6 +1483,80 @@
       "archetypes_covered": 3
     },
     "providers_by_role": {},
+    "plan_tiers": {
+      "ES|BROADBAND_HFC": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "ES|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "ES|MOBILE_5G": [
+        50,
+        100
+      ],
+      "MX|BROADBAND_HFC": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "MX|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "MX|MOBILE_5G": [
+        50,
+        100
+      ],
+      "GB|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "GB|BROADBAND_HFC": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "GB|MOBILE_5G": [
+        50,
+        100
+      ],
+      "BR|BROADBAND_HFC": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "BR|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "BR|MOBILE_5G": [
+        50,
+        100
+      ]
+    },
     "backbone": {
       "template_version": "1.0.0",
       "regions": {
@@ -1516,7 +1590,7 @@
     }
   },
   "output": {
-    "model_version": "sim-2.7.0",
+    "model_version": "sim-2.9.0",
     "seed": 20260101,
     "ensemble_size": 25,
     "sites": 78,
@@ -2132,6 +2206,7 @@
         "reason": "the only backup deliverable in SUBURBAN GB is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
       }
     ],
+    "backups_below_primary": [],
     "estate_truncated": 0,
     "sites_named": 0,
     "sites_generated": 78,
@@ -2155,7 +2230,7 @@
         "country": "BR",
         "product": "ETHERNET",
         "role": "PRIMARY",
-        "bandwidth_mbps": 8500,
+        "bandwidth_mbps": 8750,
         "count": 18,
         "service_class": "ETHERNET",
         "density": "SUBURBAN",
@@ -2221,17 +2296,6 @@
         "country": "ES",
         "product": "ETHERNET",
         "role": "PRIMARY",
-        "bandwidth_mbps": 3000,
-        "count": 2,
-        "service_class": "ETHERNET",
-        "density": "SUBURBAN",
-        "bearer_mbps": 10000,
-        "access_technology": "ETHERNET_FIBRE"
-      },
-      {
-        "country": "ES",
-        "product": "ETHERNET",
-        "role": "PRIMARY",
         "bandwidth_mbps": 5000,
         "count": 3,
         "service_class": "ETHERNET",
@@ -2243,7 +2307,18 @@
         "country": "ES",
         "product": "ETHERNET",
         "role": "PRIMARY",
-        "bandwidth_mbps": 8500,
+        "bandwidth_mbps": 6000,
+        "count": 2,
+        "service_class": "ETHERNET",
+        "density": "SUBURBAN",
+        "bearer_mbps": 10000,
+        "access_technology": "ETHERNET_FIBRE"
+      },
+      {
+        "country": "ES",
+        "product": "ETHERNET",
+        "role": "PRIMARY",
+        "bandwidth_mbps": 8750,
         "count": 46,
         "service_class": "ETHERNET",
         "density": "SUBURBAN",
@@ -2265,7 +2340,7 @@
         "country": "GB",
         "product": "ETHERNET",
         "role": "PRIMARY",
-        "bandwidth_mbps": 425,
+        "bandwidth_mbps": 437,
         "count": 3,
         "service_class": "ETHERNET",
         "density": "SUBURBAN",

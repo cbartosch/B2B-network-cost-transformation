@@ -1,13 +1,13 @@
 {
-  "simulation_run_id": "1de28b3a-b77f-41cc-be9f-cb00fb5e9a0f",
+  "simulation_run_id": "6cd3aa26-0f41-4684-880a-4b7887e5a4d3",
   "case_id": "0d8cfa49-fa9c-4815-828c-cdb1ccca5dc1",
-  "model_version": "sim-2.7.0",
+  "model_version": "sim-2.9.0",
   "seed": 20260101,
   "ensemble_size": 25,
   "status": "SUCCEEDED",
-  "output_hash": "32b27ff5fcd61cd26ed7fb67ff9c5a5bbe1e221c4bf4661b9a22a758e640d68c",
-  "started_at": "2026-10-22 18:01:37.527171+00:00",
-  "ended_at": "2026-10-22 18:01:39.511428+00:00",
+  "output_hash": "64cf25f909065cacbd653ae513ef003a3193d08f3dbcda5a2be0336aecfca54b",
+  "started_at": "2026-10-23 11:48:32.450406+00:00",
+  "ended_at": "2026-10-23 11:48:34.247012+00:00",
   "params": {
     "footprint": [
       {
@@ -1635,6 +1635,62 @@
       "archetypes_covered": 7
     },
     "providers_by_role": {},
+    "plan_tiers": {
+      "BE|BROADBAND_HFC": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "BE|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "BE|MOBILE_5G": [
+        50,
+        100
+      ],
+      "DE|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "DE|BROADBAND_HFC": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "DE|MOBILE_5G": [
+        50,
+        100
+      ],
+      "FR|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "FR|BROADBAND_HFC": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "FR|MOBILE_5G": [
+        50,
+        100
+      ]
+    },
     "backbone": {
       "template_version": "1.0.0",
       "regions": {
@@ -1666,7 +1722,7 @@
     }
   },
   "output": {
-    "model_version": "sim-2.7.0",
+    "model_version": "sim-2.9.0",
     "seed": 20260101,
     "ensemble_size": 25,
     "sites": 3261,
@@ -1703,6 +1759,7 @@
         "reason": "the only backup deliverable in DENSE_URBAN FR is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
       }
     ],
+    "backups_below_primary": [],
     "estate_truncated": 0,
     "sites_named": 0,
     "sites_generated": 3261,
@@ -1737,7 +1794,7 @@
         "country": "BE",
         "product": "ETHERNET",
         "role": "PRIMARY",
-        "bandwidth_mbps": 600,
+        "bandwidth_mbps": 800,
         "count": 2,
         "service_class": "ETHERNET",
         "density": "RURAL",
@@ -1759,7 +1816,7 @@
         "country": "DE",
         "product": "ETHERNET",
         "role": "PRIMARY",
-        "bandwidth_mbps": 600,
+        "bandwidth_mbps": 800,
         "count": 1,
         "service_class": "ETHERNET",
         "density": "RURAL",
@@ -1814,7 +1871,7 @@
         "country": "FR",
         "product": "ETHERNET",
         "role": "PRIMARY",
-        "bandwidth_mbps": 3000,
+        "bandwidth_mbps": 6500,
         "count": 1,
         "service_class": "ETHERNET",
         "density": "DENSE_URBAN",
@@ -1825,7 +1882,7 @@
         "country": "FR",
         "product": "ETHERNET",
         "role": "PRIMARY",
-        "bandwidth_mbps": 500,
+        "bandwidth_mbps": 750,
         "count": 1,
         "service_class": "ETHERNET",
         "density": "DENSE_URBAN",
@@ -1836,7 +1893,7 @@
         "country": "FR",
         "product": "ETHERNET",
         "role": "PRIMARY",
-        "bandwidth_mbps": 600,
+        "bandwidth_mbps": 800,
         "count": 6,
         "service_class": "ETHERNET",
         "density": "RURAL",
