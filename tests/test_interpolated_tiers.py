@@ -72,7 +72,16 @@ def test_every_configured_tier_is_present(priced):
 
 def test_a_derived_tier_sits_between_its_anchors(priced):
     """Sublinear pricing, so a 2 Gbps rate is above 1 Gbps and well below 10 -
-    an interpolation landing outside its anchors is not an interpolation."""
+    an interpolation landing outside its anchors is not an interpolation.
+
+    Except where the upper anchor is not an access price. A backbone region's
+    10 Gbps row is the backbone - _regional_tiers keeps it apart from the
+    access tiers its members derive, because EMEA's is 7000 against GB's 3700
+    - so it bounds no access band. AMER's backbone band runs 4,000 to 9,800,
+    and its 9 Gbps access row, a median of its members, starts at 4,293. The
+    base stays below it, which test_the_tiers_stay_monotonic_in_bandwidth
+    checks for every row."""
+    backbone = {(region, "ETHERNET", 10000) for region in seed.BACKBONE_REGIONS}
     checked = 0
     for (country, product, bw), value in priced.items():
         if bw not in TARGETS:
@@ -81,7 +90,9 @@ def test_a_derived_tier_sits_between_its_anchors(priced):
         lo = priced[(country, product, low_t)]
         hi = priced[(country, product, high_t)]
         for i in range(3):
-            assert lo[i] <= value[i] <= hi[i], (country, product, bw)
+            assert lo[i] <= value[i], (country, product, bw)
+            if (country, product, high_t) not in backbone:
+                assert value[i] <= hi[i], (country, product, bw)
         checked += 1
     assert checked, "no derived tiers found"
 
