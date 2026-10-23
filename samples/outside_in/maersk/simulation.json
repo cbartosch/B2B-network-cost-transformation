@@ -1,13 +1,13 @@
 {
-  "simulation_run_id": "c4c38ad1-6a4d-4c6e-b8d5-9207a138a7a0",
+  "simulation_run_id": "d5d44b51-e4d2-4e4a-b5ff-a103aeba3d5f",
   "case_id": "143d7786-317d-48cf-aec4-27fadf569cf4",
   "model_version": "sim-2.9.0",
   "seed": 20260101,
   "ensemble_size": 25,
   "status": "SUCCEEDED",
   "output_hash": "86e72e0486ba4e9e90c31a801064959ee2e2ec039a68c6a2340d96c253ea2322",
-  "started_at": "2026-10-23 11:47:34.249912+00:00",
-  "ended_at": "2026-10-23 11:47:34.458202+00:00",
+  "started_at": "2026-10-23 14:41:38.836859+00:00",
+  "ended_at": "2026-10-23 14:41:39.103710+00:00",
   "params": {
     "footprint": [
       {
@@ -1821,20 +1821,39 @@
     },
     "providers_by_role": {},
     "plan_tiers": {
-      "CN|BROADBAND_HFC": [
-        100,
-        250,
-        500,
-        1000
-      ],
-      "CN|BROADBAND_PON": [
+      "BR|BROADBAND_HFC": [
         50,
         100,
         250,
         500,
         1000
       ],
-      "CN|MOBILE_5G": [
+      "BR|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "BR|MOBILE_5G": [
+        50,
+        100
+      ],
+      "DE|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "DE|BROADBAND_HFC": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "DE|MOBILE_5G": [
         50,
         100
       ],
@@ -1873,21 +1892,21 @@
         500,
         1000
       ],
-      "BR|BROADBAND_HFC": [
+      "NL|BROADBAND_HFC": [
         50,
         100,
         250,
         500,
         1000
       ],
-      "BR|BROADBAND_PON": [
+      "NL|BROADBAND_PON": [
         50,
         100,
         250,
         500,
         1000
       ],
-      "BR|MOBILE_5G": [
+      "NL|MOBILE_5G": [
         50,
         100
       ],
@@ -1909,24 +1928,6 @@
         50,
         100
       ],
-      "DE|BROADBAND_PON": [
-        50,
-        100,
-        250,
-        500,
-        1000
-      ],
-      "DE|BROADBAND_HFC": [
-        50,
-        100,
-        250,
-        500,
-        1000
-      ],
-      "DE|MOBILE_5G": [
-        50,
-        100
-      ],
       "IN|BROADBAND_HFC": [
         100,
         250,
@@ -1944,21 +1945,20 @@
         50,
         100
       ],
-      "NL|BROADBAND_HFC": [
+      "CN|BROADBAND_HFC": [
+        100,
+        250,
+        500,
+        1000
+      ],
+      "CN|BROADBAND_PON": [
         50,
         100,
         250,
         500,
         1000
       ],
-      "NL|BROADBAND_PON": [
-        50,
-        100,
-        250,
-        500,
-        1000
-      ],
-      "NL|MOBILE_5G": [
+      "CN|MOBILE_5G": [
         50,
         100
       ]

@@ -1458,16 +1458,21 @@ PRIORS = PRIORS + _fill_country_tiers(PRIORS)
 #: for. 161 circuits in the twenty-company sample land in that gap, and once
 #: the rural multiplier arrived the overshoot was doubled on top.
 #:
-#: 2 Gbps only. It is the commercial step directly above 1 Gbps and it covers
-#: the requirement that prompted this - 107 of the sample's 161 gap circuits
-#: sit at 1,650 Mbps and now overshoot by 1.2x instead of 6x.
+#: Every 1 Gbps step from 2 to 9, which is how Ethernet on a 10 Gbps port is
+#: sold.
 #:
-#: A 5 Gbps tier was added alongside and removed on review. It priced the 31
-#: circuits at 3,000 Mbps, which now round up to 10 Gbps again; that is a
-#: 3.3x overshoot on 31 circuits against carrying a tier nobody asked for.
-#: Add back by appending (5000, 1000, 10000) - everything downstream, the
-#: labelling and the tests included, reads this tuple rather than a literal.
-_INTERPOLATED_TIERS = ((2000, 1000, 10000),)
+#: This was 2 Gbps alone, the step directly above 1 Gbps, and a 5 Gbps tier
+#: was removed on review as one nobody asked for. The fifty-company set asks
+#: for all of them: 431 circuits needed between 2,062 and 9,750 Mbps and paid
+#: the 10 Gbps rate, 154 of them Nestle and Danone plants committing 75% of a
+#: 2,750 Mbps bearer - 2,062, just past the only tier there was. A requirement
+#: anywhere in the gap now rounds up by less than a gigabit rather than to 10.
+#:
+#: All anchored on 1 and 10 Gbps, so every step sits on the one curve 2 Gbps
+#: already sat on and the card stays monotonic. Everything downstream - the
+#: labelling and the tests included - reads this tuple rather than a literal.
+_INTERPOLATED_TIERS = tuple((target, 1000, 10000)
+                            for target in range(2000, 10000, 1000))
 
 
 def _interpolated_tiers(rows):

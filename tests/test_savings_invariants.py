@@ -88,6 +88,32 @@ def test_the_evidence_split_sums_to_the_lever_total():
     assert abs(total - D(sc["gross_run_rate_savings"]["base"])) < TOL
 
 
+def test_the_scenario_split_is_rounded_once_not_per_lever():
+    """The scenario's split was summed from each lever's figure after it had
+    been rounded to the cent, so it drifted while the headline - rounded once -
+    did not. Iberdrola's three levers put the halves 0.02 off its headline,
+    and the validation gate refused to publish the sample summary.
+
+    Four levers here, each leaving 0.004 in both halves. Rounded per lever,
+    the halves lose 0.032 between them and miss the headline by 0.03. Summed
+    first, they can miss it by no more than the gate's cent."""
+    layers = ("L0", "L1", "L2", "L4")
+    components = []
+    for layer in layers:
+        components += [
+            _component(f"{layer}_specified", layer, "1000.04"),
+            _component(f"{layer}_simulated", layer, "1000.04",
+                       origin="SIMULATED")]
+    sc = _run(components=components,
+              levers=[_lever(f"LEV-{layer}", [layer], "0.05", "0.1", "0.15")
+                      for layer in layers])
+    halves = (D(sc["saving_on_specified_baseline"])
+              + D(sc["saving_on_simulated_baseline"]))
+    headline = D(sc["gross_run_rate_savings"]["base"])
+    assert abs(halves - headline) <= D("0.01"), (
+        f"the halves sum to {halves} against a headline of {headline}")
+
+
 # --------------------------------------------------------- monotonic addition
 
 def test_raising_a_levers_reach_strictly_increases_the_total():
