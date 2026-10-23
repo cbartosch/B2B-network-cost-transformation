@@ -1815,7 +1815,7 @@ Sources: [checkeverything.fr (ARCEP-sourced)](https://checkeverything.fr/en/tele
 
 - **Industry** FOOD_MANUFACTURING (entity resolution)
 - **Scope** FR, US, MX, PL, ES, EUR, 76 sites (research merged with disclosure)
-- **Confidence** 0.348 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.347 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 9 source(s)
 
@@ -3249,7 +3249,7 @@ Sources: [germancompanyformation.com](https://germancompanyformation.com/guides/
 
 - **Industry** UTILITIES (entity resolution)
 - **Scope** ES, GB, EUR, 2,762 sites (research merged with disclosure)
-- **Confidence** 0.327 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.326 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 10 source(s)
 
@@ -3389,7 +3389,7 @@ Sources: [Opensignal (citing CNMC data)](https://insights.opensignal.com/reports
 
 - **Industry** SPECIALTY_RETAIL (entity resolution)
 - **Scope** ES, FR, DE, EUR, 1,695 sites (research merged with disclosure)
-- **Confidence** 0.333 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.332 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 7 source(s)
 
@@ -4084,7 +4084,7 @@ Sources: [TeleGeography](https://resources.telegeography.com/the-rise-of-dia-ove
 
 - **Industry** FOOD_MANUFACTURING (entity resolution)
 - **Scope** CH, DE, FR, US, GB, ES, IT, BR, MX, CN, CHF, 292 sites (research merged with disclosure)
-- **Confidence** 0.348 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.347 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 8 source(s)
 
@@ -4545,7 +4545,7 @@ Sources: [Amvia](https://amvia.co.uk/leased-lines/compare/uk-leased-line-provide
 
 - **Industry** PHARMACEUTICALS (entity resolution)
 - **Scope** CH, DE, US, IE, IT, ES, AT, SG, CHF, 125 sites (research merged with disclosure)
-- **Confidence** 0.347 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.346 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 8 source(s)
 
