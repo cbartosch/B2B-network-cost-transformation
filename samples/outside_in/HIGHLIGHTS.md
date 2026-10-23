@@ -2463,7 +2463,7 @@ Sources: [BusinessWire / ISG](https://www.businesswire.com/news/home/20250807539
 
 - **Industry** UTILITIES (entity resolution)
 - **Scope** DE, GB, SE, CZ, HU, RO, PL, NL, EUR, 829 sites (research merged with disclosure)
-- **Confidence** 0.266 (D - Indicative), coverage PARTIAL
+- **Confidence** 0.332 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 7 source(s)
 
@@ -2978,7 +2978,7 @@ Sources: [Cloudbrink (citing AGCOM end-2025 data)](https://cloudbrink.com/europe
 
 - **Industry** BUILDING_MATERIALS (entity resolution)
 - **Scope** DE, US, GB, FR, IT, PL, EUR, 1,273 sites (research merged with disclosure)
-- **Confidence** 0.263 (D - Indicative), coverage PARTIAL
+- **Confidence** 0.330 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 7 source(s)
 
@@ -3249,7 +3249,7 @@ Sources: [germancompanyformation.com](https://germancompanyformation.com/guides/
 
 - **Industry** UTILITIES (entity resolution)
 - **Scope** ES, GB, EUR, 2,762 sites (research merged with disclosure)
-- **Confidence** 0.326 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.327 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 10 source(s)
 
@@ -3521,7 +3521,7 @@ Sources: [Opensignal](https://insights.opensignal.com/reports/2025/10/spain/fixe
 
 - **Industry** AIRLINES (entity resolution)
 - **Scope** DE, CH, AT, EUR, 218 sites (research merged with disclosure)
-- **Confidence** 0.271 (D - Indicative), coverage PARTIAL
+- **Confidence** 0.339 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 7 source(s)
 
@@ -4679,7 +4679,7 @@ Sources: [COMCOM – Federal Communications Commission Switz](https://www.comcom
 
 - **Industry** DIVERSIFIED_MINING (entity resolution)
 - **Scope** GB, AU, CA, USD, 106 sites (research merged with disclosure)
-- **Confidence** 0.275 (D - Indicative), coverage PARTIAL
+- **Confidence** 0.344 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 9 source(s)
 

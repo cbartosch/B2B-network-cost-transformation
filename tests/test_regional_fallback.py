@@ -335,16 +335,15 @@ def test_a_priced_sub_region_beats_its_parent():
             f"{country} priced by {hit and hit['scope']}, not {expected_scope}")
 
 
-def test_the_parent_rung_is_still_reachable_even_though_nothing_needs_it():
-    """Every band has its own rates since the workbook loaded, so no country
-    falls through to EMEA any more. The rung still has to work: the five empty
-    bands were the reason it exists, and a band whose cluster figures are later
-    withdrawn would need it again.
+def test_every_band_falls_to_a_parent_that_prices():
+    """The parent rung is not hypothetical. The workbook gave every band its
+    own fixed-line rates, but 5G is priced in three bands of eight - so a
+    Romanian, Swedish, Spanish or Italian 5G circuit reaches EMEA or nothing.
 
-    Asserted on the wiring rather than on a country, because there is no
-    longer a country that exercises it - and a test that silently stops
-    testing anything is worse than one that says what it is checking."""
-    from app.domain.scope import REGION_PARENT
+    This test used to say no country fell that far any more, and asserted on a
+    hypothetical one. No country did, because the route never passed the
+    chain: the rung was unreachable, not unneeded."""
+    from app.domain.scope import REGION_PARENT, price_ladder
     from app.seed import PRIORS
 
     priced = {c for c, *_rest in PRIORS if len(c) > 2}
@@ -352,10 +351,7 @@ def test_the_parent_rung_is_still_reachable_even_though_nothing_needs_it():
         assert parent in priced, (
             f"{band} falls to {parent}, which prices nothing")
 
-    # and the chain still resolves for a hypothetical unpriced band
-    hypothetical = [x for x in ("XX", "EUROPE_NORTH",
-                                REGION_PARENT["EUROPE_NORTH"]) if x]
-    assert hypothetical[-1] == "EMEA"
+    assert price_ladder("RO", _region_of()["RO"])[-1] == "EMEA"
 
 
 def test_the_route_loads_both_rungs():
@@ -375,6 +371,114 @@ def test_the_route_loads_both_rungs():
     assert "from ..domain.scope import REGION_PARENT" in api
     assert "scope.REGION_PARENT" not in api
     assert "set(_sub) |" in api
+
+
+# ------------------------------------------- the chain the route passes in
+def _five_g(country):
+    return {"country": country, "product": "MOBILE_5G", "role": "BACKUP",
+            "count": 10, "bandwidth_mbps": 100,
+            "service_class": "BEST_EFFORT", "access_technology": "MOBILE_5G"}
+
+
+def _ladders(*countries):
+    from app.domain.scope import price_ladder
+
+    region_of = _region_of()
+    return {c: price_ladder(c, region_of.get(c)) for c in countries}
+
+
+def test_the_ladder_is_the_country_then_its_band_then_the_parent():
+    from app.domain.scope import price_ladder
+
+    assert price_ladder("HU", "EUROPE_CENTRAL") == [
+        "HU", "EUROPE_CENTRAL", "EMEA"]
+    # AMER is its own parent, so there is nothing above it.
+    assert price_ladder("MX", "AMER") == ["MX", "AMER"]
+    # A backbone leg is already priced at a region, and a country in no
+    # region has no fallback - test_a_country_in_no_region_still_refuses.
+    assert price_ladder("EMEA", None) == ["EMEA"]
+    assert price_ladder("XX", None) == ["XX"]
+
+
+def test_the_estimate_prices_through_the_ladder_and_says_where():
+    """Without the map a Hungarian 5G backup is unpriced, as it was in every
+    estimate the route ran. With it, the circuit prices at the Central
+    European rate and its key says so, the way a substituted tier does."""
+    from app.domain.estimate import build_components
+    from app.domain.money import D
+
+    common = dict(
+        sim_output={"sites": 20, "products": [_five_g("DE"), _five_g("HU")]},
+        users=100, priors=_priors(),
+        ops_cost_per_site={"low": D(1), "base": D(1), "high": D(1)})
+
+    _components, unpriced = build_components(**common)
+    assert [u["country"] for u in unpriced if u.get("country")] == ["HU"]
+
+    components, unpriced = build_components(
+        **common, price_scopes=_ladders("DE", "HU"))
+    assert not [u for u in unpriced if u.get("country")]
+    assert sorted(c.key for c in components if c.layer == "L0") == [
+        "L0_backup_DE_MOBILE_5G_100M",
+        "L0_backup_HU_MOBILE_5G_100M_priced_in_EUROPE_CENTRAL"]
+
+
+def test_the_gate_takes_the_same_rung_as_the_total():
+    """Two notions of priced between the gate and the calculation would mean
+    the gate measured something the total did not contain. Romania's band has
+    no 5G rate, so it falls two rungs; Germany keeps its own."""
+    from app.domain.coverage import derive_scope
+
+    rows = derive_scope(
+        sim_output={"products": [_five_g(c) for c in ("DE", "HU", "RO")]},
+        priors=_priors(), price_scopes=_ladders("DE", "HU", "RO"))
+    assert all(r["priced"] for r in rows), rows
+    assert {r["country"]: r["priced_in_scope"] for r in rows} == {
+        "DE": None, "HU": "EUROPE_CENTRAL", "RO": "EMEA"}
+
+
+def test_a_countrys_own_rate_beats_its_region_whichever_key_holds_it():
+    """The ladder runs scope by scope. Run key by key - the two dimensions
+    across every scope, then the legacy key - a sub-region's re-keyed seed
+    would outrank a country's own price stored under the legacy key."""
+    from app.domain.estimate import match_prior
+
+    priors = {
+        ("HU", "MPLS", 100): {"base": "500", "scope": "HU"},
+        ("EUROPE_CENTRAL", "MPLS", 100): {
+            "base": "300", "scope": "EUROPE_CENTRAL", "service_class": "IPVPN",
+            "access_technology": None, "bandwidth_mbps": 100}}
+    hit, _s = match_prior(priors, "HU", "MPLS", 100, service_class="IPVPN",
+                          scopes=["HU", "EUROPE_CENTRAL", "EMEA"])
+    assert hit["scope"] == "HU", hit
+
+
+def test_the_gate_reports_how_much_rests_on_a_region():
+    """A regional median prices the circuit without being the same evidence
+    as the country's own tariff. Priced is priced - the status does not move -
+    but the share is on the gate, where the other price-quality shares are."""
+    from decimal import Decimal as D
+
+    from app.domain import coverage
+    from app.domain.policy import CoveragePolicy
+
+    policy = CoveragePolicy(
+        set_name="test",
+        prior_coverage_min=D("0.70"), prior_coverage_floor=D("0.40"),
+        material_country_floor=D("0.10"), product_coverage_min=D("0.60"),
+        prior_recency_annual_decay=D("0"), prior_recency_floor=D("0"))
+    row = {"product": "MOBILE_5G", "count": 10, "priced": True,
+           "rate_basis": "APPROVED_PRIOR", "evidence_grade": "E"}
+    cov = coverage.assess(
+        scope=[{**row, "country": "DE", "annual_value": "300",
+                "priced_in_scope": None},
+               {**row, "country": "HU", "annual_value": "100",
+                "priced_in_scope": "EUROPE_CENTRAL"}],
+        layers_in_scope=["L0"], layers_priced={"L0"}, policy=policy)
+    assert cov["status"] == "COMPLETE"
+    assert cov["regional_price_share"] == "0.250"
+    assert cov["regionally_priced_pairs"] == [
+        "HU/MOBILE_5G at EUROPE_CENTRAL"]
 
 
 def test_region_parent_does_not_live_in_the_seed():

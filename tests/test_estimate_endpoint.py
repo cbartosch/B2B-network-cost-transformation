@@ -528,3 +528,46 @@ def test_a_prior_is_resolved_by_scope_specificity():
     # a scope with no price falls through rather than failing
     assert match_prior(priors, "GB", "MPLS", 100,
                        scopes=["Area 9", "GB"])[0]["base"] == "980"
+
+
+def test_a_country_without_a_rate_prices_at_its_region(session, client):
+    """The regional rungs were loaded and never consulted.
+
+    Since EMEA split, this route has loaded each country's sub-region and its
+    parent into `priors`, and nothing passed the chain to `match_prior` - so
+    E.ON's Hungarian, Czech, Romanian and Swedish 5G backups were unpriced
+    beside the Central European and EMEA rates that would have priced them.
+    Every test of the fallback called `match_prior` with the chain written out
+    by hand, which is the one thing the route never did.
+
+    Hungary falls one rung, to EUROPE_CENTRAL. Romania's band has no 5G rate,
+    so it falls two, to EMEA. Germany has its own and keeps it.
+    """
+    countries = ("DE", "HU", "RO")
+    case_id = _ready_case(session, countries=countries)
+    sim_id = str(uuid.uuid4())
+    session.execute(insert(db.simulation_run).values(
+        simulation_run_id=sim_id, case_id=case_id, model_version="sim-1.1.0",
+        seed=42, ensemble_size=1, params={"footprint": []},
+        output={"sites": 30, "circuits": 30, "products": [
+            {"country": c, "product": "MOBILE_5G", "role": "BACKUP",
+             "count": 10, "bandwidth_mbps": 100,
+             "service_class": "BEST_EFFORT", "access_technology": "MOBILE_5G"}
+            for c in countries]},
+        output_hash="deadbeef", status="SUCCEEDED",
+        progress_completed=1, progress_total=1))
+    session.commit()
+
+    r = client.post(f"/v1/outside-in/cases/{case_id}/estimates:run",
+                    json={"method": "BUILD_UP", "simulation_run_id": sim_id,
+                          "users": 500, "ops_cost_per_site_base": 900})
+    assert r.status_code == 200, r.text
+    body = r.json()
+    assert body["coverage"]["unpriced_pairs"] == []
+    assert body["coverage"]["regionally_priced_pairs"] == [
+        "HU/MOBILE_5G at EUROPE_CENTRAL", "RO/MOBILE_5G at EMEA"]
+    assert sorted(c["key"] for c in body["components"]
+                  if c["layer"] == "L0") == [
+        "L0_backup_DE_MOBILE_5G_100M",
+        "L0_backup_HU_MOBILE_5G_100M_priced_in_EUROPE_CENTRAL",
+        "L0_backup_RO_MOBILE_5G_100M_priced_in_EMEA"]

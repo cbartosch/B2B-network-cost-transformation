@@ -346,6 +346,11 @@ def match_prior(priors: dict, country: str, product: str, mbps,
     #
     # An unrecognised scope sorts last, so a typo can never outrank a national
     # tariff that exists.
+    #
+    # The vocabulary names kinds of scope, not scopes. A country code and a
+    # region code are both unrecognised, so they sort last together and the
+    # sort is stable: the caller's order stands, which is what keeps
+    # scope.price_ladder's country - sub-region - parent in that order.
     # The figure the rate card is keyed on. Falls back to `mbps` so every
     # existing caller behaves exactly as before.
     if speed is not None:
@@ -371,11 +376,18 @@ def match_prior(priors: dict, country: str, product: str, mbps,
         if hit is not None:
             return hit, None
 
-    if service_class is not None:
-        # Keyed on the two dimensions. Tried before the legacy key so a
-        # re-keyed prior wins, and falling through to `product` means a rate
-        # card that has not been migrated still prices.
-        for scope in ordered:
+    # One scope at a time, both keys within it, before the next scope.
+    #
+    # The two keys used to run as two passes over the whole ladder, which was
+    # harmless while every caller passed one scope. With the region chain
+    # passed in, it would let a sub-region's re-keyed seed outrank a country's
+    # own price stored under the legacy key - a regional average beating a
+    # local rate because of how the local rate was filed.
+    for scope in ordered:
+        if service_class is not None:
+            # Keyed on the two dimensions. Tried before the legacy key so a
+            # re-keyed prior wins, and falling through to `product` means a
+            # rate card that has not been migrated still prices.
             for technology in (access_technology, None):
                 prior, substituted = _by_dimensions(
                     priors, scope, service_class, technology, mbps)
@@ -386,8 +398,6 @@ def match_prior(priors: dict, country: str, product: str, mbps,
                     # both a tuple and a bare value is where an unpacking error
                     # hides on the branch nobody tested.
                     return prior, substituted
-
-    for scope in ordered:
         exact = priors.get((scope, product, mbps))
         if exact:
             return exact, None
@@ -406,6 +416,19 @@ def match_prior(priors: dict, country: str, product: str, mbps,
     if above:
         return above[0][1], above[0][0]
     return None, None
+
+
+def priced_in(prior, country: str) -> str | None:
+    """The scope that priced a circuit, where it is not the circuit's country.
+
+    None for the country's own rate, a client rate included - that is scoped
+    to the client's country. Recorded rather than absorbed, like a substituted
+    tier: a Hungarian circuit at a Central European median is a different
+    claim from one at a Hungarian tariff, and the component should say which
+    it is.
+    """
+    scope = prior.get("scope") if isinstance(prior, dict) else None
+    return scope if scope and scope != country else None
 
 
 def _by_density(rate: "Range", *, product, band, prior_band, multipliers):
@@ -469,6 +492,11 @@ def build_components(*, sim_output: dict, users: int, ops_cost_per_site: dict,
                      # `priors` because both would key on the same triple and
                      # one would silently shadow the other.
                      band_priors: dict | None = None,
+                     # country -> the scopes it may be priced at, most specific
+                     # first (scope.price_ladder). Optional: without it every
+                     # country prices from its own card alone. The same map
+                     # the coverage gate used, for the reason case_rates is.
+                     price_scopes: dict | None = None,
                      ) -> tuple[list[Component], list[dict]]:
     """priors keyed by (country, product, bandwidth_mbps) with low/base/high
     monthly recurring charge. See match_prior for how a circuit finds its tier.
@@ -587,11 +615,13 @@ def build_components(*, sim_output: dict, users: int, ops_cost_per_site: dict,
                 priors, row["country"], row["product"], mbps,
                 service_class=row.get("service_class"),
                 access_technology=row.get("access_technology"),
-                case_rates=case_rates)
+                case_rates=case_rates,
+                scopes=(price_scopes or {}).get(row["country"]))
         if not prior:
             unpriced.append({**row, "reason": "NO_APPROVED_PRIOR_AT_BANDWIDTH"
                              if mbps else "NO_APPROVED_PRIOR"})
             continue
+        elsewhere = priced_in(prior, row["country"])
         # A backup circuit exists only because the seeded draw put it there.
         origin = SIMULATED if row["role"] == "BACKUP" else site_origin
         qty = int(row["count"])
@@ -620,7 +650,8 @@ def build_components(*, sim_output: dict, users: int, ops_cost_per_site: dict,
             key=(f"L0_{row['role'].lower()}_{row['country']}_{row['product']}"
                  + (f"_{mbps}M" if mbps else "")
                  + (f"_{band.lower()}" if band else "")
-                 + (f"_priced_at_{substituted}M" if substituted else "")),
+                 + (f"_priced_at_{substituted}M" if substituted else "")
+                 + (f"_priced_in_{elsewhere}" if elsewhere else "")),
             layer="L0", driver="circuits", quantity=qty,
             quantity_origin=origin, unit_cost_origin="BENCHMARK_PRIOR",
             product=row["product"], role=row["role"],

@@ -75,7 +75,11 @@ def derive_scope(*, sim_output: dict, priors: dict,
                  # coverage gate has to measure the same thing the calculation
                  # prices, or it reports a denominator the total does not use.
                  case_rates: dict | None = None,
-                 sizing_priors: dict | None = None) -> list[dict]:
+                 sizing_priors: dict | None = None,
+                 # country -> the scopes it may be priced at, most specific
+                 # first. The same map the estimate prices with, for the same
+                 # reason as case_rates.
+                 price_scopes: dict | None = None) -> list[dict]:
     """One row per (country, product, role) the simulation actually produced.
 
     `priors` are the in-scope country priors and determine whether a row is
@@ -84,7 +88,7 @@ def derive_scope(*, sim_output: dict, priors: dict,
     size one for the denominator. Keeping the two separate shrinks the unsizable
     population without pricing anything at a rate that does not apply to it.
     """
-    from .estimate import is_expired, match_prior
+    from .estimate import is_expired, match_prior, priced_in
     fallback = _fallback_rates(sizing_priors or priors)
     scope = []
     for row in sim_output.get("products", []):
@@ -103,12 +107,16 @@ def derive_scope(*, sim_output: dict, priors: dict,
             priors, row["country"], row["product"], mbps,
             service_class=row.get("service_class"),
             access_technology=row.get("access_technology"),
-            case_rates=case_rates)
+            case_rates=case_rates,
+            scopes=(price_scopes or {}).get(row["country"]))
         rate = D(prior["base"]) if prior else fallback.get(row["product"])
         scope.append({
             "country": row["country"], "product": row["product"], "role": row["role"],
             "bandwidth_mbps": mbps,
             "priced_at_bandwidth_mbps": substituted,
+            # The region whose rate priced it, where the country's own card
+            # could not.
+            "priced_in_scope": priced_in(prior, row["country"]),
             "count": int(row["count"]),
             "priced": prior is not None,
             "rate_basis": "APPROVED_PRIOR" if prior
@@ -343,6 +351,19 @@ def assess(*, scope: list[dict], layers_in_scope: list, layers_priced: set,
                    if r["priced"] and r.get("price_basis") == "SEED"))
              / D(priced_circuits)).quantize(D("0.001")))
         if priced_circuits else "0",
+        # The share of priced value resting on a region's rate rather than the
+        # country's own, and which pairs. A Central European median standing
+        # in for a Hungarian tariff prices the circuit without being the same
+        # evidence, and a reader should not have to open every scope row to
+        # learn how much of the baseline it carries.
+        "regional_price_share": str(
+            (D(sum(D(r["annual_value"]) for r in scope
+                   if r["priced"] and r.get("priced_in_scope")))
+             / priced_value).quantize(D("0.001")))
+        if priced_value else "0",
+        "regionally_priced_pairs": sorted({
+            f"{r['country']}/{r['product']} at {r['priced_in_scope']}"
+            for r in scope if r["priced"] and r.get("priced_in_scope")}),
         "unsizable_pairs": [f"{c}/{p}" for c, p in unsizable],
         "unsizable_circuits": sum(int(r["count"]) for r in scope
                                   if r["rate_basis"] == "UNSIZED"),
