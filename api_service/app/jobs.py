@@ -151,6 +151,17 @@ def run_job(run_id: str, session=None) -> dict:
         providers_by_role = {
             tuple(k.split("|")): v for k, v in
             ((row.pinned_priors or {}).get("providers_by_role") or {}).items()}
+        # One set, for every pass and for the aggregate's re-run of the median
+        # one. The aggregate was handed three of these and re-ran the median
+        # pass without the rest, so the estate it priced was not the one the
+        # passes had produced.
+        inputs = dict(
+            service_class_by_archetype=service_class_by_archetype,
+            committed_fraction_by_archetype=committed_fraction_by_archetype,
+            providers_by_role=providers_by_role,
+            dual_access_by_archetype=dual_access_by_archetype,
+            backbone=backbone, known_locations=known_locations,
+            service_table=service_table)
         total = row.progress_total or row.ensemble_size
 
         # Resume from the checkpoint. Replaying an earlier index would be safe
@@ -173,16 +184,8 @@ def run_job(run_id: str, session=None) -> dict:
                         "completed": len(summaries), "total": total}
 
             summaries.append(simulation.summarise_pass(
-                simulation.one_pass(
-                    row.seed + i, footprint, archetypes,
-                    service_class_by_archetype=service_class_by_archetype,
-                    committed_fraction_by_archetype=(
-                        committed_fraction_by_archetype),
-                    providers_by_role=providers_by_role,
-                    dual_access_by_archetype=dual_access_by_archetype,
-                    backbone=backbone,
-                    known_locations=known_locations,
-                    service_table=service_table), i))
+                simulation.one_pass(row.seed + i, footprint, archetypes,
+                                    **inputs), i))
 
             if len(summaries) % config.SIM_CHECKPOINT_EVERY == 0:
                 _set(s, run_id, partial={"summaries": summaries},
@@ -190,9 +193,7 @@ def run_job(run_id: str, session=None) -> dict:
 
         output = simulation.aggregate(
             summaries, seed=row.seed, ensemble_size=total, footprint=footprint,
-            archetypes=archetypes, model_version=row.model_version,
-            backbone=backbone, known_locations=known_locations,
-            service_table=service_table)
+            archetypes=archetypes, model_version=row.model_version, **inputs)
         # cancel_requested is cleared here, not left standing. A cancel that
         # arrives after the last pass is too late to act on - completing is
         # correct - but a row that reads SUCCEEDED *and* cancel_requested is a

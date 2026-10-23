@@ -473,9 +473,9 @@ def summarise_pass(result: dict, index: int) -> dict:
 
 def aggregate(summaries: list[dict], *, seed: int, ensemble_size: int,
               footprint: list[dict], archetypes: dict, model_version: str,
-              backbone: dict | None = None,
-              known_locations: list[dict] | None = None,
-              service_table: dict | None = None) -> dict:
+              # Everything else the passes were given, forwarded whole to the
+              # median pass's re-run - see the note there.
+              **pass_inputs) -> dict:
     """Build the ensemble payload from per-pass summaries.
 
     Deliberately a pure function of the summaries, so a run assembled from a
@@ -494,11 +494,21 @@ def aggregate(summaries: list[dict], *, seed: int, ensemble_size: int,
     backups = sorted(p["circuits_backup"] for p in passes)
     median_summary = sorted(passes, key=lambda p: (p["circuits"], p["dual_sites"],
                                                    p["index"]))[len(passes) // 2]
-    # Re-run the one pass the sample comes from. Same seed, same output.
+    # Re-run the one pass the sample comes from. Same seed and same inputs,
+    # same output - and only then.
+    #
+    # This listed the inputs it forwarded, and the list was three of seven:
+    # the backbone, the named sites and the serviceability table, without the
+    # committed fractions, dual-access rates, service classes and providers
+    # every pass in the job was given. The circuit counts came from the passes
+    # and the products came from this re-run, so the estimate priced an estate
+    # no pass had produced. On the fifty sample companies 47 differed: the
+    # median passes counted 36,545 backup circuits and the re-run priced
+    # 33,669.
+    #
+    # Forwarded whole, so an input added to the passes cannot be left out here.
     median_pass = one_pass(seed + median_summary["index"], footprint,
-                           archetypes, backbone=backbone,
-                           known_locations=known_locations,
-                           service_table=service_table)
+                           archetypes, **pass_inputs)
 
     def pct(values, q):
         if not values:
@@ -554,7 +564,7 @@ def aggregate(summaries: list[dict], *, seed: int, ensemble_size: int,
         "bandwidth_profile": median_pass["bandwidth_profile"],
         "bandwidth_mbps_total": median_pass["bandwidth_mbps_total"],
         "diversity_state": DIVERSITY_STATE,
-        "backbone": backbone or {},
+        "backbone": pass_inputs.get("backbone") or {},
         "sample_topology": {"nodes": median_pass["nodes"], "edges": median_pass["edges"]},
         "node_count": median_pass["node_count"], "edge_count": median_pass["edge_count"],
     }
@@ -577,22 +587,23 @@ def run_ensemble(*, seed: int, ensemble_size: int, footprint: list[dict],
     in front of the keyword-only marker by an automated edit - so every
     ensemble run silently used the seeded default and the assignment screen
     appeared to do nothing.
+
+    One set of inputs for the passes and the aggregate. Two lists were how
+    the median pass came to be re-run without four of them.
     """
+    inputs = dict(backbone=backbone, known_locations=known_locations,
+                  service_table=service_table,
+                  service_class_by_archetype=service_class_by_archetype,
+                  committed_fraction_by_archetype=(
+                      committed_fraction_by_archetype),
+                  providers_by_role=providers_by_role,
+                  dual_access_by_archetype=dual_access_by_archetype)
     summaries = [summarise_pass(
-        one_pass(seed + i, footprint, archetypes, backbone=backbone,
-                 known_locations=known_locations,
-                 service_table=service_table,
-                 service_class_by_archetype=service_class_by_archetype,
-                 committed_fraction_by_archetype=(
-                     committed_fraction_by_archetype),
-                 providers_by_role=providers_by_role,
-                 dual_access_by_archetype=dual_access_by_archetype), i)
-                 for i in range(ensemble_size)]
+        one_pass(seed + i, footprint, archetypes, **inputs), i)
+        for i in range(ensemble_size)]
     return aggregate(summaries, seed=seed, ensemble_size=ensemble_size,
                      footprint=footprint, archetypes=archetypes,
-                     model_version=model_version, backbone=backbone,
-                     known_locations=known_locations,
-                     service_table=service_table)
+                     model_version=model_version, **inputs)
 
 
 def output_hash(payload: dict) -> str:

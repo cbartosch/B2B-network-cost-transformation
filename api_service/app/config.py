@@ -192,7 +192,12 @@ LLM_SEARCH_TIMEOUT_SECONDS = float(
 # BRANCHES and the shape returned 60 branches and 153 ATMs. A registered count
 # is evidence and a share is a guess; a guess must not reinterpret what was
 # counted. Most ATMs are inside a branch and are not sites at all.
-SIMULATION_MODEL_VERSION = "sim-2.7.0"
+# sim-2.8.0: the estate priced is the median pass's own. The aggregate re-ran
+# that pass without the committed fractions, dual-access rates, service
+# classes and providers every pass was given, so 47 of the fifty sample
+# estates priced circuits no pass had produced - 33,669 backups against the
+# 36,545 the passes counted.
+SIMULATION_MODEL_VERSION = "sim-2.8.0"
 # calc-1.1.0: the saving band is accumulated with matched pairing rather than
 # derived as current - target. The target is a function of the current, so
 # subtracting the two crossed bounds a second time and produced worlds that

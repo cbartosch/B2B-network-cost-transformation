@@ -281,6 +281,30 @@ def test_resume_restores_the_status_when_the_pool_refuses(session, monkeypatch):
         "a refused resume must not leave the run claiming to be queued"
 
 
+# --- the median pass is re-run with what the passes had ---------------------
+def test_the_job_prices_the_estate_its_passes_ran(session):
+    """The runner gave every pass the pinned dual-access rates and committed
+    fractions, and gave the aggregate three other inputs - so the median
+    pass was re-run without them, and the products the estimate prices came
+    from an estate no pass had produced. 47 of the fifty sample companies
+    priced one."""
+    rid = _queue(session, size=3)
+    session.execute(update(db.simulation_run).where(
+        db.simulation_run.c.simulation_run_id == rid).values(
+        pinned_priors={"archetype_prior": ARCH,
+                       "dual_access_by_archetype": {"BRANCH": 1.0}}))
+    session.commit()
+
+    jobs.run_job(rid)
+    output = _row(session, rid).output
+    backups = sum(p["count"] for p in output["products"]
+                  if p["role"] == "BACKUP" and p["country"] == "GB")
+    # Every branch has a second path at the pinned rate of 1.0. The seeded
+    # 0.55 is what the re-run used, and it priced about half of them.
+    assert backups == 40, (
+        f"the pinned rate gives all 40 branches a backup; {backups} priced")
+
+
 # --- C3-06: an empty ensemble ----------------------------------------------
 def test_aggregating_an_empty_ensemble_says_what_is_wrong():
     """It raised a bare IndexError carrying no context."""

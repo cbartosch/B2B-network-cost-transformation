@@ -36,6 +36,37 @@ FOOTPRINT = [{"country": "GB", "archetype": "STORE", "sites": 1840},
              {"country": "GB", "archetype": "LARGE_OFFICE", "sites": 2}]
 
 
+def test_the_priced_estate_is_the_one_the_passes_ran():
+    """The aggregate re-runs the median pass to produce the products the
+    estimate prices, and it re-ran it with three of the seven inputs the
+    passes had. A published dual-access rate and a committed fraction reached
+    every pass and never reached the products - so the circuit counts and
+    the priced circuits described two different estates.
+
+    Here every store has a second path by the published rate, and its IPVPN
+    commits 40% of a 100 Mbps bearer. The seeded archetype says neither."""
+    from app.domain import simulation
+
+    archetypes = {"STORE": {"dual_access_probability": 0.0,
+                            "primary_product": "MPLS",
+                            "backup_product": "MOBILE_5G",
+                            "bandwidth_mbps_base": 100,
+                            "committed_fraction": 1.0}}
+    out = simulation.run_ensemble(
+        seed=42, ensemble_size=3, model_version="sim-test",
+        footprint=[{"country": "GB", "archetype": "STORE", "sites": 50}],
+        archetypes=archetypes,
+        dual_access_by_archetype={"STORE": 1.0},
+        committed_fraction_by_archetype={"STORE": 0.4})
+
+    backups = sum(p["count"] for p in out["products"] if p["role"] == "BACKUP")
+    assert backups == out["circuits_backup"]["base"] == 50, (
+        f"the passes counted {out['circuits_backup']['base']} backups and "
+        f"the products price {backups}")
+    assert {p["bandwidth_mbps"] for p in out["products"]
+            if p["role"] == "PRIMARY"} == {40}, out["products"]
+
+
 def test_the_derived_headcount_survives_aggregation():
     """Audit finding C-05. one_pass computed implied_users and aggregate
     dropped it, so the stored output never held it.
