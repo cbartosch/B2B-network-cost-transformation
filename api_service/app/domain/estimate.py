@@ -1018,6 +1018,12 @@ def scenarios(components: list[Component], levers: list[dict],
                    for c in components}
         by_key = {c.key: c for c in components}
         applied, not_applied = [], []
+        # The headline's CR-07 split, summed before rounding. It was summed
+        # from each lever's figure after rounding to the cent, so it drifted
+        # half a cent per lever while the headline was rounded once - and
+        # Iberdrola's three levers put the two halves 0.02 off the headline,
+        # past the validation gate's cent, the day a rate moved under them.
+        split_specified, split_simulated = D(0), D(0)
         # Which levers have already cut each component, for exclusivity.
         cut_by = {}
 
@@ -1187,6 +1193,8 @@ def scenarios(components: list[Component], levers: list[dict],
                         f"much that layer costs."),
                     'saving_base': '0'})
             if cut_total:
+                split_simulated += cut_unev_base
+                split_specified += cut_total - cut_unev_base
                 applied.append({"lever_id": lever["lever_id"], "family": lever["family"],
                                 "description": lever["description"],
                                 "cost_layers": sorted(layers),
@@ -1319,12 +1327,8 @@ def scenarios(components: list[Component], levers: list[dict],
             # CR-07: the headline split by what it rests on. A saving on
             # drawn value is reported, never hidden - and never mixed into
             # the figure a reader takes as the answer.
-            "saving_on_specified_baseline": as_str(
-                sum((D(l["saving_on_specified_baseline"]) for l in applied),
-                    D(0))),
-            "saving_on_simulated_baseline": as_str(
-                sum((D(l["saving_on_simulated_baseline"]) for l in applied),
-                    D(0))),
+            "saving_on_specified_baseline": as_str(split_specified),
+            "saving_on_simulated_baseline": as_str(split_simulated),
             "savings_pct_base": (f"{(saving.base / current.base):.3f}"
                                  if current.base else "0.000"),
             "levers": applied,
