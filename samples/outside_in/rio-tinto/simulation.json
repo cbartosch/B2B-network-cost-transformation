@@ -1,13 +1,13 @@
 {
-  "simulation_run_id": "b2697cd8-a6ca-45f7-b7f9-0eeb9c5b55f2",
+  "simulation_run_id": "23ddce33-1fde-4821-8874-3ce82b39ad58",
   "case_id": "db96b5a3-5939-434d-97bf-79df14ddeba4",
-  "model_version": "sim-2.7.0",
+  "model_version": "sim-2.9.0",
   "seed": 20260101,
   "ensemble_size": 25,
   "status": "SUCCEEDED",
-  "output_hash": "963eac88e66df254493cbbd646ee08d96f3c68ddb9670616643e37c80934ca36",
-  "started_at": "2026-10-22 17:59:45.578183+00:00",
-  "ended_at": "2026-10-22 17:59:45.845015+00:00",
+  "output_hash": "ea280d0324c97153a7e6e920f75138d7a1382005f09b3a22d186dbd631191d46",
+  "started_at": "2026-10-23 11:46:43.458941+00:00",
+  "ended_at": "2026-10-23 11:46:43.775840+00:00",
   "params": {
     "footprint": [
       {
@@ -1321,6 +1321,61 @@
       "archetypes_covered": 5
     },
     "providers_by_role": {},
+    "plan_tiers": {
+      "CA|BROADBAND_HFC": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "CA|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "CA|MOBILE_5G": [
+        50,
+        100
+      ],
+      "AU|BROADBAND_HFC": [
+        100,
+        250,
+        500,
+        1000
+      ],
+      "AU|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "AU|MOBILE_5G": [
+        50,
+        100
+      ],
+      "GB|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "GB|BROADBAND_HFC": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "GB|MOBILE_5G": [
+        50,
+        100
+      ]
+    },
     "backbone": {
       "template_version": "1.0.0",
       "regions": {
@@ -1354,7 +1409,7 @@
     }
   },
   "output": {
-    "model_version": "sim-2.7.0",
+    "model_version": "sim-2.9.0",
     "seed": 20260101,
     "ensemble_size": 25,
     "sites": 106,
@@ -1419,6 +1474,7 @@
         "reason": "the only backup deliverable in SUBURBAN AU is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
       }
     ],
+    "backups_below_primary": [],
     "estate_truncated": 0,
     "sites_named": 0,
     "sites_generated": 106,
@@ -1454,7 +1510,7 @@
         "product": "BROADBAND_PON",
         "role": "BACKUP",
         "bandwidth_mbps": 100,
-        "count": 43,
+        "count": 47,
         "service_class": "BEST_EFFORT",
         "density": "RURAL",
         "bearer_mbps": 100,
@@ -1508,17 +1564,6 @@
         "country": "AU",
         "product": "ETHERNET",
         "role": "PRIMARY",
-        "bandwidth_mbps": 3000,
-        "count": 2,
-        "service_class": "ETHERNET",
-        "density": "SUBURBAN",
-        "bearer_mbps": 10000,
-        "access_technology": "ETHERNET_FIBRE"
-      },
-      {
-        "country": "AU",
-        "product": "ETHERNET",
-        "role": "PRIMARY",
         "bandwidth_mbps": 600,
         "count": 8,
         "service_class": "ETHERNET",
@@ -1550,6 +1595,17 @@
       },
       {
         "country": "AU",
+        "product": "ETHERNET",
+        "role": "PRIMARY",
+        "bandwidth_mbps": 6500,
+        "count": 2,
+        "service_class": "ETHERNET",
+        "density": "SUBURBAN",
+        "bearer_mbps": 10000,
+        "access_technology": "ETHERNET_FIBRE"
+      },
+      {
+        "country": "AU",
         "product": "MOBILE_5G",
         "role": "PRIMARY",
         "bandwidth_mbps": 100,
@@ -1564,7 +1620,7 @@
         "product": "BROADBAND_PON",
         "role": "BACKUP",
         "bandwidth_mbps": 100,
-        "count": 15,
+        "count": 17,
         "service_class": "BEST_EFFORT",
         "density": "RURAL",
         "bearer_mbps": 100,
@@ -1586,7 +1642,7 @@
         "product": "DIA",
         "role": "BACKUP",
         "bandwidth_mbps": 1000,
-        "count": 3,
+        "count": 4,
         "service_class": "DIA",
         "density": "URBAN",
         "bearer_mbps": 1000,
@@ -1596,7 +1652,7 @@
         "country": "GB",
         "product": "ETHERNET",
         "role": "PRIMARY",
-        "bandwidth_mbps": 500,
+        "bandwidth_mbps": 750,
         "count": 4,
         "service_class": "ETHERNET",
         "density": "URBAN",
@@ -1610,7 +1666,7 @@
       "high": 82
     },
     "circuits_backbone": 4,
-    "circuits_per_site_base": 1.717,
+    "circuits_per_site_base": 1.783,
     "implied_users": 12960,
     "bandwidth_profile": {
       "CONTROL_CENTER": {
@@ -1673,7 +1729,7 @@
       "note": "One region with data centres (APAC), so there is no global core tier - a hub has nothing to reach across."
     },
     "node_count": 106,
-    "edge_count": 182
+    "edge_count": 189
   },
   "output_omitted": {
     "fields": [

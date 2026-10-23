@@ -1,13 +1,13 @@
 {
-  "simulation_run_id": "f9d753ce-fcd0-40c4-a827-389efdb64ec6",
+  "simulation_run_id": "aedfffa6-247a-4573-93d3-83ca84e26f87",
   "case_id": "abd7b93a-3ce9-41a4-bf5d-bf4204d18083",
-  "model_version": "sim-2.7.0",
+  "model_version": "sim-2.9.0",
   "seed": 20260101,
   "ensemble_size": 25,
   "status": "SUCCEEDED",
-  "output_hash": "306e9422875a0e650b0d88a8c090bea9328317e6ec10954dfe8e2cb5e276a957",
-  "started_at": "2026-10-22 17:59:48.283601+00:00",
-  "ended_at": "2026-10-22 17:59:52.065282+00:00",
+  "output_hash": "336fdaa3fe3a776eaec335d432ba8ff0900bc732f152eb151f54a58bb7acafff",
+  "started_at": "2026-10-23 11:46:46.431201+00:00",
+  "ended_at": "2026-10-23 11:46:52.481608+00:00",
   "params": {
     "footprint": [
       {
@@ -1261,6 +1261,26 @@
       "archetypes_covered": 3
     },
     "providers_by_role": {},
+    "plan_tiers": {
+      "DE|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "DE|BROADBAND_HFC": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "DE|MOBILE_5G": [
+        50,
+        100
+      ]
+    },
     "backbone": {
       "template_version": "1.0.0",
       "regions": {
@@ -1288,7 +1308,7 @@
     }
   },
   "output": {
-    "model_version": "sim-2.7.0",
+    "model_version": "sim-2.9.0",
     "seed": 20260101,
     "ensemble_size": 25,
     "sites": 5600,
@@ -1716,6 +1736,7 @@
         "reason": "the only backup deliverable in None DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
       }
     ],
+    "backups_below_primary": [],
     "estate_truncated": 600,
     "sites_named": 0,
     "sites_generated": 5600,
@@ -1762,7 +1783,7 @@
         "product": "DIA",
         "role": "BACKUP",
         "bandwidth_mbps": 1000,
-        "count": 52,
+        "count": 58,
         "service_class": "DIA",
         "density": "URBAN",
         "bearer_mbps": 1000,
@@ -1794,7 +1815,7 @@
         "country": "DE",
         "product": "ETHERNET",
         "role": "PRIMARY",
-        "bandwidth_mbps": 150,
+        "bandwidth_mbps": 325,
         "count": 6,
         "service_class": "ETHERNET",
         "density": "SUBURBAN",
@@ -1805,7 +1826,7 @@
         "country": "DE",
         "product": "ETHERNET",
         "role": "PRIMARY",
-        "bandwidth_mbps": 500,
+        "bandwidth_mbps": 750,
         "count": 60,
         "service_class": "ETHERNET",
         "density": "URBAN",
@@ -1852,7 +1873,7 @@
       "high": 1750
     },
     "circuits_backbone": 12,
-    "circuits_per_site_base": 1.3082,
+    "circuits_per_site_base": 1.3093,
     "implied_users": 50000,
     "bandwidth_profile": {
       "CONTROL_CENTER": {
@@ -1914,7 +1935,7 @@
       "note": "One region with data centres (EUROPE_CENTRAL), so there is no global core tier - a hub has nothing to reach across."
     },
     "node_count": 5600,
-    "edge_count": 7326
+    "edge_count": 7332
   },
   "output_omitted": {
     "fields": [

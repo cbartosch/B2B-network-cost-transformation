@@ -1,13 +1,13 @@
 {
-  "simulation_run_id": "482d9876-284a-4402-b6a4-6eb1f25240f8",
+  "simulation_run_id": "a64f0d52-103f-4e35-b9c9-b555f836e698",
   "case_id": "b22c6548-3acc-4746-a8df-fffb57c60fd8",
-  "model_version": "sim-2.7.0",
+  "model_version": "sim-2.9.0",
   "seed": 20260101,
   "ensemble_size": 25,
   "status": "SUCCEEDED",
-  "output_hash": "d99fdc7c880bab5aa34668b71b51dd83a561b9ca1b5faa61272a0fc4d1c2d027",
-  "started_at": "2026-10-22 18:01:57.447672+00:00",
-  "ended_at": "2026-10-22 18:01:57.533586+00:00",
+  "output_hash": "ece230c00b0d660062e6860aa07cf1902a84e3ecea38b5ed06c6b4c1950e62cf",
+  "started_at": "2026-10-23 11:48:49.869287+00:00",
+  "ended_at": "2026-10-23 11:48:49.943258+00:00",
   "params": {
     "footprint": [
       {
@@ -1327,6 +1327,98 @@
       "archetypes_covered": 5
     },
     "providers_by_role": {},
+    "plan_tiers": {
+      "BR|BROADBAND_HFC": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "BR|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "BR|MOBILE_5G": [
+        50,
+        100
+      ],
+      "CL|BROADBAND_HFC": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "CL|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "CL|MOBILE_5G": [
+        50,
+        100
+      ],
+      "ZA|BROADBAND_HFC": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "ZA|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "ZA|MOBILE_5G": [
+        50,
+        100
+      ],
+      "GB|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "GB|BROADBAND_HFC": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "GB|MOBILE_5G": [
+        50,
+        100
+      ],
+      "PE|BROADBAND_HFC": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "PE|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "PE|MOBILE_5G": [
+        50,
+        100
+      ]
+    },
     "backbone": {
       "template_version": "1.0.0",
       "regions": {
@@ -1350,7 +1442,7 @@
     }
   },
   "output": {
-    "model_version": "sim-2.7.0",
+    "model_version": "sim-2.9.0",
     "seed": 20260101,
     "ensemble_size": 25,
     "sites": 13,
@@ -1387,6 +1479,7 @@
         "reason": "the only backup deliverable in URBAN CL is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
       }
     ],
+    "backups_below_primary": [],
     "estate_truncated": 0,
     "sites_named": 0,
     "sites_generated": 13,
@@ -1476,7 +1569,7 @@
         "country": "GB",
         "product": "ETHERNET",
         "role": "PRIMARY",
-        "bandwidth_mbps": 500,
+        "bandwidth_mbps": 750,
         "count": 1,
         "service_class": "ETHERNET",
         "density": "URBAN",
@@ -1520,10 +1613,10 @@
         "country": "PE",
         "product": "ETHERNET",
         "role": "PRIMARY",
-        "bandwidth_mbps": 500,
+        "bandwidth_mbps": 600,
         "count": 1,
         "service_class": "ETHERNET",
-        "density": "URBAN",
+        "density": "RURAL",
         "bearer_mbps": 1000,
         "access_technology": "ETHERNET_FIBRE"
       },
@@ -1531,10 +1624,10 @@
         "country": "PE",
         "product": "ETHERNET",
         "role": "PRIMARY",
-        "bandwidth_mbps": 600,
+        "bandwidth_mbps": 750,
         "count": 1,
         "service_class": "ETHERNET",
-        "density": "RURAL",
+        "density": "URBAN",
         "bearer_mbps": 1000,
         "access_technology": "ETHERNET_FIBRE"
       },
@@ -1575,10 +1668,10 @@
         "country": "ZA",
         "product": "ETHERNET",
         "role": "PRIMARY",
-        "bandwidth_mbps": 500,
-        "count": 1,
+        "bandwidth_mbps": 600,
+        "count": 2,
         "service_class": "ETHERNET",
-        "density": "URBAN",
+        "density": "RURAL",
         "bearer_mbps": 1000,
         "access_technology": "ETHERNET_FIBRE"
       },
@@ -1586,10 +1679,10 @@
         "country": "ZA",
         "product": "ETHERNET",
         "role": "PRIMARY",
-        "bandwidth_mbps": 600,
-        "count": 2,
+        "bandwidth_mbps": 750,
+        "count": 1,
         "service_class": "ETHERNET",
-        "density": "RURAL",
+        "density": "URBAN",
         "bearer_mbps": 1000,
         "access_technology": "ETHERNET_FIBRE"
       }

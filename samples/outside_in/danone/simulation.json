@@ -1,13 +1,13 @@
 {
-  "simulation_run_id": "7d750555-2c4c-4c61-96d6-6fbb813ea6e7",
+  "simulation_run_id": "2960faf5-0a6c-484d-ad21-67c7a529bd26",
   "case_id": "ed2cd747-ea8f-4873-9bd1-c85483bdd355",
-  "model_version": "sim-2.7.0",
+  "model_version": "sim-2.9.0",
   "seed": 20260101,
   "ensemble_size": 25,
   "status": "SUCCEEDED",
-  "output_hash": "993235c22155bdafc8c2d393cd8b6c7b7586c6ee78c9281ce0725e92ecedb8fa",
-  "started_at": "2026-10-22 18:01:45.114444+00:00",
-  "ended_at": "2026-10-22 18:01:45.253243+00:00",
+  "output_hash": "e534636e2ab5562373b7cef7c8e62538948422ad5a15bcff1958b050ed9eb7cf",
+  "started_at": "2026-10-23 11:48:38.933116+00:00",
+  "ended_at": "2026-10-23 11:48:39.083260+00:00",
   "params": {
     "footprint": [
       {
@@ -1576,6 +1576,98 @@
       "archetypes_covered": 5
     },
     "providers_by_role": {},
+    "plan_tiers": {
+      "US|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "US|BROADBAND_HFC": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "US|MOBILE_5G": [
+        50,
+        100
+      ],
+      "PL|BROADBAND_HFC": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "PL|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "PL|MOBILE_5G": [
+        50,
+        100
+      ],
+      "FR|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "FR|BROADBAND_HFC": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "FR|MOBILE_5G": [
+        50,
+        100
+      ],
+      "ES|BROADBAND_HFC": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "ES|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "ES|MOBILE_5G": [
+        50,
+        100
+      ],
+      "MX|BROADBAND_HFC": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "MX|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "MX|MOBILE_5G": [
+        50,
+        100
+      ]
+    },
     "backbone": {
       "template_version": "1.0.0",
       "regions": {
@@ -1601,7 +1693,7 @@
     }
   },
   "output": {
-    "model_version": "sim-2.7.0",
+    "model_version": "sim-2.9.0",
     "seed": 20260101,
     "ensemble_size": 25,
     "sites": 76,
@@ -1632,6 +1724,35 @@
     },
     "unserviceable": [],
     "single_by_necessity": [],
+    "backups_below_primary": [
+      {
+        "country": "ES",
+        "archetype": "PLANT",
+        "density": "RURAL",
+        "product": "BROADBAND_PON",
+        "asked_mbps": 2750,
+        "sold_mbps": 1000,
+        "sites": 5
+      },
+      {
+        "country": "MX",
+        "archetype": "PLANT",
+        "density": "RURAL",
+        "product": "BROADBAND_PON",
+        "asked_mbps": 2750,
+        "sold_mbps": 1000,
+        "sites": 30
+      },
+      {
+        "country": "PL",
+        "archetype": "PLANT",
+        "density": "RURAL",
+        "product": "BROADBAND_PON",
+        "asked_mbps": 2750,
+        "sold_mbps": 1000,
+        "sites": 4
+      }
+    ],
     "estate_truncated": 0,
     "sites_named": 0,
     "sites_generated": 76,
@@ -1655,18 +1776,18 @@
         "country": "ES",
         "product": "BROADBAND_PON",
         "role": "BACKUP",
-        "bandwidth_mbps": 2750,
+        "bandwidth_mbps": 1000,
         "count": 5,
         "service_class": "BEST_EFFORT",
         "density": "RURAL",
-        "bearer_mbps": 2750,
+        "bearer_mbps": 1000,
         "access_technology": "PON"
       },
       {
         "country": "ES",
         "product": "ETHERNET",
         "role": "PRIMARY",
-        "bandwidth_mbps": 1650,
+        "bandwidth_mbps": 2062,
         "count": 5,
         "service_class": "ETHERNET",
         "density": "RURAL",
@@ -1688,7 +1809,7 @@
         "country": "FR",
         "product": "ETHERNET",
         "role": "PRIMARY",
-        "bandwidth_mbps": 600,
+        "bandwidth_mbps": 750,
         "count": 13,
         "service_class": "ETHERNET",
         "density": "RURAL",
@@ -1699,18 +1820,18 @@
         "country": "MX",
         "product": "BROADBAND_PON",
         "role": "BACKUP",
-        "bandwidth_mbps": 2750,
+        "bandwidth_mbps": 1000,
         "count": 30,
         "service_class": "BEST_EFFORT",
         "density": "RURAL",
-        "bearer_mbps": 2750,
+        "bearer_mbps": 1000,
         "access_technology": "PON"
       },
       {
         "country": "MX",
         "product": "ETHERNET",
         "role": "PRIMARY",
-        "bandwidth_mbps": 1650,
+        "bandwidth_mbps": 2062,
         "count": 35,
         "service_class": "ETHERNET",
         "density": "RURAL",
@@ -1721,11 +1842,11 @@
         "country": "PL",
         "product": "BROADBAND_PON",
         "role": "BACKUP",
-        "bandwidth_mbps": 2750,
-        "count": 3,
+        "bandwidth_mbps": 1000,
+        "count": 4,
         "service_class": "BEST_EFFORT",
         "density": "RURAL",
-        "bearer_mbps": 2750,
+        "bearer_mbps": 1000,
         "access_technology": "PON"
       },
       {
@@ -1743,7 +1864,7 @@
         "country": "PL",
         "product": "ETHERNET",
         "role": "PRIMARY",
-        "bandwidth_mbps": 1650,
+        "bandwidth_mbps": 2062,
         "count": 7,
         "service_class": "ETHERNET",
         "density": "RURAL",
@@ -1754,7 +1875,7 @@
         "country": "PL",
         "product": "ETHERNET",
         "role": "PRIMARY",
-        "bandwidth_mbps": 500,
+        "bandwidth_mbps": 700,
         "count": 2,
         "service_class": "ETHERNET",
         "density": "URBAN",
@@ -1766,7 +1887,7 @@
         "product": "BROADBAND_PON",
         "role": "BACKUP",
         "bandwidth_mbps": 100,
-        "count": 11,
+        "count": 12,
         "service_class": "BEST_EFFORT",
         "density": "RURAL",
         "bearer_mbps": 100,
@@ -1787,7 +1908,7 @@
         "country": "US",
         "product": "ETHERNET",
         "role": "PRIMARY",
-        "bandwidth_mbps": 500,
+        "bandwidth_mbps": 700,
         "count": 2,
         "service_class": "ETHERNET",
         "density": "URBAN",
@@ -1798,7 +1919,7 @@
         "country": "US",
         "product": "ETHERNET",
         "role": "PRIMARY",
-        "bandwidth_mbps": 600,
+        "bandwidth_mbps": 750,
         "count": 12,
         "service_class": "ETHERNET",
         "density": "RURAL",
@@ -1812,7 +1933,7 @@
       "high": 71
     },
     "circuits_backbone": 0,
-    "circuits_per_site_base": 1.8553,
+    "circuits_per_site_base": 1.8816,
     "implied_users": 29800,
     "bandwidth_profile": {
       "PLANT": {
@@ -1852,7 +1973,7 @@
       "note": "No backbone tier: this estate has no data centres, so there is nothing to cluster. Access circuits only, which is correct for a footprint of leaves - not a gap in the model."
     },
     "node_count": 76,
-    "edge_count": 141
+    "edge_count": 143
   },
   "output_omitted": {
     "fields": [

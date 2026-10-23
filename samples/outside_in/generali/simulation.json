@@ -1,13 +1,13 @@
 {
-  "simulation_run_id": "977628d6-f0df-483d-abf2-82283ee79e05",
+  "simulation_run_id": "2c268d42-fb57-4625-b150-78e8bdaf36d1",
   "case_id": "cd7685b6-d71e-405e-999e-507e5e3c694f",
-  "model_version": "sim-2.7.0",
+  "model_version": "sim-2.9.0",
   "seed": 20260101,
   "ensemble_size": 25,
   "status": "SUCCEEDED",
-  "output_hash": "189015db509239e3ab64d88de0015eaf8f573c3ab182bb9af848772cc0633f5d",
-  "started_at": "2026-10-22 18:01:30.273952+00:00",
-  "ended_at": "2026-10-22 18:01:30.946070+00:00",
+  "output_hash": "a231ff9aebe308b45d1590e58559446c89907369b4881fbd15217528a7b9939a",
+  "started_at": "2026-10-23 11:48:26.202121+00:00",
+  "ended_at": "2026-10-23 11:48:26.783804+00:00",
   "params": {
     "footprint": [
       {
@@ -1163,6 +1163,44 @@
       "archetypes_covered": 4
     },
     "providers_by_role": {},
+    "plan_tiers": {
+      "AT|BROADBAND_HFC": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "AT|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "AT|MOBILE_5G": [
+        50,
+        100
+      ],
+      "IT|BROADBAND_HFC": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "IT|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "IT|MOBILE_5G": [
+        50,
+        100
+      ]
+    },
     "backbone": {
       "template_version": "1.0.0",
       "regions": {
@@ -1181,7 +1219,7 @@
     }
   },
   "output": {
-    "model_version": "sim-2.7.0",
+    "model_version": "sim-2.9.0",
     "seed": 20260101,
     "ensemble_size": 25,
     "sites": 932,
@@ -1200,6 +1238,7 @@
     },
     "unserviceable": [],
     "single_by_necessity": [],
+    "backups_below_primary": [],
     "estate_truncated": 0,
     "sites_named": 0,
     "sites_generated": 932,
@@ -1235,7 +1274,7 @@
         "product": "DIA",
         "role": "BACKUP",
         "bandwidth_mbps": 10000,
-        "count": 2,
+        "count": 3,
         "service_class": "DIA",
         "density": "DENSE_URBAN",
         "bearer_mbps": 10000,
@@ -1267,7 +1306,7 @@
         "country": "AT",
         "product": "ETHERNET",
         "role": "PRIMARY",
-        "bandwidth_mbps": 5000,
+        "bandwidth_mbps": 6250,
         "count": 3,
         "service_class": "ETHERNET",
         "density": "DENSE_URBAN",
@@ -1278,7 +1317,7 @@
         "country": "AT",
         "product": "ETHERNET",
         "role": "PRIMARY",
-        "bandwidth_mbps": 5000,
+        "bandwidth_mbps": 6250,
         "count": 6,
         "service_class": "ETHERNET",
         "density": "URBAN",
@@ -1333,7 +1372,7 @@
         "country": "IT",
         "product": "ETHERNET",
         "role": "PRIMARY",
-        "bandwidth_mbps": 5000,
+        "bandwidth_mbps": 6250,
         "count": 2,
         "service_class": "ETHERNET",
         "density": "DENSE_URBAN",
@@ -1344,7 +1383,7 @@
         "country": "IT",
         "product": "ETHERNET",
         "role": "PRIMARY",
-        "bandwidth_mbps": 5000,
+        "bandwidth_mbps": 6250,
         "count": 2,
         "service_class": "ETHERNET",
         "density": "URBAN",
@@ -1358,7 +1397,7 @@
       "high": 549
     },
     "circuits_backbone": 0,
-    "circuits_per_site_base": 1.5633,
+    "circuits_per_site_base": 1.5644,
     "implied_users": 26225,
     "bandwidth_profile": {
       "BRANCH": {
@@ -1391,7 +1430,7 @@
       "note": "No backbone tier: this estate has no data centres, so there is nothing to cluster. Access circuits only, which is correct for a footprint of leaves - not a gap in the model."
     },
     "node_count": 932,
-    "edge_count": 1457
+    "edge_count": 1458
   },
   "output_omitted": {
     "fields": [

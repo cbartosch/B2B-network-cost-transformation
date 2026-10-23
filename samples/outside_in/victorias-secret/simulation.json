@@ -1,13 +1,13 @@
 {
-  "simulation_run_id": "dd95ff79-7d65-4b13-bb9a-e74bae798c9c",
+  "simulation_run_id": "c1ce8389-6d82-4215-b841-9d922e7187da",
   "case_id": "63048804-2cbf-468f-a16f-2d1921d7af1f",
-  "model_version": "sim-2.7.0",
+  "model_version": "sim-2.9.0",
   "seed": 20260101,
   "ensemble_size": 25,
   "status": "SUCCEEDED",
-  "output_hash": "8e1cdab50cf920de0fa915dd6ff5c35c771fc7ccce4e5a53b64558b4eb4bb930",
-  "started_at": "2026-10-22 18:00:15.011463+00:00",
-  "ended_at": "2026-10-22 18:00:15.651472+00:00",
+  "output_hash": "e474173512a7f275b7b10d79f2bf3bd77fd6de4b22d6eb916a285351b9f60fd6",
+  "started_at": "2026-10-23 11:47:19.386583+00:00",
+  "ended_at": "2026-10-23 11:47:20.411630+00:00",
   "params": {
     "footprint": [
       {
@@ -1437,6 +1437,44 @@
       "archetypes_covered": 4
     },
     "providers_by_role": {},
+    "plan_tiers": {
+      "US|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "US|BROADBAND_HFC": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "US|MOBILE_5G": [
+        50,
+        100
+      ],
+      "CA|BROADBAND_HFC": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "CA|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "CA|MOBILE_5G": [
+        50,
+        100
+      ]
+    },
     "backbone": {
       "template_version": "1.0.0",
       "regions": {
@@ -1465,7 +1503,7 @@
     }
   },
   "output": {
-    "model_version": "sim-2.7.0",
+    "model_version": "sim-2.9.0",
     "seed": 20260101,
     "ensemble_size": 25,
     "sites": 835,
@@ -1517,6 +1555,26 @@
         "reason": "the only backup deliverable in SUBURBAN US is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
       }
     ],
+    "backups_below_primary": [
+      {
+        "country": "CA",
+        "archetype": "STORE",
+        "density": "SUBURBAN",
+        "product": "MOBILE_5G",
+        "asked_mbps": 275,
+        "sold_mbps": 100,
+        "sites": 11
+      },
+      {
+        "country": "US",
+        "archetype": "STORE",
+        "density": "SUBURBAN",
+        "product": "MOBILE_5G",
+        "asked_mbps": 275,
+        "sold_mbps": 100,
+        "sites": 281
+      }
+    ],
     "estate_truncated": 0,
     "sites_named": 0,
     "sites_generated": 835,
@@ -1562,11 +1620,11 @@
         "country": "CA",
         "product": "MOBILE_5G",
         "role": "BACKUP",
-        "bandwidth_mbps": 275,
+        "bandwidth_mbps": 100,
         "count": 11,
         "service_class": "BEST_EFFORT",
         "density": "SUBURBAN",
-        "bearer_mbps": 275,
+        "bearer_mbps": 100,
         "access_technology": "MOBILE_5G"
       },
       {
@@ -1617,7 +1675,7 @@
         "country": "US",
         "product": "ETHERNET",
         "role": "PRIMARY",
-        "bandwidth_mbps": 150,
+        "bandwidth_mbps": 200,
         "count": 2,
         "service_class": "ETHERNET",
         "density": "SUBURBAN",
@@ -1639,11 +1697,11 @@
         "country": "US",
         "product": "MOBILE_5G",
         "role": "BACKUP",
-        "bandwidth_mbps": 275,
+        "bandwidth_mbps": 100,
         "count": 281,
         "service_class": "BEST_EFFORT",
         "density": "SUBURBAN",
-        "bearer_mbps": 275,
+        "bearer_mbps": 100,
         "access_technology": "MOBILE_5G"
       }
     ],

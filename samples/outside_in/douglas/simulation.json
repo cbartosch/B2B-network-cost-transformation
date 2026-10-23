@@ -1,13 +1,13 @@
 {
-  "simulation_run_id": "395cb541-5faf-42e5-ac63-44a456c1f9f1",
+  "simulation_run_id": "9a063a15-dff4-417c-a5de-27ae492b33c2",
   "case_id": "b374ccc2-f4d2-4ade-9a47-161e8b4a5a4a",
-  "model_version": "sim-2.7.0",
+  "model_version": "sim-2.9.0",
   "seed": 20260101,
   "ensemble_size": 25,
   "status": "SUCCEEDED",
-  "output_hash": "db38fec13ace9fb45037cec0f44838e860ed20ecdea68d8cf0a5c5906cb0d418",
-  "started_at": "2026-10-22 18:00:11.869886+00:00",
-  "ended_at": "2026-10-22 18:00:12.837219+00:00",
+  "output_hash": "106d0abd61dbffe61340a4efb21fcc4d5b43c38e02733db78147635e89fa432c",
+  "started_at": "2026-10-23 11:47:15.832292+00:00",
+  "ended_at": "2026-10-23 11:47:17.543683+00:00",
   "params": {
     "footprint": [
       {
@@ -2036,6 +2036,98 @@
       "archetypes_covered": 4
     },
     "providers_by_role": {},
+    "plan_tiers": {
+      "PL|BROADBAND_HFC": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "PL|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "PL|MOBILE_5G": [
+        50,
+        100
+      ],
+      "IT|BROADBAND_HFC": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "IT|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "IT|MOBILE_5G": [
+        50,
+        100
+      ],
+      "FR|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "FR|BROADBAND_HFC": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "FR|MOBILE_5G": [
+        50,
+        100
+      ],
+      "DE|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "DE|BROADBAND_HFC": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "DE|MOBILE_5G": [
+        50,
+        100
+      ],
+      "NL|BROADBAND_HFC": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "NL|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "NL|MOBILE_5G": [
+        50,
+        100
+      ]
+    },
     "backbone": {
       "template_version": "1.0.0",
       "regions": {
@@ -2071,7 +2163,7 @@
     }
   },
   "output": {
-    "model_version": "sim-2.7.0",
+    "model_version": "sim-2.9.0",
     "seed": 20260101,
     "ensemble_size": 25,
     "sites": 1339,
@@ -2123,6 +2215,53 @@
         "reason": "the only backup deliverable in SUBURBAN DE is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
       }
     ],
+    "backups_below_primary": [
+      {
+        "country": "DE",
+        "archetype": "STORE",
+        "density": "URBAN",
+        "product": "MOBILE_5G",
+        "asked_mbps": 275,
+        "sold_mbps": 100,
+        "sites": 144
+      },
+      {
+        "country": "FR",
+        "archetype": "STORE",
+        "density": "URBAN",
+        "product": "MOBILE_5G",
+        "asked_mbps": 275,
+        "sold_mbps": 100,
+        "sites": 163
+      },
+      {
+        "country": "IT",
+        "archetype": "STORE",
+        "density": "URBAN",
+        "product": "MOBILE_5G",
+        "asked_mbps": 275,
+        "sold_mbps": 100,
+        "sites": 42
+      },
+      {
+        "country": "NL",
+        "archetype": "STORE",
+        "density": "URBAN",
+        "product": "MOBILE_5G",
+        "asked_mbps": 275,
+        "sold_mbps": 100,
+        "sites": 32
+      },
+      {
+        "country": "PL",
+        "archetype": "STORE",
+        "density": "URBAN",
+        "product": "MOBILE_5G",
+        "asked_mbps": 275,
+        "sold_mbps": 100,
+        "sites": 89
+      }
+    ],
     "estate_truncated": 0,
     "sites_named": 0,
     "sites_generated": 1339,
@@ -2168,7 +2307,7 @@
         "country": "DE",
         "product": "ETHERNET",
         "role": "PRIMARY",
-        "bandwidth_mbps": 150,
+        "bandwidth_mbps": 200,
         "count": 2,
         "service_class": "ETHERNET",
         "density": "SUBURBAN",
@@ -2190,11 +2329,11 @@
         "country": "DE",
         "product": "MOBILE_5G",
         "role": "BACKUP",
-        "bandwidth_mbps": 275,
+        "bandwidth_mbps": 100,
         "count": 144,
         "service_class": "BEST_EFFORT",
         "density": "URBAN",
-        "bearer_mbps": 275,
+        "bearer_mbps": 100,
         "access_technology": "MOBILE_5G"
       },
       {
@@ -2234,11 +2373,11 @@
         "country": "FR",
         "product": "MOBILE_5G",
         "role": "BACKUP",
-        "bandwidth_mbps": 275,
+        "bandwidth_mbps": 100,
         "count": 163,
         "service_class": "BEST_EFFORT",
         "density": "URBAN",
-        "bearer_mbps": 275,
+        "bearer_mbps": 100,
         "access_technology": "MOBILE_5G"
       },
       {
@@ -2267,11 +2406,11 @@
         "country": "IT",
         "product": "MOBILE_5G",
         "role": "BACKUP",
-        "bandwidth_mbps": 275,
+        "bandwidth_mbps": 100,
         "count": 42,
         "service_class": "BEST_EFFORT",
         "density": "URBAN",
-        "bearer_mbps": 275,
+        "bearer_mbps": 100,
         "access_technology": "MOBILE_5G"
       },
       {
@@ -2289,11 +2428,11 @@
         "country": "NL",
         "product": "MOBILE_5G",
         "role": "BACKUP",
-        "bandwidth_mbps": 275,
+        "bandwidth_mbps": 100,
         "count": 32,
         "service_class": "BEST_EFFORT",
         "density": "URBAN",
-        "bearer_mbps": 275,
+        "bearer_mbps": 100,
         "access_technology": "MOBILE_5G"
       },
       {
@@ -2322,11 +2461,11 @@
         "country": "PL",
         "product": "MOBILE_5G",
         "role": "BACKUP",
-        "bandwidth_mbps": 275,
+        "bandwidth_mbps": 100,
         "count": 89,
         "service_class": "BEST_EFFORT",
         "density": "URBAN",
-        "bearer_mbps": 275,
+        "bearer_mbps": 100,
         "access_technology": "MOBILE_5G"
       }
     ],
