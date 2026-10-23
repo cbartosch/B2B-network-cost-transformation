@@ -53,7 +53,11 @@ def one_pass(seed: int, footprint: list[dict], archetypes: dict,
              dual_access_by_archetype: dict | None = None,
              backbone: dict | None = None,
              known_locations: list[dict] | None = None,
-             service_table: dict | None = None) -> dict:
+             service_table: dict | None = None,
+             # {(country, product): [tiers]} - every tier the rate card sells
+             # the product at, on the country's price ladder. Absent, nothing
+             # is resized, which is how a run pinned before it existed behaves.
+             plan_tiers: dict | None = None) -> dict:
     """One synthetic estate, as a list of sites.
 
     The estate is materialised site by site rather than counted: every circuit
@@ -95,6 +99,10 @@ def one_pass(seed: int, footprint: list[dict], archetypes: dict,
     # silently shrinks reads as a weaker architecture rather than as a
     # constraint on what can be delivered.
     single_by_necessity: list[dict] = []
+    # Second paths that carry less than the first: a best-effort backup bought
+    # as the largest plan sold, below the bandwidth it was asked for at. Keyed
+    # by cluster and counted, so an estate of thousands stays one row each.
+    below_primary: dict[tuple, int] = {}
     # Inter-site transport, counted separately from access so a reader can see
     # which part of the estate a circuit total refers to.
     backbone_circuits = 0
@@ -226,6 +234,7 @@ def one_pass(seed: int, footprint: list[dict], archetypes: dict,
                 "service_outcome": served["outcome"],
                 "asked_for": served["asked_for"],
                 "backup_product": None,
+                "backup_mbps": None,
             })
             # Only a bounded display sample is materialised. An earlier revision
             # held full node and edge lists per pass, so peak memory was
@@ -317,6 +326,30 @@ def one_pass(seed: int, footprint: list[dict], archetypes: dict,
                 else:
                     b_product = backup_served["product"]
                     b_mbps = int(backup_served["bandwidth_mbps"])
+                    # Sized to the plans actually sold, where it is a plan.
+                    #
+                    # The backup is asked for at the primary's bandwidth, and a
+                    # best-effort one is not bought by bandwidth - it is a plan,
+                    # and the card's 5G plans stop at 100 Mbps. A store whose
+                    # primary runs at 275 asked for a 275 Mbps 5G backup that
+                    # nobody sells, the card had no tier to price it at, and
+                    # 15,039 5G backups went unpriced across the sample set -
+                    # in Germany and the US as much as anywhere.
+                    #
+                    # So it is bought as the largest plan sold, and the site
+                    # says its second path carries less than its first: a
+                    # resilience finding, reported beside a second path that
+                    # cannot be delivered at all. A committed backup is left as
+                    # asked. A 10 Gbps DIA is a real circuit with a real price,
+                    # and a card without one is the finding.
+                    sold = (plan_tiers or {}).get((entry["country"], b_product))
+                    if (sold and backup_class == access.BEST_EFFORT
+                            and b_mbps > max(sold)):
+                        short = (entry["country"], entry["archetype"], density,
+                                 b_product, b_mbps, max(sold))
+                        below_primary[short] = below_primary.get(short, 0) + 1
+                        b_mbps = max(sold)
+                    site_rows[-1]["backup_mbps"] = b_mbps
                     if len(edges) < SAMPLE_EDGES:
                         edges.append({"from": node_id,
                                       "to": f"POP2-{entry['country']}",
@@ -405,6 +438,14 @@ def one_pass(seed: int, footprint: list[dict], archetypes: dict,
             # be delivered. Distinct from a site the draw left single: this one
             # is a serviceability finding about the location.
             "single_by_necessity": single_by_necessity,
+            # The second path exists and carries less than it was asked to:
+            # the largest plan sold, below the primary's bandwidth. Distinct
+            # from single_by_necessity, where there is no second path at all.
+            "backups_below_primary": [
+                {"country": c, "archetype": a, "density": d, "product": p,
+                 "asked_mbps": asked, "sold_mbps": sold, "sites": n}
+                for (c, a, d, p, asked, sold), n in sorted(
+                    below_primary.items(), key=lambda kv: str(kv[0]))],
             "circuits_backbone": backbone_circuits,
             "site_sample": site_rows[:SAMPLE_NODES],
             # The whole estate, for the one pass that keeps it. Carrying this
@@ -527,6 +568,7 @@ def aggregate(summaries: list[dict], *, seed: int, ensemble_size: int,
         "serviceability": median_pass["serviceability"],
         "unserviceable": median_pass["unserviceable"],
         "single_by_necessity": median_pass["single_by_necessity"],
+        "backups_below_primary": median_pass["backups_below_primary"],
         "estate": median_pass["estate_full"][:MAX_ESTATE_ROWS],
         "estate_truncated": max(
             0, len(median_pass["estate_full"]) - MAX_ESTATE_ROWS),
@@ -578,7 +620,8 @@ def run_ensemble(*, seed: int, ensemble_size: int, footprint: list[dict],
                  service_class_by_archetype: dict | None = None,
                  committed_fraction_by_archetype: dict | None = None,
                  providers_by_role: dict | None = None,
-                 dual_access_by_archetype: dict | None = None) -> dict:
+                 dual_access_by_archetype: dict | None = None,
+                 plan_tiers: dict | None = None) -> dict:
     """Convenience wrapper: run every pass, then aggregate. The job runner drives
     the two halves separately so it can checkpoint, cancel and resume.
 
@@ -597,7 +640,8 @@ def run_ensemble(*, seed: int, ensemble_size: int, footprint: list[dict],
                   committed_fraction_by_archetype=(
                       committed_fraction_by_archetype),
                   providers_by_role=providers_by_role,
-                  dual_access_by_archetype=dual_access_by_archetype)
+                  dual_access_by_archetype=dual_access_by_archetype,
+                  plan_tiers=plan_tiers)
     summaries = [summarise_pass(
         one_pass(seed + i, footprint, archetypes, **inputs), i)
         for i in range(ensemble_size)]

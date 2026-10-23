@@ -197,7 +197,11 @@ LLM_SEARCH_TIMEOUT_SECONDS = float(
 # classes and providers every pass was given, so 47 of the fifty sample
 # estates priced circuits no pass had produced - 33,669 backups against the
 # 36,545 the passes counted.
-SIMULATION_MODEL_VERSION = "sim-2.8.0"
+# sim-2.9.0: a best-effort backup is bought as a plan the card sells. It was
+# asked for at the primary's bandwidth - a 275 Mbps 5G backup nobody sells -
+# and went unpriced. It is now the largest plan sold, and the run reports the
+# sites whose second path carries less than their first.
+SIMULATION_MODEL_VERSION = "sim-2.9.0"
 # calc-1.1.0: the saving band is accumulated with matched pairing rather than
 # derived as current - target. The target is a function of the current, so
 # subtracting the two crossed bounds a second time and produced worlds that

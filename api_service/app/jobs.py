@@ -151,6 +151,12 @@ def run_job(run_id: str, session=None) -> dict:
         providers_by_role = {
             tuple(k.split("|")): v for k, v in
             ((row.pinned_priors or {}).get("providers_by_role") or {}).items()}
+        # The plans the card sold when the run started, keyed "COUNTRY|PRODUCT"
+        # in the pin for the same reason. A rate promoted mid-run must not
+        # resize half an estate's backups.
+        plan_tiers = {
+            tuple(k.split("|")): v for k, v in
+            ((row.pinned_priors or {}).get("plan_tiers") or {}).items()}
         # One set, for every pass and for the aggregate's re-run of the median
         # one. The aggregate was handed three of these and re-ran the median
         # pass without the rest, so the estate it priced was not the one the
@@ -160,6 +166,7 @@ def run_job(run_id: str, session=None) -> dict:
             committed_fraction_by_archetype=committed_fraction_by_archetype,
             providers_by_role=providers_by_role,
             dual_access_by_archetype=dual_access_by_archetype,
+            plan_tiers=plan_tiers,
             backbone=backbone, known_locations=known_locations,
             service_table=service_table)
         total = row.progress_total or row.ensemble_size

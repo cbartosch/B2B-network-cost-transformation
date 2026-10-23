@@ -1609,6 +1609,23 @@ def run_simulation(case_id: str, payload: SimIn):
             regions=_regions, template=_template)
 
         footprint = [r.model_dump() for r in payload.footprint]
+
+        # The plans a best-effort backup can be bought as, per country: every
+        # tier the card sells the product at on the country's price ladder,
+        # which is the ladder the estimate prices with. A backup asked for
+        # above the largest is bought as the largest, and says so - see
+        # one_pass. National rates only: a band rate prices its band alone.
+        plan_tiers = estimate.plans_sold(
+            s.execute(select(db.unit_cost_prior.c.country,
+                             db.unit_cost_prior.c.product,
+                             db.unit_cost_prior.c.bandwidth_mbps).where(
+                db.unit_cost_prior.c.approved.is_(True),
+                db.unit_cost_prior.c.density_band.is_(None),
+                db.unit_cost_prior.c.service_class
+                == access_vocab.BEST_EFFORT)).all(),
+            {c: price_ladder(c, _regions.get(c))
+             for c in {r["country"] for r in footprint}})
+
         total_sites = sum(r["sites"] for r in footprint)
         if total_sites == 0:
             # The footprint editor now opens on the case's in-scope countries
@@ -1772,6 +1789,10 @@ def run_simulation(case_id: str, payload: SimIn):
                            # run started with. Keyed "COUNTRY|ROLE" because
                            # JSON has no tuple keys.
                            "providers_by_role": _providers_by_role(s, case_id),
+                           # The plans the card sold when the run started,
+                           # keyed "COUNTRY|PRODUCT" for the same reason.
+                           "plan_tiers": {f"{c}|{p}": tiers for (c, p), tiers
+                                          in plan_tiers.items()},
                            "backbone": backbone},
             status=jobs.QUEUED, progress_completed=0,
             progress_total=payload.ensemble_size, cancel_requested=False))

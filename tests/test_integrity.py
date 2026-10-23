@@ -1150,8 +1150,13 @@ def test_every_prior_key_carries_a_bandwidth():
             # like (country, product) is the shape that silently misprices.
             if not isinstance(node, ast.Dict):
                 continue
-            for key in node.keys:
+            for key, value in zip(node.keys, node.values):
                 if not isinstance(key, ast.Tuple) or len(key.elts) != 2:
+                    continue
+                # A list of tiers is not a price. The plans a product is sold
+                # at are keyed (country, product) by design - the bandwidths
+                # are the value - and no list can stand where a rate row does.
+                if isinstance(value, ast.List):
                     continue
                 parts = [e.value for e in key.elts
                          if isinstance(e, ast.Constant) and isinstance(e.value, str)]

@@ -431,6 +431,28 @@ def priced_in(prior, country: str) -> str | None:
     return scope if scope and scope != country else None
 
 
+def plans_sold(rows, ladders: dict) -> dict:
+    """(country, product) -> every tier the card sells it at, for that country.
+
+    `rows` are (scope, product, bandwidth_mbps) of approved national rates and
+    `ladders` maps each country to its scope.price_ladder. A tier anywhere on
+    the ladder counts, because `match_prior` falls to the next rung when the
+    country has nothing at or above the requirement - so these are exactly
+    the tiers a circuit in that country can be priced at, and a circuit sized
+    to one of them can always be priced.
+    """
+    by_scope: dict = {}
+    for scope, product, mbps in rows:
+        if mbps:
+            by_scope.setdefault((scope, product), set()).add(int(mbps))
+    out: dict = {}
+    for country, ladder in ladders.items():
+        for (scope, product), tiers in by_scope.items():
+            if scope in ladder:
+                out.setdefault((country, product), set()).update(tiers)
+    return {key: sorted(tiers) for key, tiers in out.items()}
+
+
 def _by_density(rate: "Range", *, product, band, prior_band, multipliers):
     """Scale a national rate into a density band.
 
