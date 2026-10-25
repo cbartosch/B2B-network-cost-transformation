@@ -82,6 +82,9 @@ COPY samples/companies.json ./samples/companies.json
 # missing from this list entirely, so a fresh container always saw an empty
 # register regardless of what reviewers had recorded on the host.
 COPY samples/verification_register.csv ./samples/verification_register.csv
+# The same kind of record for researched prices: what a steward decided about
+# each, and why. Left out, its test would skip in every container.
+COPY samples/price_decisions.csv ./samples/price_decisions.csv
 COPY tests ./tests
 # The second of those two services. The line above has always said the tests
 # read files from both, and `make test` runs them from inside this image - but

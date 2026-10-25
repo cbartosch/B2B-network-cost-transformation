@@ -1,13 +1,13 @@
 {
-  "simulation_run_id": "27c54ccc-4923-44a5-b958-b3f335095599",
+  "simulation_run_id": "2e1895fa-9743-4933-afc7-df09455120a7",
   "case_id": "db96b5a3-5939-434d-97bf-79df14ddeba4",
   "model_version": "sim-2.9.0",
   "seed": 20260101,
   "ensemble_size": 25,
   "status": "SUCCEEDED",
   "output_hash": "ea280d0324c97153a7e6e920f75138d7a1382005f09b3a22d186dbd631191d46",
-  "started_at": "2026-10-23 14:40:59.076803+00:00",
-  "ended_at": "2026-10-23 14:40:59.266309+00:00",
+  "started_at": "2026-10-25 11:59:09.662904+00:00",
+  "ended_at": "2026-10-25 11:59:09.823414+00:00",
   "params": {
     "footprint": [
       {
@@ -1322,23 +1322,6 @@
     },
     "providers_by_role": {},
     "plan_tiers": {
-      "AU|BROADBAND_HFC": [
-        100,
-        250,
-        500,
-        1000
-      ],
-      "AU|BROADBAND_PON": [
-        50,
-        100,
-        250,
-        500,
-        1000
-      ],
-      "AU|MOBILE_5G": [
-        50,
-        100
-      ],
       "CA|BROADBAND_HFC": [
         50,
         100,
@@ -1367,11 +1350,33 @@
       "GB|BROADBAND_HFC": [
         50,
         100,
+        200,
+        250,
+        400,
+        500,
+        600,
+        1000,
+        2000
+      ],
+      "GB|MOBILE_5G": [
+        50,
+        100
+      ],
+      "AU|BROADBAND_HFC": [
+        100,
+        250,
+        500,
+        1000,
+        2000
+      ],
+      "AU|BROADBAND_PON": [
+        50,
+        100,
         250,
         500,
         1000
       ],
-      "GB|MOBILE_5G": [
+      "AU|MOBILE_5G": [
         50,
         100
       ]

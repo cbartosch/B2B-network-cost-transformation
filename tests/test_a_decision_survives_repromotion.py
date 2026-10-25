@@ -5,6 +5,11 @@ every run_samples --repromote undid every approval and every revocation since
 the last one. US DIA at 10 Gbps and US MPLS at 1 Gbps were approved by name on
 13 October and were unapproved, with no approver recorded, ten days later.
 
+Keeping a decision only when the same figure came back was not enough: one
+row stands for a key across every company, and the companies disagree. So
+promotion never writes over a decided row, and reports a different figure as
+a challenge instead.
+
 And the comparison promote() records was made in two currencies: a 104 AUD
 plan judged against a 116-193 USD band. 26 of the 59 researched prices on the
 card carry a verdict made that way.
@@ -83,9 +88,10 @@ def test_a_revocation_survives_the_same_figure_being_promoted_again(session):
     assert out["decisions_kept"][0]["by"] == "Priya Raman"
 
 
-def test_a_changed_figure_is_proposed_afresh_and_says_what_it_replaced(session):
-    """A different number is a different claim. The approval was about 520,
-    and carrying it to 610 would approve a figure nobody looked at."""
+def test_a_different_figure_is_reported_and_the_approval_stands(session):
+    """Another company's research for the same key. The approval was about
+    520; replacing it with an unapproved 610 takes an approved price off the
+    card because one search found another number."""
     case_id, cid = _finding(session)
     _promote(session, case_id, cid)
     promotion.approve_price(session, row_id="DE-DIA-100-researched",
@@ -95,27 +101,60 @@ def test_a_changed_figure_is_proposed_afresh_and_says_what_it_replaced(session):
     out = _promote(session, later, later_cid)
 
     row = _row(session)
-    assert row.approved is False and float(row.base) == 610
-    assert "the earlier APPROVED decision (Priya Raman)" in row.source_note
-    assert out["decisions_superseded"][0]["was"].startswith("520")
+    assert row.approved is True and float(row.base) == 520
+    challenge = out["decisions_challenged"][0]
+    assert challenge["found"].startswith("610")
+    assert challenge["decided"].startswith("520")
     assert not out["decisions_kept"]
 
 
-def test_a_fresh_proposal_after_a_revocation_is_not_itself_read_as_revoked(
-        session):
-    """The note on the replacement names the revocation it replaced. Worded
-    with the marker, the new row would read back as revoked - a proposal
-    nobody has looked at, presented as one somebody turned down."""
+def test_a_different_figure_does_not_reopen_a_revocation(session):
     case_id, cid = _finding(session)
     _promote(session, case_id, cid)
     promotion.revoke_price(session, row_id="DE-DIA-100-researched",
                            revoked_by="Priya Raman", reason="wholesale")
     later, later_cid = _finding(session, value=610)
-    _promote(session, later, later_cid)
+    out = _promote(session, later, later_cid)
 
     row = _row(session)
-    assert promotion.decision_on(row) is None
-    assert "REVOKED decision" in row.source_note
+    assert promotion.decision_on(row)["decision"] == "REVOKED"
+    assert float(row.base) == 520
+    assert out["decisions_challenged"][0]["decision"] == "REVOKED"
+
+
+def test_a_decision_survives_companies_that_disagree(session):
+    """What the first rerun after the approvals did. One row stands for US DIA
+    at 100 Mbps across every company, research found it at 333, 492, 625 and
+    641, and promotion runs company by company - so the first with another
+    figure replaced the approval, and every one after it priced without it."""
+    first, first_cid = _finding(session, value=520)
+    _promote(session, first, first_cid)
+    promotion.approve_price(session, row_id="DE-DIA-100-researched",
+                            approved_by="Priya Raman")
+
+    for value in (610, 520, 480):
+        case_id, cid = _finding(session, value=value)
+        _promote(session, case_id, cid)
+        row = _row(session)
+        assert row.approved is True and float(row.base) == 520, value
+
+
+def test_a_reopened_price_is_a_proposal_again(session):
+    """Reopening returns the row to the queue, so the next run refreshes it
+    like any undecided price - the revocation it reopened does not linger as
+    a decision nobody holds any more."""
+    case_id, cid = _finding(session)
+    _promote(session, case_id, cid)
+    promotion.revoke_price(session, row_id="DE-DIA-100-researched",
+                           revoked_by="Priya Raman", reason="wholesale")
+    promotion.reopen_price(session, row_id="DE-DIA-100-researched",
+                           reopened_by="A reviewer", reason="source traced")
+    assert promotion.decision_on(_row(session)) is None
+
+    later, later_cid = _finding(session, value=610)
+    out = _promote(session, later, later_cid)
+    assert float(_row(session).base) == 610
+    assert not out["decisions_challenged"]
 
 
 def test_an_undecided_price_is_still_refreshed(session):
@@ -126,7 +165,7 @@ def test_an_undecided_price_is_still_refreshed(session):
     out = _promote(session, case_id, cid, by="second run")
 
     assert "second run" in _row(session).source_note
-    assert not out["decisions_kept"] and not out["decisions_superseded"]
+    assert not out["decisions_kept"] and not out["decisions_challenged"]
 
 
 # ------------------------------------- the comparison is made in one currency
