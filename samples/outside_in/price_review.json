@@ -882,7 +882,11 @@
    "state": "UNDECIDED",
    "decided_by": null,
    "usd": "183.66",
-   "replaces": null,
+   "replaces": {
+    "id": "ES-DIA-100",
+    "basis": "SEED",
+    "usd": "287.00"
+   },
    "lower_tier": null,
    "upper_tier": 300,
    "inversions": [],
@@ -903,17 +907,17 @@
    "other_observations": [],
    "effect": {
     "carrefour": {
-     "delta": "-134271.72",
+     "delta": "-16202.83",
      "currency": "EUR",
      "circuits": 12
     },
     "fresenius": {
-     "delta": "-4811403.30",
+     "delta": "-580601.26",
      "currency": "EUR",
      "circuits": 430
     },
     "santander": {
-     "delta": "-14590860.24",
+     "delta": "-1760707.09",
      "currency": "EUR",
      "circuits": 1630
     }
@@ -928,8 +932,8 @@
    "currency": "EUR",
    "low": "1100.00",
    "high": "1100.00",
-   "state": "UNDECIDED",
-   "decided_by": null,
+   "state": "REVOKED",
+   "decided_by": "Christian Bartosch",
    "usd": "1262.77",
    "replaces": null,
    "lower_tier": 500,
@@ -962,8 +966,8 @@
    "currency": "EUR",
    "low": "449.00",
    "high": "449.00",
-   "state": "UNDECIDED",
-   "decided_by": null,
+   "state": "REVOKED",
+   "decided_by": "Christian Bartosch",
    "usd": "515.44",
    "replaces": {
     "id": "ES-DIA-1000",
@@ -992,25 +996,10 @@
    ],
    "other_observations": [],
    "effect": {
-    "carrefour": {
-     "delta": "-82249.92",
-     "currency": "EUR",
-     "circuits": 12
-    },
-    "fresenius": {
-     "delta": "-2947288.80",
-     "currency": "EUR",
-     "circuits": 430
-    },
     "iberdrola": {
      "delta": "-164023.20",
      "currency": "EUR",
      "circuits": 20
-    },
-    "santander": {
-     "delta": "-8937824.64",
-     "currency": "EUR",
-     "circuits": 1630
     },
     "volkswagen": {
      "delta": "-65609.28",
@@ -4612,36 +4601,24 @@
    "product": "DIA",
    "approved": [],
    "undecided": [
-    "ES-DIA-100-researched",
-    "ES-DIA-600-researched",
-    "ES-DIA-1000-researched"
+    "ES-DIA-100-researched"
    ],
    "effect_of_approvals": {},
    "effect_of_approving_undecided": {
     "carrefour": {
-     "delta": "-134271.72",
+     "delta": "-16202.83",
      "currency": "EUR",
      "circuits": 12
     },
     "fresenius": {
-     "delta": "-4811403.30",
+     "delta": "-580601.26",
      "currency": "EUR",
      "circuits": 430
     },
-    "iberdrola": {
-     "delta": "-164023.20",
-     "currency": "EUR",
-     "circuits": 20
-    },
     "santander": {
-     "delta": "-14590860.24",
+     "delta": "-1760707.09",
      "currency": "EUR",
      "circuits": 1630
-    },
-    "volkswagen": {
-     "delta": "-65609.28",
-     "currency": "EUR",
-     "circuits": 8
     }
    }
   },

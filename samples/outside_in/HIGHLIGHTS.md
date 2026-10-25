@@ -2719,7 +2719,7 @@ Sources: [ts2.tech](https://ts2.tech/en/internet-access-in-germany-2025-dsl-cabl
 
 - **Industry** HOSPITAL (entity resolution)
 - **Scope** DE, ES, US, EUR, 3,385 sites (research merged with disclosure)
-- **Confidence** 0.342 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.341 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 8 source(s)
 
@@ -5082,7 +5082,7 @@ Sources: [Telecompaper](https://www.telecompaper.com/news/fibre-adoption-rises-t
 
 - **Industry** UNIVERSAL_BANKING (entity resolution)
 - **Scope** ES, GB, PT, EUR, 2,268 sites (research merged with disclosure)
-- **Confidence** 0.343 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.338 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 10 source(s)
 
