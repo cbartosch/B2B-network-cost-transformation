@@ -917,6 +917,23 @@ SOURCED_RATES = [
     ("GB", "DIA", 100, 185, 185, "GBP", "B",
      "Virgin Media Business published entry price for 100 Mbps Dedicated "
      "Internet Access, Sept 2026"),
+    # Spain had no DIA tier below 300 Mbps, so every 100 Mbps circuit priced
+    # at the 300 Mbps seed of EUR 906 - 2,072 circuits across the sample set,
+    # 3.0 to 4.5 times this range. Spanish carriers quote dedicated fibre
+    # after a site survey and publish nothing, so the range is a comparison
+    # site's, and graded D: more than an assumption, less than a survey of
+    # several sources (C) or a seller's own tariff (B).
+    #
+    # Direct Telecom's published EUR 159.99 is not an anchor here: it is a
+    # "guaranteed" circuit rather than a dedicated one, and anchoring would
+    # move the base to 230 on the strength of a different product.
+    ("ES", "DIA", 100, 200, 300, "EUR", "D",
+     "Kompara, 'Internet para Empresas y PYMEs: Guia Completa 2026' (30 "
+     "April 2026), market ranges at January 2026 for dedicated fibre - 100% "
+     "guaranteed speed, 2-4h repair SLA, fixed IPs; business list-price "
+     "basis, installation EUR 500-1,000 not included. A comparison site's "
+     "ranges, not a carrier tariff. Direct Telecom's guaranteed (not "
+     "dedicated) 100/100 circuit at EUR 159.99 sits below it."),
 ]
 
 # Where a country's rate is quoted in its own currency. The seeded card is USD
@@ -928,9 +945,13 @@ SOURCED_RATES = [
 # the overstatement was reported as 2.6x when it is 1.9x. The model has a
 # currency module built to prevent exactly that; the comparison was done
 # outside it.
-SOURCED_FX = {"GBP": "1.34"}     # GBP/USD mid-market, 16 September 2026
-SOURCED_FX_NOTE = ("GBP/USD 1.34, mid-market 16 September 2026. A rate this "
-                   "old prices a circuit at last month's exchange rate; the "
+# EUR at the inverse of the card's own USD->EUR row (0.8711), so a euro rate
+# sourced here converts back to the euro it was quoted in.
+SOURCED_FX = {"GBP": "1.34",     # GBP/USD mid-market, 16 September 2026
+              "EUR": "1.148"}    # EUR/USD mid-market, 17 September 2026
+SOURCED_FX_NOTE = ("GBP/USD 1.34, mid-market 16 September 2026; EUR/USD "
+                   "1.148, mid-market 17 September 2026. A rate this old "
+                   "prices a circuit at last month's exchange rate; the "
                    "case's own fx_convention governs a live estimate.")
 
 
