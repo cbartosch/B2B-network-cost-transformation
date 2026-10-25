@@ -28,10 +28,31 @@ def test_the_uk_survey_rows_are_the_ones_carried():
     """GB DIA at 100 and 1000, GB Ethernet at 500, 1000 and 10000. Five
     keys from six source rows, because the Virgin Media tariff and the
     survey band describe the same circuit and merge."""
-    assert set(seed.SOURCED_PROVENANCE) == {
+    assert {k for k in seed.SOURCED_PROVENANCE if k[0] == "GB"} == {
         ("GB", "DIA", 100), ("GB", "DIA", 1000),
         ("GB", "ETHERNET", 500), ("GB", "ETHERNET", 1000),
         ("GB", "ETHERNET", 10000)}
+
+
+def test_spain_prices_a_100_mbps_circuit_at_its_market_not_its_300_seed():
+    """Spain had no DIA tier below 300 Mbps, so 2,072 circuits needing 100
+    priced at the 300 Mbps seed of EUR 906 - three to four times the range a
+    Spanish comparison site gives for dedicated fibre. The range enters at
+    grade D, its midpoint converting back to the EUR 250 it was quoted at."""
+    from decimal import Decimal as D
+
+    grade, source = seed.SOURCED_PROVENANCE[("ES", "DIA", 100)]
+    assert grade == "D"
+    assert "Kompara" in source and "dedicated" in source
+    row = next(r for r in seed.PRIORS
+               if (r[0], r[1], int(r[3])) == ("ES", "DIA", 100))
+    usd_to_eur = D("0.8711")          # the card's own USD->EUR row
+    assert abs(D(row[5]) * usd_to_eur - 250) < 1, row
+    # The 300 Mbps seed it no longer stands in for is untouched: one sourced
+    # tier has nothing to reprice between.
+    seeded = next(r for r in seed.PRIORS
+                  if (r[0], r[1], int(r[3])) == ("ES", "DIA", 300))
+    assert int(seeded[5]) == 1040
 
 
 def test_a_point_tariff_does_not_lend_its_grade_to_a_survey_band():
