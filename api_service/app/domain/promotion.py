@@ -36,6 +36,9 @@ from sqlalchemy import delete, insert, select, update
 
 from .. import db
 from . import access, triangulate
+# Aliased: compare_to_benchmark takes a `currency` argument, the code a price
+# was quoted in, and the module is needed inside it to convert that.
+from . import currency as fx
 
 # The archetypes the simulation understands. A quantity naming anything else
 # cannot be promoted to a footprint row - it may be a perfectly good finding,
@@ -1005,7 +1008,11 @@ def candidates(session, case_id: str) -> dict:
 
 def compare_to_benchmark(session, *, country: str, product: str, value: float,
                          bandwidth_mbps: int | None = None,
-                         policy=None) -> dict:
+                         policy=None,
+                         # The currency `value` was quoted in. Omitted, it is
+                         # taken to be the benchmark's own, which is how every
+                         # caller behaved before this was here.
+                         currency: str | None = None) -> dict:
     """How far a researched price sits from the approved benchmark it would
     displace.
 
@@ -1052,10 +1059,49 @@ def compare_to_benchmark(session, *, country: str, product: str, value: float,
                      f"new coverage.")}
 
     low, base, high = float(row.low), float(row.base), float(row.high)
+    # In the benchmark's currency, at the card's own rates.
+    #
+    # This compared the figure as quoted against a band in the benchmark's
+    # currency, which is USD for every seeded row - so 104 AUD was judged
+    # against a band of 116-193 USD and a GBP tariff against dollars. 26 of
+    # the 59 researched prices on the card carry a verdict made that way, and
+    # "material divergence" is the line a steward reads first.
+    #
+    # Converted at reference.fx_rate, the rates the estimate converts with.
+    # With no rate there is no comparison, said so, rather than a verdict on
+    # numbers in two currencies.
+    target = (row.currency or "USD").upper()
+    quoted = (currency or target).upper()
+    unit, conversion = target, None
+    if quoted != target:
+        try:
+            rates = fx.rate_table(
+                [{"from_currency": r.from_currency,
+                  "to_currency": r.to_currency, "rate": r.rate,
+                  "as_of": str(r.as_of) if r.as_of else None,
+                  "convention": r.convention, "source": r.source,
+                  "evidence_grade": r.evidence_grade}
+                 for r in session.execute(select(db.fx_rate)).all()],
+                currencies=[quoted], to=target, convention=None,
+                as_of=f"{row.price_year or 2026}-12-31")
+        except (fx.CurrencyMismatch, fx.UnknownCurrency):
+            return {"verdict": "NO_EXCHANGE_RATE", "material": False,
+                    "benchmark": {"low": low, "base": base, "high": high},
+                    "note": (f"{value} {quoted} cannot be compared with the "
+                             f"band {low}-{high} {target}: reference.fx_rate "
+                             f"holds no {quoted}-{target} rate, and an "
+                             f"unconverted comparison would be a verdict on "
+                             f"two currencies")}
+        factor = Decimal(str(rates["factors"][quoted]))
+        conversion = {"from": quoted, "to": target, "factor": str(factor),
+                      "quoted": value}
+        value = round(float(Decimal(str(value)) * factor), 2)
+        unit = f"{target} ({conversion['quoted']} {quoted})"
     if low <= value <= high:
         return {"verdict": "WITHIN_BAND", "material": False,
                 "benchmark": {"low": low, "base": base, "high": high},
-                "note": (f"{value} falls inside the approved band "
+                "conversion": conversion,
+                "note": (f"{value} {unit} falls inside the approved band "
                          f"{low}-{high}; the research corroborates the "
                          f"benchmark")}
 
@@ -1066,6 +1112,7 @@ def compare_to_benchmark(session, *, country: str, product: str, value: float,
     if edge == 0:
         return {"verdict": "BENCHMARK_UNUSABLE", "material": True,
                 "benchmark": {"low": low, "base": base, "high": high},
+                "conversion": conversion,
                 "note": (f"the approved band for {country} {product} has a "
                          f"zero edge, so divergence cannot be computed - the "
                          f"benchmark itself needs attention")}
@@ -1077,11 +1124,12 @@ def compare_to_benchmark(session, *, country: str, product: str, value: float,
         "verdict": "OUTSIDE_BAND",
         "material": share >= threshold,
         "benchmark": {"low": low, "base": base, "high": high},
+        "conversion": conversion,
         "divergence_share": round(share, 4),
         "direction": direction,
         "threshold": threshold,
-        "note": (f"{value} is {share:.0%} {direction} the approved band "
-                 f"{low}-{high}"
+        "note": (f"{value} {unit} is {share:.0%} {direction} the approved "
+                 f"band {low}-{high}"
                  + (f", beyond the {threshold:.0%} materiality threshold - "
                     f"public research and the governed benchmark disagree "
                     f"materially and a steward should adjudicate before "
@@ -1201,6 +1249,7 @@ def promote(session, *, case_id: str, candidate_ids: list[str],
     now = datetime.now(timezone.utc)
     promoted_footprint, proposed_prices, declined = [], [], []
     promoted_archetype, promoted_anchor = [], []
+    decisions_kept, decisions_superseded = [], []
     entries, superseded = _one_row_per_pair(
         entries, accept_conflicts=accept_conflicts)
 
@@ -1414,11 +1463,24 @@ def promote(session, *, case_id: str, candidate_ids: list[str],
                                f"promotable to a prior - re-run the domain, or "
                                f"set the tier on the observation first.")})
                 continue
+            quoted = q.get("currency") or "USD"
             cmp = compare_to_benchmark(session, country=country,
                                        product=product, value=value,
                                        bandwidth_mbps=int(mbps),
-                                       policy=divergence_policy)
+                                       policy=divergence_policy,
+                                       currency=quoted)
             row_id = f"{country}-{product}-{int(mbps)}-researched"
+            # Left as a steward decided it, if research found the same figure.
+            existing, decided, keep = _standing_decision(
+                session, row_id, value, quoted)
+            if keep:
+                decisions_kept.append({"id": row_id, **decided})
+                proposed_prices.append(
+                    {"country": country, "product": product, "base": value,
+                     "approved": bool(existing.approved),
+                     "decision_kept": decided["decision"],
+                     "benchmark_comparison": cmp})
+                continue
             session.execute(delete(db.unit_cost_prior).where(
                 db.unit_cost_prior.c.id == row_id))
             session.execute(insert(db.unit_cost_prior).values(
@@ -1455,7 +1517,20 @@ def promote(session, *, case_id: str, candidate_ids: list[str],
                                 f"{q.get('unit')!r}, divided by "
                                 f"{MONTHS_PER_YEAR} to reach this monthly "
                                 f"rate. " if period == "YEAR" else "")
-                             + f"vs benchmark: {cmp['verdict']} - {cmp['note']}")))
+                             + f"vs benchmark: {cmp['verdict']} - {cmp['note']}"
+                             # Worded so it can never contain REVOKED_MARK: a
+                             # fresh proposal whose note said "revoked by"
+                             # would read back as revoked.
+                             + (f" | the figure changed from {existing.base} "
+                                f"{existing.currency}, so the earlier "
+                                f"{decided['decision']} decision "
+                                f"({decided['by']}) was not carried over"
+                                if decided else ""))))
+            if decided:
+                decisions_superseded.append(
+                    {"id": row_id, **decided,
+                     "was": f"{existing.base} {existing.currency}",
+                     "now": f"{value} {quoted}"})
             proposed_prices.append(
                 {"country": country, "product": product, "base": value,
                  "approved": False, "benchmark_comparison": cmp})
@@ -1482,12 +1557,17 @@ def promote(session, *, case_id: str, candidate_ids: list[str],
         # this silently.
         "superseded_within_pair": superseded,
         "declined": declined,
+        # A steward's approval or revocation left standing because research
+        # found the same figure again, and the ones a changed figure replaced.
+        "decisions_kept": decisions_kept,
+        "decisions_superseded": decisions_superseded,
         "promoted_by": promoted_by,
         "note": (
             "Footprint rows are now available to the simulation page as the "
             "evidenced starting point. Prices are written unapproved and take "
             "no part in any estimate until a steward approves them - research "
-            "proposes a governed value, it does not set one."),
+            "proposes a governed value, it does not set one. A figure a "
+            "steward has already approved or revoked is left as decided."),
     }
 
 
@@ -1495,6 +1575,61 @@ def promote(session, *, case_id: str, candidate_ids: list[str],
 #: broadband row it holds. Not a judgement introduced here - measured off
 #: the card: 280 DIA rows, 89 MPLS, 356 Ethernet, all at exactly this.
 CARD_BAND_SHARE = Decimal("0.25")
+
+#: How revoke_price marks a row, and how promote recognises one. Written and
+#: read through this one name, because the decision lives in the note and a
+#: second spelling of it would read as no decision at all.
+REVOKED_MARK = "revoked by"
+
+
+def decision_on(row) -> dict | None:
+    """The steward's decision a promoted row carries, if it carries one.
+
+    Approval is a column; revocation is only the note revoke_price appends,
+    because the row keeps its observed value and grade either way. A row
+    revoked and then approved again is approved - the column is checked first.
+    """
+    if row is None:
+        return None
+    if row.approved:
+        return {"decision": "APPROVED", "by": row.approved_by,
+                "at": str(row.approved_at) if row.approved_at else None}
+    note = row.source_note or ""
+    if REVOKED_MARK in note:
+        tail = note.rsplit(REVOKED_MARK, 1)[1]
+        return {"decision": "REVOKED", "by": tail.split(":", 1)[0].strip(),
+                "at": None}
+    return None
+
+
+def _same_figure(row, value, quoted: str) -> bool:
+    """Is a re-promoted observation the figure a decision was made about?"""
+    cents = Decimal("0.01")
+    return (Decimal(str(row.base)).quantize(cents)
+            == Decimal(str(value)).quantize(cents)
+            and (row.currency or "USD").upper() == (quoted or "USD").upper())
+
+
+def _standing_decision(session, row_id: str, value, quoted: str) -> tuple:
+    """(existing row, its decision, whether promote must leave it alone).
+
+    A steward's decision outlives re-promotion of the figure it was about.
+    promote deleted and re-inserted the row unapproved every time, so each
+    run_samples --repromote undid every approval and every revocation since
+    the last one. US DIA at 10 Gbps and US MPLS at 1 Gbps were approved by
+    name on 13 October and were unapproved, with no approver recorded, ten
+    days later - and the two EUR rows revoked that day had lost their reasons
+    too.
+
+    The same figure re-found leaves the row exactly as decided. A different
+    figure is a different claim, so it is proposed afresh, and its note says
+    what was decided about the one it replaces.
+    """
+    existing = session.execute(select(db.unit_cost_prior).where(
+        db.unit_cost_prior.c.id == row_id)).first()
+    decided = decision_on(existing)
+    return (existing, decided,
+            bool(decided) and _same_figure(existing, value, quoted))
 
 
 def approve_price(session, *, row_id: str, approved_by: str,
@@ -1586,7 +1721,7 @@ def revoke_price(session, *, row_id: str, revoked_by: str,
                     .where(db.unit_cost_prior.c.id == row_id)
                     .values(approved=False,
                             source_note=f"{row.source_note or ''} "
-                                        f"| revoked by {revoked_by}: "
+                                        f"| {REVOKED_MARK} {revoked_by}: "
                                         f"{reason}".strip(" |")))
     session.commit()
     return {"id": row_id, "country": row.country, "product": row.product,
