@@ -1,4 +1,4 @@
-.PHONY: lock check-lock test-offline end-to-end set-release check-identity validate-cases audit-contract audit-identity check-duplication validate-flow verify-domains backup restore deck benchmarks reach tls-doctor tls-doctor-in-container check up down logs test seed reset psql doctor migrate pins attest
+.PHONY: lock check-lock test-offline end-to-end set-release check-identity validate-cases audit-contract audit-identity check-duplication validate-flow verify-domains backup restore deck benchmarks price-review price-decisions reach tls-doctor tls-doctor-in-container check up down logs test seed reset psql doctor migrate pins attest
 
 lock: ## record the transitive versions that actually install
 	@echo "Requires built containers. Produces the files check-lock verifies."
@@ -51,6 +51,14 @@ deck:          ## render a V0 snapshot as a PowerPoint (CASE=<case-id> OUT=v0.pp
 
 benchmarks:    ## ingest a folder of benchmark sources (BENCH=./folder RIGHTS=PUBLISHED)
 	python tools/ingest_benchmarks.py $(BENCH) --rights $(RIGHTS) $(if $(ORG),--org "$(ORG)",)
+
+price-review:  ## every researched price beside the rate it would replace -> docs/price-review.xlsx
+	docker compose exec api sh -c 'cd /app && PYTHONPATH=/app python tools/review_prices.py --out /src/samples/outside_in'
+	python tools/build_price_review.py
+
+price-decisions:  ## apply samples/price_decisions.csv to the rate card (BY="name"); read a workbook back first with WORKBOOK=docs/price-review.xlsx
+	$(if $(WORKBOOK),python tools/build_price_review.py --to-register $(WORKBOOK),)
+	docker compose exec api sh -c 'cd /app && PYTHONPATH=/app python tools/approve_prices.py --by "$(BY)" --decisions /src/samples/price_decisions.csv'
 
 reach:         ## prove the container is really on the internet (live, changing values)
 	docker compose exec api python -c "import json; from app.domain import reachability; print(json.dumps(reachability.check(), indent=2))"
