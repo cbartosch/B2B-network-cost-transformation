@@ -1,0 +1,5338 @@
+{
+ "reproduced": 50,
+ "prices": [
+  {
+   "id": "AU-BROADBAND_HFC-250-researched",
+   "country": "AU",
+   "product": "BROADBAND_HFC",
+   "mbps": 250,
+   "base": "104.00",
+   "currency": "AUD",
+   "low": "78.00",
+   "high": "130.00",
+   "state": "APPROVED",
+   "decided_by": "Christian Bartosch",
+   "usd": "70.27",
+   "replaces": {
+    "id": "AU-BROADBAND_HFC-250",
+    "basis": "SEED",
+    "usd": "155.00"
+   },
+   "lower_tier": 100,
+   "upper_tier": 500,
+   "inversions": [
+    "100 Mbps at 115 > 250 Mbps at 70 USD",
+    "1000 Mbps at 250 > 2000 Mbps at 149 USD"
+   ],
+   "researched_by": "woolworths",
+   "as_of": "2025",
+   "evidence": {
+    "from": "run narrative (the disposition was replaced)",
+    "label": null,
+    "vendor": null,
+    "term_months": null,
+    "as_of": null,
+    "excerpt": "ise NBN (symmetric, SLA-backed) list prices in AUD excl. GST: 100/100 Mbps A$399/mo, 250/250 Mbps A$399/mo, 500/500 Mbps A$469/mo, 1000/1000 Mbps A$699/mo (36-month term). Swoop published business NBN prices: 250 Mbps A$104/mo (FTTP), 1000 Mbps A$129/mo (FTTP/HFC). Kookaburra Comms (trade press, 2026) cites typical published range A$400 for 100-250 Mbps to A$700-A$1,500 for 1 Gbps",
+    "sources": []
+   },
+   "flags": [
+    "single source",
+    "re-prices lower tiers"
+   ],
+   "other_observations": [],
+   "effect": {
+    "woolworths": {
+     "delta": "-1572960.00",
+     "currency": "AUD",
+     "circuits": 1130
+    }
+   }
+  },
+  {
+   "id": "AU-BROADBAND_HFC-2000-researched",
+   "country": "AU",
+   "product": "BROADBAND_HFC",
+   "mbps": 2000,
+   "base": "220.00",
+   "currency": "AUD",
+   "low": "165.00",
+   "high": "275.00",
+   "state": "APPROVED",
+   "decided_by": "Christian Bartosch",
+   "usd": "148.65",
+   "replaces": null,
+   "lower_tier": 1000,
+   "upper_tier": null,
+   "inversions": [
+    "100 Mbps at 115 > 250 Mbps at 70 USD",
+    "1000 Mbps at 250 > 2000 Mbps at 149 USD"
+   ],
+   "researched_by": "woolworths",
+   "as_of": "2026",
+   "evidence": {
+    "from": "domain 19 disposition",
+    "label": "BROADBAND_HFC AU 2000Mbps MRC (Aussie Broadband Business Hyperfast HFC)",
+    "vendor": "Aussie Broadband",
+    "term_months": null,
+    "as_of": "2026",
+    "sources": [
+     {
+      "publisher": "Aussie Broadband / WhistleOut",
+      "source_url": "https://www.whistleout.com.au/Broadband/Guides/NBN-business-plans-compared",
+      "source_class": "AGGREGATOR",
+      "how_read": "SNIPPET_ONLY",
+      "excerpt": "Aussie Broadband FTTP Business Hyperfast Plus 2000/500 Unlimited Data $220/mth",
+      "note": "2000 Mbps tier available on HFC and FTTP; this is the NBN Hyperfast tier"
+     },
+     {
+      "publisher": "kookaburracomms.com.au",
+      "source_url": "https://www.kookaburracomms.com.au/guides/business-fibre-cost/",
+      "source_class": "TRADE_PRESS",
+      "how_read": "SNIPPET_ONLY",
+      "excerpt": "business NBN plans on fibre run roughly $100 to $220 a month",
+      "note": "Upper end of range consistent with 2000 Mbps plans; October 2026 date confirmed in source"
+     }
+    ]
+   },
+   "flags": [
+    "read from a snippet",
+    "re-prices lower tiers"
+   ],
+   "other_observations": [
+    {
+     "slug": "woolworths",
+     "value": "220",
+     "currency": "AUD"
+    }
+   ],
+   "effect": {}
+  },
+  {
+   "id": "AU-BROADBAND_PON-250-researched",
+   "country": "AU",
+   "product": "BROADBAND_PON",
+   "mbps": 250,
+   "base": "114.00",
+   "currency": "AUD",
+   "low": "85.50",
+   "high": "142.50",
+   "state": "APPROVED",
+   "decided_by": "Christian Bartosch",
+   "usd": "77.03",
+   "replaces": {
+    "id": "AU-BROADBAND_PON-250",
+    "basis": "SEED",
+    "usd": "101.00"
+   },
+   "lower_tier": 100,
+   "upper_tier": 500,
+   "inversions": [],
+   "researched_by": "woolworths",
+   "as_of": "2026",
+   "evidence": {
+    "from": "domain 19 disposition",
+    "label": "BROADBAND_PON AU 250Mbps MRC (Aussie Broadband Business FTTP 250/100)",
+    "vendor": "Aussie Broadband",
+    "term_months": null,
+    "as_of": "2026",
+    "sources": [
+     {
+      "publisher": "Aussie Broadband Enterprise",
+      "source_url": "https://www.aussiebroadband.com.au/enterprise/internet/nbn-plans/",
+      "source_class": "COMPANY_PUBLISHED",
+      "how_read": "SNIPPET_ONLY",
+      "excerpt": "Superfast Plus 250/100 $114/month",
+      "note": "Business NBN FTTP plan; HFC also available at same price tier"
+     },
+     {
+      "publisher": "WhistleOut",
+      "source_url": "https://www.whistleout.com.au/Broadband/Guides/NBN-business-plans-compared",
+      "source_class": "AGGREGATOR",
+      "how_read": "SNIPPET_ONLY",
+      "excerpt": "Aussie Broadband FTTP, HFC Business Superfast Plus 250/100 nbn 250/89 Mbps $114/mth",
+      "note": "Aggregator confirmation of Aussie Broadband published price"
+     }
+    ]
+   },
+   "flags": [
+    "read from a snippet"
+   ],
+   "other_observations": [
+    {
+     "slug": "woolworths",
+     "value": "114",
+     "currency": "AUD"
+    }
+   ],
+   "effect": {}
+  },
+  {
+   "id": "AU-DIA-250-researched",
+   "country": "AU",
+   "product": "DIA",
+   "mbps": 250,
+   "base": "339.00",
+   "currency": "AUD",
+   "low": "339.00",
+   "high": "339.00",
+   "state": "UNDECIDED",
+   "decided_by": null,
+   "usd": "229.05",
+   "replaces": null,
+   "lower_tier": null,
+   "upper_tier": 300,
+   "inversions": [],
+   "researched_by": "woolworths",
+   "as_of": "2025",
+   "evidence": {
+    "from": "run narrative (the disposition was replaced)",
+    "label": null,
+    "vendor": null,
+    "term_months": null,
+    "as_of": null,
+    "excerpt": "advertised price ~A$65-80/mo (not enterprise). AU DIA (Dedicated Internet Access – direct fibre): Nexthop AU lists 1 Gbps datacenter DIA at A$499/mo (24-month, on-net); Vocus Fast Fibre (direct fibre, enterprise) from A$339/mo excl. GST for 250 Mbps+. AyeTech 2026 guide cites enterprise dedicated fibre 100 Mbps–1 Gbps at A$2,500–A$8,000/mo for large-enterprise/data-centre grade. N",
+    "sources": []
+   },
+   "flags": [
+    "single source"
+   ],
+   "other_observations": [],
+   "effect": {
+    "woolworths": {
+     "delta": "-779850.00",
+     "currency": "AUD",
+     "circuits": 30
+    }
+   }
+  },
+  {
+   "id": "AU-DIA-1000-researched",
+   "country": "AU",
+   "product": "DIA",
+   "mbps": 1000,
+   "base": "499.00",
+   "currency": "AUD",
+   "low": "499.00",
+   "high": "499.00",
+   "state": "REVOKED",
+   "decided_by": "Christian Bartosch",
+   "usd": "337.16",
+   "replaces": {
+    "id": "AU-DIA-1000",
+    "basis": "SEED",
+    "usd": "1750.00"
+   },
+   "lower_tier": 500,
+   "upper_tier": null,
+   "inversions": [
+    "500 Mbps at 1610 > 1000 Mbps at 337 USD"
+   ],
+   "researched_by": "woolworths",
+   "as_of": "2025",
+   "evidence": {
+    "from": "run narrative (the disposition was replaced)",
+    "label": null,
+    "vendor": null,
+    "term_months": null,
+    "as_of": null,
+    "excerpt": " not retail MRCs. Residential NBN (consumer, ACCC June 2025): 100 Mbps median advertised price ~A$65-80/mo (not enterprise). AU DIA (Dedicated Internet Access – direct fibre): Nexthop AU lists 1 Gbps datacenter DIA at A$499/mo (24-month, on-net); Vocus Fast Fibre (direct fibre, enterprise) from A$339/mo excl. GST for 250 Mbps+. AyeTech 2026 guide cites enterprise dedicated fibre 1",
+    "sources": []
+   },
+   "flags": [
+    "consumer",
+    "single source",
+    "re-prices lower tiers"
+   ],
+   "other_observations": [],
+   "effect": {
+    "woolworths": {
+     "delta": "-707850.00",
+     "currency": "AUD",
+     "circuits": 30
+    }
+   }
+  },
+  {
+   "id": "AU-ETHERNET-250-researched",
+   "country": "AU",
+   "product": "ETHERNET",
+   "mbps": 250,
+   "base": "399.00",
+   "currency": "AUD",
+   "low": "299.25",
+   "high": "498.75",
+   "state": "APPROVED",
+   "decided_by": "Christian Bartosch",
+   "usd": "269.59",
+   "replaces": null,
+   "lower_tier": null,
+   "upper_tier": 500,
+   "inversions": [],
+   "researched_by": "woolworths",
+   "as_of": "2026",
+   "evidence": {
+    "from": "domain 19 disposition",
+    "label": "ETHERNET AU 250Mbps MRC (NBN Enterprise Ethernet retail, ex GST)",
+    "vendor": "Swoop / Vocus / businesscom",
+    "term_months": null,
+    "as_of": "2026",
+    "sources": [
+     {
+      "publisher": "Swoop",
+      "source_url": "https://www.swoop.com.au/business/enterprise-ethernet/",
+      "source_class": "COMPANY_PUBLISHED",
+      "how_read": "SNIPPET_ONLY",
+      "excerpt": "Business Fibre 250/250 Mbps $399 per month",
+      "note": "Retail ex GST, 36-month term; NBN EE wholesale product"
+     },
+     {
+      "publisher": "Vocus",
+      "source_url": "https://www.vocus.com.au/enterprise/internet-and-networks/nbn-enterprise-ethernet",
+      "source_class": "COMPANY_PUBLISHED",
+      "how_read": "SNIPPET_ONLY",
+      "excerpt": "100/100Mbps Starting at $399 / per month (ex. GST); 250/250Mbps Starting at $399 / per month (ex. GST)",
+      "note": "Both 100 and 250 Mbps start at same published price from Vocus"
+     }
+    ]
+   },
+   "flags": [
+    "wholesale",
+    "floor",
+    "read from a snippet"
+   ],
+   "other_observations": [
+    {
+     "slug": "woolworths",
+     "value": "399",
+     "currency": "AUD"
+    }
+   ],
+   "effect": {
+    "woolworths": {
+     "delta": "-4200.00",
+     "currency": "AUD",
+     "circuits": 5
+    }
+   }
+  },
+  {
+   "id": "AU-ETHERNET-500-researched",
+   "country": "AU",
+   "product": "ETHERNET",
+   "mbps": 500,
+   "base": "469.00",
+   "currency": "AUD",
+   "low": "351.75",
+   "high": "586.25",
+   "state": "APPROVED",
+   "decided_by": "Christian Bartosch",
+   "usd": "316.89",
+   "replaces": {
+    "id": "AU-ETHERNET-500",
+    "basis": "SEED",
+    "usd": "1288.00"
+   },
+   "lower_tier": 250,
+   "upper_tier": 1000,
+   "inversions": [],
+   "researched_by": "woolworths",
+   "as_of": "2026",
+   "evidence": {
+    "from": "domain 19 disposition",
+    "label": "ETHERNET AU 500Mbps MRC (NBN Enterprise Ethernet retail, ex GST)",
+    "vendor": "Vocus / Swoop",
+    "term_months": null,
+    "as_of": "2026",
+    "sources": [
+     {
+      "publisher": "Vocus",
+      "source_url": "https://www.vocus.com.au/enterprise/internet-and-networks/nbn-enterprise-ethernet",
+      "source_class": "COMPANY_PUBLISHED",
+      "how_read": "SNIPPET_ONLY",
+      "excerpt": "500/500Mbps Starting at $469 / per month (ex. GST)",
+      "note": "Retail ex GST, 36-month term"
+     },
+     {
+      "publisher": "Swoop",
+      "source_url": "https://www.swoop.com.au/business/enterprise-ethernet/",
+      "source_class": "COMPANY_PUBLISHED",
+      "how_read": "SNIPPET_ONLY",
+      "excerpt": "Business Fibre 500/500 Mbps $499 per month",
+      "note": "Retail ex GST, 36-month term"
+     }
+    ]
+   },
+   "flags": [
+    "floor",
+    "read from a snippet"
+   ],
+   "other_observations": [
+    {
+     "slug": "woolworths",
+     "value": "469",
+     "currency": "AUD"
+    }
+   ],
+   "effect": {}
+  },
+  {
+   "id": "AU-ETHERNET-1000-researched",
+   "country": "AU",
+   "product": "ETHERNET",
+   "mbps": 1000,
+   "base": "699.00",
+   "currency": "AUD",
+   "low": "524.25",
+   "high": "873.75",
+   "state": "APPROVED",
+   "decided_by": "Christian Bartosch",
+   "usd": "472.30",
+   "replaces": {
+    "id": "AU-ETHERNET-1000",
+    "basis": "SEED",
+    "usd": "1450.00"
+   },
+   "lower_tier": 500,
+   "upper_tier": 2000,
+   "inversions": [],
+   "researched_by": "woolworths",
+   "as_of": "2026",
+   "evidence": {
+    "from": "domain 19 disposition",
+    "label": "ETHERNET AU 1000Mbps MRC (NBN Enterprise Ethernet retail, ex GST)",
+    "vendor": "Swoop / Vocus / Telstra via Telair",
+    "term_months": null,
+    "as_of": "2026",
+    "sources": [
+     {
+      "publisher": "Swoop",
+      "source_url": "https://www.swoop.com.au/business/enterprise-ethernet/",
+      "source_class": "COMPANY_PUBLISHED",
+      "how_read": "SNIPPET_ONLY",
+      "excerpt": "Business Fibre 1000/1000 Mbps $699 per month",
+      "note": "Retail ex GST, 36-month term, NBN EE"
+     },
+     {
+      "publisher": "Vocus",
+      "source_url": "https://www.vocus.com.au/enterprise/internet-and-networks/nbn-enterprise-ethernet",
+      "source_class": "COMPANY_PUBLISHED",
+      "how_read": "SNIPPET_ONLY",
+      "excerpt": "1000/1000Mbps Starting at $699 / per month (ex. GST)",
+      "note": "Retail ex GST, 36-month term"
+     },
+     {
+      "publisher": "Telair (Telstra Ethernet Access Fibre)",
+      "source_url": "https://www.telair.com.au/telstra-fibre/",
+      "source_class": "COMPANY_PUBLISHED",
+      "how_read": "SNIPPET_ONLY",
+      "excerpt": "1000Mbps/1000Mbps $659/month (ex. GST) Minimum cost over 36 months: $23,724",
+      "note": "Telstra carrier ethernet via Telair reseller, 36-month term, ex GST"
+     }
+    ]
+   },
+   "flags": [
+    "floor",
+    "read from a snippet"
+   ],
+   "other_observations": [
+    {
+     "slug": "woolworths",
+     "value": "699",
+     "currency": "AUD"
+    }
+   ],
+   "effect": {
+    "rio-tinto": {
+     "delta": "-349626.49",
+     "currency": "USD",
+     "circuits": 20
+    }
+   }
+  },
+  {
+   "id": "BE-BROADBAND_PON-150-researched",
+   "country": "BE",
+   "product": "BROADBAND_PON",
+   "mbps": 150,
+   "base": "60.00",
+   "currency": "EUR",
+   "low": "45.00",
+   "high": "75.00",
+   "state": "APPROVED",
+   "decided_by": "Christian Bartosch",
+   "usd": "68.88",
+   "replaces": null,
+   "lower_tier": 100,
+   "upper_tier": 250,
+   "inversions": [],
+   "researched_by": "bnp-paribas",
+   "as_of": "2025",
+   "evidence": {
+    "from": "domain 19 disposition",
+    "label": "BROADBAND_PON 150 Mbps MRC (business shared fibre, Proximus Go Fiber)",
+    "vendor": "Proximus",
+    "term_months": null,
+    "as_of": "2025",
+    "sources": [
+     {
+      "publisher": "Proximus (proximus.be)",
+      "source_url": "https://www.proximus.be/en/business/internet-subscription",
+      "source_class": "COMPANY_PUBLISHED",
+      "how_read": "FULL_PAGE",
+      "excerpt": "Business Internet Go Fiber 150 Mbps: €45/month during 12 months, then €60/month",
+      "note": "Standard post-promo tariff; 150 Mbps down / 30 Mbps up; excl. VAT"
+     }
+    ]
+   },
+   "flags": [
+    "promotional",
+    "single source"
+   ],
+   "other_observations": [
+    {
+     "slug": "bnp-paribas",
+     "value": "60",
+     "currency": "EUR"
+    }
+   ],
+   "effect": {}
+  },
+  {
+   "id": "BE-BROADBAND_PON-2500-researched",
+   "country": "BE",
+   "product": "BROADBAND_PON",
+   "mbps": 2500,
+   "base": "95.00",
+   "currency": "EUR",
+   "low": "95.00",
+   "high": "95.00",
+   "state": "UNDECIDED",
+   "decided_by": null,
+   "usd": "109.06",
+   "replaces": null,
+   "lower_tier": 1000,
+   "upper_tier": null,
+   "inversions": [
+    "1000 Mbps at 136 > 2500 Mbps at 109 USD"
+   ],
+   "researched_by": "bnp-paribas",
+   "as_of": "2025-07",
+   "evidence": {
+    "from": "domain 19 disposition",
+    "label": "BROADBAND_PON 2500 Mbps MRC (Proximus Flex+ Giga Fiber 2.5 Gbps)",
+    "vendor": "Proximus",
+    "term_months": null,
+    "as_of": "2025-07",
+    "sources": [
+     {
+      "publisher": "Proximus (proximus.com press release Jul 2025)",
+      "source_url": "https://www.proximus.com/news/2025/202507-business-flex-plus-packs-as-of-july-1-2025.html",
+      "source_class": "COMPANY_PUBLISHED",
+      "how_read": "FULL_PAGE",
+      "excerpt": "Business Flex+ Giga Fiber 2.5 Gbps symmetric: from €95/month",
+      "note": "Wi-Fi 6E; includes Easy Protect; small business product"
+     }
+    ]
+   },
+   "flags": [
+    "floor",
+    "single source",
+    "re-prices lower tiers"
+   ],
+   "other_observations": [
+    {
+     "slug": "bnp-paribas",
+     "value": "95",
+     "currency": "EUR"
+    }
+   ],
+   "effect": {}
+  },
+  {
+   "id": "DE-BROADBAND_PON-75-researched",
+   "country": "DE",
+   "product": "BROADBAND_PON",
+   "mbps": 75,
+   "base": "19.22",
+   "currency": "EUR",
+   "low": "19.22",
+   "high": "19.22",
+   "state": "REVOKED",
+   "decided_by": "Christian Bartosch",
+   "usd": "22.06",
+   "replaces": null,
+   "lower_tier": 50,
+   "upper_tier": 100,
+   "inversions": [
+    "50 Mbps at 64 > 75 Mbps at 22 USD"
+   ],
+   "researched_by": "fresenius",
+   "as_of": "2024-12",
+   "evidence": {
+    "from": "domain 19 disposition",
+    "label": "DE BROADBAND_PON wholesale bitstream L2-BSA 50-99 Mbps MRC (regulatory price cap)",
+    "vendor": "BNetzA/BMDV (wholesale cap, subsidised FTTH networks)",
+    "term_months": null,
+    "as_of": "2024-12",
+    "sources": [
+     {
+      "publisher": "BMDV / Bundesnetzagentur (German Federal Ministry for Digital Affairs)",
+      "source_url": "https://www.bmv.de/SharedDocs/DE/Anlage/DG/vorleistungspreise.pdf?__blob=publicationFile",
+      "source_class": "REGULATOR",
+      "how_read": "SNIPPET_ONLY",
+      "excerpt": "50 – 99 Mbit/s … L2-BSA Überlassungsentgelt … 19,22 €",
+      "note": "Wholesale bitstream price cap for subsidised FTTH networks, published 23 Dec 2024. Not a retail enterprise price — cost…"
+     },
+     {
+      "publisher": "Rödl & Partner (law firm commentary on BMDV price table)",
+      "source_url": "https://www.roedl.de/themen/kompass-telekommunikation/2025/01/preise-fuer-den-zugang-dritter-auf-vorleistungsebene-zu-gefoerderten-netzen-festgesetzt",
+      "source_class": "OTHER",
+      "how_read": "SNIPPET_ONLY",
+      "excerpt": "Dezember 2024 verbindliche Preise für den Zugang Dritter auf Vorleistungsebene in geförderten Glasfasernetzen veröffentlicht",
+      "note": "Confirms Dec 2024 publication of binding wholesale price caps. Corroborates BMDV source."
+     }
+    ]
+   },
+   "flags": [
+    "wholesale",
+    "read from a snippet",
+    "re-prices lower tiers"
+   ],
+   "other_observations": [
+    {
+     "slug": "fresenius",
+     "value": "19.22",
+     "currency": "EUR"
+    }
+   ],
+   "effect": {}
+  },
+  {
+   "id": "DE-BROADBAND_PON-150-researched",
+   "country": "DE",
+   "product": "BROADBAND_PON",
+   "mbps": 150,
+   "base": "21.55",
+   "currency": "EUR",
+   "low": "21.55",
+   "high": "21.55",
+   "state": "REVOKED",
+   "decided_by": "Christian Bartosch",
+   "usd": "24.74",
+   "replaces": null,
+   "lower_tier": 100,
+   "upper_tier": 250,
+   "inversions": [
+    "100 Mbps at 78 > 150 Mbps at 25 USD"
+   ],
+   "researched_by": "fresenius",
+   "as_of": "2024-12",
+   "evidence": {
+    "from": "domain 19 disposition",
+    "label": "DE BROADBAND_PON wholesale bitstream L2-BSA 100-199 Mbps MRC (regulatory price cap)",
+    "vendor": "BNetzA/BMDV (wholesale cap, subsidised FTTH networks)",
+    "term_months": null,
+    "as_of": "2024-12",
+    "sources": [
+     {
+      "publisher": "BMDV / Bundesnetzagentur",
+      "source_url": "https://www.bmv.de/SharedDocs/DE/Anlage/DG/vorleistungspreise.pdf?__blob=publicationFile",
+      "source_class": "REGULATOR",
+      "how_read": "SNIPPET_ONLY",
+      "excerpt": "100 – 199 Mbit/s … L2-BSA … 21,55 €",
+      "note": "Wholesale bitstream price cap. Not a retail enterprise price."
+     },
+     {
+      "publisher": "Grant Thornton DE (commentary on BNetzA price table)",
+      "source_url": "https://www.grantthornton.de/themen/2025/entgeltregulierung-im-telekommunikationsmarkt/",
+      "source_class": "OTHER",
+      "how_read": "SNIPPET_ONLY",
+      "excerpt": "100 – 199 Mbit/s … 21,55 EUR / 25,35 EUR",
+      "note": "Reproduces BMDV table. L2-BSA/L3-BSA figures shown."
+     }
+    ]
+   },
+   "flags": [
+    "wholesale",
+    "read from a snippet",
+    "re-prices lower tiers"
+   ],
+   "other_observations": [
+    {
+     "slug": "fresenius",
+     "value": "21.55",
+     "currency": "EUR"
+    }
+   ],
+   "effect": {}
+  },
+  {
+   "id": "DE-BROADBAND_PON-750-researched",
+   "country": "DE",
+   "product": "BROADBAND_PON",
+   "mbps": 750,
+   "base": "30.74",
+   "currency": "EUR",
+   "low": "30.74",
+   "high": "30.74",
+   "state": "REVOKED",
+   "decided_by": "Christian Bartosch",
+   "usd": "35.29",
+   "replaces": null,
+   "lower_tier": 500,
+   "upper_tier": 1000,
+   "inversions": [
+    "500 Mbps at 132 > 750 Mbps at 35 USD"
+   ],
+   "researched_by": "fresenius",
+   "as_of": "2024-12",
+   "evidence": {
+    "from": "domain 19 disposition",
+    "label": "DE BROADBAND_PON wholesale bitstream L2-BSA 500-999 Mbps MRC (regulatory price cap)",
+    "vendor": "BNetzA/BMDV (wholesale cap, subsidised FTTH networks)",
+    "term_months": null,
+    "as_of": "2024-12",
+    "sources": [
+     {
+      "publisher": "BMDV / Bundesnetzagentur",
+      "source_url": "https://www.bmv.de/SharedDocs/DE/Anlage/DG/vorleistungspreise.pdf?__blob=publicationFile",
+      "source_class": "REGULATOR",
+      "how_read": "SNIPPET_ONLY",
+      "excerpt": "500 – 999 Mbit/s … L2-BSA … 30,74 €",
+      "note": "Wholesale bitstream price cap for subsidised FTTH networks."
+     },
+     {
+      "publisher": "Grant Thornton DE",
+      "source_url": "https://www.grantthornton.de/themen/2025/entgeltregulierung-im-telekommunikationsmarkt/",
+      "source_class": "OTHER",
+      "how_read": "SNIPPET_ONLY",
+      "excerpt": "500 – 999 Mbit/s … 30,74 EUR / 36,16 EUR",
+      "note": "Corroborates BMDV table."
+     }
+    ]
+   },
+   "flags": [
+    "wholesale",
+    "read from a snippet",
+    "re-prices lower tiers"
+   ],
+   "other_observations": [
+    {
+     "slug": "fresenius",
+     "value": "30.74",
+     "currency": "EUR"
+    }
+   ],
+   "effect": {
+    "abb": {
+     "delta": "-4781.41",
+     "currency": "USD",
+     "circuits": 4
+    },
+    "basf": {
+     "delta": "-38527.01",
+     "currency": "EUR",
+     "circuits": 37
+    },
+    "henkel": {
+     "delta": "-5206.35",
+     "currency": "EUR",
+     "circuits": 5
+    },
+    "novartis": {
+     "delta": "-7650.25",
+     "currency": "CHF",
+     "circuits": 8
+    },
+    "saint-gobain": {
+     "delta": "-11453.98",
+     "currency": "EUR",
+     "circuits": 11
+    },
+    "siemens": {
+     "delta": "-29155.58",
+     "currency": "EUR",
+     "circuits": 28
+    },
+    "unilever": {
+     "delta": "-5206.35",
+     "currency": "EUR",
+     "circuits": 5
+    },
+    "volkswagen": {
+     "delta": "-29155.58",
+     "currency": "EUR",
+     "circuits": 28
+    }
+   }
+  },
+  {
+   "id": "DE-BROADBAND_PON-1000-researched",
+   "country": "DE",
+   "product": "BROADBAND_PON",
+   "mbps": 1000,
+   "base": "41.97",
+   "currency": "EUR",
+   "low": "41.97",
+   "high": "41.97",
+   "state": "REVOKED",
+   "decided_by": "Christian Bartosch",
+   "usd": "48.18",
+   "replaces": {
+    "id": "DE-BROADBAND_PON-1000",
+    "basis": "SEED",
+    "usd": "171.00"
+   },
+   "lower_tier": 500,
+   "upper_tier": null,
+   "inversions": [
+    "500 Mbps at 132 > 1000 Mbps at 48 USD"
+   ],
+   "researched_by": "fresenius",
+   "as_of": "2024-12",
+   "evidence": {
+    "from": "domain 19 disposition",
+    "label": "DE BROADBAND_PON wholesale bitstream L2-BSA 1000 Mbps MRC (regulatory price cap)",
+    "vendor": "BNetzA/BMDV (wholesale cap, subsidised FTTH networks)",
+    "term_months": null,
+    "as_of": "2024-12",
+    "sources": [
+     {
+      "publisher": "BMDV / Bundesnetzagentur",
+      "source_url": "https://www.bmv.de/SharedDocs/DE/Anlage/DG/vorleistungspreise.pdf?__blob=publicationFile",
+      "source_class": "REGULATOR",
+      "how_read": "SNIPPET_ONLY",
+      "excerpt": "1000 Mbit/s … L2-BSA … 41,97 €",
+      "note": "Wholesale bitstream price cap only. Retail enterprise will be higher after margin stack."
+     },
+     {
+      "publisher": "Grant Thornton DE",
+      "source_url": "https://www.grantthornton.de/themen/2025/entgeltregulierung-im-telekommunikationsmarkt/",
+      "source_class": "OTHER",
+      "how_read": "SNIPPET_ONLY",
+      "excerpt": "1.000 Mbit/s … 41,97 EUR / 49,38 EUR",
+      "note": "Corroborates BMDV table."
+     }
+    ]
+   },
+   "flags": [
+    "wholesale",
+    "read from a snippet",
+    "re-prices lower tiers"
+   ],
+   "other_observations": [
+    {
+     "slug": "fresenius",
+     "value": "41.97",
+     "currency": "EUR"
+    }
+   ],
+   "effect": {
+    "abb": {
+     "delta": "-4144.04",
+     "currency": "USD",
+     "circuits": 4
+    },
+    "basf": {
+     "delta": "-33391.31",
+     "currency": "EUR",
+     "circuits": 37
+    },
+    "henkel": {
+     "delta": "-4512.34",
+     "currency": "EUR",
+     "circuits": 5
+    },
+    "novartis": {
+     "delta": "-6630.46",
+     "currency": "CHF",
+     "circuits": 8
+    },
+    "saint-gobain": {
+     "delta": "-9927.15",
+     "currency": "EUR",
+     "circuits": 11
+    },
+    "siemens": {
+     "delta": "-25269.10",
+     "currency": "EUR",
+     "circuits": 28
+    },
+    "unilever": {
+     "delta": "-4512.34",
+     "currency": "EUR",
+     "circuits": 5
+    },
+    "volkswagen": {
+     "delta": "-25269.10",
+     "currency": "EUR",
+     "circuits": 28
+    }
+   }
+  },
+  {
+   "id": "ES-DIA-100-researched",
+   "country": "ES",
+   "product": "DIA",
+   "mbps": 100,
+   "base": "159.99",
+   "currency": "EUR",
+   "low": "159.99",
+   "high": "159.99",
+   "state": "UNDECIDED",
+   "decided_by": null,
+   "usd": "183.66",
+   "replaces": null,
+   "lower_tier": null,
+   "upper_tier": 300,
+   "inversions": [],
+   "researched_by": "inditex",
+   "as_of": "2025",
+   "evidence": {
+    "from": "run narrative (the disposition was replaced)",
+    "label": null,
+    "vendor": null,
+    "term_months": null,
+    "as_of": null,
+    "excerpt": "band, MPLS/IP-VPN and SD-WAN from all four national players plus resellers. Telefónica Global Solutions offers DIA on its own Tier 1 global infrastructure. A domestic reseller (Direct Telecom) lists 100/100 Mbps DIA at €159.99/month and 1 Gbps dedicated circuit at €449/month (2025 prices). Telefónica and MasOrange are exploring acquisition of Vodafone España (as of mid-2025); if comp",
+    "sources": []
+   },
+   "flags": [
+    "single source"
+   ],
+   "other_observations": [],
+   "effect": {
+    "carrefour": {
+     "delta": "-134271.72",
+     "currency": "EUR",
+     "circuits": 12
+    },
+    "fresenius": {
+     "delta": "-4811403.30",
+     "currency": "EUR",
+     "circuits": 430
+    },
+    "santander": {
+     "delta": "-14590860.24",
+     "currency": "EUR",
+     "circuits": 1630
+    }
+   }
+  },
+  {
+   "id": "ES-DIA-600-researched",
+   "country": "ES",
+   "product": "DIA",
+   "mbps": 600,
+   "base": "1100.00",
+   "currency": "EUR",
+   "low": "1100.00",
+   "high": "1100.00",
+   "state": "UNDECIDED",
+   "decided_by": null,
+   "usd": "1262.77",
+   "replaces": null,
+   "lower_tier": 500,
+   "upper_tier": 1000,
+   "inversions": [],
+   "researched_by": "carrefour",
+   "as_of": "2025",
+   "evidence": {
+    "from": "run narrative (the disposition was replaced)",
+    "label": null,
+    "vendor": null,
+    "term_months": null,
+    "as_of": null,
+    "excerpt": null,
+    "sources": []
+   },
+   "flags": [
+    "single source",
+    "untraceable"
+   ],
+   "other_observations": [],
+   "effect": {}
+  },
+  {
+   "id": "ES-DIA-1000-researched",
+   "country": "ES",
+   "product": "DIA",
+   "mbps": 1000,
+   "base": "449.00",
+   "currency": "EUR",
+   "low": "449.00",
+   "high": "449.00",
+   "state": "UNDECIDED",
+   "decided_by": null,
+   "usd": "515.44",
+   "replaces": {
+    "id": "ES-DIA-1000",
+    "basis": "SEED",
+    "usd": "1300.00"
+   },
+   "lower_tier": 500,
+   "upper_tier": null,
+   "inversions": [
+    "500 Mbps at 1196 > 1000 Mbps at 515 USD"
+   ],
+   "researched_by": "inditex",
+   "as_of": "2025",
+   "evidence": {
+    "from": "run narrative (the disposition was replaced)",
+    "label": null,
+    "vendor": null,
+    "term_months": null,
+    "as_of": null,
+    "excerpt": "ional players plus resellers. Telefónica Global Solutions offers DIA on its own Tier 1 global infrastructure. A domestic reseller (Direct Telecom) lists 100/100 Mbps DIA at €159.99/month and 1 Gbps dedicated circuit at €449/month (2025 prices). Telefónica and MasOrange are exploring acquisition of Vodafone España (as of mid-2025); if completed this would reduce the market to three",
+    "sources": []
+   },
+   "flags": [
+    "single source",
+    "re-prices lower tiers"
+   ],
+   "other_observations": [],
+   "effect": {
+    "carrefour": {
+     "delta": "-82249.92",
+     "currency": "EUR",
+     "circuits": 12
+    },
+    "fresenius": {
+     "delta": "-2947288.80",
+     "currency": "EUR",
+     "circuits": 430
+    },
+    "iberdrola": {
+     "delta": "-164023.20",
+     "currency": "EUR",
+     "circuits": 20
+    },
+    "santander": {
+     "delta": "-8937824.64",
+     "currency": "EUR",
+     "circuits": 1630
+    },
+    "volkswagen": {
+     "delta": "-65609.28",
+     "currency": "EUR",
+     "circuits": 8
+    }
+   }
+  },
+  {
+   "id": "FR-BROADBAND_PON-100-researched",
+   "country": "FR",
+   "product": "BROADBAND_PON",
+   "mbps": 100,
+   "base": "26.12",
+   "currency": "EUR",
+   "low": "26.12",
+   "high": "26.12",
+   "state": "REVOKED",
+   "decided_by": "Christian Bartosch",
+   "usd": "29.99",
+   "replaces": {
+    "id": "FR-BROADBAND_PON-100",
+    "basis": "SEED",
+    "usd": "68.00"
+   },
+   "lower_tier": 50,
+   "upper_tier": 250,
+   "inversions": [
+    "50 Mbps at 56 > 100 Mbps at 30 USD"
+   ],
+   "researched_by": "air-france-klm",
+   "as_of": "2024",
+   "evidence": {
+    "from": "domain 19 disposition",
+    "label": "BROADBAND_PON France cheapest FttH/coaxial consumer double-play plan",
+    "vendor": null,
+    "term_months": null,
+    "as_of": "2025-06",
+    "sources": [
+     {
+      "publisher": "ARCEP",
+      "source_url": "https://www.arcep.fr/uploads/tx_gspublication/etude-tarifs-services-fixes-France-evolution-2015-2025_janv2026.pdf",
+      "source_class": "REGULATOR",
+      "how_read": "SNIPPET_ONLY",
+      "excerpt": "Les tarifs mensuels des offres FttH ou avec terminaison coaxiale les moins chères sont compris, en juin 2025, entre 20 € et 36 € TTC",
+      "note": "Consumer double-play (phone + internet) entry price. Not enterprise-grade; anchors lower bound."
+     }
+    ]
+   },
+   "flags": [
+    "consumer",
+    "single source",
+    "read from a snippet",
+    "re-prices lower tiers"
+   ],
+   "other_observations": [
+    {
+     "slug": "air-france-klm",
+     "value": "20",
+     "currency": "EUR"
+    },
+    {
+     "slug": "air-france-klm",
+     "value": "36",
+     "currency": "EUR"
+    },
+    {
+     "slug": "air-france-klm",
+     "value": "26.12",
+     "currency": "EUR"
+    }
+   ],
+   "effect": {
+    "air-france-klm": {
+     "delta": "-5730.18",
+     "currency": "EUR",
+     "circuits": 14
+    },
+    "allianz": {
+     "delta": "-69541.08",
+     "currency": "EUR",
+     "circuits": 175
+    },
+    "bayer": {
+     "delta": "-1780.25",
+     "currency": "EUR",
+     "circuits": 4
+    },
+    "bnp-paribas": {
+     "delta": "-509835.46",
+     "currency": "EUR",
+     "circuits": 1283
+    },
+    "danone": {
+     "delta": "-5340.75",
+     "currency": "EUR",
+     "circuits": 12
+    },
+    "heidelberg-materials": {
+     "delta": "-93018.15",
+     "currency": "EUR",
+     "circuits": 209
+    },
+    "michelin": {
+     "delta": "-5340.75",
+     "currency": "EUR",
+     "circuits": 12
+    },
+    "nestle": {
+     "delta": "-6539.78",
+     "currency": "CHF",
+     "circuits": 16
+    },
+    "saint-gobain": {
+     "delta": "-23588.33",
+     "currency": "EUR",
+     "circuits": 53
+    },
+    "totalenergies": {
+     "delta": "-2554.60",
+     "currency": "USD",
+     "circuits": 5
+    },
+    "toyota": {
+     "delta": "-75616.24",
+     "currency": "JPY",
+     "circuits": 1
+    }
+   }
+  },
+  {
+   "id": "FR-DIA-1000-researched",
+   "country": "FR",
+   "product": "DIA",
+   "mbps": 1000,
+   "base": "1200.00",
+   "currency": "EUR",
+   "low": "900.00",
+   "high": "1500.00",
+   "state": "APPROVED",
+   "decided_by": "Christian Bartosch",
+   "usd": "1377.57",
+   "replaces": {
+    "id": "FR-DIA-1000",
+    "basis": "SEED",
+    "usd": "1520.00"
+   },
+   "lower_tier": 500,
+   "upper_tier": null,
+   "inversions": [
+    "500 Mbps at 1398 > 1000 Mbps at 1378 USD"
+   ],
+   "researched_by": "bnp-paribas",
+   "as_of": "2025",
+   "evidence": {
+    "from": "domain 19 disposition",
+    "label": "DIA 1000 Mbps MRC France (Orange Business FTTO dedicated fibre)",
+    "vendor": "Orange Business",
+    "term_months": null,
+    "as_of": "2025",
+    "sources": [
+     {
+      "publisher": "myadsl.fr",
+      "source_url": "https://www.myadsl.fr/cout-ftto-orange-2025/",
+      "source_class": "TRADE_PRESS",
+      "how_read": "SNIPPET_ONLY",
+      "excerpt": "Offre intermédiaire: 1 Gb/s, SLA amélioré, support 24/7 – tarif mensuel approximatif: 1 200 €",
+      "note": "Approximate/indicative; single source, snippet only; treat as directional"
+     }
+    ]
+   },
+   "flags": [
+    "single source",
+    "read from a snippet",
+    "re-prices lower tiers"
+   ],
+   "other_observations": [
+    {
+     "slug": "bnp-paribas",
+     "value": "~1200",
+     "currency": "EUR"
+    }
+   ],
+   "effect": {
+    "accor": {
+     "delta": "-7444.32",
+     "currency": "EUR",
+     "circuits": 5
+    },
+    "air-france-klm": {
+     "delta": "-2977.73",
+     "currency": "EUR",
+     "circuits": 2
+    },
+    "allianz": {
+     "delta": "-1488.86",
+     "currency": "EUR",
+     "circuits": 1
+    },
+    "basf": {
+     "delta": "-8933.18",
+     "currency": "EUR",
+     "circuits": 6
+    },
+    "bnp-paribas": {
+     "delta": "-29777.28",
+     "currency": "EUR",
+     "circuits": 20
+    },
+    "capgemini": {
+     "delta": "-14888.64",
+     "currency": "EUR",
+     "circuits": 10
+    },
+    "michelin": {
+     "delta": "-5955.46",
+     "currency": "EUR",
+     "circuits": 4
+    },
+    "nestle": {
+     "delta": "-5469.37",
+     "currency": "CHF",
+     "circuits": 4
+    },
+    "saint-gobain": {
+     "delta": "-1369.75",
+     "currency": "EUR",
+     "circuits": 1
+    },
+    "siemens": {
+     "delta": "-26799.55",
+     "currency": "EUR",
+     "circuits": 18
+    },
+    "totalenergies": {
+     "delta": "-1572.44",
+     "currency": "USD",
+     "circuits": 1
+    }
+   }
+  },
+  {
+   "id": "GB-BROADBAND_HFC-100-researched",
+   "country": "GB",
+   "product": "BROADBAND_HFC",
+   "mbps": 100,
+   "base": "29.95",
+   "currency": "GBP",
+   "low": "29.95",
+   "high": "29.95",
+   "state": "REVOKED",
+   "decided_by": "Christian Bartosch",
+   "usd": "40.13",
+   "replaces": {
+    "id": "GB-BROADBAND_HFC-100",
+    "basis": "SEED",
+    "usd": "80.00"
+   },
+   "lower_tier": 50,
+   "upper_tier": 200,
+   "inversions": [
+    "50 Mbps at 65 > 100 Mbps at 40 USD",
+    "250 Mbps at 108 > 400 Mbps at 47 USD",
+    "500 Mbps at 140 > 600 Mbps at 52 USD"
+   ],
+   "researched_by": "siemens",
+   "as_of": "2025",
+   "evidence": {
+    "from": "domain 19 disposition",
+    "label": "BROADBAND_HFC 100Mbps MRC",
+    "vendor": "Virgin Media Business",
+    "term_months": 24,
+    "as_of": "2025",
+    "sources": [
+     {
+      "publisher": "Amvia (citing Virgin Media Business)",
+      "source_url": "https://amvia.co.uk/compare/business-broadband",
+      "source_class": "AGGREGATOR",
+      "how_read": "SNIPPET_ONLY",
+      "excerpt": "Virgin Media Business £29.95/mo ex VAT (Voom 200) 24 months",
+      "note": "HFC cable product; 200 Mbps tier listed; no 100 Mbps tier shown for Virgin Media Business — this is closest available"
+     }
+    ]
+   },
+   "flags": [
+    "single source",
+    "read from a snippet",
+    "re-prices lower tiers"
+   ],
+   "other_observations": [
+    {
+     "slug": "siemens",
+     "value": "~29.95",
+     "currency": "GBP"
+    }
+   ],
+   "effect": {
+    "boots": {
+     "delta": "-742.66",
+     "currency": "GBP",
+     "circuits": 2
+    },
+    "iberdrola": {
+     "delta": "-4584.31",
+     "currency": "EUR",
+     "circuits": 11
+    },
+    "network-rail": {
+     "delta": "-6312.61",
+     "currency": "GBP",
+     "circuits": 17
+    },
+    "nhs-england": {
+     "delta": "-6683.94",
+     "currency": "GBP",
+     "circuits": 18
+    },
+    "saint-gobain": {
+     "delta": "-174237.07",
+     "currency": "EUR",
+     "circuits": 402
+    },
+    "tesco": {
+     "delta": "-3713.30",
+     "currency": "GBP",
+     "circuits": 10
+    },
+    "unilever": {
+     "delta": "-1733.70",
+     "currency": "EUR",
+     "circuits": 4
+    }
+   }
+  },
+  {
+   "id": "GB-BROADBAND_HFC-200-researched",
+   "country": "GB",
+   "product": "BROADBAND_HFC",
+   "mbps": 200,
+   "base": "29.95",
+   "currency": "GBP",
+   "low": "22.46",
+   "high": "37.44",
+   "state": "APPROVED",
+   "decided_by": "Christian Bartosch",
+   "usd": "40.13",
+   "replaces": null,
+   "lower_tier": 100,
+   "upper_tier": 250,
+   "inversions": [
+    "100 Mbps at 80 > 200 Mbps at 40 USD",
+    "250 Mbps at 108 > 400 Mbps at 47 USD",
+    "500 Mbps at 140 > 600 Mbps at 52 USD"
+   ],
+   "researched_by": "boots",
+   "as_of": "2026",
+   "evidence": {
+    "from": "domain 19 disposition",
+    "label": "BROADBAND_HFC 200Mbps MRC (Virgin Media Business Voom 200)",
+    "vendor": "Virgin Media Business",
+    "term_months": 24,
+    "as_of": "2026",
+    "sources": [
+     {
+      "publisher": "virginmediabusiness.co.uk",
+      "source_url": "https://www.virginmediabusiness.co.uk/connectivity/internet-access/business-broadband/",
+      "source_class": "COMPANY_PUBLISHED",
+      "how_read": "SNIPPET_ONLY",
+      "excerpt": "Prices start from just £29.95 per month",
+      "note": "Virgin Media Business Voom 200 (200 Mbps down/20 Mbps up), 24-month, ex-VAT; HFC cable"
+     },
+     {
+      "publisher": "amvia.co.uk",
+      "source_url": "https://amvia.co.uk/compare/business-broadband",
+      "source_class": "AGGREGATOR",
+      "how_read": "SNIPPET_ONLY",
+      "excerpt": "Virgin Media Business: £29.95/mo ex VAT (Voom 200), 24 months",
+      "note": "Independently verified against provider site April 2026 per source note"
+     }
+    ]
+   },
+   "flags": [
+    "floor",
+    "read from a snippet",
+    "re-prices lower tiers"
+   ],
+   "other_observations": [
+    {
+     "slug": "boots",
+     "value": "29.95",
+     "currency": "GBP"
+    }
+   ],
+   "effect": {
+    "boots": {
+     "delta": "-129840.00",
+     "currency": "GBP",
+     "circuits": 2164
+    },
+    "tesco": {
+     "delta": "-230880.00",
+     "currency": "GBP",
+     "circuits": 3700
+    }
+   }
+  },
+  {
+   "id": "GB-BROADBAND_HFC-400-researched",
+   "country": "GB",
+   "product": "BROADBAND_HFC",
+   "mbps": 400,
+   "base": "34.95",
+   "currency": "GBP",
+   "low": "26.21",
+   "high": "43.69",
+   "state": "APPROVED",
+   "decided_by": "Christian Bartosch",
+   "usd": "46.83",
+   "replaces": null,
+   "lower_tier": 250,
+   "upper_tier": 500,
+   "inversions": [
+    "100 Mbps at 80 > 200 Mbps at 40 USD",
+    "250 Mbps at 108 > 400 Mbps at 47 USD",
+    "500 Mbps at 140 > 600 Mbps at 52 USD"
+   ],
+   "researched_by": null,
+   "as_of": "2026",
+   "evidence": {
+    "from": "domain 19 disposition",
+    "label": "BROADBAND_HFC 400Mbps MRC — Virgin Media Business Voom 400",
+    "vendor": "Virgin Media Business",
+    "term_months": 24,
+    "as_of": "2026",
+    "sources": [
+     {
+      "publisher": "virginmediabusiness.co.uk",
+      "source_url": "https://www.virginmediabusiness.co.uk/connectivity/internet-access/business-broadband/",
+      "source_class": "COMPANY_PUBLISHED",
+      "how_read": "SNIPPET_ONLY",
+      "excerpt": "Voom 400 | Download 400Mbps | £34.95 per month",
+      "note": "Published tariff, ex-VAT, 24-month contract, October 2026"
+     },
+     {
+      "publisher": "bestbroadbanddeals.co.uk",
+      "source_url": "https://bestbroadbanddeals.co.uk/broadband/business/virgin-media/",
+      "source_class": "AGGREGATOR",
+      "how_read": "SNIPPET_ONLY",
+      "excerpt": "Virgin Media Business Voom 400 | 400Mb | £34.95 Per month",
+      "note": "October 2026 aggregator listing"
+     }
+    ]
+   },
+   "flags": [
+    "read from a snippet",
+    "re-prices lower tiers"
+   ],
+   "other_observations": [],
+   "effect": {
+    "deutsche-post-dhl": {
+     "delta": "-20102.42",
+     "currency": "EUR",
+     "circuits": 345
+    },
+    "mcdonalds": {
+     "delta": "-100803.22",
+     "currency": "USD",
+     "circuits": 1507
+    },
+    "royal-mail": {
+     "delta": "-2246.40",
+     "currency": "GBP",
+     "circuits": 45
+    },
+    "ups": {
+     "delta": "-1270.91",
+     "currency": "USD",
+     "circuits": 19
+    }
+   }
+  },
+  {
+   "id": "GB-BROADBAND_HFC-500-researched",
+   "country": "GB",
+   "product": "BROADBAND_HFC",
+   "mbps": 500,
+   "base": "55.00",
+   "currency": "GBP",
+   "low": "55.00",
+   "high": "55.00",
+   "state": "REVOKED",
+   "decided_by": "Christian Bartosch",
+   "usd": "73.70",
+   "replaces": {
+    "id": "GB-BROADBAND_HFC-500",
+    "basis": "SEED",
+    "usd": "140.00"
+   },
+   "lower_tier": 400,
+   "upper_tier": 600,
+   "inversions": [
+    "100 Mbps at 80 > 200 Mbps at 40 USD",
+    "250 Mbps at 108 > 400 Mbps at 47 USD",
+    "500 Mbps at 74 > 600 Mbps at 52 USD"
+   ],
+   "researched_by": "saint-gobain",
+   "as_of": "2026-05",
+   "evidence": {
+    "from": "run narrative (the disposition was replaced)",
+    "label": null,
+    "vendor": null,
+    "term_months": null,
+    "as_of": null,
+    "excerpt": "he model's assumed GB MPLS 100 Mbps of USD 750–1,250/month is within this band.\n\n**GB — BROADBAND_PON / HFC**\nBT Business published tariffs (verified May 2026): Full Fibre 100 Mbps £35/month ex-VAT; Full Fibre 500 Mbps £55/month; Full Fibre 900 Mbps £65/month. Virgin Media Business (cable/HFC): from £29.95/month. Vodafone Business entry-level fro…",
+    "sources": []
+   },
+   "flags": [
+    "floor",
+    "single source",
+    "re-prices lower tiers"
+   ],
+   "other_observations": [],
+   "effect": {}
+  },
+  {
+   "id": "GB-BROADBAND_HFC-600-researched",
+   "country": "GB",
+   "product": "BROADBAND_HFC",
+   "mbps": 600,
+   "base": "38.95",
+   "currency": "GBP",
+   "low": "29.21",
+   "high": "48.69",
+   "state": "APPROVED",
+   "decided_by": "Christian Bartosch",
+   "usd": "52.19",
+   "replaces": null,
+   "lower_tier": 500,
+   "upper_tier": 1000,
+   "inversions": [
+    "100 Mbps at 80 > 200 Mbps at 40 USD",
+    "250 Mbps at 108 > 400 Mbps at 47 USD",
+    "500 Mbps at 140 > 600 Mbps at 52 USD"
+   ],
+   "researched_by": null,
+   "as_of": "2026",
+   "evidence": {
+    "from": "domain 19 disposition",
+    "label": "BROADBAND_HFC 600Mbps MRC — Virgin Media Business Voom 600",
+    "vendor": "Virgin Media Business",
+    "term_months": 24,
+    "as_of": "2026",
+    "sources": [
+     {
+      "publisher": "virginmediabusiness.co.uk",
+      "source_url": "https://www.virginmediabusiness.co.uk/connectivity/internet-access/business-broadband/",
+      "source_class": "COMPANY_PUBLISHED",
+      "how_read": "SNIPPET_ONLY",
+      "excerpt": "Voom 600 | Download 600Mbps | £38.95 per month",
+      "note": "Published tariff, ex-VAT, 24-month contract, October 2026"
+     },
+     {
+      "publisher": "businesscomparison.com",
+      "source_url": "https://www.businesscomparison.com/blog/broadband-phones/virgin-media-review",
+      "source_class": "AGGREGATOR",
+      "how_read": "SNIPPET_ONLY",
+      "excerpt": "Voom 600 | 600 / 60 Mbps | £38.95",
+      "note": "Corroborating aggregator, 2026"
+     }
+    ]
+   },
+   "flags": [
+    "read from a snippet",
+    "re-prices lower tiers"
+   ],
+   "other_observations": [],
+   "effect": {}
+  },
+  {
+   "id": "GB-BROADBAND_HFC-1000-researched",
+   "country": "GB",
+   "product": "BROADBAND_HFC",
+   "mbps": 1000,
+   "base": "43.95",
+   "currency": "GBP",
+   "low": "32.96",
+   "high": "54.94",
+   "state": "APPROVED",
+   "decided_by": "Christian Bartosch",
+   "usd": "58.89",
+   "replaces": {
+    "id": "GB-BROADBAND_HFC-1000",
+    "basis": "SEED",
+    "usd": "176.00"
+   },
+   "lower_tier": 600,
+   "upper_tier": 2000,
+   "inversions": [
+    "100 Mbps at 80 > 200 Mbps at 40 USD",
+    "250 Mbps at 108 > 400 Mbps at 47 USD",
+    "500 Mbps at 140 > 600 Mbps at 52 USD"
+   ],
+   "researched_by": null,
+   "as_of": "2026",
+   "evidence": {
+    "from": "domain 19 disposition",
+    "label": "BROADBAND_HFC 1000Mbps MRC — Virgin Media Business Voom Gig1",
+    "vendor": "Virgin Media Business",
+    "term_months": 24,
+    "as_of": "2026",
+    "sources": [
+     {
+      "publisher": "virginmediabusiness.co.uk",
+      "source_url": "https://www.virginmediabusiness.co.uk/connectivity/internet-access/business-broadband/",
+      "source_class": "COMPANY_PUBLISHED",
+      "how_read": "SNIPPET_ONLY",
+      "excerpt": "Voom Gig1 | Download 1000Mbps | £43.95 per month",
+      "note": "Published tariff, ex-VAT, 24-month contract, October 2026"
+     },
+     {
+      "publisher": "bestbroadbanddeals.co.uk",
+      "source_url": "https://bestbroadbanddeals.co.uk/broadband/business/virgin-media/",
+      "source_class": "AGGREGATOR",
+      "how_read": "SNIPPET_ONLY",
+      "excerpt": "Virgin Media Business Voom Gig1 | 1Gb Average speed | £43.95 Per month",
+      "note": "October 2026 aggregator listing"
+     }
+    ]
+   },
+   "flags": [
+    "read from a snippet",
+    "re-prices lower tiers"
+   ],
+   "other_observations": [
+    {
+     "slug": "boots",
+     "value": "53.95",
+     "currency": "GBP"
+    }
+   ],
+   "effect": {}
+  },
+  {
+   "id": "GB-BROADBAND_HFC-2000-researched",
+   "country": "GB",
+   "product": "BROADBAND_HFC",
+   "mbps": 2000,
+   "base": "83.95",
+   "currency": "GBP",
+   "low": "62.96",
+   "high": "104.94",
+   "state": "APPROVED",
+   "decided_by": "Christian Bartosch",
+   "usd": "112.49",
+   "replaces": null,
+   "lower_tier": 1000,
+   "upper_tier": null,
+   "inversions": [
+    "100 Mbps at 80 > 200 Mbps at 40 USD",
+    "250 Mbps at 108 > 400 Mbps at 47 USD",
+    "500 Mbps at 140 > 600 Mbps at 52 USD"
+   ],
+   "researched_by": "royal-mail",
+   "as_of": "2026",
+   "evidence": {
+    "from": "run narrative (the disposition was replaced)",
+    "label": null,
+    "vendor": null,
+    "term_months": null,
+    "as_of": null,
+    "excerpt": "e DIA. (2) BROADBAND_HFC: Virgin Media Business publishes HFC/cable broadband: Voom 200 (200 Mbps) from £29.95/month, Voom 400 (400 Mbps) from £34.95/month, Voom Gig1 (1 Gbps) from £43.95/month, Voom Gig2 (2 Gbps) from £83.95/month, all ex-VAT 24-month contract, October 2026. New symmetric XGS-PON (BROADBAND_PON) Full Fibre X plans: 200 Mbps from £39.95/month, 1 Gbps from £53.95/mon",
+    "sources": []
+   },
+   "flags": [
+    "floor",
+    "single source",
+    "re-prices lower tiers"
+   ],
+   "other_observations": [],
+   "effect": {}
+  },
+  {
+   "id": "GB-BROADBAND_PON-100-researched",
+   "country": "GB",
+   "product": "BROADBAND_PON",
+   "mbps": 100,
+   "base": "35.00",
+   "currency": "GBP",
+   "low": "26.25",
+   "high": "43.75",
+   "state": "APPROVED",
+   "decided_by": "Christian Bartosch",
+   "usd": "46.90",
+   "replaces": {
+    "id": "GB-BROADBAND_PON-100",
+    "basis": "SEED",
+    "usd": "70.00"
+   },
+   "lower_tier": 50,
+   "upper_tier": 250,
+   "inversions": [
+    "50 Mbps at 58 > 100 Mbps at 47 USD"
+   ],
+   "researched_by": "saint-gobain",
+   "as_of": "2026-05",
+   "evidence": {
+    "from": "run narrative (the disposition was replaced)",
+    "label": null,
+    "vendor": null,
+    "term_months": null,
+    "as_of": null,
+    "excerpt": " €700–€1,300/month (≈USD 765–1,420). The model's assumed GB MPLS 100 Mbps of USD 750–1,250/month is within this band.\n\n**GB — BROADBAND_PON / HFC**\nBT Business published tariffs (verified May 2026): Full Fibre 100 Mbps £35/month ex-VAT; Full Fibre 500 Mbps £55/month; Full Fibre 900 Mbps £65/month. Virgin Media Business (cable/HFC): from £29.95/month. Vodafone Business entry-level",
+    "sources": []
+   },
+   "flags": [
+    "floor",
+    "single source",
+    "re-prices lower tiers"
+   ],
+   "other_observations": [
+    {
+     "slug": "deutsche-post-dhl",
+     "value": "29",
+     "currency": "GBP"
+    }
+   ],
+   "effect": {
+    "heidelberg-materials": {
+     "delta": "-38406.49",
+     "currency": "EUR",
+     "circuits": 142
+    },
+    "iberdrola": {
+     "delta": "-243421.43",
+     "currency": "EUR",
+     "circuits": 900
+    },
+    "nestle": {
+     "delta": "-3229.10",
+     "currency": "CHF",
+     "circuits": 13
+    },
+    "network-rail": {
+     "delta": "-185375.23",
+     "currency": "GBP",
+     "circuits": 800
+    },
+    "nhs-england": {
+     "delta": "-138203.86",
+     "currency": "GBP",
+     "circuits": 668
+    },
+    "royal-mail": {
+     "delta": "-13839.01",
+     "currency": "GBP",
+     "circuits": 65
+    },
+    "saint-gobain": {
+     "delta": "-4597.96",
+     "currency": "EUR",
+     "circuits": 17
+    },
+    "santander": {
+     "delta": "-57957.48",
+     "currency": "EUR",
+     "circuits": 240
+    },
+    "toyota": {
+     "delta": "-91905.18",
+     "currency": "JPY",
+     "circuits": 2
+    }
+   }
+  },
+  {
+   "id": "GB-BROADBAND_PON-1000-researched",
+   "country": "GB",
+   "product": "BROADBAND_PON",
+   "mbps": 1000,
+   "base": "39.10",
+   "currency": "GBP",
+   "low": "39.10",
+   "high": "39.10",
+   "state": "REVOKED",
+   "decided_by": "Christian Bartosch",
+   "usd": "52.39",
+   "replaces": {
+    "id": "GB-BROADBAND_PON-1000",
+    "basis": "SEED",
+    "usd": "155.00"
+   },
+   "lower_tier": 500,
+   "upper_tier": null,
+   "inversions": [
+    "50 Mbps at 58 > 100 Mbps at 47 USD",
+    "500 Mbps at 120 > 1000 Mbps at 52 USD"
+   ],
+   "researched_by": "tesco",
+   "as_of": "2025",
+   "evidence": {
+    "from": "domain 19 disposition",
+    "label": "BROADBAND_PON 1000 Mbps wholesale MRC (Openreach GEA-FTTP, asymmetric)",
+    "vendor": "Openreach",
+    "term_months": null,
+    "as_of": "2025",
+    "sources": [
+     {
+      "publisher": "thinkbroadband.com",
+      "source_url": "https://www.thinkbroadband.com/news/openreach-reduces-the-price-of-one-of-its-gigabit-fttp-services",
+      "source_class": "TRADE_PRESS",
+      "how_read": "SNIPPET_ONLY",
+      "excerpt": "The more common 1000 Mbps download and 115 Mbps upload service is a lot cheaper at £39.10 a month",
+      "note": "Openreach wholesale FTTP standard (Equinox); retail ISPs add margin, VAT and CPE"
+     }
+    ]
+   },
+   "flags": [
+    "wholesale",
+    "single source",
+    "read from a snippet",
+    "re-prices lower tiers"
+   ],
+   "other_observations": [
+    {
+     "slug": "tesco",
+     "value": "39.10",
+     "currency": "GBP"
+    }
+   ],
+   "effect": {
+    "saint-gobain": {
+     "delta": "-13830.55",
+     "currency": "EUR",
+     "circuits": 19
+    },
+    "siemens": {
+     "delta": "-6551.31",
+     "currency": "EUR",
+     "circuits": 9
+    },
+    "unilever": {
+     "delta": "-8007.16",
+     "currency": "EUR",
+     "circuits": 11
+    }
+   }
+  },
+  {
+   "id": "GB-DIA-50-researched",
+   "country": "GB",
+   "product": "DIA",
+   "mbps": 50,
+   "base": "119.00",
+   "currency": "GBP",
+   "low": "119.00",
+   "high": "119.00",
+   "state": "REVOKED",
+   "decided_by": "Christian Bartosch",
+   "usd": "159.45",
+   "replaces": null,
+   "lower_tier": null,
+   "upper_tier": 100,
+   "inversions": [],
+   "researched_by": "network-rail",
+   "as_of": "2026",
+   "evidence": {
+    "from": "domain 19 disposition",
+    "label": "DIA 50Mbps MRC",
+    "vendor": "Cambridge Fibre",
+    "term_months": 60,
+    "as_of": "2026",
+    "sources": [
+     {
+      "publisher": "Cambridge Fibre",
+      "source_url": "https://www.cambridgefibre.uk/business-dedicated-internet-access",
+      "source_class": "COMPANY_PUBLISHED",
+      "how_read": "SNIPPET_ONLY",
+      "excerpt": "Dedicated Internet 50 Mbps — £119 / month — 60 months",
+      "note": "Regional altnet only; not a national benchmark"
+     }
+    ]
+   },
+   "flags": [
+    "single source",
+    "read from a snippet"
+   ],
+   "other_observations": [
+    {
+     "slug": "network-rail",
+     "value": "119",
+     "currency": "GBP"
+    }
+   ],
+   "effect": {}
+  },
+  {
+   "id": "GB-DIA-100-researched",
+   "country": "GB",
+   "product": "DIA",
+   "mbps": 100,
+   "base": "185.00",
+   "currency": "GBP",
+   "low": "185.00",
+   "high": "185.00",
+   "state": "UNDECIDED",
+   "decided_by": null,
+   "usd": "247.89",
+   "replaces": {
+    "id": "GB-DIA-100",
+    "basis": "SEED",
+    "usd": "335.00"
+   },
+   "lower_tier": null,
+   "upper_tier": 300,
+   "inversions": [],
+   "researched_by": "unilever",
+   "as_of": "2025",
+   "evidence": {
+    "from": "domain 19 disposition",
+    "label": "GB DIA 100 Mbps MRC – Virgin Media Business published tariff",
+    "vendor": "Virgin Media Business",
+    "term_months": null,
+    "as_of": "2025",
+    "sources": [
+     {
+      "publisher": "Virgin Media Business",
+      "source_url": "https://www.virginmediabusiness.co.uk/connectivity/internet-access/leased-lines-for-business/",
+      "source_class": "COMPANY_PUBLISHED",
+      "how_read": "SNIPPET_ONLY",
+      "excerpt": "Our packages start at £185 per month which provided 100Mbps upload and download speeds.",
+      "note": "Published carrier tariff, starting/floor price, enterprise DIA/leased line product"
+     },
+     {
+      "publisher": "AMVIA",
+      "source_url": "https://www.amvia.co.uk/blog/leased-line-prices-in-the-uk-what-can-you-expect",
+      "source_class": "TRADE_PRESS",
+      "how_read": "SNIPPET_ONLY",
+      "excerpt": "City centre, multiple networks available: from £199–£320/month … Suburban business park: from £350–£500/month",
+      "note": "Urban range for 100 Mbps UK leased line, 36-month term, 2025 market rates"
+     },
+     {
+      "publisher": "AMVIA",
+      "source_url": "https://www.amvia.co.uk/blog/the-complete-guide-to-comparing-leased-line-costs-and-specifications-in-2025",
+      "source_class": "TRADE_PRESS",
+      "how_read": "SNIPPET_ONLY",
+      "excerpt": "UK businesses pay £175-£270 monthly for 100Mbps urban connections",
+      "note": "Urban 100 Mbps leased line, 2025 market rates"
+     }
+    ]
+   },
+   "flags": [
+    "floor",
+    "read from a snippet"
+   ],
+   "other_observations": [
+    {
+     "slug": "deutsche-post-dhl",
+     "value": "206",
+     "currency": "GBP"
+    },
+    {
+     "slug": "eon",
+     "value": "139",
+     "currency": "GBP"
+    },
+    {
+     "slug": "iberdrola",
+     "value": "130",
+     "currency": "GBP"
+    },
+    {
+     "slug": "nhs-england",
+     "value": "222",
+     "currency": "GBP"
+    },
+    {
+     "slug": "unilever",
+     "value": "185",
+     "currency": "GBP"
+    }
+   ],
+   "effect": {
+    "boots": {
+     "delta": "-2925.47",
+     "currency": "GBP",
+     "circuits": 3
+    },
+    "iberdrola": {
+     "delta": "-15479.90",
+     "currency": "EUR",
+     "circuits": 17
+    },
+    "network-rail": {
+     "delta": "-29254.72",
+     "currency": "GBP",
+     "circuits": 30
+    },
+    "nhs-england": {
+     "delta": "-960530.14",
+     "currency": "GBP",
+     "circuits": 1225
+    },
+    "royal-mail": {
+     "delta": "-111089.94",
+     "currency": "GBP",
+     "circuits": 117
+    },
+    "saint-gobain": {
+     "delta": "-796759.73",
+     "currency": "EUR",
+     "circuits": 700
+    },
+    "santander": {
+     "delta": "-280459.43",
+     "currency": "EUR",
+     "circuits": 308
+    },
+    "tesco": {
+     "delta": "-19503.15",
+     "currency": "GBP",
+     "circuits": 20
+    },
+    "unilever": {
+     "delta": "-10244.05",
+     "currency": "EUR",
+     "circuits": 9
+    }
+   }
+  },
+  {
+   "id": "GB-DIA-500-researched",
+   "country": "GB",
+   "product": "DIA",
+   "mbps": 500,
+   "base": "257.00",
+   "currency": "GBP",
+   "low": "257.00",
+   "high": "257.00",
+   "state": "UNDECIDED",
+   "decided_by": null,
+   "usd": "344.37",
+   "replaces": {
+    "id": "GB-DIA-500",
+    "basis": "SEED",
+    "usd": "690.00"
+   },
+   "lower_tier": 300,
+   "upper_tier": 1000,
+   "inversions": [
+    "300 Mbps at 600 > 500 Mbps at 344 USD"
+   ],
+   "researched_by": "nhs-england",
+   "as_of": "2025",
+   "evidence": {
+    "from": "domain 19 disposition",
+    "label": "DIA 500Mbps MRC – Vodafone Business published retail tariff",
+    "vendor": "Vodafone Business",
+    "term_months": 60,
+    "as_of": "2025",
+    "sources": [
+     {
+      "publisher": "Vodafone Business",
+      "source_url": "https://www.vodafone.co.uk/business/connectivity/data-connectivity/dedicated-internet-access",
+      "source_class": "COMPANY_PUBLISHED",
+      "how_read": "FULL_PAGE",
+      "excerpt": "Vodafone Dedicated Internet Access (Managed) 500 Mbps Monthly price from £257 (ex. VAT) 60 months",
+      "note": "Large business managed DIA, 60-month term, ex VAT"
+     },
+     {
+      "publisher": "Vodafone Business",
+      "source_url": "https://www.vodafone.co.uk/business/connectivity/data-connectivity/dedicated-internet-access",
+      "source_class": "COMPANY_PUBLISHED",
+      "how_read": "FULL_PAGE",
+      "excerpt": "Vodafone Dedicated Internet Access (Wires only) 500 Mbps Monthly price from £243 (ex. VAT) 60 months",
+      "note": "Wires-only variant, 500Mbps, 60-month, ex VAT"
+     }
+    ]
+   },
+   "flags": [
+    "floor",
+    "single source",
+    "re-prices lower tiers"
+   ],
+   "other_observations": [
+    {
+     "slug": "deutsche-post-dhl",
+     "value": "243",
+     "currency": "GBP"
+    },
+    {
+     "slug": "nhs-england",
+     "value": "257",
+     "currency": "GBP"
+    }
+   ],
+   "effect": {
+    "boots": {
+     "delta": "-7738.41",
+     "currency": "GBP",
+     "circuits": 2
+    },
+    "deutsche-post-dhl": {
+     "delta": "-1892301.51",
+     "currency": "EUR",
+     "circuits": 419
+    },
+    "mcdonalds": {
+     "delta": "-4147.61",
+     "currency": "USD",
+     "circuits": 1
+    },
+    "royal-mail": {
+     "delta": "-233699.98",
+     "currency": "GBP",
+     "circuits": 62
+    },
+    "tesco": {
+     "delta": "-34049.00",
+     "currency": "GBP",
+     "circuits": 11
+    },
+    "ups": {
+     "delta": "-129612.92",
+     "currency": "USD",
+     "circuits": 25
+    }
+   }
+  },
+  {
+   "id": "GB-DIA-1000-researched",
+   "country": "GB",
+   "product": "DIA",
+   "mbps": 1000,
+   "base": "195.00",
+   "currency": "GBP",
+   "low": "195.00",
+   "high": "195.00",
+   "state": "UNDECIDED",
+   "decided_by": null,
+   "usd": "261.29",
+   "replaces": {
+    "id": "GB-DIA-1000",
+    "basis": "SEED",
+    "usd": "737.00"
+   },
+   "lower_tier": 500,
+   "upper_tier": null,
+   "inversions": [
+    "500 Mbps at 690 > 1000 Mbps at 261 USD"
+   ],
+   "researched_by": "iberdrola",
+   "as_of": "2026",
+   "evidence": {
+    "from": "domain 18 disposition",
+    "label": "GB enterprise leased line (DIA) monthly cost — 1 Gbps enterprise",
+    "vendor": null,
+    "term_months": null,
+    "as_of": "2026",
+    "sources": [
+     {
+      "publisher": "ComparenetUK",
+      "source_url": "https://comparenet.co.uk/dedicated-fibre-leased-lines",
+      "source_class": "AGGREGATOR",
+      "how_read": "SNIPPET_ONLY",
+      "excerpt": "1Gbps Symmetric — From £195/month, enterprise-grade with dedicated account manager",
+      "note": "Floor price from aggregator; BT Business from £199/month at 1 Gbps"
+     }
+    ]
+   },
+   "flags": [
+    "floor",
+    "single source",
+    "read from a snippet",
+    "re-prices lower tiers"
+   ],
+   "other_observations": [
+    {
+     "slug": "deutsche-post-dhl",
+     "value": "267",
+     "currency": "GBP"
+    },
+    {
+     "slug": "iberdrola",
+     "value": "195",
+     "currency": "GBP"
+    },
+    {
+     "slug": "nhs-england",
+     "value": "300",
+     "currency": "GBP"
+    }
+   ],
+   "effect": {
+    "anglo-american": {
+     "delta": "-5708.53",
+     "currency": "USD",
+     "circuits": 1
+    },
+    "capgemini": {
+     "delta": "-44754.32",
+     "currency": "EUR",
+     "circuits": 9
+    },
+    "eon": {
+     "delta": "-39781.62",
+     "currency": "EUR",
+     "circuits": 8
+    },
+    "iberdrola": {
+     "delta": "-22874.43",
+     "currency": "EUR",
+     "circuits": 5
+    },
+    "nestle": {
+     "delta": "-13700.48",
+     "currency": "CHF",
+     "circuits": 3
+    },
+    "network-rail": {
+     "delta": "-102246.65",
+     "currency": "GBP",
+     "circuits": 24
+    },
+    "nhs-england": {
+     "delta": "-157630.26",
+     "currency": "GBP",
+     "circuits": 37
+    },
+    "rio-tinto": {
+     "delta": "-22834.13",
+     "currency": "USD",
+     "circuits": 4
+    },
+    "shell": {
+     "delta": "-45668.25",
+     "currency": "USD",
+     "circuits": 8
+    },
+    "siemens": {
+     "delta": "-119344.85",
+     "currency": "EUR",
+     "circuits": 24
+    },
+    "unilever": {
+     "delta": "-49727.02",
+     "currency": "EUR",
+     "circuits": 10
+    }
+   }
+  },
+  {
+   "id": "GB-DIA-10000-researched",
+   "country": "GB",
+   "product": "DIA",
+   "mbps": 10000,
+   "base": "450.00",
+   "currency": "GBP",
+   "low": "450.00",
+   "high": "450.00",
+   "state": "UNDECIDED",
+   "decided_by": null,
+   "usd": "602.97",
+   "replaces": null,
+   "lower_tier": 1000,
+   "upper_tier": null,
+   "inversions": [
+    "1000 Mbps at 737 > 10000 Mbps at 603 USD"
+   ],
+   "researched_by": "deutsche-post-dhl",
+   "as_of": "2026",
+   "evidence": {
+    "from": "domain 19 disposition",
+    "label": "DIA 10000Mbps MRC (Spitfire, retail)",
+    "vendor": "Spitfire Networks",
+    "term_months": null,
+    "as_of": "2026",
+    "sources": [
+     {
+      "publisher": "Spitfire Networks — product page",
+      "source_url": "https://www.spitfire.co.uk/connectivity/fibre-ethernet-leased-line/",
+      "source_class": "COMPANY_PUBLISHED",
+      "how_read": "SNIPPET_ONLY",
+      "excerpt": "10 Gbps From: £450/month — 10Gbps Upload — 10Gbps Download",
+      "note": "Floor price, competitive market entry point. Single source — noted as such."
+     }
+    ]
+   },
+   "flags": [
+    "single source",
+    "read from a snippet",
+    "re-prices lower tiers"
+   ],
+   "other_observations": [
+    {
+     "slug": "deutsche-post-dhl",
+     "value": "450",
+     "currency": "GBP"
+    }
+   ],
+   "effect": {}
+  },
+  {
+   "id": "GB-ETHERNET-100-researched",
+   "country": "GB",
+   "product": "ETHERNET",
+   "mbps": 100,
+   "base": "203.50",
+   "currency": "GBP",
+   "low": "203.50",
+   "high": "203.50",
+   "state": "REVOKED",
+   "decided_by": "Christian Bartosch",
+   "usd": "272.68",
+   "replaces": null,
+   "lower_tier": null,
+   "upper_tier": 500,
+   "inversions": [],
+   "researched_by": "nhs-england",
+   "as_of": "2026-07",
+   "evidence": {
+    "from": "domain 19 disposition",
+    "label": "ETHERNET 100Mbps MRC – Openreach EAD wholesale Area 2",
+    "vendor": "Openreach",
+    "term_months": 12,
+    "as_of": "2026-07",
+    "sources": [
+     {
+      "publisher": "Openreach",
+      "source_url": "https://www.openreach.co.uk/orpg/home/products/pricing/loadProductPriceDetails.do?data=0d0zetWgShsjqKWjcN2Y5WJA8BGGqsBLxL7IgSM4fRpZ6rNZujnCs99NbIKJZPD9hXYmiijxH6wrCQm97GZMyQ%3D%3D",
+      "source_class": "PRIMARY_FILING",
+      "how_read": "FULL_PAGE",
+      "excerpt": "EAD 100 - Area 2 | 01/07/2026 | Annual Rental £ Exc VAT 2,442.00",
+      "note": "£2,442/year ÷ 12 = £203.50/month; operative date 01/07/2026, ex VAT"
+     }
+    ]
+   },
+   "flags": [
+    "wholesale",
+    "single source"
+   ],
+   "other_observations": [
+    {
+     "slug": "eon",
+     "value": "139",
+     "currency": "GBP"
+    },
+    {
+     "slug": "nhs-england",
+     "value": "203.50",
+     "currency": "GBP"
+    },
+    {
+     "slug": "ups",
+     "value": "203.50",
+     "currency": "GBP"
+    }
+   ],
+   "effect": {}
+  },
+  {
+   "id": "GB-ETHERNET-1000-researched",
+   "country": "GB",
+   "product": "ETHERNET",
+   "mbps": 1000,
+   "base": "196.50",
+   "currency": "GBP",
+   "low": "196.50",
+   "high": "196.50",
+   "state": "REVOKED",
+   "decided_by": "Christian Bartosch",
+   "usd": "263.30",
+   "replaces": {
+    "id": "GB-ETHERNET-1000",
+    "basis": "SEED",
+    "usd": "737.00"
+   },
+   "lower_tier": 500,
+   "upper_tier": 2000,
+   "inversions": [
+    "500 Mbps at 569 > 1000 Mbps at 263 USD"
+   ],
+   "researched_by": "santander",
+   "as_of": "2025-04",
+   "evidence": {
+    "from": "domain 19 disposition",
+    "label": "ETHERNET 1000Mbps MRC",
+    "vendor": "Openreach",
+    "term_months": 12,
+    "as_of": "2026-07",
+    "sources": [
+     {
+      "publisher": "Openreach",
+      "source_url": "https://www.openreach.co.uk/orpg/home/products/pricing/loadProductPriceDetails.do?data=0d0zetWgShsjqKWjcN2Y5WJA8BGGqsBLxL7IgSM4fRpZ6rNZujnCs99NbIKJZPD9hXYmiijxH6wrCQm97GZMyQ%3D%3D",
+      "source_class": "REGULATOR",
+      "how_read": "FULL_PAGE",
+      "excerpt": "EAD 1000 - CLA annual rental £2,442 exc VAT (01/07/2026); divided by 12 = £203.50/month",
+      "note": "Wholesale Openreach price; retail ISP margin on top. CLA = Central London Area."
+     },
+     {
+      "publisher": "ISPreview UK",
+      "source_url": "https://www.ispreview.co.uk/index.php/2024/12/openreach-reveal-more-2024-uk-ethernet-pia-and-dark-fibre-price-rises.html",
+      "source_class": "TRADE_PRESS",
+      "how_read": "SNIPPET_ONLY",
+      "excerpt": "annual rental for an 1Gbps EAD circuit will increase from £2,262 to £2,358 (+4.24%)",
+      "note": "April 2025 annual rental £2,358/year = £196.50/month wholesale."
+     }
+    ]
+   },
+   "flags": [
+    "wholesale",
+    "floor",
+    "re-prices lower tiers"
+   ],
+   "other_observations": [
+    {
+     "slug": "deutsche-post-dhl",
+     "value": "155",
+     "currency": "GBP"
+    },
+    {
+     "slug": "eon",
+     "value": "203",
+     "currency": "GBP"
+    },
+    {
+     "slug": "heidelberg-materials",
+     "value": "260000",
+     "currency": null
+    },
+    {
+     "slug": "nhs-england",
+     "value": "188.50",
+     "currency": "GBP"
+    },
+    {
+     "slug": "saint-gobain",
+     "value": "176",
+     "currency": "GBP"
+    },
+    {
+     "slug": "santander",
+     "value": "203.50",
+     "currency": "GBP"
+    },
+    {
+     "slug": "santander",
+     "value": "2,358",
+     "currency": "GBP"
+    },
+    {
+     "slug": "shell",
+     "value": "2442",
+     "currency": "GBP"
+    }
+   ],
+   "effect": {
+    "aena": {
+     "delta": "-12462.66",
+     "currency": "EUR",
+     "circuits": 3
+    },
+    "anglo-american": {
+     "delta": "-5684.41",
+     "currency": "USD",
+     "circuits": 1
+    },
+    "boots": {
+     "delta": "-10677.17",
+     "currency": "GBP",
+     "circuits": 3
+    },
+    "capgemini": {
+     "delta": "-49516.92",
+     "currency": "EUR",
+     "circuits": 10
+    },
+    "deutsche-post-dhl": {
+     "delta": "-26520.27",
+     "currency": "EUR",
+     "circuits": 6
+    },
+    "eon": {
+     "delta": "-39613.54",
+     "currency": "EUR",
+     "circuits": 8
+    },
+    "heidelberg-materials": {
+     "delta": "-29710.15",
+     "currency": "EUR",
+     "circuits": 3
+    },
+    "iberdrola": {
+     "delta": "-31690.83",
+     "currency": "EUR",
+     "circuits": 7
+    },
+    "mcdonalds": {
+     "delta": "-3668.41",
+     "currency": "USD",
+     "circuits": 1
+    },
+    "nestle": {
+     "delta": "-150068.50",
+     "currency": "CHF",
+     "circuits": 19
+    },
+    "network-rail": {
+     "delta": "-116734.10",
+     "currency": "GBP",
+     "circuits": 28
+    },
+    "nhs-england": {
+     "delta": "-1124346.42",
+     "currency": "GBP",
+     "circuits": 266
+    },
+    "rio-tinto": {
+     "delta": "-22737.65",
+     "currency": "USD",
+     "circuits": 4
+    },
+    "royal-mail": {
+     "delta": "-164264.18",
+     "currency": "GBP",
+     "circuits": 48
+    },
+    "saint-gobain": {
+     "delta": "-281152.09",
+     "currency": "EUR",
+     "circuits": 40
+    },
+    "shell": {
+     "delta": "-45475.30",
+     "currency": "USD",
+     "circuits": 8
+    },
+    "siemens": {
+     "delta": "-161180.28",
+     "currency": "EUR",
+     "circuits": 34
+    },
+    "tesco": {
+     "delta": "-121829.27",
+     "currency": "GBP",
+     "circuits": 37
+    },
+    "toyota": {
+     "delta": "-3365172.32",
+     "currency": "JPY",
+     "circuits": 2
+    },
+    "unilever": {
+     "delta": "-99367.57",
+     "currency": "EUR",
+     "circuits": 22
+    }
+   }
+  },
+  {
+   "id": "GB-ETHERNET-10000-researched",
+   "country": "GB",
+   "product": "ETHERNET",
+   "mbps": 10000,
+   "base": "415.00",
+   "currency": "GBP",
+   "low": "415.00",
+   "high": "415.00",
+   "state": "REVOKED",
+   "decided_by": "Christian Bartosch",
+   "usd": "556.08",
+   "replaces": {
+    "id": "GB-ETHERNET-10000",
+    "basis": "SEED",
+    "usd": "2881.00"
+   },
+   "lower_tier": 9000,
+   "upper_tier": null,
+   "inversions": [
+    "9000 Mbps at 2707 > 10000 Mbps at 556 USD"
+   ],
+   "researched_by": "nhs-england",
+   "as_of": "2026-07",
+   "evidence": {
+    "from": "domain 19 disposition",
+    "label": "ETHERNET 10000Mbps MRC – Openreach EAD wholesale Area 2",
+    "vendor": "Openreach",
+    "term_months": 12,
+    "as_of": "2026-07",
+    "sources": [
+     {
+      "publisher": "Openreach",
+      "source_url": "https://www.openreach.co.uk/orpg/home/products/pricing/loadProductPriceDetails.do?data=0d0zetWgShsjqKWjcN2Y5WJA8BGGqsBLxL7IgSM4fRpZ6rNZujnCs99NbIKJZPD9hXYmiijxH6wrCQm97GZMyQ%3D%3D",
+      "source_class": "PRIMARY_FILING",
+      "how_read": "FULL_PAGE",
+      "excerpt": "EAD 10000 - Area 2 | 01/07/2026 | Annual Rental £ Exc VAT 4,980.00",
+      "note": "£4,980/year ÷ 12 = £415/month; ex VAT; 60-month term has lower annual rental £4,380/year = £365/month"
+     }
+    ]
+   },
+   "flags": [
+    "wholesale",
+    "single source",
+    "re-prices lower tiers"
+   ],
+   "other_observations": [
+    {
+     "slug": "deutsche-post-dhl",
+     "value": "304",
+     "currency": "GBP"
+    },
+    {
+     "slug": "eon",
+     "value": "450",
+     "currency": "GBP"
+    },
+    {
+     "slug": "nhs-england",
+     "value": "415",
+     "currency": "GBP"
+    },
+    {
+     "slug": "saint-gobain",
+     "value": "453",
+     "currency": "GBP"
+    },
+    {
+     "slug": "santander",
+     "value": "415",
+     "currency": "GBP"
+    }
+   ],
+   "effect": {
+    "aena": {
+     "delta": "-526.85",
+     "currency": "EUR",
+     "circuits": 3
+    },
+    "anglo-american": {
+     "delta": "-2171.08",
+     "currency": "USD",
+     "circuits": 1
+    },
+    "boots": {
+     "delta": "-21272.46",
+     "currency": "GBP",
+     "circuits": 4
+    },
+    "capgemini": {
+     "delta": "-35625.03",
+     "currency": "EUR",
+     "circuits": 11
+    },
+    "deutsche-post-dhl": {
+     "delta": "-4484.93",
+     "currency": "EUR",
+     "circuits": 6
+    },
+    "eon": {
+     "delta": "-15129.82",
+     "currency": "EUR",
+     "circuits": 8
+    },
+    "heidelberg-materials": {
+     "delta": "-11347.37",
+     "currency": "EUR",
+     "circuits": 3
+    },
+    "iberdrola": {
+     "delta": "-12103.86",
+     "currency": "EUR",
+     "circuits": 7
+    },
+    "mcdonalds": {
+     "delta": "-155.08",
+     "currency": "USD",
+     "circuits": 1
+    },
+    "nestle": {
+     "delta": "-57316.52",
+     "currency": "CHF",
+     "circuits": 19
+    },
+    "network-rail": {
+     "delta": "-426173.29",
+     "currency": "GBP",
+     "circuits": 48
+    },
+    "nhs-england": {
+     "delta": "-422174.82",
+     "currency": "GBP",
+     "circuits": 266
+    },
+    "rio-tinto": {
+     "delta": "-8684.32",
+     "currency": "USD",
+     "circuits": 4
+    },
+    "royal-mail": {
+     "delta": "-6944.18",
+     "currency": "GBP",
+     "circuits": 48
+    },
+    "saint-gobain": {
+     "delta": "-79161.47",
+     "currency": "EUR",
+     "circuits": 40
+    },
+    "shell": {
+     "delta": "-17368.64",
+     "currency": "USD",
+     "circuits": 8
+    },
+    "siemens": {
+     "delta": "-48861.26",
+     "currency": "EUR",
+     "circuits": 34
+    },
+    "tesco": {
+     "delta": "-5150.27",
+     "currency": "GBP",
+     "circuits": 37
+    },
+    "toyota": {
+     "delta": "-1285279.52",
+     "currency": "JPY",
+     "circuits": 2
+    },
+    "unilever": {
+     "delta": "-21019.69",
+     "currency": "EUR",
+     "circuits": 22
+    }
+   }
+  },
+  {
+   "id": "GB-MPLS-100-researched",
+   "country": "GB",
+   "product": "MPLS",
+   "mbps": 100,
+   "base": "200.00",
+   "currency": "GBP",
+   "low": "200.00",
+   "high": "200.00",
+   "state": "REVOKED",
+   "decided_by": "Christian Bartosch",
+   "usd": "267.99",
+   "replaces": {
+    "id": "GB-MPLS-100",
+    "basis": "SEED",
+    "usd": "1000.00"
+   },
+   "lower_tier": null,
+   "upper_tier": null,
+   "inversions": [],
+   "researched_by": "iberdrola",
+   "as_of": "2026",
+   "evidence": {
+    "from": "run narrative (the disposition was replaced)",
+    "label": null,
+    "vendor": null,
+    "term_months": null,
+    "as_of": null,
+    "excerpt": null,
+    "sources": []
+   },
+   "flags": [
+    "single source",
+    "untraceable"
+   ],
+   "other_observations": [],
+   "effect": {}
+  },
+  {
+   "id": "IE-BROADBAND_PON-1000-researched",
+   "country": "IE",
+   "product": "BROADBAND_PON",
+   "mbps": 1000,
+   "base": "49.99",
+   "currency": "EUR",
+   "low": "49.99",
+   "high": "49.99",
+   "state": "REVOKED",
+   "decided_by": "Christian Bartosch",
+   "usd": "57.39",
+   "replaces": {
+    "id": "IE-BROADBAND_PON-1000",
+    "basis": "SEED",
+    "usd": "155.00"
+   },
+   "lower_tier": 500,
+   "upper_tier": null,
+   "inversions": [
+    "500 Mbps at 120 > 1000 Mbps at 57 USD"
+   ],
+   "researched_by": "tesco",
+   "as_of": "2026",
+   "evidence": {
+    "from": "domain 18 disposition",
+    "label": "IE business broadband – Eir SMB monthly price (gigabit FTTP)",
+    "vendor": "Eir",
+    "term_months": 24,
+    "as_of": "2026",
+    "sources": [
+     {
+      "publisher": "eir.ie",
+      "source_url": "https://www.eir.ie/business/smb/business-broadband/",
+      "source_class": "COMPANY_PUBLISHED",
+      "how_read": "SNIPPET_ONLY",
+      "excerpt": "€49.99 a month for 24 months. €69.99 a month thereafter.",
+      "note": "SMB gigabit fibre broadband; 24-month contract"
+     }
+    ]
+   },
+   "flags": [
+    "promotional",
+    "single source",
+    "read from a snippet",
+    "re-prices lower tiers"
+   ],
+   "other_observations": [
+    {
+     "slug": "tesco",
+     "value": "49.99",
+     "currency": "EUR"
+    }
+   ],
+   "effect": {
+    "novartis": {
+     "delta": "-2895.59",
+     "currency": "CHF",
+     "circuits": 3
+    }
+   }
+  },
+  {
+   "id": "IT-ETHERNET-100-researched",
+   "country": "IT",
+   "product": "ETHERNET",
+   "mbps": 100,
+   "base": "3115.00",
+   "currency": "EUR",
+   "low": "3115.00",
+   "high": "3115.00",
+   "state": "REVOKED",
+   "decided_by": "Christian Bartosch",
+   "usd": "3575.94",
+   "replaces": null,
+   "lower_tier": null,
+   "upper_tier": 500,
+   "inversions": [
+    "100 Mbps at 3576 > 500 Mbps at 956 USD"
+   ],
+   "researched_by": "allianz",
+   "as_of": "2015",
+   "evidence": {
+    "from": "run narrative (the disposition was replaced)",
+    "label": null,
+    "vendor": null,
+    "term_months": null,
+    "as_of": null,
+    "excerpt": null,
+    "sources": []
+   },
+   "flags": [
+    "single source",
+    "untraceable",
+    "re-prices lower tiers"
+   ],
+   "other_observations": [],
+   "effect": {}
+  },
+  {
+   "id": "NL-BROADBAND_PON-100-researched",
+   "country": "NL",
+   "product": "BROADBAND_PON",
+   "mbps": 100,
+   "base": "23.39",
+   "currency": "EUR",
+   "low": "23.39",
+   "high": "23.39",
+   "state": "REVOKED",
+   "decided_by": "Christian Bartosch",
+   "usd": "26.85",
+   "replaces": {
+    "id": "NL-BROADBAND_PON-100",
+    "basis": "SEED",
+    "usd": "62.00"
+   },
+   "lower_tier": 50,
+   "upper_tier": 250,
+   "inversions": [
+    "50 Mbps at 53 > 100 Mbps at 27 USD"
+   ],
+   "researched_by": "air-france-klm",
+   "as_of": "2024",
+   "evidence": {
+    "from": "domain 19 disposition",
+    "label": "BROADBAND_PON Netherlands lowest advertised standalone 30-100 Mbps (Eurostat/BEREC benchmark)",
+    "vendor": null,
+    "term_months": null,
+    "as_of": "2024",
+    "sources": [
+     {
+      "publisher": "Germanpedia / Eurostat",
+      "source_url": "https://germanpedia.com/broadband-prices-in-the-eu/",
+      "source_class": "AGGREGATOR",
+      "how_read": "SNIPPET_ONLY",
+      "excerpt": "Netherlands | €37.86 | €23.39 | -38%",
+      "note": "PPP-adjusted lowest advertised price for standalone 30-100 Mbps from largest NL providers, per Eurostat 2024 following…"
+     }
+    ]
+   },
+   "flags": [
+    "single source",
+    "read from a snippet",
+    "re-prices lower tiers"
+   ],
+   "other_observations": [
+    {
+     "slug": "air-france-klm",
+     "value": "23.39",
+     "currency": "EUR"
+    }
+   ],
+   "effect": {
+    "air-france-klm": {
+     "delta": "-1135.32",
+     "currency": "EUR",
+     "circuits": 3
+    },
+    "shell": {
+     "delta": "-1417.20",
+     "currency": "USD",
+     "circuits": 3
+    }
+   }
+  },
+  {
+   "id": "NL-DIA-200-researched",
+   "country": "NL",
+   "product": "DIA",
+   "mbps": 200,
+   "base": "348.00",
+   "currency": "EUR",
+   "low": "261.00",
+   "high": "435.00",
+   "state": "APPROVED",
+   "decided_by": "Christian Bartosch",
+   "usd": "399.49",
+   "replaces": null,
+   "lower_tier": 100,
+   "upper_tier": 300,
+   "inversions": [
+    "100 Mbps at 500 > 200 Mbps at 399 USD"
+   ],
+   "researched_by": "ahold-delhaize",
+   "as_of": "2025",
+   "evidence": {
+    "from": "domain 18 disposition",
+    "label": "DIA MRC 200 Mbps (NL, Eurofiber)",
+    "vendor": "Eurofiber",
+    "term_months": null,
+    "as_of": "2025",
+    "sources": [
+     {
+      "publisher": "Connected Networks",
+      "source_url": "https://www.connectednetworks.io/countries/holland-the-netherlands-business-internet-connectivity",
+      "source_class": "COMPANY_PUBLISHED",
+      "how_read": "FULL_PAGE",
+      "excerpt": "DIA pricing via Eurofiber starts from approximately €348/month for 200Mbps.",
+      "note": "Broker/aggregator quoting Eurofiber indicative price"
+     }
+    ]
+   },
+   "flags": [
+    "floor",
+    "single source",
+    "re-prices lower tiers"
+   ],
+   "other_observations": [
+    {
+     "slug": "ahold-delhaize",
+     "value": "348",
+     "currency": "EUR"
+    },
+    {
+     "slug": "deutsche-post-dhl",
+     "value": "348",
+     "currency": "EUR"
+    },
+    {
+     "slug": "douglas",
+     "value": "348",
+     "currency": "EUR"
+    },
+    {
+     "slug": "maersk",
+     "value": "348",
+     "currency": "EUR"
+    },
+    {
+     "slug": "shell",
+     "value": "~€348",
+     "currency": "EUR"
+    },
+    {
+     "slug": "shell",
+     "value": "348",
+     "currency": "EUR"
+    },
+    {
+     "slug": "unilever",
+     "value": "348",
+     "currency": "EUR"
+    },
+    {
+     "slug": "unilever",
+     "value": "348",
+     "currency": "EUR"
+    }
+   ],
+   "effect": {}
+  },
+  {
+   "id": "NZ-BROADBAND_PON-100-researched",
+   "country": "NZ",
+   "product": "BROADBAND_PON",
+   "mbps": 100,
+   "base": "38.00",
+   "currency": "NZD",
+   "low": "38.00",
+   "high": "38.00",
+   "state": "REVOKED",
+   "decided_by": "Christian Bartosch",
+   "usd": null,
+   "replaces": {
+    "id": "NZ-BROADBAND_PON-100",
+    "basis": "SEED",
+    "usd": "75.00"
+   },
+   "lower_tier": null,
+   "upper_tier": 250,
+   "inversions": [],
+   "researched_by": "woolworths",
+   "as_of": "2025",
+   "evidence": {
+    "from": "run narrative (the disposition was replaced)",
+    "label": null,
+    "vendor": null,
+    "term_months": null,
+    "as_of": null,
+    "excerpt": null,
+    "sources": []
+   },
+   "flags": [
+    "single source",
+    "untraceable",
+    "no exchange rate"
+   ],
+   "other_observations": [],
+   "effect": {}
+  },
+  {
+   "id": "SG-BROADBAND_PON-500-researched",
+   "country": "SG",
+   "product": "BROADBAND_PON",
+   "mbps": 500,
+   "base": "109.00",
+   "currency": "SGD",
+   "low": "81.75",
+   "high": "136.25",
+   "state": "APPROVED",
+   "decided_by": "Christian Bartosch",
+   "usd": "85.16",
+   "replaces": {
+    "id": "SG-BROADBAND_PON-500",
+    "basis": "SEED",
+    "usd": "115.00"
+   },
+   "lower_tier": 250,
+   "upper_tier": 1000,
+   "inversions": [
+    "250 Mbps at 91 > 500 Mbps at 85 USD"
+   ],
+   "researched_by": "dbs",
+   "as_of": "2025",
+   "evidence": {
+    "from": "domain 19 disposition",
+    "label": "BROADBAND_PON 500 Mbps MRC business dynamic — Singapore (Singtel)",
+    "vendor": "Singtel",
+    "term_months": null,
+    "as_of": "2025",
+    "sources": [
+     {
+      "publisher": "DollarsAndSense.sg",
+      "source_url": "https://dollarsandsense.sg/price-guide-to-business-broadband-plans-for-offices-in-singapore/",
+      "source_class": "AGGREGATOR",
+      "how_read": "SNIPPET_ONLY",
+      "excerpt": "Singtel · $118 · $178 [for 500Mbps and 1Gbps dynamic broadband, 24-month contract]",
+      "note": "Business dynamic broadband (shared/PON-delivered fibre). 24-month contract."
+     }
+    ]
+   },
+   "flags": [
+    "single source",
+    "read from a snippet",
+    "re-prices lower tiers"
+   ],
+   "other_observations": [
+    {
+     "slug": "dbs",
+     "value": "118",
+     "currency": "SGD"
+    },
+    {
+     "slug": "dbs",
+     "value": "109",
+     "currency": "SGD"
+    }
+   ],
+   "effect": {
+    "dbs": {
+     "delta": "-3231.36",
+     "currency": "SGD",
+     "circuits": 36
+    }
+   }
+  },
+  {
+   "id": "SG-BROADBAND_PON-1000-researched",
+   "country": "SG",
+   "product": "BROADBAND_PON",
+   "mbps": 1000,
+   "base": "178.00",
+   "currency": "SGD",
+   "low": "133.50",
+   "high": "222.50",
+   "state": "APPROVED",
+   "decided_by": "Christian Bartosch",
+   "usd": "139.06",
+   "replaces": {
+    "id": "SG-BROADBAND_PON-1000",
+    "basis": "SEED",
+    "usd": "149.00"
+   },
+   "lower_tier": 500,
+   "upper_tier": null,
+   "inversions": [
+    "250 Mbps at 91 > 500 Mbps at 85 USD"
+   ],
+   "researched_by": "dbs",
+   "as_of": "2025",
+   "evidence": {
+    "from": "domain 19 disposition",
+    "label": "BROADBAND_PON 1000 Mbps MRC business dynamic — Singapore (Singtel)",
+    "vendor": "Singtel",
+    "term_months": null,
+    "as_of": "2025",
+    "sources": [
+     {
+      "publisher": "DollarsAndSense.sg",
+      "source_url": "https://dollarsandsense.sg/price-guide-to-business-broadband-plans-for-offices-in-singapore/",
+      "source_class": "AGGREGATOR",
+      "how_read": "SNIPPET_ONLY",
+      "excerpt": "Singtel · $118 · $178 [for 500Mbps and 1Gbps dynamic broadband, 24-month contract]",
+      "note": "Business dynamic broadband fibre. 24-month contract. StarHub also at S$174 for 1Gbps."
+     },
+     {
+      "publisher": "DollarsAndSense.sg",
+      "source_url": "https://dollarsandsense.sg/price-guide-to-business-broadband-plans-for-offices-in-singapore/",
+      "source_class": "AGGREGATOR",
+      "how_read": "SNIPPET_ONLY",
+      "excerpt": "StarHub · $109 · $174 [for 500Mbps and 1Gbps dynamic broadband, 24-month contract]",
+      "note": "StarHub competitor price for same tier, 24-month contract."
+     }
+    ]
+   },
+   "flags": [
+    "single source",
+    "read from a snippet",
+    "re-prices lower tiers"
+   ],
+   "other_observations": [
+    {
+     "slug": "dbs",
+     "value": "178",
+     "currency": "SGD"
+    },
+    {
+     "slug": "dbs",
+     "value": "53.89",
+     "currency": "SGD"
+    }
+   ],
+   "effect": {
+    "novartis": {
+     "delta": "-294.79",
+     "currency": "CHF",
+     "circuits": 3
+    }
+   }
+  },
+  {
+   "id": "SG-DIA-100-researched",
+   "country": "SG",
+   "product": "DIA",
+   "mbps": 100,
+   "base": "312.00",
+   "currency": "SGD",
+   "low": "312.00",
+   "high": "312.00",
+   "state": "UNDECIDED",
+   "decided_by": null,
+   "usd": "243.75",
+   "replaces": {
+    "id": "SG-DIA-100",
+    "basis": "SEED",
+    "usd": "660.00"
+   },
+   "lower_tier": null,
+   "upper_tier": 300,
+   "inversions": [],
+   "researched_by": "dbs",
+   "as_of": "2026",
+   "evidence": {
+    "from": "domain 19 disposition",
+    "label": "DIA 100 Mbps MRC — Singapore (SPTel enterprise tariff)",
+    "vendor": "SPTel",
+    "term_months": null,
+    "as_of": "2026",
+    "sources": [
+     {
+      "publisher": "SPTel",
+      "source_url": "https://sptel.com/promotion/business-broadband-singapore/",
+      "source_class": "COMPANY_PUBLISHED",
+      "how_read": "SNIPPET_ONLY",
+      "excerpt": "Enterprise Internet 100Mbps $312/mth (on 24-month contract)",
+      "note": "Includes 8 static IPs, DDoS detection, 99.95% SLA. Valid to 31 Dec 2026."
+     }
+    ]
+   },
+   "flags": [
+    "single source",
+    "read from a snippet"
+   ],
+   "other_observations": [
+    {
+     "slug": "dbs",
+     "value": "312",
+     "currency": "SGD"
+    },
+    {
+     "slug": "dbs",
+     "value": "312",
+     "currency": "SGD"
+    }
+   ],
+   "effect": {}
+  },
+  {
+   "id": "SG-DIA-10000-researched",
+   "country": "SG",
+   "product": "DIA",
+   "mbps": 10000,
+   "base": "4500.00",
+   "currency": "USD",
+   "low": "3375.00",
+   "high": "5625.00",
+   "state": "APPROVED",
+   "decided_by": "Christian Bartosch",
+   "usd": "4500.00",
+   "replaces": null,
+   "lower_tier": 1000,
+   "upper_tier": null,
+   "inversions": [],
+   "researched_by": "maersk",
+   "as_of": "2026",
+   "evidence": {
+    "from": "domain 19 disposition",
+    "label": "DIA 10000 Mbps (10 GigE) MRC — SG (TeleGeography 2026)",
+    "vendor": null,
+    "term_months": null,
+    "as_of": "2026",
+    "sources": [
+     {
+      "publisher": "TeleGeography",
+      "source_url": "https://resources.telegeography.com/dia-pricing-in-asia-and-oceania",
+      "source_class": "TRADE_PRESS",
+      "how_read": "SNIPPET_ONLY",
+      "excerpt": "$4,500 for 10 GigE",
+      "note": "Singapore; Oct 2026; TeleGeography survey-based benchmark"
+     }
+    ]
+   },
+   "flags": [
+    "single source",
+    "read from a snippet"
+   ],
+   "other_observations": [
+    {
+     "slug": "dbs",
+     "value": "4500",
+     "currency": "USD"
+    },
+    {
+     "slug": "maersk",
+     "value": "4500",
+     "currency": "USD"
+    }
+   ],
+   "effect": {}
+  },
+  {
+   "id": "US-BROADBAND_HFC-100-researched",
+   "country": "US",
+   "product": "BROADBAND_HFC",
+   "mbps": 100,
+   "base": "100.00",
+   "currency": "USD",
+   "low": "60.00",
+   "high": "175.00",
+   "state": "APPROVED",
+   "decided_by": "Christian Bartosch",
+   "usd": "100.00",
+   "replaces": {
+    "id": "US-BROADBAND_HFC-100",
+    "basis": "SEED",
+    "usd": "120.00"
+   },
+   "lower_tier": 50,
+   "upper_tier": 250,
+   "inversions": [
+    "250 Mbps at 162 > 500 Mbps at 110 USD"
+   ],
+   "researched_by": "ahold-delhaize",
+   "as_of": "2025-2026",
+   "evidence": {
+    "from": "domain 19 disposition",
+    "label": "BROADBAND_HFC 100 Mbps MRC median",
+    "vendor": "Multi-carrier (Lightyear dataset)",
+    "term_months": null,
+    "as_of": "2025-2026",
+    "sources": [
+     {
+      "publisher": "Lightyear",
+      "source_url": "https://lightyear.ai/resources/dedicated-internet-access-dia-ultimate-pricing-guide",
+      "source_class": "AGGREGATOR",
+      "how_read": "FULL_PAGE",
+      "excerpt": "100 Mbps | $60 | $100 | $175",
+      "note": "Broadband P10/median/P90; includes HFC and fibre mix"
+     },
+     {
+      "publisher": "lightyear.ai business internet costs",
+      "source_url": "https://lightyear.ai/blogs/how-much-business-internet-costs",
+      "source_class": "AGGREGATOR",
+      "how_read": "FULL_PAGE",
+      "excerpt": "100 Mbps | $60 | $100 | $175",
+      "note": "Second Lightyear page confirming same broadband table"
+     }
+    ]
+   },
+   "flags": [
+    "re-prices lower tiers"
+   ],
+   "other_observations": [
+    {
+     "slug": "ahold-delhaize",
+     "value": "100",
+     "currency": "USD"
+    },
+    {
+     "slug": "ups",
+     "value": "100",
+     "currency": "USD"
+    }
+   ],
+   "effect": {
+    "ahold-delhaize": {
+     "delta": "-2174.27",
+     "currency": "EUR",
+     "circuits": 10
+    },
+    "fresenius": {
+     "delta": "-434.85",
+     "currency": "EUR",
+     "circuits": 2
+    },
+    "maersk": {
+     "delta": "-27580.80",
+     "currency": "DKK",
+     "circuits": 17
+    },
+    "victorias-secret": {
+     "delta": "-249.60",
+     "currency": "USD",
+     "circuits": 1
+    }
+   }
+  },
+  {
+   "id": "US-BROADBAND_HFC-500-researched",
+   "country": "US",
+   "product": "BROADBAND_HFC",
+   "mbps": 500,
+   "base": "110.00",
+   "currency": "USD",
+   "low": "65.00",
+   "high": "212.00",
+   "state": "APPROVED",
+   "decided_by": "Christian Bartosch",
+   "usd": "110.00",
+   "replaces": {
+    "id": "US-BROADBAND_HFC-500",
+    "basis": "SEED",
+    "usd": "208.00"
+   },
+   "lower_tier": 250,
+   "upper_tier": 1000,
+   "inversions": [
+    "250 Mbps at 162 > 500 Mbps at 110 USD"
+   ],
+   "researched_by": "ahold-delhaize",
+   "as_of": "2025-2026",
+   "evidence": {
+    "from": "domain 19 disposition",
+    "label": "BROADBAND_HFC/PON 500 Mbps MRC median",
+    "vendor": "Multi-carrier (Lightyear dataset)",
+    "term_months": null,
+    "as_of": "2025-2026",
+    "sources": [
+     {
+      "publisher": "Lightyear",
+      "source_url": "https://lightyear.ai/resources/dedicated-internet-access-dia-ultimate-pricing-guide",
+      "source_class": "AGGREGATOR",
+      "how_read": "FULL_PAGE",
+      "excerpt": "500 Mbps | $65 | $110 | $212",
+      "note": "Broadband 500 Mbps P10/median/P90"
+     },
+     {
+      "publisher": "lightyear.ai business internet costs",
+      "source_url": "https://lightyear.ai/blogs/how-much-business-internet-costs",
+      "source_class": "AGGREGATOR",
+      "how_read": "FULL_PAGE",
+      "excerpt": "500 Mbps | $65 | $110 | $212",
+      "note": "Corroborating page"
+     }
+    ]
+   },
+   "flags": [
+    "re-prices lower tiers"
+   ],
+   "other_observations": [
+    {
+     "slug": "ahold-delhaize",
+     "value": "110",
+     "currency": "USD"
+    },
+    {
+     "slug": "simmons-bank",
+     "value": "100",
+     "currency": "USD"
+    }
+   ],
+   "effect": {
+    "ahold-delhaize": {
+     "delta": "-1096373.43",
+     "currency": "EUR",
+     "circuits": 2017
+    },
+    "mcdonalds": {
+     "delta": "-12657765.12",
+     "currency": "USD",
+     "circuits": 13706
+    },
+    "unfi": {
+     "delta": "-33246.72",
+     "currency": "USD",
+     "circuits": 36
+    },
+    "ups": {
+     "delta": "-749898.24",
+     "currency": "USD",
+     "circuits": 812
+    },
+    "victorias-secret": {
+     "delta": "-738816.00",
+     "currency": "USD",
+     "circuits": 800
+    }
+   }
+  },
+  {
+   "id": "US-BROADBAND_HFC-1000-researched",
+   "country": "US",
+   "product": "BROADBAND_HFC",
+   "mbps": 1000,
+   "base": "184.00",
+   "currency": "USD",
+   "low": "124.00",
+   "high": "330.00",
+   "state": "APPROVED",
+   "decided_by": "Christian Bartosch",
+   "usd": "184.00",
+   "replaces": {
+    "id": "US-BROADBAND_HFC-1000",
+    "basis": "SEED",
+    "usd": "264.00"
+   },
+   "lower_tier": 500,
+   "upper_tier": null,
+   "inversions": [
+    "250 Mbps at 162 > 500 Mbps at 110 USD"
+   ],
+   "researched_by": "ahold-delhaize",
+   "as_of": "2025-2026",
+   "evidence": {
+    "from": "domain 19 disposition",
+    "label": "BROADBAND_HFC/PON 1 Gbps MRC median",
+    "vendor": "Multi-carrier (Lightyear dataset)",
+    "term_months": null,
+    "as_of": "2025-2026",
+    "sources": [
+     {
+      "publisher": "Lightyear",
+      "source_url": "https://lightyear.ai/resources/dedicated-internet-access-dia-ultimate-pricing-guide",
+      "source_class": "AGGREGATOR",
+      "how_read": "FULL_PAGE",
+      "excerpt": "1 Gbps | $124 | $184 | $330",
+      "note": "Business broadband 1 Gbps P10/median/P90"
+     },
+     {
+      "publisher": "lightyear.ai business internet costs",
+      "source_url": "https://lightyear.ai/blogs/how-much-business-internet-costs",
+      "source_class": "AGGREGATOR",
+      "how_read": "FULL_PAGE",
+      "excerpt": "1 Gbps | $124 | $184 | $330",
+      "note": "Corroborating page"
+     }
+    ]
+   },
+   "flags": [
+    "re-prices lower tiers"
+   ],
+   "other_observations": [
+    {
+     "slug": "ahold-delhaize",
+     "value": "184",
+     "currency": "USD"
+    },
+    {
+     "slug": "simmons-bank",
+     "value": "115",
+     "currency": "USD"
+    },
+    {
+     "slug": "ups",
+     "value": "184",
+     "currency": "USD"
+    }
+   ],
+   "effect": {}
+  },
+  {
+   "id": "US-BROADBAND_PON-100-researched",
+   "country": "US",
+   "product": "BROADBAND_PON",
+   "mbps": 100,
+   "base": "100.00",
+   "currency": "USD",
+   "low": "60.00",
+   "high": "175.00",
+   "state": "APPROVED",
+   "decided_by": "Christian Bartosch",
+   "usd": "100.00",
+   "replaces": {
+    "id": "US-BROADBAND_PON-100",
+    "basis": "SEED",
+    "usd": "85.00"
+   },
+   "lower_tier": 50,
+   "upper_tier": 250,
+   "inversions": [
+    "250 Mbps at 114 > 500 Mbps at 99 USD"
+   ],
+   "researched_by": "volkswagen",
+   "as_of": "2025-2026",
+   "evidence": {
+    "from": "domain 19 disposition",
+    "label": "BROADBAND_PON/HFC 100 Mbps MRC – US business",
+    "vendor": null,
+    "term_months": null,
+    "as_of": "2025-2026",
+    "sources": [
+     {
+      "publisher": "Lightyear",
+      "source_url": "https://lightyear.ai/resources/dedicated-internet-access-dia-ultimate-pricing-guide",
+      "source_class": "AGGREGATOR",
+      "how_read": "SNIPPET_ONLY",
+      "excerpt": "100 Mbps | $60 | $100 | $175 — Last 12 Months Broadband Pricing ($MRC) by Bandwidth Tier",
+      "note": "US business broadband (shared/best-effort); 10th pct $60, median $100, 90th pct $175; technology not split HFC vs PON"
+     }
+    ]
+   },
+   "flags": [
+    "single source",
+    "read from a snippet",
+    "re-prices lower tiers"
+   ],
+   "other_observations": [
+    {
+     "slug": "volkswagen",
+     "value": "100",
+     "currency": "USD"
+    }
+   ],
+   "effect": {
+    "bayer": {
+     "delta": "3512.28",
+     "currency": "EUR",
+     "circuits": 20
+    },
+    "danone": {
+     "delta": "2107.37",
+     "currency": "EUR",
+     "circuits": 12
+    },
+    "fresenius": {
+     "delta": "228202.24",
+     "currency": "EUR",
+     "circuits": 1413
+    },
+    "heidelberg-materials": {
+     "delta": "41620.46",
+     "currency": "EUR",
+     "circuits": 237
+    },
+    "michelin": {
+     "delta": "5092.80",
+     "currency": "EUR",
+     "circuits": 29
+    },
+    "nestle": {
+     "delta": "7902.72",
+     "currency": "CHF",
+     "circuits": 49
+    },
+    "toyota": {
+     "delta": "298368.00",
+     "currency": "JPY",
+     "circuits": 10
+    }
+   }
+  },
+  {
+   "id": "US-BROADBAND_PON-300-researched",
+   "country": "US",
+   "product": "BROADBAND_PON",
+   "mbps": 300,
+   "base": "70.00",
+   "currency": "USD",
+   "low": "70.00",
+   "high": "70.00",
+   "state": "UNDECIDED",
+   "decided_by": null,
+   "usd": "70.00",
+   "replaces": null,
+   "lower_tier": 250,
+   "upper_tier": 500,
+   "inversions": [
+    "250 Mbps at 114 > 300 Mbps at 70 USD"
+   ],
+   "researched_by": "simmons-bank",
+   "as_of": "2026",
+   "evidence": {
+    "from": "domain 19 disposition",
+    "label": "BROADBAND_PON 300 Mbps MRC – US (AT&T Business Fiber published rate)",
+    "vendor": "AT&T Business Fiber",
+    "term_months": null,
+    "as_of": "2026",
+    "sources": [
+     {
+      "publisher": "business.org (AT&T Business Internet Review 2026)",
+      "source_url": "https://www.business.org/services/internet/att-business-internet-review/",
+      "source_class": "AGGREGATOR",
+      "how_read": "SNIPPET_ONLY",
+      "excerpt": "Business Fiber 300: $70.00/mo",
+      "note": "AT&T published price, shared fibre (PON), month-to-month"
+     },
+     {
+      "publisher": "smartsmssolutions.com",
+      "source_url": "https://smartsmssolutions.com/resources/blog/business/business-internet-pricing-tco-case-studies",
+      "source_class": "TRADE_PRESS",
+      "how_read": "SNIPPET_ONLY",
+      "excerpt": "Shared Fiber (GPON) 100/100 Mbps symmetric: $80-$120",
+      "note": "US 2025 GPON business pricing benchmark"
+     }
+    ]
+   },
+   "flags": [
+    "read from a snippet",
+    "re-prices lower tiers"
+   ],
+   "other_observations": [
+    {
+     "slug": "simmons-bank",
+     "value": "70",
+     "currency": "USD"
+    }
+   ],
+   "effect": {
+    "abb": {
+     "delta": "-6093.48",
+     "currency": "USD",
+     "circuits": 17
+    },
+    "basf": {
+     "delta": "-8430.40",
+     "currency": "EUR",
+     "circuits": 27
+    },
+    "henkel": {
+     "delta": "-4683.56",
+     "currency": "EUR",
+     "circuits": 15
+    },
+    "novartis": {
+     "delta": "-2294.02",
+     "currency": "CHF",
+     "circuits": 8
+    },
+    "siemens": {
+     "delta": "-7181.45",
+     "currency": "EUR",
+     "circuits": 23
+    },
+    "simmons-bank": {
+     "delta": "-45521.88",
+     "currency": "USD",
+     "circuits": 127
+    },
+    "unilever": {
+     "delta": "-7181.45",
+     "currency": "EUR",
+     "circuits": 23
+    },
+    "volkswagen": {
+     "delta": "-936.71",
+     "currency": "EUR",
+     "circuits": 3
+    }
+   }
+  },
+  {
+   "id": "US-BROADBAND_PON-500-researched",
+   "country": "US",
+   "product": "BROADBAND_PON",
+   "mbps": 500,
+   "base": "99.00",
+   "currency": "USD",
+   "low": "74.25",
+   "high": "123.75",
+   "state": "APPROVED",
+   "decided_by": "Christian Bartosch",
+   "usd": "99.00",
+   "replaces": {
+    "id": "US-BROADBAND_PON-500",
+    "basis": "SEED",
+    "usd": "145.00"
+   },
+   "lower_tier": 250,
+   "upper_tier": 1000,
+   "inversions": [
+    "250 Mbps at 114 > 500 Mbps at 99 USD"
+   ],
+   "researched_by": "bayer",
+   "as_of": "2026",
+   "evidence": {
+    "from": "domain 19 disposition",
+    "label": "BROADBAND_PON 500 Mbps MRC – US, Verizon Fios Business",
+    "vendor": "Verizon",
+    "term_months": null,
+    "as_of": "2026",
+    "sources": [
+     {
+      "publisher": "highspeedinternet.com (Verizon published tariff)",
+      "source_url": "https://www.highspeedinternet.com/resources/business-internet-guide",
+      "source_class": "AGGREGATOR",
+      "how_read": "SNIPPET_ONLY",
+      "excerpt": "Verizon Business Fios 500 | $99/mo. | Up to 500Mbps | Fiber",
+      "note": "Verizon Fios Business shared fiber (PON); published tariff as listed in aggregator"
+     },
+     {
+      "publisher": "highspeedinternet.com (Verizon Fios 500)",
+      "source_url": "https://www.highspeedinternet.com/resources/business-internet-guide",
+      "source_class": "AGGREGATOR",
+      "how_read": "SNIPPET_ONLY",
+      "excerpt": "Fios 500 Mbps | $99/mo. | 500Mbps | Fiber",
+      "note": "Consistent listing from same aggregator"
+     }
+    ]
+   },
+   "flags": [
+    "single source",
+    "read from a snippet",
+    "re-prices lower tiers"
+   ],
+   "other_observations": [
+    {
+     "slug": "bayer",
+     "value": "99",
+     "currency": "USD"
+    }
+   ],
+   "effect": {
+    "abb": {
+     "delta": "-9665.52",
+     "currency": "USD",
+     "circuits": 17
+    },
+    "basf": {
+     "delta": "-13372.36",
+     "currency": "EUR",
+     "circuits": 27
+    },
+    "henkel": {
+     "delta": "-7429.09",
+     "currency": "EUR",
+     "circuits": 15
+    },
+    "novartis": {
+     "delta": "-3638.78",
+     "currency": "CHF",
+     "circuits": 8
+    },
+    "siemens": {
+     "delta": "-11391.27",
+     "currency": "EUR",
+     "circuits": 23
+    },
+    "simmons-bank": {
+     "delta": "-23545.80",
+     "currency": "USD",
+     "circuits": 127
+    },
+    "unilever": {
+     "delta": "-11391.27",
+     "currency": "EUR",
+     "circuits": 23
+    },
+    "volkswagen": {
+     "delta": "-1485.82",
+     "currency": "EUR",
+     "circuits": 3
+    }
+   }
+  },
+  {
+   "id": "US-DIA-100-researched",
+   "country": "US",
+   "product": "DIA",
+   "mbps": 100,
+   "base": "492.00",
+   "currency": "USD",
+   "low": "333.00",
+   "high": "641.00",
+   "state": "APPROVED",
+   "decided_by": "Christian Bartosch",
+   "usd": "492.00",
+   "replaces": {
+    "id": "US-DIA-100",
+    "basis": "SEED",
+    "usd": "480.00"
+   },
+   "lower_tier": null,
+   "upper_tier": 300,
+   "inversions": [
+    "500 Mbps at 1242 > 1000 Mbps at 901 USD"
+   ],
+   "researched_by": "abb",
+   "as_of": "2025-2026",
+   "evidence": {
+    "from": "domain 19 disposition",
+    "label": "DIA 100 Mbps MRC – US (Lightyear dataset, 36-month, median)",
+    "vendor": null,
+    "term_months": 36,
+    "as_of": "2025-2026",
+    "sources": [
+     {
+      "publisher": "Lightyear.ai",
+      "source_url": "https://lightyear.ai/resources/dedicated-internet-access-dia-ultimate-pricing-guide",
+      "source_class": "AGGREGATOR",
+      "how_read": "SNIPPET_ONLY",
+      "excerpt": "Median DIA MRC 36-month: 100 Mbps $492, 1 Gbps $901, 10 Gbps $1,987 (US, mixed geo/ISP)",
+      "note": "10th pct $333, 90th pct $641 at 100 Mbps"
+     },
+     {
+      "publisher": "successknocks.com (citing Lightyear 2026 US market data)",
+      "source_url": "https://successknocks.com/dedicated-internet-access-vs-broadband/",
+      "source_class": "AGGREGATOR",
+      "how_read": "SNIPPET_ONLY",
+      "excerpt": "Typical 100 Mbps DIA cost $333–$641/month (2026 US market data across multiple carriers)",
+      "note": "Aligns with Lightyear dataset"
+     },
+     {
+      "publisher": "Discover Communications",
+      "source_url": "https://discovercomm.com/blog-how-much-does-business-internet-cost.html",
+      "source_class": "TRADE_PRESS",
+      "how_read": "SNIPPET_ONLY",
+      "excerpt": "100 Mbps symmetrical DIA: $300–$700/month (2026)",
+      "note": "Wider range includes off-net"
+     }
+    ]
+   },
+   "flags": [
+    "read from a snippet",
+    "re-prices lower tiers"
+   ],
+   "other_observations": [
+    {
+     "slug": "abb",
+     "value": "492",
+     "currency": "USD"
+    },
+    {
+     "slug": "ahold-delhaize",
+     "value": "333",
+     "currency": "USD"
+    },
+    {
+     "slug": "ahold-delhaize",
+     "value": "492",
+     "currency": "USD"
+    },
+    {
+     "slug": "ahold-delhaize",
+     "value": "641",
+     "currency": "USD"
+    },
+    {
+     "slug": "basf",
+     "value": "492",
+     "currency": "USD"
+    },
+    {
+     "slug": "basf",
+     "value": "625",
+     "currency": "USD"
+    },
+    {
+     "slug": "bayer",
+     "value": "492",
+     "currency": "USD"
+    },
+    {
+     "slug": "fresenius",
+     "value": "492",
+     "currency": "USD"
+    }
+   ],
+   "effect": {
+    "ahold-delhaize": {
+     "delta": "3919.95",
+     "currency": "EUR",
+     "circuits": 25
+    },
+    "fresenius": {
+     "delta": "408145.19",
+     "currency": "EUR",
+     "circuits": 2603
+    },
+    "maersk": {
+     "delta": "46800.00",
+     "currency": "DKK",
+     "circuits": 40
+    },
+    "victorias-secret": {
+     "delta": "360.00",
+     "currency": "USD",
+     "circuits": 2
+    }
+   }
+  },
+  {
+   "id": "US-DIA-1000-researched",
+   "country": "US",
+   "product": "DIA",
+   "mbps": 1000,
+   "base": "901.00",
+   "currency": "USD",
+   "low": "600.00",
+   "high": "1312.00",
+   "state": "APPROVED",
+   "decided_by": "Christian Bartosch",
+   "usd": "901.00",
+   "replaces": {
+    "id": "US-DIA-1000",
+    "basis": "SEED",
+    "usd": "1350.00"
+   },
+   "lower_tier": 500,
+   "upper_tier": 10000,
+   "inversions": [
+    "500 Mbps at 1242 > 1000 Mbps at 901 USD"
+   ],
+   "researched_by": "abb",
+   "as_of": "2025-2026",
+   "evidence": {
+    "from": "domain 19 disposition",
+    "label": "DIA 1000 Mbps MRC – US (Lightyear dataset, 36-month, median)",
+    "vendor": null,
+    "term_months": 36,
+    "as_of": "2025-2026",
+    "sources": [
+     {
+      "publisher": "Lightyear.ai",
+      "source_url": "https://lightyear.ai/resources/dedicated-internet-access-dia-ultimate-pricing-guide",
+      "source_class": "AGGREGATOR",
+      "how_read": "SNIPPET_ONLY",
+      "excerpt": "Median DIA 1 Gbps $901/month (US, 36-month, 10th pct $600, 90th pct $1,312)",
+      "note": "Lightyear actual quote dataset"
+     },
+     {
+      "publisher": "successknocks.com (citing Lightyear 2026 US market data)",
+      "source_url": "https://successknocks.com/dedicated-internet-access-vs-broadband/",
+      "source_class": "AGGREGATOR",
+      "how_read": "SNIPPET_ONLY",
+      "excerpt": "Typical 1 Gbps DIA $600–$1,312/month (2026 US data)",
+      "note": "Consistent across sources"
+     },
+     {
+      "publisher": "Discover Communications",
+      "source_url": "https://discovercomm.com/blog-how-much-does-business-internet-cost.html",
+      "source_class": "TRADE_PRESS",
+      "how_read": "SNIPPET_ONLY",
+      "excerpt": "1 Gbps DIA: $700–$2,000/month (2026)",
+      "note": "Wide range; includes off-net"
+     }
+    ]
+   },
+   "flags": [
+    "read from a snippet",
+    "re-prices lower tiers"
+   ],
+   "other_observations": [
+    {
+     "slug": "abb",
+     "value": "901",
+     "currency": "USD"
+    },
+    {
+     "slug": "ahold-delhaize",
+     "value": "600",
+     "currency": "USD"
+    },
+    {
+     "slug": "ahold-delhaize",
+     "value": "901",
+     "currency": "USD"
+    },
+    {
+     "slug": "ahold-delhaize",
+     "value": "1312",
+     "currency": "USD"
+    },
+    {
+     "slug": "basf",
+     "value": "901",
+     "currency": "USD"
+    },
+    {
+     "slug": "basf",
+     "value": "1070",
+     "currency": "USD"
+    },
+    {
+     "slug": "bayer",
+     "value": "901",
+     "currency": "USD"
+    },
+    {
+     "slug": "fresenius",
+     "value": "901",
+     "currency": "USD"
+    }
+   ],
+   "effect": {
+    "basf": {
+     "delta": "-65708.82",
+     "currency": "EUR",
+     "circuits": 14
+    },
+    "bayer": {
+     "delta": "-37547.89",
+     "currency": "EUR",
+     "circuits": 8
+    },
+    "capgemini": {
+     "delta": "-70402.30",
+     "currency": "EUR",
+     "circuits": 15
+    },
+    "danone": {
+     "delta": "-9386.97",
+     "currency": "EUR",
+     "circuits": 2
+    },
+    "michelin": {
+     "delta": "-14080.46",
+     "currency": "EUR",
+     "circuits": 3
+    },
+    "nestle": {
+     "delta": "-77587.20",
+     "currency": "CHF",
+     "circuits": 18
+    },
+    "novartis": {
+     "delta": "-68966.40",
+     "currency": "CHF",
+     "circuits": 16
+    },
+    "siemens": {
+     "delta": "-314463.62",
+     "currency": "EUR",
+     "circuits": 67
+    },
+    "simmons-bank": {
+     "delta": "-617550.00",
+     "currency": "USD",
+     "circuits": 230
+    },
+    "toyota": {
+     "delta": "-3189696.00",
+     "currency": "JPY",
+     "circuits": 4
+    },
+    "unilever": {
+     "delta": "-56321.84",
+     "currency": "EUR",
+     "circuits": 12
+    },
+    "volkswagen": {
+     "delta": "-46934.87",
+     "currency": "EUR",
+     "circuits": 10
+    }
+   }
+  },
+  {
+   "id": "US-DIA-10000-researched",
+   "country": "US",
+   "product": "DIA",
+   "mbps": 10000,
+   "base": "1987.00",
+   "currency": "USD",
+   "low": "1175.00",
+   "high": "2853.00",
+   "state": "APPROVED",
+   "decided_by": "Christian Bartosch",
+   "usd": "1987.00",
+   "replaces": null,
+   "lower_tier": 1000,
+   "upper_tier": null,
+   "inversions": [
+    "500 Mbps at 1242 > 1000 Mbps at 901 USD"
+   ],
+   "researched_by": "abb",
+   "as_of": "2025-2026",
+   "evidence": {
+    "from": "domain 19 disposition",
+    "label": "DIA 10000 Mbps MRC – US (Lightyear dataset, 36-month, median)",
+    "vendor": null,
+    "term_months": 36,
+    "as_of": "2025-2026",
+    "sources": [
+     {
+      "publisher": "Lightyear.ai",
+      "source_url": "https://lightyear.ai/resources/dedicated-internet-access-dia-ultimate-pricing-guide",
+      "source_class": "AGGREGATOR",
+      "how_read": "SNIPPET_ONLY",
+      "excerpt": "Median DIA 10 Gbps $1,987/month (US, 36-month, 10th pct $1,175, 90th pct $2,853)",
+      "note": "Lightyear actual quote dataset"
+     },
+     {
+      "publisher": "defendmybusiness.com",
+      "source_url": "https://defendmybusiness.com/dedicated-internet-access-pricing-in-us/",
+      "source_class": "AGGREGATOR",
+      "how_read": "SNIPPET_ONLY",
+      "excerpt": "US DIA 10 Gbps on-net: Lumen/Zayo $2,000-$2,500, AT&T $3,000-$3,700, Verizon $3,000-$3,500",
+      "note": "Provider-level detail"
+     },
+     {
+      "publisher": "californiatelecom.com (citing Lightyear data)",
+      "source_url": "https://californiatelecom.com/blog/enterprise-fiber-cost",
+      "source_class": "TRADE_PRESS",
+      "how_read": "SNIPPET_ONLY",
+      "excerpt": "Enterprise dedicated fiber $1,800 to $5,000+ for 10 Gbps (2026)",
+      "note": "Wider range including off-net"
+     }
+    ]
+   },
+   "flags": [
+    "read from a snippet",
+    "re-prices lower tiers"
+   ],
+   "other_observations": [
+    {
+     "slug": "abb",
+     "value": "1987",
+     "currency": "USD"
+    },
+    {
+     "slug": "ahold-delhaize",
+     "value": "1987",
+     "currency": "USD"
+    },
+    {
+     "slug": "bayer",
+     "value": "1987",
+     "currency": "USD"
+    },
+    {
+     "slug": "fresenius",
+     "value": "1987",
+     "currency": "USD"
+    },
+    {
+     "slug": "mcdonalds",
+     "value": "1987",
+     "currency": "USD"
+    },
+    {
+     "slug": "siemens",
+     "value": "1987",
+     "currency": "USD"
+    },
+    {
+     "slug": "simmons-bank",
+     "value": "1987",
+     "currency": "USD"
+    },
+    {
+     "slug": "ups",
+     "value": "1987",
+     "currency": "USD"
+    }
+   ],
+   "effect": {}
+  },
+  {
+   "id": "US-ETHERNET-10000-researched",
+   "country": "US",
+   "product": "ETHERNET",
+   "mbps": 10000,
+   "base": "1807.00",
+   "currency": "USD",
+   "low": "1244.00",
+   "high": "2157.00",
+   "state": "APPROVED",
+   "decided_by": "Christian Bartosch",
+   "usd": "1807.00",
+   "replaces": {
+    "id": "US-ETHERNET-10000",
+    "basis": "SEED",
+    "usd": "3450.00"
+   },
+   "lower_tier": 9000,
+   "upper_tier": null,
+   "inversions": [
+    "9000 Mbps at 3267 > 10000 Mbps at 1807 USD"
+   ],
+   "researched_by": "simmons-bank",
+   "as_of": "2025-2026",
+   "evidence": {
+    "from": "domain 19 disposition",
+    "label": "ETHERNET 10000 Mbps point-to-point MRC – US (Lightyear dataset)",
+    "vendor": null,
+    "term_months": null,
+    "as_of": "2025-2026",
+    "sources": [
+     {
+      "publisher": "lightyear.ai (Ethernet Private Line guide)",
+      "source_url": "https://lightyear.ai/blogs/ethernet-private-line-cost",
+      "source_class": "TRADE_PRESS",
+      "how_read": "SNIPPET_ONLY",
+      "excerpt": "10 Gbps Point-to-Point (Ethernet): 10th pct $1,244, Median $1,807, 90th pct $2,157",
+      "note": "US, last 12 months from Lightyear dataset; diverse geographies, ISPs, on-net/off-net"
+     },
+     {
+      "publisher": "tailwindvoiceanddata.com",
+      "source_url": "https://www.tailwindvoiceanddata.com/blog/how-much-does-ethernet-installation-cost",
+      "source_class": "TRADE_PRESS",
+      "how_read": "SNIPPET_ONLY",
+      "excerpt": "Monthly business Ethernet pricing ranges from $300 to $2,000+ per month per location",
+      "note": "US carrier-delivered business Ethernet, all bandwidths"
+     }
+    ]
+   },
+   "flags": [
+    "floor",
+    "read from a snippet",
+    "re-prices lower tiers"
+   ],
+   "other_observations": [
+    {
+     "slug": "simmons-bank",
+     "value": "1807",
+     "currency": "USD"
+    }
+   ],
+   "effect": {
+    "shell": {
+     "delta": "-37104.83",
+     "currency": "USD",
+     "circuits": 2
+    }
+   }
+  },
+  {
+   "id": "US-ETHERNET-100000-researched",
+   "country": "US",
+   "product": "ETHERNET",
+   "mbps": 100000,
+   "base": "2050.00",
+   "currency": "USD",
+   "low": "2050.00",
+   "high": "2050.00",
+   "state": "REVOKED",
+   "decided_by": "Christian Bartosch",
+   "usd": "2050.00",
+   "replaces": null,
+   "lower_tier": 10000,
+   "upper_tier": null,
+   "inversions": [
+    "9000 Mbps at 3267 > 10000 Mbps at 1807 USD"
+   ],
+   "researched_by": "mcdonalds",
+   "as_of": "2026",
+   "evidence": {
+    "from": "domain 19 disposition",
+    "label": "ETHERNET 100 Gbps Wave MRC (US point-to-point)",
+    "vendor": null,
+    "term_months": null,
+    "as_of": "2026",
+    "sources": [
+     {
+      "publisher": "Lightyear Ethernet Private Line Pricing 2026",
+      "source_url": "https://lightyear.ai/blogs/ethernet-private-line-cost",
+      "source_class": "AGGREGATOR",
+      "how_read": "SNIPPET_ONLY",
+      "excerpt": "With a median price of $2,050 per month, a 100 Gbps Wave comes in roughly in line with 10 Gbps DIA pricing",
+      "note": "Wavelength service; per Lightyear 2026 dataset"
+     }
+    ]
+   },
+   "flags": [
+    "single source",
+    "read from a snippet",
+    "re-prices lower tiers"
+   ],
+   "other_observations": [
+    {
+     "slug": "mcdonalds",
+     "value": "2050",
+     "currency": "USD"
+    }
+   ],
+   "effect": {}
+  },
+  {
+   "id": "US-MPLS-1000-researched",
+   "country": "US",
+   "product": "MPLS",
+   "mbps": 1000,
+   "base": "1439.00",
+   "currency": "USD",
+   "low": "1079.25",
+   "high": "1798.75",
+   "state": "APPROVED",
+   "decided_by": "Christian Bartosch",
+   "usd": "1439.00",
+   "replaces": null,
+   "lower_tier": 100,
+   "upper_tier": null,
+   "inversions": [],
+   "researched_by": "toyota",
+   "as_of": "2026",
+   "evidence": {
+    "from": "domain 19 disposition",
+    "label": "MPLS 1000Mbps MRC",
+    "vendor": null,
+    "term_months": null,
+    "as_of": "2026",
+    "sources": [
+     {
+      "publisher": "Lightyear",
+      "source_url": "https://lightyear.ai/blogs/sd-wan-vs-mpls-cost-comparison",
+      "source_class": "AGGREGATOR",
+      "how_read": "SNIPPET_ONLY",
+      "excerpt": "MPLS | $1,439 | $17,268 | All-inclusive managed service (1 Gbps)",
+      "note": "Median from Lightyear enterprise dataset, North America"
+     }
+    ]
+   },
+   "flags": [
+    "single source",
+    "read from a snippet"
+   ],
+   "other_observations": [
+    {
+     "slug": "abb",
+     "value": "1439",
+     "currency": "USD"
+    },
+    {
+     "slug": "basf",
+     "value": "1439",
+     "currency": "USD"
+    },
+    {
+     "slug": "bayer",
+     "value": "1439",
+     "currency": "USD"
+    },
+    {
+     "slug": "maersk",
+     "value": "1439",
+     "currency": "USD"
+    },
+    {
+     "slug": "mcdonalds",
+     "value": "1439",
+     "currency": "USD"
+    },
+    {
+     "slug": "siemens",
+     "value": "1439",
+     "currency": "USD"
+    },
+    {
+     "slug": "simmons-bank",
+     "value": "1439",
+     "currency": "USD"
+    },
+    {
+     "slug": "toyota",
+     "value": "1439",
+     "currency": "USD"
+    }
+   ],
+   "effect": {}
+  },
+  {
+   "id": "ZA-DIA-100-researched",
+   "country": "ZA",
+   "product": "DIA",
+   "mbps": 100,
+   "base": "8000.00",
+   "currency": "ZAR",
+   "low": "8000.00",
+   "high": "8000.00",
+   "state": "UNDECIDED",
+   "decided_by": null,
+   "usd": "444.44",
+   "replaces": null,
+   "lower_tier": null,
+   "upper_tier": 300,
+   "inversions": [],
+   "researched_by": null,
+   "as_of": "2026",
+   "evidence": {
+    "from": "domain 19 disposition",
+    "label": "DIA 100 Mbps MRC ZA (leased line / dedicated fibre)",
+    "vendor": "MWCom / market",
+    "term_months": null,
+    "as_of": "2026",
+    "sources": [
+     {
+      "publisher": "mwcom.co.za",
+      "source_url": "https://www.mwcom.co.za/business-internet-south-africa",
+      "source_class": "COMPANY_PUBLISHED",
+      "how_read": "SNIPPET_ONLY",
+      "excerpt": "Leased lines start from around R8,000/mo for 100 Mbps symmetric.",
+      "note": "Carrier published floor price; 100 Mbps symmetric dedicated fibre; 2026"
+     },
+     {
+      "publisher": "bizai.co.za",
+      "source_url": "https://www.bizai.co.za/blog/dedicated-internet-vs-leased-line-south-africa-2026",
+      "source_class": "TRADE_PRESS",
+      "how_read": "SNIPPET_ONLY",
+      "excerpt": "Enterprise pricing: Typically R8,000-R25,000/month depending on distance and capacity.",
+      "note": "2026 market range; leased line / dedicated private circuit; distance and capacity dependent"
+     }
+    ]
+   },
+   "flags": [
+    "floor",
+    "read from a snippet"
+   ],
+   "other_observations": [],
+   "effect": {
+    "anglo-american": {
+     "delta": "-18912.00",
+     "currency": "USD",
+     "circuits": 1
+    }
+   }
+  }
+ ],
+ "sets": [
+  {
+   "country": "AU",
+   "product": "BROADBAND_HFC",
+   "approved": [
+    "AU-BROADBAND_HFC-250-researched",
+    "AU-BROADBAND_HFC-2000-researched"
+   ],
+   "undecided": [],
+   "effect_of_approvals": {
+    "woolworths": {
+     "delta": "-1700424.00",
+     "currency": "AUD",
+     "circuits": 1130
+    }
+   },
+   "effect_of_approving_undecided": {}
+  },
+  {
+   "country": "AU",
+   "product": "BROADBAND_PON",
+   "approved": [
+    "AU-BROADBAND_PON-250-researched"
+   ],
+   "undecided": [],
+   "effect_of_approvals": {},
+   "effect_of_approving_undecided": {}
+  },
+  {
+   "country": "AU",
+   "product": "DIA",
+   "approved": [],
+   "undecided": [
+    "AU-DIA-250-researched"
+   ],
+   "effect_of_approvals": {},
+   "effect_of_approving_undecided": {
+    "woolworths": {
+     "delta": "-779850.00",
+     "currency": "AUD",
+     "circuits": 30
+    }
+   }
+  },
+  {
+   "country": "AU",
+   "product": "ETHERNET",
+   "approved": [
+    "AU-ETHERNET-250-researched",
+    "AU-ETHERNET-500-researched",
+    "AU-ETHERNET-1000-researched"
+   ],
+   "undecided": [],
+   "effect_of_approvals": {
+    "rio-tinto": {
+     "delta": "-349626.49",
+     "currency": "USD",
+     "circuits": 20
+    },
+    "woolworths": {
+     "delta": "-90434.40",
+     "currency": "AUD",
+     "circuits": 5
+    }
+   },
+   "effect_of_approving_undecided": {}
+  },
+  {
+   "country": "BE",
+   "product": "BROADBAND_PON",
+   "approved": [
+    "BE-BROADBAND_PON-150-researched"
+   ],
+   "undecided": [
+    "BE-BROADBAND_PON-2500-researched"
+   ],
+   "effect_of_approvals": {},
+   "effect_of_approving_undecided": {}
+  },
+  {
+   "country": "DE",
+   "product": "BROADBAND_PON",
+   "approved": [],
+   "undecided": [],
+   "effect_of_approvals": {},
+   "effect_of_approving_undecided": {}
+  },
+  {
+   "country": "ES",
+   "product": "DIA",
+   "approved": [],
+   "undecided": [
+    "ES-DIA-100-researched",
+    "ES-DIA-600-researched",
+    "ES-DIA-1000-researched"
+   ],
+   "effect_of_approvals": {},
+   "effect_of_approving_undecided": {
+    "carrefour": {
+     "delta": "-134271.72",
+     "currency": "EUR",
+     "circuits": 12
+    },
+    "fresenius": {
+     "delta": "-4811403.30",
+     "currency": "EUR",
+     "circuits": 430
+    },
+    "iberdrola": {
+     "delta": "-164023.20",
+     "currency": "EUR",
+     "circuits": 20
+    },
+    "santander": {
+     "delta": "-14590860.24",
+     "currency": "EUR",
+     "circuits": 1630
+    },
+    "volkswagen": {
+     "delta": "-65609.28",
+     "currency": "EUR",
+     "circuits": 8
+    }
+   }
+  },
+  {
+   "country": "FR",
+   "product": "BROADBAND_PON",
+   "approved": [],
+   "undecided": [],
+   "effect_of_approvals": {},
+   "effect_of_approving_undecided": {}
+  },
+  {
+   "country": "FR",
+   "product": "DIA",
+   "approved": [
+    "FR-DIA-1000-researched"
+   ],
+   "undecided": [],
+   "effect_of_approvals": {
+    "accor": {
+     "delta": "-7444.32",
+     "currency": "EUR",
+     "circuits": 5
+    },
+    "air-france-klm": {
+     "delta": "-2977.73",
+     "currency": "EUR",
+     "circuits": 2
+    },
+    "allianz": {
+     "delta": "-1488.86",
+     "currency": "EUR",
+     "circuits": 1
+    },
+    "basf": {
+     "delta": "-8933.18",
+     "currency": "EUR",
+     "circuits": 6
+    },
+    "bnp-paribas": {
+     "delta": "-29777.28",
+     "currency": "EUR",
+     "circuits": 20
+    },
+    "capgemini": {
+     "delta": "-14888.64",
+     "currency": "EUR",
+     "circuits": 10
+    },
+    "michelin": {
+     "delta": "-5955.46",
+     "currency": "EUR",
+     "circuits": 4
+    },
+    "nestle": {
+     "delta": "-5469.37",
+     "currency": "CHF",
+     "circuits": 4
+    },
+    "saint-gobain": {
+     "delta": "-1369.75",
+     "currency": "EUR",
+     "circuits": 1
+    },
+    "siemens": {
+     "delta": "-26799.55",
+     "currency": "EUR",
+     "circuits": 18
+    },
+    "totalenergies": {
+     "delta": "-1572.44",
+     "currency": "USD",
+     "circuits": 1
+    }
+   },
+   "effect_of_approving_undecided": {}
+  },
+  {
+   "country": "GB",
+   "product": "BROADBAND_HFC",
+   "approved": [
+    "GB-BROADBAND_HFC-200-researched",
+    "GB-BROADBAND_HFC-400-researched",
+    "GB-BROADBAND_HFC-600-researched",
+    "GB-BROADBAND_HFC-1000-researched",
+    "GB-BROADBAND_HFC-2000-researched"
+   ],
+   "undecided": [],
+   "effect_of_approvals": {
+    "boots": {
+     "delta": "-1315289.59",
+     "currency": "GBP",
+     "circuits": 2164
+    },
+    "deutsche-post-dhl": {
+     "delta": "-349440.29",
+     "currency": "EUR",
+     "circuits": 345
+    },
+    "mcdonalds": {
+     "delta": "-1752262.30",
+     "currency": "USD",
+     "circuits": 1507
+    },
+    "royal-mail": {
+     "delta": "-39049.17",
+     "currency": "GBP",
+     "circuits": 45
+    },
+    "tesco": {
+     "delta": "-2338832.87",
+     "currency": "GBP",
+     "circuits": 3700
+    },
+    "ups": {
+     "delta": "-22092.23",
+     "currency": "USD",
+     "circuits": 19
+    }
+   },
+   "effect_of_approving_undecided": {}
+  },
+  {
+   "country": "GB",
+   "product": "BROADBAND_PON",
+   "approved": [
+    "GB-BROADBAND_PON-100-researched"
+   ],
+   "undecided": [],
+   "effect_of_approvals": {
+    "heidelberg-materials": {
+     "delta": "-38406.49",
+     "currency": "EUR",
+     "circuits": 142
+    },
+    "iberdrola": {
+     "delta": "-243421.43",
+     "currency": "EUR",
+     "circuits": 900
+    },
+    "nestle": {
+     "delta": "-3229.10",
+     "currency": "CHF",
+     "circuits": 13
+    },
+    "network-rail": {
+     "delta": "-185375.23",
+     "currency": "GBP",
+     "circuits": 800
+    },
+    "nhs-england": {
+     "delta": "-138203.86",
+     "currency": "GBP",
+     "circuits": 668
+    },
+    "royal-mail": {
+     "delta": "-13839.01",
+     "currency": "GBP",
+     "circuits": 65
+    },
+    "saint-gobain": {
+     "delta": "-4597.96",
+     "currency": "EUR",
+     "circuits": 17
+    },
+    "santander": {
+     "delta": "-57957.48",
+     "currency": "EUR",
+     "circuits": 240
+    },
+    "toyota": {
+     "delta": "-91905.18",
+     "currency": "JPY",
+     "circuits": 2
+    }
+   },
+   "effect_of_approving_undecided": {}
+  },
+  {
+   "country": "GB",
+   "product": "DIA",
+   "approved": [],
+   "undecided": [
+    "GB-DIA-100-researched",
+    "GB-DIA-500-researched",
+    "GB-DIA-1000-researched",
+    "GB-DIA-10000-researched"
+   ],
+   "effect_of_approvals": {},
+   "effect_of_approving_undecided": {
+    "anglo-american": {
+     "delta": "-5708.53",
+     "currency": "USD",
+     "circuits": 1
+    },
+    "boots": {
+     "delta": "-10663.88",
+     "currency": "GBP",
+     "circuits": 5
+    },
+    "capgemini": {
+     "delta": "-44754.32",
+     "currency": "EUR",
+     "circuits": 9
+    },
+    "deutsche-post-dhl": {
+     "delta": "-1892301.51",
+     "currency": "EUR",
+     "circuits": 419
+    },
+    "eon": {
+     "delta": "-39781.62",
+     "currency": "EUR",
+     "circuits": 8
+    },
+    "iberdrola": {
+     "delta": "-38354.33",
+     "currency": "EUR",
+     "circuits": 22
+    },
+    "mcdonalds": {
+     "delta": "-4147.61",
+     "currency": "USD",
+     "circuits": 1
+    },
+    "nestle": {
+     "delta": "-13700.48",
+     "currency": "CHF",
+     "circuits": 3
+    },
+    "network-rail": {
+     "delta": "-131501.38",
+     "currency": "GBP",
+     "circuits": 54
+    },
+    "nhs-england": {
+     "delta": "-1118160.39",
+     "currency": "GBP",
+     "circuits": 1262
+    },
+    "rio-tinto": {
+     "delta": "-22834.13",
+     "currency": "USD",
+     "circuits": 4
+    },
+    "royal-mail": {
+     "delta": "-344789.92",
+     "currency": "GBP",
+     "circuits": 179
+    },
+    "saint-gobain": {
+     "delta": "-796759.73",
+     "currency": "EUR",
+     "circuits": 700
+    },
+    "santander": {
+     "delta": "-280459.43",
+     "currency": "EUR",
+     "circuits": 308
+    },
+    "shell": {
+     "delta": "-45668.25",
+     "currency": "USD",
+     "circuits": 8
+    },
+    "siemens": {
+     "delta": "-119344.85",
+     "currency": "EUR",
+     "circuits": 24
+    },
+    "tesco": {
+     "delta": "-53552.15",
+     "currency": "GBP",
+     "circuits": 31
+    },
+    "unilever": {
+     "delta": "-59971.07",
+     "currency": "EUR",
+     "circuits": 19
+    },
+    "ups": {
+     "delta": "-129612.92",
+     "currency": "USD",
+     "circuits": 25
+    }
+   }
+  },
+  {
+   "country": "GB",
+   "product": "ETHERNET",
+   "approved": [],
+   "undecided": [],
+   "effect_of_approvals": {},
+   "effect_of_approving_undecided": {}
+  },
+  {
+   "country": "GB",
+   "product": "MPLS",
+   "approved": [],
+   "undecided": [],
+   "effect_of_approvals": {},
+   "effect_of_approving_undecided": {}
+  },
+  {
+   "country": "IE",
+   "product": "BROADBAND_PON",
+   "approved": [],
+   "undecided": [],
+   "effect_of_approvals": {},
+   "effect_of_approving_undecided": {}
+  },
+  {
+   "country": "IT",
+   "product": "ETHERNET",
+   "approved": [],
+   "undecided": [],
+   "effect_of_approvals": {},
+   "effect_of_approving_undecided": {}
+  },
+  {
+   "country": "NL",
+   "product": "BROADBAND_PON",
+   "approved": [],
+   "undecided": [],
+   "effect_of_approvals": {},
+   "effect_of_approving_undecided": {}
+  },
+  {
+   "country": "NL",
+   "product": "DIA",
+   "approved": [
+    "NL-DIA-200-researched"
+   ],
+   "undecided": [],
+   "effect_of_approvals": {},
+   "effect_of_approving_undecided": {}
+  },
+  {
+   "country": "NZ",
+   "product": "BROADBAND_PON",
+   "approved": [],
+   "undecided": [],
+   "effect_of_approvals": {},
+   "effect_of_approving_undecided": {}
+  },
+  {
+   "country": "SG",
+   "product": "BROADBAND_PON",
+   "approved": [
+    "SG-BROADBAND_PON-500-researched",
+    "SG-BROADBAND_PON-1000-researched"
+   ],
+   "undecided": [],
+   "effect_of_approvals": {
+    "dbs": {
+     "delta": "-3231.36",
+     "currency": "SGD",
+     "circuits": 36
+    },
+    "novartis": {
+     "delta": "-294.79",
+     "currency": "CHF",
+     "circuits": 3
+    }
+   },
+   "effect_of_approving_undecided": {}
+  },
+  {
+   "country": "SG",
+   "product": "DIA",
+   "approved": [
+    "SG-DIA-10000-researched"
+   ],
+   "undecided": [
+    "SG-DIA-100-researched"
+   ],
+   "effect_of_approvals": {},
+   "effect_of_approving_undecided": {}
+  },
+  {
+   "country": "US",
+   "product": "BROADBAND_HFC",
+   "approved": [
+    "US-BROADBAND_HFC-100-researched",
+    "US-BROADBAND_HFC-500-researched",
+    "US-BROADBAND_HFC-1000-researched"
+   ],
+   "undecided": [],
+   "effect_of_approvals": {
+    "ahold-delhaize": {
+     "delta": "-1098547.69",
+     "currency": "EUR",
+     "circuits": 2027
+    },
+    "fresenius": {
+     "delta": "-434.85",
+     "currency": "EUR",
+     "circuits": 2
+    },
+    "maersk": {
+     "delta": "-27580.80",
+     "currency": "DKK",
+     "circuits": 17
+    },
+    "mcdonalds": {
+     "delta": "-16762986.24",
+     "currency": "USD",
+     "circuits": 13706
+    },
+    "unfi": {
+     "delta": "-44029.44",
+     "currency": "USD",
+     "circuits": 36
+    },
+    "ups": {
+     "delta": "-993108.48",
+     "currency": "USD",
+     "circuits": 812
+    },
+    "victorias-secret": {
+     "delta": "-978681.60",
+     "currency": "USD",
+     "circuits": 801
+    }
+   },
+   "effect_of_approving_undecided": {}
+  },
+  {
+   "country": "US",
+   "product": "BROADBAND_PON",
+   "approved": [
+    "US-BROADBAND_PON-100-researched",
+    "US-BROADBAND_PON-500-researched"
+   ],
+   "undecided": [
+    "US-BROADBAND_PON-300-researched"
+   ],
+   "effect_of_approvals": {
+    "abb": {
+     "delta": "-9665.52",
+     "currency": "USD",
+     "circuits": 17
+    },
+    "basf": {
+     "delta": "-13372.36",
+     "currency": "EUR",
+     "circuits": 27
+    },
+    "bayer": {
+     "delta": "3512.28",
+     "currency": "EUR",
+     "circuits": 20
+    },
+    "danone": {
+     "delta": "2107.37",
+     "currency": "EUR",
+     "circuits": 12
+    },
+    "fresenius": {
+     "delta": "228202.24",
+     "currency": "EUR",
+     "circuits": 1413
+    },
+    "heidelberg-materials": {
+     "delta": "41620.46",
+     "currency": "EUR",
+     "circuits": 237
+    },
+    "henkel": {
+     "delta": "-7429.09",
+     "currency": "EUR",
+     "circuits": 15
+    },
+    "michelin": {
+     "delta": "5092.80",
+     "currency": "EUR",
+     "circuits": 29
+    },
+    "nestle": {
+     "delta": "7902.72",
+     "currency": "CHF",
+     "circuits": 49
+    },
+    "novartis": {
+     "delta": "-3638.78",
+     "currency": "CHF",
+     "circuits": 8
+    },
+    "siemens": {
+     "delta": "-11391.27",
+     "currency": "EUR",
+     "circuits": 23
+    },
+    "simmons-bank": {
+     "delta": "-23545.80",
+     "currency": "USD",
+     "circuits": 127
+    },
+    "toyota": {
+     "delta": "298368.00",
+     "currency": "JPY",
+     "circuits": 10
+    },
+    "unilever": {
+     "delta": "-11391.27",
+     "currency": "EUR",
+     "circuits": 23
+    },
+    "volkswagen": {
+     "delta": "-1485.82",
+     "currency": "EUR",
+     "circuits": 3
+    }
+   },
+   "effect_of_approving_undecided": {
+    "abb": {
+     "delta": "-6093.48",
+     "currency": "USD",
+     "circuits": 17
+    },
+    "basf": {
+     "delta": "-8430.40",
+     "currency": "EUR",
+     "circuits": 27
+    },
+    "henkel": {
+     "delta": "-4683.56",
+     "currency": "EUR",
+     "circuits": 15
+    },
+    "novartis": {
+     "delta": "-2294.02",
+     "currency": "CHF",
+     "circuits": 8
+    },
+    "siemens": {
+     "delta": "-7181.45",
+     "currency": "EUR",
+     "circuits": 23
+    },
+    "simmons-bank": {
+     "delta": "-45521.88",
+     "currency": "USD",
+     "circuits": 127
+    },
+    "unilever": {
+     "delta": "-7181.45",
+     "currency": "EUR",
+     "circuits": 23
+    },
+    "volkswagen": {
+     "delta": "-936.71",
+     "currency": "EUR",
+     "circuits": 3
+    }
+   }
+  },
+  {
+   "country": "US",
+   "product": "DIA",
+   "approved": [
+    "US-DIA-100-researched",
+    "US-DIA-1000-researched",
+    "US-DIA-10000-researched"
+   ],
+   "undecided": [],
+   "effect_of_approvals": {
+    "ahold-delhaize": {
+     "delta": "3919.95",
+     "currency": "EUR",
+     "circuits": 25
+    },
+    "basf": {
+     "delta": "-65708.82",
+     "currency": "EUR",
+     "circuits": 14
+    },
+    "bayer": {
+     "delta": "-37547.89",
+     "currency": "EUR",
+     "circuits": 8
+    },
+    "capgemini": {
+     "delta": "-70402.30",
+     "currency": "EUR",
+     "circuits": 15
+    },
+    "danone": {
+     "delta": "-9386.97",
+     "currency": "EUR",
+     "circuits": 2
+    },
+    "fresenius": {
+     "delta": "408145.19",
+     "currency": "EUR",
+     "circuits": 2603
+    },
+    "maersk": {
+     "delta": "46800.00",
+     "currency": "DKK",
+     "circuits": 40
+    },
+    "michelin": {
+     "delta": "-14080.46",
+     "currency": "EUR",
+     "circuits": 3
+    },
+    "nestle": {
+     "delta": "-77587.20",
+     "currency": "CHF",
+     "circuits": 18
+    },
+    "novartis": {
+     "delta": "-68966.40",
+     "currency": "CHF",
+     "circuits": 16
+    },
+    "siemens": {
+     "delta": "-314463.62",
+     "currency": "EUR",
+     "circuits": 67
+    },
+    "simmons-bank": {
+     "delta": "-617550.00",
+     "currency": "USD",
+     "circuits": 230
+    },
+    "toyota": {
+     "delta": "-3189696.00",
+     "currency": "JPY",
+     "circuits": 4
+    },
+    "unilever": {
+     "delta": "-56321.84",
+     "currency": "EUR",
+     "circuits": 12
+    },
+    "victorias-secret": {
+     "delta": "360.00",
+     "currency": "USD",
+     "circuits": 2
+    },
+    "volkswagen": {
+     "delta": "-46934.87",
+     "currency": "EUR",
+     "circuits": 10
+    }
+   },
+   "effect_of_approving_undecided": {}
+  },
+  {
+   "country": "US",
+   "product": "ETHERNET",
+   "approved": [
+    "US-ETHERNET-10000-researched"
+   ],
+   "undecided": [],
+   "effect_of_approvals": {
+    "shell": {
+     "delta": "-37104.83",
+     "currency": "USD",
+     "circuits": 2
+    }
+   },
+   "effect_of_approving_undecided": {}
+  },
+  {
+   "country": "US",
+   "product": "MPLS",
+   "approved": [
+    "US-MPLS-1000-researched"
+   ],
+   "undecided": [],
+   "effect_of_approvals": {},
+   "effect_of_approving_undecided": {}
+  },
+  {
+   "country": "ZA",
+   "product": "DIA",
+   "approved": [],
+   "undecided": [
+    "ZA-DIA-100-researched"
+   ],
+   "effect_of_approvals": {},
+   "effect_of_approving_undecided": {
+    "anglo-american": {
+     "delta": "-18912.00",
+     "currency": "USD",
+     "circuits": 1
+    }
+   }
+  }
+ ]
+}
