@@ -532,17 +532,21 @@ def promote(case_id, slug):
                    f"/v1/outside-in/cases/{case_id}/research-findings:promote",
                    {"candidate_ids": ids, "promoted_by": ANALYST},
                    timeout=600)
-    # Decisions a steward already made on these prices, left standing because
-    # research found the same figure, and the ones a changed figure replaced.
-    # Logged, because a re-run that silently reset approvals is what this
-    # line used to hide.
+    # Decisions a steward already made on these prices, which promotion now
+    # leaves standing: kept where research found the decided figure again,
+    # challenged where it found another - a figure a steward should see, and
+    # the card does not take. Logged, because a re-run that silently reset
+    # approvals is what this line used to hide.
     kept = (res or {}).get("decisions_kept") or [] if st == 200 else []
-    lost = (res or {}).get("decisions_superseded") or [] if st == 200 else []
+    challenged = ((res or {}).get("decisions_challenged") or []
+                  if st == 200 else [])
     log(slug, f"promote {len(by_bucket['footprint_candidates'])} footprint "
               f"+ {len(by_bucket['price_candidates'])} price finding(s): {st}"
               + (f"; kept {len(kept)} price decision(s)" if kept else "")
-              + (f"; {len(lost)} superseded by a changed figure: "
-                 + ", ".join(d["id"] for d in lost) if lost else ""))
+              + (f"; {len(challenged)} challenged by another figure: "
+                 + ", ".join(f"{d['id']} ({d['found']} against "
+                             f"{d['decided']})" for d in challenged)
+                 if challenged else ""))
     return {"promoted": st == 200, "ids": ids,
             "price_ids": by_bucket["price_candidates"], "result": res}
 

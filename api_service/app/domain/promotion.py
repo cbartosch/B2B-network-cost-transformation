@@ -1249,7 +1249,7 @@ def promote(session, *, case_id: str, candidate_ids: list[str],
     now = datetime.now(timezone.utc)
     promoted_footprint, proposed_prices, declined = [], [], []
     promoted_archetype, promoted_anchor = [], []
-    decisions_kept, decisions_superseded = [], []
+    decisions_kept, decisions_challenged = [], []
     entries, superseded = _one_row_per_pair(
         entries, accept_conflicts=accept_conflicts)
 
@@ -1470,16 +1470,14 @@ def promote(session, *, case_id: str, candidate_ids: list[str],
                                        policy=divergence_policy,
                                        currency=quoted)
             row_id = f"{country}-{product}-{int(mbps)}-researched"
-            # Left as a steward decided it, if research found the same figure.
-            existing, decided, keep = _standing_decision(
-                session, row_id, value, quoted)
-            if keep:
-                decisions_kept.append({"id": row_id, **decided})
-                proposed_prices.append(
-                    {"country": country, "product": product, "base": value,
-                     "approved": bool(existing.approved),
-                     "decision_kept": decided["decision"],
-                     "benchmark_comparison": cmp})
+            # Left as a steward decided it, whatever research found this time.
+            existing, decided = _standing_decision(session, row_id)
+            if decided:
+                # Not a proposal, so not in proposed_prices: it was decided.
+                (decisions_kept if _same_figure(existing, value, quoted)
+                 else decisions_challenged).append(
+                    {"id": row_id, **decided, "found": f"{value} {quoted}",
+                     "decided": f"{existing.base} {existing.currency}"})
                 continue
             session.execute(delete(db.unit_cost_prior).where(
                 db.unit_cost_prior.c.id == row_id))
@@ -1517,20 +1515,7 @@ def promote(session, *, case_id: str, candidate_ids: list[str],
                                 f"{q.get('unit')!r}, divided by "
                                 f"{MONTHS_PER_YEAR} to reach this monthly "
                                 f"rate. " if period == "YEAR" else "")
-                             + f"vs benchmark: {cmp['verdict']} - {cmp['note']}"
-                             # Worded so it can never contain REVOKED_MARK: a
-                             # fresh proposal whose note said "revoked by"
-                             # would read back as revoked.
-                             + (f" | the figure changed from {existing.base} "
-                                f"{existing.currency}, so the earlier "
-                                f"{decided['decision']} decision "
-                                f"({decided['by']}) was not carried over"
-                                if decided else ""))))
-            if decided:
-                decisions_superseded.append(
-                    {"id": row_id, **decided,
-                     "was": f"{existing.base} {existing.currency}",
-                     "now": f"{value} {quoted}"})
+                             + f"vs benchmark: {cmp['verdict']} - {cmp['note']}")))
             proposed_prices.append(
                 {"country": country, "product": product, "base": value,
                  "approved": False, "benchmark_comparison": cmp})
@@ -1557,10 +1542,11 @@ def promote(session, *, case_id: str, candidate_ids: list[str],
         # this silently.
         "superseded_within_pair": superseded,
         "declined": declined,
-        # A steward's approval or revocation left standing because research
-        # found the same figure again, and the ones a changed figure replaced.
+        # A steward's approval or revocation, left standing. Kept: research
+        # found the figure that was decided. Challenged: it found another, and
+        # a steward should see it - the card still holds what was decided.
         "decisions_kept": decisions_kept,
-        "decisions_superseded": decisions_superseded,
+        "decisions_challenged": decisions_challenged,
         "promoted_by": promoted_by,
         "note": (
             "Footprint rows are now available to the simulation page as the "
@@ -1580,6 +1566,23 @@ CARD_BAND_SHARE = Decimal("0.25")
 #: read through this one name, because the decision lives in the note and a
 #: second spelling of it would read as no decision at all.
 REVOKED_MARK = "revoked by"
+#: How reopen_price marks a row it returns to undecided. The note keeps the
+#: history; the later of the two marks is the state.
+REOPENED_MARK = "reopened by"
+
+
+def _plain_reason(reason: str) -> str:
+    """A reason the note can carry without being misread as a decision.
+
+    The state is read from the last mark in the note, so a reason saying
+    "was revoked by mistake" would read back as a revocation.
+    """
+    for mark in (REVOKED_MARK, REOPENED_MARK):
+        if mark in (reason or "").lower():
+            raise NotPromotable(
+                f"the reason cannot contain {mark!r}: the note is read for "
+                f"that phrase to tell a revoked price from an open one")
+    return reason
 
 
 def decision_on(row) -> dict | None:
@@ -1588,6 +1591,8 @@ def decision_on(row) -> dict | None:
     Approval is a column; revocation is only the note revoke_price appends,
     because the row keeps its observed value and grade either way. A row
     revoked and then approved again is approved - the column is checked first.
+    A revocation a steward later reopened is no decision: the note keeps both,
+    and whichever came last stands.
     """
     if row is None:
         return None
@@ -1595,7 +1600,7 @@ def decision_on(row) -> dict | None:
         return {"decision": "APPROVED", "by": row.approved_by,
                 "at": str(row.approved_at) if row.approved_at else None}
     note = row.source_note or ""
-    if REVOKED_MARK in note:
+    if note.rfind(REVOKED_MARK) > note.rfind(REOPENED_MARK):
         tail = note.rsplit(REVOKED_MARK, 1)[1]
         return {"decision": "REVOKED", "by": tail.split(":", 1)[0].strip(),
                 "at": None}
@@ -1610,26 +1615,28 @@ def _same_figure(row, value, quoted: str) -> bool:
             and (row.currency or "USD").upper() == (quoted or "USD").upper())
 
 
-def _standing_decision(session, row_id: str, value, quoted: str) -> tuple:
-    """(existing row, its decision, whether promote must leave it alone).
+def _standing_decision(session, row_id: str) -> tuple:
+    """(existing row, the steward's decision on it, if any).
 
-    A steward's decision outlives re-promotion of the figure it was about.
-    promote deleted and re-inserted the row unapproved every time, so each
-    run_samples --repromote undid every approval and every revocation since
-    the last one. US DIA at 10 Gbps and US MPLS at 1 Gbps were approved by
-    name on 13 October and were unapproved, with no approver recorded, ten
-    days later - and the two EUR rows revoked that day had lost their reasons
-    too.
+    Promotion does not write over a decided row. It deleted and re-inserted
+    every researched row unapproved, so each run_samples --repromote undid
+    every approval and revocation since the last one: US DIA at 10 Gbps and
+    US MPLS at 1 Gbps were approved by name on 13 October and were
+    unapproved, with no approver recorded, ten days later.
 
-    The same figure re-found leaves the row exactly as decided. A different
-    figure is a different claim, so it is proposed afresh, and its note says
-    what was decided about the one it replaces.
+    Keeping a decision only when research re-found the same figure was not
+    enough. One row stands for a country, product and tier across every
+    company, and research found US DIA 100 at 333, 492, 625 and 641 - so
+    the first company with another figure replaced the approval at 492 and
+    every company after it priced without it, in the first run after the
+    approvals were made.
+
+    So a different figure is reported as a challenge to the decision, for a
+    steward to weigh, and the card keeps what was decided.
     """
     existing = session.execute(select(db.unit_cost_prior).where(
         db.unit_cost_prior.c.id == row_id)).first()
-    decided = decision_on(existing)
-    return (existing, decided,
-            bool(decided) and _same_figure(existing, value, quoted))
+    return existing, decision_on(existing)
 
 
 def approve_price(session, *, row_id: str, approved_by: str,
@@ -1713,6 +1720,7 @@ def revoke_price(session, *, row_id: str, revoked_by: str,
         raise NotPromotable(
             "revocation needs a named person and a reason: a price leaving "
             "the rate card changes every estimate that used it")
+    _plain_reason(reason)
     row = session.execute(select(db.unit_cost_prior).where(
         db.unit_cost_prior.c.id == row_id)).first()
     if row is None:
@@ -1727,6 +1735,39 @@ def revoke_price(session, *, row_id: str, revoked_by: str,
     return {"id": row_id, "country": row.country, "product": row.product,
             "bandwidth_mbps": row.bandwidth_mbps, "approved": False,
             "revoked_by": revoked_by, "reason": reason}
+
+
+def reopen_price(session, *, row_id: str, reopened_by: str,
+                 reason: str) -> dict:
+    """Return a decided price to undecided: neither priced nor turned down.
+
+    A decision is reversible in both directions or it is not a review. A
+    revocation stood for good once promotion stopped writing over decided
+    rows, so a rejection a second reviewer downgraded to a hold - the source
+    traced after all - had no way back to the queue.
+
+    Unapproves an approved row too, so a hold always means the same thing.
+    The note records who reopened it and why, after what it replaces.
+    """
+    if not reopened_by or not reason:
+        raise NotPromotable(
+            "reopening needs a named person and a reason: it changes what "
+            "the next steward is asked to decide")
+    _plain_reason(reason)
+    row = session.execute(select(db.unit_cost_prior).where(
+        db.unit_cost_prior.c.id == row_id)).first()
+    if row is None:
+        raise NotPromotable(f"no such price row: {row_id}")
+    session.execute(update(db.unit_cost_prior)
+                    .where(db.unit_cost_prior.c.id == row_id)
+                    .values(approved=False,
+                            source_note=f"{row.source_note or ''} "
+                                        f"| {REOPENED_MARK} {reopened_by}: "
+                                        f"{reason}".strip(" |")))
+    session.commit()
+    return {"id": row_id, "country": row.country, "product": row.product,
+            "bandwidth_mbps": row.bandwidth_mbps, "approved": False,
+            "reopened_by": reopened_by, "reason": reason}
 
 
 def evidenced_footprint(session, case_id: str) -> list[dict]:
