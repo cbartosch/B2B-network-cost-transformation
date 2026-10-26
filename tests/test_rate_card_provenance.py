@@ -25,13 +25,29 @@ def test_the_sourced_rates_keep_their_grade():
 
 
 def test_the_uk_survey_rows_are_the_ones_carried():
-    """GB DIA at 100, 500 and 1000, GB Ethernet at 500, 1000 and 10000. Six
-    keys from seven source rows, because the Virgin Media tariff and the
-    survey band describe the same circuit and merge."""
+    """GB DIA at 100, 500, 1000 and 10000, GB Ethernet at 500, 1000 and
+    10000. Seven keys from eight source rows, because the Virgin Media tariff
+    and the survey band describe the same circuit and merge."""
     assert {k for k in seed.SOURCED_PROVENANCE if k[0] == "GB"} == {
         ("GB", "DIA", 100), ("GB", "DIA", 500), ("GB", "DIA", 1000),
-        ("GB", "ETHERNET", 500), ("GB", "ETHERNET", 1000),
-        ("GB", "ETHERNET", 10000)}
+        ("GB", "DIA", 10000), ("GB", "ETHERNET", 500),
+        ("GB", "ETHERNET", 1000), ("GB", "ETHERNET", 10000)}
+
+
+def test_uk_dia_reaches_10_gbps_at_the_surveys_band():
+    """DIA stopped at 1 Gbps, so the 10 Gbps DIA backups beside urban 10 Gbps
+    sites went unpriced once those sites were no longer cut to 1 Gbps. The
+    survey's 10 Gbps band prices them, as its 500 Mbps band does, and the
+    steps between 1 and 10 Gbps are interpolated on it."""
+    from decimal import Decimal as D
+
+    grade, source = seed.SOURCED_PROVENANCE[("GB", "DIA", 10000)]
+    assert grade == "C" and "Purple" in source
+    fx = D(seed.SOURCED_FX["GBP"])
+    _c, _p, _l, _bw, low, base, high = _row("GB", "DIA", 10000)
+    assert (low, base, high) == (int(800 * fx), int((800 + 3500) * fx / 2),
+                                 int(3500 * fx))
+    assert ("GB", "DIA", 5000) in seed._DERIVED_TIER_KEYS
 
 
 def _row(country, product, mbps):

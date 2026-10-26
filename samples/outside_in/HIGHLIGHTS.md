@@ -721,7 +721,7 @@ Sources: [ARCEP (French Telecom Regulator)](https://en.arcep.fr/news/press-relea
 
 - **Industry** INSURANCE (entity resolution)
 - **Scope** DE, FR, IT, EUR, 1,538 sites (research merged with disclosure)
-- **Confidence** 0.342 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.343 (D - Indicative), coverage COMPLETE
 
 **Profile** - DECLARED_UNKNOWN, 1 source(s)
 
@@ -2596,7 +2596,7 @@ Sources: [Analysys Mason](https://www.analysysmason.com/research/content/reports
 
 - **Industry** AIRPORTS (entity resolution)
 - **Scope** DE, GR, BR, PE, TR, BG, EUR, 41 sites (research merged with disclosure)
-- **Confidence** 0.347 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.348 (D - Indicative), coverage COMPLETE
 
 **Profile** - DECLARED_UNKNOWN, 1 source(s)
 

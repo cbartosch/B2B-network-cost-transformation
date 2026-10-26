@@ -1,13 +1,13 @@
 {
-  "simulation_run_id": "54cdc0c7-1c61-4220-9552-2cbf6a582669",
+  "simulation_run_id": "0bcf6352-7e90-47fb-971b-dda59c3f88c2",
   "case_id": "11ba398f-96c7-4027-9624-6355f5290b8e",
   "model_version": "sim-2.10.0",
   "seed": 20260101,
   "ensemble_size": 25,
   "status": "SUCCEEDED",
   "output_hash": "7b8d8a14a8408c9e1f7d0e8aaa08fb21816927dd4afaef7c5d2487f018208eb9",
-  "started_at": "2026-10-26 11:26:47.425992+00:00",
-  "ended_at": "2026-10-26 11:26:48.655509+00:00",
+  "started_at": "2026-10-26 13:46:15.844433+00:00",
+  "ended_at": "2026-10-26 13:46:16.986113+00:00",
   "params": {
     "footprint": [
       {
@@ -1211,6 +1211,23 @@
     },
     "providers_by_role": {},
     "plan_tiers": {
+      "IN|BROADBAND_HFC": [
+        100,
+        250,
+        500,
+        1000
+      ],
+      "IN|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "IN|MOBILE_5G": [
+        50,
+        100
+      ],
       "CN|BROADBAND_HFC": [
         100,
         250,
@@ -1225,6 +1242,23 @@
         1000
       ],
       "CN|MOBILE_5G": [
+        50,
+        100
+      ],
+      "ID|BROADBAND_HFC": [
+        100,
+        250,
+        500,
+        1000
+      ],
+      "ID|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "ID|MOBILE_5G": [
         50,
         100
       ],
@@ -1244,40 +1278,6 @@
         250,
         500,
         1000
-      ],
-      "ID|BROADBAND_HFC": [
-        100,
-        250,
-        500,
-        1000
-      ],
-      "ID|BROADBAND_PON": [
-        50,
-        100,
-        250,
-        500,
-        1000
-      ],
-      "ID|MOBILE_5G": [
-        50,
-        100
-      ],
-      "IN|BROADBAND_HFC": [
-        100,
-        250,
-        500,
-        1000
-      ],
-      "IN|BROADBAND_PON": [
-        50,
-        100,
-        250,
-        500,
-        1000
-      ],
-      "IN|MOBILE_5G": [
-        50,
-        100
       ]
     },
     "backbone": {
