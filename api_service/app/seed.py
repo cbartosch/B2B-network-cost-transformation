@@ -967,6 +967,23 @@ SOURCED_RATES = [
      "October 2026: Vocus and Swoop nbn Enterprise Ethernet AUD 699 at a "
      "CBD, low class-of-service reference; Next Telecom AUD 899-1,499 by "
      "class and zone; SME retail basis."),
+    # Australia had no 5G rate of its own, so its 5G circuits priced at
+    # APAC's - Singapore's seed alone, about AUD 142 for 100 Mbps. Telstra
+    # publishes its business 5G plans. The page does not say whether GST is
+    # included; the business Premium costs what Telstra's consumer plan does,
+    # so it probably is, and each band runs from the ex-GST figure to the
+    # price as listed. Grade B: the seller's own published tariff.
+    ("AU", "MOBILE_5G", 50, "72.73", 80, "AUD", "B",
+     "Telstra 5G Business Internet Essential, 50/20 Mbps, AUD 80 a month "
+     "from 1 July 2026 (Telstra's own price notice); 1,000 GB, month to "
+     "month; business retail basis. GST not stated: the band runs from the "
+     "ex-GST figure to the listed price."),
+    ("AU", "MOBILE_5G", 300, "86.36", 95, "AUD", "B",
+     "Telstra 5G Business Internet Premium, 300/30 Mbps (busy-hour 80-600, "
+     "average 300), AUD 95 a month from 1 July 2026, up from 85 (Telstra's "
+     "own price notice); 1,000 GB, month to month; business retail basis. "
+     "GST not stated: the band runs from the ex-GST figure to the listed "
+     "price."),
 ]
 
 # Where a country's rate is quoted in its own currency. The seeded card is USD
@@ -1284,12 +1301,19 @@ def _fwa_tiers(rows):
     """
     from decimal import Decimal as _D
 
-    present = {(c, p, bw) for c, p, _l, bw, *_r in rows}
+    # Nothing to extrapolate where the country already quotes 5G at or above
+    # 100: a 100 Mbps need takes the cheapest tier at or above it. Australia
+    # quotes 50 and 300 from Telstra, and a 100 scaled from its 50 sat above
+    # its own 300.
+    top = {}
+    for c, p, _l, bw, *_r in rows:
+        if p == "MOBILE_5G":
+            top[c] = max(top.get(c, 0), int(bw))
     out = []
     for country, product, layer, mbps, low, base, high in rows:
         if product != "MOBILE_5G" or int(mbps) != 50:
             continue
-        if (country, product, 100) in present:
+        if top.get(country, 0) >= 100:
             continue
         f = _D("1.55")
         out.append((country, product, layer, 100,
@@ -2105,13 +2129,50 @@ def _regional_curve(rows):
         out.append((country, product, layer, int(mbps), *band))
         # No longer a median of its members, so it no longer counts them.
         REGIONAL_MEMBERS.pop((country, product, int(mbps)), None)
-        REGIONAL_RECURVED.add((country, product, int(mbps)))
+        REGIONAL_RECURVED[(country, product, int(mbps))] = anchors[1:]
     return out
 
 
-#: Regional rows _regional_curve placed on the region's own curve.
-REGIONAL_RECURVED: set = set()
+def _regional_monotone(rows):
+    """No regional tier priced above the tier above it.
+
+    A region's tiers are medians over whichever members price each one, so
+    neighbouring tiers can rest on different countries. Australia sourced 5G
+    at 50 and 300 from Telstra while Singapore's seed alone set APAC's 100,
+    which put APAC's 100 Mbps at USD 96 over its 300 at 61. A regional tier
+    above the tier above it is interpolated between its neighbours, as
+    _regional_curve does for the 2-9 Gbps steps. Never towards a backbone
+    row, which is no access price.
+    """
+    import math
+
+    backbone = {(region, "ETHERNET", 10000) for region in BACKBONE_REGIONS}
+    rows = list(rows)
+    scopes = {}
+    for i, (c, p, _l, bw, *_r) in enumerate(rows):
+        if c in REGION_CODES:
+            scopes.setdefault((c, p), []).append((int(bw), i))
+    for (region, product), tiers in scopes.items():
+        tiers.sort()
+        for k in range(1, len(tiers) - 1):
+            (lo_bw, lo_i), (bw, i), (hi_bw, hi_i) = tiers[k - 1:k + 2]
+            if ((region, product, hi_bw) in backbone
+                    or float(rows[i][5]) <= float(rows[hi_i][5])):
+                continue
+            f = math.log(bw / lo_bw) / math.log(hi_bw / lo_bw)
+            band = [round(float(a) * ((float(b) / float(a)) ** f), 2)
+                    for a, b in zip(rows[lo_i][4:], rows[hi_i][4:])]
+            rows[i] = (region, product, rows[i][2], bw, *band)
+            REGIONAL_MEMBERS.pop((region, product, bw), None)
+            REGIONAL_RECURVED[(region, product, bw)] = (lo_bw, hi_bw)
+    return rows
+
+
+#: Regional rows placed on the region's own curve, and the two tiers each
+#: was placed between.
+REGIONAL_RECURVED: dict = {}
 PRIORS = _regional_curve(PRIORS)
+PRIORS = _regional_monotone(PRIORS)
 
 # Again, after the derivation. A region's 50 Mbps row is the median of its
 # members' 50 Mbps rows, which is computed from the rescaled country figures -
@@ -2138,10 +2199,15 @@ def _regional_source(key):
     was not observed in.
     """
     region, product, mbps = key
+
+    def _tier(bw):
+        return f"{bw // 1000} Gbps" if bw >= 1000 else f"{bw} Mbps"
+
     if key in REGIONAL_RECURVED:
-        text = ("interpolated between this region's own 1 Gbps and 10 Gbps "
-                "rows, because the median of the members that price this "
-                "tier fell outside them")
+        lower, upper = REGIONAL_RECURVED[key]
+        text = (f"interpolated between this region's own {_tier(lower)} and "
+                f"{_tier(upper)} rows, because the median of the members that "
+                f"price this tier fell outside them")
     elif key in REGIONAL_MEMBERS:
         members = REGIONAL_MEMBERS[key]
         provenance = {m: SOURCED_PROVENANCE[(m, product, mbps)]
@@ -2171,7 +2237,7 @@ def _regional_source(key):
 
 _REGIONAL_SOURCES = {
     key: _regional_source(key)
-    for key in set(REGIONAL_MEMBERS) | REGIONAL_RECURVED}
+    for key in set(REGIONAL_MEMBERS) | set(REGIONAL_RECURVED)}
 
 #: Which rows are interpolated, settled against the FINISHED pipeline.
 #:
