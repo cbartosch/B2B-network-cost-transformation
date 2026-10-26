@@ -176,6 +176,30 @@ def test_every_other_row_is_still_an_assumption():
     assert len(keys - set(seed.SOURCED_PROVENANCE)) > 1000
 
 
+def test_australia_prices_5g_at_telstras_business_plans():
+    """Australia had no 5G rate of its own and priced 5G at APAC's, which was
+    Singapore's seed alone. Telstra publishes its business 5G plans; each
+    band runs from the ex-GST figure to the listed price, because the page
+    does not say which it is, and converts back to Australian dollars."""
+    from decimal import Decimal as D
+
+    usd_to_aud = D("1.48")
+    for mbps, low, high in ((50, D("72.73"), 80), (300, D("86.36"), 95)):
+        grade, source = seed.SOURCED_PROVENANCE[("AU", "MOBILE_5G", mbps)]
+        assert grade == "B" and "Telstra" in source and "GST" in source
+        _c, _p, _l, _bw, lo, base, hi = _row("AU", "MOBILE_5G", mbps)
+        assert abs(D(lo) * usd_to_aud - low) < 2, (mbps, lo)
+        assert abs(D(hi) * usd_to_aud - high) < 2, (mbps, hi)
+
+
+def test_no_5g_tier_is_extrapolated_under_one_already_quoted():
+    """The 100 Mbps 5G fill scales a country's 50 by 1.55. Scaled from
+    Telstra's 50, it sat above Telstra's own 300; a 100 Mbps need takes the
+    300 instead."""
+    assert not any((r[0], r[1], int(r[3])) == ("AU", "MOBILE_5G", 100)
+                   for r in seed.PRIORS)
+
+
 # ------------------------------------------- a regional row says whose it is
 @pytest.fixture(scope="module")
 def card():
@@ -205,6 +229,17 @@ def test_a_regional_row_names_the_countries_its_rate_came_from(card):
 def test_a_regional_tier_put_on_the_regions_curve_says_so(card):
     row = card["EUROPE_WEST-DIA-2000"]
     assert "interpolated between this region's own" in row["source"]
+    assert row["sample_size"] is None
+
+
+def test_a_regional_tier_above_the_tier_above_it_is_placed_between_them(card):
+    """APAC's 100 Mbps 5G rested on Singapore's seed alone, above the 300
+    Mbps rate Australia's Telstra plans gave the region. It is interpolated
+    between APAC's own 50 and 300 now, and says so."""
+    row = card["APAC-MOBILE_5G-100"]
+    assert card["APAC-MOBILE_5G-50"]["base"] < row["base"] \
+        < card["APAC-MOBILE_5G-300"]["base"]
+    assert "between this region's own 50 Mbps and 300 Mbps" in row["source"]
     assert row["sample_size"] is None
 
 
