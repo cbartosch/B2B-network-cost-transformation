@@ -1,13 +1,13 @@
 {
-  "simulation_run_id": "23db6e73-66c9-4047-b5c6-bac3f60c38c0",
+  "simulation_run_id": "857e66a5-65ed-4711-bfa7-42e772f91c6c",
   "case_id": "0fad5c9a-1959-4583-845f-a7cc722e8f60",
-  "model_version": "sim-2.9.0",
+  "model_version": "sim-2.10.0",
   "seed": 20260101,
   "ensemble_size": 25,
   "status": "SUCCEEDED",
-  "output_hash": "915b3c8123ff55d7ee95714a7b0ba7d51ba7fa58834384aa55927ee764f19931",
-  "started_at": "2026-10-26 10:18:42.420742+00:00",
-  "ended_at": "2026-10-26 10:18:44.383191+00:00",
+  "output_hash": "a6b3bd37c2527d13403368e0b18b37b536401d384ef11bd09bdcc8f6f850cf00",
+  "started_at": "2026-10-26 11:24:21.485347+00:00",
+  "ended_at": "2026-10-26 11:24:23.483392+00:00",
   "params": {
     "footprint": [
       {
@@ -2052,24 +2052,6 @@
     },
     "providers_by_role": {},
     "plan_tiers": {
-      "DE|BROADBAND_PON": [
-        50,
-        100,
-        250,
-        500,
-        1000
-      ],
-      "DE|BROADBAND_HFC": [
-        50,
-        100,
-        250,
-        500,
-        1000
-      ],
-      "DE|MOBILE_5G": [
-        50,
-        100
-      ],
       "NL|BROADBAND_PON": [
         50,
         100,
@@ -2109,6 +2091,24 @@
       "GB|MOBILE_5G": [
         50,
         100
+      ],
+      "DE|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "DE|BROADBAND_HFC": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "DE|MOBILE_5G": [
+        50,
+        100
       ]
     },
     "backbone": {
@@ -2142,14 +2142,14 @@
     }
   },
   "output": {
-    "model_version": "sim-2.9.0",
+    "model_version": "sim-2.10.0",
     "seed": 20260101,
     "ensemble_size": 25,
     "sites": 2914,
     "serviceability": {
       "counts": {
-        "DELIVERED": 2200,
-        "SUBSTITUTED": 714,
+        "DELIVERED": 2275,
+        "SUBSTITUTED": 639,
         "UNSERVICEABLE": 0
       },
       "substitutions": [
@@ -2164,12 +2164,6 @@
           "delivered": "ETHERNET",
           "bandwidth_mbps": 500,
           "sites": 105
-        },
-        {
-          "asked_for": "ETHERNET",
-          "delivered": "ETHERNET",
-          "bandwidth_mbps": 1000,
-          "sites": 75
         }
       ],
       "by_access_technology": [
@@ -2179,11 +2173,15 @@
         },
         {
           "access_technology": "ETHERNET_FIBRE",
-          "sites": 714
+          "sites": 639
+        },
+        {
+          "access_technology": "DARK_FIBRE",
+          "sites": 75
         }
       ],
       "unserviceable": 0,
-      "note": "714 of 2914 site(s) take a different product or tier from the one their type asks for, and 0 can be served by nothing at all. 714 of 2914 are delivered over a bearer other than PON (714 on ETHERNET_FIBRE), which is a different circuit at a different rate. A uniform estate is an assumption; this is what the density bands say about it.",
+      "note": "639 of 2914 site(s) take a different product or tier from the one their type asks for, and 0 can be served by nothing at all. 714 of 2914 are delivered over a bearer other than PON (639 on ETHERNET_FIBRE, 75 on DARK_FIBRE), which is a different circuit at a different rate. A uniform estate is an assumption; this is what the density bands say about it.",
       "table_rows": 102,
       "table_basis": "GOVERNED"
     },
@@ -3654,11 +3652,11 @@
         "country": "DE",
         "product": "BROADBAND_HFC",
         "role": "BACKUP",
-        "bandwidth_mbps": 300,
+        "bandwidth_mbps": 500,
         "count": 77,
         "service_class": "BEST_EFFORT",
         "density": "SUBURBAN",
-        "bearer_mbps": 300,
+        "bearer_mbps": 500,
         "access_technology": "HFC"
       },
       {
@@ -3698,22 +3696,22 @@
         "country": "DE",
         "product": "ETHERNET",
         "role": "PRIMARY",
-        "bandwidth_mbps": 600,
+        "bandwidth_mbps": 6000,
         "count": 6,
         "service_class": "ETHERNET",
         "density": "URBAN",
-        "bearer_mbps": 1000,
+        "bearer_mbps": 10000,
         "access_technology": "ETHERNET_FIBRE"
       },
       {
         "country": "DE",
         "product": "ETHERNET",
         "role": "PRIMARY",
-        "bandwidth_mbps": 875,
+        "bandwidth_mbps": 8750,
         "count": 66,
         "service_class": "ETHERNET",
         "density": "URBAN",
-        "bearer_mbps": 1000,
+        "bearer_mbps": 10000,
         "access_technology": "ETHERNET_FIBRE"
       },
       {
@@ -3742,11 +3740,11 @@
         "country": "GB",
         "product": "BROADBAND_HFC",
         "role": "BACKUP",
-        "bandwidth_mbps": 300,
+        "bandwidth_mbps": 500,
         "count": 345,
         "service_class": "BEST_EFFORT",
         "density": "SUBURBAN",
-        "bearer_mbps": 300,
+        "bearer_mbps": 500,
         "access_technology": "HFC"
       },
       {
@@ -3775,22 +3773,22 @@
         "country": "GB",
         "product": "ETHERNET",
         "role": "PRIMARY",
-        "bandwidth_mbps": 875,
+        "bandwidth_mbps": 8750,
         "count": 2,
         "service_class": "ETHERNET",
         "density": "URBAN",
-        "bearer_mbps": 1000,
+        "bearer_mbps": 10000,
         "access_technology": "ETHERNET_FIBRE"
       },
       {
         "country": "NL",
         "product": "BROADBAND_HFC",
         "role": "BACKUP",
-        "bandwidth_mbps": 300,
+        "bandwidth_mbps": 500,
         "count": 20,
         "service_class": "BEST_EFFORT",
         "density": "SUBURBAN",
-        "bearer_mbps": 300,
+        "bearer_mbps": 500,
         "access_technology": "HFC"
       },
       {
@@ -3819,11 +3817,11 @@
         "country": "NL",
         "product": "ETHERNET",
         "role": "PRIMARY",
-        "bandwidth_mbps": 875,
+        "bandwidth_mbps": 8750,
         "count": 1,
         "service_class": "ETHERNET",
         "density": "URBAN",
-        "bearer_mbps": 1000,
+        "bearer_mbps": 10000,
         "access_technology": "ETHERNET_FIBRE"
       }
     ],

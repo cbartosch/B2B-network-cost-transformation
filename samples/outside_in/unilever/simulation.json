@@ -1,13 +1,13 @@
 {
-  "simulation_run_id": "915329c4-c681-4cc7-ac36-52bbad84e5c0",
+  "simulation_run_id": "665ab97c-5905-4373-ac00-eb71234a789a",
   "case_id": "13a3f769-2b31-4a51-acde-9940dcf70ee0",
-  "model_version": "sim-2.9.0",
+  "model_version": "sim-2.10.0",
   "seed": 20260101,
   "ensemble_size": 25,
   "status": "SUCCEEDED",
-  "output_hash": "31d7883aa0704b03c38ab02c94d4d052def493b50323167018fc23755ee58537",
-  "started_at": "2026-10-26 10:20:25.985315+00:00",
-  "ended_at": "2026-10-26 10:20:26.283912+00:00",
+  "output_hash": "0369bb6908c7d8c2c71ab083dd3a61fc0ab796882308c82e8d524aa2931a4549",
+  "started_at": "2026-10-26 11:26:23.315517+00:00",
+  "ended_at": "2026-10-26 11:26:23.694945+00:00",
   "params": {
     "footprint": [
       {
@@ -2560,24 +2560,6 @@
     },
     "providers_by_role": {},
     "plan_tiers": {
-      "DE|BROADBAND_PON": [
-        50,
-        100,
-        250,
-        500,
-        1000
-      ],
-      "DE|BROADBAND_HFC": [
-        50,
-        100,
-        250,
-        500,
-        1000
-      ],
-      "DE|MOBILE_5G": [
-        50,
-        100
-      ],
       "IN|BROADBAND_HFC": [
         100,
         250,
@@ -2592,24 +2574,6 @@
         1000
       ],
       "IN|MOBILE_5G": [
-        50,
-        100
-      ],
-      "IT|BROADBAND_HFC": [
-        50,
-        100,
-        250,
-        500,
-        1000
-      ],
-      "IT|BROADBAND_PON": [
-        50,
-        100,
-        250,
-        500,
-        1000
-      ],
-      "IT|MOBILE_5G": [
         50,
         100
       ],
@@ -2628,24 +2592,6 @@
         1000
       ],
       "PL|MOBILE_5G": [
-        50,
-        100
-      ],
-      "MX|BROADBAND_HFC": [
-        50,
-        100,
-        250,
-        500,
-        1000
-      ],
-      "MX|BROADBAND_PON": [
-        50,
-        100,
-        250,
-        500,
-        1000
-      ],
-      "MX|MOBILE_5G": [
         50,
         100
       ],
@@ -2668,6 +2614,60 @@
         2000
       ],
       "GB|MOBILE_5G": [
+        50,
+        100
+      ],
+      "IT|BROADBAND_HFC": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "IT|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "IT|MOBILE_5G": [
+        50,
+        100
+      ],
+      "FR|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "FR|BROADBAND_HFC": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "FR|MOBILE_5G": [
+        50,
+        100
+      ],
+      "NL|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "NL|BROADBAND_HFC": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "NL|MOBILE_5G": [
         50,
         100
       ],
@@ -2707,39 +2707,39 @@
         50,
         100
       ],
-      "NL|BROADBAND_PON": [
+      "DE|BROADBAND_PON": [
         50,
         100,
         250,
         500,
         1000
       ],
-      "NL|BROADBAND_HFC": [
+      "DE|BROADBAND_HFC": [
         50,
         100,
         250,
         500,
         1000
       ],
-      "NL|MOBILE_5G": [
+      "DE|MOBILE_5G": [
         50,
         100
       ],
-      "FR|BROADBAND_PON": [
+      "MX|BROADBAND_HFC": [
         50,
         100,
         250,
         500,
         1000
       ],
-      "FR|BROADBAND_HFC": [
+      "MX|BROADBAND_PON": [
         50,
         100,
         250,
         500,
         1000
       ],
-      "FR|MOBILE_5G": [
+      "MX|MOBILE_5G": [
         50,
         100
       ]
@@ -2816,7 +2816,7 @@
     }
   },
   "output": {
-    "model_version": "sim-2.9.0",
+    "model_version": "sim-2.10.0",
     "seed": 20260101,
     "ensemble_size": 25,
     "sites": 208,
@@ -2978,11 +2978,11 @@
         "country": "DE",
         "product": "BROADBAND_PON",
         "role": "BACKUP",
-        "bandwidth_mbps": 300,
+        "bandwidth_mbps": 500,
         "count": 5,
         "service_class": "BEST_EFFORT",
         "density": "SUBURBAN",
-        "bearer_mbps": 300,
+        "bearer_mbps": 500,
         "access_technology": "PON"
       },
       {
@@ -3044,11 +3044,11 @@
         "country": "FR",
         "product": "BROADBAND_PON",
         "role": "BACKUP",
-        "bandwidth_mbps": 300,
+        "bandwidth_mbps": 500,
         "count": 5,
         "service_class": "BEST_EFFORT",
         "density": "SUBURBAN",
-        "bearer_mbps": 300,
+        "bearer_mbps": 500,
         "access_technology": "PON"
       },
       {
@@ -3077,11 +3077,11 @@
         "country": "GB",
         "product": "BROADBAND_PON",
         "role": "BACKUP",
-        "bandwidth_mbps": 300,
+        "bandwidth_mbps": 500,
         "count": 11,
         "service_class": "BEST_EFFORT",
         "density": "SUBURBAN",
-        "bearer_mbps": 300,
+        "bearer_mbps": 500,
         "access_technology": "PON"
       },
       {
@@ -3264,11 +3264,11 @@
         "country": "NL",
         "product": "BROADBAND_PON",
         "role": "BACKUP",
-        "bandwidth_mbps": 300,
+        "bandwidth_mbps": 500,
         "count": 7,
         "service_class": "BEST_EFFORT",
         "density": "SUBURBAN",
-        "bearer_mbps": 300,
+        "bearer_mbps": 500,
         "access_technology": "PON"
       },
       {
@@ -3341,11 +3341,11 @@
         "country": "US",
         "product": "BROADBAND_PON",
         "role": "BACKUP",
-        "bandwidth_mbps": 300,
+        "bandwidth_mbps": 500,
         "count": 23,
         "service_class": "BEST_EFFORT",
         "density": "SUBURBAN",
-        "bearer_mbps": 300,
+        "bearer_mbps": 500,
         "access_technology": "PON"
       },
       {
