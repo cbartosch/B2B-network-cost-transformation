@@ -905,6 +905,16 @@ SOURCED_RATES = [
      "CompareYourBusinessCosts); SME retail basis"),
     ("GB", "DIA", 1000, 300, 800, "GBP", "C",
      "UK leased line market survey, Sept 2026; SME retail basis"),
+    # The survey recorded 500 Mbps only under Ethernet, so GB DIA 500 stayed a
+    # seed at 515 - unsourced, and at the top of every 2026 range checked
+    # against it. The survey prices DIA and Ethernet alike at 1 Gbps, so its
+    # 500 Mbps band stands for DIA too, and the sellers' own 2026 prices sit
+    # inside it.
+    ("GB", "DIA", 500, 250, 600, "GBP", "C",
+     "UK leased line market survey, Sept 2026, its 500 Mbps band; SME "
+     "retail basis. Inside it in 2026: Vodafone Business DIA from GBP "
+     "243-257 (60 months), Virgin Media Business from GBP 332, Purple "
+     "GBP 280-550 (8 February 2026)."),
     ("GB", "ETHERNET", 500, 250, 600, "GBP", "C",
      "UK leased line market survey, Sept 2026; SME retail basis"),
     ("GB", "ETHERNET", 1000, 300, 800, "GBP", "C",
@@ -972,15 +982,12 @@ SOURCED_FX_NOTE = ("GBP/USD 1.34, mid-market 16 September 2026; EUR/USD "
 SOURCED_PROVENANCE: dict = {}
 
 
-def _sourced_priors(rows):
-    """Sourced rates in the seed's tuple shape, converted to USD.
+def _sourced_bands(rows):
+    """(country, product, mbps) -> (low, high, grade, source), in USD.
 
-    The base is the midpoint of the published band, because a band needs one.
-    Which is the one invented number here, and it is an average of two figures
-    that were both published rather than a figure conjured between them.
-
-    A finer grade wins on the same key: the Virgin Media tariff is grade B and
-    supersedes the survey band at 100 Mbps.
+    One band per key, however many rows name it. The priced row and the
+    repricing of the tiers between sourced ones both read it, so the two
+    cannot disagree about what a key's band is.
     """
     from decimal import Decimal as _D
 
@@ -1002,9 +1009,8 @@ def _sourced_priors(rows):
         else:
             bands[key] = (low, high, currency, grade, source)
 
-    out = []
+    out = {}
     for key in sorted(set(bands) | set(anchors)):
-        country, product, mbps = key
         if key in bands:
             low, high, currency, grade, source = bands[key]
         else:
@@ -1029,8 +1035,26 @@ def _sourced_priors(rows):
             # keeps finding.
             source = (f"{source}; floor set by "
                       f"{anchors[key][3]}")
-        SOURCED_PROVENANCE[(country, product, int(mbps))] = (grade, source)
-        out.append((country, product, "L0", int(mbps),
+        out[key] = (lo, hi, grade, source)
+    return out
+
+
+def _sourced_priors(rows):
+    """Sourced rates in the seed's tuple shape, converted to USD.
+
+    The base is the midpoint of the published band, because a band needs one.
+    Which is the one invented number here, and it is an average of two figures
+    that were both published rather than a figure conjured between them.
+
+    A published point on the same key as a band can only lower its floor, and
+    leaves its grade: GB DIA 100 keeps the survey's grade C beside Virgin
+    Media's grade B entry price.
+    """
+    out = []
+    for key, (lo, hi, grade, source) in _sourced_bands(rows).items():
+        country, product, mbps = key
+        SOURCED_PROVENANCE[key] = (grade, source)
+        out.append((country, product, "L0", mbps,
                     int(lo), int((lo + hi) / 2), int(hi)))
     return out
 
@@ -1362,12 +1386,14 @@ def _reprice_between_sourced(rows):
     from decimal import Decimal as _D
     import math
 
+    # Each sourced tier as the card prices it. Read row by row instead, a
+    # later point on the same key replaced its band, and the tiers between
+    # were drawn from Virgin Media's 185 entry price as though it were the
+    # whole 100 Mbps market.
     sourced = {}
-    for country, product, mbps, low, high, currency, _g, _s in SOURCED_RATES:
-        fx = _D(SOURCED_FX.get(currency, "1"))
-        key = (country, product)
-        sourced.setdefault(key, {})[int(mbps)] = (
-            _D(low) * fx, _D(high) * fx)
+    for (country, product, mbps), (low, high, _g, _s) in \
+            _sourced_bands(SOURCED_RATES).items():
+        sourced.setdefault((country, product), {})[mbps] = (low, high)
 
     out = []
     for row in rows:
