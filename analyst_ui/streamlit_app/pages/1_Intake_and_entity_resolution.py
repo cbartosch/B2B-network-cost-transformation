@@ -63,9 +63,9 @@ scope_mode = st.radio(
     format_func=lambda m: {"COUNTRIES": "Specific countries", "REGION": "Region",
                            "GLOBAL": "Global"}[m],
     horizontal=True,
-    help="Region and Global resolve to a literal country list when you save - "
-         "only countries with an approved pricing benchmark can be priced "
-         "either way, so the resolved list is shown back to you after saving.")
+    help="Region and Global resolve to a literal country list when you save: "
+         "every country the rate card can price, at its own rate or at its "
+         "region's. The resolved list is shown back to you after saving.")
 
 region_options = api.get("/v1/outside-in/regions").get("regions", [])
 
@@ -206,8 +206,8 @@ elif scope_mode == "REGION":
         "Region *", region_options,
         index=region_options.index(_default_region) if _default_region in region_options else 0, key=f"ik_region_choice_{case_id[:8]}")
 else:
-    c5.caption("Resolves to every country with an approved pricing "
-               "benchmark, evaluated when you save.")
+    c5.caption("Resolves to every country the rate card can price, at its "
+               "own rate or at its region's, evaluated when you save.")
 
 layers = c6.multiselect("In-scope cost layers *", ["L0", "L1", "L2", "L3", "L4", "OPS"],
                         case.get("in_scope_cost_layers") or ["L0", "L2", "L4", "OPS"], key="ik_layers")

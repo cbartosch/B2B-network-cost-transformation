@@ -11,12 +11,15 @@ save time, same as before, and the *descriptor* the analyst actually chose is
 kept alongside it in `in_scope_region` purely for audit and re-editing - so
 "why is Singapore priced?" has an answer that isn't "someone typed SG once".
 
-GLOBAL is resolved dynamically against approved priors rather than a fixed
-list, so it tracks whatever countries are actually priceable rather than
-drifting stale as PRIORS grows. A region with no approved priors in any
-member country still resolves - to an empty list - because an empty list is
-a legitimate answer for the mandatory-intake gate, and a fabricated non-empty
-one is worse than a plain "no priced countries in this region yet".
+REGION and GLOBAL resolve against what the rate card can price, evaluated at
+save time rather than fixed, so they track the card rather than drifting stale
+as PRIORS grows. A country prices at its own rate or, failing that, at its
+sub-region's and then that sub-region's parent's - `price_ladder` below - so it
+is in scope if any rung of its ladder holds an approved price. A selection
+that reaches no priced country still resolves - to an empty list - because an
+empty list is a legitimate answer for the mandatory-intake gate, and a
+fabricated non-empty one is worse than a plain "no priced countries in this
+region yet".
 """
 from sqlalchemy import select
 
@@ -70,18 +73,60 @@ def price_ladder(country: str, region: str | None) -> list[str]:
 
 SCOPE_MODES = ("COUNTRIES", "REGION", "GLOBAL")
 
-# Maintained by hand: there is no atlas anywhere else in this system, and a
-# derived-from-priors set would silently misrepresent a purely political
-# grouping (e.g. "EMEA" is not "wherever we happen to have a prior").
-REGION_COUNTRIES = {
-    "EMEA": ["GB", "DE", "FR", "NL", "AE"],
-    "APAC": ["SG"],
-    "AMERICAS": ["US"],
+# The regions an analyst can choose, as the atlas regions each one covers.
+#
+# This was a hand list - EMEA as GB, DE, FR, NL and AE, APAC as Singapore,
+# the Americas as the US - written when there was no atlas anywhere in the
+# system. `reference.country_region` is that atlas now, and the ladder prices
+# a country without a card of its own at its region's median, so choosing
+# EMEA scoped a case to five of the 125 EMEA countries the card can price.
+#
+# Still not derived from priors: "EMEA" is a grouping of countries, not
+# "wherever we happen to have a prior". The atlas says which countries are in
+# it; the card only decides which of them can be priced.
+REGION_SCOPES = {
+    "EMEA": tuple(sorted(sub for sub, parent in REGION_PARENT.items()
+                         if parent == "EMEA")),
+    "APAC": ("APAC",),
+    "AMERICAS": ("AMER",),
 }
 
 
 def region_choices() -> list[str]:
-    return sorted(REGION_COUNTRIES)
+    return sorted(REGION_SCOPES)
+
+
+def pricing_scopes(session, countries) -> dict:
+    """{country: the scope that would price it, or None}.
+
+    The first rung of each country's ladder holding an approved price - the
+    country, its sub-region or that sub-region's parent. Counting a country's
+    own rows instead called Ethiopia unpriced while the estimate priced every
+    Ethiopian circuit at AFRICA_SSA's median.
+    """
+    countries = list(countries or [])
+    if not countries:
+        return {}
+    region_of = dict(session.execute(
+        select(db.country_region.c.country, db.country_region.c.region)
+        .where(db.country_region.c.country.in_(countries))).all())
+    ladders = {c: price_ladder(c, region_of.get(c)) for c in countries}
+    rungs = {rung for ladder in ladders.values() for rung in ladder}
+    priced = {r.country for r in session.execute(
+        select(db.unit_cost_prior.c.country)
+        .where(db.unit_cost_prior.c.country.in_(rungs),
+               db.unit_cost_prior.c.approved.is_(True)).distinct()).all()}
+    return {c: next((rung for rung in ladder if rung in priced), None)
+            for c, ladder in ladders.items()}
+
+
+def region_members(session, region: str) -> list[str]:
+    """Every country the atlas places in `region` that the card can price."""
+    atlas = [r.country for r in session.execute(
+        select(db.country_region.c.country)
+        .where(db.country_region.c.region.in_(REGION_SCOPES[region]))).all()]
+    return sorted(c for c, rung in pricing_scopes(session, atlas).items()
+                  if rung)
 
 
 def resolve(session, *, scope_mode: str, region: str | None,
@@ -100,19 +145,24 @@ def resolve(session, *, scope_mode: str, region: str | None,
         return (explicit_countries or []), None
 
     if scope_mode == "REGION":
-        if region not in REGION_COUNTRIES:
+        if region not in REGION_SCOPES:
             raise ValueError(f"unknown region {region!r}; expected one of {region_choices()}")
-        return list(REGION_COUNTRIES[region]), region
+        return region_members(session, region), region
 
-    # GLOBAL: every *country* with at least one approved prior, today.
+    # GLOBAL: every *country* the card can price today - with an approved
+    # prior of its own, or one on its ladder. Own priors alone left GLOBAL at
+    # 78 countries while EMEA alone now reaches 125.
     #
     # scope_kind is filtered because a price may now be scoped to a region -
     # a backbone circuit belongs to EMEA - and offering "EMEA" as an in-scope
     # country would put a region into a country list, where every downstream
     # consumer would treat it as an ISO code.
-    rows = session.execute(
+    own = {r.country for r in session.execute(
         select(db.unit_cost_prior.c.country)
         .where(db.unit_cost_prior.c.approved.is_(True),
                db.unit_cost_prior.c.scope_kind != "REGION")
-        .distinct()).all()
-    return sorted({r.country for r in rows}), "GLOBAL"
+        .distinct()).all()}
+    atlas = [r.country for r in session.execute(
+        select(db.country_region.c.country)).all()]
+    reached = {c for c, rung in pricing_scopes(session, atlas).items() if rung}
+    return sorted(own | reached), "GLOBAL"
