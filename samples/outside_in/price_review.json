@@ -1904,8 +1904,8 @@
    "currency": "GBP",
    "low": "185.00",
    "high": "185.00",
-   "state": "UNDECIDED",
-   "decided_by": null,
+   "state": "REVOKED",
+   "decided_by": "Christian Bartosch",
    "usd": "247.89",
    "replaces": {
     "id": "GB-DIA-100",
@@ -2038,18 +2038,18 @@
    "currency": "GBP",
    "low": "257.00",
    "high": "257.00",
-   "state": "UNDECIDED",
-   "decided_by": null,
+   "state": "REVOKED",
+   "decided_by": "Christian Bartosch",
    "usd": "344.37",
    "replaces": {
     "id": "GB-DIA-500",
     "basis": "SEED",
-    "usd": "690.00"
+    "usd": "569.00"
    },
    "lower_tier": 300,
    "upper_tier": 1000,
    "inversions": [
-    "300 Mbps at 600 > 500 Mbps at 344 USD"
+    "300 Mbps at 481 > 500 Mbps at 344 USD"
    ],
    "researched_by": "nhs-england",
    "as_of": "2025",
@@ -2097,32 +2097,32 @@
    ],
    "effect": {
     "boots": {
-     "delta": "-7738.41",
+     "delta": "-5029.34",
      "currency": "GBP",
      "circuits": 2
     },
     "deutsche-post-dhl": {
-     "delta": "-1892301.51",
+     "delta": "-1229843.02",
      "currency": "EUR",
      "circuits": 419
     },
     "mcdonalds": {
-     "delta": "-4147.61",
+     "delta": "-2695.61",
      "currency": "USD",
      "circuits": 1
     },
     "royal-mail": {
-     "delta": "-233699.98",
+     "delta": "-151886.10",
      "currency": "GBP",
      "circuits": 62
     },
     "tesco": {
-     "delta": "-34049.00",
+     "delta": "-22129.10",
      "currency": "GBP",
      "circuits": 11
     },
     "ups": {
-     "delta": "-129612.92",
+     "delta": "-84237.92",
      "currency": "USD",
      "circuits": 25
     }
@@ -2137,8 +2137,8 @@
    "currency": "GBP",
    "low": "195.00",
    "high": "195.00",
-   "state": "UNDECIDED",
-   "decided_by": null,
+   "state": "REVOKED",
+   "decided_by": "Christian Bartosch",
    "usd": "261.29",
    "replaces": {
     "id": "GB-DIA-1000",
@@ -2148,7 +2148,7 @@
    "lower_tier": 500,
    "upper_tier": null,
    "inversions": [
-    "500 Mbps at 690 > 1000 Mbps at 261 USD"
+    "500 Mbps at 569 > 1000 Mbps at 261 USD"
    ],
    "researched_by": "iberdrola",
    "as_of": "2026",
@@ -2259,8 +2259,8 @@
    "currency": "GBP",
    "low": "450.00",
    "high": "450.00",
-   "state": "UNDECIDED",
-   "decided_by": null,
+   "state": "REVOKED",
+   "decided_by": "Christian Bartosch",
    "usd": "602.97",
    "replaces": null,
    "lower_tier": 1000,
@@ -4801,110 +4801,9 @@
    "country": "GB",
    "product": "DIA",
    "approved": [],
-   "undecided": [
-    "GB-DIA-100-researched",
-    "GB-DIA-500-researched",
-    "GB-DIA-1000-researched",
-    "GB-DIA-10000-researched"
-   ],
+   "undecided": [],
    "effect_of_approvals": {},
-   "effect_of_approving_undecided": {
-    "anglo-american": {
-     "delta": "-5708.53",
-     "currency": "USD",
-     "circuits": 1
-    },
-    "boots": {
-     "delta": "-10663.88",
-     "currency": "GBP",
-     "circuits": 5
-    },
-    "capgemini": {
-     "delta": "-44754.32",
-     "currency": "EUR",
-     "circuits": 9
-    },
-    "deutsche-post-dhl": {
-     "delta": "-1892301.51",
-     "currency": "EUR",
-     "circuits": 419
-    },
-    "eon": {
-     "delta": "-39781.62",
-     "currency": "EUR",
-     "circuits": 8
-    },
-    "iberdrola": {
-     "delta": "-38354.33",
-     "currency": "EUR",
-     "circuits": 22
-    },
-    "mcdonalds": {
-     "delta": "-4147.61",
-     "currency": "USD",
-     "circuits": 1
-    },
-    "nestle": {
-     "delta": "-13700.48",
-     "currency": "CHF",
-     "circuits": 3
-    },
-    "network-rail": {
-     "delta": "-131501.38",
-     "currency": "GBP",
-     "circuits": 54
-    },
-    "nhs-england": {
-     "delta": "-1118160.39",
-     "currency": "GBP",
-     "circuits": 1262
-    },
-    "rio-tinto": {
-     "delta": "-22834.13",
-     "currency": "USD",
-     "circuits": 4
-    },
-    "royal-mail": {
-     "delta": "-344789.92",
-     "currency": "GBP",
-     "circuits": 179
-    },
-    "saint-gobain": {
-     "delta": "-796759.73",
-     "currency": "EUR",
-     "circuits": 700
-    },
-    "santander": {
-     "delta": "-280459.43",
-     "currency": "EUR",
-     "circuits": 308
-    },
-    "shell": {
-     "delta": "-45668.25",
-     "currency": "USD",
-     "circuits": 8
-    },
-    "siemens": {
-     "delta": "-119344.85",
-     "currency": "EUR",
-     "circuits": 24
-    },
-    "tesco": {
-     "delta": "-53552.15",
-     "currency": "GBP",
-     "circuits": 31
-    },
-    "unilever": {
-     "delta": "-59971.07",
-     "currency": "EUR",
-     "circuits": 19
-    },
-    "ups": {
-     "delta": "-129612.92",
-     "currency": "USD",
-     "circuits": 25
-    }
-   }
+   "effect_of_approving_undecided": {}
   },
   {
    "country": "GB",

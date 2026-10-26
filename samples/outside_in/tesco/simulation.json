@@ -1,13 +1,13 @@
 {
-  "simulation_run_id": "bade9895-3d74-44a6-82f6-d0f3f2a9eb09",
+  "simulation_run_id": "b48f0ad2-3c07-4716-8b01-f0361a304be7",
   "case_id": "1acf16ce-b58d-437f-8c30-60d47bbf86d2",
   "model_version": "sim-2.9.0",
   "seed": 20260101,
   "ensemble_size": 25,
   "status": "SUCCEEDED",
   "output_hash": "682b78d9ac3b3c820d820743be572d4abda7c7f14dab195b482b73be0b197d8d",
-  "started_at": "2026-10-25 17:24:13.047661+00:00",
-  "ended_at": "2026-10-25 17:24:20.617576+00:00",
+  "started_at": "2026-10-26 04:21:23.858530+00:00",
+  "ended_at": "2026-10-26 04:21:33.017443+00:00",
   "params": {
     "footprint": [
       {
@@ -375,6 +375,36 @@
   },
   "pinned_priors": {
     "archetype_prior": {
+      "SELF_SERVICE_TERMINAL": {
+        "dual_access_probability": 0.15,
+        "primary_product": "MOBILE_5G",
+        "backup_product": "BROADBAND_PON",
+        "users_base": 0,
+        "bandwidth_mbps_base": 50,
+        "committed_fraction": "0.250",
+        "primary_service_class": "BEST_EFFORT",
+        "backup_service_class": "BEST_EFFORT"
+      },
+      "ATM": {
+        "dual_access_probability": 0.55,
+        "primary_product": "MOBILE_5G",
+        "backup_product": "BROADBAND_PON",
+        "users_base": 0,
+        "bandwidth_mbps_base": 50,
+        "committed_fraction": "0.600",
+        "primary_service_class": "BEST_EFFORT",
+        "backup_service_class": "BEST_EFFORT"
+      },
+      "LEGACY_WAN_SITE": {
+        "dual_access_probability": 0.6,
+        "primary_product": "MPLS",
+        "backup_product": "BROADBAND_PON",
+        "users_base": 40,
+        "bandwidth_mbps_base": 100,
+        "committed_fraction": "0.800",
+        "primary_service_class": "IPVPN",
+        "backup_service_class": "BEST_EFFORT"
+      },
       "BRANCH": {
         "dual_access_probability": 0.55,
         "primary_product": "DIA",
@@ -493,36 +523,6 @@
         "bandwidth_mbps_base": 50,
         "committed_fraction": "0.300",
         "primary_service_class": "BEST_EFFORT",
-        "backup_service_class": "BEST_EFFORT"
-      },
-      "SELF_SERVICE_TERMINAL": {
-        "dual_access_probability": 0.15,
-        "primary_product": "MOBILE_5G",
-        "backup_product": "BROADBAND_PON",
-        "users_base": 0,
-        "bandwidth_mbps_base": 50,
-        "committed_fraction": "0.250",
-        "primary_service_class": "BEST_EFFORT",
-        "backup_service_class": "BEST_EFFORT"
-      },
-      "ATM": {
-        "dual_access_probability": 0.55,
-        "primary_product": "MOBILE_5G",
-        "backup_product": "BROADBAND_PON",
-        "users_base": 0,
-        "bandwidth_mbps_base": 50,
-        "committed_fraction": "0.600",
-        "primary_service_class": "BEST_EFFORT",
-        "backup_service_class": "BEST_EFFORT"
-      },
-      "LEGACY_WAN_SITE": {
-        "dual_access_probability": 0.6,
-        "primary_product": "MPLS",
-        "backup_product": "BROADBAND_PON",
-        "users_base": 40,
-        "bandwidth_mbps_base": 100,
-        "committed_fraction": "0.800",
-        "primary_service_class": "IPVPN",
         "backup_service_class": "BEST_EFFORT"
       },
       "DEFAULT/BRANCH": {
@@ -1446,6 +1446,24 @@
     },
     "providers_by_role": {},
     "plan_tiers": {
+      "IE|BROADBAND_HFC": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "IE|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "IE|MOBILE_5G": [
+        50,
+        100
+      ],
       "GB|BROADBAND_PON": [
         50,
         100,
@@ -1465,24 +1483,6 @@
         2000
       ],
       "GB|MOBILE_5G": [
-        50,
-        100
-      ],
-      "IE|BROADBAND_HFC": [
-        50,
-        100,
-        250,
-        500,
-        1000
-      ],
-      "IE|BROADBAND_PON": [
-        50,
-        100,
-        250,
-        500,
-        1000
-      ],
-      "IE|MOBILE_5G": [
         50,
         100
       ]
