@@ -436,6 +436,33 @@ def test_a_bearer_that_reaches_but_cannot_carry_the_size_substitutes():
     assert "below the 500 Mbps" in out["note"]
 
 
+def test_a_bearer_too_small_does_not_stop_one_that_can_carry_the_size():
+    """In town Ethernet fibre stops at 1 Gbps and dark fibre runs to 10. The
+    resolver took the first bearer that reached the site, so every urban
+    circuit above 1 Gbps was cut to 1 Gbps - and priced as one - with dark
+    fibre in the table able to carry it."""
+    from app.domain import access
+
+    for service_class, wanted in ((access.ETHERNET, 10_000),
+                                  (access.DIA, 2_000)):
+        out = _resolve_by_class(service_class, wanted=wanted, density="URBAN")
+        assert out["outcome"] == serviceability.DELIVERED, out
+        assert out["access_technology"] == "DARK_FIBRE"
+        assert out["bandwidth_mbps"] == wanted
+
+
+def test_a_build_still_never_displaces_a_circuit_already_in_the_street():
+    """Holding a too-small bearer as the fallback must not walk on into a
+    build: a rural DIA site asking for more than its PON carries keeps the
+    PON at the PON's size, and is not dug fibre for."""
+    from app.domain import access
+
+    out = _resolve_by_class(access.DIA, wanted=2_000, density="RURAL")
+    assert out["outcome"] == serviceability.SUBSTITUTED
+    assert out["access_technology"] == "PON"
+    assert out["bandwidth_mbps"] == 100
+
+
 def test_an_unrecorded_bearer_is_unknown_not_unavailable():
     """The rule the product-keyed resolver had, preserved: an empty table must
     not read as an estate nobody can serve."""
