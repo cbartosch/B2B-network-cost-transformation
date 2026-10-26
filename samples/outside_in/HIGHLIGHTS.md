@@ -2202,7 +2202,7 @@ Sources: [Deutsche Bahn AG – IR](https://ir.deutschebahn.com/en/news-presentat
 
 - **Industry** PARCEL_LOGISTICS (entity resolution)
 - **Scope** DE, NL, GB, EUR, 2,914 sites (research merged with disclosure)
-- **Confidence** 0.335 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.337 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 10 source(s)
 
@@ -3249,7 +3249,7 @@ Sources: [germancompanyformation.com](https://germancompanyformation.com/guides/
 
 - **Industry** UTILITIES (entity resolution)
 - **Scope** ES, GB, EUR, 2,762 sites (research merged with disclosure)
-- **Confidence** 0.325 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.326 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 10 source(s)
 
@@ -4390,7 +4390,7 @@ Sources: [Netify](https://netify.co.uk/insights/top-best-mpls-network-providers/
 
 - **Industry** HOSPITAL (entity resolution)
 - **Scope** GB, GBP, 1,491 sites (research merged with disclosure)
-- **Confidence** 0.337 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.341 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 6 source(s)
 

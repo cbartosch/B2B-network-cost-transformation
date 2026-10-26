@@ -201,7 +201,11 @@ LLM_SEARCH_TIMEOUT_SECONDS = float(
 # asked for at the primary's bandwidth - a 275 Mbps 5G backup nobody sells -
 # and went unpriced. It is now the largest plan sold, and the run reports the
 # sites whose second path carries less than their first.
-SIMULATION_MODEL_VERSION = "sim-2.9.0"
+# sim-2.10.0: a site takes the first bearer that can carry its size, not the
+# first that reaches it. In town Ethernet fibre stops at 1 Gbps and dark fibre
+# runs to 10, so every urban circuit above 1 Gbps in the five countries with a
+# serviceability table was cut to 1 Gbps and priced as one.
+SIMULATION_MODEL_VERSION = "sim-2.10.0"
 # calc-1.1.0: the saving band is accumulated with matched pairing rather than
 # derived as current - target. The target is a function of the current, so
 # subtracting the two crossed bounds a second time and produced worlds that

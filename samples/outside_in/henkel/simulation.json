@@ -1,13 +1,13 @@
 {
-  "simulation_run_id": "4a9578a0-ffaf-4508-95ba-18b13c8d7111",
+  "simulation_run_id": "7e8bf7d6-41c1-4ae7-a29e-82f06d99fe5a",
   "case_id": "c05c02ee-172c-48d6-acbd-5230b96a0271",
-  "model_version": "sim-2.9.0",
+  "model_version": "sim-2.10.0",
   "seed": 20260101,
   "ensemble_size": 25,
   "status": "SUCCEEDED",
-  "output_hash": "a04790736e2d7e9e20f82c2eb9aab83687d6f4f86fcc8286d05746b5eb64dd74",
-  "started_at": "2026-10-26 10:22:01.055607+00:00",
-  "ended_at": "2026-10-26 10:22:01.187373+00:00",
+  "output_hash": "16dc8fe4bf3a560f81183efa0188c67a2357945c525794d9f7c1aaab0be3865f",
+  "started_at": "2026-10-26 11:28:07.935510+00:00",
+  "ended_at": "2026-10-26 11:28:08.046244+00:00",
   "params": {
     "footprint": [
       {
@@ -1582,6 +1582,41 @@
     },
     "providers_by_role": {},
     "plan_tiers": {
+      "CN|BROADBAND_HFC": [
+        100,
+        250,
+        500,
+        1000
+      ],
+      "CN|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "CN|MOBILE_5G": [
+        50,
+        100
+      ],
+      "US|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "US|BROADBAND_HFC": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "US|MOBILE_5G": [
+        50,
+        100
+      ],
       "DE|BROADBAND_PON": [
         50,
         100,
@@ -1617,41 +1652,6 @@
       "MX|MOBILE_5G": [
         50,
         100
-      ],
-      "CN|BROADBAND_HFC": [
-        100,
-        250,
-        500,
-        1000
-      ],
-      "CN|BROADBAND_PON": [
-        50,
-        100,
-        250,
-        500,
-        1000
-      ],
-      "CN|MOBILE_5G": [
-        50,
-        100
-      ],
-      "US|BROADBAND_PON": [
-        50,
-        100,
-        250,
-        500,
-        1000
-      ],
-      "US|BROADBAND_HFC": [
-        50,
-        100,
-        250,
-        500,
-        1000
-      ],
-      "US|MOBILE_5G": [
-        50,
-        100
       ]
     },
     "backbone": {
@@ -1676,14 +1676,14 @@
     }
   },
   "output": {
-    "model_version": "sim-2.9.0",
+    "model_version": "sim-2.10.0",
     "seed": 20260101,
     "ensemble_size": 25,
     "sites": 41,
     "serviceability": {
       "counts": {
-        "DELIVERED": 16,
-        "SUBSTITUTED": 25,
+        "DELIVERED": 17,
+        "SUBSTITUTED": 24,
         "UNSERVICEABLE": 0
       },
       "substitutions": [
@@ -1692,22 +1692,20 @@
           "delivered": "ETHERNET",
           "bandwidth_mbps": 500,
           "sites": 24
-        },
-        {
-          "asked_for": "ETHERNET",
-          "delivered": "ETHERNET",
-          "bandwidth_mbps": 1000,
-          "sites": 1
         }
       ],
       "by_access_technology": [
         {
           "access_technology": "ETHERNET_FIBRE",
-          "sites": 25
+          "sites": 24
+        },
+        {
+          "access_technology": "DARK_FIBRE",
+          "sites": 1
         }
       ],
       "unserviceable": 0,
-      "note": "25 of 41 site(s) take a different product or tier from the one their type asks for, and 0 can be served by nothing at all. A uniform estate is an assumption; this is what the density bands say about it.",
+      "note": "24 of 41 site(s) take a different product or tier from the one their type asks for, and 0 can be served by nothing at all. 1 of 41 are delivered over a bearer other than ETHERNET_FIBRE (1 on DARK_FIBRE), which is a different circuit at a different rate. A uniform estate is an assumption; this is what the density bands say about it.",
       "table_rows": 68,
       "table_basis": "GOVERNED"
     },
@@ -1790,11 +1788,11 @@
         "country": "DE",
         "product": "BROADBAND_PON",
         "role": "BACKUP",
-        "bandwidth_mbps": 300,
+        "bandwidth_mbps": 500,
         "count": 5,
         "service_class": "BEST_EFFORT",
         "density": "SUBURBAN",
-        "bearer_mbps": 300,
+        "bearer_mbps": 500,
         "access_technology": "PON"
       },
       {
@@ -1812,11 +1810,11 @@
         "country": "DE",
         "product": "ETHERNET",
         "role": "PRIMARY",
-        "bandwidth_mbps": 950,
+        "bandwidth_mbps": 9500,
         "count": 1,
         "service_class": "ETHERNET",
         "density": "URBAN",
-        "bearer_mbps": 1000,
+        "bearer_mbps": 10000,
         "access_technology": "ETHERNET_FIBRE"
       },
       {
@@ -1889,11 +1887,11 @@
         "country": "US",
         "product": "BROADBAND_PON",
         "role": "BACKUP",
-        "bandwidth_mbps": 300,
+        "bandwidth_mbps": 500,
         "count": 15,
         "service_class": "BEST_EFFORT",
         "density": "SUBURBAN",
-        "bearer_mbps": 300,
+        "bearer_mbps": 500,
         "access_technology": "PON"
       },
       {

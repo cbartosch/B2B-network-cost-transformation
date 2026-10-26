@@ -1,13 +1,13 @@
 {
-  "simulation_run_id": "5717171e-0b12-403a-83ab-09901f49b602",
+  "simulation_run_id": "0010fcd7-5c60-410f-8181-538aec4e085e",
   "case_id": "fc1746fc-9230-4fd3-8e8e-98b1d81a30d0",
-  "model_version": "sim-2.9.0",
+  "model_version": "sim-2.10.0",
   "seed": 20260101,
   "ensemble_size": 25,
   "status": "SUCCEEDED",
-  "output_hash": "7b191f6b1259cae63a6e3393116adce20a7d409e8e7eaefd01accac1b6af96d2",
-  "started_at": "2026-10-26 10:20:43.494316+00:00",
-  "ended_at": "2026-10-26 10:20:44.353775+00:00",
+  "output_hash": "4f6ce1334c20a7824120fbad94cb8a82496e361773d7ec461e410b49eccbe0fb",
+  "started_at": "2026-10-26 11:26:41.502463+00:00",
+  "ended_at": "2026-10-26 11:26:42.357901+00:00",
   "params": {
     "footprint": [
       {
@@ -2030,24 +2030,6 @@
         50,
         100
       ],
-      "DE|BROADBAND_PON": [
-        50,
-        100,
-        250,
-        500,
-        1000
-      ],
-      "DE|BROADBAND_HFC": [
-        50,
-        100,
-        250,
-        500,
-        1000
-      ],
-      "DE|MOBILE_5G": [
-        50,
-        100
-      ],
       "GB|BROADBAND_PON": [
         50,
         100,
@@ -2067,6 +2049,24 @@
         2000
       ],
       "GB|MOBILE_5G": [
+        50,
+        100
+      ],
+      "DE|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "DE|BROADBAND_HFC": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "DE|MOBILE_5G": [
         50,
         100
       ]
@@ -2104,7 +2104,7 @@
     }
   },
   "output": {
-    "model_version": "sim-2.9.0",
+    "model_version": "sim-2.10.0",
     "seed": 20260101,
     "ensemble_size": 25,
     "sites": 1089,
@@ -2305,11 +2305,11 @@
         "country": "DE",
         "product": "BROADBAND_HFC",
         "role": "BACKUP",
-        "bandwidth_mbps": 300,
+        "bandwidth_mbps": 500,
         "count": 33,
         "service_class": "BEST_EFFORT",
         "density": "SUBURBAN",
-        "bearer_mbps": 300,
+        "bearer_mbps": 500,
         "access_technology": "HFC"
       },
       {
@@ -2338,11 +2338,11 @@
         "country": "GB",
         "product": "BROADBAND_HFC",
         "role": "BACKUP",
-        "bandwidth_mbps": 300,
+        "bandwidth_mbps": 500,
         "count": 19,
         "service_class": "BEST_EFFORT",
         "density": "SUBURBAN",
-        "bearer_mbps": 300,
+        "bearer_mbps": 500,
         "access_technology": "HFC"
       },
       {
@@ -2360,11 +2360,11 @@
         "country": "US",
         "product": "BROADBAND_HFC",
         "role": "BACKUP",
-        "bandwidth_mbps": 300,
+        "bandwidth_mbps": 500,
         "count": 812,
         "service_class": "BEST_EFFORT",
         "density": "SUBURBAN",
-        "bearer_mbps": 300,
+        "bearer_mbps": 500,
         "access_technology": "HFC"
       },
       {

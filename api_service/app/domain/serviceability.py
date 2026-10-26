@@ -124,15 +124,31 @@ def _by_access(*, table: dict, country: str, density: str,
                          f"{density} {country}, so nothing is known rather "
                          f"than nothing deliverable")}
 
+    # A bearer that reaches the site but cannot carry the size is held as the
+    # fallback, not taken at once. In town Ethernet fibre stops at 1 Gbps and
+    # dark fibre runs to 10, and taking the first bearer cut every urban
+    # circuit above 1 Gbps to 1 Gbps - and priced it as one - while the table
+    # said dark fibre could carry it.
+    #
+    # A build is still never taken over a bearer already in the street: a
+    # rural DIA site keeps the PON it has, at the PON's size.
+    smaller = None
     for technology in known:
         row = table[(country, density, technology)]
         if not getattr(row, "available", False):
             continue
+        if smaller is not None and (density, technology) in BUILD_ONLY:
+            break
         capacity = getattr(row, "max_bandwidth_mbps", None)
         if capacity is None or int(capacity) >= int(wanted_mbps or 0):
             return {"product": asked_for, "access_technology": technology,
                     "bandwidth_mbps": wanted_mbps, "outcome": DELIVERED,
                     "asked_for": asked_for, "note": None}
+        if smaller is None:
+            smaller = (technology, capacity)
+
+    if smaller is not None:
+        technology, capacity = smaller
         # Reaches the site but not at this size. Reported as a substitution
         # rather than a refusal, because a smaller circuit is a real option and
         # a silent downgrade is not.

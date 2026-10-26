@@ -1,13 +1,13 @@
 {
-  "simulation_run_id": "7187e1fa-98e2-49f6-8469-55b5b3fffb16",
+  "simulation_run_id": "79c5bc42-f2ff-4244-83db-865615c5d303",
   "case_id": "18f2d1bc-b978-4074-8726-19be0609f087",
-  "model_version": "sim-2.9.0",
+  "model_version": "sim-2.10.0",
   "seed": 20260101,
   "ensemble_size": 25,
   "status": "SUCCEEDED",
-  "output_hash": "d3e3065bb11ffdd74fe1813f424f189ac511768f7385feff88a0ef5bb973d816",
-  "started_at": "2026-10-26 10:19:32.123797+00:00",
-  "ended_at": "2026-10-26 10:19:32.305822+00:00",
+  "output_hash": "efe19e0f532fbf25acd0a0f13ac822353acf61938fb4413e76e86e7996a4129c",
+  "started_at": "2026-10-26 11:25:18.198275+00:00",
+  "ended_at": "2026-10-26 11:25:18.662844+00:00",
   "params": {
     "footprint": [
       {
@@ -1675,41 +1675,6 @@
         50,
         100
       ],
-      "SG|BROADBAND_PON": [
-        50,
-        100,
-        250,
-        500,
-        1000
-      ],
-      "SG|MOBILE_5G": [
-        50,
-        100
-      ],
-      "SG|BROADBAND_HFC": [
-        100,
-        250,
-        500,
-        1000
-      ],
-      "DE|BROADBAND_PON": [
-        50,
-        100,
-        250,
-        500,
-        1000
-      ],
-      "DE|BROADBAND_HFC": [
-        50,
-        100,
-        250,
-        500,
-        1000
-      ],
-      "DE|MOBILE_5G": [
-        50,
-        100
-      ],
       "IE|BROADBAND_HFC": [
         50,
         100,
@@ -1728,24 +1693,6 @@
         50,
         100
       ],
-      "IT|BROADBAND_HFC": [
-        50,
-        100,
-        250,
-        500,
-        1000
-      ],
-      "IT|BROADBAND_PON": [
-        50,
-        100,
-        250,
-        500,
-        1000
-      ],
-      "IT|MOBILE_5G": [
-        50,
-        100
-      ],
       "AT|BROADBAND_HFC": [
         50,
         100,
@@ -1761,6 +1708,24 @@
         1000
       ],
       "AT|MOBILE_5G": [
+        50,
+        100
+      ],
+      "IT|BROADBAND_HFC": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "IT|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "IT|MOBILE_5G": [
         50,
         100
       ],
@@ -1799,6 +1764,41 @@
       "ES|MOBILE_5G": [
         50,
         100
+      ],
+      "DE|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "DE|BROADBAND_HFC": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "DE|MOBILE_5G": [
+        50,
+        100
+      ],
+      "SG|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "SG|MOBILE_5G": [
+        50,
+        100
+      ],
+      "SG|BROADBAND_HFC": [
+        100,
+        250,
+        500,
+        1000
       ]
     },
     "backbone": {
@@ -1871,14 +1871,14 @@
     }
   },
   "output": {
-    "model_version": "sim-2.9.0",
+    "model_version": "sim-2.10.0",
     "seed": 20260101,
     "ensemble_size": 25,
     "sites": 125,
     "serviceability": {
       "counts": {
-        "DELIVERED": 96,
-        "SUBSTITUTED": 29,
+        "DELIVERED": 101,
+        "SUBSTITUTED": 24,
         "UNSERVICEABLE": 0
       },
       "substitutions": [
@@ -1887,22 +1887,20 @@
           "delivered": "ETHERNET",
           "bandwidth_mbps": 500,
           "sites": 24
-        },
-        {
-          "asked_for": "ETHERNET",
-          "delivered": "ETHERNET",
-          "bandwidth_mbps": 1000,
-          "sites": 5
         }
       ],
       "by_access_technology": [
         {
           "access_technology": "ETHERNET_FIBRE",
-          "sites": 52
+          "sites": 47
+        },
+        {
+          "access_technology": "DARK_FIBRE",
+          "sites": 5
         }
       ],
       "unserviceable": 0,
-      "note": "29 of 125 site(s) take a different product or tier from the one their type asks for, and 0 can be served by nothing at all. A uniform estate is an assumption; this is what the density bands say about it.",
+      "note": "24 of 125 site(s) take a different product or tier from the one their type asks for, and 0 can be served by nothing at all. 5 of 125 are delivered over a bearer other than ETHERNET_FIBRE (5 on DARK_FIBRE), which is a different circuit at a different rate. A uniform estate is an assumption; this is what the density bands say about it.",
       "table_rows": 68,
       "table_basis": "GOVERNED"
     },
@@ -2168,11 +2166,11 @@
         "country": "DE",
         "product": "BROADBAND_PON",
         "role": "BACKUP",
-        "bandwidth_mbps": 300,
+        "bandwidth_mbps": 500,
         "count": 8,
         "service_class": "BEST_EFFORT",
         "density": "SUBURBAN",
-        "bearer_mbps": 300,
+        "bearer_mbps": 500,
         "access_technology": "PON"
       },
       {
@@ -2333,11 +2331,11 @@
         "country": "US",
         "product": "BROADBAND_PON",
         "role": "BACKUP",
-        "bandwidth_mbps": 300,
+        "bandwidth_mbps": 500,
         "count": 8,
         "service_class": "BEST_EFFORT",
         "density": "SUBURBAN",
-        "bearer_mbps": 300,
+        "bearer_mbps": 500,
         "access_technology": "PON"
       },
       {
@@ -2388,11 +2386,11 @@
         "country": "US",
         "product": "ETHERNET",
         "role": "PRIMARY",
-        "bandwidth_mbps": 975,
+        "bandwidth_mbps": 9750,
         "count": 5,
         "service_class": "ETHERNET",
         "density": "URBAN",
-        "bearer_mbps": 1000,
+        "bearer_mbps": 10000,
         "access_technology": "ETHERNET_FIBRE"
       }
     ],

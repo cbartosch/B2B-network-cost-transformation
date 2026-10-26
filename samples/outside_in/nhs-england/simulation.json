@@ -1,13 +1,13 @@
 {
-  "simulation_run_id": "56ce1f1d-01b0-4e8c-8466-a5514040a878",
+  "simulation_run_id": "759d0683-40fc-409f-ab6a-edbdd4f9b66b",
   "case_id": "c7709723-63a0-40a4-a5b1-aba323b64c35",
-  "model_version": "sim-2.9.0",
+  "model_version": "sim-2.10.0",
   "seed": 20260101,
   "ensemble_size": 25,
   "status": "SUCCEEDED",
-  "output_hash": "ac4a1e4d22f0039a218547e7b73233b71f7cc018f97dfc220fd7898c93b7581f",
-  "started_at": "2026-10-26 10:21:31.851470+00:00",
-  "ended_at": "2026-10-26 10:21:32.867485+00:00",
+  "output_hash": "b801aff31d60fed1e6a4a060524f8a5777b77fc6662bc16a9974dd3c22af194f",
+  "started_at": "2026-10-26 11:27:36.818059+00:00",
+  "ended_at": "2026-10-26 11:27:38.005596+00:00",
   "params": {
     "footprint": [
       {
@@ -1361,23 +1361,17 @@
     }
   },
   "output": {
-    "model_version": "sim-2.9.0",
+    "model_version": "sim-2.10.0",
     "seed": 20260101,
     "ensemble_size": 25,
     "sites": 1491,
     "serviceability": {
       "counts": {
-        "DELIVERED": 1265,
-        "SUBSTITUTED": 226,
+        "DELIVERED": 1485,
+        "SUBSTITUTED": 6,
         "UNSERVICEABLE": 0
       },
       "substitutions": [
-        {
-          "asked_for": "ETHERNET",
-          "delivered": "ETHERNET",
-          "bandwidth_mbps": 1000,
-          "sites": 220
-        },
         {
           "asked_for": "ETHERNET",
           "delivered": "ETHERNET",
@@ -1388,11 +1382,15 @@
       "by_access_technology": [
         {
           "access_technology": "ETHERNET_FIBRE",
-          "sites": 1491
+          "sites": 1271
+        },
+        {
+          "access_technology": "DARK_FIBRE",
+          "sites": 220
         }
       ],
       "unserviceable": 0,
-      "note": "226 of 1491 site(s) take a different product or tier from the one their type asks for, and 0 can be served by nothing at all. A uniform estate is an assumption; this is what the density bands say about it.",
+      "note": "6 of 1491 site(s) take a different product or tier from the one their type asks for, and 0 can be served by nothing at all. 220 of 1491 are delivered over a bearer other than ETHERNET_FIBRE (220 on DARK_FIBRE), which is a different circuit at a different rate. A uniform estate is an assumption; this is what the density bands say about it.",
       "table_rows": 34,
       "table_basis": "GOVERNED"
     },
@@ -3319,11 +3317,11 @@
         "country": "GB",
         "product": "ETHERNET",
         "role": "PRIMARY",
-        "bandwidth_mbps": 950,
+        "bandwidth_mbps": 9500,
         "count": 220,
         "service_class": "ETHERNET",
         "density": "URBAN",
-        "bearer_mbps": 1000,
+        "bearer_mbps": 10000,
         "access_technology": "ETHERNET_FIBRE"
       }
     ],
