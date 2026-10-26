@@ -915,6 +915,15 @@ SOURCED_RATES = [
      "retail basis. Inside it in 2026: Vodafone Business DIA from GBP "
      "243-257 (60 months), Virgin Media Business from GBP 332, Purple "
      "GBP 280-550 (8 February 2026)."),
+    # DIA stopped at 1 Gbps, so the 10 Gbps DIA backups beside urban 10 Gbps
+    # sites went unpriced once those sites stopped being cut to 1 Gbps. The
+    # survey's 10 Gbps band, as at 500 Mbps; Purple's 2026 range and Babble's
+    # "well above GBP 1,000" sit inside it.
+    ("GB", "DIA", 10000, 800, 3500, "GBP", "C",
+     "UK leased line market survey, Sept 2026, its 10 Gbps band; SME retail "
+     "basis. Inside it in 2026: Purple GBP 1,200-3,500 (8 February 2026), "
+     "Babble 'well above GBP 1,000'; CompareNET's indicative 'from' GBP 650 "
+     "sits below it."),
     ("GB", "ETHERNET", 500, 250, 600, "GBP", "C",
      "UK leased line market survey, Sept 2026; SME retail basis"),
     ("GB", "ETHERNET", 1000, 300, 800, "GBP", "C",
@@ -2041,6 +2050,49 @@ PRIORS = PRIORS + _regional_tiers(
     PRIORS, [(country, REGION_PARENT[region])
              for country, region in COUNTRY_REGION
              if region in REGION_PARENT])
+
+
+def _regional_curve(rows):
+    """A region's derived tiers, kept between the region's own anchors.
+
+    A region's 2-9 Gbps rows are the median of the members that quote them,
+    and its 1 Gbps row the median of every member - two different sets. While
+    every member quoting Ethernet quoted it to 10 Gbps they agreed. DIA is
+    quoted to 10 Gbps by the UK alone, whose curve starts below the regional
+    median, and Western Europe's 2 Gbps came out at 1,110 under its 1 Gbps at
+    1,350. A derived regional tier that falls outside its region's anchors is
+    interpolated between them instead, the way a country's is. A backbone
+    region's 10 Gbps Ethernet row is no access anchor and is left alone, as
+    _regional_tiers leaves it.
+    """
+    import math
+
+    priced = {(c, p, int(bw)): (lo, ba, hi) for c, p, _l, bw, lo, ba, hi in rows}
+    backbone = {(region, "ETHERNET", 10000) for region in BACKBONE_REGIONS}
+    out = []
+    for row in rows:
+        country, product, layer, mbps, low, base, high = row
+        anchors = next((a for a in _INTERPOLATED_TIERS if a[0] == int(mbps)),
+                       None)
+        if len(country) == 2 or anchors is None:
+            out.append(row)
+            continue
+        lo_a = priced.get((country, product, anchors[1]))
+        hi_a = priced.get((country, product, anchors[2]))
+        if (not lo_a or not hi_a
+                or (country, product, anchors[2]) in backbone
+                or all(float(a) <= float(v) <= float(b)
+                       for a, v, b in zip(lo_a, (low, base, high), hi_a))):
+            out.append(row)
+            continue
+        f = math.log(anchors[0] / anchors[1]) / math.log(anchors[2] / anchors[1])
+        band = [round(float(a) * ((float(b) / float(a)) ** f), 2)
+                for a, b in zip(lo_a, hi_a)]
+        out.append((country, product, layer, int(mbps), *band))
+    return out
+
+
+PRIORS = _regional_curve(PRIORS)
 
 # Again, after the derivation. A region's 50 Mbps row is the median of its
 # members' 50 Mbps rows, which is computed from the rescaled country figures -

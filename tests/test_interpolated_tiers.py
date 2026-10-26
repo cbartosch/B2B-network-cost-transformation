@@ -144,11 +144,14 @@ def test_a_derived_tier_is_not_presented_as_a_seeded_position():
     assumption is replaced with a quote, an interpolation disappears when
     its anchors are quoted."""
     assert seed._DERIVED_TIER_KEYS, "no derived tiers"
+    # Only a product that spans 1-10 Gbps in that scope: a tier anywhere else
+    # would be an extrapolation wearing an interpolation's label. That was
+    # Ethernet alone until the UK sourced DIA at 10 Gbps.
+    spans = {(c, p) for c, p, _l, bw, *_r in seed.PRIORS if int(bw) == 10000}
     for country, product, bw in seed._DERIVED_TIER_KEYS:
         assert bw in TARGETS
-        assert product == "ETHERNET", (
-            "only ETHERNET spans 1-10 Gbps on this card; a tier elsewhere "
-            "would be an extrapolation wearing an interpolation's label")
+        assert (country, product) in spans, (
+            f"{country} {product} {bw} is derived with no 10 Gbps anchor")
 
 
 def test_every_row_at_a_new_tier_is_labelled_interpolated():
