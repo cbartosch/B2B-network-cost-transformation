@@ -6746,7 +6746,7 @@ Sources: [germancompanyformation.com](https://germancompanyformation.com/guides/
 
 - **Industry** GROCERY_RETAIL (entity resolution)
 - **Scope** AU, NZ, AUD, 1,363 sites (research merged with disclosure)
-- **Confidence** 0.333 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.332 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 7 source(s)
 

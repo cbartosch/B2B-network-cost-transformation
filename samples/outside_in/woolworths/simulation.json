@@ -1,13 +1,13 @@
 {
-  "simulation_run_id": "47db43f7-c734-4fa9-9d24-44fcb3a261b8",
+  "simulation_run_id": "ee28b7d6-72d2-48e4-a578-e34069c5b065",
   "case_id": "8c0a9187-60fb-4862-b38e-f6d4131a65f0",
   "model_version": "sim-2.10.0",
   "seed": 20260101,
   "ensemble_size": 25,
   "status": "SUCCEEDED",
-  "output_hash": "62d24dad15a63063ed86d9bd4579b5e079492b079a42d129df6187e847dc9479",
-  "started_at": "2026-10-26 13:46:19.055415+00:00",
-  "ended_at": "2026-10-26 13:46:19.837073+00:00",
+  "output_hash": "bf86844930ed1d6f66918258346e6870969db45957b42c93e8d732f8393866dc",
+  "started_at": "2026-10-26 17:45:02.084270+00:00",
+  "ended_at": "2026-10-26 17:45:03.108674+00:00",
   "params": {
     "footprint": [
       {
@@ -1181,6 +1181,11 @@
     },
     "providers_by_role": {},
     "plan_tiers": {
+      "AU|MOBILE_5G": [
+        50,
+        100,
+        300
+      ],
       "AU|BROADBAND_HFC": [
         100,
         250,
@@ -1195,9 +1200,10 @@
         500,
         1000
       ],
-      "AU|MOBILE_5G": [
+      "NZ|MOBILE_5G": [
         50,
-        100
+        100,
+        300
       ],
       "NZ|BROADBAND_HFC": [
         100,
@@ -1211,10 +1217,6 @@
         250,
         500,
         1000
-      ],
-      "NZ|MOBILE_5G": [
-        50,
-        100
       ]
     },
     "backbone": {
@@ -1281,26 +1283,7 @@
         "reason": "the only backup deliverable in SUBURBAN AU is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
       }
     ],
-    "backups_below_primary": [
-      {
-        "country": "AU",
-        "archetype": "STORE",
-        "density": "URBAN",
-        "product": "MOBILE_5G",
-        "asked_mbps": 110,
-        "sold_mbps": 100,
-        "sites": 388
-      },
-      {
-        "country": "NZ",
-        "archetype": "STORE",
-        "density": "URBAN",
-        "product": "MOBILE_5G",
-        "asked_mbps": 110,
-        "sold_mbps": 100,
-        "sites": 71
-      }
-    ],
+    "backups_below_primary": [],
     "estate_truncated": 0,
     "sites_named": 0,
     "sites_generated": 1363,
@@ -1401,11 +1384,11 @@
         "country": "AU",
         "product": "MOBILE_5G",
         "role": "BACKUP",
-        "bandwidth_mbps": 100,
+        "bandwidth_mbps": 110,
         "count": 388,
         "service_class": "BEST_EFFORT",
         "density": "URBAN",
-        "bearer_mbps": 100,
+        "bearer_mbps": 110,
         "access_technology": "MOBILE_5G"
       },
       {
@@ -1467,11 +1450,11 @@
         "country": "NZ",
         "product": "MOBILE_5G",
         "role": "BACKUP",
-        "bandwidth_mbps": 100,
+        "bandwidth_mbps": 110,
         "count": 71,
         "service_class": "BEST_EFFORT",
         "density": "URBAN",
-        "bearer_mbps": 100,
+        "bearer_mbps": 110,
         "access_technology": "MOBILE_5G"
       }
     ],

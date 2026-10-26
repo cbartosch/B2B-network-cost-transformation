@@ -1,13 +1,13 @@
 {
-  "simulation_run_id": "efaf690b-6994-476a-b305-23553368fb01",
+  "simulation_run_id": "a500da30-9134-4ea6-9b39-4b84b3091cd1",
   "case_id": "b22c6548-3acc-4746-a8df-fffb57c60fd8",
   "model_version": "sim-2.10.0",
   "seed": 20260101,
   "ensemble_size": 25,
   "status": "SUCCEEDED",
   "output_hash": "d4fb98912a68662e8ae0879a26680609855d0f3600b1b263093bb187703374c9",
-  "started_at": "2026-10-26 13:47:32.001526+00:00",
-  "ended_at": "2026-10-26 13:47:32.068219+00:00",
+  "started_at": "2026-10-26 17:47:07.607556+00:00",
+  "ended_at": "2026-10-26 17:47:07.749891+00:00",
   "params": {
     "footprint": [
       {
@@ -1328,25 +1328,39 @@
     },
     "providers_by_role": {},
     "plan_tiers": {
-      "GB|BROADBAND_PON": [
+      "ZA|BROADBAND_HFC": [
         50,
         100,
         250,
         500,
         1000
       ],
-      "GB|BROADBAND_HFC": [
+      "ZA|BROADBAND_PON": [
         50,
         100,
-        200,
         250,
-        400,
         500,
-        600,
-        1000,
-        2000
+        1000
       ],
-      "GB|MOBILE_5G": [
+      "ZA|MOBILE_5G": [
+        50,
+        100
+      ],
+      "BR|BROADBAND_HFC": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "BR|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "BR|MOBILE_5G": [
         50,
         100
       ],
@@ -1386,39 +1400,25 @@
         50,
         100
       ],
-      "BR|BROADBAND_HFC": [
+      "GB|BROADBAND_PON": [
         50,
         100,
         250,
         500,
         1000
       ],
-      "BR|BROADBAND_PON": [
+      "GB|BROADBAND_HFC": [
         50,
         100,
+        200,
         250,
+        400,
         500,
-        1000
+        600,
+        1000,
+        2000
       ],
-      "BR|MOBILE_5G": [
-        50,
-        100
-      ],
-      "ZA|BROADBAND_HFC": [
-        50,
-        100,
-        250,
-        500,
-        1000
-      ],
-      "ZA|BROADBAND_PON": [
-        50,
-        100,
-        250,
-        500,
-        1000
-      ],
-      "ZA|MOBILE_5G": [
+      "GB|MOBILE_5G": [
         50,
         100
       ]
