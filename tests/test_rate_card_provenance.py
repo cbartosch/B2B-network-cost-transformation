@@ -176,6 +176,46 @@ def test_every_other_row_is_still_an_assumption():
     assert len(keys - set(seed.SOURCED_PROVENANCE)) > 1000
 
 
+# ------------------------------------------- a regional row says whose it is
+@pytest.fixture(scope="module")
+def card():
+    from app import db
+    builder = next(b for t, b in seed._rows() if t is db.unit_cost_prior)
+    return {r["id"]: r for r in builder()}
+
+
+def test_a_regional_row_names_the_countries_its_rate_came_from(card):
+    """Every regional row read "no transaction, quote or published benchmark
+    behind it" - Western Europe's 10 Gbps DIA too, which is the UK survey
+    band carried for the region. It names its members now, counts them, and
+    stays grade E: a UK price used for Germany is a starting point for
+    research there, not evidence about it."""
+    one = card["EUROPE_WEST-DIA-10000"]
+    assert one["sample_size"] == 1 and one["evidence_grade"] == "E"
+    assert "the rate of GB" in one["source"]
+    assert "UK leased line market survey" in one["source"]
+
+    many = card["EMEA-DIA-100"]
+    assert many["sample_size"] > 1 and many["evidence_grade"] == "E"
+    assert f"median of the {many['sample_size']} member" in many["source"]
+    assert "ES (grade D" in many["source"] and "GB (grade C" in many["source"]
+    assert "no transaction" not in many["source"]
+
+
+def test_a_regional_tier_put_on_the_regions_curve_says_so(card):
+    row = card["EUROPE_WEST-DIA-2000"]
+    assert "interpolated between this region's own" in row["source"]
+    assert row["sample_size"] is None
+
+
+def test_a_backbone_row_is_not_dressed_as_a_median(card):
+    """The backbone 10 Gbps Ethernet rows are seeded positions the regional
+    derivation leaves alone, and their source keeps saying so."""
+    row = card["EMEA-ETHERNET-10000"]
+    assert row["sample_size"] is None
+    assert row["source"].startswith("indicative starting position")
+
+
 # ------------------------------------------- what --force may not delete
 
 def test_the_seed_will_not_delete_rows_it_did_not_write():
