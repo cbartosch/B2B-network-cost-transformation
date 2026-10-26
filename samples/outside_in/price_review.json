@@ -2030,7 +2030,7 @@
     "usd": "737.00"
    },
    "lower_tier": 500,
-   "upper_tier": null,
+   "upper_tier": 2000,
    "inversions": [
     "500 Mbps at 569 > 1000 Mbps at 261 USD"
    ],
@@ -2141,11 +2141,15 @@
    "state": "REVOKED",
    "decided_by": "Christian Bartosch",
    "usd": "602.97",
-   "replaces": null,
-   "lower_tier": 1000,
+   "replaces": {
+    "id": "GB-DIA-10000",
+    "basis": "SEED",
+    "usd": "2881.00"
+   },
+   "lower_tier": 9000,
    "upper_tier": null,
    "inversions": [
-    "1000 Mbps at 737 > 10000 Mbps at 603 USD"
+    "9000 Mbps at 2707 > 10000 Mbps at 603 USD"
    ],
    "researched_by": "deutsche-post-dhl",
    "as_of": "2026",
@@ -2180,7 +2184,7 @@
    ],
    "effect": {
     "capgemini": {
-     "delta": "56727.13",
+     "delta": "-214313.89",
      "currency": "EUR",
      "circuits": 9
     }
