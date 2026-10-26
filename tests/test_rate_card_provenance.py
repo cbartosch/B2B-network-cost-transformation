@@ -25,13 +25,51 @@ def test_the_sourced_rates_keep_their_grade():
 
 
 def test_the_uk_survey_rows_are_the_ones_carried():
-    """GB DIA at 100 and 1000, GB Ethernet at 500, 1000 and 10000. Five
-    keys from six source rows, because the Virgin Media tariff and the
+    """GB DIA at 100, 500 and 1000, GB Ethernet at 500, 1000 and 10000. Six
+    keys from seven source rows, because the Virgin Media tariff and the
     survey band describe the same circuit and merge."""
     assert {k for k in seed.SOURCED_PROVENANCE if k[0] == "GB"} == {
-        ("GB", "DIA", 100), ("GB", "DIA", 1000),
+        ("GB", "DIA", 100), ("GB", "DIA", 500), ("GB", "DIA", 1000),
         ("GB", "ETHERNET", 500), ("GB", "ETHERNET", 1000),
         ("GB", "ETHERNET", 10000)}
+
+
+def _row(country, product, mbps):
+    return next(r for r in seed.PRIORS
+                if (r[0], r[1], int(r[3])) == (country, product, mbps))
+
+
+def test_uk_dia_500_prices_at_the_surveys_band_not_its_seed():
+    """GB DIA 500 was a seed at GBP 515, unsourced and at the top of every
+    2026 figure for the circuit. It takes the survey's 500 Mbps band, the one
+    the card already prices Ethernet at, with the sellers' prices it was
+    checked against named on the row."""
+    from decimal import Decimal as D
+
+    grade, source = seed.SOURCED_PROVENANCE[("GB", "DIA", 500)]
+    assert grade == "C"
+    assert "Vodafone" in source and "Virgin Media" in source
+    fx = D(seed.SOURCED_FX["GBP"])
+    _c, _p, _l, _bw, low, base, high = _row("GB", "DIA", 500)
+    assert (low, base, high) == (int(250 * fx), int((250 + 600) * fx / 2),
+                                 int(600 * fx))
+
+
+def test_a_point_on_a_sourced_tier_does_not_narrow_the_tiers_between():
+    """The tiers between two sourced ones are drawn from their bands. Read
+    row by row, Virgin Media's 185 entry price replaced the survey's 150-350
+    band at 100 Mbps, and GB DIA 300 would have been drawn from one seller's
+    cheapest tariff as though it were the market. It is drawn from the band
+    the card prices 100 Mbps at."""
+    import math
+    from decimal import Decimal as D
+
+    fx = D(seed.SOURCED_FX["GBP"])
+    position = D(str(math.log(300 / 100) / math.log(500 / 100)))
+    expected_low = int(150 * fx * ((250 * fx) / (150 * fx)) ** position)
+    expected_high = int(350 * fx * ((600 * fx) / (350 * fx)) ** position)
+    _c, _p, _l, _bw, low, _base, high = _row("GB", "DIA", 300)
+    assert (low, high) == (expected_low, expected_high)
 
 
 def test_spain_prices_a_100_mbps_circuit_at_its_market_not_its_300_seed():

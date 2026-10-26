@@ -1,13 +1,13 @@
 {
-  "simulation_run_id": "114b5e41-e6b1-41fc-84fb-e07d8c4ea889",
+  "simulation_run_id": "38ce059f-ce7f-4cd3-b942-9010c79f35b6",
   "case_id": "c06346b4-5fad-4862-8004-16e63cb1e199",
   "model_version": "sim-2.9.0",
   "seed": 20260101,
   "ensemble_size": 25,
   "status": "SUCCEEDED",
   "output_hash": "cf51c5cbe1ac7244f05fafdab42d40e9353be015a8e69129cd9a72178379664f",
-  "started_at": "2026-10-25 17:25:45.495288+00:00",
-  "ended_at": "2026-10-25 17:25:45.813536+00:00",
+  "started_at": "2026-10-26 04:22:50.388858+00:00",
+  "ended_at": "2026-10-26 04:22:50.834000+00:00",
   "params": {
     "footprint": [
       {
@@ -1363,6 +1363,36 @@
   },
   "pinned_priors": {
     "archetype_prior": {
+      "SELF_SERVICE_TERMINAL": {
+        "dual_access_probability": 0.15,
+        "primary_product": "MOBILE_5G",
+        "backup_product": "BROADBAND_PON",
+        "users_base": 0,
+        "bandwidth_mbps_base": 50,
+        "committed_fraction": "0.250",
+        "primary_service_class": "BEST_EFFORT",
+        "backup_service_class": "BEST_EFFORT"
+      },
+      "ATM": {
+        "dual_access_probability": 0.55,
+        "primary_product": "MOBILE_5G",
+        "backup_product": "BROADBAND_PON",
+        "users_base": 0,
+        "bandwidth_mbps_base": 50,
+        "committed_fraction": "0.600",
+        "primary_service_class": "BEST_EFFORT",
+        "backup_service_class": "BEST_EFFORT"
+      },
+      "LEGACY_WAN_SITE": {
+        "dual_access_probability": 0.6,
+        "primary_product": "MPLS",
+        "backup_product": "BROADBAND_PON",
+        "users_base": 40,
+        "bandwidth_mbps_base": 100,
+        "committed_fraction": "0.800",
+        "primary_service_class": "IPVPN",
+        "backup_service_class": "BEST_EFFORT"
+      },
       "BRANCH": {
         "dual_access_probability": 0.55,
         "primary_product": "DIA",
@@ -1481,36 +1511,6 @@
         "bandwidth_mbps_base": 50,
         "committed_fraction": "0.300",
         "primary_service_class": "BEST_EFFORT",
-        "backup_service_class": "BEST_EFFORT"
-      },
-      "SELF_SERVICE_TERMINAL": {
-        "dual_access_probability": 0.15,
-        "primary_product": "MOBILE_5G",
-        "backup_product": "BROADBAND_PON",
-        "users_base": 0,
-        "bandwidth_mbps_base": 50,
-        "committed_fraction": "0.250",
-        "primary_service_class": "BEST_EFFORT",
-        "backup_service_class": "BEST_EFFORT"
-      },
-      "ATM": {
-        "dual_access_probability": 0.55,
-        "primary_product": "MOBILE_5G",
-        "backup_product": "BROADBAND_PON",
-        "users_base": 0,
-        "bandwidth_mbps_base": 50,
-        "committed_fraction": "0.600",
-        "primary_service_class": "BEST_EFFORT",
-        "backup_service_class": "BEST_EFFORT"
-      },
-      "LEGACY_WAN_SITE": {
-        "dual_access_probability": 0.6,
-        "primary_product": "MPLS",
-        "backup_product": "BROADBAND_PON",
-        "users_base": 40,
-        "bandwidth_mbps_base": 100,
-        "committed_fraction": "0.800",
-        "primary_service_class": "IPVPN",
         "backup_service_class": "BEST_EFFORT"
       },
       "DEFAULT/BRANCH": {
@@ -2288,23 +2288,6 @@
     },
     "providers_by_role": {},
     "plan_tiers": {
-      "CN|BROADBAND_HFC": [
-        100,
-        250,
-        500,
-        1000
-      ],
-      "CN|BROADBAND_PON": [
-        50,
-        100,
-        250,
-        500,
-        1000
-      ],
-      "CN|MOBILE_5G": [
-        50,
-        100
-      ],
       "US|BROADBAND_PON": [
         50,
         100,
@@ -2323,39 +2306,39 @@
         50,
         100
       ],
-      "BR|BROADBAND_HFC": [
+      "ES|BROADBAND_HFC": [
         50,
         100,
         250,
         500,
         1000
       ],
-      "BR|BROADBAND_PON": [
+      "ES|BROADBAND_PON": [
         50,
         100,
         250,
         500,
         1000
       ],
-      "BR|MOBILE_5G": [
+      "ES|MOBILE_5G": [
         50,
         100
       ],
-      "FR|BROADBAND_PON": [
+      "IT|BROADBAND_HFC": [
         50,
         100,
         250,
         500,
         1000
       ],
-      "FR|BROADBAND_HFC": [
+      "IT|BROADBAND_PON": [
         50,
         100,
         250,
         500,
         1000
       ],
-      "FR|MOBILE_5G": [
+      "IT|MOBILE_5G": [
         50,
         100
       ],
@@ -2381,6 +2364,24 @@
         50,
         100
       ],
+      "FR|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "FR|BROADBAND_HFC": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "FR|MOBILE_5G": [
+        50,
+        100
+      ],
       "CH|BROADBAND_HFC": [
         50,
         100,
@@ -2399,39 +2400,21 @@
         50,
         100
       ],
-      "DE|BROADBAND_PON": [
+      "BR|BROADBAND_HFC": [
         50,
         100,
         250,
         500,
         1000
       ],
-      "DE|BROADBAND_HFC": [
+      "BR|BROADBAND_PON": [
         50,
         100,
         250,
         500,
         1000
       ],
-      "DE|MOBILE_5G": [
-        50,
-        100
-      ],
-      "IT|BROADBAND_HFC": [
-        50,
-        100,
-        250,
-        500,
-        1000
-      ],
-      "IT|BROADBAND_PON": [
-        50,
-        100,
-        250,
-        500,
-        1000
-      ],
-      "IT|MOBILE_5G": [
+      "BR|MOBILE_5G": [
         50,
         100
       ],
@@ -2453,21 +2436,38 @@
         50,
         100
       ],
-      "ES|BROADBAND_HFC": [
+      "DE|BROADBAND_PON": [
         50,
         100,
         250,
         500,
         1000
       ],
-      "ES|BROADBAND_PON": [
+      "DE|BROADBAND_HFC": [
         50,
         100,
         250,
         500,
         1000
       ],
-      "ES|MOBILE_5G": [
+      "DE|MOBILE_5G": [
+        50,
+        100
+      ],
+      "CN|BROADBAND_HFC": [
+        100,
+        250,
+        500,
+        1000
+      ],
+      "CN|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "CN|MOBILE_5G": [
         50,
         100
       ]

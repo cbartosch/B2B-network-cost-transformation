@@ -2202,7 +2202,7 @@ Sources: [Deutsche Bahn AG – IR](https://ir.deutschebahn.com/en/news-presentat
 
 - **Industry** PARCEL_LOGISTICS (entity resolution)
 - **Scope** DE, NL, GB, EUR, 2,914 sites (research merged with disclosure)
-- **Confidence** 0.336 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.335 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 10 source(s)
 

@@ -308,12 +308,13 @@ def test_an_unsourced_tier_is_repriced_between_its_sourced_neighbours():
     """Sourcing GB DIA at 100 and 1000 left the seeded 500 row at 980 while
     the sourced gigabit came in at 737 - a 500 Mbps circuit priced above a
     1 Gbps one. match_prior self-corrects, and the card is then internally
-    inconsistent for anyone reading two rows."""
+    inconsistent for anyone reading two rows. With 500 sourced too, the
+    seeded 300 at 600 sat above it and is the tier repriced between."""
     from app.seed import PRIORS
 
     rows = {(c, p, int(bw)): ba for c, p, _l, bw, _lo, ba, _hi in PRIORS}
-    assert rows[("GB", "DIA", 100)] < rows[("GB", "DIA", 500)] \
-        < rows[("GB", "DIA", 1000)]
+    assert rows[("GB", "DIA", 100)] < rows[("GB", "DIA", 300)] \
+        < rows[("GB", "DIA", 500)] < rows[("GB", "DIA", 1000)]
 
 
 def test_the_conversion_rate_is_recorded_not_folded_in():

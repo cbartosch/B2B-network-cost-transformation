@@ -1,13 +1,13 @@
 {
-  "simulation_run_id": "9ecd74fc-537a-4869-92d5-82b5451b73aa",
+  "simulation_run_id": "65de5c67-2198-4373-9bb5-549183d652ed",
   "case_id": "db96b5a3-5939-434d-97bf-79df14ddeba4",
   "model_version": "sim-2.9.0",
   "seed": 20260101,
   "ensemble_size": 25,
   "status": "SUCCEEDED",
   "output_hash": "ea280d0324c97153a7e6e920f75138d7a1382005f09b3a22d186dbd631191d46",
-  "started_at": "2026-10-25 17:26:01.128722+00:00",
-  "ended_at": "2026-10-25 17:26:01.313547+00:00",
+  "started_at": "2026-10-26 04:23:05.323714+00:00",
+  "ended_at": "2026-10-26 04:23:05.463700+00:00",
   "params": {
     "footprint": [
       {
@@ -396,6 +396,36 @@
   },
   "pinned_priors": {
     "archetype_prior": {
+      "SELF_SERVICE_TERMINAL": {
+        "dual_access_probability": 0.15,
+        "primary_product": "MOBILE_5G",
+        "backup_product": "BROADBAND_PON",
+        "users_base": 0,
+        "bandwidth_mbps_base": 50,
+        "committed_fraction": "0.250",
+        "primary_service_class": "BEST_EFFORT",
+        "backup_service_class": "BEST_EFFORT"
+      },
+      "ATM": {
+        "dual_access_probability": 0.55,
+        "primary_product": "MOBILE_5G",
+        "backup_product": "BROADBAND_PON",
+        "users_base": 0,
+        "bandwidth_mbps_base": 50,
+        "committed_fraction": "0.600",
+        "primary_service_class": "BEST_EFFORT",
+        "backup_service_class": "BEST_EFFORT"
+      },
+      "LEGACY_WAN_SITE": {
+        "dual_access_probability": 0.6,
+        "primary_product": "MPLS",
+        "backup_product": "BROADBAND_PON",
+        "users_base": 40,
+        "bandwidth_mbps_base": 100,
+        "committed_fraction": "0.800",
+        "primary_service_class": "IPVPN",
+        "backup_service_class": "BEST_EFFORT"
+      },
       "BRANCH": {
         "dual_access_probability": 0.55,
         "primary_product": "DIA",
@@ -514,36 +544,6 @@
         "bandwidth_mbps_base": 50,
         "committed_fraction": "0.300",
         "primary_service_class": "BEST_EFFORT",
-        "backup_service_class": "BEST_EFFORT"
-      },
-      "SELF_SERVICE_TERMINAL": {
-        "dual_access_probability": 0.15,
-        "primary_product": "MOBILE_5G",
-        "backup_product": "BROADBAND_PON",
-        "users_base": 0,
-        "bandwidth_mbps_base": 50,
-        "committed_fraction": "0.250",
-        "primary_service_class": "BEST_EFFORT",
-        "backup_service_class": "BEST_EFFORT"
-      },
-      "ATM": {
-        "dual_access_probability": 0.55,
-        "primary_product": "MOBILE_5G",
-        "backup_product": "BROADBAND_PON",
-        "users_base": 0,
-        "bandwidth_mbps_base": 50,
-        "committed_fraction": "0.600",
-        "primary_service_class": "BEST_EFFORT",
-        "backup_service_class": "BEST_EFFORT"
-      },
-      "LEGACY_WAN_SITE": {
-        "dual_access_probability": 0.6,
-        "primary_product": "MPLS",
-        "backup_product": "BROADBAND_PON",
-        "users_base": 40,
-        "bandwidth_mbps_base": 100,
-        "committed_fraction": "0.800",
-        "primary_service_class": "IPVPN",
         "backup_service_class": "BEST_EFFORT"
       },
       "DEFAULT/BRANCH": {
@@ -1322,25 +1322,21 @@
     },
     "providers_by_role": {},
     "plan_tiers": {
-      "GB|BROADBAND_PON": [
+      "CA|BROADBAND_HFC": [
         50,
         100,
         250,
         500,
         1000
       ],
-      "GB|BROADBAND_HFC": [
+      "CA|BROADBAND_PON": [
         50,
         100,
-        200,
         250,
-        400,
         500,
-        600,
-        1000,
-        2000
+        1000
       ],
-      "GB|MOBILE_5G": [
+      "CA|MOBILE_5G": [
         50,
         100
       ],
@@ -1362,21 +1358,25 @@
         50,
         100
       ],
-      "CA|BROADBAND_HFC": [
+      "GB|BROADBAND_PON": [
         50,
         100,
         250,
         500,
         1000
       ],
-      "CA|BROADBAND_PON": [
+      "GB|BROADBAND_HFC": [
         50,
         100,
+        200,
         250,
+        400,
         500,
-        1000
+        600,
+        1000,
+        2000
       ],
-      "CA|MOBILE_5G": [
+      "GB|MOBILE_5G": [
         50,
         100
       ]
