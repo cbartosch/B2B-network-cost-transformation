@@ -55,6 +55,54 @@ def test_uk_dia_500_prices_at_the_surveys_band_not_its_seed():
                                  int(600 * fx))
 
 
+def test_australia_prices_dedicated_internet_at_what_its_sellers_publish():
+    """Australia's DIA seeds ran AUD 2,072 to 2,590 from 300 Mbps up - 3.7 to
+    5 times the 36-month prices Vocus and Swoop publish for dedicated
+    business internet. 500 Mbps and 1 Gbps take those prices, graded C, and
+    convert back to the Australian dollars they were quoted in."""
+    from decimal import Decimal as D
+
+    usd_to_aud = D("1.48")              # the card's own USD->AUD row
+    for mbps, low, high in ((500, 469, 499), (1000, 699, 1499)):
+        grade, source = seed.SOURCED_PROVENANCE[("AU", "DIA", mbps)]
+        assert grade == "C" and "retail" in source
+        _c, _p, _l, _bw, lo, base, hi = _row("AU", "DIA", mbps)
+        assert abs(D(lo) * usd_to_aud - low) < 2, (mbps, lo)
+        assert abs(D(hi) * usd_to_aud - high) < 2, (mbps, hi)
+        assert abs(D(base) * usd_to_aud - D(low + high) / 2) < 2, (mbps, base)
+
+
+def _seeded(country, product, mbps):
+    return next(r for r in seed._SEEDED_ROWS
+                if (r[0], r[1], int(r[3])) == (country, product, mbps))
+
+
+def test_a_tier_with_nothing_sourced_below_keeps_the_seeds_step():
+    """Sourcing AU DIA at 500 left the 300 Mbps seed at AUD 2,072 over a 500
+    Mbps rate of about 484, with nothing sourced beneath it to interpolate
+    from. It keeps the step the seeded card took between the two, applied to
+    the sourced 500 Mbps band, so a smaller circuit is never priced above a
+    larger one."""
+    from decimal import Decimal as D
+
+    step = D(_seeded("AU", "DIA", 300)[5]) / D(_seeded("AU", "DIA", 500)[5])
+    _c, _p, _l, _bw, lo3, base3, hi3 = _row("AU", "DIA", 300)
+    _c, _p, _l, _bw, lo5, base5, hi5 = _row("AU", "DIA", 500)
+    assert base3 < base5
+    assert abs(D(lo3) - D(lo5) * step) < 2 and abs(D(hi3) - D(hi5) * step) < 2
+
+
+def test_a_filled_tier_is_scaled_from_the_seeded_curve():
+    """Australia's Ethernet 10 Gbps is filled from its DIA 500 - 3.8 times it,
+    a step measured between seeded tiers. Scaled from the sourced DIA 500, a
+    fifth of the seed, it fell below Australia's own Ethernet gigabit."""
+    from decimal import Decimal as D
+
+    filled = _row("AU", "ETHERNET", 10000)[5]
+    assert filled == int(D(_seeded("AU", "DIA", 500)[5]) * D("3.80"))
+    assert filled > _row("AU", "ETHERNET", 1000)[5]
+
+
 def test_a_point_on_a_sourced_tier_does_not_narrow_the_tiers_between():
     """The tiers between two sourced ones are drawn from their bands. Read
     row by row, Virgin Media's 185 entry price replaced the survey's 150-350
