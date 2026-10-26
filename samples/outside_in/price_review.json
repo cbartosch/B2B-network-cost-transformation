@@ -174,9 +174,9 @@
    "base": "339.00",
    "currency": "AUD",
    "low": "339.00",
-   "high": "339.00",
-   "state": "UNDECIDED",
-   "decided_by": null,
+   "high": "399.00",
+   "state": "APPROVED",
+   "decided_by": "Christian Bartosch",
    "usd": "229.05",
    "replaces": null,
    "lower_tier": null,
@@ -199,7 +199,7 @@
    "other_observations": [],
    "effect": {
     "woolworths": {
-     "delta": "-779850.00",
+     "delta": "-36594.00",
      "currency": "AUD",
      "circuits": 30
     }
@@ -220,13 +220,11 @@
    "replaces": {
     "id": "AU-DIA-1000",
     "basis": "SEED",
-    "usd": "1750.00"
+    "usd": "742.00"
    },
    "lower_tier": 500,
    "upper_tier": null,
-   "inversions": [
-    "500 Mbps at 1610 > 1000 Mbps at 337 USD"
-   ],
+   "inversions": [],
    "researched_by": "woolworths",
    "as_of": "2025",
    "evidence": {
@@ -240,17 +238,10 @@
    },
    "flags": [
     "consumer",
-    "single source",
-    "re-prices lower tiers"
+    "single source"
    ],
    "other_observations": [],
-   "effect": {
-    "woolworths": {
-     "delta": "-707850.00",
-     "currency": "AUD",
-     "circuits": 30
-    }
-   }
+   "effect": {}
   },
   {
    "id": "AU-ETHERNET-250-researched",
@@ -4540,18 +4531,18 @@
   {
    "country": "AU",
    "product": "DIA",
-   "approved": [],
-   "undecided": [
+   "approved": [
     "AU-DIA-250-researched"
    ],
-   "effect_of_approvals": {},
-   "effect_of_approving_undecided": {
+   "undecided": [],
+   "effect_of_approvals": {
     "woolworths": {
-     "delta": "-779850.00",
+     "delta": "-36594.00",
      "currency": "AUD",
      "circuits": 30
     }
-   }
+   },
+   "effect_of_approving_undecided": {}
   },
   {
    "country": "AU",

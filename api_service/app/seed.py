@@ -944,6 +944,20 @@ SOURCED_RATES = [
      "basis, installation EUR 500-1,000 not included. A comparison site's "
      "ranges, not a carrier tariff. Direct Telecom's guaranteed (not "
      "dedicated) 100/100 circuit at EUR 159.99 sits below it."),
+    # Australia priced DIA from 300 Mbps up at seeds of AUD 2,072 to 2,590 -
+    # 3.7 to 5 times what Australian sellers publish for dedicated business
+    # internet over nbn Enterprise Ethernet. Two or three sellers' 36-month
+    # prices per tier, so grade C, as the UK survey bands are. 250 Mbps is
+    # Vocus's own Fast Fibre price, approved in the decisions register.
+    ("AU", "DIA", 500, 469, 499, "AUD", "C",
+     "Published 500/500 Mbps dedicated business internet over nbn Enterprise "
+     "Ethernet, ex GST, 36 months, October 2026: Vocus AUD 469, Swoop AUD "
+     "499; SME retail basis."),
+    ("AU", "DIA", 1000, 699, 1499, "AUD", "C",
+     "Published 1 Gbps dedicated business internet, ex GST, 36 months, "
+     "October 2026: Vocus and Swoop nbn Enterprise Ethernet AUD 699 at a "
+     "CBD, low class-of-service reference; Next Telecom AUD 899-1,499 by "
+     "class and zone; SME retail basis."),
 ]
 
 # Where a country's rate is quoted in its own currency. The seeded card is USD
@@ -956,13 +970,18 @@ SOURCED_RATES = [
 # currency module built to prevent exactly that; the comparison was done
 # outside it.
 # EUR at the inverse of the card's own USD->EUR row (0.8711), so a euro rate
-# sourced here converts back to the euro it was quoted in.
+# sourced here converts back to the euro it was quoted in. AUD the same way,
+# at the inverse of the card's USD->AUD row (1.48) - itself only indicative,
+# but the rate an Australian case converts back with.
 SOURCED_FX = {"GBP": "1.34",     # GBP/USD mid-market, 16 September 2026
-              "EUR": "1.148"}    # EUR/USD mid-market, 17 September 2026
+              "EUR": "1.148",    # EUR/USD mid-market, 17 September 2026
+              "AUD": "0.6757"}   # 1 / the card's USD->AUD 1.48, 1 January 2026
 SOURCED_FX_NOTE = ("GBP/USD 1.34, mid-market 16 September 2026; EUR/USD "
-                   "1.148, mid-market 17 September 2026. A rate this old "
-                   "prices a circuit at last month's exchange rate; the "
-                   "case's own fx_convention governs a live estimate.")
+                   "1.148, mid-market 17 September 2026; AUD/USD 0.6757, the "
+                   "inverse of the card's indicative USD->AUD rate of 1 "
+                   "January 2026. A rate this old prices a circuit at an old "
+                   "exchange rate; the case's own fx_convention governs a live "
+                   "estimate.")
 
 
 #: Grade and citation for the rate-card rows that have one, keyed by
@@ -1163,18 +1182,25 @@ _TIER_FILL = (
 )
 
 
-def _fill_country_tiers(rows):
+def _fill_country_tiers(rows, curves=None):
     """Tiers a country's estates need, scaled from that country's own DIA 500.
 
     Only for a country that already quotes DIA at 500 - that row is the anchor,
     and a country without one has no curve to extend. Never overwrites an
     existing row.
+
+    The anchor is read from `curves`, the card as seeded, where given. The
+    factors were measured between seeded tiers, and Australia's sourced DIA 500
+    is a fifth of its seed: scaled from that, its Ethernet 10 Gbps fell below
+    its own gigabit, a market nobody priced.
     """
     from decimal import Decimal as _D
 
-    anchors, present = {}, set()
-    for country, product, layer, mbps, low, base, high in rows:
-        present.add((country, product, mbps))
+    present = {(country, product, mbps)
+               for country, product, _l, mbps, *_r in rows}
+    anchors = {}
+    for country, product, layer, mbps, low, base, high in (
+            rows if curves is None else curves):
         # DIA 500 is the preferred anchor. The UAE quotes DIA at 100 only, so
         # its curve starts lower - scaled from 100 with the step to 500 that
         # every other market shows, rather than left unpriceable. A country
@@ -1369,7 +1395,7 @@ PRIORS = [
     ("AE", "MOBILE_5G", "L0", 50, 55, 95, 160),
 ]
 
-def _reprice_between_sourced(rows):
+def _reprice_between_sourced(rows, seeded=()):
     """Unsourced tiers that now sit above a sourced tier above them.
 
     Sourcing GB DIA at 100 and 1000 left the seeded 500 Mbps row untouched at
@@ -1382,9 +1408,18 @@ def _reprice_between_sourced(rows):
     access pricing is roughly logarithmic in capacity - doubling the bearer
     does not double the charge. Marked nowhere as sourced: it is an
     interpolation between two published points and stays grade E.
+
+    With nothing sourced beneath it there is nothing to interpolate from, so
+    the tier keeps the ratio the seeded card held between it and the sourced
+    tier above, applied to that tier's band. Sourcing AU DIA at 500 and 1000
+    left the 300 Mbps seed at AUD 2,072 over a 500 Mbps rate of 484; it now
+    sits where the seed put it, at 1,400/1,610 of the 500 Mbps band.
     """
     from decimal import Decimal as _D
     import math
+
+    seeded_base = {(c, p, int(bw)): _D(ba)
+                   for c, p, _l, bw, _lo, ba, _hi in seeded}
 
     # Each sourced tier as the card prices it. Read row by row instead, a
     # later point on the same key replaced its band, and the tiers between
@@ -1404,14 +1439,25 @@ def _reprice_between_sourced(rows):
             continue
         below = [t for t in tiers if t < int(mbps)]
         above = [t for t in tiers if t > int(mbps)]
-        if not below or not above:
+        if not above:
             out.append(row)
             continue
-        lo_t, hi_t = max(below), min(above)
+        hi_t = min(above)
         # Only reprice where the row actually contradicts its neighbour.
         if _D(base) <= (tiers[hi_t][0] + tiers[hi_t][1]) / 2:
             out.append(row)
             continue
+        if not below:
+            upper = seeded_base.get((country, product, hi_t))
+            if not upper:
+                out.append(row)
+                continue
+            ratio = _D(base) / upper
+            new_low, new_high = (v * ratio for v in tiers[hi_t])
+            out.append((country, product, layer, int(mbps), int(new_low),
+                        int((new_low + new_high) / 2), int(new_high)))
+            continue
+        lo_t = max(below)
         span = math.log(hi_t / lo_t)
         position = math.log(int(mbps) / lo_t) / span if span else 0
         def _between(a, b):
@@ -1486,14 +1532,18 @@ PRIORS = PRIORS + _V2_ROWS
 # BEFORE the regional derivation - so EUROPE_WEST and EMEA are derived from the
 # published GB band rather than from the overstatement it replaced.
 _SOURCED_KEYS = {(r[0], r[1], int(r[2])) for r in SOURCED_RATES}
+# The card as seeded, before a sourced rate replaces any of it. The shapes
+# below are measured on it: a sourced rate changes a price, not the steps the
+# seeded curve takes between tiers.
+_SEEDED_ROWS = list(PRIORS)
 PRIORS = [row for row in PRIORS
           if (row[0], row[1], int(row[3])) not in _SOURCED_KEYS]
 PRIORS = PRIORS + _sourced_priors(SOURCED_RATES)
-PRIORS = _reprice_between_sourced(PRIORS)
+PRIORS = _reprice_between_sourced(PRIORS, _SEEDED_ROWS)
 
 PRIORS = PRIORS + _consumer_tiers(PRIORS)
 PRIORS = PRIORS + _fwa_tiers(PRIORS)
-PRIORS = PRIORS + _fill_country_tiers(PRIORS)
+PRIORS = PRIORS + _fill_country_tiers(PRIORS, curves=_SEEDED_ROWS)
 
 
 #: Tiers to interpolate, and the pair each sits between.
