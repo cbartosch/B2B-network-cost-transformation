@@ -1101,7 +1101,13 @@ def _sourced_priors(rows):
 # defensible average of real markets where several exist. Where only one member
 # has a card, the region is that country wearing a regional label - so it is
 # still emitted, because refusing leaves every estate in the region unpriced,
-# but `member_count` records how thin it is and the source note says so.
+# but the row says how thin it is: its source names the members the median
+# came from and which of them were sourced, and `sample_size` counts them.
+#
+# That promise was made here as "`member_count` records it" and never kept -
+# no such column, and every regional row read "no transaction, quote or
+# published benchmark behind it", Western Europe's 10 Gbps DIA included,
+# which is the UK survey band carried for the region.
 #
 # The median, not the mean: EMEA spans Germany and Egypt, and one expensive
 # market should not carry the region.
@@ -1109,6 +1115,12 @@ def _sourced_priors(rows):
 # Grade E, and a wider grade E than a country row - the scope ladder records
 # that a REGION price was used, and `unsourced_price_share` counts it. A
 # regional average across EMEA is a starting point for research, not an answer.
+#
+#: (region, product, mbps) -> the member countries a regional row's median was
+#: taken over. Travels beside PRIORS, as SOURCED_PROVENANCE does.
+REGIONAL_MEMBERS: dict = {}
+
+
 def _regional_tiers(rows, country_region):
     """One row per (region, product, tier) the region's members price."""
     from decimal import Decimal as _D
@@ -1117,7 +1129,7 @@ def _regional_tiers(rows, country_region):
     present = {(country, product, mbps)
                for country, product, _l, mbps, *_r in rows}
 
-    grouped, members = {}, {}
+    grouped, contributors = {}, {}
     for country, product, layer, mbps, low, base, high in rows:
         region = region_of.get(country)
         if region is None or len(country) != 2:
@@ -1125,7 +1137,7 @@ def _regional_tiers(rows, country_region):
         key = (region, product, int(mbps))
         grouped.setdefault(key, []).append(
             (_D(low), _D(base), _D(high), layer))
-        members.setdefault(region, set()).add(country)
+        contributors.setdefault(key, []).append(country)
 
     def _median(values):
         ordered = sorted(values)
@@ -1156,6 +1168,8 @@ def _regional_tiers(rows, country_region):
                     int(_median([q[0] for q in quotes])),
                     int(_median([q[1] for q in quotes])),
                     int(_median([q[2] for q in quotes]))))
+        REGIONAL_MEMBERS[(region, product, mbps)] = sorted(
+            contributors[(region, product, mbps)])
     return out
 
 
@@ -2089,9 +2103,14 @@ def _regional_curve(rows):
         band = [round(float(a) * ((float(b) / float(a)) ** f), 2)
                 for a, b in zip(lo_a, hi_a)]
         out.append((country, product, layer, int(mbps), *band))
+        # No longer a median of its members, so it no longer counts them.
+        REGIONAL_MEMBERS.pop((country, product, int(mbps)), None)
+        REGIONAL_RECURVED.add((country, product, int(mbps)))
     return out
 
 
+#: Regional rows _regional_curve placed on the region's own curve.
+REGIONAL_RECURVED: set = set()
 PRIORS = _regional_curve(PRIORS)
 
 # Again, after the derivation. A region's 50 Mbps row is the median of its
@@ -2099,7 +2118,60 @@ PRIORS = _regional_curve(PRIORS)
 # but EUROPE_CENTRAL took its 100 from a workbook cluster and its 50 from the
 # median of countries whose own 50 came from elsewhere, so the inversion
 # reappeared one level up. The check that caught it is the same one.
+_REGIONAL_BEFORE_RESCALE = {(c, p, int(bw)): (lo, ba, hi)
+                            for c, p, _l, bw, lo, ba, hi in PRIORS
+                            if c in REGION_CODES}
 PRIORS = _rescale_lowest_tier(PRIORS, _WORKBOOK_KEYS)
+#: Regional rows the rescale moved, so their source can say so.
+REGIONAL_RESCALED = {
+    (c, p, int(bw)) for c, p, _l, bw, lo, ba, hi in PRIORS
+    if c in REGION_CODES
+    and _REGIONAL_BEFORE_RESCALE.get((c, p, int(bw))) != (lo, ba, hi)}
+
+
+def _regional_source(key):
+    """What a regional row is, in words: whose rates its median was taken over.
+
+    Graded E whatever its members are. A UK price carried for Germany is a
+    starting point for research there, not evidence about it: the words say
+    what the number is, and the grade how far to trust it in a country it
+    was not observed in.
+    """
+    region, product, mbps = key
+    if key in REGIONAL_RECURVED:
+        text = ("interpolated between this region's own 1 Gbps and 10 Gbps "
+                "rows, because the median of the members that price this "
+                "tier fell outside them")
+    elif key in REGIONAL_MEMBERS:
+        members = REGIONAL_MEMBERS[key]
+        provenance = {m: SOURCED_PROVENANCE[(m, product, mbps)]
+                      for m in members if (m, product, mbps) in SOURCED_PROVENANCE}
+        if len(members) == 1:
+            (only,) = members
+            text = (f"the rate of {only}, the one member country that prices "
+                    f"this tier, carried as the region's - "
+                    + (f"sourced: grade {provenance[only][0]}, "
+                       f"{provenance[only][1]}" if only in provenance
+                       else "itself not sourced"))
+        else:
+            text = (f"median of the {len(members)} member countries that "
+                    f"price this tier ({', '.join(members)}); "
+                    + ("sourced among them: " + "; ".join(
+                        f"{m} (grade {g}, {s})"
+                        for m, (g, s) in provenance.items())
+                       if provenance else "none of them sourced"))
+    else:
+        return None
+    rescaled = (" Rescaled under this region's 100 Mbps row by the step the "
+                "seeded card took from 50 to 100."
+                if key in REGIONAL_RESCALED else "")
+    return (f"{text}. A regional rate, graded E: a starting point for "
+            f"research, not evidence about any one country.{rescaled}")
+
+
+_REGIONAL_SOURCES = {
+    key: _regional_source(key)
+    for key in set(REGIONAL_MEMBERS) | REGIONAL_RECURVED}
 
 #: Which rows are interpolated, settled against the FINISHED pipeline.
 #:
@@ -2650,6 +2722,8 @@ def _rows():
              "source": (
                  SOURCED_PROVENANCE[(c, p, int(bw))][1]
                  if (c, p, int(bw)) in SOURCED_PROVENANCE else
+                 _REGIONAL_SOURCES[(c, p, int(bw))]
+                 if (c, p, int(bw)) in _REGIONAL_SOURCES else
                  "interpolated between this country and product's own 1 Gbps "
                  "and 10 Gbps rows, geometric in bandwidth and price; the "
                  "method reproduces tiers the card already holds to within "
@@ -2658,7 +2732,11 @@ def _rows():
                  if (c, p, int(bw)) in _DERIVED_TIER_KEYS else
                  "indicative starting position set at seed time; "
                  "no transaction, quote or published benchmark behind it"),
-             "source_date": "2026-01-01", "sample_size": None,
+             "source_date": "2026-01-01",
+             # How many countries a regional median was taken over - one
+             # means a single country carried as the region's rate.
+             "sample_size": (len(REGIONAL_MEMBERS[(c, p, int(bw))])
+                             if (c, p, int(bw)) in REGIONAL_MEMBERS else None),
              "term_months": 36, "sla": "STANDARD_BUSINESS",
              "taxes_included": False, "equipment_included": False,
              "managed_services_included": False,
