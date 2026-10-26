@@ -11,7 +11,7 @@ from sqlalchemy import insert, select, update
 
 from .. import config, db
 from ..llm import gateway
-from . import entity_resolution
+from . import entity_resolution, scope
 
 BLOCK, WARN, PASS = "BLOCK", "WARN", "PASS"
 
@@ -170,9 +170,12 @@ def run(session, *, case_id: str, mode: str = "LIVE") -> dict:
 
     # 4. Prior coverage - WARN here, refused at publication (0.3C)
     countries = row.in_scope_countries or []
-    priced = _priced_countries(session, countries)
-    uncovered = sorted(set(countries) - priced)
-    conditions.append(_c("Prior coverage", PASS, f"priors present for all {len(countries)} countries")
+    rungs = scope.pricing_scopes(session, countries)
+    uncovered = sorted(c for c in countries if not rungs.get(c))
+    regional = [c for c, rung in rungs.items() if rung and rung != c]
+    at_region = (f", {len(regional)} of them only at a regional median"
+                 if regional else "")
+    conditions.append(_c("Prior coverage", PASS, f"priors present for all {len(countries)} countries{at_region}")
                       if not uncovered else
                       _c("Prior coverage", WARN,
                          f"no approved reference prior for: {', '.join(uncovered)}. "
@@ -222,12 +225,15 @@ def run(session, *, case_id: str, mode: str = "LIVE") -> dict:
 
 
 def _priced_countries(session, countries) -> set:
-    if not countries:
-        return set()
-    rows = session.execute(select(db.unit_cost_prior.c.country).where(
-        db.unit_cost_prior.c.country.in_(countries),
-        db.unit_cost_prior.c.approved.is_(True))).all()
-    return {r.country for r in rows}
+    """The countries some rung of the price ladder can price.
+
+    Own rows only, this warned that a country had no approved prior and that
+    publication would be refused while the estimate priced every circuit in it
+    at its region's median - and a case scoped to EMEA would have listed
+    seventy-odd countries that way.
+    """
+    return {c for c, rung in scope.pricing_scopes(session, countries).items()
+            if rung}
 
 
 def latest(session, case_id: str):

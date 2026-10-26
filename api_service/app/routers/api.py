@@ -834,8 +834,10 @@ def update_case(case_id: str, payload: CaseUpdate):
 
 @router.get("/v1/outside-in/regions")
 def list_regions():
-    return {"regions": scope.region_choices(),
-            "members": scope.REGION_COUNTRIES}
+    with S() as s:
+        return {"regions": scope.region_choices(),
+                "members": {r: scope.region_members(s, r)
+                            for r in scope.region_choices()}}
 
 
 class ResolveIn(BaseModel):

@@ -99,6 +99,7 @@ from ..llm import errors, gateway, registry
 from ..llm.providers import _transport
 from . import dispositions, reliability, triangulate
 from .research_briefs import BRIEF_CATALOGUE_VERSION, RESEARCH_BRIEFS
+from .scope import pricing_scopes
 from .policy import ResearchPolicy
 
 log = logging.getLogger("workbench.research")
@@ -801,9 +802,18 @@ def _build_context(session, case_row, domain_no: int) -> dict:
                 "first real input it would get.")
 
     # The unit-cost band each in-scope country is currently priced at.
+    #
+    # A country with no price of its own is priced at its region's median, not
+    # excluded. This said every such country was excluded from the total, so
+    # the agent was sent after "unpriced" countries the estimate already
+    # priced - and a case scoped to EMEA would have named seventy-odd of them.
     if domain_no == 19:
         countries = list(getattr(case_row, "in_scope_countries", None) or [])
         if countries:
+            rungs = pricing_scopes(session, countries)
+            regional = sorted(c for c in countries
+                              if rungs.get(c) not in (None, c))
+            unpriced = sorted(c for c in countries if not rungs.get(c))
             rows = session.execute(
                 select(db.unit_cost_prior)
                 .where(db.unit_cost_prior.c.country.in_(countries),
@@ -821,38 +831,43 @@ def _build_context(session, case_row, domain_no: int) -> dict:
                         f"{r.bandwidth_mbps or '?'} Mbps: {r.low} / {r.base} / "
                         f"{r.high} per month (low/base/high)"
                         for r in sorted(rows, key=lambda r: (r.country, r.product))))
-                priced_countries = {r.country for r in rows}
-                unpriced = sorted(set(countries) - priced_countries)
-                if unpriced:
-                    ctx["model_state"] += (
-                        f"\n  These in-scope countries have NO approved price "
-                        f"at all: {', '.join(unpriced)}. Every circuit in them "
-                        f"is excluded from the total rather than estimated, so "
-                        f"a price for one of these is worth more than a "
-                        f"refinement of any band above.")
             else:
                 ctx["model_state"] = (
                     "None of the in-scope countries has an approved price "
-                    "benchmark, so every circuit in them is currently unpriced "
-                    "and excluded from the total. Any price you find is new "
-                    "coverage rather than a correction.")
+                    "benchmark of its own, so any price you find for one is "
+                    "new coverage rather than a correction.")
+            if regional:
+                ctx["model_state"] += (
+                    f"\n  These in-scope countries have no price of their own "
+                    f"and are priced at their region's median: "
+                    f"{', '.join(regional)}. A price for one of these replaces "
+                    f"an average of other markets.")
+            if unpriced:
+                ctx["model_state"] += (
+                    f"\n  These in-scope countries have NO approved price "
+                    f"at all: {', '.join(unpriced)}. Every circuit in them "
+                    f"is excluded from the total rather than estimated, so "
+                    f"a price for one of these is worth more than a "
+                    f"refinement of any band above.")
 
     # Which in-scope countries can be priced at all - the serviceability
     # question is only interesting where the answer changes coverage.
     if domain_no == 18:
         countries = list(getattr(case_row, "in_scope_countries", None) or [])
         if countries:
-            rows = session.execute(
-                select(db.unit_cost_prior.c.country)
-                .where(db.unit_cost_prior.c.country.in_(countries),
-                       db.unit_cost_prior.c.approved.is_(True)).distinct()).all()
-            priced = {r.country for r in rows}
-            missing = sorted(set(countries) - priced)
+            rungs = pricing_scopes(session, countries)
+            missing = sorted(c for c in countries if not rungs.get(c))
+            regional = sorted(c for c in countries
+                              if rungs.get(c) not in (None, c))
             ctx["model_state"] = (
                 f"In-scope countries with no approved price benchmark, so "
                 f"currently unpriceable: {', '.join(missing)}."
                 if missing else
-                "Every in-scope country already has a price benchmark.")
+                "Every in-scope country can already be priced.")
+            if regional:
+                ctx["model_state"] += (
+                    f" Priced only at their region's median: "
+                    f"{', '.join(regional)}.")
 
     return ctx
 
