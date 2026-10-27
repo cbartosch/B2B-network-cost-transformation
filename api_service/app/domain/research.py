@@ -85,6 +85,7 @@ client data, recorded by a named person, is not something a re-run of public
 research may discard as a side effect. See _client_confirmed_domain_nos.
 """
 import hashlib
+import json
 import logging
 import re
 import uuid
@@ -489,10 +490,7 @@ def _fetch_source_fragment(url: str, timeout: float = 10.0) -> dict | None:
     text = _WS_RE.sub(" ", _TAG_RE.sub(" ", resp.text[:20_000])).strip()
     if readable:
         # A server may serve a PDF as text/html, so the bytes get a vote too.
-        noise = sum(1 for c in text if ord(c) < 32 or ord(c) == 0xFFFD)
-        readable = not (text[:50].lstrip().startswith("%PDF")
-                        or "endstream" in text[:2000]
-                        or (text and noise / len(text) > 0.10))
+        readable = not unreadable_text(text)
     if not readable:
         return {"url": url, "status_code": resp.status_code,
                 "fragment": (f"[{ctype or 'unknown content type'}, "
@@ -508,6 +506,98 @@ def _fetch_source_fragment(url: str, timeout: float = 10.0) -> dict | None:
     # characters of the top of a page is not that.
     return {"url": url, "status_code": resp.status_code,
             "fragment": text[:600], "_body": text}
+
+
+def unreadable_text(text: str) -> bool:
+    """Is this binary decoded as text - a PDF, a spreadsheet - not a page?
+
+    The one test the fetch applies and the re-reading of stored captures
+    applies, so the two cannot disagree about what counts as read.
+    """
+    text = text or ""
+    noise = sum(1 for c in text if ord(c) < 32 or ord(c) == 0xFFFD)
+    return bool(text[:50].lstrip().startswith("%PDF")
+                or "endstream" in text[:2000]
+                or (text and noise / len(text) > 0.10))
+
+
+def reverify_dispositions(session, *, policy) -> list[dict]:
+    """Re-read every stored capture with the reader the fetch uses now.
+
+    Captures stored before the fetch refused binary kept their verdict: a
+    claim marked verified because its digits occurred inside a compressed PDF
+    stream. Their fragments are that same binary, so the fixed reader can be
+    applied to what was stored - which is what the fetch would have recorded
+    with it: no text extracted, and a claim checked against nothing is not
+    verified.
+
+    A finding is graded again from its stored inputs only where research
+    graded it in the first place and its disposition is still what that
+    grade maps to. A disposition from before grading existed was set by the
+    rule of its day, and one a person changed is theirs: both keep their
+    disposition, and only the record of what was read is corrected. Regrading
+    them under today's rules is a different change from re-reading a page,
+    and the first version of this did both - 69 findings moved from
+    EVIDENCED_PUBLIC to DECLARED_UNKNOWN, none of them for a page it re-read.
+    """
+    out = []
+    for row in session.execute(select(db.domain_disposition)).all():
+        evidence = row.evidence if isinstance(row.evidence, dict) else (
+            json.loads(row.evidence) if row.evidence else None)
+        if not evidence or not evidence.get("sources"):
+            continue
+        stored = evidence.get("reliability") or {}
+        regrade = bool(stored.get("grade")) and (
+            (row.disposition, row.reason)
+            == reliability.disposition_for(stored["grade"]))
+        sources, reread = [], 0
+        for src in evidence["sources"]:
+            fragment = src.get("fragment") or ""
+            if unreadable_text(fragment):
+                reread += 1
+                claim = str(src.get("excerpt") or "").strip()
+                src = {**src, "claim_verified": False,
+                       "claim_checked": None,
+                       "fragment": (f"[{len(fragment):,} characters of binary "
+                                    f"stored] fetched, and no text extracted: "
+                                    f"this workflow has no parser for this "
+                                    f"format. The source is real and its "
+                                    f"contents were not read."),
+                       **({"how_read": "SNIPPET_ONLY"} if claim else {})}
+            sources.append(src)
+        if not reread:
+            continue
+        if not regrade:
+            session.execute(update(db.domain_disposition)
+                            .where(db.domain_disposition.c.id == row.id)
+                            .values(evidence={**evidence, "sources": sources}))
+            out.append({"case_id": row.case_id, "domain_no": row.domain_no,
+                        "captures_reread": reread,
+                        "grade": [stored.get("grade")] * 2,
+                        "disposition": [row.disposition] * 2})
+            continue
+        case = session.execute(select(db.case.c.price_year).where(
+            db.case.c.case_id == row.case_id)).first()
+        triangulated = evidence.get("triangulated") or []
+        graded = reliability.grade(
+            verified_sources=sources,
+            claimed_sources=(int(stored.get("unconfirmed_sources") or 0)
+                             + int(stored.get("verified_sources") or 0)),
+            band=triangulated[0] if triangulated else None, policy=policy,
+            price_year=(case.price_year if case else None) or 2026,
+            value_parsed=bool(evidence.get("quantities")))
+        disposition, reason = reliability.disposition_for(graded["grade"])
+        session.execute(update(db.domain_disposition)
+                        .where(db.domain_disposition.c.id == row.id)
+                        .values(disposition=disposition, reason=reason,
+                                evidence={**evidence, "sources": sources,
+                                          "reliability": graded}))
+        out.append({"case_id": row.case_id, "domain_no": row.domain_no,
+                    "captures_reread": reread,
+                    "grade": [stored.get("grade"), graded["grade"]],
+                    "disposition": [row.disposition, disposition]})
+    session.commit()
+    return out
 
 
 def _verify_sources(claimed: list[dict],

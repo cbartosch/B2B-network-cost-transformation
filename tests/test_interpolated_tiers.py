@@ -184,3 +184,33 @@ def test_a_tier_priced_before_the_fill_is_never_relabelled():
     key, and must keep its own basis rather than inherit this one."""
     for key in seed._DERIVED_TIER_KEYS:
         assert key not in seed._PRE_INTERPOLATION_KEYS
+
+
+# ------------------------------------------- an anchor research displaced
+def test_a_step_is_redrawn_on_an_anchor_research_displaced():
+    """Approving US Ethernet at 10 Gbps for 1,807 against a seeded 3,450 left
+    the 9 Gbps step at 3,267 - above the tier above it. Redrawn between what
+    now prices each anchor, as the seed draws it; a step on two seeded
+    anchors stands."""
+    from app.domain.estimate import reanchor_interpolated
+
+    def row(low, base, high, basis):
+        return {"low": D(low), "base": D(base), "high": D(high),
+                "price_basis": basis}
+
+    priors = {
+        ("US", "ETHERNET", 1000): row("787", "1050", "1312", "SEED"),
+        ("US", "ETHERNET", 10000): row("1244", "1807", "2157", "PROMOTED"),
+        ("US", "ETHERNET", 9000): row("2371.22", "3267.23", "4523.41",
+                                      "INTERPOLATED"),
+        ("GB", "ETHERNET", 1000): row("300", "400", "500", "SEED"),
+        ("GB", "ETHERNET", 10000): row("1000", "1500", "2000", "SEED"),
+        ("GB", "ETHERNET", 9000): row("900", "1400", "1900", "INTERPOLATED"),
+    }
+
+    assert reanchor_interpolated(priors) == [("US", "ETHERNET", 9000)]
+    nine = priors[("US", "ETHERNET", 9000)]
+    assert D("1050") < nine["base"] < D("1807")
+    f = math.log(9) / math.log(10)
+    assert abs(float(nine["base"]) - 1050 * (1807 / 1050) ** f) < 0.01
+    assert priors[("GB", "ETHERNET", 9000)]["base"] == D("1400")

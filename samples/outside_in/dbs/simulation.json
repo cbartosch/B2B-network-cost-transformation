@@ -1,13 +1,13 @@
 {
-  "simulation_run_id": "4f12b7b5-1fff-471a-9b41-8cb212f977a9",
+  "simulation_run_id": "8fc8ce63-0d0c-497b-a2e3-7fdf0856150f",
   "case_id": "11ba398f-96c7-4027-9624-6355f5290b8e",
-  "model_version": "sim-2.10.0",
+  "model_version": "sim-2.11.0",
   "seed": 20260101,
   "ensemble_size": 25,
   "status": "SUCCEEDED",
-  "output_hash": "7b8d8a14a8408c9e1f7d0e8aaa08fb21816927dd4afaef7c5d2487f018208eb9",
-  "started_at": "2026-10-27 08:56:44.558616+00:00",
-  "ended_at": "2026-10-27 08:56:45.706610+00:00",
+  "output_hash": "5786921d4ad65aa42a06d493d981754fbd045ab91f8b5e5c0c9888b5c3e9137e",
+  "started_at": "2026-10-27 14:31:14.168701+00:00",
+  "ended_at": "2026-10-27 14:31:15.214605+00:00",
   "params": {
     "footprint": [
       {
@@ -1211,7 +1211,20 @@
     },
     "providers_by_role": {},
     "plan_tiers": {
-      "IN|MOBILE_5G": [
+      "ID|BROADBAND_HFC": [
+        100,
+        250,
+        500,
+        1000
+      ],
+      "ID|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "ID|MOBILE_5G": [
         50,
         100,
         300
@@ -1229,28 +1242,28 @@
         500,
         1000
       ],
-      "ID|MOBILE_5G": [
+      "IN|MOBILE_5G": [
         50,
         100,
         300
       ],
-      "ID|BROADBAND_HFC": [
-        100,
-        250,
-        500,
-        1000
-      ],
-      "ID|BROADBAND_PON": [
+      "SG|BROADBAND_PON": [
         50,
         100,
         250,
         500,
         1000
       ],
-      "CN|MOBILE_5G": [
+      "SG|MOBILE_5G": [
         50,
         100,
         300
+      ],
+      "SG|BROADBAND_HFC": [
+        100,
+        250,
+        500,
+        1000
       ],
       "CN|BROADBAND_HFC": [
         100,
@@ -1265,23 +1278,10 @@
         500,
         1000
       ],
-      "SG|MOBILE_5G": [
+      "CN|MOBILE_5G": [
         50,
         100,
         300
-      ],
-      "SG|BROADBAND_PON": [
-        50,
-        100,
-        250,
-        500,
-        1000
-      ],
-      "SG|BROADBAND_HFC": [
-        100,
-        250,
-        500,
-        1000
       ]
     },
     "backbone": {
@@ -1314,7 +1314,7 @@
     }
   },
   "output": {
-    "model_version": "sim-2.10.0",
+    "model_version": "sim-2.11.0",
     "seed": 20260101,
     "ensemble_size": 25,
     "sites": 1769,

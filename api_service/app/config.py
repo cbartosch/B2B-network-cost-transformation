@@ -205,7 +205,10 @@ LLM_SEARCH_TIMEOUT_SECONDS = float(
 # first that reaches it. In town Ethernet fibre stops at 1 Gbps and dark fibre
 # runs to 10, so every urban circuit above 1 Gbps in the five countries with a
 # serviceability table was cut to 1 Gbps and priced as one.
-SIMULATION_MODEL_VERSION = "sim-2.10.0"
+# sim-2.11.0: a published dual-access rate of 0 is a rate. `or` read it as
+# missing and used the seeded per-archetype guess, so an archetype a benchmark
+# says has no second path got the guess's share of backups.
+SIMULATION_MODEL_VERSION = "sim-2.11.0"
 # calc-1.1.0: the saving band is accumulated with matched pairing rather than
 # derived as current - target. The target is a function of the current, so
 # subtracting the two crossed bounds a second time and produced worlds that
@@ -298,4 +301,8 @@ SIMULATION_MODEL_VERSION = "sim-2.10.0"
 # is the ordinary state of an outside-in estimate - 40-70% of scope, or an
 # unsizable pair, or an uncovered material country, or an unpriced layer - and
 # no consumer distinguished it from COMPLETE.
-CALCULATION_VERSION = "calc-1.21.0"
+# calc-1.22.0: an access circuit never prices at a region's backbone row; the
+# 2-9 Gbps steps are redrawn where an approved price displaced their 1 or 10
+# Gbps anchor; and coverage reports how much of the estate rests on a research
+# count three or more years old, or on one with no date.
+CALCULATION_VERSION = "calc-1.22.0"

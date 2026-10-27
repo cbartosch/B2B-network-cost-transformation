@@ -83,7 +83,7 @@ def test_a_decided_row_becomes_the_line_the_register_holds():
     assert line == {"id": "US-DIA-100-researched", "decision": "APPROVE",
                     "base": "492.00", "currency": "USD", "band_low": "333",
                     "band_high": "641", "kind": "",
-                    "reason": "Lightyear median, 36-month"}
+                    "reason": "Lightyear median, 36-month", "traced_url": ""}
 
 
 def test_a_band_left_as_the_formula_is_the_cards_width():
@@ -119,3 +119,30 @@ def test_a_decision_that_is_not_one_is_refused():
     with pytest.raises(ValueError, match="Maybe"):
         _tool("build_price_review").register_line(_row(Decision="Maybe"),
                                                   None)
+
+
+# ----------------------------------------------- a source traced in review
+def test_a_traced_source_makes_a_row_traceable():
+    """Spain's DIA 600 stayed flagged untraceable after the audit opened
+    Direct Telecom's page and read the figure on it, because research had
+    stored only a run narrative. The register carries the page now."""
+    tool = _tool("review_prices")
+    narrative = {"from": "run narrative (the disposition was replaced)",
+                 "label": None, "excerpt": None, "sources": []}
+    evidence, untraceable = tool.traced(
+        narrative, "https://direct-telecom.es/internet/business_class_fibre/")
+    assert untraceable is False
+    assert evidence["sources"][0]["how_read"] == "REVIEWER_TRACED"
+    assert "untraceable" not in tool.flags_for(
+        evidence, fx_error=None, inversions=[], untraceable=untraceable)
+
+
+def test_a_traced_url_survives_the_workbook_round_trip():
+    tool = _tool("build_price_review")
+    previous = {"id": "US-DIA-100-researched",
+                "traced_url": "https://example.com/tariff"}
+    assert tool.register_line(_row(), previous)["traced_url"] == (
+        "https://example.com/tariff")
+    assert tool.register_line(
+        _row(**{"Traced URL": "https://example.com/other"}),
+        previous)["traced_url"] == "https://example.com/other"

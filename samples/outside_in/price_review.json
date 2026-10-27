@@ -33,7 +33,16 @@
     "term_months": null,
     "as_of": null,
     "excerpt": "ise NBN (symmetric, SLA-backed) list prices in AUD excl. GST: 100/100 Mbps A$399/mo, 250/250 Mbps A$399/mo, 500/500 Mbps A$469/mo, 1000/1000 Mbps A$699/mo (36-month term). Swoop published business NBN prices: 250 Mbps A$104/mo (FTTP), 1000 Mbps A$129/mo (FTTP/HFC). Kookaburra Comms (trade press, 2026) cites typical published range A$400 for 100-250 Mbps to A$700-A$1,500 for 1 Gbps",
-    "sources": []
+    "sources": [
+     {
+      "publisher": "traced in review",
+      "source_url": "https://www.swoop.com.au/business/nbn/",
+      "source_class": null,
+      "how_read": "REVIEWER_TRACED",
+      "excerpt": null,
+      "note": null
+     }
+    ]
    },
    "flags": [
     "single source",
@@ -191,7 +200,16 @@
     "term_months": null,
     "as_of": null,
     "excerpt": "advertised price ~A$65-80/mo (not enterprise). AU DIA (Dedicated Internet Access – direct fibre): Nexthop AU lists 1 Gbps datacenter DIA at A$499/mo (24-month, on-net); Vocus Fast Fibre (direct fibre, enterprise) from A$339/mo excl. GST for 250 Mbps+. AyeTech 2026 guide cites enterprise dedicated fibre 100 Mbps–1 Gbps at A$2,500–A$8,000/mo for large-enterprise/data-centre grade. N",
-    "sources": []
+    "sources": [
+     {
+      "publisher": "traced in review",
+      "source_url": "https://www.vocus.com.au/enterprise/internet-and-networks",
+      "source_class": null,
+      "how_read": "REVIEWER_TRACED",
+      "excerpt": null,
+      "note": null
+     }
+    ]
    },
    "flags": [
     "single source"
@@ -234,7 +252,16 @@
     "term_months": null,
     "as_of": null,
     "excerpt": " not retail MRCs. Residential NBN (consumer, ACCC June 2025): 100 Mbps median advertised price ~A$65-80/mo (not enterprise). AU DIA (Dedicated Internet Access – direct fibre): Nexthop AU lists 1 Gbps datacenter DIA at A$499/mo (24-month, on-net); Vocus Fast Fibre (direct fibre, enterprise) from A$339/mo excl. GST for 250 Mbps+. AyeTech 2026 guide cites enterprise dedicated fibre 1",
-    "sources": []
+    "sources": [
+     {
+      "publisher": "traced in review",
+      "source_url": "https://www.nexthop.com.au/dedicated-internet-access/",
+      "source_class": null,
+      "how_read": "REVIEWER_TRACED",
+      "excerpt": null,
+      "note": null
+     }
+    ]
    },
    "flags": [
     "consumer",
@@ -434,9 +461,14 @@
    ],
    "effect": {
     "rio-tinto": {
-     "delta": "-349626.49",
+     "delta": "-373985.89",
      "currency": "USD",
-     "circuits": 20
+     "circuits": 22
+    },
+    "woolworths": {
+     "delta": "-57357.23",
+     "currency": "AUD",
+     "circuits": 2
     }
    }
   },
@@ -497,8 +529,8 @@
    "currency": "EUR",
    "low": "95.00",
    "high": "95.00",
-   "state": "UNDECIDED",
-   "decided_by": null,
+   "state": "HELD",
+   "decided_by": "Christian Bartosch",
    "usd": "109.06",
    "replaces": null,
    "lower_tier": 1000,
@@ -788,8 +820,8 @@
    "currency": "EUR",
    "low": "159.99",
    "high": "159.99",
-   "state": "UNDECIDED",
-   "decided_by": null,
+   "state": "HELD",
+   "decided_by": "Christian Bartosch",
    "usd": "183.66",
    "replaces": {
     "id": "ES-DIA-100",
@@ -808,7 +840,16 @@
     "term_months": null,
     "as_of": null,
     "excerpt": "band, MPLS/IP-VPN and SD-WAN from all four national players plus resellers. Telefónica Global Solutions offers DIA on its own Tier 1 global infrastructure. A domestic reseller (Direct Telecom) lists 100/100 Mbps DIA at €159.99/month and 1 Gbps dedicated circuit at €449/month (2025 prices). Telefónica and MasOrange are exploring acquisition of Vodafone España (as of mid-2025); if comp",
-    "sources": []
+    "sources": [
+     {
+      "publisher": "traced in review",
+      "source_url": "https://direct-telecom.es/internet/business_class_fibre/",
+      "source_class": null,
+      "how_read": "REVIEWER_TRACED",
+      "excerpt": null,
+      "note": null
+     }
+    ]
    },
    "flags": [
     "single source"
@@ -857,11 +898,19 @@
     "term_months": null,
     "as_of": null,
     "excerpt": null,
-    "sources": []
+    "sources": [
+     {
+      "publisher": "traced in review",
+      "source_url": "https://direct-telecom.es/internet/business_class_fibre/",
+      "source_class": null,
+      "how_read": "REVIEWER_TRACED",
+      "excerpt": null,
+      "note": null
+     }
+    ]
    },
    "flags": [
-    "single source",
-    "untraceable"
+    "single source"
    ],
    "other_observations": [],
    "effect": {}
@@ -886,7 +935,7 @@
    "lower_tier": 500,
    "upper_tier": null,
    "inversions": [
-    "500 Mbps at 1196 > 1000 Mbps at 515 USD"
+    "500 Mbps at 574 > 1000 Mbps at 515 USD"
    ],
    "researched_by": "inditex",
    "as_of": "2025",
@@ -897,7 +946,16 @@
     "term_months": null,
     "as_of": null,
     "excerpt": "ional players plus resellers. Telefónica Global Solutions offers DIA on its own Tier 1 global infrastructure. A domestic reseller (Direct Telecom) lists 100/100 Mbps DIA at €159.99/month and 1 Gbps dedicated circuit at €449/month (2025 prices). Telefónica and MasOrange are exploring acquisition of Vodafone España (as of mid-2025); if completed this would reduce the market to three",
-    "sources": []
+    "sources": [
+     {
+      "publisher": "traced in review",
+      "source_url": "https://direct-telecom.es/internet/business_class_fibre/",
+      "source_class": null,
+      "how_read": "REVIEWER_TRACED",
+      "excerpt": null,
+      "note": null
+     }
+    ]
    },
    "flags": [
     "single source",
@@ -1398,7 +1456,16 @@
     "term_months": null,
     "as_of": null,
     "excerpt": "he model's assumed GB MPLS 100 Mbps of USD 750–1,250/month is within this band.\n\n**GB — BROADBAND_PON / HFC**\nBT Business published tariffs (verified May 2026): Full Fibre 100 Mbps £35/month ex-VAT; Full Fibre 500 Mbps £55/month; Full Fibre 900 Mbps £65/month. Virgin Media Business (cable/HFC): from £29.95/month. Vodafone Business entry-level fro…",
-    "sources": []
+    "sources": [
+     {
+      "publisher": "traced in review",
+      "source_url": "https://business.bt.com/products/broadband-and-internet/deals/",
+      "source_class": null,
+      "how_read": "REVIEWER_TRACED",
+      "excerpt": null,
+      "note": null
+     }
+    ]
    },
    "flags": [
     "floor",
@@ -1571,7 +1638,16 @@
     "term_months": null,
     "as_of": null,
     "excerpt": "e DIA. (2) BROADBAND_HFC: Virgin Media Business publishes HFC/cable broadband: Voom 200 (200 Mbps) from £29.95/month, Voom 400 (400 Mbps) from £34.95/month, Voom Gig1 (1 Gbps) from £43.95/month, Voom Gig2 (2 Gbps) from £83.95/month, all ex-VAT 24-month contract, October 2026. New symmetric XGS-PON (BROADBAND_PON) Full Fibre X plans: 200 Mbps from £39.95/month, 1 Gbps from £53.95/mon",
-    "sources": []
+    "sources": [
+     {
+      "publisher": "traced in review",
+      "source_url": "https://www.virginmediabusiness.co.uk/connectivity/internet-access/business-broadband/",
+      "source_class": null,
+      "how_read": "REVIEWER_TRACED",
+      "excerpt": null,
+      "note": null
+     }
+    ]
    },
    "flags": [
     "floor",
@@ -1612,7 +1688,16 @@
     "term_months": null,
     "as_of": null,
     "excerpt": " €700–€1,300/month (≈USD 765–1,420). The model's assumed GB MPLS 100 Mbps of USD 750–1,250/month is within this band.\n\n**GB — BROADBAND_PON / HFC**\nBT Business published tariffs (verified May 2026): Full Fibre 100 Mbps £35/month ex-VAT; Full Fibre 500 Mbps £55/month; Full Fibre 900 Mbps £65/month. Virgin Media Business (cable/HFC): from £29.95/month. Vodafone Business entry-level",
-    "sources": []
+    "sources": [
+     {
+      "publisher": "traced in review",
+      "source_url": "https://business.bt.com/products/broadband-and-internet/deals/",
+      "source_class": null,
+      "how_read": "REVIEWER_TRACED",
+      "excerpt": null,
+      "note": null
+     }
+    ]
    },
    "flags": [
     "floor",
@@ -2360,10 +2445,15 @@
      "currency": "GBP",
      "circuits": 3
     },
-    "deutsche-post-dhl": {
-     "delta": "-16616.88",
+    "capgemini": {
+     "delta": "-28286.48",
      "currency": "EUR",
-     "circuits": 4
+     "circuits": 11
+    },
+    "deutsche-post-dhl": {
+     "delta": "-19220.34",
+     "currency": "EUR",
+     "circuits": 6
     },
     "eon": {
      "delta": "-39613.54",
@@ -2376,9 +2466,9 @@
      "circuits": 3
     },
     "iberdrola": {
-     "delta": "-26739.14",
+     "delta": "-30332.60",
      "currency": "EUR",
-     "circuits": 6
+     "circuits": 7
     },
     "mcdonalds": {
      "delta": "-3668.41",
@@ -2391,9 +2481,9 @@
      "circuits": 19
     },
     "network-rail": {
-     "delta": "-116734.10",
+     "delta": "-139037.89",
      "currency": "GBP",
-     "circuits": 28
+     "circuits": 48
     },
     "nhs-england": {
      "delta": "-191045.43",
@@ -3095,8 +3185,8 @@
    "currency": "SGD",
    "low": "312.00",
    "high": "312.00",
-   "state": "UNDECIDED",
-   "decided_by": null,
+   "state": "HELD",
+   "decided_by": "Christian Bartosch",
    "usd": "243.75",
    "replaces": {
     "id": "SG-DIA-100",
@@ -3546,8 +3636,8 @@
    "currency": "USD",
    "low": "70.00",
    "high": "70.00",
-   "state": "UNDECIDED",
-   "decided_by": null,
+   "state": "HELD",
+   "decided_by": "Christian Bartosch",
    "usd": "70.00",
    "replaces": null,
    "lower_tier": 250,
@@ -4161,8 +4251,13 @@
     }
    ],
    "effect": {
+    "ahold-delhaize": {
+     "delta": "-7244.72",
+     "currency": "EUR",
+     "circuits": 1
+    },
     "capgemini": {
-     "delta": "-198716.38",
+     "delta": "-213236.56",
      "currency": "EUR",
      "circuits": 15
     },
@@ -4172,7 +4267,7 @@
      "circuits": 5
     },
     "shell": {
-     "delta": "-37104.83",
+     "delta": "-38678.82",
      "currency": "USD",
      "circuits": 2
     }
@@ -4321,8 +4416,8 @@
    "currency": "ZAR",
    "low": "8000.00",
    "high": "8000.00",
-   "state": "UNDECIDED",
-   "decided_by": null,
+   "state": "HELD",
+   "decided_by": "Christian Bartosch",
    "usd": "444.44",
    "replaces": null,
    "lower_tier": null,
@@ -4424,14 +4519,14 @@
    "undecided": [],
    "effect_of_approvals": {
     "rio-tinto": {
-     "delta": "-349626.49",
+     "delta": "-373985.89",
      "currency": "USD",
-     "circuits": 20
+     "circuits": 22
     },
     "woolworths": {
-     "delta": "-90434.40",
+     "delta": "-147791.63",
      "currency": "AUD",
-     "circuits": 5
+     "circuits": 7
     }
    },
    "effect_of_approving_undecided": {}
@@ -4976,8 +5071,13 @@
    ],
    "undecided": [],
    "effect_of_approvals": {
+    "ahold-delhaize": {
+     "delta": "-7244.72",
+     "currency": "EUR",
+     "circuits": 1
+    },
     "capgemini": {
-     "delta": "-198716.38",
+     "delta": "-213236.56",
      "currency": "EUR",
      "circuits": 15
     },
@@ -4987,7 +5087,7 @@
      "circuits": 5
     },
     "shell": {
-     "delta": "-37104.83",
+     "delta": "-38678.82",
      "currency": "USD",
      "circuits": 2
     }

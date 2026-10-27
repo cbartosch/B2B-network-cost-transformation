@@ -184,6 +184,60 @@ def test_the_backbone_row_is_not_reused_as_site_access():
         "a 500 Mbps tail must not be priced from the 10 Gbps backbone row")
 
 
+def _no_ethernet_card(regions=("APAC", "AMER")):
+    """A country in a region with no sub-region, and no Ethernet of its own."""
+    from app.seed import PRIORS
+
+    own = {(c, p) for c, p, *_rest in PRIORS}
+    return next((c, r) for c, r in sorted(_region_of().items())
+                if r in regions and (c, "ETHERNET") not in own)
+
+
+def test_a_10_gbps_site_never_prices_at_the_regions_backbone():
+    """APAC and AMER have no sub-region, so a 10 Gbps site in a member with
+    no Ethernet card of its own fell straight through to the region's
+    Ethernet 10 Gbps row - the hub-to-core price. It stays unpriced now, while
+    the backbone leg still prices there and a 2 Gbps site still prices at the
+    region's access tier."""
+    from app.domain.access import LEGACY_PRODUCT
+    from app.domain.estimate import match_prior
+
+    country, region = _no_ethernet_card()
+    service_class, technology = LEGACY_PRODUCT["ETHERNET"]
+    common = dict(service_class=service_class, access_technology=technology)
+
+    site, _s = match_prior(_priors(), country, "ETHERNET", 10000,
+                           scopes=[country, region], role="PRIMARY", **common)
+    assert site is None, f"{country} priced a 10 Gbps site at {site}"
+
+    leg, _s = match_prior(_priors(), region, "ETHERNET", 10000,
+                          scopes=[region], role="BACKBONE", **common)
+    assert leg is not None and leg["scope"] == region
+
+    two, _s = match_prior(_priors(), country, "ETHERNET", 2000,
+                          scopes=[country, region], role="PRIMARY", **common)
+    assert two is not None and two["bandwidth_mbps"] < 10000
+
+
+def test_the_gate_leaves_the_same_10_gbps_site_unpriced():
+    """The gate and the total use one notion of priced, here as everywhere."""
+    from app.domain.coverage import derive_scope
+
+    country, region = _no_ethernet_card()
+    rows = derive_scope(
+        sim_output={"products": [
+            {"country": country, "product": "ETHERNET", "role": "PRIMARY",
+             "count": 1, "bandwidth_mbps": 10000, "service_class": "ETHERNET",
+             "access_technology": "ETHERNET_FIBRE"},
+            {"country": region, "product": "ETHERNET", "role": "BACKBONE",
+             "count": 2, "bandwidth_mbps": 10000, "service_class": "ETHERNET",
+             "access_technology": "ETHERNET_FIBRE"}]},
+        priors=_priors(),
+        price_scopes={country: [country, region], region: [region]})
+    assert {r["role"]: r["priced"] for r in rows} == {
+        "PRIMARY": False, "BACKBONE": True}
+
+
 # ----------------------------------- every ISO country reaches a region
 # Codes with no enterprise estate: uninhabited, research stations, or
 # administered territories with no commercial network. Asserting a region for
@@ -419,22 +473,22 @@ def test_the_estimate_prices_through_the_ladder_and_says_where():
         **common, price_scopes=_ladders("DE", "HU"))
     assert not [u for u in unpriced if u.get("country")]
     assert sorted(c.key for c in components if c.layer == "L0") == [
-        "L0_backup_DE_MOBILE_5G_100M",
-        "L0_backup_HU_MOBILE_5G_100M_priced_in_EUROPE_CENTRAL"]
+        "L0_backup_DE_MOBILE_5G_100M_priced_at_300M",
+        "L0_backup_HU_MOBILE_5G_100M_priced_at_300M_priced_in_EUROPE_CENTRAL"]
 
 
 def test_the_gate_takes_the_same_rung_as_the_total():
     """Two notions of priced between the gate and the calculation would mean
-    the gate measured something the total did not contain. Romania's band has
+    the gate measured something the total did not contain. Sweden's band has
     no 5G rate, so it falls two rungs; Germany keeps its own."""
     from app.domain.coverage import derive_scope
 
     rows = derive_scope(
-        sim_output={"products": [_five_g(c) for c in ("DE", "HU", "RO")]},
-        priors=_priors(), price_scopes=_ladders("DE", "HU", "RO"))
+        sim_output={"products": [_five_g(c) for c in ("DE", "HU", "SE")]},
+        priors=_priors(), price_scopes=_ladders("DE", "HU", "SE"))
     assert all(r["priced"] for r in rows), rows
     assert {r["country"]: r["priced_in_scope"] for r in rows} == {
-        "DE": None, "HU": "EUROPE_CENTRAL", "RO": "EMEA"}
+        "DE": None, "HU": "EUROPE_CENTRAL", "SE": "EMEA"}
 
 
 def test_a_countrys_own_rate_beats_its_region_whichever_key_holds_it():

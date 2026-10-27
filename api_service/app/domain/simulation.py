@@ -139,6 +139,12 @@ def one_pass(seed: int, footprint: list[dict], archetypes: dict,
                 return hit
         return table.get(archetype)
 
+    def _first(*values):
+        """The first value that is set. Zero is a value: a published
+        dual-access rate of 0 says no site has a second path, and `or` read it
+        as missing and used the seeded guess instead."""
+        return next((v for v in values if v is not None), None)
+
     for entry in sorted(footprint,
                         key=lambda e: (e["country"], e["archetype"],
                                        str(e.get("industry") or ""))):
@@ -153,9 +159,9 @@ def one_pass(seed: int, footprint: list[dict], archetypes: dict,
         # A Tier 1 site is 1.00 rather than 0.95: a tier 1 site without a
         # second path is a finding about that site, and serviceability already
         # reports one it cannot deliver as `single_by_necessity`.
-        p_dual = float(
-            _for(dual_access_by_archetype, entry)
-            or prior.get("dual_access_probability", 0.5))
+        p_dual = float(_first(
+            _for(dual_access_by_archetype, entry),
+            prior.get("dual_access_probability"), 0.5))
         primary_product = prior.get("primary_product", "DIA")
         backup_product = prior.get("backup_product", "BROADBAND_PON")
         # What is bought, as distinct from how it arrives. The analyst's choice

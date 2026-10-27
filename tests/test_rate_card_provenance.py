@@ -27,8 +27,10 @@ def test_the_sourced_rates_keep_their_grade():
 def test_the_uk_survey_rows_are_the_ones_carried():
     """GB DIA at 100, 500, 1000 and 10000, GB Ethernet at 500, 1000 and
     10000. Seven keys from eight source rows, because the Virgin Media tariff
-    and the survey band describe the same circuit and merge."""
-    assert {k for k in seed.SOURCED_PROVENANCE if k[0] == "GB"} == {
+    and the survey band describe the same circuit and merge. (EE's business
+    5G, sourced since, is another source and not the survey's.)"""
+    assert {k for k in seed.SOURCED_PROVENANCE
+            if k[0] == "GB" and k[1] != "MOBILE_5G"} == {
         ("GB", "DIA", 100), ("GB", "DIA", 500), ("GB", "DIA", 1000),
         ("GB", "DIA", 10000), ("GB", "ETHERNET", 500),
         ("GB", "ETHERNET", 1000), ("GB", "ETHERNET", 10000)}
@@ -150,11 +152,15 @@ def test_spain_prices_a_100_mbps_circuit_at_its_market_not_its_300_seed():
                if (r[0], r[1], int(r[3])) == ("ES", "DIA", 100))
     usd_to_eur = D("0.8711")          # the card's own USD->EUR row
     assert abs(D(row[5]) * usd_to_eur - 250) < 1, row
-    # The 300 Mbps seed it no longer stands in for is untouched: one sourced
-    # tier has nothing to reprice between.
-    seeded = next(r for r in seed.PRIORS
-                  if (r[0], r[1], int(r[3])) == ("ES", "DIA", 300))
-    assert int(seeded[5]) == 1040
+    # The 300 Mbps seed of EUR 906 sat above the same page's 500 Mbps range
+    # once that was sourced too, so it is placed between the two now and its
+    # source names both.
+    between = next(r for r in seed.PRIORS
+                   if (r[0], r[1], int(r[3])) == ("ES", "DIA", 300))
+    hundred, five_hundred = (_row("ES", "DIA", bw)[5] for bw in (100, 500))
+    assert hundred < int(between[5]) < five_hundred
+    assert seed.SOURCED_DERIVED[("ES", "DIA", 300)][:2] == (
+        "between", (100, 500))
 
 
 def test_a_point_tariff_does_not_lend_its_grade_to_a_survey_band():
@@ -305,8 +311,9 @@ def test_a_tier_scaled_from_one_sourced_row_names_it(card):
 
 def test_a_row_scaled_from_a_seed_is_still_a_seed(card):
     """The 5G fill scales every country's 50. Where the 50 is a seed, so is
-    the 100, and it keeps saying so."""
-    assert card["US-MOBILE_5G-100"]["source"].startswith(
+    the 100, and it keeps saying so - the UAE's, since the US quotes its own
+    5G at 100 Mbps."""
+    assert card["AE-MOBILE_5G-100"]["source"].startswith(
         "indicative starting position")
 
 
@@ -340,3 +347,34 @@ def test_a_builder_id_never_looks_like_a_promoted_one():
     and a delete."""
     for c, p, l, bw, lo, ba, hi in seed.PRIORS:
         assert not f"{c}-{p}-{bw}".endswith("-researched")
+
+
+# ------------------------------------------- business 5G above 100 Mbps
+@pytest.mark.parametrize("country,mbps,seller", [
+    ("US", 100, "Verizon"), ("US", 300, "T-Mobile"), ("GB", 150, "EE"),
+    ("FR", 300, "Orange Pro"), ("DE", 300, "Telekom"), ("ES", 150, "Orange"),
+    ("ES", 300, "Vodafone"), ("BE", 300, "Proximus"), ("NL", 300, "Odido"),
+    ("PL", 300, "T-Mobile"), ("RO", 300, "Orange")])
+def test_business_5g_above_100_mbps_is_priced_from_the_operators_own_pages(
+        country, mbps, seller):
+    """The card sold 5G at 50 and 100 Mbps only, so 14,580 best-effort backups
+    asking for 110 or 275 Mbps were bought at 100. Each tier is a business
+    plan on its operator's page, at the speed the page states."""
+    grade, source = seed.SOURCED_PROVENANCE[(country, "MOBILE_5G", mbps)]
+    assert grade in ("B", "C") and seller in source, source
+    assert "retail" in source.lower()
+
+
+def test_no_tier_costs_as_much_as_a_faster_one_in_its_scope():
+    """A faster plan for the same money or less is the one a buyer takes. The
+    UK's seeded 50 Mbps 5G at USD 45 sat above EE's 150 Mbps plans at GBP
+    22-28, so it is not sold; a 50 Mbps need prices at the 150."""
+    tiers = {}
+    for c, p, _l, bw, _lo, base, _hi in seed.PRIORS:
+        tiers.setdefault((c, p), {})[int(bw)] = float(base)
+    for key, by_bw in tiers.items():
+        ordered = [by_bw[bw] for bw in sorted(by_bw)]
+        assert all(a < b for a, b in zip(ordered, ordered[1:])), (key, by_bw)
+    assert ("GB", "MOBILE_5G", 50) in seed.DROPPED_FOR_FASTER
+    assert not any((r[0], r[1], int(r[3])) == ("GB", "MOBILE_5G", 50)
+                   for r in seed.PRIORS)

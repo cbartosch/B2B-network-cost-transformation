@@ -1,13 +1,13 @@
 {
-  "simulation_run_id": "414fe40d-a5e8-4e42-9731-8c5c7172fd7a",
+  "simulation_run_id": "d5800bcb-5686-4822-9fed-21fcfa6137fd",
   "case_id": "db96b5a3-5939-434d-97bf-79df14ddeba4",
-  "model_version": "sim-2.10.0",
+  "model_version": "sim-2.11.0",
   "seed": 20260101,
   "ensemble_size": 25,
   "status": "SUCCEEDED",
-  "output_hash": "bc6e3ef9947f616c35ec8688df8ee438a73e3fca7bb33a0bf1d0ade339c8e65d",
-  "started_at": "2026-10-27 08:56:11.048330+00:00",
-  "ended_at": "2026-10-27 08:56:11.214863+00:00",
+  "output_hash": "ede37704dcf95a5bf186f3b09c6d14bebd26bf38bf9b93fa45d84907e3b9af04",
+  "started_at": "2026-10-27 14:30:40.818553+00:00",
+  "ended_at": "2026-10-27 14:30:40.957235+00:00",
   "params": {
     "footprint": [
       {
@@ -1322,6 +1322,44 @@
     },
     "providers_by_role": {},
     "plan_tiers": {
+      "AU|BROADBAND_HFC": [
+        100,
+        250,
+        500,
+        1000,
+        2000
+      ],
+      "AU|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "AU|MOBILE_5G": [
+        50,
+        100,
+        300
+      ],
+      "CA|BROADBAND_HFC": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "CA|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "CA|MOBILE_5G": [
+        50,
+        100,
+        300
+      ],
       "GB|BROADBAND_PON": [
         50,
         100,
@@ -1342,44 +1380,8 @@
       ],
       "GB|MOBILE_5G": [
         50,
-        100
-      ],
-      "AU|MOBILE_5G": [
-        50,
-        100,
+        150,
         300
-      ],
-      "AU|BROADBAND_HFC": [
-        100,
-        250,
-        500,
-        1000,
-        2000
-      ],
-      "AU|BROADBAND_PON": [
-        50,
-        100,
-        250,
-        500,
-        1000
-      ],
-      "CA|BROADBAND_HFC": [
-        50,
-        100,
-        250,
-        500,
-        1000
-      ],
-      "CA|BROADBAND_PON": [
-        50,
-        100,
-        250,
-        500,
-        1000
-      ],
-      "CA|MOBILE_5G": [
-        50,
-        100
       ]
     },
     "backbone": {
@@ -1415,7 +1417,7 @@
     }
   },
   "output": {
-    "model_version": "sim-2.10.0",
+    "model_version": "sim-2.11.0",
     "seed": 20260101,
     "ensemble_size": 25,
     "sites": 106,

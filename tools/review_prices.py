@@ -25,6 +25,7 @@ prices once, against a card where none was decided - the same shape as the
 committed sample review nothing could regenerate.
 """
 import argparse
+import csv
 import json
 import re
 import sys
@@ -105,12 +106,37 @@ def flags_for(evidence: dict, *, fx_error, inversions, untraceable) -> list:
     return out
 
 
+def traced(evidence: dict, url: str) -> tuple:
+    """(evidence, untraceable) with a source a reviewer traced put first.
+
+    The page was opened and the figure read on it, so the row is traceable
+    whatever research stored - which, for a price whose disposition a later
+    run replaced, is the run's narrative alone.
+    """
+    return {**evidence, "sources": [
+        {"publisher": "traced in review", "source_url": url,
+         "source_class": None, "how_read": "REVIEWER_TRACED",
+         "excerpt": None, "note": None}]
+        + list(evidence.get("sources") or [])}, False
+
+
 class Review:
     """The card, the fifty sample companies, and pricing as the route does."""
 
-    def __init__(self, out: Path):
+    def __init__(self, out: Path, register: Path | None = None):
         self.out = out
         self._priced = {}
+        # Sources a reviewer traced by hand, from the decisions register. The
+        # stored evidence of a price whose disposition a later run replaced
+        # is the run's narrative alone, so the tool flagged it untraceable for
+        # good - Spain's DIA 600 included, after the audit had opened Direct
+        # Telecom's page and read the figure on it.
+        self.traced = {}
+        if register is not None and register.exists():
+            with open(register, encoding="utf-8") as f:
+                self.traced = {line["id"]: line["traced_url"].strip()
+                               for line in csv.DictReader(f)
+                               if (line.get("traced_url") or "").strip()}
         with db.engine.connect() as s:
             self.card = [ns(r) for r in s.execute(
                 select(db.unit_cost_prior)).all()]
@@ -233,6 +259,7 @@ class Review:
                   for r in picked if not r.density_band}
         for p in list(priors.values()) + list(band.values()):
             currency.convert_prior(p, factors=fx["factors"])
+        estimate.reanchor_interpolated(priors)
         comps, _unpriced = estimate.build_components(
             sim_output=c["sim"], users=1,
             ops_cost_per_site={"low": D(0), "base": D(0), "high": D(0)},
@@ -370,6 +397,8 @@ class Review:
                                       others + [self.approved_as(p)])
         inversions = inversions_in(approved_ladder)
         evidence, untraceable = self.evidence_for(p)
+        if p.id in self.traced:
+            evidence, untraceable = traced(evidence, self.traced[p.id])
         effect = ({} if fx_error else self.effect(
             p.country, others + [self.approved_as(p)], others))
         note = p.source_note or ""
@@ -409,8 +438,10 @@ class Review:
         out = []
         for (country, product), group in sorted(pairs.items()):
             approved = [p for p in group if p.approved]
+            # Held is undecided too: it does not price either.
             undecided = [p for p in group
-                         if promotion.decision_on(p) is None]
+                         if (promotion.decision_on(p) or {}).get("decision")
+                         in (None, "HELD")]
             rest = [r for r in self.approved if r not in approved]
             out.append({
                 "country": country, "product": product,
@@ -431,9 +462,14 @@ def main() -> int:
     ap.add_argument("--out", required=True,
                     help="the sample output directory; price_review.json is "
                          "written there")
+    ap.add_argument("--register", default="",
+                    help="the decisions register, for sources a reviewer "
+                         "traced; defaults to price_decisions.csv beside the "
+                         "output directory")
     args = ap.parse_args()
     out = Path(args.out)
-    review = Review(out)
+    review = Review(out, Path(args.register) if args.register
+                    else out.parent / "price_decisions.csv")
 
     checks = review.reproduce()
     off = [c for c in checks

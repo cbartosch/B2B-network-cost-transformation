@@ -33,7 +33,7 @@ REGISTER = Path("samples/price_decisions.csv")
 SUMMARY = Path("samples/outside_in/summary.csv")
 WORKBOOK = Path("docs/price-review.xlsx")
 FIELDS = ["id", "decision", "base", "currency", "band_low", "band_high",
-          "kind", "reason"]
+          "kind", "reason", "traced_url"]
 DECISIONS = ("APPROVE", "REJECT", "HOLD")
 
 #: Headers a completed workbook may use, mapped to the ones read back. The
@@ -78,7 +78,12 @@ def register_line(row: dict, previous: dict | None) -> dict | None:
             "band_low": amount(row["Band low"]) if typed else "",
             "band_high": amount(row["Band high"]) if typed else "",
             "kind": str(kind).strip().upper().replace(" ", "_"),
-            "reason": " ".join(str(row.get("Reason") or "").split())}
+            "reason": " ".join(str(row.get("Reason") or "").split()),
+            # A source the reviewer traced, kept from the register unless the
+            # workbook names another.
+            "traced_url": str(row.get("Traced URL")
+                              or (previous or {}).get("traced_url")
+                              or "").strip()}
 
 
 def rows_to_register(rows: list, register: dict) -> dict:
@@ -145,8 +150,8 @@ def build(review: dict, register: dict, summary: dict, out: Path):
             PatternFill("solid", fgColor="1F3A5F"))
     inputs = (Font(name="Arial", color="0000FF"),
               PatternFill("solid", fgColor="FFF2CC"))
-    state_fill = {"UNDECIDED": "FCE4D6", "APPROVED": "E2EFDA",
-                  "REVOKED": "F2F2F2"}
+    state_fill = {"UNDECIDED": "FCE4D6", "HELD": "FCE4D6",
+                  "APPROVED": "E2EFDA", "REVOKED": "F2F2F2"}
     wrap, top = Alignment(wrap_text=True, vertical="top"), \
         Alignment(vertical="top")
     money_eur = '#,##0;(#,##0);"-"'
@@ -172,12 +177,13 @@ def build(review: dict, register: dict, summary: dict, out: Path):
             ("Effect of its approval, EUR/yr", 14), ("Circuits re-priced", 10),
             ("Largest effects", 38),
             ("Approving it re-prices lower tiers", 36),
-            ("Other companies found", 30)]
+            ("Other companies found", 30), ("Traced URL", 40)]
     header(ws, [c[0] for c in cols], [c[1] for c in cols])
     dv = DataValidation(type="list", formula1='"Approve,Reject,Hold"',
                         allow_blank=True)
     ws.add_data_validation(dv)
-    order = {"UNDECIDED": 0, "APPROVED": 1, "REVOKED": 2}
+    # Held sits with the undecided: neither prices.
+    order = {"UNDECIDED": 0, "HELD": 0, "APPROVED": 1, "REVOKED": 2}
     prices = sorted(review["prices"], key=lambda p: (
         order[p["state"]], p["country"], p["product"], p["mbps"]))
     for r, p in enumerate(prices, start=2):
@@ -225,12 +231,13 @@ def build(review: dict, register: dict, summary: dict, out: Path):
             "; ".join(f"{s} {v:+,.0f}" for s, v in top3),
             "; ".join(p["inversions"]) or "no",
             "; ".join(f"{o['slug']} {o['value']} {o['currency']}"
-                      for o in p["other_observations"])]
+                      for o in p["other_observations"]),
+            line.get("traced_url") or None]
         for col, v in enumerate(values, start=1):
             c = ws.cell(row=r, column=col, value=v)
             c.font = body
             c.alignment = wrap if col in (7, 16, 17, 19, 25, 26, 27) else top
-        for col in (6, 7, 8, 9):
+        for col in (6, 7, 8, 9, len(cols)):
             ws.cell(row=r, column=col).font = inputs[0]
             ws.cell(row=r, column=col).fill = inputs[1]
         ws.cell(row=r, column=5).fill = PatternFill(
@@ -277,9 +284,12 @@ def build(review: dict, register: dict, summary: dict, out: Path):
                 if "delta" in e and slug in fx:
                     per[kind][slug] = (per[kind].get(slug, Decimal(0))
                                        + Decimal(e["delta"]) * fx[slug])
+    # The slug breaks a tie. Without it two companies with the same effect -
+    # none, often - came out in set order, which differs between runs, and
+    # every rebuild of an unchanged review rewrote the workbook.
     slugs = sorted(set(per["effect_of_approvals"])
                    | set(per["effect_of_approving_undecided"]),
-                   key=lambda s: per["effect_of_approvals"].get(s, 0))
+                   key=lambda s: (per["effect_of_approvals"].get(s, 0), s))
     for r, slug in enumerate(slugs, start=2):
         for col, v in enumerate([
                 slug, float(summary[slug]["baseline_base_eur"]),

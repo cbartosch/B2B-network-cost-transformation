@@ -1,13 +1,13 @@
 {
-  "simulation_run_id": "aed2fbd9-e10b-448b-b489-392db90cb36c",
+  "simulation_run_id": "d76775ae-b831-4188-be1d-55f263ea4779",
   "case_id": "fab3cb28-e3ff-4c9e-a9d1-a220efeb3ac0",
-  "model_version": "sim-2.10.0",
+  "model_version": "sim-2.11.0",
   "seed": 20260101,
   "ensemble_size": 25,
   "status": "SUCCEEDED",
-  "output_hash": "36ad735065e57d8225904c6fe9aa69c8e4de4f532d45bb499a4f1643b2848367",
-  "started_at": "2026-10-27 08:56:05.164136+00:00",
-  "ended_at": "2026-10-27 08:56:07.821667+00:00",
+  "output_hash": "6da9ad2d18771c244c9a5217a1b564ae818d62e47499628177efa07b23c85e3a",
+  "started_at": "2026-10-27 14:30:37.553783+00:00",
+  "ended_at": "2026-10-27 14:30:38.651149+00:00",
   "params": {
     "footprint": [
       {
@@ -1938,6 +1938,25 @@
     },
     "providers_by_role": {},
     "plan_tiers": {
+      "FR|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "FR|BROADBAND_HFC": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "FR|MOBILE_5G": [
+        50,
+        150,
+        300
+      ],
       "GB|BROADBAND_PON": [
         50,
         100,
@@ -1958,7 +1977,8 @@
       ],
       "GB|MOBILE_5G": [
         50,
-        100
+        150,
+        300
       ],
       "DE|BROADBAND_HFC": [
         50,
@@ -1976,25 +1996,8 @@
       ],
       "DE|MOBILE_5G": [
         50,
-        100
-      ],
-      "FR|BROADBAND_PON": [
-        50,
-        100,
-        250,
-        500,
-        1000
-      ],
-      "FR|BROADBAND_HFC": [
-        50,
-        100,
-        250,
-        500,
-        1000
-      ],
-      "FR|MOBILE_5G": [
-        50,
-        100
+        150,
+        300
       ],
       "BR|BROADBAND_HFC": [
         50,
@@ -2012,7 +2015,8 @@
       ],
       "BR|MOBILE_5G": [
         50,
-        100
+        100,
+        300
       ]
     },
     "backbone": {
@@ -2077,7 +2081,7 @@
     }
   },
   "output": {
-    "model_version": "sim-2.10.0",
+    "model_version": "sim-2.11.0",
     "seed": 20260101,
     "ensemble_size": 25,
     "sites": 1928,

@@ -1,13 +1,13 @@
 {
-  "simulation_run_id": "49aefee7-4fd9-46d0-a0e8-72251d2dd64d",
+  "simulation_run_id": "09635005-82a7-492a-a45e-1c65d2d7605d",
   "case_id": "cdf61ba7-5492-4980-a4cf-615cfcb272e3",
-  "model_version": "sim-2.10.0",
+  "model_version": "sim-2.11.0",
   "seed": 20260101,
   "ensemble_size": 25,
   "status": "SUCCEEDED",
-  "output_hash": "93730b4e9a307c836c769ee165a77c478d6e741f17c639b725b32f69afcffa0e",
-  "started_at": "2026-10-27 08:56:23.687043+00:00",
-  "ended_at": "2026-10-27 08:56:24.981991+00:00",
+  "output_hash": "7f135c60df642824344bcea2fe35ac0fdbd2d439d171c4e3d52fe43ba470578b",
+  "started_at": "2026-10-27 14:30:53.371140+00:00",
+  "ended_at": "2026-10-27 14:30:54.522592+00:00",
   "params": {
     "footprint": [
       {
@@ -1281,6 +1281,25 @@
     },
     "providers_by_role": {},
     "plan_tiers": {
+      "IE|BROADBAND_HFC": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "IE|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "IE|MOBILE_5G": [
+        50,
+        150,
+        300
+      ],
       "GB|BROADBAND_PON": [
         50,
         100,
@@ -1301,25 +1320,8 @@
       ],
       "GB|MOBILE_5G": [
         50,
-        100
-      ],
-      "IE|BROADBAND_HFC": [
-        50,
-        100,
-        250,
-        500,
-        1000
-      ],
-      "IE|BROADBAND_PON": [
-        50,
-        100,
-        250,
-        500,
-        1000
-      ],
-      "IE|MOBILE_5G": [
-        50,
-        100
+        150,
+        300
       ]
     },
     "backbone": {
@@ -1350,7 +1352,7 @@
     }
   },
   "output": {
-    "model_version": "sim-2.10.0",
+    "model_version": "sim-2.11.0",
     "seed": 20260101,
     "ensemble_size": 25,
     "sites": 2266,
@@ -1402,26 +1404,7 @@
         "reason": "the only backup deliverable in SUBURBAN GB is ETHERNET, which is what the primary already uses. Two of the same service is not a second path - counting it as diversity is the assumption that makes a resilience number worthless."
       }
     ],
-    "backups_below_primary": [
-      {
-        "country": "GB",
-        "archetype": "STORE",
-        "density": "URBAN",
-        "product": "MOBILE_5G",
-        "asked_mbps": 110,
-        "sold_mbps": 100,
-        "sites": 742
-      },
-      {
-        "country": "IE",
-        "archetype": "STORE",
-        "density": "URBAN",
-        "product": "MOBILE_5G",
-        "asked_mbps": 110,
-        "sold_mbps": 100,
-        "sites": 43
-      }
-    ],
+    "backups_below_primary": [],
     "estate_truncated": 0,
     "sites_named": 0,
     "sites_generated": 2266,
@@ -1533,11 +1516,11 @@
         "country": "GB",
         "product": "MOBILE_5G",
         "role": "BACKUP",
-        "bandwidth_mbps": 100,
+        "bandwidth_mbps": 110,
         "count": 742,
         "service_class": "BEST_EFFORT",
         "density": "URBAN",
-        "bearer_mbps": 100,
+        "bearer_mbps": 110,
         "access_technology": "MOBILE_5G"
       },
       {
@@ -1555,11 +1538,11 @@
         "country": "IE",
         "product": "MOBILE_5G",
         "role": "BACKUP",
-        "bandwidth_mbps": 100,
+        "bandwidth_mbps": 110,
         "count": 43,
         "service_class": "BEST_EFFORT",
         "density": "URBAN",
-        "bearer_mbps": 100,
+        "bearer_mbps": 110,
         "access_technology": "MOBILE_5G"
       }
     ],

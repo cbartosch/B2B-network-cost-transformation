@@ -18,7 +18,7 @@ import uuid
 from datetime import date
 
 import pytest
-from sqlalchemy import insert, select
+from sqlalchemy import insert, select, update
 
 from app import db
 from app.domain import promotion
@@ -122,6 +122,48 @@ def test_a_different_figure_does_not_reopen_a_revocation(session):
     assert out["decisions_challenged"][0]["decision"] == "REVOKED"
 
 
+def test_a_held_price_keeps_its_figure(session):
+    """A hold is undecided - the row does not price - but the register names
+    the figure it was held at, and each re-run replaced that figure with the
+    next company's. It is kept now, and another figure is a challenge."""
+    case_id, cid = _finding(session)
+    _promote(session, case_id, cid)
+    promotion.hold_price(session, row_id="DE-DIA-100-researched",
+                         held_by="Priya Raman", reason="single reseller")
+    later, later_cid = _finding(session, value=610)
+    out = _promote(session, later, later_cid)
+
+    row = _row(session)
+    assert not row.approved and float(row.base) == 520
+    assert promotion.decision_on(row)["decision"] == "HELD"
+    assert out["decisions_challenged"][0]["decision"] == "HELD"
+
+
+def test_every_researched_verdict_is_judged_against_the_card_as_it_stands(
+        session):
+    """A verdict was written when promotion offered a finding and never
+    again, so a decided price kept the verdict of its day. Re-judged on every
+    promotion now - and an approved price is not its own benchmark."""
+    case_id, cid = _finding(session)
+    _promote(session, case_id, cid)
+    promotion.approve_price(session, row_id="DE-DIA-100-researched",
+                            approved_by="Priya Raman")
+    row = _row(session)
+    stale = (row.source_note.split(promotion.COMPARISON)[0]
+             + promotion.COMPARISON + "STALE - judged in two currencies")
+    session.execute(update(db.unit_cost_prior)
+                    .where(db.unit_cost_prior.c.id == row.id)
+                    .values(source_note=stale))
+    session.commit()
+
+    assert promotion.refresh_comparisons(session) == ["DE-DIA-100-researched"]
+    note = _row(session).source_note
+    assert "STALE" not in note
+    verdict = note.split(promotion.COMPARISON, 1)[1]
+    assert "falls inside the approved band 390.0-650.0" not in verdict, (
+        "judged against its own band")
+
+
 def test_a_decision_survives_companies_that_disagree(session):
     """What the first rerun after the approvals did. One row stands for US DIA
     at 100 Mbps across every company, research found it at 333, 492, 625 and
@@ -210,3 +252,22 @@ def test_promotion_compares_in_the_currency_the_source_quoted(session):
     _promote(session, case_id, cid)
     note = _row(session).source_note
     assert "WITHIN_BAND" in note and "185.0 GBP" in note, note
+
+
+def test_a_count_dated_in_the_future_is_taken_back(session):
+    """An earlier run promoted TotalEnergies' Antwerp cracker site as a Belgian
+    warehouse "from 2029". The classifier refuses it now, and promotion
+    rewrites only the pairs it is given - so the next promotion on the case
+    retracts it rather than leaving it in the estate."""
+    case_id, cid = _finding(session)
+    session.execute(insert(db.evidenced_footprint).values(
+        id=str(uuid.uuid4()), case_id=case_id, country="BE",
+        archetype="WAREHOUSE", sites=1, as_of="from 2029",
+        promoted_by="tester"))
+    session.commit()
+
+    out = _promote(session, case_id, cid)
+
+    assert [r["as_of"] for r in out["retracted_footprint"]] == ["from 2029"]
+    assert not session.execute(select(db.evidenced_footprint).where(
+        db.evidenced_footprint.c.case_id == case_id)).all()
