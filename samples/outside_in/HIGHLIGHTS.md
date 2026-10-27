@@ -449,7 +449,7 @@ Sources: [OpenSignal](https://insights.opensignal.com/reports/2025/10/spain/fixe
 
 - **Industry** GROCERY_RETAIL (entity resolution)
 - **Scope** NL, BE, US, GR, RO, CZ, EUR, 6,061 sites (research merged with disclosure)
-- **Confidence** 0.325 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.324 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 7 source(s)
 
@@ -1680,7 +1680,7 @@ Sources: [TeleGeography](https://resources.telegeography.com/the-rise-of-dia-ove
 
 - **Industry** GROCERY_RETAIL (entity resolution)
 - **Scope** FR, ES, IT, BE, PL, BR, RO, EUR, 8,982 sites (research merged with disclosure)
-- **Confidence** 0.325 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.324 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 8 source(s)
 
@@ -2080,7 +2080,7 @@ Sources: [Operator Watch](https://www.operatorwatch.com/2026/08/new-singapores-t
 
 - **Industry** RAILWAYS (entity resolution)
 - **Scope** DE, EUR, 5,600 sites (research merged with disclosure)
-- **Confidence** 0.327 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.326 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 9 source(s)
 
@@ -2345,7 +2345,7 @@ Sources: [VATM / Dialog Consult](https://www.vatm.de/dokument/market-analysis-20
 
 - **Industry** SPECIALTY_RETAIL (entity resolution)
 - **Scope** DE, FR, IT, NL, PL, EUR, 1,339 sites (research merged with disclosure)
-- **Confidence** 0.327 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.326 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 7 source(s)
 
@@ -2978,7 +2978,7 @@ Sources: [Cloudbrink (citing AGCOM end-2025 data)](https://cloudbrink.com/europe
 
 - **Industry** BUILDING_MATERIALS (entity resolution)
 - **Scope** DE, US, GB, FR, IT, PL, EUR, 1,273 sites (research merged with disclosure)
-- **Confidence** 0.330 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.329 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 7 source(s)
 
@@ -3249,7 +3249,7 @@ Sources: [germancompanyformation.com](https://germancompanyformation.com/guides/
 
 - **Industry** UTILITIES (entity resolution)
 - **Scope** ES, GB, EUR, 2,762 sites (research merged with disclosure)
-- **Confidence** 0.326 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.368 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 10 source(s)
 
@@ -3806,7 +3806,7 @@ Sources: [TelecomLead](https://telecomlead.com/broadband/best-isps-in-denmark-in
 
 - **Industry** QSR_RESTAURANTS (entity resolution)
 - **Scope** US, GB, DE, USD, 16,671 sites (research merged with disclosure)
-- **Confidence** 0.326 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.325 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 10 source(s)
 
@@ -4240,7 +4240,7 @@ Sources: [Swiss Federal Office of Communications / ComCom](https://www.comcom.ad
 
 - **Industry** RAILWAYS (entity resolution)
 - **Scope** GB, GBP, 912 sites (research merged with disclosure)
-- **Confidence** 0.329 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.328 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 4 source(s)
 
@@ -6467,7 +6467,7 @@ Sources: [Vertical Systems Group](https://verticalsystems.com/2026/09/02/mid-202
 
 - **Industry** SPECIALTY_RETAIL (entity resolution)
 - **Scope** US, CA, USD, 835 sites (research merged with disclosure)
-- **Confidence** 0.330 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.329 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 9 source(s)
 
