@@ -277,6 +277,39 @@ def test_a_backbone_row_is_not_dressed_as_a_median(card):
     assert row["source"].startswith("indicative starting position")
 
 
+# ------------------------------------ a row a sourced rate sets says so
+def test_a_tier_between_two_sourced_rows_names_them(card):
+    """UK DIA 300 sits between the survey's 100 and 500 Mbps bands and read
+    as a seeded position with nothing behind it. It names both now, and
+    stays grade E: an interpolation is no quote for its own tier."""
+    row = card["GB-DIA-300"]
+    assert row["evidence_grade"] == "E"
+    assert ("interpolated between this country's sourced 100 Mbps and "
+            "500 Mbps rows") in row["source"]
+    assert "UK leased line market survey" in row["source"]
+    assert "no transaction" not in row["source"]
+
+
+def test_a_tier_scaled_from_one_sourced_row_names_it(card):
+    """Australia's DIA 300 has nothing sourced beneath it, so it takes the
+    sourced 500 Mbps band at the seeded card's step; Singapore's 5G 100 is
+    its sourced 50 scaled by the 5G fill. Both read as seeded positions."""
+    for key, tier, seller in (("AU-DIA-300", "500 Mbps band", "Vocus"),
+                              ("SG-MOBILE_5G-100", "50 Mbps row", "StarHub")):
+        row = card[key]
+        assert row["evidence_grade"] == "E", key
+        assert f"this country's sourced {tier}" in row["source"], key
+        assert seller in row["source"], key
+        assert "no transaction" not in row["source"], key
+
+
+def test_a_row_scaled_from_a_seed_is_still_a_seed(card):
+    """The 5G fill scales every country's 50. Where the 50 is a seed, so is
+    the 100, and it keeps saying so."""
+    assert card["US-MOBILE_5G-100"]["source"].startswith(
+        "indicative starting position")
+
+
 # ------------------------------------------- what --force may not delete
 
 def test_the_seed_will_not_delete_rows_it_did_not_write():

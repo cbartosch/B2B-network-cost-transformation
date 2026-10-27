@@ -1043,6 +1043,16 @@ SOURCED_FX_NOTE = ("GBP/USD 1.34, mid-market 16 September 2026; EUR/USD "
 #: from a UK leased-line market survey and a published Virgin Media tariff.
 SOURCED_PROVENANCE: dict = {}
 
+#: Country rows whose number a sourced rate sets without being one: how, the
+#: sourced tiers it came from, and the band it was given.
+#:
+#: Repricing between sourced tiers and the 5G fill both build a row from a
+#: sourced one, and the row then read "indicative starting position set at
+#: seed time; no transaction, quote or published benchmark behind it" - UK
+#: DIA 300, which sits between the survey's 100 and 500 Mbps bands, among
+#: them. Still grade E: a derivation is no quote for its own tier.
+SOURCED_DERIVED: dict = {}
+
 
 def _sourced_bands(rows):
     """(country, product, mbps) -> (low, high, grade, source), in USD.
@@ -1314,7 +1324,8 @@ def _fwa_tiers(rows):
     Scaled from each country's own 50 Mbps figure at 1.55x, the ratio the
     seeded consumer tiers use between 50 and 100 on a fixed bearer. Grade E:
     it is an extrapolation above the highest quoted point, and a real
-    engagement replaces it with a carrier quote.
+    engagement replaces it with a carrier quote. Where the 50 is sourced,
+    SOURCED_DERIVED records it, so the 100 names the rate it was scaled from.
     """
     from decimal import Decimal as _D
 
@@ -1333,8 +1344,11 @@ def _fwa_tiers(rows):
         if top.get(country, 0) >= 100:
             continue
         f = _D("1.55")
-        out.append((country, product, layer, 100,
-                    int(_D(low) * f), int(_D(base) * f), int(_D(high) * f)))
+        row = (country, product, layer, 100,
+               int(_D(low) * f), int(_D(base) * f), int(_D(high) * f))
+        if (country, product, 50) in SOURCED_PROVENANCE:
+            SOURCED_DERIVED[(country, product, 100)] = ("fwa", (50,), row[4:])
+        out.append(row)
     return out
 
 
@@ -1472,6 +1486,7 @@ def _reprice_between_sourced(rows, seeded=()):
     access pricing is roughly logarithmic in capacity - doubling the bearer
     does not double the charge. Marked nowhere as sourced: it is an
     interpolation between two published points and stays grade E.
+    SOURCED_DERIVED records which, so its source can name them.
 
     With nothing sourced beneath it there is nothing to interpolate from, so
     the tier keeps the ratio the seeded card held between it and the sourced
@@ -1518,18 +1533,20 @@ def _reprice_between_sourced(rows, seeded=()):
                 continue
             ratio = _D(base) / upper
             new_low, new_high = (v * ratio for v in tiers[hi_t])
-            out.append((country, product, layer, int(mbps), int(new_low),
-                        int((new_low + new_high) / 2), int(new_high)))
-            continue
-        lo_t = max(below)
-        span = math.log(hi_t / lo_t)
-        position = math.log(int(mbps) / lo_t) / span if span else 0
-        def _between(a, b):
-            return a * (b / a) ** _D(str(position)) if a > 0 else b
-        new_low = _between(tiers[lo_t][0], tiers[hi_t][0])
-        new_high = _between(tiers[lo_t][1], tiers[hi_t][1])
-        out.append((country, product, layer, int(mbps), int(new_low),
-                    int((new_low + new_high) / 2), int(new_high)))
+            how, anchors = "below", (hi_t,)
+        else:
+            lo_t = max(below)
+            span = math.log(hi_t / lo_t)
+            position = math.log(int(mbps) / lo_t) / span if span else 0
+            def _between(a, b):
+                return a * (b / a) ** _D(str(position)) if a > 0 else b
+            new_low = _between(tiers[lo_t][0], tiers[hi_t][0])
+            new_high = _between(tiers[lo_t][1], tiers[hi_t][1])
+            how, anchors = "between", (lo_t, hi_t)
+        new = (country, product, layer, int(mbps), int(new_low),
+               int((new_low + new_high) / 2), int(new_high))
+        SOURCED_DERIVED[(country, product, int(mbps))] = (how, anchors, new[4:])
+        out.append(new)
     return out
 
 
@@ -2260,6 +2277,49 @@ _REGIONAL_SOURCES = {
     key: _regional_source(key)
     for key in set(REGIONAL_MEMBERS) | set(REGIONAL_RECURVED)}
 
+
+def _sourced_derived_source(key):
+    """What a row built from a sourced one is, in words, and which sourced
+    rows it came from. Graded E all the same: a derivation is no quote for
+    its own tier, and worth no more than the rows it was drawn from."""
+    country, product, _mbps = key
+    how, anchors, _band = SOURCED_DERIVED[key]
+
+    def _tier(bw):
+        return f"{bw // 1000} Gbps" if bw >= 1000 else f"{bw} Mbps"
+
+    if how == "between":
+        lower, upper = anchors
+        text = (f"interpolated between this country's sourced {_tier(lower)} "
+                f"and {_tier(upper)} rows, geometric in bandwidth and price")
+    elif how == "below":
+        (upper,) = anchors
+        text = (f"this country's sourced {_tier(upper)} band, scaled by the "
+                f"step the seeded card took between this tier and that one, "
+                f"because nothing beneath it is sourced")
+    else:
+        (lower,) = anchors
+        text = (f"this country's sourced {_tier(lower)} row scaled by 1.55, "
+                f"the step the seeded consumer tiers take from 50 to 100 Mbps "
+                f"on a fixed bearer - an extrapolation above the highest tier "
+                f"quoted")
+    cited = "; ".join(
+        f"{_tier(bw)} (grade {SOURCED_PROVENANCE[(country, product, bw)][0]}, "
+        f"{SOURCED_PROVENANCE[(country, product, bw)][1].rstrip('.')})"
+        for bw in anchors)
+    return (f"{text}. Sourced: {cited}. No quote or published price for this "
+            f"tier itself, so graded E.")
+
+
+#: Settled against the finished pipeline, as _DERIVED_TIER_KEYS is below: a
+#: row a later step replaced is described by what it became, not by this.
+_FINISHED = {(c, p, int(bw)): (lo, ba, hi)
+             for c, p, _l, bw, lo, ba, hi in PRIORS}
+_SOURCED_DERIVED_SOURCES = {
+    key: _sourced_derived_source(key)
+    for key, (_how, _anchors, band) in SOURCED_DERIVED.items()
+    if _FINISHED.get(key) == band}
+
 #: Which rows are interpolated, settled against the FINISHED pipeline.
 #:
 #: Computed at the point of interpolation first, and that was wrong by 22
@@ -2811,6 +2871,8 @@ def _rows():
                  if (c, p, int(bw)) in SOURCED_PROVENANCE else
                  _REGIONAL_SOURCES[(c, p, int(bw))]
                  if (c, p, int(bw)) in _REGIONAL_SOURCES else
+                 _SOURCED_DERIVED_SOURCES[(c, p, int(bw))]
+                 if (c, p, int(bw)) in _SOURCED_DERIVED_SOURCES else
                  "interpolated between this country and product's own 1 Gbps "
                  "and 10 Gbps rows, geometric in bandwidth and price; the "
                  "method reproduces tiers the card already holds to within "
