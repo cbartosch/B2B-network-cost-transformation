@@ -984,6 +984,22 @@ SOURCED_RATES = [
      "own price notice); 1,000 GB, month to month; business retail basis. "
      "GST not stated: the band runs from the ex-GST figure to the listed "
      "price."),
+    # Singapore priced 5G at a seed of USD 62, about SGD 79 a month, and DBS's
+    # 1,100 ATMs take it for their primary access. The three operators publish
+    # business plans with 5G well under it. The band runs from the cheapest
+    # list price to the dearest, and StarHub's 5G data-only plan - the nearest
+    # thing to a SIM in an ATM's router - sits at its middle. A SIM plan is the
+    # access line's like for like: the SD-WAN overlay is priced per site in
+    # L2. Grade C: several sellers' prices in one band, as Australia's DIA
+    # bands are. A secondary guide's Singtel "SGD 24.50 for 300 GB" is on none
+    # of Singtel's own pages and is not used.
+    ("SG", "MOBILE_5G", 50, 15, "45.42", "SGD", "C",
+     "Published business plans with 5G, October 2026: StarHub Biz+ SIM Only "
+     "Lite SGD 15.00, 153 GB, 1 year, without GST; M1 Corporate SIM Only SGD "
+     "17.32, 230 GB, 3 months, with GST; Singtel Enterprise SIM Only Plus 45 "
+     "SGD 45.42 usual, 40.74 on promotion, 70 GB, 12 months, GST not stated. "
+     "StarHub's 5G data-only plan, SGD 30.56 for 22 GB, sits mid-band. "
+     "Business retail basis."),
 ]
 
 # Where a country's rate is quoted in its own currency. The seeded card is USD
@@ -1001,13 +1017,14 @@ SOURCED_RATES = [
 # but the rate an Australian case converts back with.
 SOURCED_FX = {"GBP": "1.34",     # GBP/USD mid-market, 16 September 2026
               "EUR": "1.148",    # EUR/USD mid-market, 17 September 2026
-              "AUD": "0.6757"}   # 1 / the card's USD->AUD 1.48, 1 January 2026
+              "AUD": "0.6757",   # 1 / the card's USD->AUD 1.48, 1 January 2026
+              "SGD": "0.78125"}  # 1 / the card's USD->SGD 1.28, 1 January 2026
 SOURCED_FX_NOTE = ("GBP/USD 1.34, mid-market 16 September 2026; EUR/USD "
-                   "1.148, mid-market 17 September 2026; AUD/USD 0.6757, the "
-                   "inverse of the card's indicative USD->AUD rate of 1 "
-                   "January 2026. A rate this old prices a circuit at an old "
-                   "exchange rate; the case's own fx_convention governs a live "
-                   "estimate.")
+                   "1.148, mid-market 17 September 2026; AUD/USD 0.6757 and "
+                   "SGD/USD 0.78125, the inverses of the card's indicative "
+                   "USD->AUD and USD->SGD rates of 1 January 2026. A rate this "
+                   "old prices a circuit at an old exchange rate; the case's "
+                   "own fx_convention governs a live estimate.")
 
 
 #: Grade and citation for the rate-card rows that have one, keyed by
@@ -2143,6 +2160,10 @@ def _regional_monotone(rows):
     above the tier above it is interpolated between its neighbours, as
     _regional_curve does for the 2-9 Gbps steps. Never towards a backbone
     row, which is no access price.
+
+    Singapore's 5G is sourced now and APAC's 100 sits under its 300 without
+    help, so no row on the card needs this today. It stays for the next
+    region whose tiers rest on different members.
     """
     import math
 

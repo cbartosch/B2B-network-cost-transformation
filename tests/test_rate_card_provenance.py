@@ -192,6 +192,22 @@ def test_australia_prices_5g_at_telstras_business_plans():
         assert abs(D(hi) * usd_to_aud - high) < 2, (mbps, hi)
 
 
+def test_singapore_prices_5g_at_its_operators_business_plans():
+    """Singapore's 5G was a seed at about SGD 79 a month, and DBS's 1,100
+    ATMs take it for their primary access. StarHub, M1 and Singtel publish
+    business plans with 5G at SGD 15.00 to 45.42; the band runs from the
+    cheapest to the dearest and converts back to Singapore dollars."""
+    from decimal import Decimal as D
+
+    usd_to_sgd = D("1.28")
+    grade, source = seed.SOURCED_PROVENANCE[("SG", "MOBILE_5G", 50)]
+    assert grade == "C"
+    assert all(seller in source for seller in ("StarHub", "M1", "Singtel"))
+    _c, _p, _l, _bw, lo, base, hi = _row("SG", "MOBILE_5G", 50)
+    assert abs(D(lo) * usd_to_sgd - D("15.00")) < 2, lo
+    assert abs(D(hi) * usd_to_sgd - D("45.42")) < 2, hi
+
+
 def test_no_5g_tier_is_extrapolated_under_one_already_quoted():
     """The 100 Mbps 5G fill scales a country's 50 by 1.55. Scaled from
     Telstra's 50, it sat above Telstra's own 300; a 100 Mbps need takes the
@@ -232,15 +248,25 @@ def test_a_regional_tier_put_on_the_regions_curve_says_so(card):
     assert row["sample_size"] is None
 
 
-def test_a_regional_tier_above_the_tier_above_it_is_placed_between_them(card):
-    """APAC's 100 Mbps 5G rested on Singapore's seed alone, above the 300
-    Mbps rate Australia's Telstra plans gave the region. It is interpolated
-    between APAC's own 50 and 300 now, and says so."""
-    row = card["APAC-MOBILE_5G-100"]
-    assert card["APAC-MOBILE_5G-50"]["base"] < row["base"] \
-        < card["APAC-MOBILE_5G-300"]["base"]
-    assert "between this region's own 50 Mbps and 300 Mbps" in row["source"]
-    assert row["sample_size"] is None
+def test_a_regional_tier_above_the_tier_above_it_is_placed_between_them(
+        monkeypatch):
+    """APAC's 100 Mbps 5G rested on Singapore's seed alone, at USD 96 above
+    the 300 Mbps rate of 61 Australia's Telstra plans gave the region.
+    Singapore's 5G is sourced now and the card holds no such tier, so the
+    rule is checked on that case as it stood."""
+    key = ("APAC", "MOBILE_5G", 100)
+    monkeypatch.setattr(seed, "REGIONAL_MEMBERS", {key: ["SG"]})
+    monkeypatch.setattr(seed, "REGIONAL_RECURVED", {})
+    rows = seed._regional_monotone([
+        ("APAC", "MOBILE_5G", "L0", 50, 42, 56, 79),
+        ("APAC", "MOBILE_5G", "L0", 100, 54, 96, 162),
+        ("APAC", "MOBILE_5G", "L0", 300, 58, 61, 64)])
+    fifty, hundred, three_hundred = (row[5] for row in rows)
+    assert fifty < hundred < three_hundred
+    assert seed.REGIONAL_RECURVED == {key: (50, 300)}
+    assert key not in seed.REGIONAL_MEMBERS
+    assert "between this region's own 50 Mbps and 300 Mbps" in (
+        seed._regional_source(key))
 
 
 def test_a_backbone_row_is_not_dressed_as_a_median(card):

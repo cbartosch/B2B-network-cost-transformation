@@ -1946,7 +1946,7 @@ Sources: [ARCEP (French telecom regulator)](https://en.arcep.fr/news/press-relea
 
 - **Industry** RETAIL_BANKING (entity resolution)
 - **Scope** SG, IN, CN, ID, SGD, 1,769 sites (research merged with disclosure)
-- **Confidence** 0.341 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.340 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 10 source(s)
 

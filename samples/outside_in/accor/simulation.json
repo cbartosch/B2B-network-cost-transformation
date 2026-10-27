@@ -1,13 +1,13 @@
 {
-  "simulation_run_id": "c63de314-f4be-40ca-b1e3-07b1954dddde",
+  "simulation_run_id": "b8d96786-ef14-41d4-b327-37bb3e1bbf47",
   "case_id": "e7b1b7bd-01fa-4804-a671-efa023ca8d21",
   "model_version": "sim-2.10.0",
   "seed": 20260101,
   "ensemble_size": 25,
   "status": "SUCCEEDED",
   "output_hash": "efe5716bae578c0da1340537af047a7471907149b61af9534fab29df28f8e0ee",
-  "started_at": "2026-10-26 17:43:53.845180+00:00",
-  "ended_at": "2026-10-26 17:43:55.246013+00:00",
+  "started_at": "2026-10-27 08:55:43.871352+00:00",
+  "ended_at": "2026-10-27 08:55:45.125997+00:00",
   "params": {
     "footprint": [
       {
@@ -1801,21 +1801,25 @@
     },
     "providers_by_role": {},
     "plan_tiers": {
-      "FR|BROADBAND_PON": [
+      "GB|BROADBAND_PON": [
         50,
         100,
         250,
         500,
         1000
       ],
-      "FR|BROADBAND_HFC": [
+      "GB|BROADBAND_HFC": [
         50,
         100,
+        200,
         250,
+        400,
         500,
-        1000
+        600,
+        1000,
+        2000
       ],
-      "FR|MOBILE_5G": [
+      "GB|MOBILE_5G": [
         50,
         100
       ],
@@ -1837,25 +1841,21 @@
         50,
         100
       ],
-      "GB|BROADBAND_PON": [
+      "FR|BROADBAND_PON": [
         50,
         100,
         250,
         500,
         1000
       ],
-      "GB|BROADBAND_HFC": [
+      "FR|BROADBAND_HFC": [
         50,
         100,
-        200,
         250,
-        400,
         500,
-        600,
-        1000,
-        2000
+        1000
       ],
-      "GB|MOBILE_5G": [
+      "FR|MOBILE_5G": [
         50,
         100
       ]
