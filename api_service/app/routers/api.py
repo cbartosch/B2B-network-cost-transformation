@@ -4145,6 +4145,10 @@ def run_estimate(case_id: str, payload: EstimateIn):
             currency.convert_prior(_prior, factors=_fx["factors"])
         for _prior in band_priors.values():
             currency.convert_prior(_prior, factors=_fx["factors"])
+        # The 2-9 Gbps steps, redrawn where a researched price now prices
+        # their 1 or 10 Gbps anchor. On the converted card, so the two
+        # anchors are in one currency.
+        estimate.reanchor_interpolated(priors)
         # Sizing priors price nothing, so they are left alone - but they
         # are compared against converted ones in the coverage denominator,
         # so they have to move too or the comparison is across units.
@@ -4296,6 +4300,12 @@ def run_estimate(case_id: str, payload: EstimateIn):
         if cov["status"] == "REFUSED":
             raise HTTPException(409, {"error": "V0 publication refused (0.3C)",
                                       "coverage": cov})
+        # How old the research counts the estate rests on are, beside how
+        # much of it is priced on an expired rate.
+        cov = {**cov, **coverage.count_ages(
+            promotion.evidenced_footprint(s, case_id),
+            ((sim.params or {}).get("footprint") or []),
+            as_of_year=case_row.price_year or 2026)}
 
         # CR-06: the band this estimate reports carries the estate's
         # evidence, not only the rate card's price dispersion. The

@@ -35,7 +35,7 @@ from . import db
 log = logging.getLogger("workbench.migrations")
 
 # Bump when the physical schema changes, and add a step below.
-SCHEMA_VERSION = 70
+SCHEMA_VERSION = 71
 
 VERSION_TABLE = "schema_version"
 VERSION_SCHEMA = "audit"
@@ -1600,6 +1600,54 @@ def _migrate_v70(conn) -> None:
              "now carry who put it there", added)
 
 
+def _migrate_v71(conn) -> None:
+    """Re-resolve region and global scopes saved before the atlas.
+
+    Scope is resolved when an intake is saved. Henkel, Holcim, AstraZeneca and
+    DHL were scoped Global in September, when Global meant the 78 countries
+    with a card of their own; Global now reaches every country the price
+    ladder can price, and a saved case kept its old list until somebody
+    saved its intake again. Resolved here once, the way saving would. An
+    explicit country list is a decision and is left alone.
+
+    Skipped where the atlas or the card is empty: resolving against nothing
+    would replace every saved list with an empty one.
+    """
+    from .domain import scope
+
+    tables = (db.country_region, db.unit_cost_prior, db.case)
+    if not all(_has_table(conn, t.schema, t.name) for t in tables):
+        log.info("v71: no atlas, card or case table yet; nothing to resolve")
+        return
+    atlas = conn.execute(select(db.country_region.c.country).limit(1)).first()
+    card = conn.execute(select(db.unit_cost_prior.c.id).where(
+        db.unit_cost_prior.c.approved.is_(True)).limit(1)).first()
+    if atlas is None or card is None:
+        log.info("v71: no atlas or no card yet; saved scopes left as they are")
+        return
+    changed = 0
+    for row in conn.execute(select(
+            db.case.c.case_id, db.case.c.in_scope_region,
+            db.case.c.in_scope_countries).where(
+            db.case.c.in_scope_region.is_not(None))).all():
+        if row.in_scope_region == "GLOBAL":
+            mode, region = "GLOBAL", None
+        elif row.in_scope_region in scope.REGION_SCOPES:
+            mode, region = "REGION", row.in_scope_region
+        else:
+            continue
+        countries, _region = scope.resolve(conn, scope_mode=mode,
+                                           region=region,
+                                           explicit_countries=None)
+        if countries and sorted(row.in_scope_countries or []) != countries:
+            conn.execute(update(db.case)
+                         .where(db.case.c.case_id == row.case_id)
+                         .values(in_scope_countries=countries))
+            changed += 1
+    log.info("v71: %d region or global scope(s) re-resolved against the "
+             "atlas", changed)
+
+
 MIGRATIONS = {2: _migrate_v2, 3: _migrate_v3, 4: _migrate_v4, 5: _migrate_v5,
               6: _migrate_v6, 7: _migrate_v7, 8: _migrate_v8, 9: _migrate_v9,
               10: _migrate_v10, 11: _migrate_v11, 12: _migrate_v12,
@@ -1610,7 +1658,7 @@ MIGRATIONS = {2: _migrate_v2, 3: _migrate_v3, 4: _migrate_v4, 5: _migrate_v5,
               64: _migrate_v64, 65: _migrate_v65,
               66: _migrate_v66, 67: _migrate_v67,
               68: _migrate_v68, 69: _migrate_v69,
-              70: _migrate_v70}
+              70: _migrate_v70, 71: _migrate_v71}
 
 
 class SchemaDrift(RuntimeError):

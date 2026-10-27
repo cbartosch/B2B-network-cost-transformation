@@ -18,8 +18,10 @@ Or every decision in a register at once:
 The register has one line per researched price: APPROVE, with the band to
 approve at or blank for the card's width; REJECT, applied as a revocation
 with its reason, so the next re-run does not propose the same figure again;
-or HOLD, undecided - a row approved or revoked earlier is reopened. Each line
-is the state its row is brought to, so applying it twice changes nothing.
+or HOLD, undecided but kept - held under a name, so a re-run cannot replace
+the figure it was held at, and a row approved or revoked earlier is reopened
+into the hold. Each line is the state its row is brought to, so applying it
+twice changes nothing.
 
 Each line names the figure it decided, in `base` and `currency`. A row that
 now holds a different figure is refused, not decided: one row stands for a
@@ -89,7 +91,7 @@ def apply_decisions(session, lines, *, by: str) -> list:
             raise promotion.NotPromotable(
                 f"{line['id']}: a rejection or a hold needs its reason - it "
                 f"is what the next steward reads")
-        for mark in (promotion.REVOKED_MARK, promotion.REOPENED_MARK):
+        for mark in promotion.MARKS:
             if mark in reason.lower():
                 raise promotion.NotPromotable(
                     f"{line['id']}: the reason cannot contain {mark!r} - the "
@@ -110,13 +112,16 @@ def apply_decisions(session, lines, *, by: str) -> list:
             out.append((row_id, "MISSING", "no such price row"))
             continue
         state = promotion.decision_on(row)
-        if decision == "HOLD":
-            if state is None:
-                out.append((row_id, "HELD", "undecided"))
+        if decision == "HOLD" and (not (line.get("base") or "").strip()
+                                   or _same_figure(row, line)):
+            if state and state["decision"] == "HELD":
+                out.append((row_id, "UNCHANGED", "already held"))
                 continue
-            promotion.reopen_price(session, row_id=row_id, reopened_by=by,
-                                   reason=line["reason"].strip())
-            out.append((row_id, "REOPENED",
+            promotion.hold_price(session, row_id=row_id, held_by=by,
+                                 reason=line["reason"].strip())
+            out.append((row_id, "HELD", "undecided, figure kept")
+                       if state is None else
+                       (row_id, "REOPENED",
                         f"was {state['decision'].lower()}; "
                         f"{line['reason'].strip()}"))
         elif not _same_figure(row, line):
@@ -175,6 +180,9 @@ def main() -> int:
                 counts[outcome] = counts.get(outcome, 0) + 1
             print("  " + ", ".join(f"{n} {k.lower()}"
                                    for k, n in sorted(counts.items())))
+            refreshed = promotion.refresh_comparisons(s)
+            print(f"  {len(refreshed)} benchmark verdict(s) re-judged "
+                  f"against the card as it stands")
             return 0
 
         for row_id in args.row_ids:

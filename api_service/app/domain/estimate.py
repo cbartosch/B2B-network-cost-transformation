@@ -285,6 +285,62 @@ def best_priced_rows(rows: list) -> list:
     return [row for _rank, row in best.values()]
 
 
+#: The two tiers the seed draws every 1 Gbps step from 2 to 9 between - its
+#: _INTERPOLATED_TIERS, stated here as the rule because the estimate does not
+#: import the seed.
+INTERPOLATION_ANCHORS = (1000, 10000)
+
+
+def reanchor_interpolated(priors: dict) -> list:
+    """Redraw an interpolated step whose anchor a researched price displaced.
+
+    The seed draws the 2-9 Gbps steps between a product's own 1 and 10 Gbps
+    rows, and it runs before any research exists, so the anchors are the
+    seeded ones. Approving US Ethernet at 10 Gbps for USD 1,807 against a
+    seeded 3,450 left the 9 Gbps step at 3,267 - above the tier above it, and
+    every step from 2 to 9 resting on an anchor the card no longer prices
+    at. Above about 3 Gbps the estimate self-corrected by taking the cheaper
+    10 Gbps; below it the steps still priced on the seed.
+
+    Redrawn on the converted card, so both anchors are in one currency, and
+    geometric in bandwidth and price as the seed draws them, between whatever
+    now prices each anchor. Only where an anchor is a researched price: with
+    two seeded anchors the seed's own step stands. Returns the keys redrawn.
+    """
+    import math
+
+    lo_t, hi_t = INTERPOLATION_ANCHORS
+    redrawn = []
+    for key, prior in priors.items():
+        if not isinstance(prior, dict) or len(key) != 3 or not key[2]:
+            continue
+        scope, product, bw = key
+        if (str(prior.get("price_basis") or "").upper() != "INTERPOLATED"
+                or not lo_t < int(bw) < hi_t):
+            continue
+        lo = priors.get((scope, product, lo_t))
+        hi = priors.get((scope, product, hi_t))
+        if not lo or not hi or "PROMOTED" not in {
+                str(lo.get("price_basis") or "").upper(),
+                str(hi.get("price_basis") or "").upper()}:
+            continue
+        f = math.log(int(bw) / lo_t) / math.log(hi_t / lo_t)
+        for field in ("low", "base", "high"):
+            a, b = float(lo[field]), float(hi[field])
+            prior[field] = D(str(round(a * ((b / a) ** f), 2) if a > 0 else b))
+        prior["redrawn_between"] = [lo.get("price_basis"),
+                                    hi.get("price_basis")]
+        redrawn.append(key)
+    return redrawn
+
+
+#: The backbone as the card stores it: Ethernet at 10 Gbps at a top-level
+#: region. The seed keeps the hub-to-core price at that key instead of a median
+#: of members' access rates - EMEA's is 7,000 against GB's 3,700 for access -
+#: and the seeded topology template buys its backbone links at this tier.
+BACKBONE_TIER = ("ETHERNET", 10000)
+
+
 def match_prior(priors: dict, country: str, product: str, mbps,
                 # The structured speed pair, where the caller has one. When
                 # supplied, the rate card is keyed on the figure that is
@@ -317,7 +373,11 @@ def match_prior(priors: dict, country: str, product: str, mbps,
                 # Scope values to try, most specific first. Optional: without
                 # it the behaviour is exactly as before with `country` as the
                 # only scope, so every existing caller is unaffected.
-                scopes: list | None = None) -> tuple:
+                scopes: list | None = None,
+                # The circuit's role. An access circuit - anything but
+                # BACKBONE - never prices at the backbone row of the region
+                # at the top of its ladder. Optional, for the same reason.
+                role: str | None = None) -> tuple:
     """Find the price for this circuit, at the bandwidth it needs.
 
     Scope is resolved by specificity, not by equality. Openreach publishes by
@@ -357,6 +417,29 @@ def match_prior(priors: dict, country: str, product: str, mbps,
         mbps = access.priced_rate(speed)
 
     ordered = sorted(scopes or [country], key=access.scope_rank)
+
+    # An access circuit never prices at the backbone. APAC and AMER have no
+    # sub-region, so a 10 Gbps site in a member with no Ethernet card of its
+    # own fell straight through to the region's hub-to-core rate - priced as
+    # backbone transport, which is what the seed keeps at that key. It stays
+    # unpriced and reported instead, as every tier nothing prices does here.
+    if role and role != "BACKBONE" and scopes and len(scopes) > 1:
+        top = scopes[-1]
+
+        def _backbone(key, row):
+            # By the key, which every row is filed under as (scope, product,
+            # bandwidth); a row's own fields may not carry the product.
+            if isinstance(key, tuple) and len(key) == 3:
+                scope, product_, bw = key
+            elif isinstance(row, dict):
+                scope, product_, bw = (row.get("scope"), row.get("product"),
+                                       row.get("bandwidth_mbps"))
+            else:
+                return False
+            return (scope == top and product_ == BACKBONE_TIER[0]
+                    and bw is not None and int(bw) == BACKBONE_TIER[1])
+
+        priors = {k: v for k, v in priors.items() if not _backbone(k, v)}
 
     # This client's own rates first, always. An invoiced price is a
     # transaction that happened at this company, and a market benchmark is
@@ -638,7 +721,8 @@ def build_components(*, sim_output: dict, users: int, ops_cost_per_site: dict,
                 service_class=row.get("service_class"),
                 access_technology=row.get("access_technology"),
                 case_rates=case_rates,
-                scopes=(price_scopes or {}).get(row["country"]))
+                scopes=(price_scopes or {}).get(row["country"]),
+                role=row.get("role"))
         if not prior:
             unpriced.append({**row, "reason": "NO_APPROVED_PRIOR_AT_BANDWIDTH"
                              if mbps else "NO_APPROVED_PRIOR"})

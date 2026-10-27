@@ -223,3 +223,30 @@ def test_the_managed_subset_still_promotes():
     assert promotion._classify({
         "label": "TERMINAL - Network Rail directly managed stations",
         "country": "GB", "unit": "sites", "value": 20}) == "footprint"
+
+
+# ------------------------------------------ an estate that does not exist yet
+def test_a_site_that_exists_only_from_a_later_year_is_not_offered():
+    """totalenergies BE/WAREHOUSE. Value 1, unit 'sites converting to
+    logistics', as_of 'from 2029'.
+
+    TotalEnergies' Antwerp cracker site is to become a logistics hub from
+    2029. It was promoted from research as a Belgian warehouse, and only an
+    exclusion somebody wrote into the spec by hand kept it out of the estate:
+    the date that said it did not exist yet was in as_of, which nothing
+    read."""
+    q = {"label": "WAREHOUSE – Antwerp cracker site conversion to logistics "
+                  "hub (Belgium)",
+         "value": "1", "unit": "sites converting to logistics",
+         "country": "BE", "as_of": "from 2029"}
+    assert promotion.dated_in_the_future(q, this_year=2026)
+    assert promotion._classify(q) == "unclassified"
+
+
+@pytest.mark.parametrize("as_of,future", [
+    ("from 2029", True), ("opening in 2028", True), ("2030 onwards", True),
+    ("by FY2027", True), ("FY2025", False), ("2026", False),
+    ("from 2023", False), ("31 Dec 2025", False), ("unstated", False)])
+def test_a_later_year_is_read_wherever_the_date_is_stated(as_of, future):
+    q = {"label": "STORE count", "unit": "stores", "as_of": as_of}
+    assert promotion.dated_in_the_future(q, this_year=2026) is future

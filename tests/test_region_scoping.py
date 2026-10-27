@@ -146,3 +146,26 @@ def test_the_serviceability_brief_names_only_what_cannot_be_priced(card):
     state = research._build_context(card, row, 18)["model_state"]
     assert "currently unpriceable: BO." in state
     assert "Priced only at their region's median: AD." in state
+
+
+def test_a_scope_saved_before_the_atlas_is_re_resolved_once(card):
+    """Four Global cases saved in September kept the 78-country list Global
+    meant then, until somebody saved their intake again. Migration v71
+    resolves them as saving would - and leaves an explicit list alone."""
+    from sqlalchemy import select, update
+
+    from app import migrations
+
+    stale = _case(card, ["ES", "SG", "US"])
+    chosen = _case(card, ["ES"])
+    card.execute(update(db.case).where(db.case.c.case_id == stale)
+                 .values(in_scope_region="GLOBAL"))
+    card.commit()
+
+    migrations._migrate_v71(card.connection())
+    card.commit()
+
+    scopes = dict(card.execute(select(
+        db.case.c.case_id, db.case.c.in_scope_countries)).all())
+    assert scopes[stale] == ["AD", "BD", "ES", "ET", "SG", "US", "ZZ"]
+    assert scopes[chosen] == ["ES"]

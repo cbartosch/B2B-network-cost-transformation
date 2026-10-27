@@ -540,10 +540,12 @@ def test_a_country_without_a_rate_prices_at_its_region(session, client):
     Every test of the fallback called `match_prior` with the chain written out
     by hand, which is the one thing the route never did.
 
-    Hungary falls one rung, to EUROPE_CENTRAL. Romania's band has no 5G rate,
-    so it falls two, to EMEA. Germany has its own and keeps it.
+    Hungary falls one rung, to EUROPE_CENTRAL. Sweden's band has no 5G rate,
+    so it falls two, to EMEA. Germany has its own and keeps it - at 300 Mbps,
+    the tier Telekom's business 5G is sold at. (Romania was the two-rung case
+    until Orange Romania's business 5G gave it a rate of its own.)
     """
-    countries = ("DE", "HU", "RO")
+    countries = ("DE", "HU", "SE")
     case_id = _ready_case(session, countries=countries)
     sim_id = str(uuid.uuid4())
     session.execute(insert(db.simulation_run).values(
@@ -565,9 +567,9 @@ def test_a_country_without_a_rate_prices_at_its_region(session, client):
     body = r.json()
     assert body["coverage"]["unpriced_pairs"] == []
     assert body["coverage"]["regionally_priced_pairs"] == [
-        "HU/MOBILE_5G at EUROPE_CENTRAL", "RO/MOBILE_5G at EMEA"]
+        "HU/MOBILE_5G at EUROPE_CENTRAL", "SE/MOBILE_5G at EMEA"]
     assert sorted(c["key"] for c in body["components"]
                   if c["layer"] == "L0") == [
-        "L0_backup_DE_MOBILE_5G_100M",
-        "L0_backup_HU_MOBILE_5G_100M_priced_in_EUROPE_CENTRAL",
-        "L0_backup_RO_MOBILE_5G_100M_priced_in_EMEA"]
+        "L0_backup_DE_MOBILE_5G_100M_priced_at_300M",
+        "L0_backup_HU_MOBILE_5G_100M_priced_at_300M_priced_in_EUROPE_CENTRAL",
+        "L0_backup_SE_MOBILE_5G_100M_priced_at_150M_priced_in_EMEA"]

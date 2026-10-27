@@ -807,6 +807,31 @@ def names_a_change(label) -> bool:
     return False
 
 
+#: A year a count is said to start from, or arrive by: "from 2029",
+#: "opening in 2028", "2030 onwards".
+_FUTURE_YEAR = re.compile(
+    r"\b(?:from|by|in|after|starting(?:\s+in)?|beginning(?:\s+in)?|"
+    r"opening(?:\s+in)?|due(?:\s+in)?)\s+(?:FY\s?)?(20\d{2})\b"
+    r"|\b(20\d{2})\s+(?:onwards|and\s+beyond)\b", re.IGNORECASE)
+
+
+def dated_in_the_future(q: dict, *, this_year: int | None = None) -> bool:
+    """Is this a count of an estate that exists only from a later year?
+
+    TotalEnergies' Antwerp cracker site, converting to a logistics hub "from
+    2029", was promoted from research as a Belgian warehouse: its label
+    names a WAREHOUSE and its unit counts sites, and the date that says it
+    does not exist yet was in `as_of`, which nothing read. It stayed out of
+    the estate only because somebody wrote an exclusion for it into the spec
+    by hand. NOT_YET_BUILT reads the unit's words; this reads the year,
+    wherever it is stated.
+    """
+    this_year = this_year or datetime.now(timezone.utc).year
+    text = " ".join(str(q.get(k) or "") for k in ("as_of", "label", "unit"))
+    return any(int(m.group(1) or m.group(2)) > this_year
+               for m in _FUTURE_YEAR.finditer(text))
+
+
 def _negated(label, archetype: str) -> bool:
     """Is the archetype named only to deny it?"""
     words = [w for w in re.split(r"[^A-Za-z_]+", str(label or "").upper()) if w]
@@ -891,6 +916,9 @@ def _classify(q: dict) -> str:
     # production sites (PLANT-type)" from "DE net PLANT site closures
     # announced 2025" - the units are "sites" either way.
     if head in ARCHETYPES and (names_a_change(label) or _negated(label, head)):
+        return "unclassified"
+    # Nor is an estate that exists only from a later year.
+    if head in ARCHETYPES and dated_in_the_future(q):
         return "unclassified"
     # A figure that spans two countries, or a region, cannot be a count for
     # the one country this row is keyed on. names_a_region already guards
@@ -1012,7 +1040,12 @@ def compare_to_benchmark(session, *, country: str, product: str, value: float,
                          # The currency `value` was quoted in. Omitted, it is
                          # taken to be the benchmark's own, which is how every
                          # caller behaved before this was here.
-                         currency: str | None = None) -> dict:
+                         currency: str | None = None,
+                         # The researched row being judged, left out of its
+                         # own benchmark: once approved it is an approved row
+                         # at the same tier, and a price compared with itself
+                         # always corroborates.
+                         exclude_id: str | None = None) -> dict:
     """How far a researched price sits from the approved benchmark it would
     displace.
 
@@ -1026,6 +1059,10 @@ def compare_to_benchmark(session, *, country: str, product: str, value: float,
     price for a country the model cannot currently price at all is the most
     valuable kind, and saying so is different from saying nothing was found.
     """
+    # Compared, not stored: refresh_comparisons passes the stored Decimal,
+    # and the arithmetic below is on the band's floats.
+    if isinstance(value, Decimal):
+        value = float(value)
     # Matched on the tier, not on country and product alone. Since 4.53.0 a
     # product has several bandwidth bands - US DIA is 480/920/1340 base at
     # 100/500/1000 Mbps - and this used to take .first() with no ordering, so
@@ -1037,6 +1074,7 @@ def compare_to_benchmark(session, *, country: str, product: str, value: float,
             db.unit_cost_prior.c.country == country,
             db.unit_cost_prior.c.product == product,
             db.unit_cost_prior.c.approved.is_(True))).all()
+    rows = [r for r in rows if r.id != exclude_id]
     if not rows:
         return {"verdict": "NO_BENCHMARK", "material": False,
                 "note": (f"no approved benchmark for {country} {product} at any "
@@ -1137,6 +1175,51 @@ def compare_to_benchmark(session, *, country: str, product: str, value: float,
                     if share >= threshold else
                     f", within the {threshold:.0%} materiality threshold")),
     }
+
+
+#: Where a promoted row's note records its benchmark verdict. Everything after
+#: it, up to the first decision mark, is the verdict.
+COMPARISON = "vs benchmark: "
+
+
+def _with_comparison(note: str, cmp: dict) -> str:
+    """The note with its benchmark verdict replaced by this one."""
+    verdict = f"{COMPARISON}{cmp['verdict']} - {cmp['note']}"
+    note = note or ""
+    at = note.find(COMPARISON)
+    if at < 0:
+        return f"{note} {verdict}".strip()
+    end = note.find(" | ", at)
+    return note[:at] + verdict + (note[end:] if end >= 0 else "")
+
+
+def refresh_comparisons(session, *, policy=None) -> list:
+    """Judge every researched price against the card as it now stands.
+
+    A verdict was written when promotion offered a finding and never again,
+    so a price whose research a later run replaced - or one a steward had
+    decided, which promotion leaves alone - kept the verdict of its day: 35
+    of 59 compared a figure in its own currency with a band in dollars from
+    before figures were converted ("200.0 is 73% below the approved band
+    750.0-1250.0" for a GBP tariff), or named tiers the card has since gained.
+    The verdict is rewritten in place; the decision marks after it stay.
+    """
+    rows = session.execute(select(db.unit_cost_prior).where(
+        db.unit_cost_prior.c.price_basis == "PROMOTED")).all()
+    changed = []
+    for row in rows:
+        cmp = compare_to_benchmark(
+            session, country=row.country, product=row.product,
+            value=row.base, bandwidth_mbps=row.bandwidth_mbps,
+            policy=policy, currency=row.currency, exclude_id=row.id)
+        note = _with_comparison(row.source_note, cmp)
+        if note != (row.source_note or ""):
+            session.execute(update(db.unit_cost_prior)
+                            .where(db.unit_cost_prior.c.id == row.id)
+                            .values(source_note=note))
+            changed.append(row.id)
+    session.commit()
+    return changed
 
 
 def _one_row_per_pair(entries: list, *, accept_conflicts: bool = False) -> tuple:
@@ -1515,13 +1598,34 @@ def promote(session, *, case_id: str, candidate_ids: list[str],
                                 f"{q.get('unit')!r}, divided by "
                                 f"{MONTHS_PER_YEAR} to reach this monthly "
                                 f"rate. " if period == "YEAR" else "")
-                             + f"vs benchmark: {cmp['verdict']} - {cmp['note']}")))
+                             + f"{COMPARISON}{cmp['verdict']} - {cmp['note']}")))
             proposed_prices.append(
                 {"country": country, "product": product, "base": value,
                  "approved": False, "benchmark_comparison": cmp})
         else:
             declined.append({"candidate_id": e["candidate_id"],
                              "reason": "not in a shape the estimate consumes"})
+    session.commit()
+
+    # Every researched price re-judged against the card as it stands, not
+    # only the ones this run offered: a decided or replaced price kept the
+    # verdict of its day.
+    refresh_comparisons(session, policy=divergence_policy)
+
+    # A count dated in the future does not stay in the estate because an
+    # earlier run promoted it. This deletes and re-inserts only the pairs it
+    # is given, so a row it would no longer offer outlived the rule that
+    # refuses it - TotalEnergies' Antwerp cracker site, a Belgian warehouse
+    # "from 2029" that a hand-written spec exclusion kept out of the estate.
+    retracted = []
+    for row in session.execute(select(db.evidenced_footprint).where(
+            db.evidenced_footprint.c.case_id == case_id)).all():
+        if dated_in_the_future({"as_of": row.as_of}):
+            session.execute(delete(db.evidenced_footprint).where(
+                db.evidenced_footprint.c.id == row.id))
+            retracted.append({"country": row.country,
+                              "archetype": row.archetype,
+                              "sites": row.sites, "as_of": row.as_of})
     session.commit()
 
     material = [p for p in proposed_prices
@@ -1541,6 +1645,8 @@ def promote(session, *, case_id: str, candidate_ids: list[str],
         # are part of what it found, and because write order used to decide
         # this silently.
         "superseded_within_pair": superseded,
+        # Rows an earlier run promoted that the rules now refuse.
+        "retracted_footprint": retracted,
         "declined": declined,
         # A steward's approval or revocation, left standing. Kept: research
         # found the figure that was decided. Challenged: it found another, and
@@ -1567,8 +1673,14 @@ CARD_BAND_SHARE = Decimal("0.25")
 #: second spelling of it would read as no decision at all.
 REVOKED_MARK = "revoked by"
 #: How reopen_price marks a row it returns to undecided. The note keeps the
-#: history; the later of the two marks is the state.
+#: history; the latest mark is the state.
 REOPENED_MARK = "reopened by"
+#: How hold_price marks a row a steward held. Held is undecided - the row does
+#: not price - but its figure is the one somebody looked at, so promotion keeps
+#: it as it keeps an approval or a revocation.
+HELD_MARK = "held by"
+#: Every mark the note is read for, in one place.
+MARKS = (REVOKED_MARK, REOPENED_MARK, HELD_MARK)
 
 
 def _plain_reason(reason: str) -> str:
@@ -1577,7 +1689,7 @@ def _plain_reason(reason: str) -> str:
     The state is read from the last mark in the note, so a reason saying
     "was revoked by mistake" would read back as a revocation.
     """
-    for mark in (REVOKED_MARK, REOPENED_MARK):
+    for mark in MARKS:
         if mark in (reason or "").lower():
             raise NotPromotable(
                 f"the reason cannot contain {mark!r}: the note is read for "
@@ -1592,7 +1704,8 @@ def decision_on(row) -> dict | None:
     because the row keeps its observed value and grade either way. A row
     revoked and then approved again is approved - the column is checked first.
     A revocation a steward later reopened is no decision: the note keeps both,
-    and whichever came last stands.
+    and whichever came last stands. A hold is a decision not to decide yet,
+    and reads back as HELD.
     """
     if row is None:
         return None
@@ -1600,11 +1713,12 @@ def decision_on(row) -> dict | None:
         return {"decision": "APPROVED", "by": row.approved_by,
                 "at": str(row.approved_at) if row.approved_at else None}
     note = row.source_note or ""
-    if note.rfind(REVOKED_MARK) > note.rfind(REOPENED_MARK):
-        tail = note.rsplit(REVOKED_MARK, 1)[1]
-        return {"decision": "REVOKED", "by": tail.split(":", 1)[0].strip(),
-                "at": None}
-    return None
+    at, mark = max((note.rfind(m), m) for m in MARKS)
+    if at < 0 or mark == REOPENED_MARK:
+        return None
+    tail = note.rsplit(mark, 1)[1]
+    return {"decision": "REVOKED" if mark == REVOKED_MARK else "HELD",
+            "by": tail.split(":", 1)[0].strip(), "at": None}
 
 
 def _same_figure(row, value, quoted: str) -> bool:
@@ -1633,6 +1747,10 @@ def _standing_decision(session, row_id: str) -> tuple:
 
     So a different figure is reported as a challenge to the decision, for a
     steward to weigh, and the card keeps what was decided.
+
+    A hold is kept the same way. It was not, and each re-run could replace a
+    held price's figure with the next company's - so the figure the register
+    names as held was not necessarily the one on the card.
     """
     existing = session.execute(select(db.unit_cost_prior).where(
         db.unit_cost_prior.c.id == row_id)).first()
@@ -1768,6 +1886,37 @@ def reopen_price(session, *, row_id: str, reopened_by: str,
     return {"id": row_id, "country": row.country, "product": row.product,
             "bandwidth_mbps": row.bandwidth_mbps, "approved": False,
             "reopened_by": reopened_by, "reason": reason}
+
+
+def hold_price(session, *, row_id: str, held_by: str, reason: str) -> dict:
+    """Hold a promoted price: undecided, and kept at the figure looked at.
+
+    A held row does not price, as an undecided one does not. What a hold adds
+    is that promotion leaves its figure alone - another company's research
+    finding the same country, product and tier is reported as a challenge,
+    as it is for an approval or a revocation, instead of replacing the
+    figure the hold was about. Unapproves an approved row too, so a hold
+    always means the same thing.
+    """
+    if not held_by or not reason:
+        raise NotPromotable(
+            "a hold needs a named person and a reason: it is what the next "
+            "steward reads")
+    _plain_reason(reason)
+    row = session.execute(select(db.unit_cost_prior).where(
+        db.unit_cost_prior.c.id == row_id)).first()
+    if row is None:
+        raise NotPromotable(f"no such price row: {row_id}")
+    session.execute(update(db.unit_cost_prior)
+                    .where(db.unit_cost_prior.c.id == row_id)
+                    .values(approved=False,
+                            source_note=f"{row.source_note or ''} "
+                                        f"| {HELD_MARK} {held_by}: "
+                                        f"{reason}".strip(" |")))
+    session.commit()
+    return {"id": row_id, "country": row.country, "product": row.product,
+            "bandwidth_mbps": row.bandwidth_mbps, "approved": False,
+            "held_by": held_by, "reason": reason}
 
 
 def evidenced_footprint(session, case_id: str) -> list[dict]:

@@ -108,7 +108,8 @@ def derive_scope(*, sim_output: dict, priors: dict,
             service_class=row.get("service_class"),
             access_technology=row.get("access_technology"),
             case_rates=case_rates,
-            scopes=(price_scopes or {}).get(row["country"]))
+            scopes=(price_scopes or {}).get(row["country"]),
+            role=row.get("role"))
         rate = D(prior["base"]) if prior else fallback.get(row["product"])
         scope.append({
             "country": row["country"], "product": row["product"], "role": row["role"],
@@ -158,6 +159,56 @@ def derive_scope(*, sim_output: dict, priors: dict,
             "annual_value": as_str(D(rate) * D(row["count"]) * MONTHS) if rate else "0.00",
         })
     return scope
+
+
+#: How old a researched site count can be before its age is worth reporting.
+#: The same cutoff tools/check_footprint_verification.py reports against,
+#: which runs on the host without this package.
+STALE_COUNT_YEARS = 3
+
+
+def count_ages(evidenced: list[dict], estate: list[dict], *,
+               as_of_year: int) -> dict:
+    """How much of the estate rests on a research count that is old, or dated
+    nowhere.
+
+    A price carries `expires`, and expired_price_share reports how much of the
+    baseline rests on a rate past it. A site count carries `as_of` and nothing
+    read it: a count from 2002 entered the estate weighted exactly like one
+    from this year, and only the footprint check, outside the estimate,
+    reported the difference.
+
+    A research count is the estate's where the estate holds exactly that
+    figure for its country and site type: research supersedes a declaration
+    only with a count at least as large, so a lower finding is evidence about
+    the estate and not part of it.
+    """
+    import re
+
+    sites: dict = {}
+    for row in estate or []:
+        key = (row.get("country"), row.get("archetype"))
+        sites[key] = sites.get(key, 0) + int(row.get("sites") or 0)
+    total = sum(sites.values())
+    stale, undated = [], []
+    for row in evidenced or []:
+        key = (row.get("country"), row.get("archetype"))
+        count = int(row.get("sites") or 0)
+        if not count or sites.get(key) != count:
+            continue
+        raw = str(row.get("as_of") or "")
+        years = [int(y) for y in re.findall(r"(?<!\d)(?:19|20)\d{2}(?!\d)", raw)]
+        entry = {"country": key[0], "archetype": key[1], "sites": count,
+                 "as_of": raw or None}
+        if not years:
+            undated.append(entry)
+        elif as_of_year - max(years) >= STALE_COUNT_YEARS:
+            stale.append({**entry, "age": as_of_year - max(years)})
+    old = sum(e["sites"] for e in stale)
+    return {"stale_count_share": (str((D(old) / D(total)).quantize(D("0.001")))
+                                  if total else "0"),
+            "stale_counts": sorted(stale, key=lambda e: -e["age"]),
+            "undated_counts": undated}
 
 
 def assess(*, scope: list[dict], layers_in_scope: list, layers_priced: set,

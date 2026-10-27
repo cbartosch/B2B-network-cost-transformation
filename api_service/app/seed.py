@@ -926,6 +926,17 @@ SOURCED_RATES = [
      "sits below it."),
     ("GB", "ETHERNET", 500, 250, 600, "GBP", "C",
      "UK leased line market survey, Sept 2026; SME retail basis"),
+    # Germany's 10 Gbps DIA priced at the UK survey's band, carried for the
+    # region - 31 of Allianz's circuits and 6 of Fraport's among them. A 1&1
+    # Versatel reseller publishes net guide prices for dedicated fibre by
+    # speed, as the UK survey does; a procurement consultancy's 3,000-8,000
+    # "je nach Standort" is above it. No German carrier publishes a list price.
+    ("DE", "DIA", 10000, 1500, 4000, "EUR", "C",
+     "Haus-IT, 'Glasfaser fuer Unternehmen' (7 October 2026), guide prices "
+     "for 1&1 Versatel dedicated fibre, net per month: 10 Gbit/s dedicated "
+     "ca. EUR 1,500-4,000; SME retail basis. SAVECALL's 2026 guide puts 10 "
+     "Gbit/s at EUR 3,000-8,000 depending on location. Indicative ranges, "
+     "not a carrier tariff."),
     ("GB", "ETHERNET", 1000, 300, 800, "GBP", "C",
      "UK leased line market survey, Sept 2026; SME retail basis"),
     ("GB", "ETHERNET", 10000, 800, 3500, "GBP", "C",
@@ -953,6 +964,21 @@ SOURCED_RATES = [
      "basis, installation EUR 500-1,000 not included. A comparison site's "
      "ranges, not a carrier tariff. Direct Telecom's guaranteed (not "
      "dedicated) 100/100 circuit at EUR 159.99 sits below it."),
+    # The same page's 500 Mbps range. Spain's 500 Mbps seed sat at EUR 1,042,
+    # about twice it. Kompara's 12 May page disagrees with this one on 1 Gbps
+    # (EUR 150-400 against 700-1,200), and no Spanish carrier publishes a
+    # dedicated price to settle it; published grids elsewhere side with this
+    # page - Hyperion's French FTTO grid at EUR 269, 449 and 769 for 100 Mbps,
+    # 500 Mbps and 1 Gbps sits inside all three of its ranges, and the May
+    # figure is matched only by offers on an operator's own metro network or
+    # on business parks.
+    ("ES", "DIA", 500, 400, 600, "EUR", "D",
+     "Kompara, 'Internet para Empresas y PYMEs: Guia Completa 2026' (30 "
+     "April 2026), market ranges at January 2026 for dedicated fibre, 500 "
+     "Mbps: EUR 400-600 a month, installation EUR 1,000-2,000 not included; "
+     "business list-price basis. A comparison site's ranges, not a carrier "
+     "tariff; Hyperion's French FTTO price for 500 Mb/s, EUR 449 HT (17 "
+     "October 2026), sits inside it."),
     # Australia priced DIA from 300 Mbps up at seeds of AUD 2,072 to 2,590 -
     # 3.7 to 5 times what Australian sellers publish for dedicated business
     # internet over nbn Enterprise Ethernet. Two or three sellers' 36-month
@@ -1000,6 +1026,82 @@ SOURCED_RATES = [
      "SGD 45.42 usual, 40.74 on promotion, 70 GB, 12 months, GST not stated. "
      "StarHub's 5G data-only plan, SGD 30.56 for 22 GB, sits mid-band. "
      "Business retail basis."),
+    # Business 5G above 100 Mbps. The card sold 5G at 50 and 100 Mbps only,
+    # so 14,580 best-effort backups asking for 110 or 275 Mbps were bought at
+    # 100 - 12,076 of them in the US, the UK, France, Spain and Germany. Each
+    # row is a business plan on the operator's own page, at the speed the
+    # page states: a tier, a typical range, an average, or an "up to" where
+    # that is all there is. Plans sold by data volume rather than speed serve
+    # every tier up to theirs. Where a market publishes no speed - Brazil,
+    # New Zealand - or nothing near 275, no row is invented for it.
+    ("US", "MOBILE_5G", 100, 50, 69, "USD", "C",
+     "Published business 5G internet, October 2026: T-Mobile Business "
+     "Internet 100GB USD 50 (its FCC broadband label; typical download "
+     "52-241 Mbps on 5G; not an introductory rate) and Verizon 5G Business "
+     "Internet 100 Mbps USD 69 service price (up to 100 Mbps). Before taxes, "
+     "fees and Verizon's Economic Adjustment Charge; business retail "
+     "basis."),
+    ("US", "MOBILE_5G", 300, 50, 70, "USD", "B",
+     "T-Mobile Business Internet Unlimited, October 2026: USD 50-70 a month "
+     "by equipment option on its FCC broadband labels (50 without equipment, "
+     "60 with a router, 70 with the gateway or business router); typical "
+     "download 91-361 Mbps on 5G; not an introductory rate; before the USD "
+     "2.60 telco recovery fee and taxes; business retail basis. Verizon "
+     "lists a 400 Mbps tier without a price."),
+    ("GB", "MOBILE_5G", 150, 22, 28, "GBP", "B",
+     "EE Business mobile broadband, October 2026, ex VAT, 24 months: 5G WiFi "
+     "2 GBP 22 (100GB, average 150 Mbps) and SMART 5G Hub 7 Plus GBP 28 "
+     "(unlimited, average 144.6 Mbps). No UK business plan advertises 275 "
+     "Mbps or more; Three's business 5G broadband also averages 150. "
+     "Business retail basis."),
+    ("FR", "MOBILE_5G", 300, "42.99", "81.76", "EUR", "C",
+     "Published business 5G boxes, October 2026, HT: Orange Pro Internet 5G "
+     "Pro EUR 42.99 (unlimited, no commitment, up to 1.5 Gbit/s down) and SFR "
+     "Business Internet Mobile 5G Illimite EUR 81.76 (unlimited, 24 months). "
+     "Untiered: no French operator publishes a typical speed, and the "
+     "theoretical maximum is 1.5 Gbit/s or more. Business retail basis."),
+    ("DE", "MOBILE_5G", 300, "33.57", "62.98", "EUR", "B",
+     "Telekom MagentaMobil Business Speedbox, October 2026, net, 24 months: "
+     "S EUR 33.57 (100 GB), M 46.18 (200 GB), L 62.98 (400 GB); with the "
+     "HyperBox 5G Lite, up to 300 Mbit/s download; business retail "
+     "basis."),
+    ("ES", "MOBILE_5G", 150, "27.75", "46.25", "EUR", "C",
+     "Orange Empresas Internet Empresa Ilimitado, October 2026: EUR 37 a "
+     "month without promotion, VAT excluded, unlimited, up to 150 Mbps on "
+     "5G, 12 months, router on loan. One seller's price, given the card's "
+     "+/-25% width as an approved researched price takes. Business retail "
+     "basis."),
+    ("ES", "MOBILE_5G", 300, "49.12", "81.86", "EUR", "C",
+     "Vodafone Empresas WIFI Portatil Maxima Velocidad, October 2026: EUR "
+     "65.49 a month, VAT excluded, unlimited data in Spain, at the network's "
+     "maximum speed - no Mbps figure, beside a plan capped at 10 Mbps. One "
+     "seller's price, given the card's +/-25% width. Business retail "
+     "basis."),
+    ("BE", "MOBILE_5G", 300, "24.44", "44.90", "EUR", "C",
+     "Business mobile data SIMs for a router, October 2026, VAT excluded: "
+     "Proximus Data Connect Smart EUR 24.44 (70 GB, 420 Mbps estimated "
+     "maximum on 5G) to Ultra EUR 44.90 (unlimited); Orange Belgium Data "
+     "Everywhere Intense EUR 27 (150 GB) and Extreme EUR 32 (300 GB), 5G up "
+     "to 1 Gbps. No Belgian operator sells business fixed wireless with a "
+     "router; the router is not included. Business retail basis."),
+    ("NL", "MOBILE_5G", 300, 40, "52.50", "EUR", "B",
+     "Odido Zakelijk tariff lists of 1 September 2026, excl. btw: 5G "
+     "Internet EUR 40.00 (indoor, up to 1 Gbit/s down, unlimited in NL) and "
+     "5G Internet Pro EUR 47.50-52.50 by term (outdoor modem on loan). The "
+     "only Dutch business fixed-wireless product; its web page shows EUR "
+     "27.50 for 5G Internet without VAT wording. Business retail basis."),
+    ("PL", "MOBILE_5G", 300, 65, 100, "PLN", "B",
+     "T-Mobile Polska Magenta Biznes Internet, terms from 4 July 2026, net "
+     "of VAT: L PLN 65 a month (estimated maximum 300 Mb/s, 30 months) and "
+     "VIP PLN 100 (no speed limit, 24 months), unlimited data, after a "
+     "six-month introductory PLN 1; the router instalment is excluded. "
+     "Business retail basis."),
+    ("RO", "MOBILE_5G", 300, "8.25", "13.75", "EUR", "C",
+     "Orange Romania Office net 5G+, October 2026: EUR 11 a month excluding "
+     "VAT, 24 months, unlimited, up to 1,500 Mbps download, router included; "
+     "the offer runs to 15 December 2026 for a new 24-month package. One "
+     "seller's price, given the card's +/-25% width. Business retail "
+     "basis."),
 ]
 
 # Where a country's rate is quoted in its own currency. The seeded card is USD
@@ -1018,11 +1120,13 @@ SOURCED_RATES = [
 SOURCED_FX = {"GBP": "1.34",     # GBP/USD mid-market, 16 September 2026
               "EUR": "1.148",    # EUR/USD mid-market, 17 September 2026
               "AUD": "0.6757",   # 1 / the card's USD->AUD 1.48, 1 January 2026
-              "SGD": "0.78125"}  # 1 / the card's USD->SGD 1.28, 1 January 2026
+              "SGD": "0.78125",  # 1 / the card's USD->SGD 1.28, 1 January 2026
+              "PLN": "0.2632"}   # 1 / the card's USD->PLN 3.80, 1 January 2026
 SOURCED_FX_NOTE = ("GBP/USD 1.34, mid-market 16 September 2026; EUR/USD "
-                   "1.148, mid-market 17 September 2026; AUD/USD 0.6757 and "
-                   "SGD/USD 0.78125, the inverses of the card's indicative "
-                   "USD->AUD and USD->SGD rates of 1 January 2026. A rate this "
+                   "1.148, mid-market 17 September 2026; AUD/USD 0.6757, "
+                   "SGD/USD 0.78125 and PLN/USD 0.2632, the inverses of the "
+                   "card's indicative USD->AUD, USD->SGD and USD->PLN rates of "
+                   "1 January 2026. A rate this "
                    "old prices a circuit at an old exchange rate; the case's "
                    "own fx_convention governs a live estimate.")
 
@@ -1550,6 +1654,45 @@ def _reprice_between_sourced(rows, seeded=()):
     return out
 
 
+#: Rows dropped because a faster tier in their own scope costs no more:
+#: key -> that faster tier.
+DROPPED_FOR_FASTER: dict = {}
+
+
+def _drop_dearer_than_faster(rows, *, countries_only=False,
+                             skip=frozenset()):
+    """No tier at or above the price of a faster tier in the same scope.
+
+    A faster plan for the same money or less is the one a buyer takes, and a
+    tier nobody would buy is not a tier the card should sell. Sourcing
+    business 5G above 100 Mbps made it common: EE's plans average 150 Mbps
+    for GBP 22-28 while the UK's seeded 50 Mbps sat at USD 45, and a
+    region's median at one tier rests on other members than at the next.
+
+    Dropped rather than priced at the faster row's band: two tiers at one
+    price would tell right-sizing that downsizing saves nothing. A need at a
+    dropped tier prices at the faster one, the way any need between tiers
+    does, and its component says which. Never a backbone row, which is no
+    access price.
+    """
+    rows = list(rows)
+    by_scope = {}
+    for i, (c, p, _l, bw, *_r) in enumerate(rows):
+        if (countries_only and len(c) != 2) or (c, p, int(bw)) in skip:
+            continue
+        by_scope.setdefault((c, p), []).append((int(bw), i))
+    dropped = set()
+    for (scope, product), tiers in by_scope.items():
+        cheapest = None
+        for bw, i in sorted(tiers, reverse=True):
+            if cheapest is not None and float(rows[i][5]) >= cheapest[0]:
+                dropped.add(i)
+                DROPPED_FOR_FASTER[(scope, product, bw)] = cheapest[1]
+                continue
+            cheapest = (float(rows[i][5]), bw)
+    return [row for i, row in enumerate(rows) if i not in dropped]
+
+
 # Workbook consumer-access prices supersede the seeded assumption for the same
 # (country, product, bandwidth). Applied before the regional derivation, so
 # EUROPE_NORTH, EUROPE_SOUTH and the African bands derive from real cluster
@@ -1625,6 +1768,7 @@ PRIORS = _reprice_between_sourced(PRIORS, _SEEDED_ROWS)
 PRIORS = PRIORS + _consumer_tiers(PRIORS)
 PRIORS = PRIORS + _fwa_tiers(PRIORS)
 PRIORS = PRIORS + _fill_country_tiers(PRIORS, curves=_SEEDED_ROWS)
+PRIORS = _drop_dearer_than_faster(PRIORS, countries_only=True)
 
 
 #: Tiers to interpolate, and the pair each sits between.
@@ -2226,6 +2370,14 @@ REGIONAL_RESCALED = {
     (c, p, int(bw)) for c, p, _l, bw, lo, ba, hi in PRIORS
     if c in REGION_CODES
     and _REGIONAL_BEFORE_RESCALE.get((c, p, int(bw))) != (lo, ba, hi)}
+
+# The backstop, over the finished card: a region's medians rest on whichever
+# members price each tier, and no rule above sees two tiers apart.
+PRIORS = _drop_dearer_than_faster(PRIORS, skip=frozenset(
+    (region, "ETHERNET", 10000) for region in BACKBONE_REGIONS))
+for _key in DROPPED_FOR_FASTER:
+    REGIONAL_MEMBERS.pop(_key, None)
+    REGIONAL_RECURVED.pop(_key, None)
 
 
 def _regional_source(key):

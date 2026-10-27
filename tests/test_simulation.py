@@ -67,6 +67,26 @@ def test_the_priced_estate_is_the_one_the_passes_ran():
             if p["role"] == "PRIMARY"} == {40}, out["products"]
 
 
+def test_a_published_dual_access_rate_of_zero_is_a_rate():
+    """A published rate of 0 says no site of the type has a second path. It
+    was read as missing and the seeded guess used instead - here every store,
+    by an archetype that guesses 1.0."""
+    from app.domain import simulation
+
+    archetypes = {"STORE": {"dual_access_probability": 1.0,
+                            "primary_product": "BROADBAND_HFC",
+                            "backup_product": "MOBILE_5G",
+                            "bandwidth_mbps_base": 50}}
+    out = simulation.run_ensemble(
+        seed=42, ensemble_size=3, model_version="sim-test",
+        footprint=[{"country": "GB", "archetype": "STORE", "sites": 50}],
+        archetypes=archetypes,
+        dual_access_by_archetype={"STORE": 0.0})
+
+    assert out["circuits_backup"]["base"] == 0
+    assert not [p for p in out["products"] if p["role"] == "BACKUP"]
+
+
 def test_the_derived_headcount_survives_aggregation():
     """Audit finding C-05. one_pass computed implied_users and aggregate
     dropped it, so the stored output never held it.
