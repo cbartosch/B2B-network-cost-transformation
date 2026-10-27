@@ -1,13 +1,13 @@
 {
-  "simulation_run_id": "549c43e6-5967-4911-90f6-fe8cfc1f3c0e",
+  "simulation_run_id": "bbef7d1c-a3f4-4209-acae-b7459f07ce3e",
   "case_id": "56a9ad34-d0a4-4b0d-bfec-6eebb64f43e1",
   "model_version": "sim-2.10.0",
   "seed": 20260101,
   "ensemble_size": 25,
   "status": "SUCCEEDED",
   "output_hash": "5bb2985b38e98c78c2c4e63ac0808ac016fd1961c959df8f6bca92f6dac045f8",
-  "started_at": "2026-10-26 17:47:01.579563+00:00",
-  "ended_at": "2026-10-26 17:47:03.389085+00:00",
+  "started_at": "2026-10-27 08:57:56.240935+00:00",
+  "ended_at": "2026-10-27 08:57:57.042623+00:00",
   "params": {
     "footprint": [
       {
@@ -2156,10 +2156,10 @@
       "LEGACY_WAN_SITE": "0.7750",
       "BUILDING_MATERIALS/LARGE_OFFICE": "0.6250",
       "LARGE_OFFICE": "0.6250",
-      "BUILDING_MATERIALS/PLANT": "0.6750",
-      "PLANT": "0.6750",
       "BUILDING_MATERIALS/DC": "0.5250",
-      "DC": "0.5250"
+      "DC": "0.5250",
+      "BUILDING_MATERIALS/PLANT": "0.6750",
+      "PLANT": "0.6750"
     },
     "dual_access_by_archetype": {
       "BUILDING_MATERIALS/STORE": "0.5125",
@@ -2170,10 +2170,10 @@
       "LEGACY_WAN_SITE": "0.7000",
       "BUILDING_MATERIALS/LARGE_OFFICE": "0.9250",
       "LARGE_OFFICE": "0.9250",
-      "BUILDING_MATERIALS/PLANT": "0.8875",
-      "PLANT": "0.8875",
       "BUILDING_MATERIALS/DC": "1.0000",
-      "DC": "1.0000"
+      "DC": "1.0000",
+      "BUILDING_MATERIALS/PLANT": "0.8875",
+      "PLANT": "0.8875"
     },
     "resilience_basis": {
       "industry": "BUILDING_MATERIALS",
@@ -2182,24 +2182,6 @@
     },
     "providers_by_role": {},
     "plan_tiers": {
-      "DE|BROADBAND_HFC": [
-        50,
-        100,
-        250,
-        500,
-        1000
-      ],
-      "DE|BROADBAND_PON": [
-        50,
-        100,
-        250,
-        500,
-        1000
-      ],
-      "DE|MOBILE_5G": [
-        50,
-        100
-      ],
       "US|BROADBAND_PON": [
         50,
         100,
@@ -2236,21 +2218,25 @@
         50,
         100
       ],
-      "IT|BROADBAND_HFC": [
+      "GB|BROADBAND_PON": [
         50,
         100,
         250,
         500,
         1000
       ],
-      "IT|BROADBAND_PON": [
+      "GB|BROADBAND_HFC": [
         50,
         100,
+        200,
         250,
+        400,
         500,
-        1000
+        600,
+        1000,
+        2000
       ],
-      "IT|MOBILE_5G": [
+      "GB|MOBILE_5G": [
         50,
         100
       ],
@@ -2272,25 +2258,39 @@
         50,
         100
       ],
-      "GB|BROADBAND_PON": [
+      "IT|BROADBAND_HFC": [
         50,
         100,
         250,
         500,
         1000
       ],
-      "GB|BROADBAND_HFC": [
+      "IT|BROADBAND_PON": [
         50,
         100,
-        200,
         250,
-        400,
         500,
-        600,
-        1000,
-        2000
+        1000
       ],
-      "GB|MOBILE_5G": [
+      "IT|MOBILE_5G": [
+        50,
+        100
+      ],
+      "DE|BROADBAND_HFC": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "DE|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "DE|MOBILE_5G": [
         50,
         100
       ]

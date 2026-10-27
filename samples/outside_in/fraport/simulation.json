@@ -1,13 +1,13 @@
 {
-  "simulation_run_id": "3a817496-1aec-4866-8b29-9914eb5e354a",
+  "simulation_run_id": "550c13d1-6be1-4e9d-9f74-a3f1d32f5b32",
   "case_id": "a93435b0-a87b-4d6b-92fb-846a69ebc86b",
   "model_version": "sim-2.10.0",
   "seed": 20260101,
   "ensemble_size": 25,
   "status": "SUCCEEDED",
   "output_hash": "c014dc9ad845da0816602e4a693d566942b57d2b4171e964247c0e64d7fb1652",
-  "started_at": "2026-10-26 17:46:28.424160+00:00",
-  "ended_at": "2026-10-26 17:46:28.579958+00:00",
+  "started_at": "2026-10-27 08:57:33.842066+00:00",
+  "ended_at": "2026-10-27 08:57:33.928087+00:00",
   "params": {
     "footprint": [
       {
@@ -1499,24 +1499,6 @@
     },
     "providers_by_role": {},
     "plan_tiers": {
-      "BG|BROADBAND_HFC": [
-        50,
-        100,
-        250,
-        500,
-        1000
-      ],
-      "BG|BROADBAND_PON": [
-        50,
-        100,
-        250,
-        500,
-        1000
-      ],
-      "BG|MOBILE_5G": [
-        50,
-        100
-      ],
       "GR|BROADBAND_HFC": [
         50,
         100,
@@ -1535,23 +1517,41 @@
         50,
         100
       ],
-      "TR|BROADBAND_PON": [
+      "PE|BROADBAND_HFC": [
         50,
         100,
         250,
         500,
         1000
       ],
-      "TR|MOBILE_5G": [
+      "PE|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "PE|MOBILE_5G": [
         50,
         100
       ],
-      "TR|BROADBAND_HFC": [
+      "BG|BROADBAND_HFC": [
         50,
         100,
         250,
         500,
         1000
+      ],
+      "BG|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "BG|MOBILE_5G": [
+        50,
+        100
       ],
       "BR|BROADBAND_HFC": [
         50,
@@ -1589,23 +1589,23 @@
         50,
         100
       ],
-      "PE|BROADBAND_HFC": [
+      "TR|BROADBAND_PON": [
         50,
         100,
         250,
         500,
         1000
       ],
-      "PE|BROADBAND_PON": [
-        50,
-        100,
-        250,
-        500,
-        1000
-      ],
-      "PE|MOBILE_5G": [
+      "TR|MOBILE_5G": [
         50,
         100
+      ],
+      "TR|BROADBAND_HFC": [
+        50,
+        100,
+        250,
+        500,
+        1000
       ]
     },
     "backbone": {
