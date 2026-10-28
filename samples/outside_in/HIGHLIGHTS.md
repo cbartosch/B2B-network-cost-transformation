@@ -4,7 +4,7 @@ One section per company. Everything here was produced by the agent-routed resear
 
 ## ABB Ltd
 
-- **Industry** INDUSTRIAL_CONGLOMERATE (entity resolution)
+- **Industry** INDUSTRIAL_CONGLOMERATE (spec fallback)
 - **Scope** CH, SE, DE, US, IT, CN, IN, CA, USD, 67 sites (research merged with disclosure)
 - **Confidence** 0.345 (D - Indicative), coverage COMPLETE
 
@@ -149,7 +149,7 @@ Sources: [Val Index (Swiss commercial-register / BAKOM dat](https://valindex.ch/
 
 ## Accor SA
 
-- **Industry** HOTELS (entity resolution)
+- **Industry** HOTELS (spec fallback)
 - **Scope** FR, DE, GB, EUR, 2,255 sites (research merged with disclosure)
 - **Confidence** 0.318 (D - Indicative), coverage COMPLETE
 
@@ -302,7 +302,7 @@ Sources: [ARCEP (French telecom regulator)](https://en.arcep.fr/news/press-relea
 
 ## Aena S.M.E., S.A.
 
-- **Industry** AIRPORTS (entity resolution)
+- **Industry** AIRPORTS (spec fallback)
 - **Scope** ES, GB, BR, MX, EUR, 78 sites (research merged with disclosure)
 - **Confidence** 0.348 (D - Indicative), coverage COMPLETE
 
@@ -447,7 +447,7 @@ Sources: [OpenSignal](https://insights.opensignal.com/reports/2025/10/spain/fixe
 
 ## Koninklijke Ahold Delhaize N.V.
 
-- **Industry** GROCERY_RETAIL (entity resolution)
+- **Industry** GROCERY_RETAIL (spec fallback)
 - **Scope** NL, BE, US, GR, RO, CZ, EUR, 6,061 sites (research merged with disclosure)
 - **Confidence** 0.324 (D - Indicative), coverage COMPLETE
 
@@ -583,7 +583,7 @@ Sources: [Connected Networks](https://www.connectednetworks.io/countries/holland
 
 ## Air France-KLM S.A.
 
-- **Industry** AIRLINES (entity resolution)
+- **Industry** AIRLINES (spec fallback)
 - **Scope** FR, NL, EUR, 39 sites (research merged with disclosure)
 - **Confidence** 0.485 (D - Indicative), coverage COMPLETE
 
@@ -719,7 +719,7 @@ Sources: [ARCEP (French Telecom Regulator)](https://en.arcep.fr/news/press-relea
 
 ## Allianz SE
 
-- **Industry** INSURANCE (entity resolution)
+- **Industry** INSURANCE (spec fallback)
 - **Scope** DE, FR, IT, EUR, 1,538 sites (research merged with disclosure)
 - **Confidence** 0.343 (D - Indicative), coverage COMPLETE
 
@@ -848,7 +848,7 @@ Sources: [germancompanyformation.com](https://germancompanyformation.com/guides/
 
 ## Anglo American plc
 
-- **Industry** DIVERSIFIED_MINING (entity resolution)
+- **Industry** DIVERSIFIED_MINING (spec fallback)
 - **Scope** GB, CL, PE, ZA, BR, USD, 13 sites (research merged with disclosure)
 - **Confidence** 0.347 (D - Indicative), coverage COMPLETE
 
@@ -990,7 +990,7 @@ Sources: [netify.co.uk](https://netify.co.uk/insights/top-best-mpls-network-prov
 
 ## BASF SE
 
-- **Industry** CHEMICALS (entity resolution)
+- **Industry** CHEMICALS (spec fallback)
 - **Scope** DE, BE, US, CN, FR, ES, IT, BR, IN, EUR, 232 sites (research merged with disclosure)
 - **Confidence** 0.346 (D - Indicative), coverage COMPLETE
 
@@ -1122,7 +1122,7 @@ Sources: [germancompanyformation.com](https://germancompanyformation.com/guides/
 
 ## Bayer AG
 
-- **Industry** PHARMACEUTICALS (entity resolution)
+- **Industry** PHARMACEUTICALS (spec fallback)
 - **Scope** DE, US, CN, BR, IN, FR, ES, MX, EUR, 98 sites (public disclosure only)
 - **Confidence** 0.346 (D - Indicative), coverage COMPLETE
 
@@ -1260,7 +1260,7 @@ Sources: [VATM (German Telecommunications Association)](https://www.vatm.de/wp-c
 
 ## BNP Paribas SA
 
-- **Industry** UNIVERSAL_BANKING (entity resolution)
+- **Industry** UNIVERSAL_BANKING (spec fallback)
 - **Scope** FR, BE, IT, EUR, 2,660 sites (research merged with disclosure)
 - **Confidence** 0.343 (D - Indicative), coverage COMPLETE
 
@@ -1403,7 +1403,7 @@ Sources: [checkeverything.fr](https://checkeverything.fr/en/telecommunications/o
 
 ## Boots UK Limited
 
-- **Industry** DRUG_RETAIL (entity resolution)
+- **Industry** DRUG_RETAIL (spec fallback)
 - **Scope** GB, IE, GBP, 2,266 sites (research merged with disclosure)
 - **Confidence** 0.343 (D - Indicative), coverage COMPLETE
 
@@ -1540,7 +1540,7 @@ Sources: [ComReg (Irish regulator)](https://www.comreg.ie/industry/electronic-co
 
 ## Capgemini SE
 
-- **Industry** IT_SERVICES (entity resolution)
+- **Industry** IT_SERVICES (spec fallback)
 - **Scope** FR, IN, GB, DE, US, NL, PL, ES, EUR, 106 sites (research merged with disclosure)
 - **Confidence** 0.278 (D - Indicative), coverage PARTIAL
 
@@ -1678,7 +1678,7 @@ Sources: [TeleGeography](https://resources.telegeography.com/the-rise-of-dia-ove
 
 ## Carrefour SA
 
-- **Industry** GROCERY_RETAIL (entity resolution)
+- **Industry** GROCERY_RETAIL (spec fallback)
 - **Scope** FR, ES, IT, BE, PL, BR, RO, EUR, 8,982 sites (research merged with disclosure)
 - **Confidence** 0.324 (D - Indicative), coverage COMPLETE
 
@@ -1813,7 +1813,7 @@ Sources: [checkeverything.fr (ARCEP-sourced)](https://checkeverything.fr/en/tele
 
 ## Danone S.A.
 
-- **Industry** FOOD_MANUFACTURING (entity resolution)
+- **Industry** FOOD_MANUFACTURING (spec fallback)
 - **Scope** FR, US, MX, PL, ES, EUR, 76 sites (research merged with disclosure)
 - **Confidence** 0.347 (D - Indicative), coverage COMPLETE
 
@@ -1944,7 +1944,7 @@ Sources: [ARCEP (French telecom regulator)](https://en.arcep.fr/news/press-relea
 
 ## DBS Group Holdings Ltd
 
-- **Industry** RETAIL_BANKING (entity resolution)
+- **Industry** RETAIL_BANKING (spec fallback)
 - **Scope** SG, IN, CN, ID, SGD, 1,769 sites (research merged with disclosure)
 - **Confidence** 0.340 (D - Indicative), coverage COMPLETE
 
@@ -2078,7 +2078,7 @@ Sources: [Operator Watch](https://www.operatorwatch.com/2026/08/new-singapores-t
 
 ## Deutsche Bahn AG
 
-- **Industry** RAILWAYS (entity resolution)
+- **Industry** RAILWAYS (spec fallback)
 - **Scope** DE, EUR, 5,600 sites (research merged with disclosure)
 - **Confidence** 0.326 (D - Indicative), coverage COMPLETE
 
@@ -2200,7 +2200,7 @@ Sources: [Deutsche Bahn AG – IR](https://ir.deutschebahn.com/en/news-presentat
 
 ## Deutsche Post AG
 
-- **Industry** PARCEL_LOGISTICS (entity resolution)
+- **Industry** PARCEL_LOGISTICS (spec fallback)
 - **Scope** DE, NL, GB, EUR, 2,914 sites (research merged with disclosure)
 - **Confidence** 0.337 (D - Indicative), coverage COMPLETE
 
@@ -2343,7 +2343,7 @@ Sources: [VATM / Dialog Consult](https://www.vatm.de/dokument/market-analysis-20
 
 ## Douglas AG
 
-- **Industry** SPECIALTY_RETAIL (entity resolution)
+- **Industry** SPECIALTY_RETAIL (spec fallback)
 - **Scope** DE, FR, IT, NL, PL, EUR, 1,339 sites (research merged with disclosure)
 - **Confidence** 0.326 (D - Indicative), coverage COMPLETE
 
@@ -2461,7 +2461,7 @@ Sources: [BusinessWire / ISG](https://www.businesswire.com/news/home/20250807539
 
 ## E.ON SE
 
-- **Industry** UTILITIES (entity resolution)
+- **Industry** UTILITIES (spec fallback)
 - **Scope** DE, GB, SE, CZ, HU, RO, PL, NL, EUR, 829 sites (research merged with disclosure)
 - **Confidence** 0.333 (D - Indicative), coverage COMPLETE
 
@@ -2594,7 +2594,7 @@ Sources: [Analysys Mason](https://www.analysysmason.com/research/content/reports
 
 ## Fraport AG
 
-- **Industry** AIRPORTS (entity resolution)
+- **Industry** AIRPORTS (spec fallback)
 - **Scope** DE, GR, BR, PE, TR, BG, EUR, 41 sites (research merged with disclosure)
 - **Confidence** 0.348 (D - Indicative), coverage COMPLETE
 
@@ -2717,7 +2717,7 @@ Sources: [ts2.tech](https://ts2.tech/en/internet-access-in-germany-2025-dsl-cabl
 
 ## Fresenius SE & Co. KGaA
 
-- **Industry** HOSPITAL (entity resolution)
+- **Industry** HOSPITAL (spec fallback)
 - **Scope** DE, ES, US, EUR, 3,385 sites (research merged with disclosure)
 - **Confidence** 0.341 (D - Indicative), coverage COMPLETE
 
@@ -2857,7 +2857,7 @@ Sources: [ISG / BusinessWire](https://secure.businesswire.com/news/home/20250807
 
 ## Assicurazioni Generali S.p.A.
 
-- **Industry** INSURANCE (entity resolution)
+- **Industry** INSURANCE (spec fallback)
 - **Scope** IT, AT, EUR, 932 sites (research merged with disclosure)
 - **Confidence** 0.344 (D - Indicative), coverage COMPLETE
 
@@ -2976,7 +2976,7 @@ Sources: [Cloudbrink (citing AGCOM end-2025 data)](https://cloudbrink.com/europe
 
 ## Heidelberg Materials AG
 
-- **Industry** BUILDING_MATERIALS (entity resolution)
+- **Industry** BUILDING_MATERIALS (spec fallback)
 - **Scope** DE, US, GB, FR, IT, PL, EUR, 1,273 sites (research merged with disclosure)
 - **Confidence** 0.328 (D - Indicative), coverage COMPLETE
 
@@ -3114,7 +3114,7 @@ Sources: [VATM (German telecommunications industry associa](https://www.vatm.de/
 
 ## Henkel AG & Co. KGaA
 
-- **Industry** HOUSEHOLD_PERSONAL_CARE (entity resolution)
+- **Industry** HOUSEHOLD_PERSONAL_CARE (spec fallback)
 - **Scope** DE, US, MX, CN, EUR, 41 sites (research merged with disclosure)
 - **Confidence** 0.345 (D - Indicative), coverage COMPLETE
 
@@ -3247,7 +3247,7 @@ Sources: [germancompanyformation.com](https://germancompanyformation.com/guides/
 
 ## Iberdrola SA
 
-- **Industry** UTILITIES (entity resolution)
+- **Industry** UTILITIES (spec fallback)
 - **Scope** ES, GB, EUR, 2,762 sites (research merged with disclosure)
 - **Confidence** 0.368 (D - Indicative), coverage COMPLETE
 
@@ -3387,7 +3387,7 @@ Sources: [Opensignal (citing CNMC data)](https://insights.opensignal.com/reports
 
 ## Industria de Diseno Textil SA
 
-- **Industry** SPECIALTY_RETAIL (entity resolution)
+- **Industry** SPECIALTY_RETAIL (spec fallback)
 - **Scope** ES, FR, DE, EUR, 1,695 sites (research merged with disclosure)
 - **Confidence** 0.332 (D - Indicative), coverage COMPLETE
 
@@ -3519,7 +3519,7 @@ Sources: [Opensignal](https://insights.opensignal.com/reports/2025/10/spain/fixe
 
 ## Deutsche Lufthansa AG
 
-- **Industry** AIRLINES (entity resolution)
+- **Industry** AIRLINES (spec fallback)
 - **Scope** DE, CH, AT, EUR, 218 sites (research merged with disclosure)
 - **Confidence** 0.340 (D - Indicative), coverage COMPLETE
 
@@ -3804,7 +3804,7 @@ Sources: [TelecomLead](https://telecomlead.com/broadband/best-isps-in-denmark-in
 
 ## McDonald's Corporation
 
-- **Industry** QSR_RESTAURANTS (entity resolution)
+- **Industry** QSR_RESTAURANTS (spec fallback)
 - **Scope** US, GB, DE, USD, 16,671 sites (research merged with disclosure)
 - **Confidence** 0.325 (D - Indicative), coverage COMPLETE
 
@@ -4082,7 +4082,7 @@ Sources: [TeleGeography](https://resources.telegeography.com/the-rise-of-dia-ove
 
 ## Nestle SA
 
-- **Industry** FOOD_MANUFACTURING (entity resolution)
+- **Industry** FOOD_MANUFACTURING (spec fallback)
 - **Scope** CH, DE, FR, US, GB, ES, IT, BR, MX, CN, CHF, 292 sites (research merged with disclosure)
 - **Confidence** 0.347 (D - Indicative), coverage COMPLETE
 
@@ -4238,7 +4238,7 @@ Sources: [Swiss Federal Office of Communications / ComCom](https://www.comcom.ad
 
 ## Network Rail Infrastructure Limited
 
-- **Industry** RAILWAYS (entity resolution)
+- **Industry** RAILWAYS (spec fallback)
 - **Scope** GB, GBP, 912 sites (research merged with disclosure)
 - **Confidence** 0.328 (D - Indicative), coverage COMPLETE
 
@@ -4388,7 +4388,7 @@ Sources: [Netify](https://netify.co.uk/insights/top-best-mpls-network-providers/
 
 ## NHS England
 
-- **Industry** HOSPITAL (entity resolution)
+- **Industry** HOSPITAL (spec fallback)
 - **Scope** GB, GBP, 1,491 sites (research merged with disclosure)
 - **Confidence** 0.341 (D - Indicative), coverage COMPLETE
 
@@ -4543,7 +4543,7 @@ Sources: [Amvia](https://amvia.co.uk/leased-lines/compare/uk-leased-line-provide
 
 ## Novartis AG
 
-- **Industry** PHARMACEUTICALS (entity resolution)
+- **Industry** PHARMACEUTICALS (spec fallback)
 - **Scope** CH, DE, US, IE, IT, ES, AT, SG, CHF, 125 sites (research merged with disclosure)
 - **Confidence** 0.346 (D - Indicative), coverage COMPLETE
 
@@ -4677,7 +4677,7 @@ Sources: [COMCOM – Federal Communications Commission Switz](https://www.comcom
 
 ## Rio Tinto plc
 
-- **Industry** DIVERSIFIED_MINING (entity resolution)
+- **Industry** DIVERSIFIED_MINING (spec fallback)
 - **Scope** GB, AU, CA, USD, 106 sites (research merged with disclosure)
 - **Confidence** 0.467 (D - Indicative), coverage COMPLETE
 
@@ -4816,7 +4816,7 @@ Sources: [leasedlineandmpls.co.uk](https://www.leasedlineandmpls.co.uk/top-100gb
 
 ## Royal Mail Group Limited
 
-- **Industry** PARCEL_LOGISTICS (entity resolution)
+- **Industry** PARCEL_LOGISTICS (spec fallback)
 - **Scope** GB, GBP, 1,419 sites (research merged with disclosure)
 - **Confidence** 0.325 (D - Indicative), coverage COMPLETE
 
@@ -4954,7 +4954,7 @@ Sources: [netify.co.uk](https://netify.co.uk/insights/top-best-mpls-network-prov
 
 ## Compagnie de Saint-Gobain SA
 
-- **Industry** BUILDING_MATERIALS (entity resolution)
+- **Industry** BUILDING_MATERIALS (spec fallback)
 - **Scope** FR, DE, GB, EUR, 1,928 sites (research merged with disclosure)
 - **Confidence** 0.342 (D - Indicative), coverage COMPLETE
 
@@ -5080,7 +5080,7 @@ Sources: [Telecompaper](https://www.telecompaper.com/news/fibre-adoption-rises-t
 
 ## Banco Santander, S.A.
 
-- **Industry** UNIVERSAL_BANKING (entity resolution)
+- **Industry** UNIVERSAL_BANKING (spec fallback)
 - **Scope** ES, GB, PT, EUR, 2,268 sites (research merged with disclosure)
 - **Confidence** 0.338 (D - Indicative), coverage COMPLETE
 
@@ -5202,7 +5202,7 @@ Sources: [KenResearch](https://www.kenresearch.com/industry-reports/spain-teleco
 
 ## Shell plc
 
-- **Industry** INTEGRATED_OIL_GAS (entity resolution)
+- **Industry** INTEGRATED_OIL_GAS (spec fallback)
 - **Scope** GB, NL, DE, USD, 3,419 sites (research merged with disclosure)
 - **Confidence** 0.358 (D - Indicative), coverage COMPLETE
 
@@ -5340,7 +5340,7 @@ Sources: [leasedlineandmpls.co.uk](https://leasedlineandmpls.co.uk/top-100gb-lea
 
 ## Siemens AG
 
-- **Industry** INDUSTRIAL_CONGLOMERATE (entity resolution)
+- **Industry** INDUSTRIAL_CONGLOMERATE (spec fallback)
 - **Scope** DE, AT, US, CN, IN, GB, FR, IT, EUR, 502 sites (research merged with disclosure)
 - **Confidence** 0.346 (D - Indicative), coverage COMPLETE
 
@@ -5496,7 +5496,7 @@ Sources: [germancompanyformation.com](https://germancompanyformation.com/guides/
 
 ## Simmons First National Corporation
 
-- **Industry** RETAIL_BANKING (entity resolution)
+- **Industry** RETAIL_BANKING (spec fallback)
 - **Scope** US, USD, 235 sites (research merged with disclosure)
 - **Confidence** 0.345 (D - Indicative), coverage COMPLETE
 
@@ -5617,7 +5617,7 @@ Sources: [Pallas Digital](https://pall.as/the-state-of-enterprise-wan/); [Socium
 
 ## Tesco PLC
 
-- **Industry** GROCERY_RETAIL (entity resolution)
+- **Industry** GROCERY_RETAIL (spec fallback)
 - **Scope** GB, IE, GBP, 3,940 sites (research merged with disclosure)
 - **Confidence** 0.380 (D - Indicative), coverage COMPLETE
 
@@ -5769,7 +5769,7 @@ Sources: [Selectra](https://selectra.co.uk/tv-broadband/guides/business/leased-l
 
 ## TotalEnergies SE
 
-- **Industry** INTEGRATED_OIL_GAS (entity resolution)
+- **Industry** INTEGRATED_OIL_GAS (spec fallback)
 - **Scope** FR, BE, DE, USD, 3,261 sites (research merged with disclosure)
 - **Confidence** 0.339 (D - Indicative), coverage COMPLETE
 
@@ -5902,7 +5902,7 @@ Sources: [Telecompaper](https://www.telecompaper.com/news/fibre-adoption-rises-t
 
 ## Toyota Motor Corporation
 
-- **Industry** AUTOMOTIVE_OEM (entity resolution)
+- **Industry** AUTOMOTIVE_OEM (spec fallback)
 - **Scope** JP, US, CN, IN, BR, GB, FR, CA, JPY, 65 sites (research merged with disclosure)
 - **Confidence** 0.349 (D - Indicative), coverage COMPLETE
 
@@ -6048,7 +6048,7 @@ Sources: [TeleGeography](https://resources.telegeography.com/the-rise-of-dia-ove
 
 ## United Natural Foods, Inc.
 
-- **Industry** WHOLESALE_DISTRIBUTION (entity resolution)
+- **Industry** WHOLESALE_DISTRIBUTION (spec fallback)
 - **Scope** US, CA, USD, 134 sites (research merged with disclosure)
 - **Confidence** 0.344 (D - Indicative), coverage COMPLETE
 
@@ -6183,7 +6183,7 @@ Sources: [Vertical Systems Group](https://verticalsystems.com/2026/02/18/2025-us
 
 ## Unilever PLC
 
-- **Industry** HOUSEHOLD_PERSONAL_CARE (entity resolution)
+- **Industry** HOUSEHOLD_PERSONAL_CARE (spec fallback)
 - **Scope** GB, NL, DE, US, IN, BR, MX, PL, IT, FR, EUR, 208 sites (research merged with disclosure)
 - **Confidence** 0.345 (D - Indicative), coverage COMPLETE
 
@@ -6340,7 +6340,7 @@ Sources: [servnetuk.com](https://www.servnetuk.com/insights/sd-wan-vs-mpls-uk-20
 
 ## United Parcel Service, Inc.
 
-- **Industry** PARCEL_LOGISTICS (entity resolution)
+- **Industry** PARCEL_LOGISTICS (spec fallback)
 - **Scope** US, DE, GB, USD, 1,089 sites (research merged with disclosure)
 - **Confidence** 0.346 (D - Indicative), coverage COMPLETE
 
@@ -6465,7 +6465,7 @@ Sources: [Vertical Systems Group](https://verticalsystems.com/2026/09/02/mid-202
 
 ## Victoria's Secret & Co.
 
-- **Industry** SPECIALTY_RETAIL (entity resolution)
+- **Industry** SPECIALTY_RETAIL (spec fallback)
 - **Scope** US, CA, USD, 835 sites (research merged with disclosure)
 - **Confidence** 0.329 (D - Indicative), coverage COMPLETE
 
@@ -6596,7 +6596,7 @@ Sources: [Vertical Systems Group](https://verticalsystems.com/2026/02/18/2025-us
 
 ## Volkswagen AG
 
-- **Industry** AUTOMOTIVE_OEM (entity resolution)
+- **Industry** AUTOMOTIVE_OEM (spec fallback)
 - **Scope** DE, ES, CZ, CN, MX, BR, SK, PT, PL, US, EUR, 181 sites (research merged with disclosure)
 - **Confidence** 0.347 (D - Indicative), coverage COMPLETE
 
@@ -6744,7 +6744,7 @@ Sources: [germancompanyformation.com](https://germancompanyformation.com/guides/
 
 ## Woolworths Group Limited
 
-- **Industry** GROCERY_RETAIL (entity resolution)
+- **Industry** GROCERY_RETAIL (spec fallback)
 - **Scope** AU, NZ, AUD, 1,363 sites (research merged with disclosure)
 - **Confidence** 0.332 (D - Indicative), coverage COMPLETE
 

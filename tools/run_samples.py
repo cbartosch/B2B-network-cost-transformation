@@ -181,10 +181,10 @@ def intake(spec):
 def resolve_and_confirm(case_id, spec):
     """Real resolution, not a direct write.
 
-    The candidate carries the industry, and the industry keys
-    archetype_bandwidth and archetype_resilience - so an entity confirmed
-    without one is an estate priced off DEFAULT. Falls back to the spec's
-    industry only if resolution produces nothing, and says which was used.
+    The candidate carries the resolver's own description of the sector,
+    which confirmation records as industry_as_resolved for the cross-check
+    in set_industry_if_absent. It does not carry the taxonomy code that keys
+    archetype_bandwidth and archetype_resilience: that comes from the spec.
     """
     def _fallback(why):
         """Confirm directly, the way the flow test does when no provider is
@@ -228,11 +228,19 @@ def resolve_and_confirm(case_id, spec):
 
 
 def set_industry_if_absent(case_id, spec):
-    """The seeded industry code, if resolution did not supply one.
+    """The spec's industry code, unless the case already holds a known one.
 
     Recorded in the manifest either way. An industry the seed does not know
     silently falls back to DEFAULT and the estate stops differentiating, so
     this is not a cosmetic field.
+
+    Nothing else writes the code. Resolution records what it called the
+    sector as industry_as_resolved and leaves the code alone, so a known
+    code on a case came from the spec - this function, on this run or an
+    earlier one - or from whoever set it on the case. Labelling every known
+    code ENTITY_RESOLUTION, as this did, credited research with a choice it
+    never makes: true of none of the fifty, and Maersk and Michelin said
+    SPEC_FALLBACK only on the run that wrote their codes.
     """
     from sqlalchemy import update
     from app.domain import bics
@@ -244,7 +252,14 @@ def set_industry_if_absent(case_id, spec):
         known = {r[0] for r in s.execute(
             select(db.archetype_bandwidth.c.industry)).all()}
         if row and row.upper() in known:
-            out = {"industry": row, "origin": "ENTITY_RESOLUTION"}
+            # The spec's code, or one the case was given some other way -
+            # kept either way. Which one is reported, and a disagreement is
+            # said out loud by the caller: a corrected spec does not
+            # overwrite a known code, and nothing used to say so.
+            out = {"industry": row,
+                   "origin": ("SPEC_FALLBACK"
+                              if row.upper() == spec["industry"].upper()
+                              else "CASE_RECORD")}
         else:
             s.execute(update(db.case).where(db.case.c.case_id == case_id)
                       .values(industry=spec["industry"]))
@@ -1280,6 +1295,11 @@ def run_one(spec, outdir, domains, force, repair=False, repromote=False, redo=Fa
 
     ind = set_industry_if_absent(case_id, spec)
     log(slug, f"industry {ind['industry']} ({ind['origin']})")
+    if ind["origin"] == "CASE_RECORD":
+        log(slug, f"!! INDUSTRY NOT THE SPEC'S: the case holds "
+                  f"{ind['industry']} and the spec says {spec['industry']}. "
+                  f"The case's code prices the estate; correct whichever "
+                  f"is wrong.")
     if ind.get("agrees_with_resolution") is False:
         # Loud, because the quiet version of this cost seventeen research
         # calls and an estimate priced on the wrong archetype bandwidth.
