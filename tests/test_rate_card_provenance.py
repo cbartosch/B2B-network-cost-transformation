@@ -383,18 +383,27 @@ def test_no_tier_costs_as_much_as_a_faster_one_in_its_scope():
 # ------------------------------------------- business fibre, Spain and Italy
 @pytest.mark.parametrize("country,mbps,seller", [
     ("ES", 300, "Telefonica"), ("ES", 600, "Telefonica"),
-    ("ES", 1000, "Telefonica"), ("ES", 2000, "Telefonica"),
-    ("ES", 10000, "Telefonica"), ("IT", 1000, "Ehiweb"),
-    ("IT", 2500, "TIM"), ("IT", 10000, "TIM")])
+    ("ES", 1000, "Telefonica"), ("IT", 1000, "Ehiweb"),
+    ("IT", 2500, "TIM")])
 def test_business_fibre_is_priced_from_the_sellers_own_plans(
         country, mbps, seller):
-    """Fibre broadband stopped at 1 Gbps, so the 2,750 Mbps backups at
-    Nestle's and Danone's rural plants in Spain and Italy were bought at 1
-    Gbps, below their primary. Both markets publish business plans up to 10
-    Gbps; each tier is one of them, at the speed it is sold."""
+    """Both markets sell business fibre for less than the card's seeded 100
+    Mbps. Each tier is a plan a seller publishes, at the speed it is sold."""
     grade, source = seed.SOURCED_PROVENANCE[(country, "BROADBAND_PON", mbps)]
     assert grade == "C" and seller in source, source
     assert "retail" in source.lower()
+
+
+def test_no_plan_sold_only_over_xgs_pon_is_on_the_card():
+    """Telefonica's 2 and 10 Gb and TIM's 10 Giga are sold only where an
+    upgraded exchange serves the address, and neither country records which
+    addresses those are. On the card they bought the 2,750 Mbps backups at
+    Nestle's and Danone's rural plants a 10 Gbps plan, and the estimate
+    stopped reporting those backups below their primaries. A rate its own
+    source limits to XGS-PON addresses waits for a serviceability source."""
+    conditional = [k for k, (_grade, source) in seed.SOURCED_PROVENANCE.items()
+                   if "XGS-PON" in source]
+    assert not conditional, conditional
 
 
 def test_a_fibre_need_buys_the_plan_that_fits_it():
@@ -407,8 +416,7 @@ def test_a_fibre_need_buys_the_plan_that_fits_it():
     for c, p, _l, bw, *_r in seed.PRIORS:
         if p == "BROADBAND_PON" and c in ("ES", "IT"):
             sold.setdefault(c, set()).add(int(bw))
-    assert sold == {"ES": {300, 600, 1000, 2000, 10000},
-                    "IT": {1000, 2500, 10000}}, sold
+    assert sold == {"ES": {300, 600, 1000}, "IT": {1000, 2500}}, sold
     dropped = seed.DROPPED_FOR_FASTER
     assert dropped[("ES", "BROADBAND_PON", 100)] == 300
     assert dropped[("ES", "BROADBAND_PON", 500)] == 600
@@ -416,8 +424,8 @@ def test_a_fibre_need_buys_the_plan_that_fits_it():
 
 
 def test_no_plan_is_drawn_between_two_others():
-    """Fibre broadband and 5G are sold as plans. A 3 Gbps step between
-    Italy's 2.5 and 10 Giga, or a 500 Mbps one between Telefonica's 300 and
+    """Fibre broadband and 5G are sold as plans. A 2 Gbps step between
+    Italy's 1 and 2.5 Giga, or a 500 Mbps one between Telefonica's 300 and
     600 Mb, is no plan anyone sells; the 2-9 Gbps steps describe Ethernet
     and DIA, which are sold at the speed ordered."""
     plans = seed._PLAN_PRODUCTS
@@ -429,14 +437,14 @@ def test_no_plan_is_drawn_between_two_others():
 def test_a_region_is_not_priced_at_a_minoritys_plans(card):
     """Southern Europe prices fibre from 100 Mbps to 1 Gbps across six to
     eight members, and Spain's and Italy's plans alone price 300 and 600
-    Mbps and 2, 2.5 and 10 Gbps - below those tiers' bands. They stay
-    Spain's and Italy's. The region keeps what most of its members price,
-    and its gigabit median takes both countries' published plans in."""
+    Mbps and 2.5 Gbps - below those tiers' bands. They stay Spain's and
+    Italy's. The region keeps what most of its members price, and its
+    gigabit median takes both countries' published plans in."""
     tiers = {int(r[3]) for r in seed.PRIORS
              if (r[0], r[1]) == ("EUROPE_SOUTH", "BROADBAND_PON")}
     assert tiers == {100, 250, 500, 1000}, tiers
     for region in ("EUROPE_SOUTH", "EMEA"):
-        for bw in (300, 600, 2000, 2500, 10000):
+        for bw in (300, 600, 2500):
             assert (region, "BROADBAND_PON", bw) in seed.REGIONAL_MINORITY
     gigabit = card["EUROPE_SOUTH-BROADBAND_PON-1000"]
     assert gigabit["sample_size"] == 8

@@ -1103,19 +1103,21 @@ SOURCED_RATES = [
      "seller's price, given the card's +/-25% width. Business retail "
      "basis."),
     # Shared business fibre in Spain and Italy, at the plans each seller
-    # publishes. Fibre broadband stopped at 1 Gbps on the card, so a backup
-    # asking for more - Nestle's and Danone's rural plants, at 2,750 Mbps -
-    # was bought at 1 Gbps, below its primary. Both markets sell 10 Gbps to
-    # business for less than the card's seeded 100 Mbps: the workbook's
-    # Southern Europe cluster puts 100 Mbps to 1 Gbps at USD 65-143, and
-    # Telefonica sells 10 Gb for EUR 54.46. Priced at 10 Gbps alone, a need
-    # at any of those tiers would have bought the 10 Gbps plan, so the plans
-    # beneath it come from the same pages.
+    # publishes. Both markets sell it to business for less than the card's
+    # seeded 100 Mbps: the workbook's Southern Europe cluster puts 100 Mbps to
+    # 1 Gbps at USD 65-143, and Telefonica sells 300 Mb for EUR 34.71 and
+    # 1 Gb for 46.20.
     #
-    # XGS-PON reaches only the addresses an upgraded exchange serves:
-    # Telefonica sells its 2 and 10 Gb there alone, and TIM its 10 Giga in
-    # more than 30 municipalities. Neither country has a serviceability table
-    # to say whether a rural plant is one of them.
+    # Not the plans sold only over XGS-PON. Telefonica sells its 2 and 10 Gb
+    # only where an upgraded exchange serves the address, and TIM its 10 Giga
+    # in more than 30 municipalities, and neither country has a
+    # serviceability table to say whether a site is one of them. On the card
+    # they priced the 2,750 Mbps backups at Nestle's and Danone's rural
+    # plants - the sites least likely to be served - at a 10 Gbps tariff, and
+    # the estimate stopped reporting those backups below their primaries.
+    # They stay off until a serviceability source can place a site inside the
+    # footprint; until then a backup asking for more than the plans sold is
+    # bought at the largest, and says so.
     ("ES", "BROADBAND_PON", 300, "26.03", "43.39", "EUR", "C",
      "Telefonica Empresas Fibra 300 Mb Empresas, October 2026: EUR 34.71 a "
      "month VAT excluded (42.00 included) without promotion, 24.30 for the "
@@ -1134,20 +1136,6 @@ SOURCED_RATES = [
      "first six months, no permanence; with a fixed line, unlimited "
      "national fixed calls and 50 mobile minutes. One seller's price, given "
      "the card's +/-25% width. Business retail basis."),
-    ("ES", "BROADBAND_PON", 2000, "37.75", "62.91", "EUR", "C",
-     "Telefonica Empresas Fibra 2 Gb Empresas, October 2026: EUR 50.33 a "
-     "month VAT excluded (60.90 included) for the first 12 months, no "
-     "permanence, where an XGS-PON exchange serves the address; the price "
-     "after twelve months is not published. Unlimited national fixed calls "
-     "and 50 mobile minutes. One seller's price, given the card's +/-25% "
-     "width. Business retail basis."),
-    ("ES", "BROADBAND_PON", 10000, "40.85", "68.08", "EUR", "C",
-     "Telefonica Empresas Fibra 10 Gb Empresas, October 2026: EUR 54.46 a "
-     "month VAT excluded (65.90 included) for the first 12 months, no "
-     "permanence, symmetric 10 Gb where an XGS-PON exchange serves the "
-     "address; the price after twelve months is not published. Unlimited "
-     "national fixed calls and 50 mobile minutes. One seller's price, given "
-     "the card's +/-25% width. Business retail basis."),
     ("IT", "BROADBAND_PON", 1000, "26.21", "43.69", "EUR", "C",
      "Ehiweb Business FIBRA Ottica 1 Giga, October 2026: EUR 34.95 a month "
      "+ IVA (39.95 before the offer), locked for those signing by 31 "
@@ -1162,16 +1150,6 @@ SOURCED_RATES = [
      "Business FIBRA Ottica 2,5 Giga EUR 39.95 a month (49.95 before the "
      "offer), locked for those signing by 31 October 2026, no minimum term. "
      "Business retail basis."),
-    ("IT", "BROADBAND_PON", 10000, "39.90", "49.95", "EUR", "C",
-     "Published business 10 Giga FTTH over XGS-PON, October 2026, IVA "
-     "esclusa: TIM Business Super 10 Giga EUR 39.90 a month list (34.90 "
-     "with direct debit, 29.90 with a TIM mobile line and TIM Unica "
-     "Business too), 10 Gbps down and 2 up, with a virtual switchboard and "
-     "two lines, activation EUR 120 over 24 months, only where an XGS-PON "
-     "exchange serves the address, in more than 30 municipalities; Ehiweb "
-     "Business FIBRA Ottica 10 Giga EUR 49.95 a month (99.95 before the "
-     "offer), locked for those signing by 31 October 2026, no minimum term, "
-     "on Open Fiber. Business retail basis."),
 ]
 
 # Where a country's rate is quoted in its own currency. The seeded card is USD
@@ -2365,9 +2343,9 @@ def _drop_minority_plans(rows):
     """No regional plan tier a minority price below a majority's band.
 
     A region's tiers are medians over whichever members price each one. Spain
-    sells business fibre at 300 and 600 Mb and 2 Gb, Italy at 2.5 Giga, and
-    the two of them at 10 Gbps - each below the band Southern Europe's other
-    six members put on a slower tier, the USD 48-81 of 100 Mbps among them.
+    prices business fibre at 300 and 600 Mb and Italy at 2.5 Giga - each
+    below the band Southern Europe's other six members put on a slower tier,
+    the USD 48-81 of 100 Mbps among them.
     Those tiers are two countries' plans, not the region's price: left in,
     the rules below rebuild the region around them, drop its 100 Mbps for
     Spain's 300 and price an Albanian circuit at a Spanish plan. Dropped from
