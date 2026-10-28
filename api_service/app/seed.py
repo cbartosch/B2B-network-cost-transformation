@@ -1102,6 +1102,76 @@ SOURCED_RATES = [
      "the offer runs to 15 December 2026 for a new 24-month package. One "
      "seller's price, given the card's +/-25% width. Business retail "
      "basis."),
+    # Shared business fibre in Spain and Italy, at the plans each seller
+    # publishes. Fibre broadband stopped at 1 Gbps on the card, so a backup
+    # asking for more - Nestle's and Danone's rural plants, at 2,750 Mbps -
+    # was bought at 1 Gbps, below its primary. Both markets sell 10 Gbps to
+    # business for less than the card's seeded 100 Mbps: the workbook's
+    # Southern Europe cluster puts 100 Mbps to 1 Gbps at USD 65-143, and
+    # Telefonica sells 10 Gb for EUR 54.46. Priced at 10 Gbps alone, a need
+    # at any of those tiers would have bought the 10 Gbps plan, so the plans
+    # beneath it come from the same pages.
+    #
+    # XGS-PON reaches only the addresses an upgraded exchange serves:
+    # Telefonica sells its 2 and 10 Gb there alone, and TIM its 10 Giga in
+    # more than 30 municipalities. Neither country has a serviceability table
+    # to say whether a rural plant is one of them.
+    ("ES", "BROADBAND_PON", 300, "26.03", "43.39", "EUR", "C",
+     "Telefonica Empresas Fibra 300 Mb Empresas, October 2026: EUR 34.71 a "
+     "month VAT excluded (42.00 included) without promotion, 24.30 for the "
+     "first six months, no permanence; with a fixed line, unlimited "
+     "national fixed calls and 50 mobile minutes. One seller's price, given "
+     "the card's +/-25% width. Business retail basis."),
+    ("ES", "BROADBAND_PON", 600, "30.38", "50.63", "EUR", "C",
+     "Telefonica Empresas Fibra 600 Mb Empresas, October 2026: EUR 40.50 a "
+     "month VAT excluded (49.00 included) without promotion, 28.35 for the "
+     "first six months, no permanence; with a fixed line, unlimited "
+     "national fixed calls and 50 mobile minutes. One seller's price, given "
+     "the card's +/-25% width. Business retail basis."),
+    ("ES", "BROADBAND_PON", 1000, "34.65", "57.75", "EUR", "C",
+     "Telefonica Empresas Fibra 1 Gb Empresas, October 2026: EUR 46.20 a "
+     "month VAT excluded (55.90 included) without promotion, 32.34 for the "
+     "first six months, no permanence; with a fixed line, unlimited "
+     "national fixed calls and 50 mobile minutes. One seller's price, given "
+     "the card's +/-25% width. Business retail basis."),
+    ("ES", "BROADBAND_PON", 2000, "37.75", "62.91", "EUR", "C",
+     "Telefonica Empresas Fibra 2 Gb Empresas, October 2026: EUR 50.33 a "
+     "month VAT excluded (60.90 included) for the first 12 months, no "
+     "permanence, where an XGS-PON exchange serves the address; the price "
+     "after twelve months is not published. Unlimited national fixed calls "
+     "and 50 mobile minutes. One seller's price, given the card's +/-25% "
+     "width. Business retail basis."),
+    ("ES", "BROADBAND_PON", 10000, "40.85", "68.08", "EUR", "C",
+     "Telefonica Empresas Fibra 10 Gb Empresas, October 2026: EUR 54.46 a "
+     "month VAT excluded (65.90 included) for the first 12 months, no "
+     "permanence, symmetric 10 Gb where an XGS-PON exchange serves the "
+     "address; the price after twelve months is not published. Unlimited "
+     "national fixed calls and 50 mobile minutes. One seller's price, given "
+     "the card's +/-25% width. Business retail basis."),
+    ("IT", "BROADBAND_PON", 1000, "26.21", "43.69", "EUR", "C",
+     "Ehiweb Business FIBRA Ottica 1 Giga, October 2026: EUR 34.95 a month "
+     "+ IVA (39.95 before the offer), locked for those signing by 31 "
+     "October 2026, no minimum term, 1 Gbps down and 300 Mbps up over FTTH. "
+     "TIM sells business FTTH at 2.5 and 10 Giga only. One seller's price, "
+     "given the card's +/-25% width. Business retail basis."),
+    ("IT", "BROADBAND_PON", 2500, "34.90", "39.95", "EUR", "C",
+     "Published business 2.5 Giga FTTH, October 2026, IVA esclusa: TIM "
+     "Business Full Fibra EUR 34.90 a month list (24.90 only with direct "
+     "debit, a TIM mobile line and TIM Unica Business), with a static IP "
+     "and unlimited calls, activation EUR 120 over 24 months; Ehiweb "
+     "Business FIBRA Ottica 2,5 Giga EUR 39.95 a month (49.95 before the "
+     "offer), locked for those signing by 31 October 2026, no minimum term. "
+     "Business retail basis."),
+    ("IT", "BROADBAND_PON", 10000, "39.90", "49.95", "EUR", "C",
+     "Published business 10 Giga FTTH over XGS-PON, October 2026, IVA "
+     "esclusa: TIM Business Super 10 Giga EUR 39.90 a month list (34.90 "
+     "with direct debit, 29.90 with a TIM mobile line and TIM Unica "
+     "Business too), 10 Gbps down and 2 up, with a virtual switchboard and "
+     "two lines, activation EUR 120 over 24 months, only where an XGS-PON "
+     "exchange serves the address, in more than 30 municipalities; Ehiweb "
+     "Business FIBRA Ottica 10 Giga EUR 49.95 a month (99.95 before the "
+     "offer), locked for those signing by 31 October 2026, no minimum term, "
+     "on Open Fiber. Business retail basis."),
 ]
 
 # Where a country's rate is quoted in its own currency. The seeded card is USD
@@ -1577,6 +1647,14 @@ PRIORS = [
     ("AE", "MOBILE_5G", "L0", 50, 55, 95, 160),
 ]
 
+#: Products sold as plans, at the speeds each seller names. Telefonica sells
+#: business fibre at 300 Mb, 600 Mb, 1, 2 and 10 Gb and TIM at 2.5 and 10
+#: Giga, and 5G is sold by plan too: a tier between two plans is not one
+#: anyone sells, and a need there buys the faster plan. Ethernet and DIA are
+#: sold at the speed ordered, which is what an interpolated step describes.
+_PLAN_PRODUCTS = frozenset({"BROADBAND_PON", "BROADBAND_HFC", "MOBILE_5G"})
+
+
 def _reprice_between_sourced(rows, seeded=()):
     """Unsourced tiers that now sit above a sourced tier above them.
 
@@ -1597,6 +1675,10 @@ def _reprice_between_sourced(rows, seeded=()):
     tier above, applied to that tier's band. Sourcing AU DIA at 500 and 1000
     left the 300 Mbps seed at AUD 2,072 over a 500 Mbps rate of 484; it now
     sits where the seed put it, at 1,400/1,610 of the 500 Mbps band.
+
+    Never for a product sold as plans. Spain's seeded 500 Mbps fibre sits
+    between Telefonica's 300 and 600 Mb, and no seller sells it: it is left
+    as seeded, and dropped below for costing as much as the 600.
     """
     from decimal import Decimal as _D
     import math
@@ -1617,7 +1699,7 @@ def _reprice_between_sourced(rows, seeded=()):
     for row in rows:
         country, product, layer, mbps, low, base, high = row
         tiers = sourced.get((country, product))
-        if not tiers or int(mbps) in tiers:
+        if not tiers or int(mbps) in tiers or product in _PLAN_PRODUCTS:
             out.append(row)
             continue
         below = [t for t in tiers if t < int(mbps)]
@@ -1793,6 +1875,9 @@ PRIORS = _drop_dearer_than_faster(PRIORS, countries_only=True)
 #: All anchored on 1 and 10 Gbps, so every step sits on the one curve 2 Gbps
 #: already sat on and the card stays monotonic. Everything downstream - the
 #: labelling and the tests included - reads this tuple rather than a literal.
+#:
+#: Never for a product sold as plans: a 3 Gbps step between Italy's 2.5 and
+#: 10 Giga fibre is no plan anyone sells.
 _INTERPOLATED_TIERS = tuple((target, 1000, 10000)
                             for target in range(2000, 10000, 1000))
 
@@ -1831,6 +1916,8 @@ def _interpolated_tiers(rows):
     out = []
     for country, product, bw in sorted({(c, p, int(b)) for c, p, b in have}):
         if bw != 1000:                      # one pass per (country, product)
+            continue
+        if product in _PLAN_PRODUCTS:
             continue
         for target, low_t, high_t in _INTERPOLATED_TIERS:
             if (country, product, target) in have:
@@ -2266,6 +2353,59 @@ PRIORS = PRIORS + _regional_tiers(
     PRIORS, [(country, REGION_PARENT[region])
              for country, region in COUNTRY_REGION
              if region in REGION_PARENT])
+
+
+#: Regional plan tiers dropped because a minority of the region's members
+#: price them below the band of a slower tier most of them price: key -> the
+#: fastest such slower tier.
+REGIONAL_MINORITY: dict = {}
+
+
+def _drop_minority_plans(rows):
+    """No regional plan tier a minority price below a majority's band.
+
+    A region's tiers are medians over whichever members price each one. Spain
+    sells business fibre at 300 and 600 Mb and 2 Gb, Italy at 2.5 Giga, and
+    the two of them at 10 Gbps - each below the band Southern Europe's other
+    six members put on a slower tier, the USD 48-81 of 100 Mbps among them.
+    Those tiers are two countries' plans, not the region's price: left in,
+    the rules below rebuild the region around them, drop its 100 Mbps for
+    Spain's 300 and price an Albanian circuit at a Spanish plan. Dropped from
+    the region only; Spain and Italy still sell them.
+
+    Plans only. DIA and Ethernet are sold at the speed ordered, and a tier
+    one member prices is put on the region's curve instead (_regional_curve).
+    Only below a majority's band, not its base: Singapore's 100 Mbps 5G at
+    USD 35 sits inside the 30-44 band it and Australia give 50 Mbps, which is
+    the region's spread, and the rescale below puts the 50 under it as it
+    did. And only under a majority's tier: Western Europe's 50 Mbps 5G rests
+    on two of its four 5G markets and the UK's 150 on one, so the backstop
+    decides between them as it did.
+    """
+    rows = list(rows)
+    members, tiers = {}, {}
+    for i, (c, p, _l, bw, *_r) in enumerate(rows):
+        key = (c, p, int(bw))
+        if p in _PLAN_PRODUCTS and key in REGIONAL_MEMBERS:
+            members.setdefault((c, p), set()).update(REGIONAL_MEMBERS[key])
+            tiers.setdefault((c, p), []).append((int(bw), i))
+    dropped = set()
+    for (region, product), entries in tiers.items():
+        half = len(members[(region, product)]) / 2
+        majority = [(bw, i) for bw, i in entries
+                    if len(REGIONAL_MEMBERS[(region, product, bw)]) > half]
+        for bw, i in entries:
+            under = [b for b, j in majority
+                     if b < bw and float(rows[i][5]) < float(rows[j][4])]
+            if (bw, i) not in majority and under:
+                dropped.add(i)
+                REGIONAL_MINORITY[(region, product, bw)] = max(under)
+    for key in REGIONAL_MINORITY:
+        REGIONAL_MEMBERS.pop(key, None)
+    return [row for i, row in enumerate(rows) if i not in dropped]
+
+
+PRIORS = _drop_minority_plans(PRIORS)
 
 
 def _regional_curve(rows):

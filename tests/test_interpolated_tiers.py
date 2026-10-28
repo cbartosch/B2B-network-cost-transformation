@@ -165,6 +165,10 @@ def test_every_row_at_a_new_tier_is_labelled_interpolated():
     """
     at_new_tier = {(c, p, int(bw)) for c, p, _l, bw, _lo, _ba, _hi
                    in seed.PRIORS if int(bw) in TARGETS}
+    # Less what was priced before the fill: Telefonica's 2 Gb fibre plan is
+    # sourced at one of the targets and keeps its own basis.
+    at_new_tier -= seed._PRE_INTERPOLATION_KEYS
+    assert ("ES", "BROADBAND_PON", 2000) in seed._PRE_INTERPOLATION_KEYS
     assert at_new_tier == seed._DERIVED_TIER_KEYS, (
         "unlabelled: " + str(sorted(at_new_tier - seed._DERIVED_TIER_KEYS)[:5]))
 

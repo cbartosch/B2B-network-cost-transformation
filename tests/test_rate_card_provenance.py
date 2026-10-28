@@ -378,3 +378,96 @@ def test_no_tier_costs_as_much_as_a_faster_one_in_its_scope():
     assert ("GB", "MOBILE_5G", 50) in seed.DROPPED_FOR_FASTER
     assert not any((r[0], r[1], int(r[3])) == ("GB", "MOBILE_5G", 50)
                    for r in seed.PRIORS)
+
+
+# ------------------------------------------- business fibre, Spain and Italy
+@pytest.mark.parametrize("country,mbps,seller", [
+    ("ES", 300, "Telefonica"), ("ES", 600, "Telefonica"),
+    ("ES", 1000, "Telefonica"), ("ES", 2000, "Telefonica"),
+    ("ES", 10000, "Telefonica"), ("IT", 1000, "Ehiweb"),
+    ("IT", 2500, "TIM"), ("IT", 10000, "TIM")])
+def test_business_fibre_is_priced_from_the_sellers_own_plans(
+        country, mbps, seller):
+    """Fibre broadband stopped at 1 Gbps, so the 2,750 Mbps backups at
+    Nestle's and Danone's rural plants in Spain and Italy were bought at 1
+    Gbps, below their primary. Both markets publish business plans up to 10
+    Gbps; each tier is one of them, at the speed it is sold."""
+    grade, source = seed.SOURCED_PROVENANCE[(country, "BROADBAND_PON", mbps)]
+    assert grade == "C" and seller in source, source
+    assert "retail" in source.lower()
+
+
+def test_a_fibre_need_buys_the_plan_that_fits_it():
+    """The workbook's Southern Europe cluster seeded Spain's and Italy's
+    fibre at USD 65-110 from 100 to 500 Mbps, above Telefonica's 300 Mb at
+    EUR 34.71 and Ehiweb's 1 Giga at 34.95. Those tiers are not sold: a 100
+    Mbps need buys the 300 Mb plan in Spain and the 1 Giga in Italy, and a
+    500 Mbps one the 600 Mb in Spain."""
+    sold = {}
+    for c, p, _l, bw, *_r in seed.PRIORS:
+        if p == "BROADBAND_PON" and c in ("ES", "IT"):
+            sold.setdefault(c, set()).add(int(bw))
+    assert sold == {"ES": {300, 600, 1000, 2000, 10000},
+                    "IT": {1000, 2500, 10000}}, sold
+    dropped = seed.DROPPED_FOR_FASTER
+    assert dropped[("ES", "BROADBAND_PON", 100)] == 300
+    assert dropped[("ES", "BROADBAND_PON", 500)] == 600
+    assert dropped[("IT", "BROADBAND_PON", 100)] == 1000
+
+
+def test_no_plan_is_drawn_between_two_others():
+    """Fibre broadband and 5G are sold as plans. A 3 Gbps step between
+    Italy's 2.5 and 10 Giga, or a 500 Mbps one between Telefonica's 300 and
+    600 Mb, is no plan anyone sells; the 2-9 Gbps steps describe Ethernet
+    and DIA, which are sold at the speed ordered."""
+    plans = seed._PLAN_PRODUCTS
+    assert not [k for k in seed._DERIVED_TIER_KEYS if k[1] in plans]
+    assert not [k for k, (how, *_r) in seed.SOURCED_DERIVED.items()
+                if k[1] in plans and how in ("between", "below")]
+
+
+def test_a_region_is_not_priced_at_a_minoritys_plans(card):
+    """Southern Europe prices fibre from 100 Mbps to 1 Gbps across six to
+    eight members, and Spain's and Italy's plans alone price 300 and 600
+    Mbps and 2, 2.5 and 10 Gbps - below those tiers' bands. They stay
+    Spain's and Italy's. The region keeps what most of its members price,
+    and its gigabit median takes both countries' published plans in."""
+    tiers = {int(r[3]) for r in seed.PRIORS
+             if (r[0], r[1]) == ("EUROPE_SOUTH", "BROADBAND_PON")}
+    assert tiers == {100, 250, 500, 1000}, tiers
+    for region in ("EUROPE_SOUTH", "EMEA"):
+        for bw in (300, 600, 2000, 2500, 10000):
+            assert (region, "BROADBAND_PON", bw) in seed.REGIONAL_MINORITY
+    gigabit = card["EUROPE_SOUTH-BROADBAND_PON-1000"]
+    assert gigabit["sample_size"] == 8
+    assert "ES (grade C" in gigabit["source"]
+    assert "IT (grade C" in gigabit["source"]
+
+
+def test_a_minoritys_plan_under_a_majoritys_band_leaves_the_region(
+        monkeypatch):
+    """The rule on its own: two of eight members sell 10 Gbps for less than
+    the band all eight give 1 Gbps."""
+    monkeypatch.setattr(seed, "REGIONAL_MEMBERS", {
+        ("R", "BROADBAND_PON", 1000): list("ABCDEFGH"),
+        ("R", "BROADBAND_PON", 10000): ["A", "B"]})
+    monkeypatch.setattr(seed, "REGIONAL_MINORITY", {})
+    rows = seed._drop_minority_plans([
+        ("R", "BROADBAND_PON", "L0", 1000, 94, 126, 157),
+        ("R", "BROADBAND_PON", "L0", 10000, 46, 56, 70)])
+    assert [int(r[3]) for r in rows] == [1000]
+    assert seed.REGIONAL_MINORITY == {("R", "BROADBAND_PON", 10000): 1000}
+    assert ("R", "BROADBAND_PON", 10000) not in seed.REGIONAL_MEMBERS
+
+
+def test_a_regional_spread_or_a_split_vote_is_left_to_the_rules_after():
+    """Singapore's 100 Mbps 5G sits inside the band Australia and Singapore
+    give 50 Mbps, and Western Europe's 50 rests on two of its four 5G
+    markets against the UK's 150 on one. Neither is a minority's plan under
+    a majority's band, so both are decided as they were: the 50 rescaled
+    under Singapore's 100, and Western Europe's 50 dropped for the UK's
+    150."""
+    assert not [k for k in seed.REGIONAL_MINORITY if k[1] == "MOBILE_5G"]
+    assert any((r[0], r[1], int(r[3])) == ("APAC", "MOBILE_5G", 100)
+               for r in seed.PRIORS)
+    assert seed.DROPPED_FOR_FASTER[("EUROPE_WEST", "MOBILE_5G", 50)] == 150
