@@ -2978,7 +2978,7 @@ Sources: [Cloudbrink (citing AGCOM end-2025 data)](https://cloudbrink.com/europe
 
 - **Industry** BUILDING_MATERIALS (entity resolution)
 - **Scope** DE, US, GB, FR, IT, PL, EUR, 1,273 sites (research merged with disclosure)
-- **Confidence** 0.329 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.328 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 7 source(s)
 
@@ -3666,7 +3666,7 @@ Sources: [germancompanyformation.com](https://germancompanyformation.com/guides/
 
 ## A.P. Moller - Maersk A/S
 
-- **Industry** SHIPPING_LOGISTICS (spec fallback)
+- **Industry** LOGISTICS (spec fallback)
 - **Scope** DK, NL, DE, US, CN, IN, BR, SG, DKK, 156 sites (research merged with disclosure)
 - **Confidence** 0.348 (D - Indicative), coverage COMPLETE
 
@@ -3941,7 +3941,7 @@ Sources: [TeleGeography](https://resources.telegeography.com/the-rise-of-dia-ove
 
 ## Compagnie Generale des Etablissements Michelin SCA
 
-- **Industry** AUTOMOTIVE_PARTS (spec fallback)
+- **Industry** AUTOMOTIVE_OEM (spec fallback)
 - **Scope** FR, DE, US, BR, CN, PL, ES, IN, EUR, 98 sites (research merged with disclosure)
 - **Confidence** 0.346 (D - Indicative), coverage COMPLETE
 
