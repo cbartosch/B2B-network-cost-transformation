@@ -2978,7 +2978,7 @@ Sources: [Cloudbrink (citing AGCOM end-2025 data)](https://cloudbrink.com/europe
 
 - **Industry** BUILDING_MATERIALS (entity resolution)
 - **Scope** DE, US, GB, FR, IT, PL, EUR, 1,273 sites (research merged with disclosure)
-- **Confidence** 0.329 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.328 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 7 source(s)
 

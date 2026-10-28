@@ -134,7 +134,7 @@ def test_every_seeded_bandwidth_has_a_tier_that_can_price_it():
 def test_the_consumer_tiers_extend_a_market_rather_than_inventing_one():
     """A country with no HFC row has no HFC market recorded, and adding three
     tiers for it would assert a market rather than extend one."""
-    from app.seed import PRIORS
+    from app.seed import PRIORS, SOURCED_PROVENANCE
 
     by_country = {}
     for country, product, _layer, mbps, *_rest in PRIORS:
@@ -144,10 +144,14 @@ def test_the_consumer_tiers_extend_a_market_rather_than_inventing_one():
     # Anchored on each country's own lowest recorded tier, not on a 100 Mbps
     # row: France and the Netherlands price HFC at 50 only, and requiring 100
     # skipped them - leaving a French supermarket estate unpriceable, which is
-    # the defect this change exists to fix.
+    # the defect this change exists to fix. A market priced at the plans its
+    # sellers publish is recorded from its cheapest plan up: Spain's fibre
+    # starts at Telefonica's 300 Mb and Italy's at the 1 Giga.
     for (country, product), tiers in by_country.items():
-        assert min(tiers) <= 100, (
-            f"{country}/{product} starts at {min(tiers)} Mbps with no lower "
+        lowest = min(tiers)
+        sourced = (country, product, lowest) in SOURCED_PROVENANCE
+        assert lowest <= 100 or sourced, (
+            f"{country}/{product} starts at {lowest} Mbps with no lower "
             f"anchor - these tiers were not extended from a recorded market")
 
 
