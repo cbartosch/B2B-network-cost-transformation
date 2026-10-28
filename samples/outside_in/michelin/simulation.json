@@ -1,13 +1,13 @@
 {
-  "simulation_run_id": "5e7cebb4-5cc2-409f-972c-5eafe1937bb9",
+  "simulation_run_id": "243d662f-d38c-402d-b30f-766386342a18",
   "case_id": "92b5aa01-f7e2-4b3b-a6db-653c41832e17",
   "model_version": "sim-2.11.0",
   "seed": 20260101,
   "ensemble_size": 25,
   "status": "SUCCEEDED",
-  "output_hash": "b9743992bf86607a4d982568eb2a0183d58a2509c3de3a10ffadb9cc0ea74d43",
-  "started_at": "2026-10-27 14:31:56.307819+00:00",
-  "ended_at": "2026-10-27 14:31:56.450983+00:00",
+  "output_hash": "41ee74b259f6e62ae0ee5ea4959d4ae20b681bd95abac759a4e761cd58fc4469",
+  "started_at": "2026-10-28 07:48:31.500810+00:00",
+  "ended_at": "2026-10-28 07:48:31.690283+00:00",
   "params": {
     "footprint": [
       {
@@ -981,6 +981,36 @@
   },
   "pinned_priors": {
     "archetype_prior": {
+      "SELF_SERVICE_TERMINAL": {
+        "dual_access_probability": 0.15,
+        "primary_product": "MOBILE_5G",
+        "backup_product": "BROADBAND_PON",
+        "users_base": 0,
+        "bandwidth_mbps_base": 50,
+        "committed_fraction": "0.250",
+        "primary_service_class": "BEST_EFFORT",
+        "backup_service_class": "BEST_EFFORT"
+      },
+      "ATM": {
+        "dual_access_probability": 0.55,
+        "primary_product": "MOBILE_5G",
+        "backup_product": "BROADBAND_PON",
+        "users_base": 0,
+        "bandwidth_mbps_base": 50,
+        "committed_fraction": "0.600",
+        "primary_service_class": "BEST_EFFORT",
+        "backup_service_class": "BEST_EFFORT"
+      },
+      "LEGACY_WAN_SITE": {
+        "dual_access_probability": 0.6,
+        "primary_product": "MPLS",
+        "backup_product": "BROADBAND_PON",
+        "users_base": 40,
+        "bandwidth_mbps_base": 100,
+        "committed_fraction": "0.800",
+        "primary_service_class": "IPVPN",
+        "backup_service_class": "BEST_EFFORT"
+      },
       "BRANCH": {
         "dual_access_probability": 0.55,
         "primary_product": "DIA",
@@ -1099,36 +1129,6 @@
         "bandwidth_mbps_base": 50,
         "committed_fraction": "0.300",
         "primary_service_class": "BEST_EFFORT",
-        "backup_service_class": "BEST_EFFORT"
-      },
-      "SELF_SERVICE_TERMINAL": {
-        "dual_access_probability": 0.15,
-        "primary_product": "MOBILE_5G",
-        "backup_product": "BROADBAND_PON",
-        "users_base": 0,
-        "bandwidth_mbps_base": 50,
-        "committed_fraction": "0.250",
-        "primary_service_class": "BEST_EFFORT",
-        "backup_service_class": "BEST_EFFORT"
-      },
-      "ATM": {
-        "dual_access_probability": 0.55,
-        "primary_product": "MOBILE_5G",
-        "backup_product": "BROADBAND_PON",
-        "users_base": 0,
-        "bandwidth_mbps_base": 50,
-        "committed_fraction": "0.600",
-        "primary_service_class": "BEST_EFFORT",
-        "backup_service_class": "BEST_EFFORT"
-      },
-      "LEGACY_WAN_SITE": {
-        "dual_access_probability": 0.6,
-        "primary_product": "MPLS",
-        "backup_product": "BROADBAND_PON",
-        "users_base": 40,
-        "bandwidth_mbps_base": 100,
-        "committed_fraction": "0.800",
-        "primary_service_class": "IPVPN",
         "backup_service_class": "BEST_EFFORT"
       },
       "DEFAULT/BRANCH": {
@@ -1280,11 +1280,61 @@
         "committed_fraction": "0.800",
         "primary_service_class": "IPVPN",
         "backup_service_class": "BEST_EFFORT"
+      },
+      "AUTOMOTIVE_OEM/LARGE_OFFICE": {
+        "dual_access_probability": 0.9,
+        "primary_product": "ETHERNET",
+        "backup_product": "DIA",
+        "users_base": 250,
+        "bandwidth_mbps_base": 1000,
+        "committed_fraction": "0.500",
+        "primary_service_class": "ETHERNET",
+        "backup_service_class": "DIA"
+      },
+      "AUTOMOTIVE_OEM/DC": {
+        "dual_access_probability": 1.0,
+        "primary_product": "ETHERNET",
+        "backup_product": "ETHERNET",
+        "users_base": 0,
+        "bandwidth_mbps_base": 10000,
+        "committed_fraction": "0.300",
+        "primary_service_class": "ETHERNET",
+        "backup_service_class": "ETHERNET"
+      },
+      "AUTOMOTIVE_OEM/BRANCH": {
+        "dual_access_probability": 0.55,
+        "primary_product": "DIA",
+        "backup_product": "BROADBAND_PON",
+        "users_base": 25,
+        "bandwidth_mbps_base": 100,
+        "committed_fraction": "0.500",
+        "primary_service_class": "DIA",
+        "backup_service_class": "BEST_EFFORT"
+      },
+      "AUTOMOTIVE_OEM/PLANT": {
+        "dual_access_probability": 0.85,
+        "primary_product": "ETHERNET",
+        "backup_product": "BROADBAND_PON",
+        "users_base": 400,
+        "bandwidth_mbps_base": 1000,
+        "committed_fraction": "0.600",
+        "primary_service_class": "ETHERNET",
+        "backup_service_class": "BEST_EFFORT"
+      },
+      "AUTOMOTIVE_OEM/LEGACY_WAN_SITE": {
+        "dual_access_probability": 0.6,
+        "primary_product": "MPLS",
+        "backup_product": "BROADBAND_PON",
+        "users_base": 40,
+        "bandwidth_mbps_base": 100,
+        "committed_fraction": "0.800",
+        "primary_service_class": "IPVPN",
+        "backup_service_class": "BEST_EFFORT"
       }
     },
     "bandwidth_basis": {
-      "industry": "AUTOMOTIVE_PARTS",
-      "matched": false,
+      "industry": "AUTOMOTIVE_OEM",
+      "matched": true,
       "by_archetype": {
         "ATM": 50,
         "BRANCH": 100,
@@ -1293,6 +1343,7 @@
         "DC": 10000,
         "LARGE_OFFICE": 1000,
         "LEGACY_WAN_SITE": 100,
+        "MANUFACTURING_PLANT": 10500,
         "NETWORK_SITE": 100,
         "PLANT": 1000,
         "REMOTE_SITE": 100,
@@ -1319,9 +1370,21 @@
         "DEFAULT/TERMINAL": 10000,
         "DEFAULT/WAREHOUSE": 100
       },
-      "benchmark": [],
-      "benchmark_matched": false,
-      "benchmark_note": "no published benchmark row for AUTOMOTIVE_PARTS, so every figure is this repository's own judgement at evidence grade E"
+      "benchmark": [
+        {
+          "archetype_code": "MANUFACTURING_PLANT",
+          "site_archetype": "Manufacturing Plant",
+          "bandwidth_low_mbps": 1000,
+          "bandwidth_base_mbps": 10500,
+          "bandwidth_high_mbps": 20000,
+          "committed_share_base": "0.900",
+          "criticality_tier": "Tier 1",
+          "dual_access_probability": "1.000",
+          "density_band": "SUBURBAN"
+        }
+      ],
+      "benchmark_matched": true,
+      "benchmark_note": "1 published benchmark row(s) for AUTOMOTIVE_OEM; these override the seeded bandwidth for the archetypes they name"
     },
     "topology_basis": {
       "by_field": {
@@ -1344,6 +1407,26 @@
         "ATM.users_base": {
           "value": 0,
           "layer": "SEEDED_PRIOR"
+        },
+        "AUTOMOTIVE_OEM/BRANCH.bandwidth_mbps_base": {
+          "value": 100,
+          "layer": "INDUSTRY_DEFAULT"
+        },
+        "AUTOMOTIVE_OEM/DC.bandwidth_mbps_base": {
+          "value": 10000,
+          "layer": "INDUSTRY_DEFAULT"
+        },
+        "AUTOMOTIVE_OEM/LARGE_OFFICE.bandwidth_mbps_base": {
+          "value": 1000,
+          "layer": "INDUSTRY_DEFAULT"
+        },
+        "AUTOMOTIVE_OEM/LEGACY_WAN_SITE.bandwidth_mbps_base": {
+          "value": 100,
+          "layer": "INDUSTRY_DEFAULT"
+        },
+        "AUTOMOTIVE_OEM/PLANT.bandwidth_mbps_base": {
+          "value": 1000,
+          "layer": "INDUSTRY_DEFAULT"
         },
         "BRANCH.backup_product": {
           "value": "BROADBAND_PON",
@@ -1699,6 +1782,11 @@
         "ATM.dual_access_probability",
         "ATM.primary_product",
         "ATM.users_base",
+        "AUTOMOTIVE_OEM/BRANCH.bandwidth_mbps_base",
+        "AUTOMOTIVE_OEM/DC.bandwidth_mbps_base",
+        "AUTOMOTIVE_OEM/LARGE_OFFICE.bandwidth_mbps_base",
+        "AUTOMOTIVE_OEM/LEGACY_WAN_SITE.bandwidth_mbps_base",
+        "AUTOMOTIVE_OEM/PLANT.bandwidth_mbps_base",
         "BRANCH.backup_product",
         "BRANCH.bandwidth_mbps_base",
         "BRANCH.dual_access_probability",
@@ -1788,52 +1876,37 @@
       "note": "A field on SEEDED_PRIOR or INDUSTRY_DEFAULT is an assumption this case has not tested. Research the relevant domain and promote the finding, or register what the team knows, to replace it - the simulation is a sizing instrument either way (0.3B), but an instrument calibrated to this client sizes it better."
     },
     "service_class_by_archetype": {},
-    "committed_fraction_by_archetype": {},
-    "dual_access_by_archetype": {},
+    "committed_fraction_by_archetype": {
+      "AUTOMOTIVE_OEM/LEGACY_WAN_SITE": "0.8500",
+      "LEGACY_WAN_SITE": "0.8500",
+      "AUTOMOTIVE_OEM/LARGE_OFFICE": "0.7000",
+      "LARGE_OFFICE": "0.7000",
+      "AUTOMOTIVE_OEM/DC": "0.6000",
+      "DC": "0.6000",
+      "AUTOMOTIVE_OEM/BRANCH": "0.7000",
+      "BRANCH": "0.7000",
+      "AUTOMOTIVE_OEM/PLANT": "0.7500",
+      "PLANT": "0.7500"
+    },
+    "dual_access_by_archetype": {
+      "AUTOMOTIVE_OEM/LEGACY_WAN_SITE": "0.8600",
+      "LEGACY_WAN_SITE": "0.8600",
+      "AUTOMOTIVE_OEM/LARGE_OFFICE": "0.9650",
+      "LARGE_OFFICE": "0.9650",
+      "AUTOMOTIVE_OEM/DC": "1.0000",
+      "DC": "1.0000",
+      "AUTOMOTIVE_OEM/BRANCH": "0.8000",
+      "BRANCH": "0.8000",
+      "AUTOMOTIVE_OEM/PLANT": "0.9475",
+      "PLANT": "0.9475"
+    },
     "resilience_basis": {
-      "industry": "AUTOMOTIVE_PARTS",
-      "criticality_tier": null,
-      "archetypes_covered": 0
+      "industry": "AUTOMOTIVE_OEM",
+      "criticality_tier": "Tier 1",
+      "archetypes_covered": 5
     },
     "providers_by_role": {},
     "plan_tiers": {
-      "IN|BROADBAND_HFC": [
-        100,
-        250,
-        500,
-        1000
-      ],
-      "IN|BROADBAND_PON": [
-        50,
-        100,
-        250,
-        500,
-        1000
-      ],
-      "IN|MOBILE_5G": [
-        50,
-        100,
-        300
-      ],
-      "ES|MOBILE_5G": [
-        50,
-        150,
-        300
-      ],
-      "ES|BROADBAND_HFC": [
-        50,
-        100,
-        250,
-        500,
-        1000
-      ],
-      "ES|BROADBAND_PON": [
-        50,
-        100,
-        250,
-        500,
-        1000
-      ],
       "US|BROADBAND_HFC": [
         50,
         100,
@@ -1853,13 +1926,6 @@
         100,
         300
       ],
-      "FR|BROADBAND_PON": [
-        50,
-        100,
-        250,
-        500,
-        1000
-      ],
       "FR|BROADBAND_HFC": [
         50,
         100,
@@ -1872,22 +1938,67 @@
         150,
         300
       ],
-      "CN|BROADBAND_HFC": [
-        100,
-        250,
-        500,
-        1000
-      ],
-      "CN|BROADBAND_PON": [
+      "FR|BROADBAND_PON": [
         50,
         100,
         250,
         500,
         1000
       ],
-      "CN|MOBILE_5G": [
+      "IN|BROADBAND_HFC": [
+        100,
+        250,
+        500,
+        1000
+      ],
+      "IN|BROADBAND_PON": [
         50,
         100,
+        250,
+        500,
+        1000
+      ],
+      "IN|MOBILE_5G": [
+        50,
+        100,
+        300
+      ],
+      "DE|BROADBAND_HFC": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "DE|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "DE|MOBILE_5G": [
+        50,
+        150,
+        300
+      ],
+      "ES|BROADBAND_HFC": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "ES|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "ES|MOBILE_5G": [
+        50,
+        150,
         300
       ],
       "BR|BROADBAND_HFC": [
@@ -1909,6 +2020,24 @@
         100,
         300
       ],
+      "CN|BROADBAND_HFC": [
+        100,
+        250,
+        500,
+        1000
+      ],
+      "CN|BROADBAND_PON": [
+        50,
+        100,
+        250,
+        500,
+        1000
+      ],
+      "CN|MOBILE_5G": [
+        50,
+        100,
+        300
+      ],
       "PL|BROADBAND_HFC": [
         50,
         100,
@@ -1924,25 +2053,6 @@
         1000
       ],
       "PL|MOBILE_5G": [
-        50,
-        150,
-        300
-      ],
-      "DE|BROADBAND_HFC": [
-        50,
-        100,
-        250,
-        500,
-        1000
-      ],
-      "DE|BROADBAND_PON": [
-        50,
-        100,
-        250,
-        500,
-        1000
-      ],
-      "DE|MOBILE_5G": [
         50,
         150,
         300
@@ -2043,9 +2153,9 @@
     "sites_named": 0,
     "sites_generated": 98,
     "circuits": {
-      "low": 172,
-      "base": 178,
-      "high": 183
+      "low": 182,
+      "base": 186,
+      "high": 189
     },
     "circuits_primary": {
       "low": 98,
@@ -2053,9 +2163,9 @@
       "high": 98
     },
     "circuits_backup": {
-      "low": 70,
-      "base": 76,
-      "high": 81
+      "low": 80,
+      "base": 84,
+      "high": 87
     },
     "products": [
       {
@@ -2073,7 +2183,7 @@
         "country": "BR",
         "product": "ETHERNET",
         "role": "PRIMARY",
-        "bandwidth_mbps": 600,
+        "bandwidth_mbps": 750,
         "count": 4,
         "service_class": "ETHERNET",
         "density": "RURAL",
@@ -2085,7 +2195,7 @@
         "product": "BROADBAND_PON",
         "role": "BACKUP",
         "bandwidth_mbps": 1000,
-        "count": 3,
+        "count": 4,
         "service_class": "BEST_EFFORT",
         "density": "RURAL",
         "bearer_mbps": 1000,
@@ -2095,7 +2205,7 @@
         "country": "CN",
         "product": "ETHERNET",
         "role": "PRIMARY",
-        "bandwidth_mbps": 600,
+        "bandwidth_mbps": 750,
         "count": 4,
         "service_class": "ETHERNET",
         "density": "RURAL",
@@ -2107,7 +2217,7 @@
         "product": "BROADBAND_PON",
         "role": "BACKUP",
         "bandwidth_mbps": 100,
-        "count": 6,
+        "count": 5,
         "service_class": "BEST_EFFORT",
         "density": "RURAL",
         "bearer_mbps": 100,
@@ -2117,7 +2227,7 @@
         "country": "DE",
         "product": "ETHERNET",
         "role": "PRIMARY",
-        "bandwidth_mbps": 600,
+        "bandwidth_mbps": 750,
         "count": 6,
         "service_class": "ETHERNET",
         "density": "RURAL",
@@ -2139,7 +2249,7 @@
         "country": "ES",
         "product": "ETHERNET",
         "role": "PRIMARY",
-        "bandwidth_mbps": 600,
+        "bandwidth_mbps": 750,
         "count": 5,
         "service_class": "ETHERNET",
         "density": "RURAL",
@@ -2173,7 +2283,7 @@
         "product": "BROADBAND_PON",
         "role": "BACKUP",
         "bandwidth_mbps": 100,
-        "count": 12,
+        "count": 16,
         "service_class": "BEST_EFFORT",
         "density": "RURAL",
         "bearer_mbps": 100,
@@ -2184,7 +2294,7 @@
         "product": "DIA",
         "role": "BACKUP",
         "bandwidth_mbps": 1000,
-        "count": 4,
+        "count": 5,
         "service_class": "DIA",
         "density": "URBAN",
         "bearer_mbps": 1000,
@@ -2205,7 +2315,7 @@
         "country": "FR",
         "product": "ETHERNET",
         "role": "PRIMARY",
-        "bandwidth_mbps": 150,
+        "bandwidth_mbps": 300,
         "count": 2,
         "service_class": "ETHERNET",
         "density": "SUBURBAN",
@@ -2216,7 +2326,7 @@
         "country": "FR",
         "product": "ETHERNET",
         "role": "PRIMARY",
-        "bandwidth_mbps": 500,
+        "bandwidth_mbps": 700,
         "count": 5,
         "service_class": "ETHERNET",
         "density": "URBAN",
@@ -2227,7 +2337,7 @@
         "country": "FR",
         "product": "ETHERNET",
         "role": "PRIMARY",
-        "bandwidth_mbps": 600,
+        "bandwidth_mbps": 750,
         "count": 16,
         "service_class": "ETHERNET",
         "density": "RURAL",
@@ -2239,7 +2349,7 @@
         "product": "BROADBAND_PON",
         "role": "BACKUP",
         "bandwidth_mbps": 1000,
-        "count": 2,
+        "count": 1,
         "service_class": "BEST_EFFORT",
         "density": "RURAL",
         "bearer_mbps": 1000,
@@ -2249,7 +2359,7 @@
         "country": "IN",
         "product": "ETHERNET",
         "role": "PRIMARY",
-        "bandwidth_mbps": 600,
+        "bandwidth_mbps": 750,
         "count": 2,
         "service_class": "ETHERNET",
         "density": "RURAL",
@@ -2261,7 +2371,7 @@
         "product": "BROADBAND_PON",
         "role": "BACKUP",
         "bandwidth_mbps": 1000,
-        "count": 2,
+        "count": 3,
         "service_class": "BEST_EFFORT",
         "density": "RURAL",
         "bearer_mbps": 1000,
@@ -2271,7 +2381,7 @@
         "country": "PL",
         "product": "ETHERNET",
         "role": "PRIMARY",
-        "bandwidth_mbps": 600,
+        "bandwidth_mbps": 750,
         "count": 3,
         "service_class": "ETHERNET",
         "density": "RURAL",
@@ -2283,7 +2393,7 @@
         "product": "BROADBAND_PON",
         "role": "BACKUP",
         "bandwidth_mbps": 100,
-        "count": 29,
+        "count": 33,
         "service_class": "BEST_EFFORT",
         "density": "RURAL",
         "bearer_mbps": 100,
@@ -2294,7 +2404,7 @@
         "product": "DIA",
         "role": "BACKUP",
         "bandwidth_mbps": 1000,
-        "count": 3,
+        "count": 2,
         "service_class": "DIA",
         "density": "URBAN",
         "bearer_mbps": 1000,
@@ -2304,7 +2414,7 @@
         "country": "US",
         "product": "ETHERNET",
         "role": "PRIMARY",
-        "bandwidth_mbps": 500,
+        "bandwidth_mbps": 700,
         "count": 3,
         "service_class": "ETHERNET",
         "density": "URBAN",
@@ -2315,7 +2425,7 @@
         "country": "US",
         "product": "ETHERNET",
         "role": "PRIMARY",
-        "bandwidth_mbps": 600,
+        "bandwidth_mbps": 750,
         "count": 36,
         "service_class": "ETHERNET",
         "density": "RURAL",
@@ -2324,12 +2434,12 @@
       }
     ],
     "dual_access_sites": {
-      "low": 70,
-      "base": 76,
-      "high": 81
+      "low": 80,
+      "base": 84,
+      "high": 87
     },
     "circuits_backbone": 4,
-    "circuits_per_site_base": 1.8163,
+    "circuits_per_site_base": 1.898,
     "implied_users": 33120,
     "bandwidth_profile": {
       "PLANT": {
@@ -2396,7 +2506,7 @@
       "note": "One region with data centres (EUROPE_WEST), so there is no global core tier - a hub has nothing to reach across."
     },
     "node_count": 98,
-    "edge_count": 178
+    "edge_count": 186
   },
   "output_omitted": {
     "fields": [
