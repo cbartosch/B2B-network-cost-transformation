@@ -234,13 +234,18 @@ def set_industry_if_absent(case_id, spec):
     silently falls back to DEFAULT and the estate stops differentiating, so
     this is not a cosmetic field.
 
-    Nothing else writes the code. Resolution records what it called the
-    sector as industry_as_resolved and leaves the code alone, so a known
-    code on a case came from the spec - this function, on this run or an
-    earlier one - or from whoever set it on the case. Labelling every known
+    The origin says where this run took the code from, and claims nothing it
+    did not see. SPEC_FALLBACK is the run that writes the spec's code onto
+    the case. A known code already there is CASE_RECORD, whoever put it
+    there - an earlier run of this function, an analyst through the intake
+    form, or an older spec, since a corrected spec does not overwrite a
+    known code - and agrees_with_spec says separately whether it is the
+    spec's. Equality names the code, not who chose it.
+
+    Resolution never writes the code: it records what it called the sector
+    as industry_as_resolved and leaves the code alone. Labelling every known
     code ENTITY_RESOLUTION, as this did, credited research with a choice it
-    never makes: true of none of the fifty, and Maersk and Michelin said
-    SPEC_FALLBACK only on the run that wrote their codes.
+    never makes - true of none of the fifty.
     """
     from sqlalchemy import update
     from app.domain import bics
@@ -252,19 +257,18 @@ def set_industry_if_absent(case_id, spec):
         known = {r[0] for r in s.execute(
             select(db.archetype_bandwidth.c.industry)).all()}
         if row and row.upper() in known:
-            # The spec's code, or one the case was given some other way -
-            # kept either way. Which one is reported, and a disagreement is
+            # Kept, whoever put it there. A disagreement with the spec is
             # said out loud by the caller: a corrected spec does not
             # overwrite a known code, and nothing used to say so.
-            out = {"industry": row,
-                   "origin": ("SPEC_FALLBACK"
-                              if row.upper() == spec["industry"].upper()
-                              else "CASE_RECORD")}
+            out = {"industry": row, "origin": "CASE_RECORD",
+                   "agrees_with_spec":
+                       row.upper() == spec["industry"].upper()}
         else:
             s.execute(update(db.case).where(db.case.c.case_id == case_id)
                       .values(industry=spec["industry"]))
             s.commit()
-            out = {"industry": spec["industry"], "origin": "SPEC_FALLBACK"}
+            out = {"industry": spec["industry"], "origin": "SPEC_FALLBACK",
+                   "agrees_with_spec": True}
 
     # The cross-check. The membership test above asks whether the code is A
     # code; this asks whether it is THIS ENTITY'S code, which is the question
@@ -1295,7 +1299,7 @@ def run_one(spec, outdir, domains, force, repair=False, repromote=False, redo=Fa
 
     ind = set_industry_if_absent(case_id, spec)
     log(slug, f"industry {ind['industry']} ({ind['origin']})")
-    if ind["origin"] == "CASE_RECORD":
+    if not ind["agrees_with_spec"]:
         log(slug, f"!! INDUSTRY NOT THE SPEC'S: the case holds "
                   f"{ind['industry']} and the spec says {spec['industry']}. "
                   f"The case's code prices the estate; correct whichever "
