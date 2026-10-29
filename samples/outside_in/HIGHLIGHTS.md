@@ -585,7 +585,7 @@ Sources: [Connected Networks](https://www.connectednetworks.io/countries/holland
 
 - **Industry** AIRLINES (case record)
 - **Scope** FR, NL, EUR, 39 sites (research merged with disclosure)
-- **Confidence** 0.485 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.486 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 10 source(s)
 
@@ -1405,7 +1405,7 @@ Sources: [checkeverything.fr](https://checkeverything.fr/en/telecommunications/o
 
 - **Industry** DRUG_RETAIL (case record)
 - **Scope** GB, IE, GBP, 2,266 sites (research merged with disclosure)
-- **Confidence** 0.343 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.344 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 6 source(s)
 
@@ -3249,7 +3249,7 @@ Sources: [germancompanyformation.com](https://germancompanyformation.com/guides/
 
 - **Industry** UTILITIES (case record)
 - **Scope** ES, GB, EUR, 2,762 sites (research merged with disclosure)
-- **Confidence** 0.368 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.323 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 10 source(s)
 
@@ -5619,7 +5619,7 @@ Sources: [Pallas Digital](https://pall.as/the-state-of-enterprise-wan/); [Socium
 
 - **Industry** GROCERY_RETAIL (case record)
 - **Scope** GB, IE, GBP, 3,940 sites (research merged with disclosure)
-- **Confidence** 0.380 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.390 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 7 source(s)
 
@@ -6746,7 +6746,7 @@ Sources: [germancompanyformation.com](https://germancompanyformation.com/guides/
 
 - **Industry** GROCERY_RETAIL (case record)
 - **Scope** AU, NZ, AUD, 1,363 sites (research merged with disclosure)
-- **Confidence** 0.332 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.375 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 7 source(s)
 
