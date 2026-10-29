@@ -662,3 +662,36 @@ def test_per_site_costs_stated_in_usd_convert_into_the_case_currency(
         assert close(eur_cost, D(usd_cost) * factor), (
             f"scenario {k}: EUR {eur_cost}, expected USD {usd_cost} "
             f"converted at {factor}")
+
+
+def test_the_ops_floor_is_judged_after_conversion(session, client):
+    """900 stated in JPY is about USD 6 a site a year. Checked before
+    conversion it passed the floor that catches a monthly figure, and priced
+    a USD case's operations at almost nothing."""
+    case_id = _ready_case(session, layers=("L0", "OPS"))
+    sim_id = _simulation(session, case_id)
+    _prior(session)
+    r = client.post(f"/v1/outside-in/cases/{case_id}/estimates:run",
+                    json={"method": "BUILD_UP", "simulation_run_id": sim_id,
+                          "users": 500, "ops_cost_per_site_base": 900,
+                          "ops_cost_per_site_currency": "JPY"})
+    assert r.status_code == 422, r.text
+    detail = str(r.json())
+    assert "JPY" in detail and "USD" in detail, detail
+
+
+def test_an_anchor_estimate_pins_the_rate_its_one_time_cost_converted_at(
+        session, client):
+    """ANCHOR converts the one-time cost per site as BUILD_UP does, and pins
+    the rate as BUILD_UP does, so an FX row changing cannot move a payback
+    with nothing recorded to say why."""
+    case_id = _ready_case(session, base_currency="EUR")
+    r = client.post(f"/v1/outside-in/cases/{case_id}/estimates:run",
+                    json={"method": "ANCHOR", "anchor_value": 213_000_000,
+                          "users": 500, "ops_cost_per_site_base": 900})
+    assert r.status_code == 200, r.text
+    pins = session.execute(select(db.estimate_snapshot.c.pins).where(
+        db.estimate_snapshot.c.estimate_snapshot_id
+        == r.json()["estimate_snapshot_id"])).scalar()
+    assert pins["fx"]["to"] == "EUR"
+    assert "USD" in pins["fx"]["rates"]

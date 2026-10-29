@@ -307,7 +307,37 @@ def _fx_rows(s):
             for r in s.execute(select(db.fx_rate)).all()]
 
 
-def _transition_policy(s, case_row=None):
+def _case_fx(s, case_row, currencies):
+    """currency.rate_table into the case's currency, or a 422 naming the gap.
+
+    One call for every conversion a run makes, so each uses the case's own
+    fx_convention and pricing date and the caller can pin what it got.
+    """
+    try:
+        return currency.rate_table(
+            _fx_rows(s), currencies=currencies,
+            to=currency.normalise(case_row.base_currency),
+            convention=getattr(case_row, "fx_convention", None),
+            as_of=f"{case_row.price_year or 2026}-12-31")
+    except (currency.CurrencyMismatch, currency.UnknownCurrency) as exc:
+        raise HTTPException(422, {"error": "currencies do not reconcile",
+                                  "detail": str(exc)})
+
+
+def _in_case_currency(tp, fx):
+    """The transition policy in the case's currency, at a table's factor.
+
+    The per-site costs are governed in TransitionPolicy.currency and were read
+    as every case's own, so the same 900 was 900 euros for Iberdrola and 900
+    yen, about EUR 5, for Toyota. Converted at the factor the caller's table
+    holds - a table the caller pins, so a rerun that moves a one-time cost or
+    a payback says which rate moved it.
+    """
+    return tp.in_currency(fx["factors"][currency.normalise(tp.currency)],
+                          fx["to"])
+
+
+def _transition_policy(s):
     """What it costs to get to the target estate.
 
     A 503 like every other governed policy, rather than None. scenarios()
@@ -321,29 +351,14 @@ def _transition_policy(s, case_row=None):
     transition_policy.evidence_grade is deliberately unseeded and from_rows
     reads it with .get(..., "E"); the five numeric fields are required.
 
-    Given the case, in the case's currency. The per-site costs are governed
-    in TransitionPolicy.currency and were read as every case's own, so the
-    same 900 was 900 euros for Iberdrola and 900 yen, about EUR 5, for
-    Toyota. Converted here, at the rate and convention every price uses, so
-    both methods - BUILD_UP and ANCHOR - get the same figure.
+    In TransitionPolicy.currency. Both methods convert it with
+    _in_case_currency, at a rate they pin.
     """
     try:
-        tp = policy.TransitionPolicy.from_rows(_thresholds(s, "transition_policy"))
+        return policy.TransitionPolicy.from_rows(_thresholds(s, "transition_policy"))
     except (policy.PolicyIncomplete, policy.PolicyInvalid) as exc:
         raise HTTPException(503, {"error": "governed transition policy unusable",
                                   "detail": str(exc)})
-    if case_row is None:
-        return tp
-    target = currency.normalise(case_row.base_currency)
-    try:
-        fx = currency.rate_table(
-            _fx_rows(s), currencies=[tp.currency], to=target,
-            convention=getattr(case_row, "fx_convention", None),
-            as_of=f"{case_row.price_year or 2026}-12-31")
-    except (currency.CurrencyMismatch, currency.UnknownCurrency) as exc:
-        raise HTTPException(422, {"error": "currencies do not reconcile",
-                                  "detail": str(exc)})
-    return tp.in_currency(fx["factors"][currency.normalise(tp.currency)], target)
 
 
 def _recommendation_policy(s):
@@ -3712,13 +3727,19 @@ def _run_anchor_estimate(s, *, case_id, case_row, payload,
         scope_status=_scope_status(case_row))
     lv = [dict(r._mapping) for r in s.execute(select(db.lever)).all()]
     levers_by_id = {l["lever_id"]: l for l in lv}
+    # The one-time costs' own table. ANCHOR prices no card, so this is the
+    # only conversion it makes - and it is pinned below, as BUILD_UP pins its
+    # card's, or an FX row changing would move a payback with nothing
+    # recorded to say why.
+    _tp = _transition_policy(s)
+    _tp_fx = _case_fx(s, case_row, [_tp.currency])
     # With the transition policy, so each scenario carries what it
     # costs to get there. Site count and run rate are read back from
     # the components rather than passed alongside them - a number
     # passed beside the components could disagree with them.
     scen = estimate.scenarios(
         components, lv,
-        transition_policy=_transition_policy(s, case_row),
+        transition_policy=_in_case_currency(_tp, _tp_fx),
         sites=estimate.site_count(components),
         monthly_run_rate=estimate.monthly_run_rate(components),
         range_factor=_range_factor,
@@ -3805,6 +3826,11 @@ def _run_anchor_estimate(s, *, case_id, case_row, payload,
               "perimeter_version": case_row.perimeter_version,
               "discount_rate_set_id": case_row.discount_rate_set_id,
               "base_currency": case_row.base_currency,
+              # The rate the one-time costs converted at, in the shape the
+              # BUILD_UP snapshot pins its card's in. Null when nothing
+              # converted: a case in the policy's own currency.
+              "fx": ({"to": _tp_fx["to"], "rates": _tp_fx["detail"]}
+                     if _tp_fx["detail"] else None),
               "price_year": case_row.price_year}))
     s.commit()
 
@@ -3890,25 +3916,8 @@ def run_estimate(case_id: str, payload: EstimateIn):
         # figure for that method refused a valid request for a driver the
         # calculation would not have used. Two tests caught this and I had not
         # run them.
-        # The ops cost is annual per site, while every circuit price in the
-        # model is monthly. Nothing but a page label distinguished them, and a
-        # monthly figure typed here understates total cost by around 40% on a
-        # large estate - the kind of error that reads as a plausible number.
-        #
-        # Refused rather than warned: a range this low is far more likely to be
-        # a monthly figure than a real annual one, and the estimate is used to
-        # size a sourcing exercise.
-        if _ops is not None and D(0) < D(str(_ops)) < D("240"):
-            raise HTTPException(422, {
-                "error": "ops cost per site looks monthly, not annual",
-                "detail": (
-                    f"{_ops} per site per year is below any plausible annual "
-                    f"figure for operating a site's network - it is most "
-                    f"likely a monthly cost. Every circuit price in this model "
-                    f"is monthly and annualised; this one field is annual. "
-                    f"Multiply by 12, or raise "
-                    f"footprint_policy.min_plausible_ops_cost_per_site if the "
-                    f"figure really is this low.")})
+        # Whether the ops cost looks monthly rather than annual is checked
+        # once it is in the case's currency - see where `ops` is set below.
 
         # The method is checked first because the check below branches on it.
         # In the other order, `payload.method != METHOD_ANCHOR` was asked of a
@@ -4107,19 +4116,16 @@ def run_estimate(case_id: str, payload: EstimateIn):
             if payload.ops_cost_per_site_base is not None
             and payload.ops_cost_per_site_currency
             else case_row.base_currency)
-        _fx = {"to": _case_ccy, "factors": {}, "detail": {}}
-        try:
-            _fx = currency.rate_table(
-                _fx_rows(s),
-                currencies=([r.currency for r in prior_rows]
-                            + [r.currency for r in platform_rows]
-                            + [_ops_ccy]),
-                to=_case_ccy,
-                convention=getattr(case_row, "fx_convention", None),
-                as_of=f"{case_row.price_year or 2026}-12-31")
-        except (currency.CurrencyMismatch, currency.UnknownCurrency) as exc:
-            raise HTTPException(422, {"error": "currencies do not reconcile",
-                                      "detail": str(exc)})
+        # The transition policy, loaded here so its currency is among the
+        # ones the table converts: its one-time costs then convert at a rate
+        # this snapshot pins, not one fetched again later.
+        _tp = _transition_policy(s)
+        # USD as well: the floor that tells an annual ops cost from a monthly
+        # one is a USD figure, compared in the case's currency below.
+        _fx = _case_fx(s, case_row,
+                       [r.currency for r in prior_rows]
+                       + [r.currency for r in platform_rows]
+                       + [_ops_ccy, _tp.currency, "USD"])
 
         # A band-specific rate is kept OUT of the national dict and indexed
         # separately. Both are keyed (country, product, bandwidth), so a row
@@ -4296,6 +4302,30 @@ def run_estimate(case_id: str, payload: EstimateIn):
                           "estate, for example). Supply `users` explicitly."})
 
         ops = D(_ops) * _fx["factors"][_ops_ccy]
+        # The ops cost is annual per site, while every circuit price in the
+        # model is monthly. Nothing but a page label distinguished them, and a
+        # monthly figure typed here understates total cost by around 40% on a
+        # large estate - the kind of error that reads as a plausible number.
+        #
+        # Refused rather than warned: a figure this low is far more likely to
+        # be monthly than a real annual one. Judged in the case's currency,
+        # against a floor of USD 240 converted into it. Compared before
+        # conversion, 900 stated in JPY passed it and priced a USD case's
+        # operations at about USD 6 a site.
+        _ops_floor = D("240") * _fx["factors"]["USD"]
+        if D(0) < ops < _ops_floor:
+            stated = f"{_ops} {_ops_ccy}" + (
+                f", {ops:.2f} {_case_ccy}," if _ops_ccy != _case_ccy else "")
+            raise HTTPException(422, {
+                "error": "ops cost per site looks monthly, not annual",
+                "detail": (
+                    f"{stated} per site per year is below USD 240 "
+                    f"({_ops_floor:.2f} {_case_ccy}), under any plausible "
+                    f"annual figure for operating a site's network - it is "
+                    f"most likely a monthly cost. Every circuit price in this "
+                    f"model is monthly and annualised; this one field is "
+                    f"annual. Multiply by 12, or state the currency it is "
+                    f"in.")})
         # How much of the estate is named. The named share keeps the
         # footprint's origin; the tallied share takes the weaker of
         # PUBLIC_DERIVED and that origin - so naming sites raises confidence
@@ -4383,7 +4413,7 @@ def run_estimate(case_id: str, payload: EstimateIn):
         # passed beside the components could disagree with them.
         scen = estimate.scenarios(
             components, lv,
-            transition_policy=_transition_policy(s, case_row),
+            transition_policy=_in_case_currency(_tp, _fx),
             sites=estimate.site_count(components),
             monthly_run_rate=estimate.monthly_run_rate(components),
             range_factor=_range_factor,
