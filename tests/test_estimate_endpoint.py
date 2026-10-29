@@ -611,3 +611,87 @@ def test_the_platform_layers_convert_into_the_case_currency(session, client):
         assert abs(D(eur[layer]["base"]) - expected) < D("0.01"), (
             f"{layer}: EUR {eur[layer]['base']}, expected {expected:.2f} - "
             f"USD {usd[layer]['base']} converted at {factor}")
+
+
+def test_per_site_costs_stated_in_usd_convert_into_the_case_currency(
+        session, client):
+    """The operations cost and the one-time cost per site are USD figures
+    that were read as each case's own, so the same 900 was 900 euros for
+    Iberdrola and 900 yen for Toyota. Stated in USD, both convert at the
+    factor every rate uses. An ops cost stated with no currency is still the
+    case's own, as the request has always meant."""
+    from app.domain import currency
+
+    def run(base_currency, ops_currency=None):
+        case_id = _ready_case(session, base_currency=base_currency,
+                              layers=("L0", "OPS"))
+        sim_id = _simulation(session, case_id)
+        _prior(session)
+        body = {"method": "BUILD_UP", "simulation_run_id": sim_id,
+                "users": 500, "ops_cost_per_site_base": 900}
+        if ops_currency:
+            body["ops_cost_per_site_currency"] = ops_currency
+        r = client.post(f"/v1/outside-in/cases/{case_id}/estimates:run",
+                        json=body)
+        assert r.status_code == 200, r.text
+        return r.json()
+
+    usd, eur, eur_own = run("USD", "USD"), run("EUR", "USD"), run("EUR")
+    factor = currency.rate_table(
+        [{"from_currency": r.from_currency, "to_currency": r.to_currency,
+          "rate": r.rate, "as_of": str(r.as_of) if r.as_of else None,
+          "convention": r.convention, "source": r.source,
+          "evidence_grade": r.evidence_grade}
+         for r in session.execute(select(db.fx_rate)).all()],
+        currencies=["USD"], to="EUR", convention="BUDGET",
+        as_of="2026-12-31")["factors"]["USD"]
+    assert factor != 1
+
+    def close(got, expected):
+        return abs(D(got) - D(expected)) < D("0.01")
+
+    assert close(eur["by_layer"]["OPS"]["base"],
+                 D(usd["by_layer"]["OPS"]["base"]) * factor)
+    assert eur_own["by_layer"]["OPS"]["base"] == usd["by_layer"]["OPS"]["base"]
+    with_transition = [k for k, sc in usd["scenarios"].items()
+                       if "transition" in sc]
+    assert with_transition
+    for k in with_transition:
+        usd_cost = usd["scenarios"][k]["transition"]["one_time_cost"]["base"]
+        eur_cost = eur["scenarios"][k]["transition"]["one_time_cost"]["base"]
+        assert close(eur_cost, D(usd_cost) * factor), (
+            f"scenario {k}: EUR {eur_cost}, expected USD {usd_cost} "
+            f"converted at {factor}")
+
+
+def test_the_ops_floor_is_judged_after_conversion(session, client):
+    """900 stated in JPY is about USD 6 a site a year. Checked before
+    conversion it passed the floor that catches a monthly figure, and priced
+    a USD case's operations at almost nothing."""
+    case_id = _ready_case(session, layers=("L0", "OPS"))
+    sim_id = _simulation(session, case_id)
+    _prior(session)
+    r = client.post(f"/v1/outside-in/cases/{case_id}/estimates:run",
+                    json={"method": "BUILD_UP", "simulation_run_id": sim_id,
+                          "users": 500, "ops_cost_per_site_base": 900,
+                          "ops_cost_per_site_currency": "JPY"})
+    assert r.status_code == 422, r.text
+    detail = str(r.json())
+    assert "JPY" in detail and "USD" in detail, detail
+
+
+def test_an_anchor_estimate_pins_the_rate_its_one_time_cost_converted_at(
+        session, client):
+    """ANCHOR converts the one-time cost per site as BUILD_UP does, and pins
+    the rate as BUILD_UP does, so an FX row changing cannot move a payback
+    with nothing recorded to say why."""
+    case_id = _ready_case(session, base_currency="EUR")
+    r = client.post(f"/v1/outside-in/cases/{case_id}/estimates:run",
+                    json={"method": "ANCHOR", "anchor_value": 213_000_000,
+                          "users": 500, "ops_cost_per_site_base": 900})
+    assert r.status_code == 200, r.text
+    pins = session.execute(select(db.estimate_snapshot.c.pins).where(
+        db.estimate_snapshot.c.estimate_snapshot_id
+        == r.json()["estimate_snapshot_id"])).scalar()
+    assert pins["fx"]["to"] == "EUR"
+    assert "USD" in pins["fx"]["rates"]

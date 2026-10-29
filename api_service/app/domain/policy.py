@@ -19,7 +19,7 @@ Two design rules follow, and the second is the one that matters:
 Policies are validated on construction, so a steward cannot commit weights that
 sum to 1.3 or bands that overlap.
 """
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from decimal import Decimal
 
 from .money import D
@@ -680,6 +680,26 @@ class TransitionPolicy:
     one_time_share_project_management: Decimal = Decimal("0")
     one_time_reference_circuits_per_site: Decimal = Decimal("1")
     evidence_grade: str = "E"
+    # The currency the per-site costs are governed in. A field, not a
+    # threshold row, for the reason evidence_grade is one:
+    # reference.threshold.value is numeric. USD, like the rate card they sit
+    # beside - and read as every case's own currency until in_currency, so
+    # the same 900 was 900 euros for one estate and 900 yen for another.
+    currency: str = "USD"
+
+    def in_currency(self, factor, code: str) -> "TransitionPolicy":
+        """This policy with its money moved into another currency.
+
+        Only the three per-site costs are money. The shares, the reference
+        density, the months and the migration rate are not, and stay as
+        they are.
+        """
+        f = Decimal(str(factor))
+        return replace(
+            self, currency=code,
+            one_time_cost_per_site_low=Decimal(self.one_time_cost_per_site_low) * f,
+            one_time_cost_per_site_base=Decimal(self.one_time_cost_per_site_base) * f,
+            one_time_cost_per_site_high=Decimal(self.one_time_cost_per_site_high) * f)
 
     @classmethod
     def from_rows(cls, rows: dict, set_name: str = "transition_policy"):
