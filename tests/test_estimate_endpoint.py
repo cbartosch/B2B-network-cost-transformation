@@ -43,7 +43,8 @@ def client():
         yield c
 
 
-def _ready_case(session, *, countries=("GB",)) -> str:
+def _ready_case(session, *, countries=("GB",), base_currency="USD",
+                layers=("L0",)) -> str:
     """A case in the one state estimates:run will accept.
 
     Seeds reference data explicitly. The `session` fixture drops and recreates
@@ -61,8 +62,8 @@ def _ready_case(session, *, countries=("GB",)) -> str:
         subject_entity_legal_name="Acme Global Logistics",
         entity_identifier="5493001KJTIIGC8Y1R12", country_of_domicile="GB",
         group_perimeter="SINGLE_ENTITY", in_scope_countries=list(countries),
-        in_scope_cost_layers=["L0"], in_scope_service_families=["WAN"],
-        base_currency="USD", price_year=2026, fx_convention="BUDGET",
+        in_scope_cost_layers=list(layers), in_scope_service_families=["WAN"],
+        base_currency=base_currency, price_year=2026, fx_convention="BUDGET",
         analysis_horizon_years=5, discount_rate_set_id="DRS-2026-USD",
         engagement_purpose="PROPOSAL_QUALIFICATION",
         client_contact_status="NO_CONTACT", baseline_reference_period="FY2026",
@@ -573,3 +574,40 @@ def test_a_country_without_a_rate_prices_at_its_region(session, client):
         "L0_backup_DE_MOBILE_5G_100M_priced_at_300M",
         "L0_backup_HU_MOBILE_5G_100M_priced_at_300M_priced_in_EUROPE_CENTRAL",
         "L0_backup_SE_MOBILE_5G_100M_priced_at_150M_priced_in_EMEA"]
+
+
+def test_the_platform_layers_convert_into_the_case_currency(session, client):
+    """The platform card is priced in USD and was the one rate set the route
+    never converted, so a EUR case paid the overlay's USD 55 a site a month
+    as EUR 55 - and a JPY case as JPY 55, which put Toyota's platform layers
+    at EUR 3,008. The same estate priced in EUR must cost its USD price at
+    the factor every access rate uses."""
+    from app.domain import currency
+
+    def by_layer(base_currency):
+        case_id = _ready_case(session, base_currency=base_currency,
+                              layers=("L0", "L2", "L4"))
+        sim_id = _simulation(session, case_id)
+        _prior(session)
+        r = client.post(f"/v1/outside-in/cases/{case_id}/estimates:run",
+                        json={"method": "BUILD_UP", "simulation_run_id": sim_id,
+                              "users": 500, "ops_cost_per_site_base": 900})
+        assert r.status_code == 200, r.text
+        return r.json()["by_layer"]
+
+    usd, eur = by_layer("USD"), by_layer("EUR")
+    factor = currency.rate_table(
+        [{"from_currency": r.from_currency, "to_currency": r.to_currency,
+          "rate": r.rate, "as_of": str(r.as_of) if r.as_of else None,
+          "convention": r.convention, "source": r.source,
+          "evidence_grade": r.evidence_grade}
+         for r in session.execute(select(db.fx_rate)).all()],
+        currencies=["USD"], to="EUR", convention="BUDGET",
+        as_of="2026-12-31")["factors"]["USD"]
+    assert factor != 1
+    for layer in ("L2", "L4"):
+        assert D(usd[layer]["base"]) > 0, layer
+        expected = D(usd[layer]["base"]) * factor
+        assert abs(D(eur[layer]["base"]) - expected) < D("0.01"), (
+            f"{layer}: EUR {eur[layer]['base']}, expected {expected:.2f} - "
+            f"USD {usd[layer]['base']} converted at {factor}")

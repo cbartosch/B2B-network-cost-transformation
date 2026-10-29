@@ -4055,6 +4055,15 @@ def run_estimate(case_id: str, payload: EstimateIn):
         # currency its source quoted, so approving one makes the mix
         # correct, and the refusal started blocking 11 of 26 companies on
         # two approved EUR rows.
+        # The platform card - SD-WAN overlay, SSE licences, PoP colocation -
+        # is priced in its own currency like the access card, and was the
+        # consumer that did not carry the rate: loaded raw after the
+        # conversion below, so every non-USD estimate paid the USD figure in
+        # its own currency. Toyota's overlay cost JPY 55 a site a month and
+        # Tesco's GBP 55. Loaded here so its currencies are among the ones
+        # the rate table must convert, and converted with the rest.
+        platform_rows = s.execute(select(db.platform_unit_cost).where(
+            db.platform_unit_cost.c.approved.is_(True))).all()
         _case_ccy = currency.normalise(case_row.base_currency)
         _fx = {"to": _case_ccy, "factors": {}, "detail": {}}
         try:
@@ -4065,7 +4074,8 @@ def run_estimate(case_id: str, payload: EstimateIn):
                   "convention": r.convention, "source": r.source,
                   "evidence_grade": r.evidence_grade}
                  for r in s.execute(select(db.fx_rate)).all()],
-                currencies=[r.currency for r in prior_rows],
+                currencies=([r.currency for r in prior_rows]
+                            + [r.currency for r in platform_rows]),
                 to=_case_ccy,
                 convention=getattr(case_row, "fx_convention", None),
                 as_of=f"{case_row.price_year or 2026}-12-31")
@@ -4154,9 +4164,11 @@ def run_estimate(case_id: str, payload: EstimateIn):
         # so they have to move too or the comparison is across units.
         for _prior in sizing_priors.values():
             currency.convert_prior(_prior, factors=_fx["factors"])
-        platform = {r.product: {"low": r.low, "base": r.base, "high": r.high}
-                    for r in s.execute(select(db.platform_unit_cost).where(
-                        db.platform_unit_cost.c.approved.is_(True))).all()}
+        platform = {r.product: {"low": r.low, "base": r.base, "high": r.high,
+                                "currency": r.currency}
+                    for r in platform_rows}
+        for _unit in platform.values():
+            currency.convert_prior(_unit, factors=_fx["factors"])
 
         # Coverage denominator derived from the simulated scope, per
         # (country, product) pair - not accepted from the caller.
