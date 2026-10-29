@@ -229,6 +229,8 @@ THRESHOLDS = [
     # Circuits per site the reference cost assumes. A seeded estate runs
     # about 1.3; 1.25 is the round reference the shares were set against.
     ("transition_policy", "one_time_reference_circuits_per_site", "1.25"),
+    # In USD, which TransitionPolicy.currency declares - a threshold row
+    # holds a number, not a code - and converted into each case's currency.
     ("transition_policy", "one_time_cost_per_site_low", "400"),
     ("transition_policy", "one_time_cost_per_site_base", "900"),
     ("transition_policy", "one_time_cost_per_site_high", "1800"),

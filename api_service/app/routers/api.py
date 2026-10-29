@@ -298,7 +298,16 @@ def _range_policy(s):
                                   "detail": str(exc)})
 
 
-def _transition_policy(s):
+def _fx_rows(s):
+    """reference.fx_rate in the shape currency.rate_table reads."""
+    return [{"from_currency": r.from_currency, "to_currency": r.to_currency,
+             "rate": r.rate, "as_of": str(r.as_of) if r.as_of else None,
+             "convention": r.convention, "source": r.source,
+             "evidence_grade": r.evidence_grade}
+            for r in s.execute(select(db.fx_rate)).all()]
+
+
+def _transition_policy(s, case_row=None):
     """What it costs to get to the target estate.
 
     A 503 like every other governed policy, rather than None. scenarios()
@@ -311,12 +320,30 @@ def _transition_policy(s):
 
     transition_policy.evidence_grade is deliberately unseeded and from_rows
     reads it with .get(..., "E"); the five numeric fields are required.
+
+    Given the case, in the case's currency. The per-site costs are governed
+    in TransitionPolicy.currency and were read as every case's own, so the
+    same 900 was 900 euros for Iberdrola and 900 yen, about EUR 5, for
+    Toyota. Converted here, at the rate and convention every price uses, so
+    both methods - BUILD_UP and ANCHOR - get the same figure.
     """
     try:
-        return policy.TransitionPolicy.from_rows(_thresholds(s, "transition_policy"))
+        tp = policy.TransitionPolicy.from_rows(_thresholds(s, "transition_policy"))
     except (policy.PolicyIncomplete, policy.PolicyInvalid) as exc:
         raise HTTPException(503, {"error": "governed transition policy unusable",
                                   "detail": str(exc)})
+    if case_row is None:
+        return tp
+    target = currency.normalise(case_row.base_currency)
+    try:
+        fx = currency.rate_table(
+            _fx_rows(s), currencies=[tp.currency], to=target,
+            convention=getattr(case_row, "fx_convention", None),
+            as_of=f"{case_row.price_year or 2026}-12-31")
+    except (currency.CurrencyMismatch, currency.UnknownCurrency) as exc:
+        raise HTTPException(422, {"error": "currencies do not reconcile",
+                                  "detail": str(exc)})
+    return tp.in_currency(fx["factors"][currency.normalise(tp.currency)], target)
 
 
 def _recommendation_policy(s):
@@ -3571,6 +3598,12 @@ class EstimateIn(BaseModel):
     # cosmetic. Both now resolve from the case, and a case with neither is
     # refused rather than costed at a number nobody supplied.
     ops_cost_per_site_base: Decimal | None = Field(default=None, ge=0)
+    # The currency ops_cost_per_site_base is stated in. Absent means the
+    # case's own, as it always has. A caller with one assumption for every
+    # case - the sample driver's USD 900 - states it here and the route
+    # converts it, rather than JPY 900 standing for USD 900.
+    ops_cost_per_site_currency: str | None = Field(default=None,
+                                                   min_length=3, max_length=3)
     # Reconciled and reported. Never used as the coverage denominator - that is
     # derived from the simulated scope and the priors.
     declared_spend_by_country: dict = {}
@@ -3685,7 +3718,7 @@ def _run_anchor_estimate(s, *, case_id, case_row, payload,
     # passed beside the components could disagree with them.
     scen = estimate.scenarios(
         components, lv,
-        transition_policy=_transition_policy(s),
+        transition_policy=_transition_policy(s, case_row),
         sites=estimate.site_count(components),
         monthly_run_rate=estimate.monthly_run_rate(components),
         range_factor=_range_factor,
@@ -4065,17 +4098,22 @@ def run_estimate(case_id: str, payload: EstimateIn):
         platform_rows = s.execute(select(db.platform_unit_cost).where(
             db.platform_unit_cost.c.approved.is_(True))).all()
         _case_ccy = currency.normalise(case_row.base_currency)
+        # The ops cost's own currency: the one the request states it in, or
+        # the case's where the request states none or the figure came from
+        # the case. Among the ones the table must convert, so a currency
+        # with no FX rate is refused rather than read as the case's.
+        _ops_ccy = currency.normalise(
+            payload.ops_cost_per_site_currency
+            if payload.ops_cost_per_site_base is not None
+            and payload.ops_cost_per_site_currency
+            else case_row.base_currency)
         _fx = {"to": _case_ccy, "factors": {}, "detail": {}}
         try:
             _fx = currency.rate_table(
-                [{"from_currency": r.from_currency,
-                  "to_currency": r.to_currency, "rate": r.rate,
-                  "as_of": str(r.as_of) if r.as_of else None,
-                  "convention": r.convention, "source": r.source,
-                  "evidence_grade": r.evidence_grade}
-                 for r in s.execute(select(db.fx_rate)).all()],
+                _fx_rows(s),
                 currencies=([r.currency for r in prior_rows]
-                            + [r.currency for r in platform_rows]),
+                            + [r.currency for r in platform_rows]
+                            + [_ops_ccy]),
                 to=_case_ccy,
                 convention=getattr(case_row, "fx_convention", None),
                 as_of=f"{case_row.price_year or 2026}-12-31")
@@ -4257,7 +4295,7 @@ def run_estimate(case_id: str, payload: EstimateIn):
                           "every archetype in it has users_base 0 (a DC-only "
                           "estate, for example). Supply `users` explicitly."})
 
-        ops = D(_ops)
+        ops = D(_ops) * _fx["factors"][_ops_ccy]
         # How much of the estate is named. The named share keeps the
         # footprint's origin; the tallied share takes the weaker of
         # PUBLIC_DERIVED and that origin - so naming sites raises confidence
@@ -4345,7 +4383,7 @@ def run_estimate(case_id: str, payload: EstimateIn):
         # passed beside the components could disagree with them.
         scen = estimate.scenarios(
             components, lv,
-            transition_policy=_transition_policy(s),
+            transition_policy=_transition_policy(s, case_row),
             sites=estimate.site_count(components),
             monthly_run_rate=estimate.monthly_run_rate(components),
             range_factor=_range_factor,

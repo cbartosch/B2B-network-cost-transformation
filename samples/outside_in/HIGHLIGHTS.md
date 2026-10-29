@@ -151,7 +151,7 @@ Sources: [Val Index (Swiss commercial-register / BAKOM dat](https://valindex.ch/
 
 - **Industry** HOTELS (case record)
 - **Scope** FR, DE, GB, EUR, 2,255 sites (research merged with disclosure)
-- **Confidence** 0.318 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.320 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 7 source(s)
 
@@ -449,7 +449,7 @@ Sources: [OpenSignal](https://insights.opensignal.com/reports/2025/10/spain/fixe
 
 - **Industry** GROCERY_RETAIL (case record)
 - **Scope** NL, BE, US, GR, RO, CZ, EUR, 6,061 sites (research merged with disclosure)
-- **Confidence** 0.324 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.326 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 7 source(s)
 
@@ -1124,7 +1124,7 @@ Sources: [germancompanyformation.com](https://germancompanyformation.com/guides/
 
 - **Industry** PHARMACEUTICALS (case record)
 - **Scope** DE, US, CN, BR, IN, FR, ES, MX, EUR, 98 sites (public disclosure only)
-- **Confidence** 0.346 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.347 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 10 source(s)
 
@@ -1680,7 +1680,7 @@ Sources: [TeleGeography](https://resources.telegeography.com/the-rise-of-dia-ove
 
 - **Industry** GROCERY_RETAIL (case record)
 - **Scope** FR, ES, IT, BE, PL, BR, RO, EUR, 8,982 sites (research merged with disclosure)
-- **Confidence** 0.324 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.326 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 8 source(s)
 
@@ -1946,7 +1946,7 @@ Sources: [ARCEP (French telecom regulator)](https://en.arcep.fr/news/press-relea
 
 - **Industry** RETAIL_BANKING (case record)
 - **Scope** SG, IN, CN, ID, SGD, 1,769 sites (research merged with disclosure)
-- **Confidence** 0.340 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.338 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 10 source(s)
 
@@ -2080,7 +2080,7 @@ Sources: [Operator Watch](https://www.operatorwatch.com/2026/08/new-singapores-t
 
 - **Industry** RAILWAYS (case record)
 - **Scope** DE, EUR, 5,600 sites (research merged with disclosure)
-- **Confidence** 0.326 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.328 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 9 source(s)
 
@@ -2202,7 +2202,7 @@ Sources: [Deutsche Bahn AG – IR](https://ir.deutschebahn.com/en/news-presentat
 
 - **Industry** PARCEL_LOGISTICS (case record)
 - **Scope** DE, NL, GB, EUR, 2,914 sites (research merged with disclosure)
-- **Confidence** 0.337 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.338 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 10 source(s)
 
@@ -2345,7 +2345,7 @@ Sources: [VATM / Dialog Consult](https://www.vatm.de/dokument/market-analysis-20
 
 - **Industry** SPECIALTY_RETAIL (case record)
 - **Scope** DE, FR, IT, NL, PL, EUR, 1,339 sites (research merged with disclosure)
-- **Confidence** 0.326 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.328 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 7 source(s)
 
@@ -2463,7 +2463,7 @@ Sources: [BusinessWire / ISG](https://www.businesswire.com/news/home/20250807539
 
 - **Industry** UTILITIES (case record)
 - **Scope** DE, GB, SE, CZ, HU, RO, PL, NL, EUR, 829 sites (research merged with disclosure)
-- **Confidence** 0.333 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.334 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 7 source(s)
 
@@ -2719,7 +2719,7 @@ Sources: [ts2.tech](https://ts2.tech/en/internet-access-in-germany-2025-dsl-cabl
 
 - **Industry** HOSPITAL (case record)
 - **Scope** DE, ES, US, EUR, 3,385 sites (research merged with disclosure)
-- **Confidence** 0.341 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.342 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 8 source(s)
 
@@ -2859,7 +2859,7 @@ Sources: [ISG / BusinessWire](https://secure.businesswire.com/news/home/20250807
 
 - **Industry** INSURANCE (case record)
 - **Scope** IT, AT, EUR, 932 sites (research merged with disclosure)
-- **Confidence** 0.344 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.345 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 7 source(s)
 
@@ -2978,7 +2978,7 @@ Sources: [Cloudbrink (citing AGCOM end-2025 data)](https://cloudbrink.com/europe
 
 - **Industry** BUILDING_MATERIALS (case record)
 - **Scope** DE, US, GB, FR, IT, PL, EUR, 1,273 sites (research merged with disclosure)
-- **Confidence** 0.328 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.330 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 7 source(s)
 
@@ -3249,7 +3249,7 @@ Sources: [germancompanyformation.com](https://germancompanyformation.com/guides/
 
 - **Industry** UTILITIES (case record)
 - **Scope** ES, GB, EUR, 2,762 sites (research merged with disclosure)
-- **Confidence** 0.323 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.371 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 10 source(s)
 
@@ -3389,7 +3389,7 @@ Sources: [Opensignal (citing CNMC data)](https://insights.opensignal.com/reports
 
 - **Industry** SPECIALTY_RETAIL (case record)
 - **Scope** ES, FR, DE, EUR, 1,695 sites (research merged with disclosure)
-- **Confidence** 0.332 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.333 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 7 source(s)
 
@@ -3521,7 +3521,7 @@ Sources: [Opensignal](https://insights.opensignal.com/reports/2025/10/spain/fixe
 
 - **Industry** AIRLINES (case record)
 - **Scope** DE, CH, AT, EUR, 218 sites (research merged with disclosure)
-- **Confidence** 0.340 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.341 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 7 source(s)
 
@@ -3668,7 +3668,7 @@ Sources: [germancompanyformation.com](https://germancompanyformation.com/guides/
 
 - **Industry** LOGISTICS (case record)
 - **Scope** DK, NL, DE, US, CN, IN, BR, SG, DKK, 156 sites (research merged with disclosure)
-- **Confidence** 0.348 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.347 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 8 source(s)
 
@@ -3943,7 +3943,7 @@ Sources: [TeleGeography](https://resources.telegeography.com/the-rise-of-dia-ove
 
 - **Industry** AUTOMOTIVE_OEM (case record)
 - **Scope** FR, DE, US, BR, CN, PL, ES, IN, EUR, 98 sites (research merged with disclosure)
-- **Confidence** 0.346 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.347 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 7 source(s)
 
@@ -4240,7 +4240,7 @@ Sources: [Swiss Federal Office of Communications / ComCom](https://www.comcom.ad
 
 - **Industry** RAILWAYS (case record)
 - **Scope** GB, GBP, 912 sites (research merged with disclosure)
-- **Confidence** 0.328 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.332 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 4 source(s)
 
@@ -4390,7 +4390,7 @@ Sources: [Netify](https://netify.co.uk/insights/top-best-mpls-network-providers/
 
 - **Industry** HOSPITAL (case record)
 - **Scope** GB, GBP, 1,491 sites (research merged with disclosure)
-- **Confidence** 0.341 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.343 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 6 source(s)
 
@@ -4545,7 +4545,7 @@ Sources: [Amvia](https://amvia.co.uk/leased-lines/compare/uk-leased-line-provide
 
 - **Industry** PHARMACEUTICALS (case record)
 - **Scope** CH, DE, US, IE, IT, ES, AT, SG, CHF, 125 sites (research merged with disclosure)
-- **Confidence** 0.346 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.347 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 8 source(s)
 
@@ -4818,7 +4818,7 @@ Sources: [leasedlineandmpls.co.uk](https://www.leasedlineandmpls.co.uk/top-100gb
 
 - **Industry** PARCEL_LOGISTICS (case record)
 - **Scope** GB, GBP, 1,419 sites (research merged with disclosure)
-- **Confidence** 0.325 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.329 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 7 source(s)
 
@@ -4956,7 +4956,7 @@ Sources: [netify.co.uk](https://netify.co.uk/insights/top-best-mpls-network-prov
 
 - **Industry** BUILDING_MATERIALS (case record)
 - **Scope** FR, DE, GB, EUR, 1,928 sites (research merged with disclosure)
-- **Confidence** 0.342 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.343 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 8 source(s)
 
@@ -5082,7 +5082,7 @@ Sources: [Telecompaper](https://www.telecompaper.com/news/fibre-adoption-rises-t
 
 - **Industry** UNIVERSAL_BANKING (case record)
 - **Scope** ES, GB, PT, EUR, 2,268 sites (research merged with disclosure)
-- **Confidence** 0.338 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.339 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 10 source(s)
 
@@ -5904,7 +5904,7 @@ Sources: [Telecompaper](https://www.telecompaper.com/news/fibre-adoption-rises-t
 
 - **Industry** AUTOMOTIVE_OEM (case record)
 - **Scope** JP, US, CN, IN, BR, GB, FR, CA, JPY, 65 sites (research merged with disclosure)
-- **Confidence** 0.349 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.347 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 9 source(s)
 
@@ -6185,7 +6185,7 @@ Sources: [Vertical Systems Group](https://verticalsystems.com/2026/02/18/2025-us
 
 - **Industry** HOUSEHOLD_PERSONAL_CARE (case record)
 - **Scope** GB, NL, DE, US, IN, BR, MX, PL, IT, FR, EUR, 208 sites (research merged with disclosure)
-- **Confidence** 0.345 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.346 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 10 source(s)
 
@@ -6746,7 +6746,7 @@ Sources: [germancompanyformation.com](https://germancompanyformation.com/guides/
 
 - **Industry** GROCERY_RETAIL (case record)
 - **Scope** AU, NZ, AUD, 1,363 sites (research merged with disclosure)
-- **Confidence** 0.375 (D - Indicative), coverage COMPLETE
+- **Confidence** 0.327 (D - Indicative), coverage COMPLETE
 
 **Profile** - EVIDENCED_PUBLIC, 7 source(s)
 

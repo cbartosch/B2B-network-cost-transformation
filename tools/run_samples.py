@@ -1028,7 +1028,11 @@ def estimate(case_id, slug, sim_id, footprint):
         # a user population nobody has researched are assumptions, and the
         # confidence model is what carries that.
         "users": max(1, total_sites * 12),
-        "ops_cost_per_site_base": 900}, timeout=900)
+        # In USD, stated so the route converts it. Sent bare, it was read in
+        # each case's own currency: 900 euros for one estate, 900 yen for
+        # another.
+        "ops_cost_per_site_base": 900,
+        "ops_cost_per_site_currency": "USD"}, timeout=900)
     if st != 200:
         raise RuntimeError(f"estimate {st}: {est}")
     log(slug, f"V0 {est.get('v0_status')}, "
@@ -1465,6 +1469,7 @@ def run_one(spec, outdir, domains, force, repair=False, repromote=False, redo=Fa
             "method": "BUILD_UP",
             "users": max(1, sum(int(r["sites"]) for r in foot) * 12),
             "ops_cost_per_site_base": 900,
+            "ops_cost_per_site_currency": "USD",
             "note": ("users and ops_cost_per_site are assumptions, not "
                      "research. They are stated here because an estimate "
                      "that hides its inputs cannot be checked."),
